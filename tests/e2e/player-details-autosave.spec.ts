@@ -113,10 +113,7 @@ test.describe("Player Details Auto-Save", () => {
     }
   });
 
-  // QUARANTINED 2026-05-22: page restructured into tabs — labels under
-  // non-default tabs aren't reachable without tab-click logic. Rewrite needs
-  // per-tab navigation.
-  test.skip("should have academic fields with GPA, SAT, ACT", async ({ page }) => {
+  test("should have academic fields with GPA, SAT, ACT", async ({ page }) => {
     // Check for GPA input
     const gpaInput = page.locator('[data-testid="gpa-input"]');
     if (await gpaInput.isVisible()) {
@@ -141,8 +138,7 @@ test.describe("Player Details Auto-Save", () => {
     expect(hasAcademics).toBe(true);
   });
 
-  // QUARANTINED 2026-05-22: see comment above — tabs.
-  test.skip("should have graduation year field", async ({ page }) => {
+  test("should have graduation year field", async ({ page }) => {
     const labels = page.locator("label");
     let foundGradYear = false;
 
@@ -176,8 +172,7 @@ test.describe("Player Details Auto-Save", () => {
     }
   });
 
-  // QUARANTINED 2026-05-22: see comment above — tabs.
-  test.skip("form fields should be properly labeled", async ({ page }) => {
+  test("form fields should be properly labeled", async ({ page }) => {
     const labels = page.locator("label");
     const labelTexts: string[] = [];
 
@@ -194,9 +189,7 @@ test.describe("Player Details Auto-Save", () => {
     );
   });
 
-  // QUARANTINED 2026-05-22: see comment above — tabs (Baseball option lives
-  // under Athletics tab, not the default Basics tab).
-  test.skip("should have proper structure for position selection", async ({
+  test("should have proper structure for position selection", async ({
     page,
   }) => {
     // Athletics tab is visible

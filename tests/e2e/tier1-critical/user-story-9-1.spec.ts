@@ -217,16 +217,25 @@ test.describe("User Story 9.1 - Athlete Views Their Task List", () => {
     await expect(heading).toBeVisible();
   });
 
-  // QUARANTINED 2026-05-22: assertion expects > 0 of something that's missing.
-  test.skip("Empty state message is shown when no tasks", async ({ page }) => {
-    // This test may skip if user has tasks
-    const taskItems = page.locator('[data-testid="task-item"]');
-    const hasAnyTasks = await taskItems.count();
+  test("Empty state message is shown when no tasks", async ({ page }) => {
+    // Wait for either tasks or empty state to settle (page has a loading
+    // skeleton that resolves into one of the two branches).
+    const taskItem = page.locator('[data-testid="task-item"]').first();
+    const emptyStateMessage = page.locator(
+      "text=No tasks available for this grade level",
+    );
+    await Promise.race([
+      taskItem.waitFor({ state: "visible", timeout: 10000 }).catch(() => null),
+      emptyStateMessage
+        .waitFor({ state: "visible", timeout: 10000 })
+        .catch(() => null),
+    ]);
 
-    const emptyStateMessage = page.locator("text=/No tasks available|Start/");
+    const hasAnyTasks = await page
+      .locator('[data-testid="task-item"]')
+      .count();
     const hasEmptyState = await emptyStateMessage.count();
 
-    // Either show tasks or empty state, not both
     if (hasAnyTasks === 0) {
       expect(hasEmptyState).toBeGreaterThan(0);
     } else {
@@ -302,13 +311,13 @@ test.describe("User Story 9.1 - Athlete Views Their Task List", () => {
     expect(collapsedHeight).toBeTruthy();
   });
 
-  // QUARANTINED 2026-05-22: page title format drifted.
-  test.skip("Page title and metadata are correct", async ({ page }) => {
-    // Verify page title contains "Tasks"
+  test("Page title and metadata are correct", async ({ page }) => {
+    // useHead applies on hydration; wait for it to populate document.title.
+    await page.waitForFunction(() => document.title.length > 0, undefined, {
+      timeout: 10000,
+    });
     const pageTitle = await page.title();
     expect(pageTitle).toContain("Tasks");
-
-    // Verify URL is correct
     expect(page.url()).toContain("/tasks");
   });
 

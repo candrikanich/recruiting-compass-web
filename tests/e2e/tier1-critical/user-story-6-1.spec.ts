@@ -265,28 +265,23 @@ test.describe("User Story 6.1: Parent Views Recruiting Stage Guidance", () => {
     }
   });
 
-  // QUARANTINED 2026-05-22: invalid CSS selector in test (regex inside :has-text).
-  test.skip("Scenario 12: Milestone links have correct attributes", async ({
+  test("Scenario 12: Milestone links have correct attributes", async ({
     page,
   }) => {
-    // Find milestone links that have URLs
-    const milestonLinks = page.locator(
-      "a[href^='http']:has-text(/Test Date|Opens|Deadline|Period|Signing/)",
-    );
+    const milestoneLinks = page
+      .locator("a[href^='http']")
+      .filter({ hasText: /Test Date|Opens|Deadline|Period|Signing/ });
 
-    const count = await milestonLinks.count();
-    if (count > 0) {
-      // Verify first link has target="_blank" for external links
-      const firstLink = milestonLinks.first();
-      const target = await firstLink.getAttribute("target");
-      const rel = await firstLink.getAttribute("rel");
-
-      if (
-        await firstLink.getAttribute("href").then((h) => h?.startsWith("http"))
-      ) {
-        expect(target).toBe("_blank");
-        expect(rel).toContain("noopener");
-      }
+    const count = await milestoneLinks.count();
+    if (count === 0) {
+      test.skip();
+      return;
     }
+
+    const firstLink = milestoneLinks.first();
+    const target = await firstLink.getAttribute("target");
+    const rel = await firstLink.getAttribute("rel");
+    expect(target).toBe("_blank");
+    expect(rel).toContain("noopener");
   });
 });

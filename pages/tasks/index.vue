@@ -6,7 +6,10 @@ import { useParentContext } from "~/composables/useParentContext";
 import { calculateCurrentGrade } from "~/utils/gradeHelpers";
 import { calculateDeadlineInfo } from "~/utils/deadlineHelpers";
 import AthleteSwitcher from "~/components/Parent/AthleteSwitcher.vue";
+import DeadlineBadge from "~/components/Timeline/DeadlineBadge.vue";
 import type { TaskWithStatus } from "~/types/timeline";
+
+useHead({ title: "My Tasks" });
 
 const { session } = useAuth();
 const {
@@ -504,6 +507,10 @@ const onUrgencyFilterChange = () => {
                     >
                       Required
                     </span>
+                    <DeadlineBadge
+                      :deadline-date="task.deadline_date"
+                      :is-completed="task.athlete_task?.status === 'completed'"
+                    />
                   </div>
                   <p
                     v-if="task.description"

@@ -50,16 +50,19 @@ test.describe("/timeline — Recruiting Timeline", () => {
     ).toBeVisible();
   });
 
-  // QUARANTINED 2026-05-22: [data-testid="guidance-sidebar"] no longer exists.
-  test.skip("shows guidance sidebar", async ({ page }) => {
+  test("shows guidance sidebar", async ({ page }) => {
     await expect(
       page.locator('[data-testid="guidance-sidebar"]'),
     ).toBeVisible();
   });
 
-  // QUARANTINED 2026-05-22: seed-dependent year sections on /timeline.
-  test.skip("shows year section headings", async ({ page }) => {
-    // PhaseCardInline renders title in h3 — page shows all 4 grade years
+  test("shows year section headings", async ({ page }) => {
+    // PhaseCardInline renders title in h3 inside a v-if="!loading" block —
+    // wait for the sidebar (also gated on load) before counting.
+    await page.locator('[data-testid="guidance-sidebar"]').waitFor({
+      state: "visible",
+      timeout: 10000,
+    });
     const yearHeadings = page.locator("h3").filter({ hasText: /Year/ });
     expect(await yearHeadings.count()).toBeGreaterThanOrEqual(1);
   });

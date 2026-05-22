@@ -44,16 +44,23 @@ test.describe("Notifications Page", () => {
 
   // ── Empty or populated state ────────────────────────────────────────────────
 
-  // QUARANTINED 2026-05-22: vacuous conditional assertion that resolves to
-  // false when neither path matches — needs a real seeded state.
-  test.skip("shows either notifications or empty state — no blank screen", async ({
+  test("shows either notifications or empty state — no blank screen", async ({
     page,
   }) => {
+    // Race: wait for first notification card or empty-state copy to appear.
+    const notifications = page.locator(".border-l-4").first();
+    const emptyState = page.locator("text=You're all caught up!");
+    await Promise.race([
+      notifications
+        .waitFor({ state: "visible", timeout: 10000 })
+        .catch(() => null),
+      emptyState
+        .waitFor({ state: "visible", timeout: 10000 })
+        .catch(() => null),
+    ]);
+
     const hasNotifications = (await page.locator(".border-l-4").count()) > 0;
-    const hasEmptyState = await page
-      .locator("text=You're all caught up!")
-      .isVisible()
-      .catch(() => false);
+    const hasEmptyState = await emptyState.isVisible().catch(() => false);
 
     expect(hasNotifications || hasEmptyState).toBe(true);
   });
