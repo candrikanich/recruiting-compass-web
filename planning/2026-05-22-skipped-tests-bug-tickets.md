@@ -46,19 +46,18 @@ Each ticket: blockers, affected specs, scope, estimate. Pick up in any order —
 
 ---
 
-## #3 — Performance Tracking Feature
+## #3 — Performance Tracking Feature — RESOLVED 2026-05-23
 
-**Blocks:** ~11 tests
-**Affected:** `tests/e2e/tier2-important/performance.spec.ts:7` (whole suite)
+**Was blocking:** ~11 tests
 
-**What's missing:** Performance-tracking UI likely unfinished — 11/11 fail on selector lookup. Need to confirm whether feature exists in product roadmap.
+**Investigation:** Feature exists (`pages/performance/index.vue` 757 LOC, `pages/performance/timeline.vue` 310 LOC, `components/Performance/LogMetricModal.vue`). Spec assumed testids (`metric-type-select`, `metric-value-input`, `nav-performance`) that the UI never adopted — selectors fully drifted, the POM (`PerformancePage.ts`) referenced a non-existent surface.
 
-**Scope:**
-1. Product decision: ship feature, defer, or kill spec
-2. If shipping: complete UI, add testids, rewrite spec against final design
-3. If killing: delete spec file
+**Action:** Deleted spec + POM + unused `testPerformanceMetrics` fixture. Feature stays; if perf tracking gets E2E coverage later it should be rewritten from scratch against the current UI rather than salvaged from the stale spec.
 
-**Estimate:** 5 days (feature build) OR 30 min (delete)
+**Files removed:**
+- `tests/e2e/tier2-important/performance.spec.ts`
+- `tests/e2e/pages/PerformancePage.ts`
+- `testPerformanceMetrics` block in `tests/e2e/fixtures/testData.ts`
 
 ---
 
@@ -150,12 +149,12 @@ Each ticket: blockers, affected specs, scope, estimate. Pick up in any order —
 |---|---|---|---|
 | 1 | Smart Inputs seed + env | ~15 | 2d |
 | 2 | Analytics rewrite | ~20 | 3d |
-| 3 | Performance tracking | ~11 | 5d or 30m |
+| 3 | Performance tracking | ~11 | DONE (deleted) |
 | 4 | Settings split | ~22 | 2d |
 | 5 | Documents rewrite | ~22 | 3d |
 | 6 | Password reset mock | ~14 | 1d |
 | 7 | User prefs migration | 3 | 3d |
 | 8 | Notes refresh after save | 2 | DONE |
-| **Total** | | **~107 tests remaining** | **~19 days** |
+| **Total** | | **~94 tests remaining** | **~14 days** |
 
 Remaining ~125 skipped tests are CONDITIONAL-DATA-GUARD that resolve when seed data lands (dashboard-8-x, family-invite-flow, coaching-philosophy, bulk-delete-users, etc.) — track separately as seed infrastructure work.

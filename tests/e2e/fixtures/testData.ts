@@ -138,33 +138,6 @@ export const testOffers = {
   },
 };
 
-export const testPerformanceMetrics = {
-  metric1: {
-    type: "Velocity",
-    value: 92,
-    unit: "mph",
-    date: new Date().toISOString().split("T")[0],
-  },
-  metric2: {
-    type: "Exit Velo",
-    value: 88,
-    unit: "mph",
-    date: new Date().toISOString().split("T")[0],
-  },
-  metric3: {
-    type: "60 Yard Dash",
-    value: 6.8,
-    unit: "sec",
-    date: new Date().toISOString().split("T")[0],
-  },
-  metric4: {
-    type: "Batting Average",
-    value: 0.325,
-    unit: "avg",
-    date: new Date().toISOString().split("T")[0],
-  },
-};
-
 export const testErrorScenarios = {
   invalidEmail: "not-an-email",
   weakPassword: "weak",
