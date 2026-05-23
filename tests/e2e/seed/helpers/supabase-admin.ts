@@ -384,6 +384,32 @@ export async function createOneOffTestUser(opts: {
 }
 
 /**
+ * Generate a real Supabase password-recovery link for an existing user.
+ *
+ * Returns the action_link from supabase.auth.admin.generateLink so tests can
+ * page.goto(...) it — supabase-js then processes the hash params on landing,
+ * establishing a real recovery session and unlocking the /reset-password
+ * form UI for assertions.
+ */
+export async function generateRecoveryLink(
+  email: string,
+  redirectTo?: string,
+): Promise<string> {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase.auth.admin.generateLink({
+    type: "recovery",
+    email,
+    options: redirectTo ? { redirectTo } : undefined,
+  });
+  if (error || !data?.properties?.action_link) {
+    throw new Error(
+      `generateRecoveryLink failed for ${email}: ${error?.message ?? "no action_link returned"}`,
+    );
+  }
+  return data.properties.action_link;
+}
+
+/**
  * Delete a one-off test user created by `createOneOffTestUser`.
  *
  * Safe to call even if the user does not exist (no-op).

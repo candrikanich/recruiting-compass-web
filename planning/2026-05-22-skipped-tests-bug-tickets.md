@@ -95,19 +95,31 @@ Each ticket: blockers, affected specs, scope, estimate. Pick up in any order —
 
 ---
 
-## #6 — Password Reset Mock Token Plumbing
+## #6 — Password Reset Mock Token Plumbing — RESOLVED 2026-05-23
 
-**Blocks:** ~14 tests
-**Affected:** `tests/e2e/tier1-critical/password-reset.spec.ts` (multiple `test.skip`)
+**Was blocking:** 11 tests in password-reset.spec.ts
 
-**What's broken:** Mock tokens always trigger `invalidToken` state in Supabase auth. Tests skip when they need a real password-reset session.
+**Approach:** Option A (real recovery token via admin API).
 
-**Scope (pick one):**
-- **Option A:** Use Supabase admin API to mint a real recovery token in beforeAll
-- **Option B:** Add `E2E_BYPASS_TOKEN_VALIDATION=true` env flag (dev-only) that accepts mock tokens
-- Option A safer; Option B faster
+**Implementation:**
+1. New helper `generateRecoveryLink(email, redirectTo?)` in `tests/e2e/seed/helpers/supabase-admin.ts` — wraps `supabase.auth.admin.generateLink({ type: "recovery" })`.
+2. Per-spec helper `navigateWithRecoverySession(page, email)` in `password-reset.spec.ts`:
+   - Generates the verify URL via admin
+   - Visits it in an isolated browser context (Supabase enforces the Site URL / Redirect URL allow list, so it lands on the project Site URL not localhost)
+   - Extracts the `#access_token=...&type=recovery` fragment
+   - Replays the fragment against `${baseURL}/reset-password` so supabase-js consumes it locally
+3. `Reset Password Page > with valid recovery session` describe wraps 9 form tests with a beforeAll-created one-off user + per-test recovery link.
+4. `Password Reset Form Validation > should prevent submission with invalid password` switched to the same helper.
 
-**Estimate:** 1 day (Option A), 2 hours (Option B)
+**App fixes uncovered while doing this:**
+- `pages/reset-password.vue` referenced `<PasswordRequirements>` but Nuxt auto-imports it as `<AuthPasswordRequirements>` (path prefix from `components/Auth/`). The component never rendered. Fixed by adding an explicit import — the requirements checklist now actually appears on the page (real production bug, not just a test bug).
+- Removed stale `getByRole("button", { name: /reset password/i })` selectors that hit 0 matches because `aria-label` differs from rendered text — switched to `data-testid="reset-password-button"`.
+- Updated `should navigate back to ...` to look for "Back to Home" (the actual layout copy) instead of "Back to Welcome".
+
+**Tests still skipped after fix (out of scope for #6):**
+- L188 `should show resend button after success` / L209 `should have resend cooldown` — depend on Supabase signaling emailSent=true; flaky against real backend under rate limits.
+- L464 `should not allow password reuse of reset token` — needs backend single-use enforcement assertion, not UI.
+- L550 `should show back links throughout flow` — separate selector drift (existing quarantine).
 
 ---
 
@@ -152,9 +164,9 @@ Each ticket: blockers, affected specs, scope, estimate. Pick up in any order —
 | 3 | Performance tracking | ~11 | DONE (deleted) |
 | 4 | Settings split | ~22 | 2d |
 | 5 | Documents rewrite | ~22 | 3d |
-| 6 | Password reset mock | ~14 | 1d |
+| 6 | Password reset mock | 11 | DONE |
 | 7 | User prefs migration | 3 | 3d |
 | 8 | Notes refresh after save | 2 | DONE |
-| **Total** | | **~94 tests remaining** | **~14 days** |
+| **Total** | | **~83 tests remaining** | **~13 days** |
 
 Remaining ~125 skipped tests are CONDITIONAL-DATA-GUARD that resolve when seed data lands (dashboard-8-x, family-invite-flow, coaching-philosophy, bulk-delete-users, etc.) — track separately as seed infrastructure work.
