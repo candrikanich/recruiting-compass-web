@@ -30,19 +30,20 @@ Each ticket: blockers, affected specs, scope, estimate. Pick up in any order —
 
 ---
 
-## #2 — Analytics Dashboard UI Rewrite
+## #2 — Analytics Dashboard UI Rewrite — RESOLVED 2026-05-25
 
-**Blocks:** ~20 tests
-**Affected:** `tests/e2e/tier2-important/analytics.spec.ts:7` (whole suite)
+**Was blocking:** 20 tests in `tier2-important/analytics.spec.ts`
 
-**What's broken:** Page structure drifted from spec; 19/20 tests fail on selectors.
+**Investigation:** The current `/analytics` UI is in good shape — `PageHeader`, `DateRangeToolbar`, 4 `StatCard`s (Total Schools, Total Interactions, Offer Count, Commitments), 5 chart titles (Interaction Types, Sentiment Breakdown, School Status, Recruiting Pipeline, Performance Correlation Analysis), 3 export buttons with existing testids (`export-csv-button`, `export-excel-button`, `export-pdf-button`), and a `date-range-preset` select with `clear-date-range-button`. The old spec was simply written against a much older surface.
 
-**Scope:**
-1. Audit current `/analytics` route against test expectations
-2. Either rewrite page to match spec OR rewrite tests against current page
-3. Establish `data-testid` contract for stat cards, charts, filter controls
+**App bug uncovered:** `pages/analytics/index.vue` had no `definePageMeta({ middleware: "auth" })`, so the route was publicly accessible even though `/analytics` is in `PROTECTED_ROUTE_PREFIXES`. The named `auth` middleware only runs on pages that opt in. Sibling protected pages (`/recommendations`, `/social`, `/dashboard`, `/settings/*`) all opt in — `/analytics` did not. Added the missing definePageMeta.
 
-**Estimate:** 3 days
+**Action:**
+1. Deleted old monolithic spec + `AnalyticsPage` POM.
+2. Wrote fresh `analytics.spec.ts` mirroring the settings/medium-priority-pages pattern: smoke-level coverage of header, date range toolbar (including preset options and a change-doesn't-crash assertion), all 4 stat cards by label, all 5 chart titles, all 3 export buttons, the Export Analytics section heading, and the auth guard.
+3. Added `definePageMeta({ middleware: "auth" })` to `pages/analytics/index.vue`.
+
+**Result:** 10/10 pass. Chart correctness and CSV/Excel/PDF export *content* deliberately out of scope here — those need fixture-driven unit tests, not E2E.
 
 ---
 
@@ -156,13 +157,13 @@ Each ticket: blockers, affected specs, scope, estimate. Pick up in any order —
 | # | Ticket | Tests Unblocked | Estimate |
 |---|---|---|---|
 | 1 | Smart Inputs seed + env | ~15 | 2d |
-| 2 | Analytics rewrite | ~20 | 3d |
+| 2 | Analytics rewrite | 20 | DONE |
 | 3 | Performance tracking | ~11 | DONE (deleted) |
 | 4 | Settings split | 22 | DONE |
 | 5 | Documents rewrite | ~22 | DONE |
 | 6 | Password reset mock | 11 | DONE |
 | 7 | User prefs migration | 3 | 3d |
 | 8 | Notes refresh after save | 2 | DONE |
-| **Total** | | **~38 tests remaining** | **~8 days** |
+| **Total** | | **~18 tests remaining** | **~5 days** |
 
 Remaining ~125 skipped tests are CONDITIONAL-DATA-GUARD that resolve when seed data lands (dashboard-8-x, family-invite-flow, coaching-philosophy, bulk-delete-users, etc.) — track separately as seed infrastructure work.

@@ -146,6 +146,8 @@ import FunnelChart from "~/components/Analytics/FunnelChart.vue";
 import ScatterChart from "~/components/Analytics/ScatterChart.vue";
 import { useDashboardData } from "~/composables/useDashboardData";
 import { useFamilyCtx } from "~/composables/useFamilyCtx";
+
+definePageMeta({ middleware: "auth" });
 import { useUserStore } from "~/stores/user";
 
 interface DateRange {
