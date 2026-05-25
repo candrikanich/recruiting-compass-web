@@ -2,15 +2,21 @@ import { defineEventHandler, setHeader } from "h3";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import { useLogger } from "~/server/utils/logger";
 
-const SITE_URL = (process.env.NUXT_PUBLIC_SITE_URL ?? "https://myrecruitingcompass.com").replace(
-  /\/$/,
-  "",
-);
+const SITE_URL = (
+  process.env.NUXT_PUBLIC_SITE_URL ?? "https://myrecruitingcompass.com"
+).replace(/\/$/, "");
 
 type SitemapEntry = {
   loc: string;
   lastmod?: string;
-  changefreq?: "always" | "hourly" | "daily" | "weekly" | "monthly" | "yearly" | "never";
+  changefreq?:
+    | "always"
+    | "hourly"
+    | "daily"
+    | "weekly"
+    | "monthly"
+    | "yearly"
+    | "never";
   priority?: number;
 };
 
@@ -38,8 +44,10 @@ function escapeXml(value: string): string {
 function renderEntry(entry: SitemapEntry): string {
   const parts: string[] = [`    <loc>${escapeXml(SITE_URL + entry.loc)}</loc>`];
   if (entry.lastmod) parts.push(`    <lastmod>${entry.lastmod}</lastmod>`);
-  if (entry.changefreq) parts.push(`    <changefreq>${entry.changefreq}</changefreq>`);
-  if (entry.priority !== undefined) parts.push(`    <priority>${entry.priority.toFixed(1)}</priority>`);
+  if (entry.changefreq)
+    parts.push(`    <changefreq>${entry.changefreq}</changefreq>`);
+  if (entry.priority !== undefined)
+    parts.push(`    <priority>${entry.priority.toFixed(1)}</priority>`);
   return `  <url>\n${parts.join("\n")}\n  </url>`;
 }
 
@@ -59,17 +67,24 @@ export default defineEventHandler(async (event) => {
       logger.error("Failed to query published player_profiles", error);
     } else if (data) {
       for (const row of data) {
-        const slug = (row.vanity_slug as string | null) ?? (row.hash_slug as string | null);
+        const slug =
+          (row.vanity_slug as string | null) ??
+          (row.hash_slug as string | null);
         if (!slug) continue;
         const updatedAt = row.updated_at as string | null;
         entries.push({
           loc: `/p/${slug}`,
-          lastmod: updatedAt ? new Date(updatedAt).toISOString().split("T")[0] : undefined,
+          lastmod: updatedAt
+            ? new Date(updatedAt).toISOString().split("T")[0]
+            : undefined,
           changefreq: "weekly",
           priority: 0.5,
         });
       }
-      logger.info("Sitemap built", { static: STATIC_ENTRIES.length, profiles: data.length });
+      logger.info("Sitemap built", {
+        static: STATIC_ENTRIES.length,
+        profiles: data.length,
+      });
     }
   } catch (err) {
     logger.error("Failed to build dynamic sitemap entries", err);

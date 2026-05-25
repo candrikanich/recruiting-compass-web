@@ -274,7 +274,9 @@ defineExpose({
 
 <style scoped>
 svg {
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.05)); /* audit-ignore — drop-shadow() filter, no token equivalent */
+  filter: drop-shadow(
+    0 1px 2px rgba(0, 0, 0, 0.05)
+  ); /* audit-ignore — drop-shadow() filter, no token equivalent */
 }
 
 polygon {

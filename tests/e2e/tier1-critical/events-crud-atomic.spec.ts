@@ -77,9 +77,13 @@ test.describe("Events CRUD — atomic lifecycle", () => {
     await page.waitForLoadState("domcontentloaded");
     await page.locator('[data-testid="add-event-button"]').click();
     await page.waitForURL("/events/create");
-    await expect(page.getByRole("heading", { name: "Add New Event" })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Add New Event" }),
+    ).toBeVisible();
 
-    await page.getByLabel("Event Type", { exact: false }).selectOption("showcase");
+    await page
+      .getByLabel("Event Type", { exact: false })
+      .selectOption("showcase");
     await page.getByLabel("Event Name", { exact: false }).fill(eventName);
     // "School" alone collides with the nav-search link's aria-label;
     // exact match scopes to the form select.
@@ -116,7 +120,9 @@ test.describe("Events CRUD — atomic lifecycle", () => {
     await expect(
       editModal.getByRole("heading", { name: "Edit Event" }),
     ).toBeVisible();
-    await editModal.getByLabel("Event Name", { exact: false }).fill(updatedName);
+    await editModal
+      .getByLabel("Event Name", { exact: false })
+      .fill(updatedName);
     await editModal.getByRole("button", { name: "Save Changes" }).click();
     await expect(
       editModal.getByRole("heading", { name: "Edit Event" }),
@@ -139,8 +145,8 @@ test.describe("Events CRUD — atomic lifecycle", () => {
     // 7. VERIFY — back at /events, our event is gone from the list
     await page.goto("/events");
     await page.waitForLoadState("domcontentloaded");
-    await expect(
-      page.getByRole("heading", { name: updatedName }),
-    ).toHaveCount(0);
+    await expect(page.getByRole("heading", { name: updatedName })).toHaveCount(
+      0,
+    );
   });
 });

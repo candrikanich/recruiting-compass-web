@@ -67,7 +67,10 @@ async function globalSetup(_config: FullConfig) {
         await context.storageState({ path: `${AUTH_DIR}/${role}.json` });
         console.log(`  ✅ Saved ${role}.json`);
       } catch (error) {
-        console.error(`  ❌ Failed to capture storageState for ${role}:`, error);
+        console.error(
+          `  ❌ Failed to capture storageState for ${role}:`,
+          error,
+        );
         failures.push({ role, error });
       } finally {
         await context.close();

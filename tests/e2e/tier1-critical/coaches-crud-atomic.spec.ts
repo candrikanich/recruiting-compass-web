@@ -98,22 +98,20 @@ test.describe("Coaches CRUD — atomic lifecycle", () => {
 
     // 3. READ — click "View details for {name}" button to open detail page
     await page
-      .getByRole("button", { name: `View details for ${firstName} ${lastName}` })
+      .getByRole("button", {
+        name: `View details for ${firstName} ${lastName}`,
+      })
       .click();
     await page.waitForURL(/\/coaches\/[a-f0-9-]+/);
     await expect(page.locator("h1").first()).toContainText(firstName);
     await expect(page.locator(`text=${email}`)).toBeVisible();
 
     // 4. UPDATE — open Edit Coach modal, change first name, save
-    await page
-      .getByRole("button", { name: "Edit coach information" })
-      .click();
+    await page.getByRole("button", { name: "Edit coach information" }).click();
     const editDialog = page.getByRole("dialog", { name: "Edit Coach" });
     await expect(editDialog).toBeVisible();
     await editDialog.locator("#firstName").fill(updatedFirstName);
-    await editDialog
-      .getByRole("button", { name: "Save Changes" })
-      .click();
+    await editDialog.getByRole("button", { name: "Save Changes" }).click();
     await expect(editDialog).toBeHidden();
 
     // 5. Reload — confirm persistence (mirrors the schools pilot)

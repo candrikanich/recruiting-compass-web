@@ -84,9 +84,9 @@ test.describe("Offers CRUD — atomic lifecycle", () => {
     const addForm = page.locator("form");
 
     // Wait for our school to appear in the dropdown (schools load async)
-    await expect(
-      page.locator(`option:text-is("${schoolName}")`),
-    ).toBeAttached({ timeout: 10_000 });
+    await expect(page.locator(`option:text-is("${schoolName}")`)).toBeAttached({
+      timeout: 10_000,
+    });
 
     await addForm
       .locator("select")
@@ -136,8 +136,6 @@ test.describe("Offers CRUD — atomic lifecycle", () => {
     // 7. VERIFY — back on /offers, our school's offer is gone
     await page.goto("/offers");
     await page.waitForLoadState("domcontentloaded");
-    await expect(
-      page.locator(`text=${schoolName}`),
-    ).toHaveCount(0);
+    await expect(page.locator(`text=${schoolName}`)).toHaveCount(0);
   });
 });

@@ -59,5 +59,4 @@ describe("sentiment utils", () => {
       expect(getDirectionBadgeColor("other")).toBe("slate");
     });
   });
-
 });

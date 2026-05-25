@@ -508,8 +508,15 @@ definePageMeta({
 });
 
 const offersStore = useOffersStore();
-const { offers, acceptedOffers, pendingOffers, declinedOffers, loading, softWarnVisible, totalCount } =
-  storeToRefs(offersStore);
+const {
+  offers,
+  acceptedOffers,
+  pendingOffers,
+  declinedOffers,
+  loading,
+  softWarnVisible,
+  totalCount,
+} = storeToRefs(offersStore);
 const { fetchOffers, createOffer, daysUntilDeadline } = offersStore;
 const deleteOfferAPI = offersStore.deleteOffer;
 const { schools, fetchSchools } = useSchools();

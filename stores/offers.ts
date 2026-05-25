@@ -36,9 +36,7 @@ export const useOffersStore = defineStore("offers", () => {
     offers.value.filter((o) => o.status === "declined"),
   );
 
-  const hasMore = computed(
-    () => totalCount.value > offers.value.length,
-  );
+  const hasMore = computed(() => totalCount.value > offers.value.length);
 
   const softWarnVisible = computed(
     () => totalCount.value >= OFFERS_SOFT_WARN_THRESHOLD,
@@ -70,7 +68,11 @@ export const useOffersStore = defineStore("offers", () => {
     error.value = null;
 
     try {
-      const { data, error: fetchError, count } = await supabase
+      const {
+        data,
+        error: fetchError,
+        count,
+      } = await supabase
         .from("offers")
         .select("*", { count: "exact" })
         .eq("family_unit_id", familyId)
