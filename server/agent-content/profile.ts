@@ -6,7 +6,10 @@ function formatHeight(inches: number): string {
   return `${ft}'${inch}" (${inches} in)`;
 }
 
-export function renderProfileMarkdown(slug: string, profile: PublicProfileData): string {
+export function renderProfileMarkdown(
+  slug: string,
+  profile: PublicProfileData,
+): string {
   const lines: string[] = [];
 
   lines.push(`# ${profile.playerName}`);
@@ -22,13 +25,19 @@ export function renderProfileMarkdown(slug: string, profile: PublicProfileData):
     const a = profile.athletic;
     const items: string[] = [];
     if (a.primary_sport) items.push(`- **Sport:** ${a.primary_sport}`);
-    if (a.primary_position) items.push(`- **Primary position:** ${a.primary_position}`);
-    if (a.positions?.length) items.push(`- **Positions:** ${a.positions.join(", ")}`);
-    if (a.height_inches !== undefined) items.push(`- **Height:** ${formatHeight(a.height_inches)}`);
-    if (a.weight_lbs !== undefined) items.push(`- **Weight:** ${a.weight_lbs} lbs`);
+    if (a.primary_position)
+      items.push(`- **Primary position:** ${a.primary_position}`);
+    if (a.positions?.length)
+      items.push(`- **Positions:** ${a.positions.join(", ")}`);
+    if (a.height_inches !== undefined)
+      items.push(`- **Height:** ${formatHeight(a.height_inches)}`);
+    if (a.weight_lbs !== undefined)
+      items.push(`- **Weight:** ${a.weight_lbs} lbs`);
     if (a.ncaa_id) items.push(`- **NCAA ID:** ${a.ncaa_id}`);
-    if (a.perfect_game_id) items.push(`- **Perfect Game ID:** ${a.perfect_game_id}`);
-    if (a.prep_baseball_id) items.push(`- **Prep Baseball ID:** ${a.prep_baseball_id}`);
+    if (a.perfect_game_id)
+      items.push(`- **Perfect Game ID:** ${a.perfect_game_id}`);
+    if (a.prep_baseball_id)
+      items.push(`- **Prep Baseball ID:** ${a.prep_baseball_id}`);
     if (items.length) {
       lines.push("## Athletic");
       lines.push("");
@@ -41,11 +50,13 @@ export function renderProfileMarkdown(slug: string, profile: PublicProfileData):
     const ac = profile.academics;
     const items: string[] = [];
     if (ac.high_school) items.push(`- **High school:** ${ac.high_school}`);
-    if (ac.graduation_year) items.push(`- **Graduation year:** ${ac.graduation_year}`);
+    if (ac.graduation_year)
+      items.push(`- **Graduation year:** ${ac.graduation_year}`);
     if (ac.gpa !== undefined) items.push(`- **GPA:** ${ac.gpa}`);
     if (ac.sat_score) items.push(`- **SAT:** ${ac.sat_score}`);
     if (ac.act_score) items.push(`- **ACT:** ${ac.act_score}`);
-    if (ac.core_courses?.length) items.push(`- **Core courses:** ${ac.core_courses.join(", ")}`);
+    if (ac.core_courses?.length)
+      items.push(`- **Core courses:** ${ac.core_courses.join(", ")}`);
     if (items.length) {
       lines.push("## Academics");
       lines.push("");

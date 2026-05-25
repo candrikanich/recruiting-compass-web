@@ -52,7 +52,8 @@ export default defineNuxtConfig({
     // Server-side code uses useLogger(); client-side uses createClientLogger().
     // Direct console calls are dev-only and must not ship to users.
     esbuild: {
-      drop: process.env.NODE_ENV === "production" ? ["console", "debugger"] : [],
+      drop:
+        process.env.NODE_ENV === "production" ? ["console", "debugger"] : [],
     },
 
     // Pre-bundle frequently used dependencies
@@ -115,19 +116,19 @@ export default defineNuxtConfig({
         headers: { "content-type": "application/json" },
       },
       // RFC 9727 — extensionless catalog file needs an explicit linkset content-type.
-      '/.well-known/api-catalog': {
-        headers: { 'content-type': 'application/linkset+json; charset=utf-8' },
+      "/.well-known/api-catalog": {
+        headers: { "content-type": "application/linkset+json; charset=utf-8" },
       },
       // RFC 8631 — service descriptions use the OpenAPI media type.
-      '/.well-known/api-docs/public-profile.openapi.json': {
-        headers: { 'content-type': 'application/openapi+json; charset=utf-8' },
+      "/.well-known/api-docs/public-profile.openapi.json": {
+        headers: { "content-type": "application/openapi+json; charset=utf-8" },
       },
       // RFC 8288 Link headers — advertise discoverable resources to agents/crawlers
       // on every response. Relation types are IANA-registered
       // (https://www.iana.org/assignments/link-relations).
       // Vary: Accept lets caches serve both HTML and the text/markdown variant
       // (see server/middleware/agent-markdown.ts) without crossing them.
-      '/**': {
+      "/**": {
         headers: {
           link: [
             '</sitemap.xml>; rel="sitemap"',
@@ -136,8 +137,8 @@ export default defineNuxtConfig({
             '</legal/terms>; rel="terms-of-service"',
             '</help>; rel="help"',
             '</about>; rel="about"',
-          ].join(', '),
-          vary: 'Accept',
+          ].join(", "),
+          vary: "Accept",
         },
       },
     },

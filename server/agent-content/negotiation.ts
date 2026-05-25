@@ -4,7 +4,10 @@
 export function parseAcceptHeader(accept: string): Map<string, number> {
   const map = new Map<string, number>();
   for (const entry of accept.split(",")) {
-    const parts = entry.trim().split(";").map((s) => s.trim());
+    const parts = entry
+      .trim()
+      .split(";")
+      .map((s) => s.trim());
     const mediaType = parts[0]?.toLowerCase();
     if (!mediaType) continue;
     let q = 1;

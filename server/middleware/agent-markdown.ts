@@ -1,4 +1,9 @@
-import { defineEventHandler, getRequestHeader, getRequestURL, setHeader } from "h3";
+import {
+  defineEventHandler,
+  getRequestHeader,
+  getRequestURL,
+  setHeader,
+} from "h3";
 import type { PublicProfileData } from "~/types/models";
 import { STATIC_MARKDOWN } from "~/server/agent-content/static";
 import { renderProfileMarkdown } from "~/server/agent-content/profile";
@@ -15,7 +20,10 @@ export default defineEventHandler(async (event) => {
 
   const url = getRequestURL(event);
   const rawPath = url.pathname;
-  const path = rawPath.length > 1 && rawPath.endsWith("/") ? rawPath.slice(0, -1) : rawPath;
+  const path =
+    rawPath.length > 1 && rawPath.endsWith("/")
+      ? rawPath.slice(0, -1)
+      : rawPath;
 
   let body: string | null = null;
 
@@ -26,10 +34,13 @@ export default defineEventHandler(async (event) => {
     if (profileMatch) {
       const slug = profileMatch[1];
       try {
-        const profile = await $fetch<PublicProfileData>(`/api/public/profile/${slug}`, {
-          baseURL: `${url.protocol}//${url.host}`,
-          headers: { accept: "application/json" },
-        });
+        const profile = await $fetch<PublicProfileData>(
+          `/api/public/profile/${slug}`,
+          {
+            baseURL: `${url.protocol}//${url.host}`,
+            headers: { accept: "application/json" },
+          },
+        );
         body = renderProfileMarkdown(slug, profile);
       } catch {
         // Profile not found / unpublished — fall through to default routing

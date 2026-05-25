@@ -163,7 +163,10 @@ async function main() {
   let deleted = 0;
   for (let i = 0; i < ids.length; i += BATCH) {
     const batchIds = ids.slice(i, i + BATCH);
-    const { error } = await supabase.from("schools").delete().in("id", batchIds);
+    const { error } = await supabase
+      .from("schools")
+      .delete()
+      .in("id", batchIds);
     if (error) {
       console.error(`❌ Batch delete failed at ${i}:`, error.message);
       process.exit(1);

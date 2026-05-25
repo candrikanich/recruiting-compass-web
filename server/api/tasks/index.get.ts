@@ -26,7 +26,10 @@ export default defineEventHandler(async (event) => {
       : undefined;
     const category = query.category as string | undefined;
     const division = query.division as string | undefined;
-    const limit = Math.min(parseInt(String(query.limit ?? "100"), 10) || 100, 200);
+    const limit = Math.min(
+      parseInt(String(query.limit ?? "100"), 10) || 100,
+      200,
+    );
     const offset = Math.max(parseInt(String(query.offset ?? "0"), 10) || 0, 0);
 
     // Generate cache key based on filters + pagination window
