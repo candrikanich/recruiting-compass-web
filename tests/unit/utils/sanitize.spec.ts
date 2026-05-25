@@ -104,7 +104,7 @@ describe("Sanitization utilities", () => {
       });
 
       it("should remove iframe tags", () => {
-        const input = '<p>Content</p><iframe src="evil.com"></iframe>';
+        const input = '<p>Content</p><iframe src="about:blank"></iframe>';
         const result = sanitizeHtml(input);
         expect(result).not.toContain("iframe");
       });
