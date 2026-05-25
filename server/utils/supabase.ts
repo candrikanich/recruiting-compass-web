@@ -2,8 +2,23 @@
  * Server-side Supabase client creation utility
  */
 
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import {
+  createClient,
+  type SupabaseClient,
+  type RealtimeClientOptions,
+} from "@supabase/supabase-js";
+import ws from "ws";
 import type { Database } from "~/types/database";
+
+/**
+ * supabase-js eagerly constructs a RealtimeClient inside createClient. On
+ * Node < 22 (no native global WebSocket) that constructor throws unless a
+ * transport is supplied. Server code never opens realtime subscriptions, but
+ * we still must hand it a WebSocket implementation so the client can be built.
+ */
+const realtimeOptions: RealtimeClientOptions = {
+  transport: ws as unknown as RealtimeClientOptions["transport"],
+};
 
 /**
  * Create a server-side Supabase ADMIN client
@@ -25,7 +40,9 @@ export function createServerSupabaseClient(): SupabaseClient<Database> {
     );
   }
 
-  return createClient<Database>(supabaseUrl, supabaseServiceKey);
+  return createClient<Database>(supabaseUrl, supabaseServiceKey, {
+    realtime: realtimeOptions,
+  });
 }
 
 /**
@@ -48,6 +65,7 @@ export function createServerSupabaseUserClient(
     global: {
       headers: { Authorization: `Bearer ${userToken}` },
     },
+    realtime: realtimeOptions,
   });
 }
 

@@ -1,12 +1,148 @@
 import { test, expect } from "@playwright/test";
+import { resolve } from "path";
+import {
+  getSupabaseAdmin,
+  findUserIdByEmail,
+} from "../seed/helpers/supabase-admin";
+import { TEST_ACCOUNTS } from "../config/test-accounts";
+
+const RUN_ID = Date.now();
+let seededInteractionIds: string[] = [];
+let seededSchoolId: string | null = null;
 
 test.describe("User Story 8.3 - Recent Activity Feed", () => {
-  test.beforeEach(async ({ page }) => {
-    // Navigate to dashboard
-    await page.goto("/dashboard");
+  test.use({
+    storageState: resolve(process.cwd(), "tests/e2e/.auth/player.json"),
+  });
 
-    // Wait for page to load
+  test.beforeAll(async () => {
+    try {
+      const supabase = getSupabaseAdmin();
+      const playerUserId = await findUserIdByEmail(
+        supabase,
+        TEST_ACCOUNTS.player.email,
+      );
+      if (!playerUserId) {
+        console.warn("⚠️  dashboard-8-3 seed: player user not found");
+        return;
+      }
+
+      const { data: membership } = await supabase
+        .from("family_members")
+        .select("family_unit_id")
+        .eq("user_id", playerUserId)
+        .maybeSingle();
+      if (!membership) {
+        console.warn("⚠️  dashboard-8-3 seed: player has no family unit");
+        return;
+      }
+      const familyUnitId = membership.family_unit_id as string;
+
+      // Ensure at least one school exists for this family unit (interactions
+      // require school_id NOT NULL). Use existing or create our own.
+      const { data: existing } = await supabase
+        .from("schools")
+        .select("id")
+        .eq("family_unit_id", familyUnitId)
+        .limit(1)
+        .maybeSingle();
+      let schoolId = (existing as { id?: string } | null)?.id ?? null;
+      if (!schoolId) {
+        const { data: created, error: schoolErr } = await supabase
+          .from("schools")
+          .insert({
+            name: `[e2e-${RUN_ID}] Dashboard Activity School`,
+            family_unit_id: familyUnitId,
+            user_id: playerUserId,
+            status: "researching",
+          })
+          .select("id")
+          .single();
+        if (schoolErr) {
+          console.warn(
+            "⚠️  dashboard-8-3 seed: school insert failed:",
+            schoolErr.message,
+          );
+          return;
+        }
+        schoolId = (created as { id: string }).id;
+        seededSchoolId = schoolId;
+      }
+
+      // 10 interactions across the last 30 days, varied types/sentiments.
+      const day = 24 * 60 * 60 * 1000;
+      const ago = (d: number) => new Date(Date.now() - d * day).toISOString();
+      const types = [
+        "email",
+        "phone_call",
+        "text",
+        "in_person_visit",
+        "virtual_meeting",
+        "camp",
+        "showcase",
+        "tweet",
+        "email",
+        "phone_call",
+      ] as const;
+      const rows = types.map((type, i) => ({
+        school_id: schoolId,
+        family_unit_id: familyUnitId,
+        logged_by: playerUserId,
+        type,
+        direction: i % 2 === 0 ? ("outbound" as const) : ("inbound" as const),
+        sentiment: "positive" as const,
+        subject: `[e2e-${RUN_ID}] Activity ${i + 1}`,
+        content: `Seeded interaction ${i + 1} for dashboard activity feed.`,
+        occurred_at: ago(i * 2),
+      }));
+
+      const { data, error } = await supabase
+        .from("interactions")
+        .insert(rows)
+        .select("id");
+      if (error) {
+        console.warn(
+          "⚠️  dashboard-8-3 seed: interactions insert failed:",
+          error.message,
+        );
+        return;
+      }
+      seededInteractionIds = (data ?? []).map((r) => r.id as string);
+    } catch (e) {
+      console.warn("⚠️  dashboard-8-3 seed threw:", e);
+    }
+  });
+
+  test.afterAll(async () => {
+    try {
+      const supabase = getSupabaseAdmin();
+      if (seededInteractionIds.length > 0) {
+        await supabase
+          .from("interactions")
+          .delete()
+          .in("id", seededInteractionIds);
+      }
+      if (seededSchoolId) {
+        await supabase.from("schools").delete().eq("id", seededSchoolId);
+      }
+    } catch {
+      // non-fatal
+    }
+  });
+
+  test.beforeEach(async ({ page }) => {
+    await page.goto("/dashboard");
     await page.waitForLoadState("domcontentloaded");
+    // RecentActivityFeed is dynamically imported behind a Suspense — wait for
+    // the section heading to mount before querying its items.
+    await page
+      .locator('h3:has-text("Recent Activity")')
+      .scrollIntoViewIfNeeded()
+      .catch(() => null);
+    await page
+      .locator('h3:has-text("Recent Activity")')
+      .waitFor({ state: "visible", timeout: 15000 })
+      .catch(() => null);
   });
 
   test("displays Recent Activity section on dashboard", async ({ page }) => {
@@ -16,63 +152,40 @@ test.describe("User Story 8.3 - Recent Activity Feed", () => {
     await expect(activitySection).toBeVisible({ timeout: 15000 });
   });
 
+  // SKIPPED until app bug fixed: RecentActivityFeed renders 0 items even
+  // though interactions exist in DB and seed runs successfully.
+  // See task #7 / planning notes for diagnostic trail.
   test.skip("shows last 10 events in feed", async ({ page }) => {
-    // TODO: test account has 0 interactions. waitForSelector will timeout since no activities exist.
-    // Skipped until seed data added.
-    // Wait for activity feed to load
-    await page.waitForSelector('[data-testid="activity-event-item"]');
-
-    // Count activity items
+    await page.waitForSelector('[data-testid="activity-event-item"]', {
+      timeout: 15000,
+    });
     const activityItems = page.locator('[data-testid="activity-event-item"]');
     const count = await activityItems.count();
-
-    // waitForSelector above guarantees at least 1 item; cap is 10
     expect(count).toBeGreaterThanOrEqual(1);
     expect(count).toBeLessThanOrEqual(10);
   });
 
   test.skip("displays interaction details in feed", async ({ page }) => {
-    // TODO: test account has 0 interactions. Skipped until seed data added.
-    // Verify interaction events are displayed
     const activityItems = page.locator('[data-testid="activity-event-item"]');
-
-    // Wait for at least one item
-    if ((await activityItems.count()) > 0) {
-      const firstItem = activityItems.first();
-
-      // Check that interaction-like elements exist
-      // (may show school name, date, type, etc.)
-      const text = await firstItem.textContent();
-      expect(text).toBeTruthy();
-    }
+    await activityItems.first().waitFor({ state: "visible", timeout: 15000 });
+    const text = await activityItems.first().textContent();
+    expect(text?.trim()).toBeTruthy();
   });
 
   test.skip("displays event icons correctly", async ({ page }) => {
-    // TODO: test account has 0 interactions. Skipped until seed data added.
     const activityItems = page.locator('[data-testid="activity-event-item"]');
-
-    if ((await activityItems.count()) > 0) {
-      const firstItem = activityItems.first();
-      const text = await firstItem.textContent();
-
-      // Should contain some emoji or visual indicator
-      expect(text).toMatch(/[📧☎️💬🤝💻⛺🎬🐦📱📍📄]/);
-    }
+    await activityItems.first().waitFor({ state: "visible", timeout: 15000 });
+    const text = await activityItems.first().textContent();
+    expect(text).toMatch(/[📧☎️💬🤝💻⛺🎬🐦📱📍📄]/);
   });
 
   test.skip("formats timestamps correctly", async ({ page }) => {
-    // TODO: test account has 0 interactions. Skipped until seed data added.
     const activityItems = page.locator('[data-testid="activity-event-item"]');
-
-    if ((await activityItems.count()) > 0) {
-      const firstItem = activityItems.first();
-      const text = await firstItem.textContent();
-
-      // Should contain relative time format
-      expect(text).toMatch(
-        /(just now|[0-9]+[mhd] ago|[A-Z][a-z]{2} [0-9]{1,2})/,
-      );
-    }
+    await activityItems.first().waitFor({ state: "visible", timeout: 15000 });
+    const text = await activityItems.first().textContent();
+    expect(text).toMatch(
+      /(just now|[0-9]+[mhd] ago|[A-Z][a-z]{2} [0-9]{1,2})/,
+    );
   });
 
   test('displays "View All Activity" link', async ({ page }) => {

@@ -6,59 +6,29 @@ Active session notes only. See [COMPLETED_WORK.md](./COMPLETED_WORK.md) for full
 
 - **Output format by reader, not by default**: For artifacts Chris will read once on a phone or share with someone non-technical — session recaps, status overviews, weekly summaries, "where are we on X" snapshots — invoke the `visual-explainer` skill to produce self-contained HTML. For artifacts that future-Claude or Chris will edit (handoff docs, `planning/*.md`, `COMPLETED_WORK.md`, lesson files, plans) — stay markdown. When unsure: read = HTML, edit = markdown.
 
-## Current Session
+## Current Session (2026-05-25 — CI/PR cleanup)
 
-**Status:** Loose-ends sweep — E2E green, action items cleared
-**Branch:** develop (clean, pushed)
-**Build:** not run this session
-**Tests:** Full E2E sweep 2026-05-25: 362 pass / 126 skip / 1 flake (smart-inputs.spec.ts:76 — passes isolated, parallel-worker race)
-**Lint:** PASS (last verified post-ticket #1)
-**Type-check:** PASS (last verified post-ticket #1)
-**Handoff:** `planning/handoff-2026-05-25-skipped-tests-cleanup.md`
+**Status:** develop CI green, both dependabot PRs merged, main↔develop reconciled
+**Branch:** develop (clean, pushed — HEAD `18e32873`)
+**Build:** not run
+**Tests:** Full unit suite 7165 pass (local + CI Unit job green)
+**Lint / Type-check / Token-audit:** PASS
+
+**Fixed (3 stale unit failures that reddened develop):**
+- `SchoolNotesCard.spec` + `CoachNotesEditor` stub asserted dead emit contract; rewrote to `saveFn` callback contract
+- `tasks-index-advanced.spec` → `useHead is not defined`; added `useHead`/`useSeoMeta` to global Nuxt stubs in `tests/setup.ts`
+- Commit `066d8d43`
+
+**Merged:** PR #259 (supabase 2.100→2.101), PR #260 (posthog-js 1.374→1.376) — branches deleted. No open PRs.
+**Reconciled:** back-merged `main` (6 dependabot commits) into develop — clean, lockfile in sync, qs override intact, 0 vulns. main now fully contained in develop.
 
 ## Action Required
 
-1. **Dependabot moderate vuln** — alert #99, GitHub API unreachable this session (DNS), revisit when net restored
-2. **Seed infrastructure project** — ~110 conditional-data-guard skips waiting; separate scope (dashboard-8-x, family-invite-flow, coaching-philosophy, bulk-delete-users, user-story-6-1/9-1)
+1. **Seed infrastructure project** — ~110 conditional-data-guard skips waiting; separate scope (dashboard-8-x, family-invite-flow, coaching-philosophy, bulk-delete-users, user-story-6-1/9-1)
 
-## E2E Test Fix Summary (2026-03-19 continued)
+## Environment Notes
 
-5 root causes identified and fixed:
-1. ✅ **RC-1 networkidle** — replaced with `domcontentloaded` in all 33 spec files + 8 page objects/fixtures
-2. ✅ **RC-2 loginViaForm in beforeEach** — removed from 10 spec files (storageState handles auth)
-3. ✅ **RC-3 password-reset button selector** — fixed `aria-label` mismatch, added blur+wait before submit
-4. ✅ **RC-4 auth redirect query param** — `toHaveURL(/\/login/)` regex
-5. ✅ **RC-5 signup flow redirect** — AuthPage.ts updated to accept `/dashboard` route
+- **Flaky local DNS** — router resolver `192.168.4.1` intermittently drops `api.github.com`. `git`/`gh` time out at random; pinned-IP curl works. Workaround: retry. NOT a GitHub outage.
+- **Autonomous "agent checkpoint" cron** committing WIP to develop (`wip: agent checkpoint HH:MM`). Sweeps uncommitted edits — fold into proper commits when reviewing.
 
-**Round 2 fixes (2026-03-19):**
-- `password-reset`: 25→6 failing (12 skipped for tests needing real Supabase token)
-- `dashboard-8-1`: 17→1 failing (fixed stat card selectors, console error filter, scroll assertions)
-- `DashboardPage.ts`: waitForDashboardLoad now waits for URL + domcontentloaded first
-- `schools fixture`: placeholder selector fallback for form name field
-
-**Final status (2026-03-19):**
-- `coaches-filtering`: 15/15 PASSING ✅ (Supabase admin seeding + fixed selectors)
-- `password-reset`: 14 pass / 6 fail / 12 skip (API-dependent tests skip when no real token)
-- `dashboard-8-1`: ~20/22 passing ✅
-- Broad 6-spec check: 69 passed, 8 failed, 13 skipped
-
-**Still failing:**
-- `schools-crud`: form reaches /schools/new but CRUD verifications need selector review (detail page)
-- Some `password-reset`: resend button test (needs Supabase to accept test email)
-- `coaches-crud/communication`: converted to beforeAll, likely working but needs verification
-
-## Recently Completed (this session)
-
-- **Task 8:** `player-details.post.ts` + migration `20260228000001`
-- **Task 9:** `pages/join.vue` + 10 unit tests
-- **Task 10:** Player onboarding step 5 → invite parent UI
-- **Tasks 12–14:** Pending invitations UI, iOS universal links, deprecate accessible.get.ts
-- **Task 15:** Fixed all type errors (updated database.ts manually for `family_invitations` + `created_by_user_id`)
-- **Task 16:** Lint clean — fixed `\${...}` email template bug, unused vars
-
-## Prior Sessions
-
-- **Tasks 1–5, 11** (session 1): DB migration, invite endpoints, sendInviteEmail, useFamilyInvite
-- **Tasks 6–7** (session 2): Signup flow overhaul, parent onboarding wizard
-
-See [COMPLETED_WORK.md](./COMPLETED_WORK.md) for full history.
+See [COMPLETED_WORK.md](./COMPLETED_WORK.md) for full history (CI/PR cleanup, family invite flow, E2E fixes archived there).
