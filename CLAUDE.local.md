@@ -8,13 +8,13 @@ Active session notes only. See [COMPLETED_WORK.md](./COMPLETED_WORK.md) for full
 
 ## Current Session
 
-**Status:** NEARLY DONE — E2E suite is 259/0 pass/fail; 10 tests in 3 user-stories specs need selector fixes
-**Branch:** develop (3 commits ahead of origin — NOT YET PUSHED)
+**Status:** NEARLY DONE — all 8 bug tickets closed, 4 followups identified
+**Branch:** develop (0 commits ahead of origin — pushed)
 **Build:** not run this session
-**Tests:** Full suite: 259 pass, 133 skip, 27 did not run, 0 fail ✅ (10 flaky in user-stories when run isolated)
-**Lint:** UNKNOWN
-**Type-check:** UNKNOWN
-**Handoff:** `planning/handoff-2026-03-20-e2e-status.md`
+**Tests:** Touched specs verified green in isolation; full E2E sweep NOT re-run after last several tickets — verify next session
+**Lint:** PASS (after `eslint.config.js` ignore for `playwright-report/`, `test-results/`)
+**Type-check:** PASS (last verified post-ticket #1)
+**Handoff:** `planning/handoff-2026-05-25-skipped-tests-cleanup.md`
 
 ## Action Required
 
