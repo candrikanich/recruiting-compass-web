@@ -79,21 +79,15 @@ Each ticket: blockers, affected specs, scope, estimate. Pick up in any order —
 
 ---
 
-## #5 — Documents Page Rewrite
+## #5 — Documents Page Rewrite — RESOLVED 2026-05-25
 
-**Blocks:** ~22 tests + ~22 from search-and-filters (overlapping)
-**Affected:**
-- `tests/e2e/tier2-important/search-and-filters.spec.ts:7` (~22 tests)
-- Any remaining documents-* selectors elsewhere
+**Investigation:** The triage doc conflated two unrelated specs. `tier2-important/search-and-filters.spec.ts` is actually a **schools** search/filter spec (uses `SchoolsPage` POM, fixtures from `testSchools`), not a documents spec. Its 18 test cases overlap entirely with the existing, passing `schools-filtering.spec.ts` (15 working tests). The `documents-search` / `document-card` testids the triage mentioned came from the deleted `search-workflows.spec.ts` (already removed in the REMOVE pass).
 
-**What's missing:** `data-testid="documents-search"`, `document-card`, `filter-type` don't exist on current `/documents` page.
+**Action:**
+1. Deleted redundant `tier2-important/search-and-filters.spec.ts` — schools coverage already lives in `schools-filtering.spec.ts`.
+2. Added net-new `tier2-important/documents-list.spec.ts` — fills the genuine gap (the /documents *list* page itself had no spec; only crud-atomic + sharing covered it). 7 tests, all green: heading, description, Add CTA, stats row, filter panel, no-blank-screen, auth guard.
 
-**Scope:**
-1. Add testids to documents list page
-2. Rewrite search-and-filters spec against current selectors
-3. Consider merging with documents-crud-atomic if scope overlaps
-
-**Estimate:** 3 days
+**Result:** 18 redundant tests removed, 7 net-new passing tests covering the documents list page surface that wasn't tested before.
 
 ---
 
@@ -165,10 +159,10 @@ Each ticket: blockers, affected specs, scope, estimate. Pick up in any order —
 | 2 | Analytics rewrite | ~20 | 3d |
 | 3 | Performance tracking | ~11 | DONE (deleted) |
 | 4 | Settings split | 22 | DONE |
-| 5 | Documents rewrite | ~22 | 3d |
+| 5 | Documents rewrite | ~22 | DONE |
 | 6 | Password reset mock | 11 | DONE |
 | 7 | User prefs migration | 3 | 3d |
 | 8 | Notes refresh after save | 2 | DONE |
-| **Total** | | **~61 tests remaining** | **~11 days** |
+| **Total** | | **~38 tests remaining** | **~8 days** |
 
 Remaining ~125 skipped tests are CONDITIONAL-DATA-GUARD that resolve when seed data lands (dashboard-8-x, family-invite-flow, coaching-philosophy, bulk-delete-users, etc.) — track separately as seed infrastructure work.
