@@ -28,7 +28,10 @@ export const useTasks = (): {
   error: Ref<string | null>;
   fetchTasks: (params?: TaskQueryParams) => Promise<Task[]>;
   fetchAthleteTasks: () => Promise<AthleteTask[]>;
-  fetchTasksWithStatus: (gradeLevel?: number) => Promise<TaskWithStatus[]>;
+  fetchTasksWithStatus: (
+    gradeLevel?: number,
+    athleteId?: string,
+  ) => Promise<TaskWithStatus[]>;
   updateTaskStatus: (
     taskId: string,
     status: TaskStatus,
@@ -70,6 +73,8 @@ export const useTasks = (): {
         queryParams.append("gradeLevel", params.gradeLevel.toString());
       if (params?.category) queryParams.append("category", params.category);
       if (params?.division) queryParams.append("division", params.division);
+      if (params?.athleteId)
+        queryParams.append("athleteId", params.athleteId);
 
       const response = await $fetchAuth("/api/tasks", {
         query: Object.fromEntries(queryParams),
@@ -114,14 +119,17 @@ export const useTasks = (): {
   /**
    * Merge tasks with athlete completion status
    */
-  const fetchTasksWithStatus = async (gradeLevel?: number) => {
+  const fetchTasksWithStatus = async (
+    gradeLevel?: number,
+    athleteId?: string,
+  ) => {
     loading.value = true;
     error.value = null;
 
     try {
       // Fetch both tasks and athlete tasks in parallel
       const [allTasks, athleteTaskData] = await Promise.all([
-        fetchTasks({ gradeLevel }),
+        fetchTasks({ gradeLevel, athleteId }),
         fetchAthleteTasks(),
       ]);
 

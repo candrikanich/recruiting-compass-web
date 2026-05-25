@@ -9,14 +9,20 @@
 import { defineEventHandler, getQuery } from "h3";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
 import { requireAuth } from "~/server/utils/auth";
+import { resolveTargetAthleteId } from "~/server/utils/athleteAccess";
+import { computeTaskDeadline } from "~/server/utils/taskDeadlines";
 import { useLogger } from "~/server/utils/logger";
 import { getCached } from "~/server/utils/cache";
 import type { Task } from "~/types/timeline";
 
+type TaskTemplate = Omit<Task, "deadline_date"> & {
+  deadline_offset_months: number | null;
+};
+
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "tasks");
   try {
-    await requireAuth(event);
+    const user = await requireAuth(event);
 
     const supabase = createServerSupabaseClient();
 
@@ -29,57 +35,82 @@ export default defineEventHandler(async (event) => {
     const limit = Math.min(parseInt(String(query.limit ?? "100"), 10) || 100, 200);
     const offset = Math.max(parseInt(String(query.offset ?? "0"), 10) || 0, 0);
 
-    // Generate cache key based on filters + pagination window
+    // Resolve whose deadlines to compute. Defaults to the caller; a parent may
+    // pass ?athleteId to view a linked athlete — authorized by shared family unit.
+    const athleteId = await resolveTargetAthleteId(
+      event,
+      user.id,
+      query.athleteId as string | undefined,
+    );
+
+    // Templates are shared across athletes, so cache them without deadlines and
+    // apply the per-athlete deadline after retrieval (never mutate the cache).
     const cacheKey = `tasks:${gradeLevel || "all"}:${category || "all"}:${division || "all"}:${limit}:${offset}`;
 
-    // Try to get from cache first
-    const cached = getCached<Task[]>(cacheKey);
-    if (cached) {
+    let templates = getCached<TaskTemplate[]>(cacheKey);
+    if (templates) {
       logger.debug("Tasks served from cache", { cacheKey });
-      return cached;
-    }
-    logger.debug("Tasks cache miss", { cacheKey });
+    } else {
+      logger.debug("Tasks cache miss", { cacheKey });
 
-    let request = supabase
-      .from("task")
-      .select(
-        "id, category, grade_level, title, description, required, dependency_task_ids, why_it_matters, failure_risk, division_applicability, created_at, updated_at",
-      );
+      let request = supabase
+        .from("task")
+        .select(
+          "id, category, grade_level, title, description, required, dependency_task_ids, why_it_matters, failure_risk, division_applicability, deadline_offset_months, created_at, updated_at",
+        );
 
-    // Apply filters
-    if (gradeLevel) {
-      request = request.eq("grade_level", gradeLevel);
-    }
-    if (category) {
-      request = request.eq("category", category);
-    }
-    if (division) {
-      request = request.contains("division_applicability", [division]);
-    }
+      if (gradeLevel) {
+        request = request.eq("grade_level", gradeLevel);
+      }
+      if (category) {
+        request = request.eq("category", category);
+      }
+      if (division) {
+        request = request.contains("division_applicability", [division]);
+      }
 
-    // Order by grade level and category, then bound the result window
-    request = request
-      .order("grade_level", { ascending: true })
-      .order("category", { ascending: true })
-      .range(offset, offset + limit - 1);
+      request = request
+        .order("grade_level", { ascending: true })
+        .order("category", { ascending: true })
+        .range(offset, offset + limit - 1);
 
-    const { data, error } = await request;
+      const { data, error } = await request;
 
-    if (error) {
-      logger.error("Supabase error fetching tasks", error);
-      throw createError({
-        statusCode: 500,
-        statusMessage: "Failed to fetch tasks",
-      });
-    }
+      if (error) {
+        logger.error("Supabase error fetching tasks", error);
+        throw createError({
+          statusCode: 500,
+          statusMessage: "Failed to fetch tasks",
+        });
+      }
 
-    const tasks = data as Task[];
+      templates = (data ?? []) as TaskTemplate[];
 
-    // Cache for 1 hour (3600 seconds) - tasks rarely change
-    if (tasks) {
       const { setCached } = await import("~/server/utils/cache");
-      setCached(cacheKey, tasks, 3600);
+      setCached(cacheKey, templates, 3600);
     }
+
+    // Look up the target athlete's graduation year and compute each task's
+    // deadline. New objects only — the cached templates stay deadline-free.
+    const { data: athlete } = await supabase
+      .from("users")
+      .select("graduation_year")
+      .eq("id", athleteId)
+      .maybeSingle();
+    const graduationYear =
+      (athlete as { graduation_year: number | null } | null)?.graduation_year ??
+      null;
+
+    const tasks: Task[] = templates.map((t) => {
+      const { deadline_offset_months, ...rest } = t;
+      return {
+        ...rest,
+        deadline_date: computeTaskDeadline(
+          graduationYear,
+          deadline_offset_months,
+        ),
+      } as Task;
+    });
 
     return tasks;
   } catch (err) {

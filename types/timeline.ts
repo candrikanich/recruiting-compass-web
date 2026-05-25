@@ -100,6 +100,8 @@ export interface TaskQueryParams {
   division?: Division;
   required?: boolean;
   includeRecovery?: boolean;
+  /** Compute deadlines for this athlete (parent viewing a linked athlete). */
+  athleteId?: string;
 }
 
 export interface TaskCompletionStats {

@@ -205,7 +205,10 @@ const handleToggleTask = async (taskId: string, currentStatus: string) => {
     }
 
     // Refetch to update UI
-    await fetchTasksWithStatus(currentGradeLevel.value);
+    await fetchTasksWithStatus(
+    currentGradeLevel.value,
+    isViewingAsParent.value ? currentAthleteId.value || undefined : undefined,
+  );
   } catch (err) {
     console.error("Error updating task status:", err);
     alert(
@@ -234,7 +237,10 @@ onMounted(async () => {
     );
   }
 
-  await fetchTasksWithStatus(currentGradeLevel.value);
+  await fetchTasksWithStatus(
+    currentGradeLevel.value,
+    isViewingAsParent.value ? currentAthleteId.value || undefined : undefined,
+  );
 
   // Load seen locked tasks from localStorage
   const athleteId = currentAthleteId.value || session.value?.user?.id;

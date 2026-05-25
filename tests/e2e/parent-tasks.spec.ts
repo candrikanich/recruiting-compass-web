@@ -38,14 +38,10 @@ test.describe("Parent Task Viewing Workflow", () => {
   });
 
   test("can expand task details when tasks exist", async ({ page }) => {
+    // Tasks load after auth + two API calls + render; the old 3s probe raced
+    // the spinner. Wait properly for the first task to mount.
     const taskItem = page.locator("[data-testid='task-item']").first();
-    const hasTask = await taskItem
-      .isVisible({ timeout: 3000 })
-      .catch(() => false);
-    if (!hasTask) {
-      test.skip();
-      return;
-    }
+    await expect(taskItem).toBeVisible({ timeout: 15000 });
     const expandButton = taskItem.locator("button").first();
     await expandButton.click();
     const details = taskItem.locator(".border-t");
@@ -53,16 +49,15 @@ test.describe("Parent Task Viewing Workflow", () => {
   });
 
   test("sees deadline badges with correct urgency colors", async ({ page }) => {
-    const firstBadge = page.locator("[data-testid='deadline-badge']").first();
-    const hasBadge = await firstBadge
-      .isVisible({ timeout: 3000 })
-      .catch(() => false);
-    if (!hasBadge) {
-      test.skip();
-      return;
-    }
-    const allBadges = page.locator("[data-testid='deadline-badge']");
-    expect(await allBadges.count()).toBeGreaterThan(0);
+    // Grade-10 task templates carry a deadline_offset_months; the server
+    // computes deadline_date from the athlete's graduation_year, so badges
+    // render once tasks load.
+    await expect(
+      page.locator("[data-testid='task-item']").first(),
+    ).toBeVisible({ timeout: 15000 });
+    const badges = page.locator("[data-testid='deadline-badge']");
+    await expect(badges.first()).toBeVisible({ timeout: 15000 });
+    expect(await badges.count()).toBeGreaterThan(0);
   });
 
   test("sees athlete switcher with multiple athletes", async ({ page }) => {

@@ -6,11 +6,13 @@
 import { defineEventHandler, getQuery } from "h3";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
 import { requireAuth } from "~/server/utils/auth";
+import { resolveTargetAthleteId } from "~/server/utils/athleteAccess";
+import { computeTaskDeadline } from "~/server/utils/taskDeadlines";
 import { useLogger } from "~/server/utils/logger";
 import type { TaskWithStatus } from "~/types/timeline";
 
 const TASK_COLUMNS =
-  "id, category, grade_level, title, description, required, dependency_task_ids, why_it_matters, failure_risk, division_applicability, created_at, updated_at";
+  "id, category, grade_level, title, description, required, dependency_task_ids, why_it_matters, failure_risk, division_applicability, deadline_offset_months, created_at, updated_at";
 
 const ATHLETE_TASK_COLUMNS =
   "id, athlete_id, task_id, status, completed_at, is_recovery_task, created_at, updated_at";
@@ -25,6 +27,23 @@ export default defineEventHandler(async (event) => {
     const gradeLevel = query.gradeLevel
       ? parseInt(query.gradeLevel as string)
       : undefined;
+
+    // Resolve target athlete (caller, or a parent's linked athlete via ?athleteId).
+    const athleteId = await resolveTargetAthleteId(
+      event,
+      user.id,
+      query.athleteId as string | undefined,
+    );
+
+    // Athlete's graduation year drives deadline computation.
+    const { data: athlete } = await supabase
+      .from("users")
+      .select("graduation_year")
+      .eq("id", athleteId)
+      .maybeSingle();
+    const graduationYear =
+      (athlete as { graduation_year: number | null } | null)?.graduation_year ??
+      null;
 
     // Fetch all tasks
     let tasksRequest = supabase.from("task").select(TASK_COLUMNS);
@@ -52,7 +71,7 @@ export default defineEventHandler(async (event) => {
     const { data: athleteTasksData, error: athleteTasksError } = await supabase
       .from("athlete_task")
       .select(ATHLETE_TASK_COLUMNS)
-      .eq("athlete_id", user.id);
+      .eq("athlete_id", athleteId);
 
     if (athleteTasksError) {
       logger.error("Supabase error fetching athlete tasks", athleteTasksError);
@@ -105,8 +124,17 @@ export default defineEventHandler(async (event) => {
           );
         });
 
+      const { deadline_offset_months, ...taskRest } = task as Record<
+        string,
+        unknown
+      > & { deadline_offset_months?: number | null };
+
       return {
-        ...(task as Record<string, unknown>),
+        ...taskRest,
+        deadline_date: computeTaskDeadline(
+          graduationYear,
+          deadline_offset_months ?? null,
+        ),
         athlete_task: athleteTask,
         has_incomplete_prerequisites:
           ((task as { dependency_task_ids?: string[] }).dependency_task_ids
