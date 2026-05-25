@@ -20,22 +20,24 @@ const RUN_ID = Date.now();
 const VALID_TOKEN = `e2e-valid-${RUN_ID}`;
 const EXPIRED_TOKEN = `e2e-expired-${RUN_ID}`;
 const DECLINE_TOKEN = `e2e-decline-${RUN_ID}`;
+// Read-only token for the decline-button visibility test — DECLINE_TOKEN gets
+// mutated to 'declined' by the authenticated-decline test, so a visibility-only
+// test needs its own pending invite that nothing else touches.
+const DECLINE_VIEW_TOKEN = `e2e-decline-view-${RUN_ID}`;
 const LOGIN_CONNECT_TOKEN = `e2e-login-connect-${RUN_ID}`;
 const REVOKE_TOKEN = `e2e-revoke-${RUN_ID}`;
 
 let seedReady = false;
 let seedError: string | null = null;
 
-// Seed infra works end-to-end. The error-states tests (including
-// expired-token) pass cleanly when un-gated — task #5 was a false alarm; the
-// server returns 410 and the page renders `data-testid="error-expired"`
-// correctly. The remaining 7 failures are real /join + family-management UI
-// gaps from the un-skipped valid/decline/revoke describes. Keep the flag on
-// until those are addressed so the suite stays green.
-const BLOCKED_BY_APP_GAP = true;
+// Full /join + family-management invite flow is exercised here. Tests only skip
+// when the DB seed itself is unavailable (seedReady=false). The earlier app gaps
+// (decline 500 from a too-narrow status CHECK, missing Bearer token on decline,
+// auth-vs-storageState mismatches) are fixed.
 let validInviteId: string | null = null;
 let expiredInviteId: string | null = null;
 let declineInviteId: string | null = null;
+let declineViewInviteId: string | null = null;
 let loginConnectInviteId: string | null = null;
 let revokeInviteId: string | null = null;
 
@@ -115,6 +117,23 @@ test.describe("Family Invite Flow", () => {
         .single();
       declineInviteId = decline?.id ?? null;
 
+      const { data: declineView } = await supabase
+        .from("family_invitations")
+        .insert({
+          family_unit_id: familyUnitId,
+          invited_by: playerUserId,
+          invited_email: "e2e-decline-view@example.com",
+          role: "parent",
+          token: DECLINE_VIEW_TOKEN,
+          status: "pending",
+          expires_at: new Date(
+            Date.now() + 7 * 24 * 60 * 60 * 1000,
+          ).toISOString(),
+        })
+        .select("id")
+        .single();
+      declineViewInviteId = declineView?.id ?? null;
+
       const { data: loginConnect } = await supabase
         .from("family_invitations")
         .insert({
@@ -153,12 +172,13 @@ test.describe("Family Invite Flow", () => {
         validInviteId &&
         expiredInviteId &&
         declineInviteId &&
+        declineViewInviteId &&
         loginConnectInviteId &&
         revokeInviteId
       ) {
         seedReady = true;
       } else {
-        seedError = `partial seed: valid=${!!validInviteId} expired=${!!expiredInviteId} decline=${!!declineInviteId} loginConnect=${!!loginConnectInviteId} revoke=${!!revokeInviteId}`;
+        seedError = `partial seed: valid=${!!validInviteId} expired=${!!expiredInviteId} decline=${!!declineInviteId} declineView=${!!declineViewInviteId} loginConnect=${!!loginConnectInviteId} revoke=${!!revokeInviteId}`;
       }
     } catch (e) {
       seedError = e instanceof Error ? e.message : String(e);
@@ -171,6 +191,7 @@ test.describe("Family Invite Flow", () => {
       validInviteId,
       expiredInviteId,
       declineInviteId,
+      declineViewInviteId,
       loginConnectInviteId,
       revokeInviteId,
     ].filter(Boolean) as string[];
@@ -215,13 +236,10 @@ test.describe("Family Invite Flow", () => {
   });
 
   test.describe("/join page — valid invite (unauthenticated)", () => {
+    // Override the global player storageState — these tests must be logged out.
+    test.use({ storageState: { cookies: [], origins: [] } });
     test("shows invite details and login form", async ({ page }) => {
-      test.skip(
-        BLOCKED_BY_APP_GAP || !seedReady,
-        BLOCKED_BY_APP_GAP
-          ? "Blocked by app gap — see planning/seed-infrastructure-plan.md"
-          : `Invite seed not available: ${seedError}`,
-      );
+      test.skip(!seedReady, `Invite seed not available: ${seedError}`);
       await page.goto(`/join?token=${VALID_TOKEN}`);
       await page.waitForLoadState("domcontentloaded");
 
@@ -248,12 +266,7 @@ test.describe("Family Invite Flow", () => {
     test("authenticated user sees connect button instead of login form", async ({
       page,
     }) => {
-      test.skip(
-        BLOCKED_BY_APP_GAP || !seedReady,
-        BLOCKED_BY_APP_GAP
-          ? "Blocked by app gap — see planning/seed-infrastructure-plan.md"
-          : `Invite seed not available: ${seedError}`,
-      );
+      test.skip(!seedReady, `Invite seed not available: ${seedError}`);
       await loginAs(page, TEST_PARENT.email, TEST_PARENT.password);
       await page.goto(`/join?token=${VALID_TOKEN}`);
       await page.waitForLoadState("domcontentloaded");
@@ -269,12 +282,7 @@ test.describe("Family Invite Flow", () => {
     test("authenticated user can accept invite and is redirected to dashboard", async ({
       page,
     }) => {
-      test.skip(
-        BLOCKED_BY_APP_GAP || !seedReady,
-        BLOCKED_BY_APP_GAP
-          ? "Blocked by app gap — see planning/seed-infrastructure-plan.md"
-          : `Invite seed not available: ${seedError}`,
-      );
+      test.skip(!seedReady, `Invite seed not available: ${seedError}`);
       await loginAs(page, TEST_PARENT.email, TEST_PARENT.password);
       await page.goto(`/join?token=${VALID_TOKEN}`);
       await page.waitForLoadState("domcontentloaded");
@@ -293,12 +301,7 @@ test.describe("Family Invite Flow", () => {
     test("authenticated user can decline invite and sees declined state", async ({
       page,
     }) => {
-      test.skip(
-        BLOCKED_BY_APP_GAP || !seedReady,
-        BLOCKED_BY_APP_GAP
-          ? "Blocked by app gap — see planning/seed-infrastructure-plan.md"
-          : `Invite seed not available: ${seedError}`,
-      );
+      test.skip(!seedReady, `Invite seed not available: ${seedError}`);
       await loginAs(page, TEST_PARENT.email, TEST_PARENT.password);
       await page.goto(`/join?token=${DECLINE_TOKEN}`);
       await page.waitForLoadState("domcontentloaded");
@@ -316,13 +319,10 @@ test.describe("Family Invite Flow", () => {
     test("unauthenticated user sees decline button on valid invite", async ({
       page,
     }) => {
-      test.skip(
-        BLOCKED_BY_APP_GAP || !seedReady,
-        BLOCKED_BY_APP_GAP
-          ? "Blocked by app gap — see planning/seed-infrastructure-plan.md"
-          : `Invite seed not available: ${seedError}`,
-      );
-      await page.goto(`/join?token=${DECLINE_TOKEN}`);
+      test.skip(!seedReady, `Invite seed not available: ${seedError}`);
+      // Use the dedicated read-only token — DECLINE_TOKEN is mutated to
+      // 'declined' by the authenticated-decline test running in parallel.
+      await page.goto(`/join?token=${DECLINE_VIEW_TOKEN}`);
       await page.waitForLoadState("domcontentloaded");
 
       await expect(page.locator('[data-testid="decline-button"]')).toBeVisible({
@@ -332,15 +332,12 @@ test.describe("Family Invite Flow", () => {
   });
 
   test.describe("/join page — unauthenticated login+connect", () => {
+    // Override the global player storageState — this test must be logged out.
+    test.use({ storageState: { cookies: [], origins: [] } });
     test("existing user can fill password and click login-connect to accept invite", async ({
       page,
     }) => {
-      test.skip(
-        BLOCKED_BY_APP_GAP || !seedReady,
-        BLOCKED_BY_APP_GAP
-          ? "Blocked by app gap — see planning/seed-infrastructure-plan.md"
-          : `Invite seed not available: ${seedError}`,
-      );
+      test.skip(!seedReady, `Invite seed not available: ${seedError}`);
       // Visit join page unauthenticated — invite email matches TEST_PARENT (existing user)
       await page.goto(`/join?token=${LOGIN_CONNECT_TOKEN}`);
       await page.waitForLoadState("domcontentloaded");
@@ -354,9 +351,13 @@ test.describe("Family Invite Flow", () => {
         page.locator('[data-testid="password-input"]'),
       ).toBeVisible();
 
-      // Fill password (email is pre-filled from invite)
+      // The testid sits on the DesignSystemInput wrapper — target the inner
+      // <input> to fill. Email is not pre-filled, so supply both credentials.
       await page
-        .locator('[data-testid="password-input"]')
+        .locator('[data-testid="email-input"] input')
+        .fill(TEST_PARENT.email);
+      await page
+        .locator('[data-testid="password-input"] input')
         .fill(TEST_PARENT.password);
 
       // Click "Log in and connect"
@@ -372,37 +373,29 @@ test.describe("Family Invite Flow", () => {
     test("player can click revoke and pending invite disappears", async ({
       page,
     }) => {
-      test.skip(
-        BLOCKED_BY_APP_GAP || !seedReady,
-        BLOCKED_BY_APP_GAP
-          ? "Blocked by app gap — see planning/seed-infrastructure-plan.md"
-          : `Invite seed not available: ${seedError}`,
-      );
+      test.skip(!seedReady, `Invite seed not available: ${seedError}`);
       await loginAs(page, TEST_PLAYER.email, TEST_PLAYER.password);
       await page.goto("/settings/family-management");
       await page.waitForLoadState("domcontentloaded");
 
-      // Should have at least one pending invite (the REVOKE_TOKEN one)
-      await expect(
-        page.locator('[data-testid="pending-invite-card"]').first(),
-      ).toBeVisible({ timeout: 10000 });
+      // Scope to our own seeded email — other workers mutate this shared family
+      // unit's invite list in parallel, so absolute counts race. Only this test
+      // creates e2e-revoke@example.com (possibly >1 from prior debris runs), so
+      // revoking one and asserting the matching count drops by one is stable.
+      const revokeCards = page.locator('[data-testid="pending-invite-card"]', {
+        hasText: "e2e-revoke@example.com",
+      });
+      await expect(revokeCards.first()).toBeVisible({ timeout: 10000 });
+      const matchingBefore = await revokeCards.count();
 
-      const countBefore = await page
-        .locator('[data-testid="pending-invite-card"]')
-        .count();
-
-      // Click the first revoke button
-      await page
-        .locator('[data-testid="revoke-invite-button"]')
+      // Revoke fires DELETE then refetches — poll until one of ours disappears.
+      await revokeCards
         .first()
+        .locator('[data-testid="revoke-invite-button"]')
         .click();
-
-      // Wait for the list to update
-
-      const countAfter = await page
-        .locator('[data-testid="pending-invite-card"]')
-        .count();
-      expect(countAfter).toBeLessThan(countBefore);
+      await expect(revokeCards).toHaveCount(matchingBefore - 1, {
+        timeout: 10000,
+      });
     });
   });
 
@@ -410,12 +403,7 @@ test.describe("Family Invite Flow", () => {
     test("pending invite card visible after sending invite", async ({
       page,
     }) => {
-      test.skip(
-        BLOCKED_BY_APP_GAP || !seedReady,
-        BLOCKED_BY_APP_GAP
-          ? "Blocked by app gap — see planning/seed-infrastructure-plan.md"
-          : `Invite seed not available: ${seedError}`,
-      );
+      test.skip(!seedReady, `Invite seed not available: ${seedError}`);
       await loginAs(page, TEST_PLAYER.email, TEST_PLAYER.password);
       await page.goto("/settings/family-management");
       await page.waitForLoadState("domcontentloaded");
@@ -426,12 +414,7 @@ test.describe("Family Invite Flow", () => {
     });
 
     test("revoke button present on pending invite card", async ({ page }) => {
-      test.skip(
-        BLOCKED_BY_APP_GAP || !seedReady,
-        BLOCKED_BY_APP_GAP
-          ? "Blocked by app gap — see planning/seed-infrastructure-plan.md"
-          : `Invite seed not available: ${seedError}`,
-      );
+      test.skip(!seedReady, `Invite seed not available: ${seedError}`);
       await loginAs(page, TEST_PLAYER.email, TEST_PLAYER.password);
       await page.goto("/settings/family-management");
       await page.waitForLoadState("domcontentloaded");

@@ -15,7 +15,6 @@ const { login, signup } = useAuth();
 const userStore = useUserStore();
 const supabase = useSupabase();
 const { $fetchAuth } = useAuthFetch();
-const { post: csrfPost } = useCsrf();
 const { showToast } = useAppToast();
 const activeFamilyCtx = inject<UseActiveFamilyReturn>("activeFamily");
 
@@ -193,8 +192,15 @@ async function signupAndConnect() {
 async function decline() {
   declining.value = true;
   try {
-    await csrfPost(`/api/family/invite/${token.value}/decline`);
+    // The decline endpoint runs requireAuth, so it needs the Bearer token —
+    // $fetchAuth injects both auth and CSRF, unlike the bare csrf-only post.
+    await $fetchAuth(`/api/family/invite/${token.value}/decline`, {
+      method: "POST",
+    });
     fetchStatus.value = "declined";
+  } catch (err: unknown) {
+    loginError.value =
+      err instanceof Error ? err.message : "Could not decline invitation.";
   } finally {
     declining.value = false;
   }
