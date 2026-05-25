@@ -78,11 +78,13 @@ test.describe("Smart Inputs — High School Search", () => {
       '[placeholder="Search for your high school"]',
     );
     await schoolInput.fill("xqzpwvnonexistent");
-    await page.locator("text=Can't find it").click();
+    const escapeHatch = page.locator("text=Can't find it");
+    await expect(escapeHatch).toBeVisible({ timeout: 5000 });
+    await escapeHatch.click();
     const manualInput = page.locator(
       '[placeholder="Enter school name manually"]',
     );
-    await expect(manualInput).toBeVisible();
+    await expect(manualInput).toBeVisible({ timeout: 5000 });
     await manualInput.fill("Hogwarts Academy");
     await expect(manualInput).toHaveValue("Hogwarts Academy");
   });
