@@ -26,11 +26,12 @@ const REVOKE_TOKEN = `e2e-revoke-${RUN_ID}`;
 let seedReady = false;
 let seedError: string | null = null;
 
-// The seed now succeeds (TEST_ACCOUNTS + public.users lookup + NoopWS), but the
-// /join page + family-management views fail the assertions that were authored
-// against an earlier version of the UI. Until those app gaps are resolved, keep
-// these tests behind a single flag so the seed infrastructure ships without
-// breaking CI. See planning notes for the per-test failure list.
+// Seed infra works end-to-end. The error-states tests (including
+// expired-token) pass cleanly when un-gated — task #5 was a false alarm; the
+// server returns 410 and the page renders `data-testid="error-expired"`
+// correctly. The remaining 7 failures are real /join + family-management UI
+// gaps from the un-skipped valid/decline/revoke describes. Keep the flag on
+// until those are addressed so the suite stays green.
 const BLOCKED_BY_APP_GAP = true;
 let validInviteId: string | null = null;
 let expiredInviteId: string | null = null;
@@ -199,12 +200,9 @@ test.describe("Family Invite Flow", () => {
     });
 
     test("expired token shows expired error", async ({ page }) => {
-      test.skip(
-        BLOCKED_BY_APP_GAP || !seedReady,
-        BLOCKED_BY_APP_GAP
-          ? "Blocked by app gap — see planning/seed-infrastructure-plan.md"
-          : `Invite seed not available: ${seedError}`,
-      );
+      // Verified working: server returns 410, page renders error-expired.
+      // Only gated on seedReady (not BLOCKED_BY_APP_GAP).
+      test.skip(!seedReady, `Invite seed not available: ${seedError}`);
       await page.goto(`/join?token=${EXPIRED_TOKEN}`);
       await page.waitForLoadState("domcontentloaded");
       await expect(page.locator('[data-testid="error-expired"]')).toBeVisible({
