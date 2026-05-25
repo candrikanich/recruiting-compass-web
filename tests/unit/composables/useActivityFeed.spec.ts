@@ -1,19 +1,24 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { ref } from "vue";
 import { useActivityFeed } from "~/composables/useActivityFeed";
-import { useSupabase } from "~/composables/useSupabase";
-import { useAuth } from "~/composables/useAuth";
 
-// Mock composables
+// Mutable store state — the composable reads the current user id from the
+// Pinia user store (a true singleton), NOT from a per-call useAuth() ref.
+const mockUserState: { user: { id: string } | null } = {
+  user: { id: "test-user-123" },
+};
+
+// Spy we can assert against to prove fetchActivities actually queries Supabase.
+const fromSpy = vi.fn((_table: string) => ({
+  select: vi.fn().mockReturnThis(),
+  eq: vi.fn().mockResolvedValue({ data: [], error: null }),
+  in: vi.fn().mockResolvedValue({ data: [], error: null }),
+  order: vi.fn().mockReturnThis(),
+  limit: vi.fn().mockResolvedValue({ data: [], error: null }),
+}));
+
 vi.mock("~/composables/useSupabase", () => ({
   useSupabase: () => ({
-    from: vi.fn((table: string) => ({
-      select: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockResolvedValue({ data: [] }),
-      in: vi.fn().mockResolvedValue({ data: [] }),
-      order: vi.fn().mockReturnThis(),
-      limit: vi.fn().mockReturnThis(),
-    })),
+    from: fromSpy,
     channel: vi.fn(() => ({
       on: vi.fn().mockReturnThis(),
       subscribe: vi.fn(),
@@ -22,17 +27,31 @@ vi.mock("~/composables/useSupabase", () => ({
   }),
 }));
 
-vi.mock("~/composables/useAuth", () => ({
-  useAuth: () => ({
-    session: ref({
-      user: { id: "test-user-123" },
-    }),
-  }),
+vi.mock("~/stores/user", () => ({
+  useUserStore: () => mockUserState,
 }));
 
 describe("useActivityFeed", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockUserState.user = { id: "test-user-123" };
+  });
+
+  it("fetches when the user store has a logged-in user", async () => {
+    const { fetchActivities } = useActivityFeed();
+
+    await fetchActivities();
+
+    expect(fromSpy).toHaveBeenCalledWith("interactions");
+  });
+
+  it("does not fetch when the user store has no user", async () => {
+    mockUserState.user = null;
+    const { fetchActivities } = useActivityFeed();
+
+    await fetchActivities();
+
+    expect(fromSpy).not.toHaveBeenCalled();
   });
 
   it("initializes with empty activities", () => {

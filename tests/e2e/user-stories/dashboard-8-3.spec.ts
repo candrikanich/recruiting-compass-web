@@ -152,10 +152,7 @@ test.describe("User Story 8.3 - Recent Activity Feed", () => {
     await expect(activitySection).toBeVisible({ timeout: 15000 });
   });
 
-  // SKIPPED until app bug fixed: RecentActivityFeed renders 0 items even
-  // though interactions exist in DB and seed runs successfully.
-  // See task #7 / planning notes for diagnostic trail.
-  test.skip("shows last 10 events in feed", async ({ page }) => {
+  test("shows last 10 events in feed", async ({ page }) => {
     await page.waitForSelector('[data-testid="activity-event-item"]', {
       timeout: 15000,
     });
@@ -165,21 +162,21 @@ test.describe("User Story 8.3 - Recent Activity Feed", () => {
     expect(count).toBeLessThanOrEqual(10);
   });
 
-  test.skip("displays interaction details in feed", async ({ page }) => {
+  test("displays interaction details in feed", async ({ page }) => {
     const activityItems = page.locator('[data-testid="activity-event-item"]');
     await activityItems.first().waitFor({ state: "visible", timeout: 15000 });
     const text = await activityItems.first().textContent();
     expect(text?.trim()).toBeTruthy();
   });
 
-  test.skip("displays event icons correctly", async ({ page }) => {
+  test("displays event icons correctly", async ({ page }) => {
     const activityItems = page.locator('[data-testid="activity-event-item"]');
     await activityItems.first().waitFor({ state: "visible", timeout: 15000 });
     const text = await activityItems.first().textContent();
     expect(text).toMatch(/[📧☎️💬🤝💻⛺🎬🐦📱📍📄]/);
   });
 
-  test.skip("formats timestamps correctly", async ({ page }) => {
+  test("formats timestamps correctly", async ({ page }) => {
     const activityItems = page.locator('[data-testid="activity-event-item"]');
     await activityItems.first().waitFor({ state: "visible", timeout: 15000 });
     const text = await activityItems.first().textContent();
