@@ -16,10 +16,9 @@ import { resolve } from "path";
  * - Authenticated player account (tests/e2e/.auth/player.json)
  */
 
-// QUARANTINED 2026-05-22: 8 timeout. Requires nces_schools seed + Radar API key.
-// Skipping until seed data + env are guaranteed. Rewrite tracked in
-// planning/2026-05-22-playwright-rewrite-plan.md (Phase 2i).
-test.describe.skip("Smart Inputs — High School Search", () => {
+// Uses the live nces_schools table (~27k rows, seeded with NCES public-school
+// dataset). "Lincoln High School" has ~48 matches across states.
+test.describe("Smart Inputs — High School Search", () => {
   test.use({
     storageState: resolve(process.cwd(), "tests/e2e/.auth/player.json"),
   });
@@ -49,12 +48,19 @@ test.describe.skip("Smart Inputs — High School Search", () => {
       '[placeholder="Search for your high school"]',
     );
     await schoolInput.fill("Lincoln");
-    await page.locator("text=Lincoln High School").first().click();
-    await expect(schoolInput).toHaveValue("Lincoln High School");
-    // Dropdown should dismiss after selection
-    await expect(
-      page.locator("text=Lincoln High School").nth(1),
-    ).not.toBeVisible({ timeout: 2000 });
+    // NCES has ~48 "Lincoln" matches across states (e.g. "Abraham Lincoln High
+    // School"). Grab whatever the first suggestion's text is, click it, then
+    // assert the input now holds that exact value.
+    const firstSuggestion = page.locator("text=Lincoln High School").first();
+    await firstSuggestion.waitFor({ state: "visible", timeout: 5000 });
+    const selectedName = (await firstSuggestion.textContent())?.trim() ?? "";
+    await firstSuggestion.click();
+    await expect(schoolInput).toHaveValue(selectedName);
+    // Dropdown should dismiss — first input now matches the picked value, but
+    // a second match (the dropdown row) should be gone.
+    await expect(page.locator("text=Lincoln High School").nth(1)).toBeHidden({
+      timeout: 2000,
+    });
   });
 
   test("shows escape hatch when no results found", async ({ page }) => {
@@ -82,10 +88,8 @@ test.describe.skip("Smart Inputs — High School Search", () => {
   });
 });
 
-// QUARANTINED 2026-05-22: 8 timeout. Requires nces_schools seed + Radar API key.
-// Skipping until seed data + env are guaranteed. Rewrite tracked in
-// planning/2026-05-22-playwright-rewrite-plan.md (Phase 2i).
-test.describe.skip("Smart Inputs — Address Autocomplete", () => {
+// Tests are written to gracefully no-op when Radar.io key isn't configured.
+test.describe("Smart Inputs — Address Autocomplete", () => {
   test.use({
     storageState: resolve(process.cwd(), "tests/e2e/.auth/player.json"),
   });
@@ -134,10 +138,8 @@ test.describe.skip("Smart Inputs — Address Autocomplete", () => {
   });
 });
 
-// QUARANTINED 2026-05-22: 8 timeout. Requires nces_schools seed + Radar API key.
-// Skipping until seed data + env are guaranteed. Rewrite tracked in
-// planning/2026-05-22-playwright-rewrite-plan.md (Phase 2i).
-test.describe.skip("Smart Inputs — Social Handle Normalization", () => {
+// Pure client-side input normalization (utils/social.ts) — no seed, no API.
+test.describe("Smart Inputs — Social Handle Normalization", () => {
   test.use({
     storageState: resolve(process.cwd(), "tests/e2e/.auth/player.json"),
   });
@@ -145,7 +147,13 @@ test.describe.skip("Smart Inputs — Social Handle Normalization", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/settings/player-details");
     await page.waitForLoadState("load");
-    await page.waitForTimeout(500);
+    // Social inputs live under the "Academics & Social" tab (v-show gates
+    // each tab's section). Click the tab button to make them visible.
+    await page
+      .locator("button", { hasText: "Academics & Social" })
+      .first()
+      .click();
+    await page.waitForTimeout(200);
   });
 
   test("strips full URL from Twitter handle on blur", async ({ page }) => {
