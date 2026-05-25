@@ -6,25 +6,22 @@ Active session notes only. See [COMPLETED_WORK.md](./COMPLETED_WORK.md) for full
 
 - **Output format by reader, not by default**: For artifacts Chris will read once on a phone or share with someone non-technical — session recaps, status overviews, weekly summaries, "where are we on X" snapshots — invoke the `visual-explainer` skill to produce self-contained HTML. For artifacts that future-Claude or Chris will edit (handoff docs, `planning/*.md`, `COMPLETED_WORK.md`, lesson files, plans) — stay markdown. When unsure: read = HTML, edit = markdown.
 
-## Current Session (2026-05-25 — CI/PR cleanup)
+## Current Session (2026-05-25 — E2E seed buckets + ws fix + admin-test cleanup)
 
-**Status:** develop CI green, both dependabot PRs merged, main↔develop reconciled
-**Branch:** develop (clean, pushed — HEAD `18e32873`)
-**Build:** not run
-**Tests:** Full unit suite 7165 pass (local + CI Unit job green)
-**Lint / Type-check / Token-audit:** PASS
-
-**Fixed (3 stale unit failures that reddened develop):**
-- `SchoolNotesCard.spec` + `CoachNotesEditor` stub asserted dead emit contract; rewrote to `saveFn` callback contract
-- `tasks-index-advanced.spec` → `useHead is not defined`; added `useHead`/`useSeoMeta` to global Nuxt stubs in `tests/setup.ts`
-- Commit `066d8d43`
-
-**Merged:** PR #259 (supabase 2.100→2.101), PR #260 (posthog-js 1.374→1.376) — branches deleted. No open PRs.
-**Reconciled:** back-merged `main` (6 dependabot commits) into develop — clean, lockfile in sync, qs override intact, 0 vulns. main now fully contained in develop.
+**Status:** STABLE — suite green, deferred items + bug tickets remain
+**Branch:** develop (clean, pushed — HEAD `e7e19031`)
+**Build:** not run this session
+**Tests:** E2E **385 pass / 92 skip / 9 did-not-run / 0 fail** (4.3m, end of session)
+**Lint:** not run this session
+**Type-check:** PASS (`npx nuxi typecheck` clean)
+**Handoff:** `planning/handoff-2026-05-25-e2e-bucket-work.md`
 
 ## Action Required
 
-1. **Seed infrastructure project** — ~110 conditional-data-guard skips waiting; separate scope (dashboard-8-x, family-invite-flow, coaching-philosophy, bulk-delete-users, user-story-6-1/9-1)
+1. **Family-invite UI gaps** (~7 skips) behind `BLOCKED_BY_APP_GAP=true` in `tests/e2e/family-invite-flow.spec.ts` — drop the flag once /join + family-management UI is fixed.
+2. **dashboard-8-3 RecentActivityFeed bug** (4 skips) — widget renders empty despite real interactions. Initial fix attempt reverted. See handoff for diagnostic trail.
+3. **parent-tasks bucket** (4 skips) — needs multi-athlete + deadline_date + parent storageState setup. Deferred.
+4. **Seed infrastructure project** — remaining conditional-data-guard skips (down from ~110 to ~92).
 
 ## Environment Notes
 
