@@ -61,19 +61,21 @@ Each ticket: blockers, affected specs, scope, estimate. Pick up in any order —
 
 ---
 
-## #4 — Settings Page Restructuring
+## #4 — Settings Page Restructuring — RESOLVED 2026-05-25
 
-**Blocks:** ~22 tests
-**Affected:** `tests/e2e/tier2-important/settings.spec.ts:6` (whole suite)
+**Was blocking:** 22 tests in `tier2-important/settings.spec.ts`
 
-**What's broken:** Settings is now multi-route (`/settings/profile`, `/settings/notifications`, `/settings/social-sync`, etc.) but test still assumes single page.
+**Action:** Deleted the monolithic spec + its stale POM, wrote a fresh sub-route spec mirroring `medium-priority-pages.spec.ts`. Coverage:
+- `/settings` hub — heading, all 9 nav cards visible, click-through navigation
+- One describe per sub-route (`profile`, `player-details`, `notifications`, `location`, `school-preferences`, `dashboard`, `communication-templates`, `social-sync`, `family-management`) — smoke-level (loads, heading, form/content present)
+- `/settings/account` — asserts the redirect to `/settings/profile` (the page's `onMounted` does `router.replace("/settings/profile")`, kept for old bookmarks)
+- Auth guard — unauthenticated visit to `/settings` lands on `/login`
 
-**Scope:**
-1. Split test file by route (one spec per sub-page, mirroring `medium-priority-pages.spec.ts` pattern)
-2. Cover navigation between sub-routes
-3. Delete original monolithic file
+**Result:** 24/24 pass. Form-save and validation flows stay in their dedicated specs (`player-details-autosave`, `family-invite-flow`, etc.) — this spec is only sub-route smoke coverage.
 
-**Estimate:** 2 days
+**Files removed:**
+- `tests/e2e/pages/SettingsPage.ts`
+- old `tests/e2e/tier2-important/settings.spec.ts`
 
 ---
 
@@ -162,11 +164,11 @@ Each ticket: blockers, affected specs, scope, estimate. Pick up in any order —
 | 1 | Smart Inputs seed + env | ~15 | 2d |
 | 2 | Analytics rewrite | ~20 | 3d |
 | 3 | Performance tracking | ~11 | DONE (deleted) |
-| 4 | Settings split | ~22 | 2d |
+| 4 | Settings split | 22 | DONE |
 | 5 | Documents rewrite | ~22 | 3d |
 | 6 | Password reset mock | 11 | DONE |
 | 7 | User prefs migration | 3 | 3d |
 | 8 | Notes refresh after save | 2 | DONE |
-| **Total** | | **~83 tests remaining** | **~13 days** |
+| **Total** | | **~61 tests remaining** | **~11 days** |
 
 Remaining ~125 skipped tests are CONDITIONAL-DATA-GUARD that resolve when seed data lands (dashboard-8-x, family-invite-flow, coaching-philosophy, bulk-delete-users, etc.) — track separately as seed infrastructure work.
