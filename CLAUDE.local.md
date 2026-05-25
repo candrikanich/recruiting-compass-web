@@ -8,19 +8,18 @@ Active session notes only. See [COMPLETED_WORK.md](./COMPLETED_WORK.md) for full
 
 ## Current Session
 
-**Status:** NEARLY DONE — all 8 bug tickets closed, 4 followups identified
-**Branch:** develop (0 commits ahead of origin — pushed)
+**Status:** Loose-ends sweep — E2E green, action items cleared
+**Branch:** develop (clean, pushed)
 **Build:** not run this session
-**Tests:** Touched specs verified green in isolation; full E2E sweep NOT re-run after last several tickets — verify next session
-**Lint:** PASS (after `eslint.config.js` ignore for `playwright-report/`, `test-results/`)
+**Tests:** Full E2E sweep 2026-05-25: 362 pass / 126 skip / 1 flake (smart-inputs.spec.ts:76 — passes isolated, parallel-worker race)
+**Lint:** PASS (last verified post-ticket #1)
 **Type-check:** PASS (last verified post-ticket #1)
 **Handoff:** `planning/handoff-2026-05-25-skipped-tests-cleanup.md`
 
 ## Action Required
 
-1. **Push branch:** `git push`
-2. **Supabase migration:** `player_user_id` migration may still need verifying on remote
-3. **Replace `TEAMID`** in `public/.well-known/apple-app-site-association`
+1. **Dependabot moderate vuln** — alert #99, GitHub API unreachable this session (DNS), revisit when net restored
+2. **Seed infrastructure project** — ~110 conditional-data-guard skips waiting; separate scope (dashboard-8-x, family-invite-flow, coaching-philosophy, bulk-delete-users, user-story-6-1/9-1)
 
 ## E2E Test Fix Summary (2026-03-19 continued)
 
