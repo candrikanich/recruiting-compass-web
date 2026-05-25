@@ -366,12 +366,19 @@ test.describe("Notifications Page", () => {
       return;
     }
 
+    // Parallel workers seed against the same user, so the absolute count
+    // moves under our feet (other workers' afterAll deletes fire mid-test).
+    // Assert on the specific card we deleted instead of N-1.
     const firstCard = cards.first();
-    const deleteBtn = firstCard.locator("button");
-    await deleteBtn.click();
+    const firstTitle = (await firstCard.locator("h3").textContent())?.trim();
+    expect(firstTitle).toBeTruthy();
 
-    const newCount = await page.locator(".border-l-4").count();
-    expect(newCount).toBe(initialCount - 1);
+    await firstCard.locator("button").click();
+
+    // The card with that title should be gone within a beat.
+    await expect(
+      page.locator(`.border-l-4:has(h3:text-is("${firstTitle}"))`),
+    ).toHaveCount(0, { timeout: 5000 });
   });
 
   test("Clear read button only shows when there are read notifications", async ({
