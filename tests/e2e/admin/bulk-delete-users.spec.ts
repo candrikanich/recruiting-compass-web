@@ -1,53 +1,111 @@
 import { test, expect } from "@playwright/test";
-import { authFixture } from "../fixtures/auth.fixture";
+import { resolve } from "path";
 import { AdminPage } from "../pages/AdminPage";
+import {
+  getSupabaseAdmin,
+  findUserIdByEmail,
+} from "../seed/helpers/supabase-admin";
+import { TEST_ACCOUNTS } from "../config/test-accounts";
 
 /**
- * E2E tests for bulk delete users feature on admin dashboard
+ * E2E tests for bulk delete users feature on admin dashboard.
  *
- * These tests verify:
- * - Select mode toggle shows/hides checkboxes
- * - Individual user selection
- * - Select all functionality
- * - Bulk delete modal confirmation
- * - Users removed from table after deletion
- * - Current user cannot be selected
- * - Selection cleared on exit select mode
- *
- * Note: These tests require an admin user account to access /admin page.
- * The admin middleware will redirect non-admin users.
+ * Requires admin@test.com to have is_admin=true and ≥1 deletable user in the
+ * table. is_admin is granted persistently in beforeAll; deletable users are
+ * seeded per-spec and cleaned up in afterAll.
  */
 
+const RUN_ID = Date.now();
+let seededDeletableIds: string[] = [];
+let adminGranted = false;
+
 test.describe("Admin Dashboard - Bulk Delete Users", () => {
+  test.use({
+    storageState: resolve(process.cwd(), "tests/e2e/.auth/admin.json"),
+  });
+
   let adminPage: AdminPage;
 
+  test.beforeAll(async () => {
+    try {
+      const supabase = getSupabaseAdmin();
+      const adminId = await findUserIdByEmail(
+        supabase,
+        TEST_ACCOUNTS.admin.email,
+      );
+      if (!adminId) {
+        console.warn("⚠️  bulk-delete-users: admin user not found");
+        return;
+      }
+      const { error: grantErr } = await supabase
+        .from("users")
+        .update({ is_admin: true })
+        .eq("id", adminId);
+      if (grantErr) {
+        console.warn(
+          "⚠️  bulk-delete-users: failed to grant admin:",
+          grantErr.message,
+        );
+        return;
+      }
+      adminGranted = true;
+
+      // Seed 3 deletable users so the table has selectable rows.
+      const created: string[] = [];
+      for (let i = 0; i < 3; i++) {
+        const email = `e2e-deletable-${RUN_ID}-${i}@example.com`;
+        const { data, error } = await supabase.auth.admin.createUser({
+          email,
+          password: "TestPass123!",
+          email_confirm: true,
+          user_metadata: { e2e_deletable: true, display_name: `Deletable ${i}` },
+        });
+        if (!error && data?.user?.id) {
+          created.push(data.user.id);
+        }
+      }
+      seededDeletableIds = created;
+    } catch (e) {
+      console.warn("⚠️  bulk-delete-users seed threw:", e);
+    }
+  });
+
+  test.afterAll(async () => {
+    try {
+      const supabase = getSupabaseAdmin();
+      for (const id of seededDeletableIds) {
+        await supabase.auth.admin.deleteUser(id).catch(() => null);
+      }
+      // Leave admin@test.com is_admin=true; idempotent across runs.
+    } catch {
+      // non-fatal
+    }
+  });
+
   test.beforeEach(async ({ page }) => {
-    // These tests require admin credentials. Skip for now.
-    test.skip();
-
-    // Clear auth state
-    await authFixture.clearAuthState(page);
-
-    // Note: These tests would need admin user credentials to run properly.
-    // For now, we'll skip if not authenticated as admin.
-    // In a real test environment, you would setup admin credentials.
-
+    test.skip(!adminGranted, "Admin grant failed in beforeAll");
     adminPage = new AdminPage(page);
-
-    // Navigate to admin page
-    // This will redirect to login if not authenticated or to dashboard if not admin
     await adminPage.goto();
 
-    // Check if we were redirected away (not an admin)
     const currentUrl = await adminPage.getURL();
     if (!currentUrl.includes("/admin")) {
-      test.skip();
+      test.skip(
+        true,
+        `Redirected away from /admin (url=${currentUrl})`,
+      );
     }
 
-    // Wait for users table to load
-    await page.waitForSelector("tbody tr", { timeout: 5000 }).catch(() => {
-      // Table might be empty, which is fine
-    });
+    // /admin defaults to the "overview" tab; the bulk-delete UI lives under
+    // the "Users" tab — click into it before any select-mode assertions.
+    await page
+      .locator('button:has-text("Users")')
+      .first()
+      .click()
+      .catch(() => null);
+
+    await page
+      .waitForSelector('[data-testid="select-mode-toggle"]', { timeout: 15000 })
+      .catch(() => null);
   });
 
   test("should toggle select mode on button click", async ({ page }) => {
@@ -100,9 +158,11 @@ test.describe("Admin Dashboard - Bulk Delete Users", () => {
     // Click select all
     await adminPage.selectAllUsers();
 
-    // All users should be selected
+    // All users except the current admin should be selected — the row for
+    // the logged-in user intentionally has no checkbox (verified by the
+    // "should not allow selecting current user" test below).
     const selectedCount = await adminPage.getSelectedUserCount();
-    expect(selectedCount).toBe(userCount);
+    expect(selectedCount).toBe(userCount - 1);
   });
 
   test("should show bulk delete button when users selected", async ({
@@ -160,9 +220,10 @@ test.describe("Admin Dashboard - Bulk Delete Users", () => {
     // Click cancel
     await adminPage.clickCancelBulkDelete();
 
-    // Modal should be gone
-    const isModalVisible = await adminPage.isConfirmModalVisible();
-    expect(isModalVisible).toBe(false);
+    // Modal should be gone — wait for the close transition before asserting.
+    await expect(
+      page.locator('[data-testid="confirm-bulk-delete"]'),
+    ).toBeHidden({ timeout: 5000 });
 
     // User count should be unchanged
     const finalCount = await adminPage.getUserCount();
