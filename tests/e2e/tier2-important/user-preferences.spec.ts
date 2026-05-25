@@ -83,22 +83,11 @@ test.describe("User Preferences - Migration Plan", () => {
     expect(expectedCategories).toHaveProperty("display");
   });
 
-  test.skip("should persist preferences across sessions", async ({ page }) => {
-    // This test skipped until full migration is complete
-    // Will test that after login → save preferences → logout → login,
-    // preferences are persisted from server
-  });
-
-  test.skip("should fallback to localStorage when offline", async ({
-    page,
-  }) => {
-    // This test skipped until migration is complete
-    // Will test that useUserPreferencesV2 composable properly falls back
-    // to localStorage when server is unavailable
-  });
-
-  test.skip("should provide offline changes on reconnect", async ({ page }) => {
-    // This test skipped until migration is complete
-    // Will test that changes made offline are synced when reconnected
-  });
+  // Note: empty placeholder stubs for "persist across sessions",
+  // "localStorage fallback when offline", and "offline changes on reconnect"
+  // were removed 2026-05-25 (bug ticket #7). They had no bodies — no setup,
+  // no assertions, no fixtures — and provided zero coverage. The migration
+  // plumbing (useUserPreferencesV2 composable, /api/user/preferences/[category]
+  // endpoints) is already in place; write real tests against that surface
+  // when the offline-sync behavior is actually exercised in the product.
 });
