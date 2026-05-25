@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { mount } from "@vue/test-utils";
+import { mount, flushPromises } from "@vue/test-utils";
 import SchoolNotesCard from "~/components/School/SchoolNotesCard.vue";
 
 vi.mock("~/components/School/NotesHistory.vue", () => ({
@@ -14,87 +14,88 @@ vi.mock("@heroicons/vue/24/outline", () => ({
   PencilIcon: { name: "PencilIcon", template: "<svg />" },
 }));
 
-const defaultProps = {
+const makeProps = (overrides: Record<string, unknown> = {}) => ({
   notes: "Some school notes",
   schoolId: "school-123",
-  isSaving: false,
-};
+  saveFn: vi.fn().mockResolvedValue(undefined),
+  ...overrides,
+});
+
+const editBtn = (wrapper: ReturnType<typeof mount>) =>
+  wrapper.findAll("button").find((b) => b.text().match(/Edit|Cancel/));
+const saveBtn = (wrapper: ReturnType<typeof mount>) =>
+  wrapper.findAll("button").find((b) => b.text().includes("Save Notes"));
 
 describe("SchoolNotesCard", () => {
   describe("Notes section", () => {
     it("renders school notes in display mode", () => {
-      const wrapper = mount(SchoolNotesCard, { props: defaultProps });
+      const wrapper = mount(SchoolNotesCard, { props: makeProps() });
       expect(wrapper.text()).toContain("Some school notes");
     });
 
     it("shows placeholder when notes are null", () => {
       const wrapper = mount(SchoolNotesCard, {
-        props: { ...defaultProps, notes: null },
+        props: makeProps({ notes: null }),
       });
       expect(wrapper.text()).toContain("No notes added yet.");
     });
 
     it("toggles editing mode for notes", async () => {
-      const wrapper = mount(SchoolNotesCard, { props: defaultProps });
-      const editButtons = wrapper.findAll("button");
-      const notesEditBtn = editButtons[0];
-
-      await notesEditBtn.trigger("click");
+      const wrapper = mount(SchoolNotesCard, { props: makeProps() });
+      await editBtn(wrapper)?.trigger("click");
       expect(wrapper.find("textarea").exists()).toBe(true);
     });
 
-    it("emits update:notes on save", async () => {
-      const wrapper = mount(SchoolNotesCard, { props: defaultProps });
-      const editButtons = wrapper.findAll("button");
-      await editButtons[0].trigger("click");
+    it("calls saveFn with the edited value on save", async () => {
+      const saveFn = vi.fn().mockResolvedValue(undefined);
+      const wrapper = mount(SchoolNotesCard, { props: makeProps({ saveFn }) });
+      await editBtn(wrapper)?.trigger("click");
 
-      const textarea = wrapper.find("textarea");
-      await textarea.setValue("Updated notes");
+      await wrapper.find("textarea").setValue("Updated notes");
+      await saveBtn(wrapper)?.trigger("click");
+      await flushPromises();
 
-      const saveBtn = wrapper
-        .findAll("button")
-        .find((b) => b.text().includes("Save Notes"));
-      await saveBtn?.trigger("click");
-
-      expect(wrapper.emitted("update:notes")).toBeTruthy();
-      expect(wrapper.emitted("update:notes")![0]).toEqual(["Updated notes"]);
+      expect(saveFn).toHaveBeenCalledWith("Updated notes");
     });
 
     it("closes edit mode after saving notes", async () => {
-      const wrapper = mount(SchoolNotesCard, { props: defaultProps });
-      const editButtons = wrapper.findAll("button");
-      await editButtons[0].trigger("click");
+      const wrapper = mount(SchoolNotesCard, { props: makeProps() });
+      await editBtn(wrapper)?.trigger("click");
 
-      const saveBtn = wrapper
-        .findAll("button")
-        .find((b) => b.text().includes("Save Notes"));
-      await saveBtn?.trigger("click");
+      await saveBtn(wrapper)?.trigger("click");
+      await flushPromises();
 
       expect(wrapper.findAll("textarea")).toHaveLength(0);
     });
   });
 
-  describe("isSaving prop", () => {
-    it("shows Saving... text when isSaving is true", async () => {
-      const wrapper = mount(SchoolNotesCard, {
-        props: { ...defaultProps, isSaving: true },
-      });
+  describe("saving state", () => {
+    it("shows Saving... while the save is in flight", async () => {
+      let resolveSave: () => void = () => {};
+      const saveFn = vi.fn(
+        () =>
+          new Promise<void>((resolve) => {
+            resolveSave = resolve;
+          }),
+      );
+      const wrapper = mount(SchoolNotesCard, { props: makeProps({ saveFn }) });
+      await editBtn(wrapper)?.trigger("click");
 
-      const editBtns = wrapper
-        .findAll("button")
-        .filter((b) => b.text().includes("Edit"));
-      await editBtns[0].trigger("click");
+      await saveBtn(wrapper)?.trigger("click");
+      await wrapper.vm.$nextTick();
 
-      const saveBtn = wrapper
-        .findAll("button")
-        .find((b) => b.text().includes("Saving..."));
-      expect(saveBtn?.exists()).toBe(true);
+      expect(
+        wrapper.findAll("button").some((b) => b.text().includes("Saving...")),
+      ).toBe(true);
+
+      resolveSave();
+      await flushPromises();
     });
   });
 
   describe("NotesHistory integration", () => {
     it("passes schoolId to NotesHistory component", () => {
-      const wrapper = mount(SchoolNotesCard, { props: defaultProps });
+      const wrapper = mount(SchoolNotesCard, { props: makeProps() });
       const notesHistory = wrapper.find("[data-testid='notes-history']");
       expect(notesHistory.exists()).toBe(true);
     });

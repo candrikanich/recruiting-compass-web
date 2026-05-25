@@ -127,8 +127,8 @@ vi.mock("~/components/Coach/CoachStatsGrid.vue", () => ({
 vi.mock("~/components/Coach/CoachNotesEditor.vue", () => ({
   default: {
     name: "CoachNotesEditor",
-    props: ["modelValue", "title", "subtitle", "placeholder"],
-    emits: ["update:modelValue", "save"],
+    props: ["modelValue", "title", "subtitle", "placeholder", "saveFn"],
+    emits: ["update:modelValue"],
     template: `
       <div data-test="coach-notes-editor">
         <input
@@ -136,7 +136,7 @@ vi.mock("~/components/Coach/CoachNotesEditor.vue", () => ({
           @input="$emit('update:modelValue', $event.target.value)"
           data-test="notes-input"
         />
-        <button @click="$emit('save', modelValue)" data-test="save-notes-btn">Save</button>
+        <button @click="saveFn(modelValue)" data-test="save-notes-btn">Save</button>
       </div>
     `,
   },
