@@ -32,7 +32,7 @@ let seedError: string | null = null;
 // correctly. The remaining 7 failures are real /join + family-management UI
 // gaps from the un-skipped valid/decline/revoke describes. Keep the flag on
 // until those are addressed so the suite stays green.
-const BLOCKED_BY_APP_GAP = false;
+const BLOCKED_BY_APP_GAP = true;
 let validInviteId: string | null = null;
 let expiredInviteId: string | null = null;
 let declineInviteId: string | null = null;
