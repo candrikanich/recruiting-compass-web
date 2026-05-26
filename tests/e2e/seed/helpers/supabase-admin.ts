@@ -34,6 +34,92 @@ export const getSupabaseAdmin = () => {
   });
 };
 
+export interface SeededSchools {
+  schoolIds: string[];
+  interactionIds: string[];
+}
+
+/**
+ * Seed N schools for a family unit, each with one recent interaction.
+ *
+ * Reusable across specs that need "the athlete has tracked schools with contact
+ * history" (dashboard contact-frequency, schools lists, task/interaction flows).
+ * Interactions default to within the last 7 days so the contact-frequency widget
+ * renders them as recent (green) contacts. Returns ids for afterAll cleanup.
+ */
+export async function seedSchoolsWithInteractions(
+  supabase: ReturnType<typeof getSupabaseAdmin>,
+  opts: {
+    familyUnitId: string;
+    userId: string;
+    runId: number;
+    count?: number;
+    daysAgo?: number[];
+  },
+): Promise<SeededSchools> {
+  const count = opts.count ?? 4;
+  const daysAgo = opts.daysAgo ?? [2, 3, 4, 5];
+  const day = 24 * 60 * 60 * 1000;
+
+  const schoolRows = Array.from({ length: count }, (_, i) => ({
+    name: `[e2e-${opts.runId}] Contact School ${i + 1}`,
+    family_unit_id: opts.familyUnitId,
+    user_id: opts.userId,
+    status: "researching",
+  }));
+
+  const { data: schools, error: schoolErr } = await supabase
+    .from("schools")
+    .insert(schoolRows)
+    .select("id");
+  if (schoolErr || !schools) {
+    throw new Error(`seedSchoolsWithInteractions schools: ${schoolErr?.message}`);
+  }
+  const schoolIds = schools.map((s) => s.id as string);
+
+  const interactionRows = schoolIds.map((schoolId, i) => ({
+    school_id: schoolId,
+    family_unit_id: opts.familyUnitId,
+    logged_by: opts.userId,
+    type: "email" as const,
+    direction: i % 2 === 0 ? ("outbound" as const) : ("inbound" as const),
+    sentiment: "positive" as const,
+    subject: `[e2e-${opts.runId}] Contact ${i + 1}`,
+    content: `Seeded recent contact ${i + 1}.`,
+    occurred_at: new Date(
+      Date.now() - (daysAgo[i % daysAgo.length] ?? 3) * day,
+    ).toISOString(),
+  }));
+
+  const { data: interactions, error: intErr } = await supabase
+    .from("interactions")
+    .insert(interactionRows)
+    .select("id");
+  if (intErr) {
+    // Roll back the schools so we don't leak partial seed.
+    await supabase.from("schools").delete().in("id", schoolIds);
+    throw new Error(`seedSchoolsWithInteractions interactions: ${intErr.message}`);
+  }
+
+  return {
+    schoolIds,
+    interactionIds: (interactions ?? []).map((r) => r.id as string),
+  };
+}
+
+/** Delete rows created by seedSchoolsWithInteractions (interactions first). */
+export async function deleteSeededSchools(
+  supabase: ReturnType<typeof getSupabaseAdmin>,
+  seeded: SeededSchools,
+): Promise<void> {
+  if (seeded.interactionIds.length > 0) {
+    await supabase.from("interactions").delete().in("id", seeded.interactionIds);
+  }
+  if (seeded.schoolIds.length > 0) {
+    await supabase.from("schools").delete().in("id", seeded.schoolIds);
+  }
+}
+
 /**
  * Look up an auth user's ID by email via the public.users mirror table.
  *

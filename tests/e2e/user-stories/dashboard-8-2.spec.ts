@@ -1,8 +1,56 @@
 import { test, expect } from "@playwright/test";
 import { DashboardPage } from "../pages/DashboardPage";
+import {
+  getSupabaseAdmin,
+  findUserIdByEmail,
+  seedSchoolsWithInteractions,
+  deleteSeededSchools,
+  type SeededSchools,
+} from "../seed/helpers/supabase-admin";
+import { TEST_ACCOUNTS } from "../config/test-accounts";
+
+const RUN_ID = Date.now();
+let seeded: SeededSchools | null = null;
+let seedReady = false;
 
 test.describe("User Story 8.2: Contact Frequency Summary", () => {
   let dashboardPage: DashboardPage;
+
+  test.beforeAll(async () => {
+    try {
+      const supabase = getSupabaseAdmin();
+      const playerId = await findUserIdByEmail(
+        supabase,
+        TEST_ACCOUNTS.player.email,
+      );
+      if (!playerId) return;
+      const { data: membership } = await supabase
+        .from("family_members")
+        .select("family_unit_id")
+        .eq("user_id", playerId)
+        .maybeSingle();
+      const familyUnitId = (membership as { family_unit_id: string } | null)
+        ?.family_unit_id;
+      if (!familyUnitId) return;
+      seeded = await seedSchoolsWithInteractions(supabase, {
+        familyUnitId,
+        userId: playerId,
+        runId: RUN_ID,
+      });
+      seedReady = true;
+    } catch (e) {
+      console.warn("⚠️  dashboard-8-2 seed failed:", e);
+    }
+  });
+
+  test.afterAll(async () => {
+    if (!seeded) return;
+    try {
+      await deleteSeededSchools(getSupabaseAdmin(), seeded);
+    } catch {
+      // non-fatal
+    }
+  });
 
   test.beforeEach(async ({ page }) => {
     dashboardPage = new DashboardPage(page);
@@ -80,33 +128,28 @@ test.describe("User Story 8.2: Contact Frequency Summary", () => {
     }
   });
 
-  test.skip("AC2: Scenario 2 - Green border for recent contacts (within 7 days)", async ({
+  test("AC2: Scenario 2 - Green border for recent contacts (within 7 days)", async ({
     page,
   }) => {
-    // TODO: test account has 0 schools. Skipped until seed data added.
-    dashboardPage = new DashboardPage(page);
-    await dashboardPage.goto();
-    await dashboardPage.waitForDashboardLoad();
+    test.skip(!seedReady, "dashboard-8-2 seed unavailable");
 
-    // Check for green-bordered schools (contacted within 7 days)
+    // Seeded schools each have an interaction within 7 days, so recent-contact
+    // rows render. This is the non-vacuous anchor: if rows don't render the
+    // whole color-coding feature is broken.
     const contactFreqWidget = page.locator(
       '[data-testid="contact-frequency-widget"]',
     );
     const schoolRows = contactFreqWidget.locator(
       '[data-testid^="contacted-school-"]',
     );
+    await expect(schoolRows.first()).toBeVisible({ timeout: 15000 });
+    expect(await schoolRows.count()).toBeGreaterThan(0);
 
-    const count = await schoolRows.count();
-    if (count > 0) {
-      // Get first school row and check for green border
-      const firstSchool = schoolRows.first();
-      const classes = await firstSchool.getAttribute("class");
-      // Should have either green, yellow, or red border
-      expect(classes).toMatch(/border-(green|yellow|red)-500/);
-    }
+    const classes = await schoolRows.first().getAttribute("class");
+    expect(classes).toMatch(/border-(green|yellow|red)-500/);
   });
 
-  test.skip("AC2: Scenario 2 - Yellow border for schools contacted 8-30 days ago", async ({
+  test("AC2: Scenario 2 - Yellow border for schools contacted 8-30 days ago", async ({
     page,
   }) => {
     // TODO: test account has 0 schools. Skipped until seed data added.
@@ -133,7 +176,7 @@ test.describe("User Story 8.2: Contact Frequency Summary", () => {
     }
   });
 
-  test.skip("AC2: Scenario 2 - Red border classes applied for old contacts", async ({
+  test("AC2: Scenario 2 - Red border classes applied for old contacts", async ({
     page,
   }) => {
     // TODO: test account has 0 schools. Skipped until seed data added.
@@ -159,7 +202,7 @@ test.describe("User Story 8.2: Contact Frequency Summary", () => {
     }
   });
 
-  test.skip("AC3: Scenario 3 - School rows are clickable", async ({ page }) => {
+  test("AC3: Scenario 3 - School rows are clickable", async ({ page }) => {
     // TODO: test account has 0 schools. Skipped until seed data added.
     dashboardPage = new DashboardPage(page);
     await dashboardPage.goto();
@@ -184,7 +227,7 @@ test.describe("User Story 8.2: Contact Frequency Summary", () => {
     }
   });
 
-  test.skip("AC3: Scenario 3 - Clicking school navigates to school detail page", async ({
+  test("AC3: Scenario 3 - Clicking school navigates to school detail page", async ({
     page,
   }) => {
     // TODO: test account has 0 schools. Skipped until seed data added.
@@ -216,7 +259,7 @@ test.describe("User Story 8.2: Contact Frequency Summary", () => {
     }
   });
 
-  test.skip("AC3: Scenario 3 - School detail page shows quick action buttons", async ({
+  test("AC3: Scenario 3 - School detail page shows quick action buttons", async ({
     page,
   }) => {
     // TODO: test account has 0 schools. Skipped until seed data added.
@@ -246,7 +289,7 @@ test.describe("User Story 8.2: Contact Frequency Summary", () => {
     }
   });
 
-  test.skip("AC4: Real-time Updates - Metrics update after logging interaction", async ({
+  test("AC4: Real-time Updates - Metrics update after logging interaction", async ({
     page,
   }) => {
     // TODO: test account has 0 schools to interact with. Skipped until seed data added.
@@ -306,7 +349,7 @@ test.describe("User Story 8.2: Contact Frequency Summary", () => {
     }
   });
 
-  test.skip("Metrics display with proper formatting", async ({ page }) => {
+  test("Metrics display with proper formatting", async ({ page }) => {
     // TODO: test account has 0 schools; avg frequency cannot be calculated without data.
     // Skipped until seed data added.
     dashboardPage = new DashboardPage(page);
@@ -341,7 +384,7 @@ test.describe("User Story 8.2: Contact Frequency Summary", () => {
     }
   });
 
-  test.skip("Color-coded schools display properly stacked", async ({
+  test("Color-coded schools display properly stacked", async ({
     page,
   }) => {
     // TODO: test account has 0 schools. Skipped until seed data added.
@@ -373,7 +416,7 @@ test.describe("User Story 8.2: Contact Frequency Summary", () => {
     }
   });
 
-  test.skip("Summary metrics are accurate for tracked schools", async ({
+  test("Summary metrics are accurate for tracked schools", async ({
     page,
   }) => {
     // TODO: test account has 0 schools. Assertion that (0 <= 0) is vacuous.
@@ -398,7 +441,7 @@ test.describe("User Story 8.2: Contact Frequency Summary", () => {
     expect(contacted7Days).toBeLessThanOrEqual(totalSchools);
   });
 
-  test.skip("Hover effects visible on school rows", async ({ page }) => {
+  test("Hover effects visible on school rows", async ({ page }) => {
     // TODO: test account has 0 schools. Skipped until seed data added.
     dashboardPage = new DashboardPage(page);
     await dashboardPage.goto();
