@@ -61,3 +61,6 @@ tests/e2e/.auth/*.json
 
 # Lighthouse CI reports (generated in CI, uploaded as artifacts)
 .lighthouseci/
+
+# Scheduled-task runtime lock (per-session pid/lock — never commit)
+.claude/scheduled_tasks.lock
