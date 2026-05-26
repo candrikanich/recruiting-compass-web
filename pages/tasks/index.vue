@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, watch, onMounted } from "vue";
 import { useTasks } from "~/composables/useTasks";
 import { useAuth } from "~/composables/useAuth";
-import { useParentContext } from "~/composables/useParentContext";
+import { useActiveFamily } from "~/composables/useActiveFamily";
 import { calculateCurrentGrade } from "~/utils/gradeHelpers";
 import { calculateDeadlineInfo } from "~/utils/deadlineHelpers";
 import AthleteSwitcher from "~/components/Parent/AthleteSwitcher.vue";
@@ -12,21 +12,27 @@ import type { TaskWithStatus } from "~/types/timeline";
 useHead({ title: "My Tasks" });
 
 const { session } = useAuth();
+// Parent context comes from useActiveFamily (the same source the dashboard uses);
+// activeAthleteId is the viewed athlete and isViewingAsParent gates parent UI.
 const {
-  linkedAthletes: linkedAccountsList,
   isViewingAsParent,
-  currentAthleteId,
-} = useParentContext();
+  activeAthleteId: currentAthleteId,
+  parentAccessibleFamilies,
+  switchAthlete,
+} = useActiveFamily();
 
-// Map LinkedAccount to LinkedAthlete format for AthleteSwitcher
-const linkedAthletes = computed(() =>
-  linkedAccountsList.value.map(
-    (account: (typeof linkedAccountsList.value)[0]) => ({
-      id: account.user_id,
-      name: account.full_name || account.email,
-    }),
-  ),
-);
+// Map accessible families to AthleteSwitcher's {id,name} shape, deduped by athlete.
+const linkedAthletes = computed(() => {
+  const seen = new Set<string>();
+  const list: { id: string; name: string }[] = [];
+  for (const f of parentAccessibleFamilies.value) {
+    if (f.athleteId && !seen.has(f.athleteId)) {
+      seen.add(f.athleteId);
+      list.push({ id: f.athleteId, name: f.athleteName || "Athlete" });
+    }
+  }
+  return list;
+});
 const {
   tasksWithStatus,
   loading,
@@ -222,10 +228,19 @@ const toggleTaskDetails = (taskId: string) => {
   expandedTaskId.value = expandedTaskId.value === taskId ? null : taskId;
 };
 
-const handleAthleteChange = (athleteId: string) => {
+const handleAthleteChange = async (athleteId: string) => {
+  await switchAthlete(athleteId);
   loadFilters();
-  // Note: The actual athlete switching and data loading would be handled by the route param change
+  await fetchTasksWithStatus(currentGradeLevel.value, athleteId);
 };
+
+// useActiveFamily resolves the parent's active athlete asynchronously after
+// mount; refetch the athlete's tasks once it lands (or changes).
+watch(currentAthleteId, async (athleteId) => {
+  if (isViewingAsParent.value && athleteId) {
+    await fetchTasksWithStatus(currentGradeLevel.value, athleteId);
+  }
+});
 
 onMounted(async () => {
   loadFilters();
