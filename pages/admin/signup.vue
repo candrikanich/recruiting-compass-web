@@ -33,7 +33,7 @@
             to="/"
             class="text-white hover:text-white/80 transition-colors flex items-center gap-2"
           >
-            <ArrowLeftIcon class="w-4 h-4" />
+            <UIcon name="i-heroicons-arrow-left" class="w-4 h-4"  />
             Back to Welcome
           </NuxtLink>
         </div>
@@ -47,7 +47,7 @@
             <div
               class="w-20 h-20 bg-white rounded-full mx-auto mb-4 flex items-center justify-center shadow-lg"
             >
-              <CheckIcon class="w-11 h-11 text-red-600" />
+              <UIcon name="i-heroicons-check-solid" class="w-11 h-11 text-red-600"  />
             </div>
             <h1 class="text-slate-900 text-3xl font-bold mb-2">
               Admin Registration
@@ -68,9 +68,9 @@
           <!-- Admin Warning -->
           <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
             <div class="flex gap-3">
-              <ExclamationCircleIcon
+              <UIcon name="i-heroicons-exclamation-circle-solid"
                 class="w-5 h-5 text-red-600 shrink-0 mt-0.5"
-              />
+               />
               <div class="text-sm text-red-800">
                 <p class="font-medium mb-1">Administrator Account</p>
                 <p>
@@ -94,9 +94,9 @@
                   First Name
                 </label>
                 <div class="relative">
-                  <UserIcon
+                  <UIcon name="i-heroicons-user"
                     class="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"
-                  />
+                   />
                   <input
                     id="firstName"
                     v-model="firstName"
@@ -116,9 +116,9 @@
                   Last Name
                 </label>
                 <div class="relative">
-                  <UserIcon
+                  <UIcon name="i-heroicons-user"
                     class="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"
-                  />
+                   />
                   <input
                     id="lastName"
                     v-model="lastName"
@@ -141,9 +141,9 @@
                 Email
               </label>
               <div class="relative">
-                <EnvelopeIcon
+                <UIcon name="i-heroicons-envelope"
                   class="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"
-                />
+                 />
                 <input
                   id="email"
                   v-model="email"
@@ -168,9 +168,9 @@
                 Admin Registration Token
               </label>
               <div class="relative">
-                <KeyIcon
+                <UIcon name="i-heroicons-key"
                   class="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"
-                />
+                 />
                 <input
                   id="adminToken"
                   v-model="adminToken"
@@ -195,9 +195,9 @@
                   Password
                 </label>
                 <div class="relative">
-                  <LockClosedIcon
+                  <UIcon name="i-heroicons-lock-closed"
                     class="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"
-                  />
+                   />
                   <input
                     id="password"
                     v-model="password"
@@ -219,9 +219,9 @@
                   Confirm Password
                 </label>
                 <div class="relative">
-                  <LockClosedIcon
+                  <UIcon name="i-heroicons-lock-closed"
                     class="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"
-                  />
+                   />
                   <input
                     id="confirmPassword"
                     v-model="confirmPassword"
@@ -313,14 +313,6 @@ import { useUserStore } from "~/stores/user";
 import { useFormValidation } from "~/composables/useFormValidation";
 import { adminSignupSchema } from "~/utils/validation/schemas";
 import { z } from "zod";
-import {
-  ArrowLeftIcon,
-  UserIcon,
-  EnvelopeIcon,
-  LockClosedIcon,
-  KeyIcon,
-} from "@heroicons/vue/24/outline";
-import { CheckIcon, ExclamationCircleIcon } from "@heroicons/vue/24/solid";
 import FormErrorSummary from "~/components/Validation/FormErrorSummary.vue";
 import FieldError from "~/components/DesignSystem/FieldError.vue";
 

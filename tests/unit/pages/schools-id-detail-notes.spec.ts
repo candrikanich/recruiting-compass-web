@@ -89,12 +89,6 @@ vi.mock("~/components/School/SchoolMap.vue", () => ({
   },
 }));
 
-vi.mock("@heroicons/vue/24/outline", () => ({
-  CheckIcon: { name: "CheckIcon", template: "<svg></svg>" },
-  XMarkIcon: { name: "XMarkIcon", template: "<svg></svg>" },
-  ShareIcon: { name: "ShareIcon", template: "<svg></svg>" },
-}));
-
 vi.mock("~/utils/schoolSize", () => ({
   getCarnegieSize: () => "Large",
   getSizeColorClass: () => "bg-blue-100",

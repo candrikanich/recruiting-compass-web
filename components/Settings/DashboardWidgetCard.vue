@@ -7,11 +7,11 @@
     ]"
   >
     <!-- Drag handle -->
-    <Bars3Icon
+    <UIcon name="i-heroicons-bars-3-solid"
       v-if="!disabled"
       class="w-4 h-4 text-slate-400 shrink-0 drag-handle"
       aria-hidden="true"
-    />
+     />
     <div v-else class="w-4 h-4 shrink-0" />
 
     <!-- Label -->
@@ -27,7 +27,7 @@
       class="shrink-0 p-1 text-slate-400 hover:text-slate-700 transition-colors rounded"
       @click.stop="$emit('move-up')"
     >
-      <ChevronUpIcon class="w-3.5 h-3.5" aria-hidden="true" />
+      <UIcon name="i-heroicons-chevron-up" class="w-3.5 h-3.5" aria-hidden="true"  />
     </button>
     <button
       v-if="!disabled"
@@ -36,7 +36,7 @@
       class="shrink-0 p-1 text-slate-400 hover:text-slate-700 transition-colors rounded"
       @click.stop="$emit('move-down')"
     >
-      <ChevronDownIcon class="w-3.5 h-3.5" aria-hidden="true" />
+      <UIcon name="i-heroicons-chevron-down" class="w-3.5 h-3.5" aria-hidden="true"  />
     </button>
 
     <!-- Size badge -->
@@ -63,20 +63,13 @@
       class="shrink-0 text-slate-400 hover:text-slate-700 transition-colors"
       @click.stop="$emit('toggle')"
     >
-      <EyeIcon v-if="visible" class="w-4 h-4" />
-      <EyeSlashIcon v-else class="w-4 h-4" />
+      <UIcon name="i-heroicons-eye" v-if="visible" class="w-4 h-4"  />
+      <UIcon name="i-heroicons-eye-slash" v-else class="w-4 h-4"  />
     </button>
   </div>
 </template>
 
 <script setup lang="ts">
-import {
-  EyeIcon,
-  EyeSlashIcon,
-  ChevronUpIcon,
-  ChevronDownIcon,
-} from "@heroicons/vue/24/outline";
-import { Bars3Icon } from "@heroicons/vue/24/solid";
 import { WIDGET_SIZES, WIDGET_LABELS } from "~/types/models";
 import type { WidgetId } from "~/types/models";
 

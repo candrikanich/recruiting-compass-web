@@ -36,12 +36,12 @@
             selected === 'parent' ? 'bg-emerald-500' : 'bg-emerald-100',
           ]"
         >
-          <UserCircleIcon
+          <UIcon name="i-heroicons-user-circle"
             :class="[
               'w-7 h-7',
               selected === 'parent' ? 'text-white' : 'text-emerald-600',
             ]"
-          />
+           />
         </div>
         <div class="flex-1 min-w-0">
           <p
@@ -104,12 +104,12 @@
             selected === 'player' ? 'bg-emerald-500' : 'bg-emerald-100',
           ]"
         >
-          <TrophyIcon
+          <UIcon name="i-heroicons-trophy"
             :class="[
               'w-7 h-7',
               selected === 'player' ? 'text-white' : 'text-emerald-600',
             ]"
-          />
+           />
         </div>
         <div class="flex-1 min-w-0">
           <p
@@ -149,8 +149,6 @@
 
 <script setup lang="ts">
 import { useId } from "vue";
-import { UserCircleIcon, TrophyIcon } from "@heroicons/vue/24/outline";
-
 defineProps<{
   selected: "player" | "parent" | null;
   disabled: boolean;

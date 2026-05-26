@@ -83,11 +83,6 @@ vi.mock("~/utils/socialMediaHandlers", () => ({
 }));
 
 // Mock Heroicons
-vi.mock("@heroicons/vue/24/outline", () => ({
-  ArrowLeftIcon: { name: "ArrowLeftIcon", template: "<svg />" },
-  XMarkIcon: { name: "XMarkIcon", template: "<svg />" },
-}));
-
 // Mock child components
 vi.mock("~/components/Coach/CoachHeader.vue", () => ({
   default: {

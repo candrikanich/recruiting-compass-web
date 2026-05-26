@@ -63,7 +63,7 @@
       v-else
       class="h-64 flex flex-col items-center justify-center rounded-lg bg-slate-50 text-slate-600"
     >
-      <ChatBubbleLeftRightIcon class="w-12 h-12 mb-3 text-slate-400" />
+      <UIcon name="i-heroicons-chat-bubble-left-right" class="w-12 h-12 mb-3 text-slate-400"  />
       <p class="text-sm font-medium">No interactions in the last 30 days</p>
       <p class="text-xs text-slate-500 mt-1">
         Log your first interaction to see trends here
@@ -92,7 +92,6 @@ import {
   Legend,
   Filler,
 } from "chart.js";
-import { ChatBubbleLeftRightIcon } from "@heroicons/vue/24/outline";
 import { createClientLogger } from "~/utils/logger";
 import type { Interaction } from "~/types/models";
 

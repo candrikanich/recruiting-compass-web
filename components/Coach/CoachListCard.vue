@@ -36,11 +36,11 @@
     <div class="p-4 space-y-3">
       <!-- Contact Info -->
       <div v-if="coach.email" class="flex items-center gap-2 text-sm">
-        <EnvelopeIcon class="w-4 h-4 text-slate-400" />
+        <UIcon name="i-heroicons-envelope" class="w-4 h-4 text-slate-400"  />
         <span class="text-slate-600 truncate">{{ coach.email }}</span>
       </div>
       <div v-if="coach.phone" class="flex items-center gap-2 text-sm">
-        <PhoneIcon class="w-4 h-4 text-slate-400" />
+        <UIcon name="i-heroicons-phone" class="w-4 h-4 text-slate-400"  />
         <span class="text-slate-600">{{ coach.phone }}</span>
       </div>
 
@@ -69,7 +69,7 @@
           :aria-label="`Send email to ${coach.first_name} ${coach.last_name}`"
           class="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         >
-          <EnvelopeIcon class="w-5 h-5" aria-hidden="true" />
+          <UIcon name="i-heroicons-envelope" class="w-5 h-5" aria-hidden="true"  />
         </button>
         <button
           v-if="coach.phone"
@@ -77,7 +77,7 @@
           :aria-label="`Send text message to ${coach.first_name} ${coach.last_name}`"
           class="p-2 text-slate-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
         >
-          <ChatBubbleLeftIcon class="w-5 h-5" aria-hidden="true" />
+          <UIcon name="i-heroicons-chat-bubble-left" class="w-5 h-5" aria-hidden="true"  />
         </button>
         <button
           v-if="coach.twitter_handle"
@@ -147,11 +147,6 @@
 
 <script setup lang="ts">
 import SchoolLogo from "~/components/School/SchoolLogo.vue";
-import {
-  EnvelopeIcon,
-  PhoneIcon,
-  ChatBubbleLeftIcon,
-} from "@heroicons/vue/24/outline";
 import { getRoleLabel } from "~/utils/coachLabels";
 import {
   formatCoachDate,

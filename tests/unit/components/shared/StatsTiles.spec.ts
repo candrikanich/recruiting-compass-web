@@ -2,22 +2,20 @@
 import { describe, it, expect } from "vitest";
 import { mount } from "@vue/test-utils";
 import StatsTiles from "~/components/shared/StatsTiles.vue";
-import { AcademicCapIcon, StarIcon } from "@heroicons/vue/24/outline";
-
 describe("StatsTiles", () => {
   it("renders correct number of tiles", () => {
     const stats = [
       {
         label: "Total",
         value: 10,
-        icon: AcademicCapIcon,
+        icon: "i-heroicons-academic-cap",
         color: "blue" as const,
         testId: "stat-total",
       },
       {
         label: "Favorites",
         value: 5,
-        icon: StarIcon,
+        icon: "i-heroicons-star",
         color: "amber" as const,
         testId: "stat-favorites",
       },
@@ -47,7 +45,7 @@ describe("StatsTiles", () => {
       {
         label: "Test",
         value: 1,
-        icon: AcademicCapIcon,
+        icon: "i-heroicons-academic-cap",
         color: "amber" as const,
       },
     ];
@@ -56,8 +54,10 @@ describe("StatsTiles", () => {
       props: { stats },
     });
 
-    const icon = wrapper.find("svg");
-    expect(icon.classes()).toContain("text-amber-600");
+    // UIcon renders as <span> with icon-class; we check the wrapper element
+    // carries the color class (component spreads class to root).
+    const wrapperHtml = wrapper.html();
+    expect(wrapperHtml).toContain("text-amber-600");
   });
 
   it("has proper ARIA attributes", () => {

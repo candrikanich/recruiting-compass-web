@@ -2,13 +2,6 @@ import { describe, it, expect, vi } from "vitest";
 import { mount } from "@vue/test-utils";
 import SignupForm from "~/components/Auth/SignupForm.vue";
 
-vi.mock("@heroicons/vue/24/outline", () => ({
-  UserIcon: { template: "<svg />" },
-  EnvelopeIcon: { template: "<svg />" },
-  LockClosedIcon: { template: "<svg />" },
-  CalendarIcon: { template: "<svg />" },
-}));
-
 const baseProps = {
   userType: "player" as const,
   firstName: "Jane",

@@ -29,13 +29,6 @@ vi.mock("chart.js", () => {
   };
 });
 
-vi.mock("@heroicons/vue/24/outline", () => ({
-  ChatBubbleLeftRightIcon: {
-    name: "ChatBubbleLeftRightIcon",
-    template: '<svg data-testid="empty-icon" />',
-  },
-}));
-
 const MockedChart = Chart as unknown as ReturnType<typeof vi.fn>;
 
 const daysAgo = (days: number): Date => {

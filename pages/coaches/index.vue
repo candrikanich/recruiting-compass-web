@@ -20,7 +20,7 @@
           to="/coaches/new"
           class="px-4 py-2 text-sm font-medium text-white bg-linear-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition flex items-center gap-2 shadow-xs"
         >
-          <PlusIcon class="w-4 h-4" />
+          <UIcon name="i-heroicons-plus" class="w-4 h-4"  />
           Add Coach
         </NuxtLink>
         <button
@@ -31,7 +31,7 @@
           aria-label="Export coaches to CSV"
           class="px-3 py-2 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50 transition flex items-center gap-2 text-slate-700 disabled:opacity-50 focus:ring-2 focus:ring-offset-2 focus:ring-slate-500"
         >
-          <ArrowDownTrayIcon class="w-4 h-4" aria-hidden="true" />
+          <UIcon name="i-heroicons-arrow-down-tray" class="w-4 h-4" aria-hidden="true"  />
           {{ exportLoading ? "Exporting..." : "CSV" }}
         </button>
         <button
@@ -42,7 +42,7 @@
           aria-label="Export coaches to PDF"
           class="px-3 py-2 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50 transition flex items-center gap-2 text-slate-700 disabled:opacity-50 focus:ring-2 focus:ring-offset-2 focus:ring-slate-500"
         >
-          <ArrowDownTrayIcon class="w-4 h-4" aria-hidden="true" />
+          <UIcon name="i-heroicons-arrow-down-tray" class="w-4 h-4" aria-hidden="true"  />
           {{ exportLoading ? "Exporting..." : "PDF" }}
         </button>
         <div
@@ -175,10 +175,10 @@
         class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
         role="status"
       >
-        <UserGroupIcon
+        <UIcon name="i-heroicons-user-group"
           class="w-12 h-12 text-slate-400 mx-auto mb-4"
           aria-hidden="true"
-        />
+         />
         <h2 class="text-slate-900 font-semibold mb-2">No coaches yet</h2>
         <p class="text-slate-600 mb-6">
           Visit a school's page to add coaches from their staff.
@@ -197,10 +197,10 @@
         class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
         role="status"
       >
-        <MagnifyingGlassIcon
+        <UIcon name="i-heroicons-magnifying-glass"
           class="w-12 h-12 text-slate-400 mx-auto mb-4"
           aria-hidden="true"
-        />
+         />
         <h2 class="text-slate-900 font-semibold mb-2">
           No coaches match your filters
         </h2>
@@ -296,7 +296,7 @@
                 aria-label="Close Quick Communication dialog"
                 class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
-                <XMarkIcon class="w-5 h-5" aria-hidden="true" />
+                <UIcon name="i-heroicons-x-mark" class="w-5 h-5" aria-hidden="true"  />
               </button>
             </div>
             <div class="p-6">
@@ -346,13 +346,6 @@ const DeleteConfirmationModal = defineAsyncComponent(
 import CoachFilters from "~/components/Coach/CoachFilters.vue";
 import ActiveCoachFilterChips from "~/components/Coach/ActiveCoachFilterChips.vue";
 import CoachListCard from "~/components/Coach/CoachListCard.vue";
-import {
-  MagnifyingGlassIcon,
-  XMarkIcon,
-  ArrowDownTrayIcon,
-  UserGroupIcon,
-  PlusIcon,
-} from "@heroicons/vue/24/outline";
 import { getSchoolById } from "~/utils/coachHelpers";
 import type { Coach } from "~/types/models";
 

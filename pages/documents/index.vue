@@ -11,7 +11,7 @@
           to="/documents/add"
           class="px-4 py-2 text-sm font-medium text-white bg-linear-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition flex items-center gap-2"
         >
-          <PlusIcon class="w-4 h-4" />
+          <UIcon name="i-heroicons-plus" class="w-4 h-4"  />
           + Add Document
         </NuxtLink>
       </template>
@@ -287,7 +287,6 @@
 
 <script setup lang="ts">
 import { ref, onMounted, reactive, computed } from "vue";
-import { PlusIcon } from "@heroicons/vue/24/outline";
 import { useDocumentsConsolidated } from "~/composables/useDocumentsConsolidated";
 import { useSchools } from "~/composables/useSchools";
 import { useUniversalFilter } from "~/composables/useUniversalFilter";

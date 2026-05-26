@@ -244,6 +244,14 @@ config.global.stubs = {
     name: "Badge",
     template: "<span><slot /></span>",
   },
+  // Nuxt UI icon — render the iconify name into class + data attribute so
+  // tests can assert against `i-heroicons-*` strings in the HTML output.
+  UIcon: {
+    name: "UIcon",
+    props: ["name"],
+    template:
+      '<span :class="name" :data-icon="name" aria-hidden="true"><slot /></span>',
+  },
 };
 
 // Initialize Pinia for tests

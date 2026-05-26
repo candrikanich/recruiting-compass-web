@@ -10,10 +10,6 @@ vi.mock("~/components/School/NotesHistory.vue", () => ({
   },
 }));
 
-vi.mock("@heroicons/vue/24/outline", () => ({
-  PencilIcon: { name: "PencilIcon", template: "<svg />" },
-}));
-
 const makeProps = (overrides: Record<string, unknown> = {}) => ({
   notes: "Some school notes",
   schoolId: "school-123",

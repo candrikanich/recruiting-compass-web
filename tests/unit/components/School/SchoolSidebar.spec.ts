@@ -14,19 +14,6 @@ vi.mock("~/utils/coachLabels", () => ({
   },
 }));
 
-vi.mock("@heroicons/vue/24/outline", () => ({
-  ChatBubbleLeftRightIcon: {
-    name: "ChatBubbleLeftRightIcon",
-    template: "<svg />",
-  },
-  UsersIcon: { name: "UsersIcon", template: "<svg />" },
-  UserCircleIcon: { name: "UserCircleIcon", template: "<svg />" },
-  EnvelopeIcon: { name: "EnvelopeIcon", template: "<svg />" },
-  ChatBubbleLeftIcon: { name: "ChatBubbleLeftIcon", template: "<svg />" },
-  PhoneIcon: { name: "PhoneIcon", template: "<svg />" },
-  TrashIcon: { name: "TrashIcon", template: "<svg />" },
-}));
-
 const stubs = {
   NuxtLink: {
     template: '<a :href="to"><slot /></a>',

@@ -57,7 +57,7 @@
           :model-value="email"
           :error="fieldErrors.email"
           :disabled="loading || validating"
-          :icon="EnvelopeIcon"
+          icon="i-heroicons-envelope"
           :required="true"
           @update:model-value="email = $event"
           @blur="validateEmail"
@@ -150,7 +150,6 @@
 definePageMeta({ layout: "public" });
 
 import { ref, computed } from "vue";
-import { EnvelopeIcon } from "@heroicons/vue/24/outline";
 import FormErrorSummary from "~/components/Validation/FormErrorSummary.vue";
 import LoginInputField from "~/components/Auth/LoginInputField.vue";
 import { usePasswordReset } from "~/composables/usePasswordReset";

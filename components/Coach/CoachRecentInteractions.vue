@@ -31,8 +31,8 @@
             class="w-8 h-8 rounded-full flex items-center justify-center"
             :class="getInteractionBgColor(interaction.type)"
           >
-            <component
-              :is="getInteractionIconComponent(interaction.type)"
+            <UIcon
+              :name="getInteractionIconComponent(interaction.type)"
               class="w-4 h-4"
               :class="getInteractionIconColor(interaction.type)"
               aria-hidden="true"

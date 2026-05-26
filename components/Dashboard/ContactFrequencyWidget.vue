@@ -6,7 +6,7 @@
     <div class="flex items-center justify-between mb-5">
       <div class="flex items-center gap-3">
         <div class="p-2 bg-slate-100 rounded-lg">
-          <PhoneIcon class="w-5 h-5 text-slate-700" />
+          <UIcon name="i-heroicons-phone" class="w-5 h-5 text-slate-700"  />
         </div>
         <h3 class="text-slate-900 font-semibold">Contact Frequency</h3>
       </div>
@@ -103,7 +103,6 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
-import { PhoneIcon } from "@heroicons/vue/24/outline";
 import type { Interaction, School } from "~/types/models";
 
 interface ContactRecord {

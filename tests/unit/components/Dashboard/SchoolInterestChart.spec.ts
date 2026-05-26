@@ -41,13 +41,6 @@ vi.mock("chart.js", () => {
   };
 });
 
-vi.mock("@heroicons/vue/24/outline", () => ({
-  BuildingLibraryIcon: {
-    name: "BuildingLibraryIcon",
-    template: '<svg data-testid="empty-icon" />',
-  },
-}));
-
 vi.stubGlobal(
   "getComputedStyle",
   vi.fn(() => ({

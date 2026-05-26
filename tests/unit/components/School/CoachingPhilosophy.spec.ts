@@ -5,12 +5,6 @@ import CoachingPhilosophy from "~/components/School/CoachingPhilosophy.vue";
 import { createMockSchool } from "~/tests/fixtures/schools.fixture";
 import type { School } from "~/types/models";
 
-vi.mock("@heroicons/vue/24/outline", () => ({
-  PencilIcon: {
-    template: '<span class="pencil-icon">P</span>',
-  },
-}));
-
 vi.mock("~/components/School/NotesHistory.vue", () => ({
   default: {
     template: '<div data-testid="notes-history-stub"></div>',

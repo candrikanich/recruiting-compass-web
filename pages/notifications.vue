@@ -90,10 +90,10 @@
         >
           <div class="flex-1">
             <div class="flex items-center gap-2 mb-1">
-              <BellIcon
+              <UIcon name="i-heroicons-bell"
                 v-if="notification.type === 'follow_up_reminder'"
                 class="w-5 h-5 text-blue-600"
-              />
+               />
               <span
                 v-else
                 :class="['text-lg', getTypeIcon(notification.type)]"
@@ -142,7 +142,7 @@
             @click.stop="deleteNotification(notification.id)"
             class="ml-4 text-gray-400 hover:text-red-600 transition"
           >
-            <XMarkIcon class="w-5 h-5" />
+            <UIcon name="i-heroicons-x-mark" class="w-5 h-5"  />
           </button>
         </div>
       </div>
@@ -153,7 +153,6 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from "vue";
 import { useNotifications } from "~/composables/useNotifications";
-import { BellIcon, XMarkIcon } from "@heroicons/vue/24/outline";
 import type { Notification } from "~/types/models";
 
 definePageMeta({

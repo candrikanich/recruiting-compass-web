@@ -13,7 +13,7 @@
           data-testid="add-event-button"
           class="px-4 py-2 text-sm font-medium text-white bg-linear-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition flex items-center gap-2 shadow-xs"
         >
-          <PlusIcon class="w-4 h-4" />
+          <UIcon name="i-heroicons-plus" class="w-4 h-4"  />
           Add Event
         </NuxtLink>
       </template>
@@ -34,9 +34,9 @@
               >Search</label
             >
             <div class="relative">
-              <MagnifyingGlassIcon
+              <UIcon name="i-heroicons-magnifying-glass"
                 class="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"
-              />
+               />
               <input
                 v-model="searchQuery"
                 type="text"
@@ -125,7 +125,7 @@
         v-else-if="events.length === 0"
         class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
       >
-        <CalendarIcon class="w-12 h-12 text-slate-400 mx-auto mb-4" />
+        <UIcon name="i-heroicons-calendar" class="w-12 h-12 text-slate-400 mx-auto mb-4"  />
         <p class="text-slate-600 mb-2">No events yet</p>
         <p class="text-sm text-slate-500">
           Create your first event to start tracking camps and showcases
@@ -144,7 +144,7 @@
                 @click="previousMonth"
                 class="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition"
               >
-                <ChevronLeftIcon class="w-5 h-5" />
+                <UIcon name="i-heroicons-chevron-left" class="w-5 h-5"  />
               </button>
               <span
                 class="px-4 py-1 font-semibold text-slate-900 min-w-[160px] text-center"
@@ -155,7 +155,7 @@
                 @click="nextMonth"
                 class="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition"
               >
-                <ChevronRightIcon class="w-5 h-5" />
+                <UIcon name="i-heroicons-chevron-right" class="w-5 h-5"  />
               </button>
             </div>
           </div>
@@ -216,8 +216,8 @@
                       class="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full"
                       :class="getEventTypeBadgeColor(event.type)"
                     >
-                      <component
-                        :is="getEventTypeIcon(event.type)"
+                      <UIcon
+                        :name="getEventTypeIcon(event.type)"
                         class="w-3.5 h-3.5"
                       />
                       {{ getEventTypeLabel(event.type) }}
@@ -240,14 +240,14 @@
                   @click="deleteEvent(event.id)"
                   class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
                 >
-                  <TrashIcon class="w-5 h-5" />
+                  <UIcon name="i-heroicons-trash" class="w-5 h-5"  />
                 </button>
               </div>
 
               <!-- Event Details Grid -->
               <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div v-if="event.start_time" class="flex items-center gap-2">
-                  <ClockIcon class="w-4 h-4 text-slate-400" />
+                  <UIcon name="i-heroicons-clock" class="w-4 h-4 text-slate-400"  />
                   <div>
                     <p class="text-xs text-slate-500">Start Time</p>
                     <p class="font-medium text-slate-900">
@@ -256,7 +256,7 @@
                   </div>
                 </div>
                 <div v-if="event.cost" class="flex items-center gap-2">
-                  <CurrencyDollarIcon class="w-4 h-4 text-slate-400" />
+                  <UIcon name="i-heroicons-currency-dollar" class="w-4 h-4 text-slate-400"  />
                   <div>
                     <p class="text-xs text-slate-500">Cost</p>
                     <p class="font-medium text-slate-900">
@@ -268,7 +268,7 @@
                   v-if="event.address || event.city"
                   class="flex items-center gap-2"
                 >
-                  <MapPinIcon class="w-4 h-4 text-slate-400" />
+                  <UIcon name="i-heroicons-map-pin" class="w-4 h-4 text-slate-400"  />
                   <div>
                     <p class="text-xs text-slate-500">Location</p>
                     <p class="font-medium text-slate-900">
@@ -297,7 +297,7 @@
           v-if="filteredEvents.length === 0 && events.length > 0"
           class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
         >
-          <FunnelIcon class="w-12 h-12 text-slate-400 mx-auto mb-4" />
+          <UIcon name="i-heroicons-funnel" class="w-12 h-12 text-slate-400 mx-auto mb-4"  />
           <p class="text-slate-600 mb-2">No events match your filters</p>
           <button
             @click="clearFilters"
@@ -316,22 +316,6 @@ import { ref, onMounted, computed } from "vue";
 import { useEvents } from "~/composables/useEvents";
 import { useEventStats } from "~/composables/useEventStats";
 import StatsTiles from "~/components/shared/StatsTiles.vue";
-import {
-  PlusIcon,
-  MagnifyingGlassIcon,
-  CalendarIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  TrashIcon,
-  ClockIcon,
-  CurrencyDollarIcon,
-  MapPinIcon,
-  FunnelIcon,
-  AcademicCapIcon,
-  BuildingOfficeIcon,
-  TrophyIcon,
-  TicketIcon,
-} from "@heroicons/vue/24/outline";
 import type { Event } from "~/types/models";
 
 definePageMeta({
@@ -539,15 +523,15 @@ const getEventTypeBadgeColor = (type: string): string => {
   return colors[type] || "bg-slate-100 text-slate-700";
 };
 
-const getEventTypeIcon = (type: string) => {
-  const icons: Record<string, any> = {
-    showcase: TrophyIcon,
-    camp: AcademicCapIcon,
-    official_visit: BuildingOfficeIcon,
-    unofficial_visit: BuildingOfficeIcon,
-    game: TicketIcon,
+const getEventTypeIcon = (type: string): string => {
+  const icons: Record<string, string> = {
+    showcase: "i-heroicons-trophy",
+    camp: "i-heroicons-academic-cap",
+    official_visit: "i-heroicons-building-office",
+    unofficial_visit: "i-heroicons-building-office",
+    game: "i-heroicons-ticket",
   };
-  return icons[type] || CalendarIcon;
+  return icons[type] || "i-heroicons-calendar";
 };
 
 const getStatusLabel = (event: Event): string => {

@@ -2,7 +2,7 @@
   <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
     <div class="flex items-center justify-between mb-4">
       <div class="flex items-center gap-2">
-        <DocumentTextIcon class="w-5 h-5 text-slate-400" />
+        <UIcon name="i-heroicons-document-text" class="w-5 h-5 text-slate-400"  />
         <h2 class="text-lg font-semibold text-slate-900">Shared Documents</h2>
       </div>
       <button
@@ -54,7 +54,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import type { Document } from "~/types/models";
-import { DocumentTextIcon } from "@heroicons/vue/24/outline";
 import SchoolDocumentUploadModal from "~/components/School/DocumentUploadModal.vue";
 
 defineProps<{

@@ -199,7 +199,7 @@
                   v-if="metric.verified"
                   class="text-xs text-green-600 mt-2 flex items-center gap-1"
                 >
-                  <CheckIcon class="w-3 h-3" />
+                  <UIcon name="i-heroicons-check-solid" class="w-3 h-3"  />
                   <span>Verified by third party</span>
                 </p>
               </div>
@@ -466,7 +466,7 @@
                 @click="showEditForm = false"
                 class="text-gray-600 hover:text-gray-900"
               >
-                <XMarkIcon class="w-6 h-6" />
+                <UIcon name="i-heroicons-x-mark-solid" class="w-6 h-6"  />
               </button>
             </div>
 
@@ -741,7 +741,6 @@ import { useEvents } from "~/composables/useEvents";
 import { usePerformance } from "~/composables/usePerformance";
 import { useCoaches } from "~/composables/useCoaches";
 import { useInteractions } from "~/composables/useInteractions";
-import { CheckIcon, XMarkIcon } from "@heroicons/vue/24/solid";
 import ExportButton from "~/components/Performance/ExportButton.vue";
 const ExportModal = defineAsyncComponent(
   () => import("~/components/Performance/ExportModal.vue"),

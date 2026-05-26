@@ -2,13 +2,6 @@
 import { computed } from "vue";
 import type { Ref } from "vue";
 import type { Event } from "~/types/models";
-import {
-  CalendarIcon,
-  ArrowRightIcon,
-  CheckCircleIcon,
-  CheckBadgeIcon,
-} from "@heroicons/vue/24/outline";
-
 export function useEventStats(events: Ref<Event[]>) {
   const stats = computed(() => {
     // Get today's date as YYYY-MM-DD string for timezone-agnostic comparison
@@ -18,28 +11,28 @@ export function useEventStats(events: Ref<Event[]>) {
       {
         label: "Total Events",
         value: events.value.length,
-        icon: CalendarIcon,
+        icon: "i-heroicons-calendar",
         color: "blue" as const,
         testId: "stat-total-events",
       },
       {
         label: "Upcoming",
         value: events.value.filter((e) => e.start_date >= todayStr).length,
-        icon: ArrowRightIcon,
+        icon: "i-heroicons-arrow-right",
         color: "purple" as const,
         testId: "stat-upcoming",
       },
       {
         label: "Registered",
         value: events.value.filter((e) => e.registered && !e.attended).length,
-        icon: CheckCircleIcon,
+        icon: "i-heroicons-check-circle",
         color: "green" as const,
         testId: "stat-registered",
       },
       {
         label: "Attended",
         value: events.value.filter((e) => e.attended).length,
-        icon: CheckBadgeIcon,
+        icon: "i-heroicons-check-badge",
         color: "amber" as const,
         testId: "stat-attended",
       },

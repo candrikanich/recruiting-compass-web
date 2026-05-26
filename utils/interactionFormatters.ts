@@ -1,29 +1,20 @@
-import type { Component } from "vue";
-import {
-  EnvelopeIcon,
-  PhoneIcon,
-  ChatBubbleLeftIcon,
-  VideoCameraIcon,
-  UserGroupIcon,
-} from "@heroicons/vue/24/outline";
-
-export const getTypeIcon = (type: string): Component => {
-  const icons: Record<string, Component> = {
-    email: EnvelopeIcon,
-    text: ChatBubbleLeftIcon,
-    phone_call: PhoneIcon,
-    in_person_visit: UserGroupIcon,
-    virtual_meeting: VideoCameraIcon,
-    camp: UserGroupIcon,
-    showcase: UserGroupIcon,
-    game: UserGroupIcon,
-    unofficial_visit: UserGroupIcon,
-    official_visit: UserGroupIcon,
-    other: ChatBubbleLeftIcon,
-    tweet: ChatBubbleLeftIcon,
-    dm: ChatBubbleLeftIcon,
+export const getTypeIcon = (type: string): string => {
+  const icons: Record<string, string> = {
+    email: "i-heroicons-envelope",
+    text: "i-heroicons-chat-bubble-left",
+    phone_call: "i-heroicons-phone",
+    in_person_visit: "i-heroicons-user-group",
+    virtual_meeting: "i-heroicons-video-camera",
+    camp: "i-heroicons-user-group",
+    showcase: "i-heroicons-user-group",
+    game: "i-heroicons-user-group",
+    unofficial_visit: "i-heroicons-user-group",
+    official_visit: "i-heroicons-user-group",
+    other: "i-heroicons-chat-bubble-left",
+    tweet: "i-heroicons-chat-bubble-left",
+    dm: "i-heroicons-chat-bubble-left",
   };
-  return icons[type] || ChatBubbleLeftIcon;
+  return icons[type] || "i-heroicons-chat-bubble-left";
 };
 
 export const getTypeIconBg = (type: string): string => {

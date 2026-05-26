@@ -26,7 +26,7 @@
             class="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition focus:ring-2 focus:ring-brand-blue-500 focus:ring-offset-2"
             data-testid="nav-search-button"
           >
-            <MagnifyingGlassIcon class="w-5 h-5" aria-hidden="true" />
+            <UIcon name="i-heroicons-magnifying-glass" class="w-5 h-5" aria-hidden="true"  />
           </NuxtLink>
           <NotificationCenter />
           <HeaderProfile class="hidden md:block" />
@@ -40,12 +40,12 @@
             aria-controls="mobile-nav-menu"
             class="md:hidden p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition focus:ring-2 focus:ring-brand-blue-500 focus:ring-offset-2"
           >
-            <Bars3Icon
+            <UIcon name="i-heroicons-bars-3"
               v-if="!isMobileMenuOpen"
               class="w-6 h-6"
               aria-hidden="true"
-            />
-            <XMarkIcon v-else class="w-6 h-6" aria-hidden="true" />
+             />
+            <UIcon name="i-heroicons-x-mark" v-else class="w-6 h-6" aria-hidden="true"  />
           </button>
         </div>
       </div>
@@ -80,7 +80,7 @@
               "
               @click="closeMobileMenu"
             >
-              <component :is="item.icon" class="w-5 h-5" aria-hidden="true" />
+              <UIcon :name="item.icon" class="w-5 h-5" aria-hidden="true" />
               <span>{{ item.label }}</span>
             </NuxtLink>
           </nav>
@@ -117,7 +117,7 @@
               class="flex items-center gap-3 px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 rounded-lg transition focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               @click="closeMobileMenu"
             >
-              <component :is="item.icon" class="w-5 h-5" aria-hidden="true" />
+              <UIcon :name="item.icon" class="w-5 h-5" aria-hidden="true" />
               <span>{{ item.label }}</span>
             </NuxtLink>
           </nav>
@@ -129,7 +129,7 @@
               @click="handleLogout"
               class="flex items-center gap-3 w-full px-3 py-3 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
             >
-              <ArrowRightOnRectangleIcon class="w-5 h-5" aria-hidden="true" />
+              <UIcon name="i-heroicons-arrow-right-on-rectangle" class="w-5 h-5" aria-hidden="true"  />
               <span>Log Out</span>
             </button>
           </div>
@@ -151,26 +151,6 @@ import AthleteSwitcher from "~/components/AthleteSwitcher.vue";
 import HeaderNav from "~/components/Header/HeaderNav.vue";
 import HeaderProfile from "~/components/Header/HeaderProfile.vue";
 import NotificationCenter from "~/components/Header/NotificationCenter.vue";
-import {
-  Bars3Icon,
-  XMarkIcon,
-  BuildingLibraryIcon,
-  UserGroupIcon,
-  ChatBubbleLeftRightIcon,
-  GiftIcon,
-  ChartBarIcon,
-  HomeIcon,
-  UserIcon,
-  AdjustmentsHorizontalIcon,
-  BellIcon,
-  DocumentTextIcon,
-  ArrowRightOnRectangleIcon,
-  CalendarDaysIcon,
-  ClockIcon,
-  MagnifyingGlassIcon,
-  ChartPieIcon,
-} from "@heroicons/vue/24/outline";
-
 const route = useRoute();
 const authComposable = useAuth();
 
@@ -179,38 +159,38 @@ const user = computed(() => userStore.user || null);
 const isMobileMenuOpen = ref(false);
 
 const navItems = [
-  { to: "/dashboard", label: "Dashboard", icon: HomeIcon },
-  { to: "/schools", label: "Schools", icon: BuildingLibraryIcon },
-  { to: "/coaches", label: "Coaches", icon: UserGroupIcon },
-  { to: "/interactions", label: "Interactions", icon: ChatBubbleLeftRightIcon },
-  { to: "/events", label: "Events", icon: CalendarDaysIcon },
-  { to: "/timeline", label: "Timeline", icon: ClockIcon },
-  { to: "/performance", label: "Performance", icon: ChartBarIcon },
-  { to: "/offers", label: "Offers", icon: GiftIcon },
-  { to: "/documents", label: "Documents", icon: DocumentTextIcon },
-  { to: "/settings", label: "Settings", icon: AdjustmentsHorizontalIcon },
-  { to: "/search", label: "Search", icon: MagnifyingGlassIcon },
-  { to: "/analytics", label: "Analytics", icon: ChartPieIcon },
+  { to: "/dashboard", label: "Dashboard", icon: "i-heroicons-home" },
+  { to: "/schools", label: "Schools", icon: "i-heroicons-building-library" },
+  { to: "/coaches", label: "Coaches", icon: "i-heroicons-user-group" },
+  { to: "/interactions", label: "Interactions", icon: "i-heroicons-chat-bubble-left-right" },
+  { to: "/events", label: "Events", icon: "i-heroicons-calendar-days" },
+  { to: "/timeline", label: "Timeline", icon: "i-heroicons-clock" },
+  { to: "/performance", label: "Performance", icon: "i-heroicons-chart-bar" },
+  { to: "/offers", label: "Offers", icon: "i-heroicons-gift" },
+  { to: "/documents", label: "Documents", icon: "i-heroicons-document-text" },
+  { to: "/settings", label: "Settings", icon: "i-heroicons-adjustments-horizontal" },
+  { to: "/search", label: "Search", icon: "i-heroicons-magnifying-glass" },
+  { to: "/analytics", label: "Analytics", icon: "i-heroicons-chart-pie" },
 ];
 
 const settingsItems = [
-  { to: "/settings/location", label: "Home Location", icon: HomeIcon },
-  { to: "/settings/player-details", label: "Player Details", icon: UserIcon },
+  { to: "/settings/location", label: "Home Location", icon: "i-heroicons-home" },
+  { to: "/settings/player-details", label: "Player Details", icon: "i-heroicons-user" },
   {
     to: "/settings/school-preferences",
     label: "School Preferences",
-    icon: AdjustmentsHorizontalIcon,
+    icon: "i-heroicons-adjustments-horizontal",
   },
-  { to: "/settings/notifications", label: "Notifications", icon: BellIcon },
+  { to: "/settings/notifications", label: "Notifications", icon: "i-heroicons-bell" },
   {
     to: "/settings/communication-templates",
     label: "Templates",
-    icon: DocumentTextIcon,
+    icon: "i-heroicons-document-text",
   },
   {
     to: "/settings/family-management",
     label: "Family Management",
-    icon: AdjustmentsHorizontalIcon,
+    icon: "i-heroicons-adjustments-horizontal",
   },
 ];
 

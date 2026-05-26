@@ -17,12 +17,6 @@ vi.mock("~/stores/user", () => ({
   }),
 }));
 
-vi.mock("@heroicons/vue/24/outline", () => ({
-  ArrowRightIcon: {
-    template: '<span class="arrow-icon">→</span>',
-  },
-}));
-
 describe("SchoolStatusHistory", () => {
   const defaultHistory = [
     {

@@ -21,20 +21,6 @@ vi.mock("~/utils/dateFormatters", () => ({
 }));
 
 // Mock Heroicons
-vi.mock("@heroicons/vue/24/outline", () => ({
-  EnvelopeIcon: { name: "EnvelopeIcon", template: "<svg />" },
-  PhoneIcon: { name: "PhoneIcon", template: "<svg />" },
-  ChatBubbleLeftIcon: { name: "ChatBubbleLeftIcon", template: "<svg />" },
-  ChatBubbleLeftRightIcon: {
-    name: "ChatBubbleLeftRightIcon",
-    template: "<svg />",
-  },
-  CalendarIcon: { name: "CalendarIcon", template: "<svg />" },
-  ChartBarIcon: { name: "ChartBarIcon", template: "<svg />" },
-  PencilIcon: { name: "PencilIcon", template: "<svg />" },
-  RssIcon: { name: "RssIcon", template: "<svg />" },
-}));
-
 describe("CoachHeader", () => {
   const mockCoach: Coach = {
     id: "coach-123",

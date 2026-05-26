@@ -32,13 +32,6 @@ vi.mock("~/composables/useFormErrorFocus", () => ({
 }));
 vi.mock("~/composables/useLoadingStates");
 
-vi.mock("@heroicons/vue/24/outline", () => ({
-  ArrowLeftIcon: { template: "<svg></svg>" },
-  UserIcon: { template: "<svg></svg>" },
-  EnvelopeIcon: { template: "<svg></svg>" },
-  LockClosedIcon: { template: "<svg></svg>" },
-}));
-
 vi.mock("~/components/Validation/FormErrorSummary.vue", () => ({
   default: {
     name: "FormErrorSummary",

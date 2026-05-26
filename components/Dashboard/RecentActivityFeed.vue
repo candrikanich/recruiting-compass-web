@@ -6,7 +6,7 @@
     <div class="flex items-center justify-between mb-5">
       <div class="flex items-center gap-3">
         <div class="p-2 bg-slate-100 rounded-lg">
-          <SparklesIcon class="w-5 h-5 text-slate-700" />
+          <UIcon name="i-heroicons-sparkles" class="w-5 h-5 text-slate-700"  />
         </div>
         <h3 class="text-slate-900 font-semibold">Recent Activity</h3>
       </div>
@@ -67,7 +67,6 @@
 
 <script setup lang="ts">
 import { onMounted, onUnmounted } from "vue";
-import { SparklesIcon } from "@heroicons/vue/24/outline";
 import { useActivityFeed } from "~/composables/useActivityFeed";
 import ActivityEventItem from "~/components/Dashboard/ActivityEventItem.vue";
 

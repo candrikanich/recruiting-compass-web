@@ -8,9 +8,9 @@
         class="shrink-0 w-11 h-11 rounded-lg flex items-center justify-center"
         :class="getIconBgClass()"
       >
-        <component
-          v-if="iconComponent"
-          :is="iconComponent"
+        <UIcon
+          v-if="iconName"
+          :name="iconName"
           class="w-5 h-5"
           :class="getIconColorClass()"
         />
@@ -30,7 +30,7 @@
         <p class="text-sm text-slate-500 mt-1">{{ description }}</p>
       </div>
       <div class="shrink-0 text-slate-400">
-        <ChevronRightIcon class="w-5 h-5" />
+        <UIcon name="i-heroicons-chevron-right" class="w-5 h-5"  />
       </div>
     </div>
   </NuxtLink>
@@ -38,20 +38,6 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
-import {
-  BellIcon,
-  PencilSquareIcon,
-  DevicePhoneMobileIcon,
-  LinkIcon,
-  KeyIcon,
-  UserCircleIcon,
-  CheckCircleIcon,
-  HomeIcon,
-  ChevronRightIcon,
-  Cog6ToothIcon,
-  AdjustmentsHorizontalIcon,
-} from "@heroicons/vue/24/outline";
-
 const props = defineProps<{
   to: string;
   icon: string;
@@ -95,19 +81,19 @@ const getStatusClass = (): string => {
   return classes[props.status];
 };
 
-const iconComponent = computed(() => {
-  const iconMap: Record<string, any> = {
-    "🔔": BellIcon,
-    "📝": PencilSquareIcon,
-    "📱": DevicePhoneMobileIcon,
-    "🔗": LinkIcon,
-    "🔑": KeyIcon,
-    "👤": UserCircleIcon,
-    "✓": CheckCircleIcon,
-    "🏠": HomeIcon,
-    "⚙️": Cog6ToothIcon,
-    "🎯": AdjustmentsHorizontalIcon,
-    "🎛️": AdjustmentsHorizontalIcon,
+const iconName = computed(() => {
+  const iconMap: Record<string, string> = {
+    "🔔": "i-heroicons-bell",
+    "📝": "i-heroicons-pencil-square",
+    "📱": "i-heroicons-device-phone-mobile",
+    "🔗": "i-heroicons-link",
+    "🔑": "i-heroicons-key",
+    "👤": "i-heroicons-user-circle",
+    "✓": "i-heroicons-check-circle",
+    "🏠": "i-heroicons-home",
+    "⚙️": "i-heroicons-cog-6-tooth",
+    "🎯": "i-heroicons-adjustments-horizontal",
+    "🎛️": "i-heroicons-adjustments-horizontal",
   };
   return iconMap[props.icon] || null;
 });

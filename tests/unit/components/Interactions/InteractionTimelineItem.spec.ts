@@ -537,10 +537,9 @@ describe("InteractionTimelineItem Component", () => {
         },
       });
 
-      // Calendar icon SVG should be present
       const html = wrapper.html();
       expect(html).toContain("Feb 9, 2024");
-      expect(html).toContain("svg"); // Icon is an SVG element
+      expect(html).toContain("i-heroicons-calendar");
     });
   });
 });

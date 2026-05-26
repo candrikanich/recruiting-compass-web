@@ -32,7 +32,7 @@
             :class="iconBg"
             aria-hidden="true"
           >
-            <component :is="icon" class="w-8 h-8" :class="iconColor" />
+            <UIcon :name="icon" class="w-8 h-8" :class="iconColor" />
           </div>
 
           <!-- Headline -->
@@ -88,16 +88,6 @@
 </template>
 
 <script setup lang="ts">
-import type { Component } from "vue";
-import {
-  ExclamationTriangleIcon,
-  LockClosedIcon,
-  ShieldExclamationIcon,
-  MagnifyingGlassIcon,
-  ClockIcon,
-  ExclamationCircleIcon,
-} from "@heroicons/vue/24/outline";
-
 interface NuxtError {
   url?: string;
   statusCode?: number;
@@ -115,7 +105,7 @@ interface Action {
 interface ErrorConfig {
   headline: string;
   body: string;
-  icon: Component;
+  icon: string;
   iconBg: string;
   iconColor: string;
   primaryAction: Action;
@@ -130,7 +120,7 @@ const config = computed<ErrorConfig>(() => {
       return {
         headline: "That page ran a different route.",
         body: "We couldn't find what you're looking for. It may have moved, or the link might be off.",
-        icon: MagnifyingGlassIcon,
+        icon: "i-heroicons-magnifying-glass",
         iconBg: "bg-blue-50",
         iconColor: "text-blue-500",
         primaryAction: { label: "Go to Dashboard", href: "/dashboard" },
@@ -141,7 +131,7 @@ const config = computed<ErrorConfig>(() => {
       return {
         headline: "You'll need to sign in first.",
         body: "This page requires an account. Log in to pick up where you left off.",
-        icon: LockClosedIcon,
+        icon: "i-heroicons-lock-closed",
         iconBg: "bg-amber-50",
         iconColor: "text-amber-500",
         primaryAction: { label: "Sign In", href: "/login" },
@@ -152,7 +142,7 @@ const config = computed<ErrorConfig>(() => {
       return {
         headline: "This isn't your playbook.",
         body: "You don't have access to this page. If you think that's a mistake, reach out to the account owner.",
-        icon: ShieldExclamationIcon,
+        icon: "i-heroicons-shield-exclamation",
         iconBg: "bg-red-50",
         iconColor: "text-red-500",
         primaryAction: { label: "Go to Dashboard", href: "/dashboard" },
@@ -164,7 +154,7 @@ const config = computed<ErrorConfig>(() => {
       return {
         headline: "We're taking a timeout.",
         body: "Something on our end isn't cooperating right now. Your recruiting data is safe — we're just temporarily offline. Try again in a few minutes.",
-        icon: ClockIcon,
+        icon: "i-heroicons-clock",
         iconBg: "bg-slate-50",
         iconColor: "text-slate-500",
         primaryAction: { label: "Try Again", reload: true },
@@ -175,7 +165,7 @@ const config = computed<ErrorConfig>(() => {
       return {
         headline: "We fumbled. It's on us.",
         body: "Something went wrong on our end. Your data is safe, but we hit an unexpected snag. Our team has been notified.",
-        icon: ExclamationTriangleIcon,
+        icon: "i-heroicons-exclamation-triangle",
         iconBg: "bg-red-50",
         iconColor: "text-red-500",
         primaryAction: { label: "Try Again", reload: true },
@@ -186,7 +176,7 @@ const config = computed<ErrorConfig>(() => {
       return {
         headline: "Something went sideways.",
         body: "We hit an unexpected snag. Your data is safe — try refreshing or head back home.",
-        icon: ExclamationCircleIcon,
+        icon: "i-heroicons-exclamation-circle",
         iconBg: "bg-slate-50",
         iconColor: "text-slate-500",
         primaryAction: { label: "Try Again", reload: true },

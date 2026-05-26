@@ -6,7 +6,7 @@
     <div class="flex items-center justify-between mb-5">
       <div class="flex items-center gap-3">
         <div class="p-2 bg-slate-100 rounded-lg">
-          <CalendarDaysIcon class="w-5 h-5 text-slate-700" />
+          <UIcon name="i-heroicons-calendar-days" class="w-5 h-5 text-slate-700"  />
         </div>
         <h3 class="text-slate-900 font-semibold">Upcoming Events</h3>
       </div>
@@ -50,8 +50,6 @@
 </template>
 
 <script setup lang="ts">
-import { CalendarDaysIcon } from "@heroicons/vue/24/outline";
-
 interface Event {
   id: string;
   name: string;

@@ -148,7 +148,7 @@
                 v-if="success"
                 class="p-3 rounded-lg text-sm flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700"
               >
-                <CheckIcon class="w-4 h-4" />
+                <UIcon name="i-heroicons-check-solid" class="w-4 h-4"  />
                 <span>Thank you for your feedback!</span>
               </div>
 
@@ -179,7 +179,6 @@
 
 <script setup lang="ts">
 import { ref, reactive } from "vue";
-import { CheckIcon } from "@heroicons/vue/24/solid";
 import { useAuthFetch } from "~/composables/useAuthFetch";
 
 const { $fetchAuth } = useAuthFetch();

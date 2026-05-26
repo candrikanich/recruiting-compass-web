@@ -43,10 +43,6 @@ vi.mock("~/composables/useLoadingStates", () => ({
 }));
 
 // Mock Heroicons
-vi.mock("@heroicons/vue/24/outline", () => ({
-  ArrowLeftIcon: { template: "<svg></svg>" },
-}));
-
 // Mock components
 vi.mock("~/components/Auth/MultiSportFieldBackground.vue", () => ({
   default: {

@@ -41,7 +41,7 @@
             v-else-if="collegeScorecardFetched"
             class="mt-2 text-xs text-green-700 flex items-center gap-1"
           >
-            <CheckIcon class="w-3 h-3" />
+            <UIcon name="i-heroicons-check-solid" class="w-3 h-3"  />
             <span>College data and map coordinates loaded</span>
           </div>
         </div>
@@ -90,7 +90,6 @@
 definePageMeta({ middleware: "auth" });
 
 import { ref, reactive } from "vue";
-import { CheckIcon } from "@heroicons/vue/24/solid";
 import { useSchools } from "~/composables/useSchools";
 import { useNcaaLookup } from "~/composables/useNcaaLookup";
 import {

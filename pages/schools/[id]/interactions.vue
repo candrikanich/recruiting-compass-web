@@ -105,9 +105,9 @@
         v-if="!loading && interactions.length === 0"
         class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
       >
-        <ChatBubbleLeftRightIcon
+        <UIcon name="i-heroicons-chat-bubble-left-right"
           class="w-12 h-12 text-slate-300 mx-auto mb-4"
-        />
+         />
         <p class="text-slate-900 font-medium mb-2">
           No interactions logged yet
         </p>
@@ -128,9 +128,9 @@
         "
         class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
       >
-        <ChatBubbleLeftRightIcon
+        <UIcon name="i-heroicons-chat-bubble-left-right"
           class="w-12 h-12 text-slate-300 mx-auto mb-4"
-        />
+         />
         <p class="text-slate-900 font-medium mb-2">
           No interactions match your filters
         </p>
@@ -181,7 +181,6 @@ import { useInteractionReminders } from "~/composables/useInteractionReminders";
 import { useCoaches } from "~/composables/useCoaches";
 import { useSchools } from "~/composables/useSchools";
 import type { Interaction } from "~/types/models";
-import { ChatBubbleLeftRightIcon } from "@heroicons/vue/24/outline";
 import { useLiveRegion } from "~/composables/useLiveRegion";
 
 const route = useRoute();

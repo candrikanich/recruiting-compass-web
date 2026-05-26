@@ -2,23 +2,11 @@
  * Authentication and authorization utilities for server routes
  */
 
-import {
-  createClient,
-  type RealtimeClientOptions,
-  type SupabaseClient,
-} from "@supabase/supabase-js";
-import ws from "ws";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { createError, getCookie, getHeader, type H3Event } from "h3";
 import type { Database } from "~/types/database";
 import { createLogger } from "./logger";
 import { useSupabaseAdmin } from "./supabase";
-
-// supabase-js constructs a RealtimeClient inside createClient. Node <22 has
-// no native WebSocket, so the constructor throws — we never use realtime
-// here, but the client must still be buildable.
-const realtimeOptions: RealtimeClientOptions = {
-  transport: ws as unknown as RealtimeClientOptions["transport"],
-};
 
 const logger = createLogger("auth");
 
@@ -73,9 +61,7 @@ export async function requireAuth(event: H3Event): Promise<AuthUser> {
       throw new Error("Missing Supabase credentials");
     }
 
-    const supabase = createClient(supabaseUrl, supabaseKey, {
-      realtime: realtimeOptions,
-    });
+    const supabase = createClient(supabaseUrl, supabaseKey);
     const {
       data: { user },
       error,

@@ -9,7 +9,7 @@
           to="/settings"
           class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition mb-3 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         >
-          <ArrowLeftIcon class="w-4 h-4" />
+          <UIcon name="i-heroicons-arrow-left" class="w-4 h-4"  />
           Back to Settings
         </NuxtLink>
         <h1 class="text-2xl font-semibold text-slate-900">
@@ -70,14 +70,7 @@
             side-by-side.
           </p>
 
-          <VueDraggable
-            v-model="layout.leftColumn"
-            :group="leftGroup"
-            handle=".drag-handle"
-            class="min-h-24 space-y-2"
-            ghost-class="opacity-40"
-            @end="scheduleSave"
-          >
+          <div ref="leftColumnEl" class="min-h-24 space-y-2">
             <DashboardWidgetCard
               v-for="element in layout.leftColumn"
               :key="element.id"
@@ -88,7 +81,7 @@
               @move-up="moveWidget(layout.leftColumn, element.id, 'up')"
               @move-down="moveWidget(layout.leftColumn, element.id, 'down')"
             />
-          </VueDraggable>
+          </div>
 
           <p
             v-if="layout.leftColumn.length === 0"
@@ -107,14 +100,7 @@
           </h2>
           <p class="text-xs text-slate-400 mb-4">Narrow (2/6) widgets only.</p>
 
-          <VueDraggable
-            v-model="layout.rightColumn"
-            :group="rightGroup"
-            handle=".drag-handle"
-            class="min-h-24 space-y-2"
-            ghost-class="opacity-40"
-            @end="scheduleSave"
-          >
+          <div ref="rightColumnEl" class="min-h-24 space-y-2">
             <DashboardWidgetCard
               v-for="element in layout.rightColumn"
               :key="element.id"
@@ -125,7 +111,7 @@
               @move-up="moveWidget(layout.rightColumn, element.id, 'up')"
               @move-down="moveWidget(layout.rightColumn, element.id, 'down')"
             />
-          </VueDraggable>
+          </div>
 
           <p
             v-if="layout.rightColumn.length === 0"
@@ -190,8 +176,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from "vue";
-import { ArrowLeftIcon } from "@heroicons/vue/24/outline";
-import { VueDraggable } from "vue-draggable-plus";
+import { useSortable } from "@vueuse/integrations/useSortable";
 import { usePreferenceManager } from "~/composables/usePreferenceManager";
 import { getDefaultDashboardLayout } from "~/utils/preferenceValidation";
 import { WIDGET_SIZES } from "~/types/models";
@@ -217,15 +202,6 @@ const STAT_CARDS = [
   { key: "events" as const, label: "📅 Events" },
 ];
 
-// SortableJS group config — right column rejects 4/6 widgets
-const leftGroup = { name: "dashboard", pull: true, put: true };
-const rightGroup = {
-  name: "dashboard",
-  pull: true,
-  put: (_to: unknown, _from: unknown, dragEl: HTMLElement) =>
-    dragEl.dataset.size === "2/6",
-};
-
 const { getDashboardLayout, setDashboardLayout, dashboardPrefs } =
   usePreferenceManager();
 
@@ -236,12 +212,36 @@ const layout = reactive<DashboardLayout>(getDefaultDashboardLayout());
 const saveStatus = ref<"idle" | "saved" | "error">("idle");
 let saveTimer: ReturnType<typeof setTimeout> | null = null;
 
+const leftColumnEl = ref<HTMLElement | null>(null);
+const rightColumnEl = ref<HTMLElement | null>(null);
+
+// SortableJS group config — right column rejects 4/6 widgets
+useSortable(leftColumnEl, layout.leftColumn, {
+  group: { name: "dashboard", pull: true, put: true },
+  handle: ".drag-handle",
+  ghostClass: "opacity-40",
+  onEnd: () => scheduleSave(),
+});
+
+useSortable(rightColumnEl, layout.rightColumn, {
+  group: {
+    name: "dashboard",
+    pull: true,
+    put: (_to, _from, dragEl) =>
+      (dragEl as HTMLElement).dataset.size === "2/6",
+  },
+  handle: ".drag-handle",
+  ghostClass: "opacity-40",
+  onEnd: () => scheduleSave(),
+});
+
 onMounted(async () => {
   await dashboardPrefs.loadPreferences();
   const saved = getDashboardLayout();
   layout.statsCards = saved.statsCards;
-  layout.leftColumn = saved.leftColumn;
-  layout.rightColumn = saved.rightColumn;
+  // Mutate arrays in place — useSortable binds to the original reference.
+  layout.leftColumn.splice(0, layout.leftColumn.length, ...saved.leftColumn);
+  layout.rightColumn.splice(0, layout.rightColumn.length, ...saved.rightColumn);
 });
 
 const moveWidget = (
@@ -281,8 +281,12 @@ const scheduleSave = () => {
 const resetToDefaults = () => {
   const defaults = getDefaultDashboardLayout();
   layout.statsCards = defaults.statsCards;
-  layout.leftColumn = defaults.leftColumn;
-  layout.rightColumn = defaults.rightColumn;
+  layout.leftColumn.splice(0, layout.leftColumn.length, ...defaults.leftColumn);
+  layout.rightColumn.splice(
+    0,
+    layout.rightColumn.length,
+    ...defaults.rightColumn,
+  );
   scheduleSave();
 };
 </script>

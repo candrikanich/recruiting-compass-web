@@ -20,7 +20,7 @@
       v-else
       class="h-96 flex flex-col items-center justify-center rounded-lg bg-slate-50 text-slate-600"
     >
-      <MapPinIcon class="w-12 h-12 mb-3 text-slate-400" />
+      <UIcon name="i-heroicons-map-pin" class="w-12 h-12 mb-3 text-slate-400"  />
       <p class="text-sm font-medium">No school locations to display</p>
       <p class="text-xs text-slate-500 mt-1">
         Schools will appear on the map once you add them
@@ -131,7 +131,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, watch } from "vue";
 import L from "leaflet";
-import { MapPinIcon } from "@heroicons/vue/24/outline";
 import { useUserStore } from "~/stores/user";
 import { usePreferenceManager } from "~/composables/usePreferenceManager";
 import type { School } from "~/types/models";

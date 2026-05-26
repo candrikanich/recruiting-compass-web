@@ -4,14 +4,6 @@ import { mount } from "@vue/test-utils";
 import LoginForm from "~/components/Auth/LoginForm.vue";
 import SignupForm from "~/components/Auth/SignupForm.vue";
 
-vi.mock("@heroicons/vue/24/outline", () => ({
-  ArrowLeftIcon: { template: "<svg></svg>" },
-  UserIcon: { template: "<svg></svg>" },
-  EnvelopeIcon: { template: "<svg></svg>" },
-  LockClosedIcon: { template: "<svg></svg>" },
-  CalendarIcon: { template: "<svg></svg>" },
-}));
-
 vi.mock("~/components/Auth/LoginInputField.vue", () => ({
   default: {
     name: "LoginInputField",

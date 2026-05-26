@@ -2,11 +2,6 @@ import { describe, it, expect, vi } from "vitest";
 import { mount } from "@vue/test-utils";
 import SchoolProsConsCard from "~/components/School/SchoolProsConsCard.vue";
 
-vi.mock("@heroicons/vue/24/outline", () => ({
-  CheckIcon: { name: "CheckIcon", template: "<svg />" },
-  XMarkIcon: { name: "XMarkIcon", template: "<svg />" },
-}));
-
 const defaultProps = {
   pros: ["Great campus", "Strong program"],
   cons: ["Far from home", "Expensive"],

@@ -7,8 +7,8 @@
       >
     </label>
     <div class="relative">
-      <component
-        :is="icon"
+      <UIcon
+        :name="icon"
         class="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"
         aria-hidden="true"
       />
@@ -49,7 +49,7 @@ defineProps<{
   modelValue: string;
   error?: string;
   disabled: boolean;
-  icon: any;
+  icon: string;
   required?: boolean;
   describedBy?: string;
 }>();

@@ -38,12 +38,6 @@ vi.mock("~/composables/useLoadingStates", () => ({
 }));
 
 // Mock Heroicons
-vi.mock("@heroicons/vue/24/outline", () => ({
-  ArrowLeftIcon: { template: "<svg></svg>" },
-  EnvelopeIcon: { template: "<svg></svg>" },
-  LockClosedIcon: { template: "<svg></svg>" },
-}));
-
 // Mock validation components
 vi.mock("~/components/Validation/FormErrorSummary.vue", () => ({
   default: {

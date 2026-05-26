@@ -11,7 +11,7 @@
             :aria-label="isEditing ? 'Cancel editing notes' : 'Edit notes'"
             class="px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-50 rounded-lg transition flex items-center gap-1"
           >
-            <PencilIcon class="w-4 h-4" aria-hidden="true" />
+            <UIcon name="i-heroicons-pencil" class="w-4 h-4" aria-hidden="true"  />
             {{ isEditing ? "Cancel" : "Edit" }}
           </button>
         </div>
@@ -49,7 +49,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import NotesHistory from "~/components/School/NotesHistory.vue";
-import { PencilIcon } from "@heroicons/vue/24/outline";
 import { useNotesEditor } from "~/composables/useNotesEditor";
 
 const props = defineProps<{
