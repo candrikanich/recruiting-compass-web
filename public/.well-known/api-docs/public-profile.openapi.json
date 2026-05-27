@@ -13,9 +13,7 @@
       "url": "https://myrecruitingcompass.com/legal/terms"
     }
   },
-  "servers": [
-    { "url": "https://myrecruitingcompass.com" }
-  ],
+  "servers": [{ "url": "https://myrecruitingcompass.com" }],
   "paths": {
     "/api/public/profile/{slug}": {
       "get": {
@@ -93,11 +91,23 @@
     "schemas": {
       "PublicProfileData": {
         "type": "object",
-        "required": ["playerName", "photoUrl", "headerColor", "bio", "academics", "athletic", "film", "schools"],
+        "required": [
+          "playerName",
+          "photoUrl",
+          "headerColor",
+          "bio",
+          "academics",
+          "athletic",
+          "film",
+          "schools"
+        ],
         "properties": {
           "playerName": { "type": "string" },
           "photoUrl": { "type": ["string", "null"], "format": "uri" },
-          "headerColor": { "type": "string", "description": "Tailwind color name used as the header accent." },
+          "headerColor": {
+            "type": "string",
+            "description": "Tailwind color name used as the header accent."
+          },
           "bio": { "type": ["string", "null"] },
           "academics": {
             "description": "null when the profile owner has hidden academics.",
@@ -111,7 +121,10 @@
                   "act_score": { "type": "integer" },
                   "graduation_year": { "type": "integer" },
                   "high_school": { "type": "string" },
-                  "core_courses": { "type": "array", "items": { "type": "string" } }
+                  "core_courses": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  }
                 }
               }
             ]
@@ -125,7 +138,10 @@
                 "properties": {
                   "primary_sport": { "type": "string" },
                   "primary_position": { "type": "string" },
-                  "positions": { "type": "array", "items": { "type": "string" } },
+                  "positions": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  },
                   "height_inches": { "type": "number" },
                   "weight_lbs": { "type": "number" },
                   "ncaa_id": { "type": "string" },
@@ -139,7 +155,10 @@
             "description": "null when the profile owner has hidden film. Otherwise, an array of video links.",
             "oneOf": [
               { "type": "null" },
-              { "type": "array", "items": { "$ref": "#/components/schemas/VideoLink" } }
+              {
+                "type": "array",
+                "items": { "$ref": "#/components/schemas/VideoLink" }
+              }
             ]
           },
           "schools": {
@@ -165,7 +184,10 @@
         "type": "object",
         "required": ["platform", "url"],
         "properties": {
-          "platform": { "type": "string", "enum": ["hudl", "youtube", "vimeo"] },
+          "platform": {
+            "type": "string",
+            "enum": ["hudl", "youtube", "vimeo"]
+          },
           "url": { "type": "string", "format": "uri" },
           "title": { "type": "string" }
         }

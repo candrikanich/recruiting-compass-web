@@ -1,5 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { parseAcceptHeader, shouldServeMarkdown } from "~/server/agent-content/negotiation";
+import {
+  parseAcceptHeader,
+  shouldServeMarkdown,
+} from "~/server/agent-content/negotiation";
 import { renderProfileMarkdown } from "~/server/agent-content/profile";
 import { STATIC_MARKDOWN } from "~/server/agent-content/static";
 import type { PublicProfileData } from "~/types/models";
@@ -37,7 +40,8 @@ describe("shouldServeMarkdown", () => {
   });
 
   it("returns false for typical browser Accept", () => {
-    const browser = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8";
+    const browser =
+      "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8";
     expect(shouldServeMarkdown(browser)).toBe(false);
   });
 
@@ -47,11 +51,15 @@ describe("shouldServeMarkdown", () => {
 
   it("returns true when markdown q ≥ html q", () => {
     expect(shouldServeMarkdown("text/markdown, text/html;q=0.9")).toBe(true);
-    expect(shouldServeMarkdown("text/markdown;q=1.0, text/html;q=1.0")).toBe(true);
+    expect(shouldServeMarkdown("text/markdown;q=1.0, text/html;q=1.0")).toBe(
+      true,
+    );
   });
 
   it("returns false when html outranks markdown", () => {
-    expect(shouldServeMarkdown("text/markdown;q=0.5, text/html;q=1.0")).toBe(false);
+    expect(shouldServeMarkdown("text/markdown;q=0.5, text/html;q=1.0")).toBe(
+      false,
+    );
   });
 
   it("returns false when markdown q is zero", () => {
@@ -63,7 +71,9 @@ describe("STATIC_MARKDOWN registry", () => {
   it("covers the homepage and all help routes", () => {
     expect(STATIC_MARKDOWN["/"]).toMatch(/# The Recruiting Compass/);
     expect(STATIC_MARKDOWN["/help"]).toMatch(/# Help Center/);
-    expect(STATIC_MARKDOWN["/help/getting-started"]).toMatch(/# Getting Started/);
+    expect(STATIC_MARKDOWN["/help/getting-started"]).toMatch(
+      /# Getting Started/,
+    );
     expect(STATIC_MARKDOWN["/help/account"]).toMatch(/# Account/);
     expect(STATIC_MARKDOWN["/help/phases"]).toMatch(/# Phases/);
     expect(STATIC_MARKDOWN["/help/schools"]).toMatch(/# Schools/);
@@ -90,7 +100,11 @@ describe("renderProfileMarkdown", () => {
       weight_lbs: 145,
     },
     film: [
-      { platform: "youtube", url: "https://youtu.be/abc", title: "2025 Highlights" },
+      {
+        platform: "youtube",
+        url: "https://youtu.be/abc",
+        title: "2025 Highlights",
+      },
     ],
     schools: [
       { id: "11111111-1111-1111-1111-111111111111", name: "Some University" },

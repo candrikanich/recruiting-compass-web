@@ -374,9 +374,7 @@ describe("useOffersStore", () => {
     it("returns null when no deadline", () => {
       const store = useOffersStore();
       expect(
-        store.daysUntilDeadline(
-          makeOffer({ deadline_date: null }) as never,
-        ),
+        store.daysUntilDeadline(makeOffer({ deadline_date: null }) as never),
       ).toBeNull();
     });
 

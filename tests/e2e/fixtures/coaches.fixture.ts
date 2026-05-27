@@ -308,7 +308,9 @@ export const coachHelpers = {
       await page.getByLabel("Notes", { exact: false }).fill(coachData.notes);
     }
     if (coachData.availability) {
-      const availabilitySelect = page.locator(coachSelectors.availabilitySelect);
+      const availabilitySelect = page.locator(
+        coachSelectors.availabilitySelect,
+      );
       if ((await availabilitySelect.count()) > 0) {
         await availabilitySelect.selectOption(coachData.availability);
       }
