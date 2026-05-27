@@ -37,21 +37,33 @@ export default defineEventHandler(async (event) => {
 
     const supabase = useSupabaseAdmin();
 
-    // Find the inviter's family
-    const { data: membership } = await supabase
+    // Find the inviter's family. A parent can belong to multiple families
+    // (the one they own plus any joined via a family code), so `.single()`
+    // would throw on more than one row and wrongly reject the invite. Prefer
+    // the family the inviter created; fall back to any membership.
+    const { data: memberships } = (await supabase
       .from("family_members")
-      .select("family_unit_id")
-      .eq("user_id", user.id)
-      .single();
+      .select("family_unit_id, family_units!inner(created_by_user_id)")
+      .eq("user_id", user.id)) as {
+      data:
+        | {
+            family_unit_id: string;
+            family_units: { created_by_user_id: string | null } | null;
+          }[]
+        | null;
+    };
 
-    if (!membership) {
+    if (!memberships || memberships.length === 0) {
       throw createError({
         statusCode: 403,
         statusMessage: "You are not a member of any family",
       });
     }
 
-    const familyUnitId = membership.family_unit_id;
+    const ownedMembership = memberships.find(
+      (m) => m.family_units?.created_by_user_id === user.id,
+    );
+    const familyUnitId = (ownedMembership ?? memberships[0]).family_unit_id;
 
     // Check if the invited email is already a member
     const { data: existingUser } = await supabase

@@ -5,6 +5,15 @@ const state = {
   userId: "member-user-id",
   userEmail: "member@example.com",
   membership: { family_unit_id: "family-123" } as object | null,
+  memberships: [
+    {
+      family_unit_id: "family-123",
+      family_units: { created_by_user_id: "member-user-id" },
+    },
+  ] as Array<{
+    family_unit_id: string;
+    family_units: { created_by_user_id: string | null } | null;
+  }>,
   existingUser: null as object | null,
   existingMember: null as object | null,
   inviterProfile: { full_name: "Alice Smith" },
@@ -81,14 +90,21 @@ vi.mock("~/server/utils/supabase", () => ({
   useSupabaseAdmin: vi.fn(() => ({
     from: (table: string) => {
       if (table === "family_members") {
+        // The invite handler awaits `.select(...).eq("user_id", id)` as a list,
+        // while the existing-member check chains `.eq().eq().maybeSingle()`.
+        // A thenable chain supports both, mirroring PostgrestFilterBuilder.
+        const chain: Record<string, unknown> = {
+          eq: () => chain,
+          single: () =>
+            Promise.resolve({ data: state.membership, error: null }),
+          maybeSingle: () =>
+            Promise.resolve({ data: state.existingMember, error: null }),
+          order: () => Promise.resolve({ data: [], error: null }),
+          then: (resolve: (v: unknown) => unknown) =>
+            resolve({ data: state.memberships, error: null }),
+        };
         return {
-          select: () =>
-            chainableEq({
-              single: () =>
-                Promise.resolve({ data: state.membership, error: null }),
-              maybeSingle: () =>
-                Promise.resolve({ data: state.existingMember, error: null }),
-            }),
+          select: () => chain,
           insert: () => Promise.resolve({ error: null }),
         };
       }
@@ -174,6 +190,12 @@ describe("POST /api/family/invite", () => {
   beforeEach(() => {
     state.userId = "member-user-id";
     state.membership = { family_unit_id: "family-123" };
+    state.memberships = [
+      {
+        family_unit_id: "family-123",
+        family_units: { created_by_user_id: "member-user-id" },
+      },
+    ];
     state.existingUser = null;
     state.existingMember = null;
     state.insertedInvitation = { id: "invite-abc" };
@@ -190,6 +212,7 @@ describe("POST /api/family/invite", () => {
 
   it("rejects if inviter is not a family member", async () => {
     state.membership = null;
+    state.memberships = [];
     const { default: handler } =
       await import("~/server/api/family/invite.post");
     await expect(handler({} as Parameters<typeof handler>[0])).rejects.toThrow(
