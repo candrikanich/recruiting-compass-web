@@ -351,9 +351,13 @@ const fetchFamilyMembers = async () => {
 onMounted(async () => {
   await fetchMyCode();
 
-  // Auto-create family for students without one
-  if (isPlayer.value && !myFamilyCode.value) {
+  // Auto-create a family for any user who doesn't have one yet.
+  // Parents own a family they invite the player into (mirrors onboarding/parent);
+  // players get their own. Without this, a parent who skipped the onboarding
+  // bootstrap has no family_members row and /api/family/invite returns 403.
+  if (!myFamilyCode.value) {
     await createFamily();
+    await fetchMyCode();
   }
 
   if (isPlayer.value && myFamilyId.value) {
