@@ -13,6 +13,7 @@
       <button
         @click="refresh"
         :disabled="loading"
+        data-testid="refresh-activity"
         class="px-3 py-1 bg-brand-blue-100 text-brand-blue-700 rounded-full text-sm font-medium hover:bg-brand-blue-200 transition disabled:opacity-50"
       >
         {{ loading ? "Loading..." : "Refresh" }}

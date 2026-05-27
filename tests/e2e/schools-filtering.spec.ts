@@ -308,8 +308,7 @@ test.describe("Schools Filtering - User Story 3.3", () => {
     }
   });
 
-  // QUARANTINED 2026-05-22: flake under heavy parallel load; serial run passes.
-  test.skip("should allow clearing all filters with Clear all button", async ({
+  test("should allow clearing all filters with Clear all button", async ({
     page,
   }) => {
     const schoolCards = page.locator("[data-testid='school-card']");
@@ -329,8 +328,8 @@ test.describe("Schools Filtering - User Story 3.3", () => {
     await expect(clearAllBtn).toBeVisible();
     await clearAllBtn.click();
 
-    // After clearing, the D1 chip should be gone
-    await expect(d1Chip).not.toBeVisible();
+    // After clearing, the D1 chip should be gone (allow time for reactive update)
+    await expect(d1Chip).not.toBeVisible({ timeout: 10000 });
   });
 
   test("should allow removing individual filter chips", async ({ page }) => {

@@ -193,17 +193,16 @@ test.describe("User Story 8.3 - Recent Activity Feed", () => {
     await expect(viewAllLink).toHaveAttribute("href", "/activity");
   });
 
-  test.skip("shows refresh button", async ({ page }) => {
-    // TODO: unclear if refresh button is in design/implemented. Skipped pending verification.
-    const refreshButton = page.locator('button:has-text("Refresh")');
+  test("shows refresh button", async ({ page }) => {
+    const refreshButton = page.locator('[data-testid="refresh-activity"]');
     await expect(refreshButton).toBeVisible();
   });
 
-  test.skip("refresh button works", async ({ page }) => {
-    // TODO: depends on refresh button existing (see above). Skipped pending verification.
-    const refreshButton = page.locator('button:has-text("Refresh")');
+  test("refresh button works", async ({ page }) => {
+    // Stable selector: button text toggles "Refresh" -> "Loading..." on click,
+    // so a has-text locator detaches mid-click.
+    const refreshButton = page.locator('[data-testid="refresh-activity"]');
 
-    // Click refresh
     await refreshButton.click();
 
     // Wait for potential reload
@@ -213,8 +212,8 @@ test.describe("User Story 8.3 - Recent Activity Feed", () => {
     expect(page.url()).toContain("/dashboard");
   });
 
-  test.skip("clicking activity navigates to details page", async ({ page }) => {
-    // TODO: test account has 0 interactions. Skipped until seed data added.
+  // Real navigation coverage needs seeded activities; guard no-ops without data.
+  test("clicking activity navigates to details page", async ({ page }) => {
     const activityItems = page.locator('[data-testid="activity-event-item"]');
 
     if ((await activityItems.count()) > 0) {
@@ -295,9 +294,7 @@ test.describe("Activity History Page", () => {
     await expect(pageTitle).toBeVisible();
   });
 
-  test.skip("shows filter options", async ({ page }) => {
-    // TODO: selectors like 'label:has-text("Activity Type")' are fragile and may not match
-    // actual page structure. Unclear if filter UI is implemented. Skipped pending verification.
+  test("shows filter options", async ({ page }) => {
     // Check for filter dropdowns
     const typeFilter = page.locator('label:has-text("Activity Type")').nth(0);
     const dateFilter = page.locator('label:has-text("Date Range")').nth(0);
@@ -308,8 +305,7 @@ test.describe("Activity History Page", () => {
     await expect(searchInput).toBeVisible();
   });
 
-  test.skip("filters by activity type", async ({ page }) => {
-    // TODO: filter UI may not be implemented. Skipped pending verification.
+  test("filters by activity type", async ({ page }) => {
     // Select interaction type
     const typeSelect = page.locator("select").nth(0);
     await typeSelect.selectOption("interaction");
@@ -321,8 +317,7 @@ test.describe("Activity History Page", () => {
     expect(page.url()).toContain("/activity");
   });
 
-  test.skip("filters by date range", async ({ page }) => {
-    // TODO: filter UI may not be implemented. Skipped pending verification.
+  test("filters by date range", async ({ page }) => {
     // Select last 7 days
     const dateSelect = page.locator("select").nth(1);
     await dateSelect.selectOption("week");
@@ -333,8 +328,7 @@ test.describe("Activity History Page", () => {
     expect(page.url()).toContain("/activity");
   });
 
-  test.skip("searches activities", async ({ page }) => {
-    // TODO: search UI may not be implemented. Skipped pending verification.
+  test("searches activities", async ({ page }) => {
     // Type in search box
     const searchInput = page.locator('input[placeholder*="Search"]');
     await searchInput.fill("test");
@@ -345,19 +339,10 @@ test.describe("Activity History Page", () => {
     expect(page.url()).toContain("/activity");
   });
 
-  test.skip("displays paginated results", async ({ page }) => {
-    // TODO: `toBeDefined()` is vacuous (always true for any locator).
-    // Check for pagination buttons
-    const nextButton = page.locator('button:has-text("Next")');
-    const prevButton = page.locator('button:has-text("Previous")');
-
-    // If there are results, pagination should exist or be disabled
-    expect(nextButton).toBeDefined();
-    expect(prevButton).toBeDefined();
-  });
-
-  test.skip("paginate through results", async ({ page }) => {
-    // TODO: test account has 0 interactions. Skipped until seed data added.
+  // Real pagination coverage needs seeded activity data (>1 page). Until the
+  // E2E seed infra lands, this exercises the no-data path; the guard makes it
+  // a no-op when the account has no activities.
+  test("paginate through results", async ({ page }) => {
     const activityItems = page.locator('[data-testid="activity-event-item"]');
 
     // If there are activities
@@ -379,31 +364,6 @@ test.describe("Activity History Page", () => {
   });
 });
 
-test.describe("Real-time Activity Updates", () => {
-  test.skip("activity feed updates without manual refresh", async ({
-    page,
-  }) => {
-    // TODO: `expect(finalCount).toBeGreaterThanOrEqual(0)` is vacuous (always true).
-    // Test doesn't actually verify real-time updates.
-    // Navigate to dashboard
-    await page.goto("/dashboard");
-
-    // Wait for initial load
-    await page.waitForLoadState("domcontentloaded");
-
-    // Get initial activity count
-    const activityItems = page.locator('[data-testid="activity-event-item"]');
-    const initialCount = await activityItems.count();
-
-    // Note: This test would ideally trigger a new activity in another session
-    // or via an API call to test real-time updates.
-    // For now, we just verify the feed exists and can be displayed.
-
-    // Wait a bit to see if any updates come in
-    await page.waitForLoadState("domcontentloaded").catch(() => {});
-
-    // Should still have the same or more activities
-    const finalCount = await activityItems.count();
-
-  });
-});
+// Removed "Real-time Activity Updates" suite: its only test asserted nothing
+// (no real-time push exists to verify, and the final count check was deleted).
+// Reinstate with a websocket/polling fixture if live updates are implemented.
