@@ -66,7 +66,7 @@
       v-else
       class="h-64 flex flex-col items-center justify-center rounded-lg bg-slate-50 text-slate-600"
     >
-      <UIcon name="i-heroicons-building-library" class="w-12 h-12 mb-3 text-slate-400"  />
+      <UIcon name="i-heroicons-building-library" class="w-12 h-12 mb-3 text-slate-400" data-testid="empty-icon" />
       <p class="text-sm font-medium">No schools added yet</p>
       <p class="text-xs text-slate-500 mt-1">
         Add schools to track your recruiting pipeline
