@@ -1,15 +1,26 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { createError } from "h3";
 
+type Membership = {
+  family_unit_id: string;
+  family_units: { created_by_user_id: string | null } | null;
+};
+
 const mockState = {
   userId: "user-123",
-  membership: { family_unit_id: "family-456" } as object | null,
+  memberships: [
+    {
+      family_unit_id: "family-456",
+      family_units: { created_by_user_id: "user-123" },
+    },
+  ] as Membership[],
   existingUser: null as object | null,
   existingMember: null as object | null,
   inviterProfile: { full_name: "Test User" } as object | null,
   family: { family_name: "Test Family" } as object | null,
   invitationId: "inv-789",
   invitationError: null as object | null,
+  insertedFamilyUnitId: null as string | null,
 };
 
 const mockRateLimitState = {
@@ -54,16 +65,14 @@ vi.mock("~/server/utils/supabase", () => ({
           const callNum = familyMembersCallCount;
           return {
             select: () => ({
-              eq: (col: string, val: unknown) => {
+              eq: (_col: string, _val: unknown) => {
                 if (callNum === 1) {
-                  // First call: membership lookup — .eq("user_id", ...).single()
-                  return {
-                    single: () =>
-                      Promise.resolve({
-                        data: mockState.membership,
-                        error: null,
-                      }),
-                  };
+                  // First call: membership lookup — .eq("user_id", ...) awaited
+                  // directly, resolving to the full list of memberships.
+                  return Promise.resolve({
+                    data: mockState.memberships,
+                    error: null,
+                  });
                 }
                 // Second call: existing member check — .eq("family_unit_id", ...).eq("user_id", ...).maybeSingle()
                 return {
@@ -109,17 +118,20 @@ vi.mock("~/server/utils/supabase", () => ({
         }
         if (table === "family_invitations") {
           return {
-            insert: () => ({
-              select: () => ({
-                single: () =>
-                  Promise.resolve({
-                    data: mockState.invitationError
-                      ? null
-                      : { id: mockState.invitationId },
-                    error: mockState.invitationError,
-                  }),
-              }),
-            }),
+            insert: (payload: { family_unit_id?: string }) => {
+              mockState.insertedFamilyUnitId = payload?.family_unit_id ?? null;
+              return {
+                select: () => ({
+                  single: () =>
+                    Promise.resolve({
+                      data: mockState.invitationError
+                        ? null
+                        : { id: mockState.invitationId },
+                      error: mockState.invitationError,
+                    }),
+                }),
+              };
+            },
           };
         }
         return {};
@@ -169,7 +181,13 @@ describe("POST /api/family/invite — rate limiting", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockState.userId = "user-123";
-    mockState.membership = { family_unit_id: "family-456" };
+    mockState.memberships = [
+      {
+        family_unit_id: "family-456",
+        family_units: { created_by_user_id: "user-123" },
+      },
+    ];
+    mockState.insertedFamilyUnitId = null;
     mockState.existingUser = null;
     mockState.existingMember = null;
     mockState.inviterProfile = { full_name: "Test User" };
@@ -227,5 +245,76 @@ describe("POST /api/family/invite — rate limiting", () => {
       success: true,
       invitationId: mockState.invitationId,
     });
+  });
+});
+
+describe("POST /api/family/invite — multi-family membership", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockState.userId = "user-123";
+    mockState.existingUser = null;
+    mockState.existingMember = null;
+    mockState.inviterProfile = { full_name: "Test User" };
+    mockState.family = { family_name: "Test Family" };
+    mockState.invitationError = null;
+    mockState.insertedFamilyUnitId = null;
+    mockRateLimitState.success = true;
+
+    vi.mocked(requireAuth).mockResolvedValue({ id: mockState.userId });
+    vi.mocked(rateLimitByUser).mockResolvedValue({ ...mockRateLimitState });
+    vi.mocked(throwIfRateLimited).mockImplementation(() => {});
+  });
+
+  it("succeeds when the inviter belongs to multiple families", async () => {
+    // A parent who owns one family and joined another via code has 2 rows.
+    // The old `.single()` lookup threw on >1 row and wrongly returned 403.
+    mockState.memberships = [
+      {
+        family_unit_id: "joined-family",
+        family_units: { created_by_user_id: "other-owner" },
+      },
+      {
+        family_unit_id: "owned-family",
+        family_units: { created_by_user_id: "user-123" },
+      },
+    ];
+
+    const result = await handler({} as Parameters<typeof handler>[0]);
+
+    expect(result).toMatchObject({ success: true });
+  });
+
+  it("targets the family the inviter owns, not a joined one", async () => {
+    mockState.memberships = [
+      {
+        family_unit_id: "joined-family",
+        family_units: { created_by_user_id: "other-owner" },
+      },
+      {
+        family_unit_id: "owned-family",
+        family_units: { created_by_user_id: "user-123" },
+      },
+    ];
+
+    await handler({} as Parameters<typeof handler>[0]);
+
+    expect(mockState.insertedFamilyUnitId).toBe("owned-family");
+  });
+
+  it("falls back to the first membership when the inviter owns none", async () => {
+    mockState.memberships = [
+      {
+        family_unit_id: "joined-family-a",
+        family_units: { created_by_user_id: "other-owner" },
+      },
+      {
+        family_unit_id: "joined-family-b",
+        family_units: { created_by_user_id: "another-owner" },
+      },
+    ];
+
+    await handler({} as Parameters<typeof handler>[0]);
+
+    expect(mockState.insertedFamilyUnitId).toBe("joined-family-a");
   });
 });

@@ -7,7 +7,7 @@
     >
       <div class="flex items-center gap-3 mb-5">
         <div class="p-2 bg-slate-100 rounded-lg">
-          <BuildingLibraryIcon class="w-5 h-5 text-slate-700" />
+          <UIcon name="i-heroicons-building-library" class="w-5 h-5 text-slate-700"  />
         </div>
         <h3 class="text-slate-900 font-semibold">Schools by Size</h3>
       </div>
@@ -50,7 +50,7 @@
     >
       <div class="flex items-center gap-3 mb-5">
         <div class="p-2 bg-slate-100 rounded-lg">
-          <BoltIcon class="w-5 h-5 text-slate-700" />
+          <UIcon name="i-heroicons-bolt" class="w-5 h-5 text-slate-700"  />
         </div>
         <h3 class="text-slate-900 font-semibold">Quick Actions</h3>
       </div>
@@ -59,9 +59,9 @@
           to="/coaches/new"
           class="flex flex-col bg-brand-blue-500 hover:bg-brand-blue-600 text-white p-4 rounded-lg transition-all hover:scale-105 hover:shadow-lg text-left group"
         >
-          <UserPlusIcon
+          <UIcon name="i-heroicons-user-plus"
             class="w-6 h-6 mb-2 group-hover:scale-110 transition-transform text-white"
-          />
+           />
           <div class="font-medium mb-1">Add Coach</div>
           <div class="text-white/80 text-sm">Connect with a new coach</div>
         </NuxtLink>
@@ -69,9 +69,9 @@
           to="/interactions/new"
           class="flex flex-col bg-brand-emerald-500 hover:bg-brand-emerald-600 text-white p-4 rounded-lg transition-all hover:scale-105 hover:shadow-lg text-left group"
         >
-          <ChatBubbleLeftRightIcon
+          <UIcon name="i-heroicons-chat-bubble-left-right"
             class="w-6 h-6 mb-2 group-hover:scale-110 transition-transform text-white"
-          />
+           />
           <div class="font-medium mb-1">Log Interaction</div>
           <div class="text-white/80 text-sm">Record a conversation</div>
         </NuxtLink>
@@ -79,9 +79,9 @@
           to="/schools/new"
           class="flex flex-col bg-brand-purple-500 hover:bg-brand-purple-600 text-white p-4 rounded-lg transition-all hover:scale-105 hover:shadow-lg text-left group"
         >
-          <BuildingLibraryIcon
+          <UIcon name="i-heroicons-building-library"
             class="w-6 h-6 mb-2 group-hover:scale-110 transition-transform text-white"
-          />
+           />
           <div class="font-medium mb-1">Add School</div>
           <div class="text-white/80 text-sm">Research a new school</div>
         </NuxtLink>
@@ -89,9 +89,9 @@
           to="/events/new"
           class="flex flex-col bg-brand-orange-500 hover:bg-brand-orange-600 text-white p-4 rounded-lg transition-all hover:scale-105 hover:shadow-lg text-left group"
         >
-          <CalendarDaysIcon
+          <UIcon name="i-heroicons-calendar-days"
             class="w-6 h-6 mb-2 group-hover:scale-110 transition-transform text-white"
-          />
+           />
           <div class="font-medium mb-1">Schedule Event</div>
           <div class="text-white/80 text-sm">Register for a camp</div>
         </NuxtLink>
@@ -108,7 +108,7 @@
     >
       <div class="flex items-center gap-3 mb-5">
         <div class="p-2 bg-slate-100 rounded-lg">
-          <ChartBarIcon class="w-5 h-5 text-slate-700" />
+          <UIcon name="i-heroicons-chart-bar" class="w-5 h-5 text-slate-700"  />
         </div>
         <h3 class="text-slate-900 font-semibold">Performance Metrics</h3>
       </div>
@@ -167,14 +167,6 @@
 </template>
 
 <script setup lang="ts">
-import {
-  BuildingLibraryIcon,
-  BoltIcon,
-  UserPlusIcon,
-  ChatBubbleLeftRightIcon,
-  CalendarDaysIcon,
-  ChartBarIcon,
-} from "@heroicons/vue/24/outline";
 import ParentGuidanceCard from "~/components/Dashboard/ParentGuidanceCard.vue";
 import RecruitingCalendar from "~/components/Dashboard/RecruitingCalendar.vue";
 import InteractionTrendChart from "~/components/Dashboard/InteractionTrendChart.vue";

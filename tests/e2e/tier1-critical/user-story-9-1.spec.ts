@@ -125,7 +125,6 @@ test.describe("User Story 9.1 - Athlete Views Their Task List", () => {
     await expect(checkedCheckbox).not.toBeChecked();
 
     // Wait a moment for state update
-    await page.waitForTimeout(500);
 
     // Verify progress text may have changed
     const updatedText = await progressText.textContent();
@@ -148,7 +147,6 @@ test.describe("User Story 9.1 - Athlete Views Their Task List", () => {
     await taskTitle.click();
 
     // Wait a moment for expansion animation
-    await page.waitForTimeout(200);
 
     // Verify details section appears
     // Look for "Why It Matters" or other detail headings
@@ -220,14 +218,24 @@ test.describe("User Story 9.1 - Athlete Views Their Task List", () => {
   });
 
   test("Empty state message is shown when no tasks", async ({ page }) => {
-    // This test may skip if user has tasks
-    const taskItems = page.locator('[data-testid="task-item"]');
-    const hasAnyTasks = await taskItems.count();
+    // Wait for either tasks or empty state to settle (page has a loading
+    // skeleton that resolves into one of the two branches).
+    const taskItem = page.locator('[data-testid="task-item"]').first();
+    const emptyStateMessage = page.locator(
+      "text=No tasks available for this grade level",
+    );
+    await Promise.race([
+      taskItem.waitFor({ state: "visible", timeout: 10000 }).catch(() => null),
+      emptyStateMessage
+        .waitFor({ state: "visible", timeout: 10000 })
+        .catch(() => null),
+    ]);
 
-    const emptyStateMessage = page.locator("text=/No tasks available|Start/");
+    const hasAnyTasks = await page
+      .locator('[data-testid="task-item"]')
+      .count();
     const hasEmptyState = await emptyStateMessage.count();
 
-    // Either show tasks or empty state, not both
     if (hasAnyTasks === 0) {
       expect(hasEmptyState).toBeGreaterThan(0);
     } else {
@@ -287,14 +295,12 @@ test.describe("User Story 9.1 - Athlete Views Their Task List", () => {
 
     // Click to expand
     await taskInfo.click();
-    await page.waitForTimeout(200);
 
     // Get height after expansion
     const expandedHeight = await firstTask.evaluate((el) => el.offsetHeight);
 
     // Click to collapse
     await taskInfo.click();
-    await page.waitForTimeout(200);
 
     // Get height after collapse
     const collapsedHeight = await firstTask.evaluate((el) => el.offsetHeight);
@@ -306,11 +312,12 @@ test.describe("User Story 9.1 - Athlete Views Their Task List", () => {
   });
 
   test("Page title and metadata are correct", async ({ page }) => {
-    // Verify page title contains "Tasks"
+    // useHead applies on hydration; wait for it to populate document.title.
+    await page.waitForFunction(() => document.title.length > 0, undefined, {
+      timeout: 10000,
+    });
     const pageTitle = await page.title();
     expect(pageTitle).toContain("Tasks");
-
-    // Verify URL is correct
     expect(page.url()).toContain("/tasks");
   });
 

@@ -6,13 +6,14 @@
     <div class="flex items-center justify-between mb-5">
       <div class="flex items-center gap-3">
         <div class="p-2 bg-slate-100 rounded-lg">
-          <SparklesIcon class="w-5 h-5 text-slate-700" />
+          <UIcon name="i-heroicons-sparkles" class="w-5 h-5 text-slate-700"  />
         </div>
         <h3 class="text-slate-900 font-semibold">Recent Activity</h3>
       </div>
       <button
         @click="refresh"
         :disabled="loading"
+        data-testid="refresh-activity"
         class="px-3 py-1 bg-brand-blue-100 text-brand-blue-700 rounded-full text-sm font-medium hover:bg-brand-blue-200 transition disabled:opacity-50"
       >
         {{ loading ? "Loading..." : "Refresh" }}
@@ -67,7 +68,6 @@
 
 <script setup lang="ts">
 import { onMounted, onUnmounted } from "vue";
-import { SparklesIcon } from "@heroicons/vue/24/outline";
 import { useActivityFeed } from "~/composables/useActivityFeed";
 import ActivityEventItem from "~/components/Dashboard/ActivityEventItem.vue";
 

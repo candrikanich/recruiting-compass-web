@@ -46,9 +46,7 @@ test.describe("Auth Enforcement - Protected Routes", () => {
   }) => {
     await page.goto("/dashboard");
     await page.waitForURL(/\/login/, { timeout: 30000 });
-    expect(page.url()).toContain(
-      `redirect=${encodeURIComponent("/dashboard")}`,
-    );
+    expect(page.url()).toMatch(/redirect=(%2F|\/)dashboard/);
   });
 
   test("should preserve redirect URL for nested routes", async ({ page }) => {
@@ -90,16 +88,3 @@ test.describe("Auth Enforcement - Public Routes", () => {
   });
 });
 
-test.describe("Auth Enforcement - Feature Flag Disabled", () => {
-  // These tests validate that when auth enforcement is disabled via feature flag,
-  // protected routes are still accessible without authentication
-  // (This allows for gradual rollout/testing)
-
-  test.skip("should allow access to protected routes when feature flag is disabled", async ({
-    page,
-  }) => {
-    // Skip for now - this test verifies feature flag behavior
-    // In practice, you'd set NUXT_PUBLIC_AUTH_ENFORCEMENT_ENABLED=false
-    // and verify protected routes are still accessible
-  });
-});

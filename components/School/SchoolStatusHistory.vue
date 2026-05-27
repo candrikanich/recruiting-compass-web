@@ -41,7 +41,7 @@
             {{ formatStatus(entry.previous_status) }}
           </span>
           <span v-else class="text-xs text-slate-400">Initial</span>
-          <ArrowRightIcon class="w-4 h-4 text-slate-400 shrink-0" />
+          <UIcon name="i-heroicons-arrow-right" class="w-4 h-4 text-slate-400 shrink-0"  />
           <span
             class="px-2 py-1 text-xs font-medium rounded-full"
             :class="getStatusColor(entry.new_status)"
@@ -82,8 +82,6 @@ import { ref, onMounted } from "vue";
 import type { SchoolStatusHistory } from "~/types/models";
 import { useSchoolStore } from "~/stores/schools";
 import { useUserStore } from "~/stores/user";
-import { ArrowRightIcon } from "@heroicons/vue/24/outline";
-
 interface Props {
   schoolId: string;
 }

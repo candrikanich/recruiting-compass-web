@@ -95,7 +95,6 @@ export default defineNuxtConfig({
               "chart.js",
               "vue-chartjs",
               "chartjs-adapter-date-fns",
-              "chartjs-plugin-annotation",
             ],
             "vendor-maps": ["leaflet"],
             "vendor-utils": ["fuse.js", "date-fns"],

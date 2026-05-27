@@ -1,0 +1,12 @@
+{
+  "$schema": "https://schemas.agentskills.io/discovery/0.2.0/schema.json",
+  "skills": [
+    {
+      "name": "read-public-profile",
+      "type": "skill-md",
+      "description": "Fetch a published player recruiting profile from The Recruiting Compass by its slug. Use this when given a myrecruitingcompass.com profile URL (e.g. /p/abc123 or /p/jane-doe) and you need structured profile data — academics, athletic stats, school list, film links — instead of scraping HTML.",
+      "url": "https://myrecruitingcompass.com/.well-known/agent-skills/read-public-profile/SKILL.md",
+      "digest": "sha256:bf16b74ab1d785126c1c388b4be26e4acea6b1aeea25bdf8b4a1546a1fc2ed56"
+    }
+  ]
+}

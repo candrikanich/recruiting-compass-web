@@ -5,7 +5,7 @@
   >
     <div class="flex items-center gap-3 mb-5">
       <div class="p-2 bg-slate-100 rounded-lg">
-        <ShareIcon class="w-5 h-5 text-slate-700" />
+        <UIcon name="i-heroicons-share" class="w-5 h-5 text-slate-700"  />
       </div>
       <h3 class="text-slate-900 font-semibold">Social Media</h3>
     </div>
@@ -28,8 +28,6 @@
 </template>
 
 <script setup lang="ts">
-import { ShareIcon } from "@heroicons/vue/24/outline";
-
 interface Props {
   showSocial?: boolean;
 }

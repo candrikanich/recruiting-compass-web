@@ -17,7 +17,7 @@
         :aria-label="isEditing ? 'Cancel editing notes' : 'Edit notes'"
         class="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900"
       >
-        <PencilIcon class="w-4 h-4" aria-hidden="true" />
+        <UIcon name="i-heroicons-pencil" class="w-4 h-4" aria-hidden="true"  />
         {{ isEditing ? "Cancel" : "Edit" }}
       </button>
     </div>
@@ -59,7 +59,6 @@
 
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { PencilIcon } from "@heroicons/vue/24/outline";
 import { useNotesEditor } from "~/composables/useNotesEditor";
 
 const props = withDefaults(
@@ -70,6 +69,7 @@ const props = withDefaults(
     placeholder?: string;
     emptyText?: string;
     rows?: number;
+    saveFn: (value: string) => Promise<unknown>;
   }>(),
   {
     subtitle: "",
@@ -81,7 +81,6 @@ const props = withDefaults(
 
 const emit = defineEmits<{
   "update:modelValue": [value: string];
-  save: [value: string];
 }>();
 
 const announcement = ref("");
@@ -97,7 +96,7 @@ const handleSave = async () => {
   try {
     await save(async (value: string) => {
       emit("update:modelValue", value);
-      emit("save", value);
+      await props.saveFn(value);
     });
     announcement.value = "Notes saved successfully";
   } catch (error) {

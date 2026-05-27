@@ -16,14 +16,14 @@
           v-if="coach.last_contact_date"
           class="flex items-center gap-2 text-slate-600 text-sm mt-3"
         >
-          <CalendarIcon class="w-4 h-4" />
+          <UIcon name="i-heroicons-calendar" class="w-4 h-4"  />
           Last contact: {{ formatDate(coach.last_contact_date) }} ({{
             daysAgo(coach.last_contact_date)
           }}
           days ago)
         </div>
         <div v-else class="flex items-center gap-2 text-slate-500 text-sm mt-3">
-          <CalendarIcon class="w-4 h-4" />
+          <UIcon name="i-heroicons-calendar" class="w-4 h-4"  />
           No contact recorded yet
         </div>
       </div>
@@ -32,7 +32,7 @@
     <!-- Contact Info Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
       <div v-if="coach.email" class="flex items-center gap-3">
-        <EnvelopeIcon class="w-5 h-5 text-slate-400" />
+        <UIcon name="i-heroicons-envelope" class="w-5 h-5 text-slate-400"  />
         <div>
           <div class="text-slate-600 text-sm">Email</div>
           <a
@@ -44,7 +44,7 @@
         </div>
       </div>
       <div v-if="coach.phone" class="flex items-center gap-3">
-        <PhoneIcon class="w-5 h-5 text-slate-400" />
+        <UIcon name="i-heroicons-phone" class="w-5 h-5 text-slate-400"  />
         <div>
           <div class="text-slate-600 text-sm">Phone</div>
           <a
@@ -112,7 +112,7 @@
         @click="$emit('send-email')"
         class="inline-flex items-center gap-2 px-4 py-2 bg-linear-to-r from-blue-500 to-blue-600 text-white text-sm font-semibold rounded-lg hover:from-blue-600 hover:to-blue-700 transition shadow-xs"
       >
-        <EnvelopeIcon class="w-4 h-4" />
+        <UIcon name="i-heroicons-envelope" class="w-4 h-4"  />
         Email
       </button>
       <button
@@ -120,7 +120,7 @@
         @click="$emit('send-text')"
         class="inline-flex items-center gap-2 px-4 py-2 bg-linear-to-r from-emerald-500 to-emerald-600 text-white text-sm font-semibold rounded-lg hover:from-emerald-600 hover:to-emerald-700 transition shadow-xs"
       >
-        <ChatBubbleLeftIcon class="w-4 h-4" />
+        <UIcon name="i-heroicons-chat-bubble-left" class="w-4 h-4"  />
         Text
       </button>
       <button
@@ -128,7 +128,7 @@
         @click="$emit('call-coach')"
         class="inline-flex items-center gap-2 px-4 py-2 bg-linear-to-r from-orange-500 to-orange-600 text-white text-sm font-semibold rounded-lg hover:from-orange-600 hover:to-orange-700 transition shadow-xs"
       >
-        <PhoneIcon class="w-4 h-4" />
+        <UIcon name="i-heroicons-phone" class="w-4 h-4"  />
         Call
       </button>
       <button
@@ -159,14 +159,14 @@
         :to="`/coaches/${coach.id}/analytics`"
         class="inline-flex items-center gap-2 px-4 py-2 bg-linear-to-r from-indigo-500 to-indigo-600 text-white text-sm font-semibold rounded-lg hover:from-indigo-600 hover:to-indigo-700 transition shadow-xs"
       >
-        <ChartBarIcon class="w-4 h-4" />
+        <UIcon name="i-heroicons-chart-bar" class="w-4 h-4"  />
         Analytics
       </NuxtLink>
       <NuxtLink
         :to="`/coaches/${coach.id}/communications`"
         class="inline-flex items-center gap-2 px-4 py-2 bg-linear-to-r from-slate-500 to-slate-600 text-white text-sm font-semibold rounded-lg hover:from-slate-600 hover:to-slate-700 transition shadow-xs"
       >
-        <ChatBubbleLeftRightIcon class="w-4 h-4" />
+        <UIcon name="i-heroicons-chat-bubble-left-right" class="w-4 h-4"  />
         Messages
       </NuxtLink>
     </div>
@@ -177,14 +177,14 @@
         :to="`/coaches/${coach.id}/availability`"
         class="inline-flex items-center gap-2 px-4 py-2 border border-slate-300 text-slate-700 text-sm font-semibold rounded-lg hover:bg-slate-50 transition"
       >
-        <CalendarIcon class="w-4 h-4" />
+        <UIcon name="i-heroicons-calendar" class="w-4 h-4"  />
         Availability
       </NuxtLink>
       <NuxtLink
         :to="`/social/coach/${coach.id}`"
         class="inline-flex items-center gap-2 px-4 py-2 border border-slate-300 text-slate-700 text-sm font-semibold rounded-lg hover:bg-slate-50 transition"
       >
-        <RssIcon class="w-4 h-4" />
+        <UIcon name="i-heroicons-rss" class="w-4 h-4"  />
         Social Posts
       </NuxtLink>
       <button
@@ -192,7 +192,7 @@
         aria-label="Edit coach information"
         class="inline-flex items-center gap-2 px-4 py-2 border border-slate-300 text-slate-700 text-sm font-semibold rounded-lg hover:bg-slate-50 transition"
       >
-        <PencilIcon class="w-4 h-4" aria-hidden="true" />
+        <UIcon name="i-heroicons-pencil" class="w-4 h-4" aria-hidden="true"  />
         Edit
       </button>
       <button
@@ -224,17 +224,6 @@
 import type { Coach } from "~/types/models";
 import { getRoleLabel } from "~/utils/coachLabels";
 import { formatDate, daysAgo } from "~/utils/dateFormatters";
-import {
-  EnvelopeIcon,
-  PhoneIcon,
-  ChatBubbleLeftIcon,
-  ChatBubbleLeftRightIcon,
-  CalendarIcon,
-  ChartBarIcon,
-  PencilIcon,
-  RssIcon,
-} from "@heroicons/vue/24/outline";
-
 defineProps<{
   coach: Coach;
   schoolName?: string;

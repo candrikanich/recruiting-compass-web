@@ -55,7 +55,7 @@
             class="grid grid-cols-1 md:grid-cols-2 gap-4 py-4 border-t border-gray-200"
           >
             <div v-if="coach.twitter_handle" class="flex items-center">
-              <ShareIcon class="w-5 h-5 text-blue-400 mr-3" />
+              <UIcon name="i-heroicons-share" class="w-5 h-5 text-blue-400 mr-3"  />
               <div>
                 <p class="text-xs text-gray-500">Twitter/X</p>
                 <a
@@ -70,7 +70,7 @@
             </div>
 
             <div v-if="coach.instagram_handle" class="flex items-center">
-              <PhotoIcon class="w-5 h-5 text-pink-600 mr-3" />
+              <UIcon name="i-heroicons-photo" class="w-5 h-5 text-pink-600 mr-3"  />
               <div>
                 <p class="text-xs text-gray-500">Instagram</p>
                 <a
@@ -156,7 +156,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import { useRoute } from "vue-router";
-import { ShareIcon, PhotoIcon } from "@heroicons/vue/24/outline";
 import { useCoaches } from "~/composables/useCoaches";
 import { useSchools } from "~/composables/useSchools";
 import { useSocialMedia } from "~/composables/useSocialMedia";

@@ -14,7 +14,7 @@
           : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100',
       ]"
     >
-      <component :is="item.icon" class="w-5 h-5 shrink-0" aria-hidden="true" />
+      <UIcon :name="item.icon" class="w-5 h-5 shrink-0" aria-hidden="true" />
       <span>{{ item.label }}</span>
     </NuxtLink>
     <HeaderNavMore />
@@ -23,13 +23,6 @@
 
 <script setup lang="ts">
 import { useRoute } from "vue-router";
-import {
-  HomeIcon,
-  BuildingLibraryIcon,
-  UserGroupIcon,
-  ChatBubbleLeftRightIcon,
-  ClockIcon,
-} from "@heroicons/vue/24/outline";
 import HeaderNavMore from "./HeaderNavMore.vue";
 
 const route = useRoute();
@@ -37,15 +30,15 @@ const route = useRoute();
 interface NavItem {
   to: string;
   label: string;
-  icon: any;
+  icon: string;
 }
 
 const navItems: NavItem[] = [
-  { to: "/dashboard", label: "Dashboard", icon: HomeIcon },
-  { to: "/schools", label: "Schools", icon: BuildingLibraryIcon },
-  { to: "/coaches", label: "Coaches", icon: UserGroupIcon },
-  { to: "/interactions", label: "Interactions", icon: ChatBubbleLeftRightIcon },
-  { to: "/timeline", label: "Timeline", icon: ClockIcon },
+  { to: "/dashboard", label: "Dashboard", icon: "i-heroicons-home" },
+  { to: "/schools", label: "Schools", icon: "i-heroicons-building-library" },
+  { to: "/coaches", label: "Coaches", icon: "i-heroicons-user-group" },
+  { to: "/interactions", label: "Interactions", icon: "i-heroicons-chat-bubble-left-right" },
+  { to: "/timeline", label: "Timeline", icon: "i-heroicons-clock" },
 ];
 
 const isActive = (path: string): boolean => {

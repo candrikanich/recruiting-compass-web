@@ -17,7 +17,7 @@
           to="/coaches"
           class="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
         >
-          <ArrowLeftIcon class="w-4 h-4" />
+          <UIcon name="i-heroicons-arrow-left" class="w-4 h-4"  />
           Back to All Coaches
         </NuxtLink>
       </div>
@@ -68,7 +68,7 @@
           v-model="notes"
           title="Notes"
           placeholder="Add notes about this coach..."
-          @save="saveNotes"
+          :save-fn="saveNotes"
         />
 
         <!-- Recent Interactions Component -->
@@ -112,7 +112,7 @@
                 aria-label="Close communication panel"
                 class="text-slate-400 hover:text-slate-600"
               >
-                <XMarkIcon class="w-6 h-6" />
+                <UIcon name="i-heroicons-x-mark" class="w-6 h-6"  />
               </button>
             </div>
             <div class="p-6">
@@ -162,7 +162,6 @@ import { openTwitter, openInstagram } from "~/utils/socialMediaHandlers";
 import { useUserStore } from "~/stores/user";
 import { useDeleteModal } from "~/composables/useDeleteModal";
 import { useCommunicationModal } from "~/composables/useCommunicationModal";
-import { ArrowLeftIcon, XMarkIcon } from "@heroicons/vue/24/outline";
 import DeleteConfirmationModal from "~/components/DeleteConfirmationModal.vue";
 import CoachHeader from "~/components/Coach/CoachHeader.vue";
 import CoachStatsGrid from "~/components/Coach/CoachStatsGrid.vue";
@@ -316,7 +315,8 @@ const deleteCoach = async () => {
 // Notes save handlers
 const saveNotes = async (value: string) => {
   if (!coach.value) return;
-  await updateCoach(coach.value.id, { notes: value });
+  const updated = await updateCoach(coach.value.id, { notes: value });
+  if (updated) coach.value = updated;
 };
 
 // Data loading

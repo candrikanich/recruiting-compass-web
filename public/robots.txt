@@ -1,12 +1,19 @@
 # robots.txt — The Recruiting Compass
 # Spec: https://www.rfc-editor.org/rfc/rfc9309
+# Content Signals: https://contentsignals.org/ (draft-romm-aipref-contentsignals)
 #
 # Default rules below apply to traditional search crawlers and any crawler
 # not matched by a more specific group. Explicit AI-crawler groups follow.
 # Public marketing and content pages are open; authenticated app routes,
 # API endpoints, and token-bearing flows are off-limits.
+#
+# Content-Signal policy for allowed content:
+#   search=yes      — indexing for traditional search results is permitted
+#   ai-input=yes    — use as input for AI search / assistants (RAG) is permitted
+#   ai-train=no     — training generative AI models on this content is NOT permitted
 
 User-agent: *
+Content-Signal: search=yes, ai-input=yes, ai-train=no
 
 # Authenticated app — no public content; may carry session or query state
 Disallow: /admin/
@@ -78,6 +85,7 @@ User-agent: PerplexityBot
 User-agent: Perplexity-User
 User-agent: cohere-ai
 User-agent: CCBot
+Content-Signal: search=yes, ai-input=yes, ai-train=no
 
 Disallow: /admin/
 Disallow: /api/

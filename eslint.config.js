@@ -59,6 +59,8 @@ export default [
       ".env*",
       "PORT=*/**/*",
       "playwright.config.ts",
+      "playwright-report/**",
+      "test-results/**",
       "vitest.config.ts",
       "utils/positions.test.ts",
     ],

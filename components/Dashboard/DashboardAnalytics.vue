@@ -133,7 +133,7 @@
       <div class="flex items-center justify-between mb-5">
         <div class="flex items-center gap-3">
           <div class="p-2 bg-slate-100 rounded-lg">
-            <CalendarDaysIcon class="w-5 h-5 text-slate-700" />
+            <UIcon name="i-heroicons-calendar-days" class="w-5 h-5 text-slate-700"  />
           </div>
           <h3 class="text-slate-900 font-semibold">Upcoming Events</h3>
         </div>
@@ -194,7 +194,7 @@
           <div
             class="w-10 h-10 bg-linear-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-md"
           >
-            <CheckIcon class="w-5 h-5 text-white" />
+            <UIcon name="i-heroicons-check" class="w-5 h-5 text-white"  />
           </div>
           <div class="flex items-center gap-2">
             <h3 class="text-slate-900 font-semibold">Quick Tasks</h3>
@@ -210,7 +210,7 @@
           @click="showTaskForm = !showTaskForm"
           class="flex items-center gap-2 px-3 py-1.5 bg-linear-to-r from-brand-blue-500 to-brand-blue-600 text-white rounded-lg text-sm font-medium hover:from-brand-blue-600 hover:to-brand-blue-700 transition-all"
         >
-          <PlusIcon class="w-4 h-4" />
+          <UIcon name="i-heroicons-plus" class="w-4 h-4"  />
           Add Task
         </button>
       </div>
@@ -233,13 +233,13 @@
             @click="handleAddTask"
             class="px-3 py-1.5 text-blue-600 hover:text-blue-700 font-medium hover:bg-blue-100 rounded-sm transition-colors"
           >
-            <CheckIcon class="w-4 h-4" />
+            <UIcon name="i-heroicons-check" class="w-4 h-4"  />
           </button>
           <button
             @click="showTaskForm = false"
             class="px-3 py-1.5 text-slate-500 hover:text-slate-700 font-medium hover:bg-slate-200 rounded-sm transition-colors"
           >
-            <XMarkIcon class="w-4 h-4" />
+            <UIcon name="i-heroicons-x-mark" class="w-4 h-4"  />
           </button>
         </div>
       </div>
@@ -265,7 +265,7 @@
                 : 'border-slate-300 hover:border-blue-400',
             ]"
           >
-            <CheckIcon v-if="task.completed" class="w-3 h-3 text-white" />
+            <UIcon name="i-heroicons-check" v-if="task.completed" class="w-3 h-3 text-white"  />
           </button>
           <span
             :class="[
@@ -279,7 +279,7 @@
             @click="$emit('delete-task', task.id)"
             class="opacity-0 group-hover:opacity-100 text-red-500 hover:text-red-600 transition-all p-1 hover:bg-red-50 rounded-sm"
           >
-            <XMarkIcon class="w-4 h-4" />
+            <UIcon name="i-heroicons-x-mark" class="w-4 h-4"  />
           </button>
         </div>
       </div>
@@ -308,7 +308,7 @@
       <div class="flex items-center justify-between mb-5">
         <div class="flex items-center gap-3">
           <div class="p-2 bg-slate-100 rounded-lg">
-            <BellIcon class="w-5 h-5 text-slate-700" />
+            <UIcon name="i-heroicons-bell" class="w-5 h-5 text-slate-700"  />
           </div>
           <h3 class="text-slate-900 font-semibold">Recent Activity</h3>
         </div>
@@ -363,7 +363,7 @@
     >
       <div class="flex items-center gap-3 mb-5">
         <div class="p-2 bg-slate-100 rounded-lg">
-          <ShareIcon class="w-5 h-5 text-slate-700" />
+          <UIcon name="i-heroicons-share" class="w-5 h-5 text-slate-700"  />
         </div>
         <h3 class="text-slate-900 font-semibold">Social Media</h3>
       </div>
@@ -388,14 +388,6 @@
 
 <script setup lang="ts">
 import { ref, computed } from "vue";
-import {
-  CalendarDaysIcon,
-  BellIcon,
-  CheckIcon,
-  PlusIcon,
-  XMarkIcon,
-  ShareIcon,
-} from "@heroicons/vue/24/outline";
 import type {
   Notification as NotificationModel,
   Interaction,

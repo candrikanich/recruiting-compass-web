@@ -23,7 +23,7 @@ test.describe("Schools Filtering - User Story 3.3", () => {
     await page.goto("/schools");
     // Use load instead of networkidle to avoid timing out on slow requests
     await page.waitForLoadState("load");
-    await page.waitForTimeout(500);
+
     // Wait for schools or empty state — SchoolsFilterPanel only renders when schools.length > 0
     await page
       .waitForSelector("[data-testid='school-card']", { timeout: 10000 })
@@ -60,7 +60,6 @@ test.describe("Schools Filtering - User Story 3.3", () => {
 
     const searchInput = page.locator("#school-search");
     await searchInput.fill("zzzzzzzznotaschool");
-    await page.waitForTimeout(500);
 
     const filteredCount = await schoolCards.count();
     expect(filteredCount).toBe(0);
@@ -76,7 +75,6 @@ test.describe("Schools Filtering - User Story 3.3", () => {
 
     const searchInput = page.locator("#school-search");
     await searchInput.fill("University");
-    await page.waitForTimeout(500);
 
     // Chip value is displayed as "University" (quoted in display)
     const filtersLabel = page.locator("text=Filters:");
@@ -105,7 +103,6 @@ test.describe("Schools Filtering - User Story 3.3", () => {
       .count();
 
     await distanceSlider.fill("500");
-    await page.waitForTimeout(500);
 
     // Chip should show "Within 500 miles"
     const chip = page.locator("text=Within 500 miles");
@@ -214,7 +211,6 @@ test.describe("Schools Filtering - User Story 3.3", () => {
       .getAttribute("value");
     if (!firstStateVal) return;
     await stateSelect.selectOption(firstStateVal);
-    await page.waitForTimeout(500);
 
     const hasChip = await page
       .locator(`button[aria-label="Remove ${firstStateVal} filter"]`)
@@ -223,7 +219,6 @@ test.describe("Schools Filtering - User Story 3.3", () => {
     if (!hasChip) return; // No schools for that state, no chip shown
 
     await stateSelect.selectOption("");
-    await page.waitForTimeout(500);
 
     // State chip should be gone
     await expect(
@@ -244,7 +239,6 @@ test.describe("Schools Filtering - User Story 3.3", () => {
     // Division is the first select in the filter grid
     const divisionSelect = page.locator("#filter-division");
     await divisionSelect.selectOption("D1");
-    await page.waitForTimeout(500);
 
     const filteredCount = await schoolCards.count();
     expect(filteredCount).toBeLessThanOrEqual(initialCount);
@@ -279,8 +273,6 @@ test.describe("Schools Filtering - User Story 3.3", () => {
     const statusSelect = page.locator("#filter-status");
     await statusSelect.selectOption("researching");
 
-    await page.waitForTimeout(500);
-
     const filteredCount = await schoolCards.count();
     expect(filteredCount).toBeLessThanOrEqual(initialCount);
   });
@@ -305,7 +297,6 @@ test.describe("Schools Filtering - User Story 3.3", () => {
     // Apply a division filter
     const divisionSelect = page.locator("#filter-division");
     await divisionSelect.selectOption("D3");
-    await page.waitForTimeout(500);
 
     // After applying filter, a chip should appear
     const chipAfterFilter = page.locator(
@@ -327,7 +318,6 @@ test.describe("Schools Filtering - User Story 3.3", () => {
 
     const divisionSelect = page.locator("#filter-division");
     await divisionSelect.selectOption("D1");
-    await page.waitForTimeout(500);
 
     // Check if a D1 chip appeared
     const d1Chip = page.locator('button[aria-label="Remove D1 filter"]');
@@ -337,10 +327,9 @@ test.describe("Schools Filtering - User Story 3.3", () => {
     const clearAllBtn = page.locator('button[aria-label="Clear all filters"]');
     await expect(clearAllBtn).toBeVisible();
     await clearAllBtn.click();
-    await page.waitForTimeout(500);
 
-    // After clearing, the D1 chip should be gone
-    await expect(d1Chip).not.toBeVisible();
+    // After clearing, the D1 chip should be gone (allow time for reactive update)
+    await expect(d1Chip).not.toBeVisible({ timeout: 10000 });
   });
 
   test("should allow removing individual filter chips", async ({ page }) => {
@@ -351,7 +340,6 @@ test.describe("Schools Filtering - User Story 3.3", () => {
 
     const divisionSelect = page.locator("#filter-division");
     await divisionSelect.selectOption("D2");
-    await page.waitForTimeout(500);
 
     // Check if a D2 chip appeared
     const d2Chip = page.locator('button[aria-label="Remove D2 filter"]');
@@ -360,7 +348,6 @@ test.describe("Schools Filtering - User Story 3.3", () => {
 
     await expect(d2Chip).toBeVisible();
     await d2Chip.click();
-    await page.waitForTimeout(500);
 
     // After removing, the D2 chip should be gone
     await expect(d2Chip).not.toBeVisible();
@@ -381,8 +368,6 @@ test.describe("Schools Filtering - User Story 3.3", () => {
     // Apply JUCO division filter — unlikely to match most test data
     const divisionSelect = page.locator("#filter-division");
     await divisionSelect.selectOption("JUCO");
-
-    await page.waitForTimeout(500);
 
     const filteredCount = await schoolCards.count();
     if (filteredCount === 0) {
@@ -408,7 +393,6 @@ test.describe("Schools Filtering - User Story 3.3", () => {
 
     const divisionSelect = page.locator("#filter-division");
     await divisionSelect.selectOption("D2");
-    await page.waitForTimeout(500);
 
     const newText = await resultText.textContent();
     expect(newText).toBeDefined();

@@ -41,10 +41,18 @@ test.describe("School Detail - Notes Management", () => {
     const textarea = page.locator(notesSelectors.notesTextarea).first();
     await textarea.fill(newNotes);
 
+    // Wait for the actual PATCH to schools to complete before reloading,
+    // so we know the DB committed before the reload reads fresh data.
+    const patchResponse = page.waitForResponse(
+      (resp) =>
+        resp.url().includes("/rest/v1/schools") &&
+        resp.request().method() === "PATCH" &&
+        resp.status() === 200,
+    );
+
     const saveButton = page.locator(notesSelectors.saveButton).first();
     await saveButton.click();
-
-    await page.waitForTimeout(1000);
+    await patchResponse;
 
     await page.reload();
     await page.waitForLoadState("domcontentloaded");
@@ -66,8 +74,6 @@ test.describe("School Detail - Notes Management", () => {
 
     const cancelButton = page.locator(notesSelectors.cancelButton).first();
     await cancelButton.click();
-
-    await page.waitForTimeout(500);
 
     const notesDisplay = page.locator(notesSelectors.notesDisplay).first();
     const displayText = await notesDisplay.textContent();
@@ -97,7 +103,7 @@ test.describe("School Detail - Notes Management", () => {
       expect(isDisabled).toBe(true);
     }
     // Wait for save to complete
-    await page.waitForTimeout(1000);
+
   });
 
   test("should handle special characters in notes", async ({ page }) => {
@@ -109,18 +115,22 @@ test.describe("School Detail - Notes Management", () => {
     const textarea = page.locator(notesSelectors.notesTextarea).first();
     await textarea.fill(specialNotes);
 
+    const patchResponse = page.waitForResponse(
+      (resp) =>
+        resp.url().includes("/rest/v1/schools") &&
+        resp.request().method() === "PATCH" &&
+        resp.status() === 200,
+    );
+
     const saveButton = page.locator(notesSelectors.saveButton).first();
     await saveButton.click();
-
-    await page.waitForTimeout(1000);
+    await patchResponse;
 
     await page.reload();
     await page.waitForLoadState("domcontentloaded");
 
     const notesDisplay = page.locator(notesSelectors.notesDisplay).first();
-    const displayText = await notesDisplay.textContent();
-
-    expect(displayText).toContain("quotes");
-    expect(displayText).toContain("@#$%");
+    await expect(notesDisplay).toContainText("quotes");
+    await expect(notesDisplay).toContainText("@#$%");
   });
 });

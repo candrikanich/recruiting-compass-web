@@ -79,7 +79,7 @@ test.describe("User Story 5.3: Athlete Logs Own Interactions", () => {
       // Interactions listed should all show "You" badge
       const badges = page.locator(':has-text("You")');
       const count = await badges.count();
-      expect(count).toBeGreaterThanOrEqual(0);
+
     });
 
     test("Scenario 4: Athlete can log different interaction types", async ({
@@ -191,12 +191,11 @@ test.describe("User Story 5.3: Athlete Logs Own Interactions", () => {
         await loggedBySelect.selectOption({ index: 1 });
 
         // Wait for filtering
-        await page.waitForTimeout(500);
 
         // Verify interactions are filtered
         const interactions = page.locator(".bg-white.rounded-xl");
         const count = await interactions.count();
-        expect(count).toBeGreaterThanOrEqual(0);
+
       }
     });
 
@@ -216,12 +215,11 @@ test.describe("User Story 5.3: Athlete Logs Own Interactions", () => {
 
       if (exists > 0) {
         await meOption.click();
-        await page.waitForTimeout(500);
 
         // Verify only parent interactions are shown
         const badges = page.locator(":has-text('You')");
         const count = await badges.count();
-        expect(count).toBeGreaterThanOrEqual(0);
+
       }
     });
 
@@ -232,7 +230,6 @@ test.describe("User Story 5.3: Athlete Logs Own Interactions", () => {
       await page.goto("/interactions");
 
       // Wait for interactions to load
-      await page.waitForTimeout(500);
 
       // Click on first interaction card (if available)
       // InteractionCard has overflow-hidden; empty-state cards do not — avoid false matches

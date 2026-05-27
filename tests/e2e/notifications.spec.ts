@@ -1,9 +1,124 @@
 import { test, expect } from "@playwright/test";
+import { resolve } from "path";
+import {
+  getSupabaseAdmin,
+  findUserIdByEmail,
+} from "./seed/helpers/supabase-admin";
+import { TEST_ACCOUNTS } from "./config/test-accounts";
+
+const RUN_ID = Date.now();
+let seededIds: string[] = [];
 
 test.describe("Notifications Page", () => {
+  test.use({
+    storageState: resolve(process.cwd(), "tests/e2e/.auth/player.json"),
+  });
+
+  test.beforeAll(async () => {
+    try {
+      const supabase = getSupabaseAdmin();
+      const playerUserId = await findUserIdByEmail(
+        supabase,
+        TEST_ACCOUNTS.player.email,
+      );
+      if (!playerUserId) {
+        console.warn("⚠️  notifications seed: player user not found — skipping");
+        return;
+      }
+
+      const now = Date.now();
+      const ago = (ms: number) => new Date(now - ms).toISOString();
+      const rows = [
+        // 3 unread (mixed types, scheduled_for set so they sort to the top)
+        {
+          user_id: playerUserId,
+          type: "follow_up_reminder" as const,
+          title: `[e2e-${RUN_ID}] Follow up with Coach Smith`,
+          message: "It's been 14 days since your last contact.",
+          priority: "high",
+          read_at: null,
+          scheduled_for: ago(60 * 1000),
+          related_entity_type: "coach",
+        },
+        {
+          user_id: playerUserId,
+          type: "deadline_alert" as const,
+          title: `[e2e-${RUN_ID}] Application deadline approaching`,
+          message: "Duke University application is due in 7 days.",
+          priority: "high",
+          read_at: null,
+          scheduled_for: ago(2 * 60 * 1000),
+        },
+        {
+          user_id: playerUserId,
+          type: "inbound_interaction" as const,
+          title: `[e2e-${RUN_ID}] New email from Coach Johnson`,
+          message: "Subject: Camp invitation for July.",
+          priority: "normal",
+          read_at: null,
+          scheduled_for: ago(3 * 60 * 1000),
+        },
+        // 2 read
+        {
+          user_id: playerUserId,
+          type: "daily_digest" as const,
+          title: `[e2e-${RUN_ID}] Weekly recap`,
+          message: "You logged 3 interactions this week.",
+          priority: "low",
+          read_at: ago(24 * 60 * 60 * 1000),
+          scheduled_for: ago(24 * 60 * 60 * 1000),
+        },
+        {
+          user_id: playerUserId,
+          type: "follow_up_reminder" as const,
+          title: `[e2e-${RUN_ID}] Old reminder`,
+          message: "This one's already been read.",
+          priority: "normal",
+          read_at: ago(2 * 24 * 60 * 60 * 1000),
+          scheduled_for: ago(2 * 24 * 60 * 60 * 1000),
+        },
+      ];
+
+      const { data, error } = await supabase
+        .from("notifications")
+        .insert(rows)
+        .select("id");
+      if (error) {
+        console.warn("⚠️  notifications seed insert failed:", error.message);
+        return;
+      }
+      seededIds = (data ?? []).map((r) => r.id as string);
+    } catch (e) {
+      console.warn("⚠️  notifications seed threw:", e);
+    }
+  });
+
+  test.afterAll(async () => {
+    if (seededIds.length === 0) return;
+    try {
+      const supabase = getSupabaseAdmin();
+      await supabase.from("notifications").delete().in("id", seededIds);
+    } catch {
+      // non-fatal
+    }
+  });
+
   test.beforeEach(async ({ page }) => {
     await page.goto("/notifications");
     await page.waitForLoadState("domcontentloaded");
+    // Wait for the async fetch to render either cards or the empty state —
+    // tests that gate on `.border-l-4` count would otherwise see 0 and skip.
+    await Promise.race([
+      page
+        .locator(".border-l-4")
+        .first()
+        .waitFor({ state: "visible", timeout: 8000 })
+        .catch(() => null),
+      page
+        .locator("text=You're all caught up!")
+        .waitFor({ state: "visible", timeout: 8000 })
+        .catch(() => null),
+    ]);
   });
 
   // ── Page structure ──────────────────────────────────────────────────────────
@@ -47,11 +162,20 @@ test.describe("Notifications Page", () => {
   test("shows either notifications or empty state — no blank screen", async ({
     page,
   }) => {
+    // Race: wait for first notification card or empty-state copy to appear.
+    const notifications = page.locator(".border-l-4").first();
+    const emptyState = page.locator("text=You're all caught up!");
+    await Promise.race([
+      notifications
+        .waitFor({ state: "visible", timeout: 10000 })
+        .catch(() => null),
+      emptyState
+        .waitFor({ state: "visible", timeout: 10000 })
+        .catch(() => null),
+    ]);
+
     const hasNotifications = (await page.locator(".border-l-4").count()) > 0;
-    const hasEmptyState = await page
-      .locator("text=You're all caught up!")
-      .isVisible()
-      .catch(() => false);
+    const hasEmptyState = await emptyState.isVisible().catch(() => false);
 
     expect(hasNotifications || hasEmptyState).toBe(true);
   });
@@ -82,7 +206,6 @@ test.describe("Notifications Page", () => {
     const search = page.locator('input[placeholder="Search notifications..."]');
     // Type a search term that won't match anything
     await search.fill("zzz_no_match_xyz");
-    await page.waitForTimeout(200);
 
     const remaining = await page.locator(".border-l-4").count();
     const emptyState = await page
@@ -95,7 +218,7 @@ test.describe("Notifications Page", () => {
 
     // Clear search — results should restore
     await search.fill("");
-    await page.waitForTimeout(200);
+
     await expect(page.locator(".border-l-4").first()).toBeVisible();
   });
 
@@ -106,8 +229,11 @@ test.describe("Notifications Page", () => {
     await followUpsBtn.click();
     await expect(followUpsBtn).toHaveClass(/bg-blue-600/);
 
-    // All button should no longer be active
-    const allBtn = page.locator('button:has-text("All")').first();
+    // "All" filter button only — exclude "Mark all as read" which also contains "All"
+    const allBtn = page
+      .locator("button")
+      .filter({ hasText: /^All$/ })
+      .first();
     await expect(allBtn).not.toHaveClass(/bg-blue-600/);
   });
 
@@ -122,11 +248,13 @@ test.describe("Notifications Page", () => {
 
     // Apply a filter unlikely to match all notifications
     await page.locator('button:has-text("Offers")').first().click();
-    await page.waitForTimeout(200);
 
-    // Switch back to All
-    await page.locator('button:has-text("All")').first().click();
-    await page.waitForTimeout(200);
+    // Switch back to All — exact match to avoid "Mark all as read" collision
+    await page
+      .locator("button")
+      .filter({ hasText: /^All$/ })
+      .first()
+      .click();
 
     const restoredCount = await page.locator(".border-l-4").count();
     expect(restoredCount).toBe(initialCount);
@@ -187,7 +315,6 @@ test.describe("Notifications Page", () => {
 
     const unreadCountBefore = await unread.count();
     await unread.first().click();
-    await page.waitForTimeout(500);
 
     const unreadCountAfter = await page
       .locator(".border-l-4.border-blue-500")
@@ -218,7 +345,6 @@ test.describe("Notifications Page", () => {
     }
 
     await markAllBtn.click();
-    await page.waitForTimeout(500);
 
     // No more unread cards
     const unreadRemaining = await page
@@ -240,13 +366,19 @@ test.describe("Notifications Page", () => {
       return;
     }
 
+    // Parallel workers seed against the same user, so the absolute count
+    // moves under our feet (other workers' afterAll deletes fire mid-test).
+    // Assert on the specific card we deleted instead of N-1.
     const firstCard = cards.first();
-    const deleteBtn = firstCard.locator("button");
-    await deleteBtn.click();
-    await page.waitForTimeout(500);
+    const firstTitle = (await firstCard.locator("h3").textContent())?.trim();
+    expect(firstTitle).toBeTruthy();
 
-    const newCount = await page.locator(".border-l-4").count();
-    expect(newCount).toBe(initialCount - 1);
+    await firstCard.locator("button").click();
+
+    // The card with that title should be gone within a beat.
+    await expect(
+      page.locator(`.border-l-4:has(h3:text-is("${firstTitle}"))`),
+    ).toHaveCount(0, { timeout: 5000 });
   });
 
   test("Clear read button only shows when there are read notifications", async ({
@@ -276,7 +408,6 @@ test.describe("Notifications Page", () => {
 
     const initialUrl = page.url();
     await cards.first().click();
-    await page.waitForTimeout(1000);
 
     // Either navigated away or stayed (notification without action_url)
     // Either way, no crash occurred

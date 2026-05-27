@@ -3,25 +3,6 @@ import { mount } from "@vue/test-utils";
 import InteractionCard from "~/components/Interaction/InteractionCard.vue";
 import LoggedByBadge from "~/components/Interaction/LoggedByBadge.vue";
 import type { Interaction } from "~/types/models";
-import {
-  CalendarIcon,
-  PaperClipIcon,
-  EnvelopeIcon,
-} from "@heroicons/vue/24/outline";
-
-vi.mock("@heroicons/vue/24/outline", () => ({
-  CalendarIcon: { name: "CalendarIcon", template: "<svg />" },
-  PaperClipIcon: { name: "PaperClipIcon", template: "<svg />" },
-  EnvelopeIcon: { name: "EnvelopeIcon", template: "<svg />" },
-  ChatBubbleLeftIcon: {
-    name: "ChatBubbleLeftIcon",
-    template: "<svg />",
-  },
-  PhoneIcon: { name: "PhoneIcon", template: "<svg />" },
-  VideoCameraIcon: { name: "VideoCameraIcon", template: "<svg />" },
-  UserGroupIcon: { name: "UserGroupIcon", template: "<svg />" },
-}));
-
 describe("InteractionCard", () => {
   const mockInteraction: Interaction = {
     id: "int-1",
@@ -52,10 +33,7 @@ describe("InteractionCard", () => {
       props: defaultProps,
       global: {
         components: {
-          LoggedByBadge,
-          CalendarIcon,
-          PaperClipIcon,
-          EnvelopeIcon,
+          LoggedByBadge
         },
       },
     });
@@ -76,10 +54,7 @@ describe("InteractionCard", () => {
       props: defaultProps,
       global: {
         components: {
-          LoggedByBadge,
-          CalendarIcon,
-          PaperClipIcon,
-          EnvelopeIcon,
+          LoggedByBadge
         },
       },
     });
@@ -102,10 +77,7 @@ describe("InteractionCard", () => {
       },
       global: {
         components: {
-          LoggedByBadge,
-          CalendarIcon,
-          PaperClipIcon,
-          EnvelopeIcon,
+          LoggedByBadge
         },
       },
     });
@@ -304,8 +276,7 @@ describe("InteractionCard", () => {
       props: defaultProps,
       global: {
         components: {
-          LoggedByBadge,
-          CalendarIcon,
+          LoggedByBadge
         },
       },
     });
@@ -327,8 +298,7 @@ describe("InteractionCard", () => {
       },
       global: {
         components: {
-          LoggedByBadge,
-          CalendarIcon,
+          LoggedByBadge
         },
       },
     });
@@ -341,8 +311,7 @@ describe("InteractionCard", () => {
       props: defaultProps,
       global: {
         components: {
-          LoggedByBadge,
-          PaperClipIcon,
+          LoggedByBadge
         },
       },
     });
@@ -417,8 +386,7 @@ describe("InteractionCard", () => {
       props: defaultProps,
       global: {
         components: {
-          LoggedByBadge,
-          EnvelopeIcon,
+          LoggedByBadge
         },
       },
     });
@@ -629,10 +597,7 @@ describe("InteractionCard", () => {
         props: defaultProps,
         global: {
           components: {
-            LoggedByBadge,
-            CalendarIcon,
-            PaperClipIcon,
-            EnvelopeIcon,
+            LoggedByBadge
           },
         },
       });

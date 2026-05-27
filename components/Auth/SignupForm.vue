@@ -27,7 +27,7 @@
         :model-value="firstName"
         :error="fieldErrors.firstName"
         :disabled="disabled"
-        :icon="UserIcon"
+        icon="i-heroicons-user"
         :required="true"
         @update:model-value="$emit('update:firstName', $event)"
       />
@@ -40,7 +40,7 @@
         :model-value="lastName"
         :error="fieldErrors.lastName"
         :disabled="disabled"
-        :icon="UserIcon"
+        icon="i-heroicons-user"
         :required="true"
         @update:model-value="$emit('update:lastName', $event)"
       />
@@ -56,10 +56,10 @@
         <span class="text-red-600 ml-1" aria-label="required">*</span>
       </label>
       <div class="relative">
-        <CalendarIcon
+        <UIcon name="i-heroicons-calendar"
           class="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
           aria-hidden="true"
-        />
+         />
         <input
           id="dateOfBirth"
           :value="dateOfBirth"
@@ -102,7 +102,7 @@
       :model-value="email"
       :error="fieldErrors.email"
       :disabled="disabled"
-      :icon="EnvelopeIcon"
+      icon="i-heroicons-envelope"
       :required="true"
       @update:model-value="$emit('update:email', $event)"
       @blur="$emit('validateEmail')"
@@ -119,7 +119,7 @@
         :model-value="password"
         :error="fieldErrors.password"
         :disabled="disabled"
-        :icon="LockClosedIcon"
+        icon="i-heroicons-lock-closed"
         :required="true"
         described-by="password-requirements"
         @update:model-value="$emit('update:password', $event)"
@@ -134,10 +134,10 @@
           <span class="text-red-600 ml-1" aria-label="required">*</span>
         </label>
         <div class="relative">
-          <LockClosedIcon
+          <UIcon name="i-heroicons-lock-closed"
             class="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
             aria-hidden="true"
-          />
+           />
           <input
             id="confirmPassword"
             :value="confirmPassword"
@@ -269,12 +269,6 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
-import {
-  UserIcon,
-  EnvelopeIcon,
-  LockClosedIcon,
-  CalendarIcon,
-} from "@heroicons/vue/24/outline";
 import LoginInputField from "~/components/Auth/LoginInputField.vue";
 import FieldError from "~/components/DesignSystem/FieldError.vue";
 import type { FormFieldError } from "~/composables/useFormValidation";

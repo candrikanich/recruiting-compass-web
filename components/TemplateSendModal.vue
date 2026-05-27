@@ -18,7 +18,7 @@
           class="transition text-slate-600 hover:text-slate-900"
           aria-label="Close"
         >
-          <XMarkIcon class="w-6 h-6" />
+          <UIcon name="i-heroicons-x-mark-solid" class="w-6 h-6"  />
         </button>
       </div>
 
@@ -115,7 +115,6 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from "vue";
-import { XMarkIcon } from "@heroicons/vue/24/solid";
 import {
   useCommunicationTemplates,
   type CommunicationTemplate,

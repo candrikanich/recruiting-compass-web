@@ -57,7 +57,12 @@ test.describe("/timeline — Recruiting Timeline", () => {
   });
 
   test("shows year section headings", async ({ page }) => {
-    // PhaseCardInline renders title in h3 — page shows all 4 grade years
+    // PhaseCardInline renders title in h3 inside a v-if="!loading" block —
+    // wait for the sidebar (also gated on load) before counting.
+    await page.locator('[data-testid="guidance-sidebar"]').waitFor({
+      state: "visible",
+      timeout: 10000,
+    });
     const yearHeadings = page.locator("h3").filter({ hasText: /Year/ });
     expect(await yearHeadings.count()).toBeGreaterThanOrEqual(1);
   });
@@ -82,7 +87,11 @@ test.describe("/reports — Reports & Analytics", () => {
   });
 
   test("renders at least one interactive element", async ({ page }) => {
+    // /reports has static datePresets buttons + Generate Report button, but
+    // SSR may finish before Vue hydration attaches @click handlers. Wait for
+    // any button/link to be visible before counting.
     const interactive = page.locator("button, a[href]");
+    await expect(interactive.first()).toBeVisible({ timeout: 10000 });
     expect(await interactive.count()).toBeGreaterThan(0);
   });
 });
@@ -167,7 +176,12 @@ test.describe("/settings/profile — Profile Settings", () => {
   });
 
   test("shows a form with inputs", async ({ page }) => {
-    const inputs = page.locator("input, textarea, select");
+    // Profile fields hydrate client-side after the initial paint. The very
+    // first <input> is the hidden avatar file picker (display:none), so
+    // .first() resolves to it and toBeVisible never satisfies. Filter to
+    // :visible so the wait latches onto a real, paint-visible form control.
+    const inputs = page.locator("input:visible, textarea:visible, select:visible");
+    await expect(inputs.first()).toBeVisible({ timeout: 10000 });
     expect(await inputs.count()).toBeGreaterThan(0);
   });
 });

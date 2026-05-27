@@ -1,257 +1,271 @@
 import { test, expect } from "@playwright/test";
-import { SettingsPage } from "../pages/SettingsPage";
 
-test.describe("Phase 2: Settings Pages - Comprehensive Coverage", () => {
-  let settingsPage: SettingsPage;
+/**
+ * Settings — Sub-route Coverage
+ *
+ * The settings surface is split across `/settings` + 10 sub-routes. This
+ * spec mirrors the medium-priority-pages.spec.ts pattern: one describe per
+ * route, smoke-level assertions (loads, heading visible, key content
+ * present, no blank screen). Form-save and validation flows are out of
+ * scope here — they live in their dedicated specs (player-details-autosave,
+ * family-invite-flow, etc.).
+ *
+ * Replaces the deleted Phase-2 settings spec (22 tests, 22 fails, fully
+ * stale POM). Tracked in planning/2026-05-22-skipped-tests-bug-tickets.md
+ * (ticket #4).
+ *
+ * Run sequentially — settings sub-pages all hit user_preferences API and
+ * can collide under heavy parallel load.
+ */
+// @ts-ignore — fullyParallel override for this file
+test.describe.configure({ mode: "serial" });
 
+// ── /settings — Dashboard / Nav Hub ────────────────────────────────────────
+
+test.describe("/settings — Settings hub", () => {
   test.beforeEach(async ({ page }) => {
-    settingsPage = new SettingsPage(page);
+    await page.goto("/settings");
+    await page.waitForLoadState("domcontentloaded");
   });
 
-  test("should load settings dashboard successfully", async ({ page }) => {
-    await settingsPage.navigateToSettings();
-    await settingsPage.expectVisible(
-      "text=Manage your profile, preferences, and account settings",
-    );
+  test("loads and shows heading", async ({ page }) => {
+    await expect(
+      page.locator("h1, h2").filter({ hasText: "Settings" }).first(),
+    ).toBeVisible();
   });
 
-  test("should display all settings navigation options", async ({ page }) => {
-    await settingsPage.navigateToSettings();
-    await settingsPage.expectSettingsNavigationVisible();
-  });
-
-  test("should navigate to player details page", async ({ page }) => {
-    await settingsPage.navigateToSettings();
-    await settingsPage.navigateToPlayerDetails();
-    await settingsPage.expectPlayerDetailsVisible();
-    await settingsPage.expectPlayerDetailsForm();
-  });
-
-  test("should fill and save player details", async ({ page }) => {
-    await settingsPage.navigateToPlayerDetails();
-
-    const playerDetails = {
-      graduationYear: "2023",
-    };
-
-    await settingsPage.fillPlayerDetails(playerDetails);
-
-    // Save and verify success
-    await settingsPage.expectSaveSuccess();
-  });
-
-  test("should navigate to location settings", async ({ page }) => {
-    await settingsPage.navigateToSettings();
-    await settingsPage.navigateToLocation();
-    await settingsPage.expectLocationForm();
-  });
-
-  test("should fill and save location details", async ({ page }) => {
-    await settingsPage.navigateToLocation();
-
-    const locationDetails = {
-      address: "123 Main St",
-      city: "Anytown",
-      state: "CA",
-    };
-
-    await settingsPage.fillLocationDetails(locationDetails);
-
-    // Verify form submission
-    await settingsPage.expectLocationForm();
-  });
-
-  test("should navigate to school preferences", async ({ page }) => {
-    await settingsPage.navigateToSettings();
-    await settingsPage.navigateToSchoolPreferences();
-    await settingsPage.expectSchoolPreferencesVisible();
-  });
-
-  test("should navigate to account linking", async ({ page }) => {
-    await settingsPage.navigateToSettings();
-    await settingsPage.navigateToAccountLinking();
-    await settingsPage.expectAccountLinkingVisible();
-  });
-
-  test("should send family invitation", async ({ page }) => {
-    await settingsPage.navigateToAccountLinking();
-
-    const invitationEmail = `family-${Date.now()}@example.com`;
-
-    await settingsPage.sendInvitation(invitationEmail);
-    await settingsPage.expectInvitationSuccess();
-  });
-
-  test("should navigate to notifications settings", async ({ page }) => {
-    await settingsPage.navigateToSettings();
-    await settingsPage.navigateToNotifications();
-    await settingsPage.expectNotificationsForm();
-  });
-
-  test("should toggle notification settings", async ({ page }) => {
-    await settingsPage.navigateToNotifications();
-
-    // Toggle a few notification types
-    await settingsPage.toggleNotification("email_notifications");
-    await settingsPage.toggleNotification("sms_notifications");
-    await settingsPage.toggleNotification("push_notifications");
-
-    // Save settings
-    await settingsPage.saveNotificationSettings();
-
-    // Verify settings are applied
-    await settingsPage.expectNotificationsForm();
-  });
-
-  test("should navigate to communication templates", async ({ page }) => {
-    await settingsPage.navigateToSettings();
-    await settingsPage.navigateToTemplates();
-    await settingsPage.expectTemplatesVisible();
-  });
-
-  test("should create communication template", async ({ page }) => {
-    await settingsPage.navigateToTemplates();
-
-    const template = {
-      subject: "Recruiting Follow-up",
-      content:
-        "Dear Coach, I wanted to follow up on our previous conversation...",
-    };
-
-    await settingsPage.createTemplate(template);
-    await settingsPage.expectTemplateCreated();
-  });
-
-  test("should validate form inputs", async ({ page }) => {
-    await settingsPage.navigateToPlayerDetails();
-
-    // Try to save without required field
-    await settingsPage.fillPlayerDetails({ graduationYear: "" }); // Empty required field
-    await settingsPage.click('[data-testid="save-player-details-button"]');
-
-    // Should show validation error
-    await settingsPage.expectValidationError(
-      "Graduation Year",
-      "This field is required",
-    );
-  });
-
-  test("should handle loading states", async ({ page }) => {
-    await settingsPage.navigateToSettings();
-    await settingsPage.expectLoadingState();
-
-    // Should eventually load
-    await settingsPage.expectSettingsNavigationVisible();
-  });
-
-  test("should handle error states gracefully", async ({ page }) => {
-    await settingsPage.navigateToAccountLinking();
-
-    // Try to send invitation with invalid email
-    await settingsPage.sendInvitation("invalid-email");
-
-    // Should show error without crashing
-    await settingsPage.expectErrorState();
-  });
-
-  test("should be responsive on mobile", async ({ page }) => {
-    await settingsPage.testMobileSettings();
-    await settingsPage.expectSettingsNavigationVisible();
-  });
-
-  test("should be responsive on desktop", async ({ page }) => {
-    await settingsPage.testDesktopSettings();
-    await settingsPage.expectSettingsNavigationVisible();
-  });
-
-  test("should persist settings across navigation", async ({ page }) => {
-    await settingsPage.navigateToPlayerDetails();
-
-    // Fill and save some settings
-    await settingsPage.fillPlayerDetails({ graduationYear: "2022" });
-    await settingsPage.expectSaveSuccess();
-
-    // Navigate away and back
-    await settingsPage.navigateToSettings();
-    await settingsPage.navigateToPlayerDetails();
-
-    // Settings should be preserved
-    await settingsPage.expectPlayerDetailsForm();
-  });
-
-  test("should handle form validation for multiple fields", async ({
-    page,
-  }) => {
-    await settingsPage.navigateToLocation();
-
-    // Fill form with invalid data
-    await settingsPage.fillLocationDetails({
-      address: "", // Empty required field
-      city: "CityWithInvalidCharacters!@#$%", // Invalid characters
-      state: "XX", // Invalid state code
-    });
-
-    // Try to save
-    await settingsPage.click('button:has-text("Save Location")');
-
-    // Should show validation errors
-    await settingsPage.expectValidationError(
-      "Street Address",
-      "This field is required",
-    );
-    await settingsPage.expectValidationError(
-      "City",
-      "City contains invalid characters",
-    );
-    await settingsPage.expectValidationError(
-      "State",
-      "Please enter a valid state code",
-    );
-  });
-
-  test("should handle successful save confirmation", async ({ page }) => {
-    await settingsPage.navigateToPlayerDetails();
-
-    const validDetails = {
-      graduationYear: "2024",
-    };
-
-    await settingsPage.fillPlayerDetails(validDetails);
-
-    // Verify save was successful
-    const saveSuccessful = await settingsPage.expectSaveSuccess();
-
-    if (saveSuccessful) {
-      // Should show success message or redirect
-      await settingsPage.expectVisible(
-        "text=Saved successfully, text=Player details updated",
-      );
+  test("shows all sub-route navigation cards", async ({ page }) => {
+    const routes = [
+      "/settings/location",
+      "/settings/player-details",
+      "/settings/school-preferences",
+      "/settings/dashboard",
+      "/settings/notifications",
+      "/settings/communication-templates",
+      "/settings/social-sync",
+      "/settings/family-management",
+      "/settings/profile",
+    ];
+    for (const route of routes) {
+      await expect(page.locator(`a[href="${route}"]`)).toBeVisible();
     }
   });
 
-  test("should provide accessibility feedback", async ({ page }) => {
-    await settingsPage.navigateToPlayerDetails();
+  test("nav card click navigates to sub-route", async ({ page }) => {
+    await page.locator('a[href="/settings/profile"]').click();
+    await page.waitForURL(/\/settings\/profile/);
+    expect(page.url()).toContain("/settings/profile");
+  });
+});
 
-    // Check that form elements have proper labels and ARIA attributes
-    const graduationYearSelect = await settingsPage.page.locator(
-      'select[name="graduation_year"]',
+// ── /settings/profile ──────────────────────────────────────────────────────
+
+test.describe("/settings/profile — My Profile", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto("/settings/profile");
+    await page.waitForLoadState("domcontentloaded");
+  });
+
+  test("loads and shows heading", async ({ page }) => {
+    await expect(page.locator("h1")).toContainText("My Profile");
+  });
+
+  test("renders form inputs after hydration", async ({ page }) => {
+    // First <input> is the hidden avatar file picker (display:none) — filter
+    // to :visible so we latch onto a real form control.
+    const inputs = page.locator(
+      "input:visible, textarea:visible, select:visible",
     );
-    await graduationYearSelect.isVisible();
+    await expect(inputs.first()).toBeVisible({ timeout: 10000 });
+    expect(await inputs.count()).toBeGreaterThan(0);
+  });
+});
 
-    // Check for proper label association
-    const label = await settingsPage.page.locator(
-      'label:has-text("Graduation Year")',
+// ── /settings/player-details ───────────────────────────────────────────────
+
+test.describe("/settings/player-details — Player Details", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto("/settings/player-details");
+    await page.waitForLoadState("domcontentloaded");
+    await page
+      .locator("select")
+      .first()
+      .waitFor({ state: "visible", timeout: 15000 });
+  });
+
+  test("loads and shows heading", async ({ page }) => {
+    // h1 resolves to 2 elements (sticky header + main title) — scope by text.
+    await expect(
+      page.locator("h1", { hasText: "Player Details" }).first(),
+    ).toBeVisible();
+  });
+
+  test("shows tab navigation", async ({ page }) => {
+    // Tabs render twice (desktop + mobile) — use .first().
+    await expect(page.locator("text=Athletics").first()).toBeVisible();
+    await expect(page.locator("text=Academics & Social").first()).toBeVisible();
+  });
+});
+
+// ── /settings/notifications ────────────────────────────────────────────────
+
+test.describe("/settings/notifications — Notification Preferences", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto("/settings/notifications");
+    await page.waitForLoadState("domcontentloaded");
+  });
+
+  test("loads and shows heading", async ({ page }) => {
+    await expect(page.locator("h1")).toContainText("Notification Preferences");
+  });
+
+  test("shows back link to settings", async ({ page }) => {
+    await expect(page.locator("a:has-text('Back to Settings')")).toBeVisible();
+  });
+
+  test("renders toggleable preferences", async ({ page }) => {
+    // Notification prefs are checkboxes/switches — wait for any input to mount.
+    const toggles = page.locator(
+      'input[type="checkbox"], button[role="switch"]',
     );
-    await label.isVisible();
+    await expect(toggles.first()).toBeVisible({ timeout: 10000 });
+    expect(await toggles.count()).toBeGreaterThan(0);
+  });
+});
 
-    // Verify ARIA attributes exist
-    const hasAriaLabel = await graduationYearSelect.getAttribute("aria-label");
-    const hasAriaRequired = await settingsPage.page
-      .locator('label:has-text("Graduation Year")')
-      .locator('[aria-required="true"]')
-      .isVisible();
+// ── /settings/location ─────────────────────────────────────────────────────
 
-    // At least one of aria-label on the select or aria-required on the label must be present
-    expect(hasAriaLabel !== null || hasAriaRequired).toBe(true);
+test.describe("/settings/location — Home Location", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto("/settings/location");
+    await page.waitForLoadState("domcontentloaded");
+  });
+
+  test("loads and shows heading", async ({ page }) => {
+    await expect(page.locator("h1")).toContainText("Home Location");
+  });
+
+  test("renders address inputs", async ({ page }) => {
+    const inputs = page.locator("input:visible");
+    await expect(inputs.first()).toBeVisible({ timeout: 10000 });
+    expect(await inputs.count()).toBeGreaterThan(0);
+  });
+});
+
+// ── /settings/school-preferences ───────────────────────────────────────────
+
+test.describe("/settings/school-preferences — School Preferences", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto("/settings/school-preferences");
+    await page.waitForLoadState("domcontentloaded");
+  });
+
+  test("loads and shows heading", async ({ page }) => {
+    await expect(page.locator("h1")).toContainText("School Preferences");
+  });
+
+  test("renders content after data load", async ({ page }) => {
+    // Page shows a loading skeleton (isLoading) before preferences fetch
+    // settles — wait for any heading or button beyond the page <h1> to mount.
+    const content = page.locator("button:visible, select:visible, h2:visible");
+    await expect(content.first()).toBeVisible({ timeout: 15000 });
+    expect(await content.count()).toBeGreaterThan(0);
+  });
+});
+
+// ── /settings/dashboard — Dashboard customization ──────────────────────────
+
+test.describe("/settings/dashboard — Dashboard Customization", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto("/settings/dashboard");
+    await page.waitForLoadState("domcontentloaded");
+  });
+
+  test("loads and shows heading", async ({ page }) => {
+    await expect(page.locator("h1")).toContainText("Dashboard Customization");
+  });
+
+  test("renders meaningful content", async ({ page }) => {
+    const bodyText = await page.locator("body").textContent();
+    expect(bodyText?.trim().length).toBeGreaterThan(50);
+  });
+});
+
+// ── /settings/communication-templates ──────────────────────────────────────
+
+test.describe("/settings/communication-templates — Templates", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto("/settings/communication-templates");
+    await page.waitForLoadState("domcontentloaded");
+  });
+
+  test("loads and shows heading", async ({ page }) => {
+    await expect(page.locator("h1")).toContainText("Communication Templates");
+  });
+
+  test("renders meaningful content", async ({ page }) => {
+    const bodyText = await page.locator("body").textContent();
+    expect(bodyText?.trim().length).toBeGreaterThan(50);
+  });
+});
+
+// ── /settings/social-sync ──────────────────────────────────────────────────
+
+test.describe("/settings/social-sync — Social Media Sync", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto("/settings/social-sync");
+    await page.waitForLoadState("domcontentloaded");
+  });
+
+  test("loads and shows heading", async ({ page }) => {
+    await expect(page.locator("h1")).toContainText("Social Media Sync");
+  });
+
+  test("renders meaningful content", async ({ page }) => {
+    const bodyText = await page.locator("body").textContent();
+    expect(bodyText?.trim().length).toBeGreaterThan(50);
+  });
+});
+
+// ── /settings/family-management ────────────────────────────────────────────
+
+test.describe("/settings/family-management — Family Management", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto("/settings/family-management");
+    await page.waitForLoadState("domcontentloaded");
+  });
+
+  test("loads and shows heading", async ({ page }) => {
+    await expect(page.locator("h1")).toContainText("Family Management");
+  });
+
+  test("renders meaningful content", async ({ page }) => {
+    const bodyText = await page.locator("body").textContent();
+    expect(bodyText?.trim().length).toBeGreaterThan(50);
+  });
+});
+
+// ── /settings/account ──────────────────────────────────────────────────────
+
+test.describe("/settings/account — Account (redirect-only)", () => {
+  test("redirects to /settings/profile on mount", async ({ page }) => {
+    // account.vue exists as a route but its onMounted does
+    // router.replace("/settings/profile") — kept for backwards-compat with
+    // any saved links/bookmarks.
+    await page.goto("/settings/account");
+    await page.waitForURL(/\/settings\/profile/, { timeout: 10000 });
+    expect(page.url()).toContain("/settings/profile");
+  });
+});
+
+// ── Protected route guard ──────────────────────────────────────────────────
+
+test.describe("/settings — Auth guard", () => {
+  test.use({ storageState: { cookies: [], origins: [] } });
+
+  test("redirects unauthenticated users to login", async ({ page }) => {
+    await page.goto("/settings");
+    await page.waitForURL(/\/login/, { timeout: 10000 });
+    expect(page.url()).toContain("/login");
   });
 });

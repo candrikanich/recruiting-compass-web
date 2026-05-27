@@ -1,6 +1,6 @@
 import { ref, readonly, onUnmounted } from "vue";
 import { useSupabase } from "~/composables/useSupabase";
-import { useAuth } from "~/composables/useAuth";
+import { useUserStore } from "~/stores/user";
 import type { Interaction, School } from "~/types/models";
 import { createClientLogger } from "~/utils/logger";
 
@@ -57,7 +57,9 @@ export interface ActivityEvent {
 
 export const useActivityFeed = () => {
   const supabase = useSupabase();
-  const { session } = useAuth();
+  // The user store is a true Pinia singleton populated at app init, unlike
+  // useAuth() which returns a fresh non-singleton session ref per call.
+  const userStore = useUserStore();
 
   const activities = ref<ActivityEvent[]>([]);
   const loading = ref(false);
@@ -140,7 +142,8 @@ export const useActivityFeed = () => {
     limit?: number;
     offset?: number;
   }): Promise<void> => {
-    if (!session.value?.user?.id) return;
+    const userId = userStore.user?.id;
+    if (!userId) return;
 
     loading.value = true;
     error.value = null;
@@ -170,7 +173,7 @@ export const useActivityFeed = () => {
         .select(
           "id, school_id, type, content, subject, occurred_at, created_at, schools(id, name)",
         )
-        .eq("logged_by", session.value!.user!.id)
+        .eq("logged_by", userId)
         .order("created_at", { ascending: false })
         .limit(50);
 
@@ -227,7 +230,7 @@ export const useActivityFeed = () => {
         .select(
           "id, school_id, new_status, notes, changed_at, schools(id, name)",
         )
-        .eq("changed_by", session.value!.user!.id)
+        .eq("changed_by", userId)
         .order("changed_at", { ascending: false })
         .limit(50);
 
@@ -264,7 +267,7 @@ export const useActivityFeed = () => {
       const documentsResponse = await supabase
         .from("documents")
         .select("id, title, type, created_at")
-        .eq("user_id", session.value!.user!.id)
+        .eq("user_id", userId)
         .order("created_at", { ascending: false })
         .limit(50);
 
@@ -329,7 +332,8 @@ export const useActivityFeed = () => {
   };
 
   const subscribeToUpdates = async (): Promise<void> => {
-    if (!session.value?.user?.id) return;
+    const userId = userStore.user?.id;
+    if (!userId) return;
 
     if (subscription) {
       await subscription.unsubscribe();
@@ -347,7 +351,7 @@ export const useActivityFeed = () => {
           event: "INSERT",
           schema: "public",
           table: "interactions",
-          filter: `logged_by=eq.${session.value!.user!.id}`,
+          filter: `logged_by=eq.${userId}`,
         },
         async (payload) => {
           const interaction = payload.new as unknown as InteractionPayload;
@@ -403,7 +407,7 @@ export const useActivityFeed = () => {
           event: "INSERT",
           schema: "public",
           table: "school_status_history",
-          filter: `changed_by=eq.${session.value!.user!.id}`,
+          filter: `changed_by=eq.${userId}`,
         },
         async (payload) => {
           const change = payload.new as unknown as SchoolStatusPayload;
@@ -451,7 +455,7 @@ export const useActivityFeed = () => {
           event: "INSERT",
           schema: "public",
           table: "documents",
-          filter: `user_id=eq.${session.value!.user!.id}`,
+          filter: `user_id=eq.${userId}`,
         },
         (payload) => {
           const doc = payload.new as unknown as DocumentPayload;

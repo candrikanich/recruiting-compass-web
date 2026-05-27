@@ -59,8 +59,6 @@ test.describe("School Detail - Sidebar Features", () => {
       const sendEmailButton = page.locator(sidebarSelectors.sendEmailButton);
       await sendEmailButton.click();
 
-      await page.waitForTimeout(500);
-
       const modal = page.locator('[role="dialog"]');
       const modalVisible = await modal.isVisible();
 
@@ -127,7 +125,6 @@ test.describe("School Detail - Sidebar Features", () => {
 
       await page.goto(`/schools/${schoolId}`);
       await page.waitForLoadState("domcontentloaded");
-      await page.waitForTimeout(1000);
 
       const coachCards = page.locator(sidebarSelectors.coachCard);
       const coachCount = await coachCards.count();
@@ -158,7 +155,6 @@ test.describe("School Detail - Sidebar Features", () => {
 
       await page.goto(`/schools/${schoolId}`);
       await page.waitForLoadState("domcontentloaded");
-      await page.waitForTimeout(1000);
 
       const emailLink = page.locator(sidebarSelectors.emailIcon).first();
       const emailVisible = await emailLink
@@ -185,7 +181,6 @@ test.describe("School Detail - Sidebar Features", () => {
 
       await page.goto(`/schools/${schoolId}`);
       await page.waitForLoadState("domcontentloaded");
-      await page.waitForTimeout(1000);
 
       const phoneLink = page.locator(sidebarSelectors.phoneIcon).first();
       const phoneVisible = await phoneLink
@@ -212,7 +207,6 @@ test.describe("School Detail - Sidebar Features", () => {
 
       await page.goto(`/schools/${schoolId}`);
       await page.waitForLoadState("domcontentloaded");
-      await page.waitForTimeout(1000);
 
       const smsLink = page.locator(sidebarSelectors.smsIcon).first();
       const smsVisible = await smsLink
@@ -250,8 +244,6 @@ test.describe("School Detail - Sidebar Features", () => {
       await deleteButton.scrollIntoViewIfNeeded();
       await deleteButton.click();
 
-      await page.waitForTimeout(500);
-
       const confirmDialog = page.locator(sidebarSelectors.confirmDialog);
       const dialogVisible = await confirmDialog.isVisible();
 
@@ -275,8 +267,6 @@ test.describe("School Detail - Sidebar Features", () => {
       await deleteButton.scrollIntoViewIfNeeded();
       await deleteButton.click();
 
-      await page.waitForTimeout(500);
-
       const confirmDialog = page.locator(sidebarSelectors.confirmDialog);
       const dialogVisible = await confirmDialog.isVisible();
 
@@ -286,8 +276,8 @@ test.describe("School Detail - Sidebar Features", () => {
         );
         await confirmDeleteButton.click();
 
-        await page.waitForTimeout(2000);
-
+        // Wait for redirect off the school detail URL
+        await page.waitForURL(/\/schools(?!\/[a-f0-9-]+)/, { timeout: 10_000 });
         expect(page.url()).toContain("/schools");
         expect(page.url()).not.toContain(schoolId);
       }
@@ -298,16 +288,12 @@ test.describe("School Detail - Sidebar Features", () => {
       await deleteButton.scrollIntoViewIfNeeded();
       await deleteButton.click();
 
-      await page.waitForTimeout(500);
-
       const confirmDialog = page.locator(sidebarSelectors.confirmDialog);
       const dialogVisible = await confirmDialog.isVisible();
 
       if (dialogVisible) {
         const cancelButton = page.locator(sidebarSelectors.cancelDialogButton);
         await cancelButton.click();
-
-        await page.waitForTimeout(500);
 
         expect(page.url()).toContain(`/schools/${schoolId}`);
 

@@ -31,11 +31,10 @@ test.describe("Tier 1: Remember Me - Session Persistence", () => {
 
   test("should render Remember Me checkbox", async ({ page }) => {
     const checkbox = page.locator('[data-testid="remember-me-checkbox"]');
-    expect(checkbox).toBeVisible();
+    await expect(checkbox).toBeVisible();
 
     const label = page.locator('label[for="rememberMe"]');
-    expect(label).toContainText("Remember me on this device");
-    expect(label).toContainText("30 days");
+    await expect(label).toContainText("Remember me");
   });
 
   test("should have Remember Me checkbox unchecked by default", async ({

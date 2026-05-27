@@ -12,7 +12,7 @@
           @click="toggleEditing"
           class="px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-50 rounded-lg transition flex items-center gap-1"
         >
-          <PencilIcon class="w-4 h-4" />
+          <UIcon name="i-heroicons-pencil" class="w-4 h-4"  />
           {{ isEditing ? "Cancel" : "Edit" }}
         </button>
       </div>
@@ -156,7 +156,6 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from "vue";
-import { PencilIcon } from "@heroicons/vue/24/outline";
 import type { School } from "~/types/models";
 import NotesHistory from "~/components/School/NotesHistory.vue";
 

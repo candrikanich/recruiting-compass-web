@@ -14,7 +14,7 @@
 
     <div v-else class="flex items-start gap-4">
       <div class="shrink-0 mt-1">
-        <LightBulbIcon class="w-6 h-6 text-indigo-600" />
+        <UIcon name="i-heroicons-light-bulb" class="w-6 h-6 text-indigo-600"  />
       </div>
       <div class="flex-1">
         <h3 class="font-semibold text-lg text-slate-800 mb-2">
@@ -27,7 +27,7 @@
           class="text-sm text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1"
         >
           Learn more about this phase
-          <ArrowRightIcon class="w-4 h-4" />
+          <UIcon name="i-heroicons-arrow-right" class="w-4 h-4"  />
         </button>
       </div>
     </div>
@@ -48,7 +48,7 @@
                 @click="showLearnMore = false"
                 class="p-1 hover:bg-slate-100 rounded-lg transition"
               >
-                <XMarkIcon class="w-5 h-5 text-slate-500" />
+                <UIcon name="i-heroicons-x-mark" class="w-5 h-5 text-slate-500"  />
               </button>
             </div>
 
@@ -106,11 +106,6 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from "vue";
-import {
-  LightBulbIcon,
-  ArrowRightIcon,
-  XMarkIcon,
-} from "@heroicons/vue/24/outline";
 import { useAthleteProfile } from "~/composables/useAthleteProfile";
 import {
   getParentMessage,

@@ -82,7 +82,7 @@
                   v-if="isGenerating"
                   class="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"
                 ></div>
-                <ChartBarIcon v-else class="w-5 h-5" />
+                <UIcon name="i-heroicons-chart-bar" v-else class="w-5 h-5"  />
                 {{ isGenerating ? "Generating..." : "Generate Report" }}
               </button>
 
@@ -109,7 +109,7 @@
                 @click="() => exportToCSV()"
                 class="px-4 py-2 text-sm font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 transition flex items-center gap-2"
               >
-                <ArrowDownTrayIcon class="w-4 h-4" />
+                <UIcon name="i-heroicons-arrow-down-tray" class="w-4 h-4"  />
                 Export CSV
               </button>
             </div>
@@ -121,7 +121,7 @@
                   <div
                     class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center"
                   >
-                    <BuildingLibraryIcon class="w-5 h-5 text-blue-600" />
+                    <UIcon name="i-heroicons-building-library" class="w-5 h-5 text-blue-600"  />
                   </div>
                   <div>
                     <p class="text-2xl font-bold text-slate-900">
@@ -136,7 +136,7 @@
                   <div
                     class="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center"
                   >
-                    <UserGroupIcon class="w-5 h-5 text-purple-600" />
+                    <UIcon name="i-heroicons-user-group" class="w-5 h-5 text-purple-600"  />
                   </div>
                   <div>
                     <p class="text-2xl font-bold text-slate-900">
@@ -151,7 +151,7 @@
                   <div
                     class="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center"
                   >
-                    <ChatBubbleLeftRightIcon class="w-5 h-5 text-emerald-600" />
+                    <UIcon name="i-heroicons-chat-bubble-left-right" class="w-5 h-5 text-emerald-600"  />
                   </div>
                   <div>
                     <p class="text-2xl font-bold text-slate-900">
@@ -166,7 +166,7 @@
                   <div
                     class="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center"
                   >
-                    <ChartBarIcon class="w-5 h-5 text-amber-600" />
+                    <UIcon name="i-heroicons-chart-bar" class="w-5 h-5 text-amber-600"  />
                   </div>
                   <div>
                     <p class="text-2xl font-bold text-slate-900">
@@ -208,24 +208,24 @@
             <h3
               class="font-semibold text-blue-900 mb-3 flex items-center gap-2"
             >
-              <DocumentTextIcon class="w-5 h-5" />
+              <UIcon name="i-heroicons-document-text" class="w-5 h-5"  />
               Report Includes
             </h3>
             <ul class="text-sm text-blue-800 space-y-2">
               <li class="flex items-center gap-2">
-                <CheckIcon class="w-4 h-4 text-blue-600" />
+                <UIcon name="i-heroicons-check" class="w-4 h-4 text-blue-600"  />
                 Schools by status and division
               </li>
               <li class="flex items-center gap-2">
-                <CheckIcon class="w-4 h-4 text-blue-600" />
+                <UIcon name="i-heroicons-check" class="w-4 h-4 text-blue-600"  />
                 Coach statistics
               </li>
               <li class="flex items-center gap-2">
-                <CheckIcon class="w-4 h-4 text-blue-600" />
+                <UIcon name="i-heroicons-check" class="w-4 h-4 text-blue-600"  />
                 Interaction metrics
               </li>
               <li class="flex items-center gap-2">
-                <CheckIcon class="w-4 h-4 text-blue-600" />
+                <UIcon name="i-heroicons-check" class="w-4 h-4 text-blue-600"  />
                 Performance summaries
               </li>
             </ul>
@@ -241,11 +241,11 @@
             </p>
             <div class="space-y-2">
               <div class="flex items-center gap-2 text-sm text-slate-600">
-                <DocumentTextIcon class="w-4 h-4 text-slate-400" />
+                <UIcon name="i-heroicons-document-text" class="w-4 h-4 text-slate-400"  />
                 <span>CSV for spreadsheets</span>
               </div>
               <div class="flex items-center gap-2 text-sm text-slate-600">
-                <DocumentTextIcon class="w-4 h-4 text-slate-400" />
+                <UIcon name="i-heroicons-document-text" class="w-4 h-4 text-slate-400"  />
                 <span>PDF for printing</span>
               </div>
             </div>
@@ -259,16 +259,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { useReports } from "~/composables/useReports";
-import {
-  ChartBarIcon,
-  ArrowDownTrayIcon,
-  BuildingLibraryIcon,
-  UserGroupIcon,
-  ChatBubbleLeftRightIcon,
-  DocumentTextIcon,
-  CheckIcon,
-} from "@heroicons/vue/24/outline";
-
 definePageMeta({ middleware: "auth" });
 
 const { currentReport, isGenerating, error, generateReport, exportToCSV } =

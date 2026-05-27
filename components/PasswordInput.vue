@@ -7,10 +7,10 @@
       >
     </label>
     <div class="relative">
-      <LockClosedIcon
+      <UIcon name="i-heroicons-lock-closed"
         class="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
         aria-hidden="true"
-      />
+       />
       <input
         :id="id"
         :value="modelValue"
@@ -42,8 +42,10 @@
         :aria-label="showPassword ? 'Hide password' : 'Show password'"
         class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-sm"
       >
-        <component
-          :is="showPassword ? EyeSlashIcon : EyeIcon"
+        <UIcon
+          :name="
+            showPassword ? 'i-heroicons-eye-slash' : 'i-heroicons-eye'
+          "
           class="w-5 h-5"
           aria-hidden="true"
         />
@@ -55,11 +57,6 @@
 
 <script setup lang="ts">
 import { ref } from "vue";
-import {
-  LockClosedIcon,
-  EyeIcon,
-  EyeSlashIcon,
-} from "@heroicons/vue/24/outline";
 import FieldError from "~/components/DesignSystem/FieldError.vue";
 
 withDefaults(

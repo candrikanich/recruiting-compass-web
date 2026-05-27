@@ -33,12 +33,8 @@ test.describe("School Detail - Status History", () => {
     await page.goto(`/schools/${schoolId}`);
     await page.waitForLoadState("domcontentloaded");
 
-    await page.waitForTimeout(1000);
-
     const emptyState = page.locator(statusHistorySelectors.emptyState);
-    const isEmpty = await emptyState.isVisible();
-
-    expect(isEmpty).toBe(true);
+    await expect(emptyState).toBeVisible();
   });
 
   test("should display status change timeline", async ({ page }) => {
@@ -49,19 +45,15 @@ test.describe("School Detail - Status History", () => {
     schoolId = await schoolHelpers.createSchool(page, schoolData);
 
     await schoolHelpers.changeSchoolStatus(page, schoolId, "contacted");
-    await page.waitForTimeout(500);
 
     await schoolHelpers.changeSchoolStatus(page, schoolId, "offer_received");
-    await page.waitForTimeout(500);
 
     await page.goto(`/schools/${schoolId}`);
     await page.waitForLoadState("domcontentloaded");
-    await page.waitForTimeout(1500);
 
     const historyEntries = page.locator(statusHistorySelectors.historyEntry);
-    const entryCount = await historyEntries.count();
-
-    expect(entryCount).toBeGreaterThan(0);
+    // Wait for at least one entry to appear (history is async-loaded after page render)
+    await expect(historyEntries.first()).toBeVisible({ timeout: 10_000 });
   });
 
   test("should show 'Initial' for first status without previous", async ({
@@ -74,11 +66,9 @@ test.describe("School Detail - Status History", () => {
     schoolId = await schoolHelpers.createSchool(page, schoolData);
 
     await schoolHelpers.changeSchoolStatus(page, schoolId, "contacted");
-    await page.waitForTimeout(500);
 
     await page.goto(`/schools/${schoolId}`);
     await page.waitForLoadState("domcontentloaded");
-    await page.waitForTimeout(1500);
 
     const initialText = page.locator("text=Initial");
     const hasInitial = await initialText.isVisible();
@@ -96,11 +86,9 @@ test.describe("School Detail - Status History", () => {
     schoolId = await schoolHelpers.createSchool(page, schoolData);
 
     await schoolHelpers.changeSchoolStatus(page, schoolId, "offer_received");
-    await page.waitForTimeout(500);
 
     await page.goto(`/schools/${schoolId}`);
     await page.waitForLoadState("domcontentloaded");
-    await page.waitForTimeout(1500);
 
     const statusBadges = page.locator(statusHistorySelectors.statusBadge);
     const badgeCount = await statusBadges.count();
@@ -123,11 +111,9 @@ test.describe("School Detail - Status History", () => {
     schoolId = await schoolHelpers.createSchool(page, schoolData);
 
     await schoolHelpers.changeSchoolStatus(page, schoolId, "contacted");
-    await page.waitForTimeout(500);
 
     await page.goto(`/schools/${schoolId}`);
     await page.waitForLoadState("domcontentloaded");
-    await page.waitForTimeout(1500);
 
     const userNameElements = page.locator(statusHistorySelectors.userName);
     const count = await userNameElements.count();
@@ -146,11 +132,9 @@ test.describe("School Detail - Status History", () => {
     schoolId = await schoolHelpers.createSchool(page, schoolData);
 
     await schoolHelpers.changeSchoolStatus(page, schoolId, "contacted");
-    await page.waitForTimeout(500);
 
     await page.goto(`/schools/${schoolId}`);
     await page.waitForLoadState("domcontentloaded");
-    await page.waitForTimeout(1500);
 
     const timestamps = page.locator(statusHistorySelectors.timestamp);
     const timestampCount = await timestamps.count();
@@ -170,11 +154,9 @@ test.describe("School Detail - Status History", () => {
     schoolId = await schoolHelpers.createSchool(page, schoolData);
 
     await schoolHelpers.changeSchoolStatus(page, schoolId, "contacted");
-    await page.waitForTimeout(500);
 
     await page.goto(`/schools/${schoolId}`);
     await page.waitForLoadState("domcontentloaded");
-    await page.waitForTimeout(1500);
 
     const arrowIcons = page.locator(statusHistorySelectors.arrowIcon);
     const iconCount = await arrowIcons.count();

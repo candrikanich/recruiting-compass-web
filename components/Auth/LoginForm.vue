@@ -16,7 +16,7 @@
       :model-value="email"
       :error="fieldErrors.email"
       :disabled="disabled"
-      :icon="EnvelopeIcon"
+      icon="i-heroicons-envelope"
       @update:model-value="$emit('update:email', $event)"
       @blur="$emit('validateEmail')"
     />
@@ -31,7 +31,7 @@
       :model-value="password"
       :error="fieldErrors.password"
       :disabled="disabled"
-      :icon="LockClosedIcon"
+      icon="i-heroicons-lock-closed"
       @update:model-value="$emit('update:password', $event)"
       @blur="$emit('validatePassword')"
     />
@@ -114,7 +114,6 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
-import { EnvelopeIcon, LockClosedIcon } from "@heroicons/vue/24/outline";
 import LoginInputField from "~/components/Auth/LoginInputField.vue";
 import type { FormFieldError } from "~/composables/useFormValidation";
 

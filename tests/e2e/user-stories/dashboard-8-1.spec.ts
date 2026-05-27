@@ -286,24 +286,22 @@ test.describe("User Story 8.1: Dashboard Overview", () => {
 
     // Test keyboard interaction
     await page.keyboard.press("Enter");
-    await page.waitForTimeout(200);
+
   });
 
-  test.skip("Dashboard displays correct stat counts", async ({ page }) => {
-    // TODO: test account has 0 coaches, 0 schools, 0 interactions. This assertion
-    // is vacuous (always passes for >= 0). Skipped until we add seed data to test account.
+  test("Dashboard displays correct stat counts", async ({ page }) => {
     dashboardPage = new DashboardPage(page);
     await dashboardPage.goto();
     await dashboardPage.waitForDashboardLoad();
 
-    // Get stat values - should be numbers (0 or greater)
     const coachCount = await dashboardPage.getStatValue("Coaches");
     const schoolCount = await dashboardPage.getStatValue("Schools");
     const interactionCount = await dashboardPage.getStatValue("Interactions");
 
-    expect(parseInt(coachCount) || 0).toBeGreaterThanOrEqual(0);
-    expect(parseInt(schoolCount) || 0).toBeGreaterThanOrEqual(0);
-    expect(parseInt(interactionCount) || 0).toBeGreaterThanOrEqual(0);
+    // Stat widgets render whole numbers — assert numeric format, not value.
+    expect(coachCount).toMatch(/^\d+$/);
+    expect(schoolCount).toMatch(/^\d+$/);
+    expect(interactionCount).toMatch(/^\d+$/);
   });
 
   test("Contact Frequency widget shows recent contacts", async ({ page }) => {

@@ -12,10 +12,10 @@
       class="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-r-lg focus:outline-2 focus:outline-offset-2 focus:outline-red-600"
     >
       <div class="flex items-start gap-3">
-        <ExclamationTriangleIcon
+        <UIcon name="i-heroicons-exclamation-triangle-solid"
           class="w-5 h-5 text-red-600 shrink-0 mt-0.5"
           aria-hidden="true"
-        />
+         />
         <div class="flex-1">
           <h3 class="text-sm font-semibold text-red-800 mb-2">
             Please correct the following errors:
@@ -46,7 +46,7 @@
           class="text-red-600 hover:text-red-800 transition shrink-0 mt-0.5 focus:outline-2 focus:outline-offset-2 focus:outline-red-600"
           aria-label="Dismiss error summary"
         >
-          <XMarkIcon class="w-5 h-5" aria-hidden="true" />
+          <UIcon name="i-heroicons-x-mark-solid" class="w-5 h-5" aria-hidden="true"  />
         </button>
       </div>
     </div>
@@ -55,7 +55,6 @@
 
 <script setup lang="ts">
 import { ref, watch } from "vue";
-import { ExclamationTriangleIcon, XMarkIcon } from "@heroicons/vue/24/solid";
 import type { FormFieldError } from "~/composables/useFormValidation";
 
 const props = defineProps<{

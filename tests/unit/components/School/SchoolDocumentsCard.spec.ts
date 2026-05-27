@@ -4,10 +4,6 @@ import SchoolDocumentsCard from "~/components/School/SchoolDocumentsCard.vue";
 import type { Document } from "~/types/models";
 
 // Mock icons
-vi.mock("@heroicons/vue/24/outline", () => ({
-  DocumentTextIcon: { name: "DocumentTextIcon", template: "<svg />" },
-}));
-
 // Mock child components
 vi.mock("~/components/School/DocumentUploadModal.vue", () => ({
   default: {
@@ -58,8 +54,7 @@ describe("SchoolDocumentsCard", () => {
         props: { schoolId, documents: [] },
       });
 
-      const icon = wrapper.findComponent({ name: "DocumentTextIcon" });
-      expect(icon.exists()).toBe(true);
+      expect(wrapper.html()).toContain("i-heroicons-document-text");
     });
   });
 

@@ -26,11 +26,15 @@ export class DashboardPage extends BasePage {
   }
 
   async getStatValue(label: string): Promise<string> {
-    const statCard = this.page
-      .locator(`text="${label}"`)
-      .locator("ancestor::a");
-    const value = await statCard.locator("div").first().textContent();
-    return value || "0";
+    // Stats cards are anchor elements with aria-label like
+    // "Coaches section: N total coaches." Pull the leading integer from the
+    // aria-label to avoid scraping the card's nested DOM.
+    const statCard = this.page.locator(
+      `a[aria-label*="${label} section"]`,
+    );
+    const aria = (await statCard.getAttribute("aria-label")) ?? "";
+    const match = aria.match(/:\s*(\d+)/);
+    return match?.[1] ?? "0";
   }
 
   async expectContactFrequencyWidget() {

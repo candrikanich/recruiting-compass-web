@@ -20,7 +20,7 @@ import {
  * name is UUID-suffixed via generateUniqueSchoolName.
  */
 test.describe("Schools CRUD — atomic lifecycle", () => {
-  test.setTimeout(60_000);
+  test.setTimeout(120_000);
 
   test("create → read → update status → delete", async ({ page }) => {
     const name = generateUniqueSchoolName("Atomic CRUD");

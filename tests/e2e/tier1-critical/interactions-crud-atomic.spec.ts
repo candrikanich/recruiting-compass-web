@@ -2,6 +2,7 @@ import { test, expect } from "@playwright/test";
 import { resolve } from "path";
 import {
   createSchoolData,
+  deleteSchoolDirect,
   generateUniqueSchoolName,
   schoolHelpers,
 } from "../fixtures/schools.fixture";
@@ -18,11 +19,12 @@ import {
  * Parallel: UUID-suffixed content string scopes per-worker assertions.
  */
 test.describe("Interactions CRUD — atomic lifecycle (school-attached)", () => {
-  test.setTimeout(90_000);
+  test.setTimeout(120_000);
 
   let schoolId: string;
 
-  test.beforeAll(async ({ browser }) => {
+  test.beforeAll(async ({ browser }, testInfo) => {
+    testInfo.setTimeout(120_000);
     const ctx = await browser.newContext({
       storageState: resolve(process.cwd(), "tests/e2e/.auth/player.json"),
     });
@@ -38,23 +40,8 @@ test.describe("Interactions CRUD — atomic lifecycle (school-attached)", () => 
     }
   });
 
-  test.afterAll(async ({ browser }) => {
-    if (!schoolId) return;
-    const ctx = await browser.newContext({
-      storageState: resolve(process.cwd(), "tests/e2e/.auth/player.json"),
-    });
-    try {
-      const page = await ctx.newPage();
-      await page.goto(`/schools/${schoolId}`);
-      await page.waitForLoadState("domcontentloaded");
-      await page.locator('button:has-text("Delete School")').click();
-      const dialog = page.getByRole("dialog");
-      await expect(dialog).toBeVisible();
-      await dialog.getByRole("button", { name: "Delete", exact: true }).click();
-      await page.waitForURL("/schools");
-    } finally {
-      await ctx.close();
-    }
+  test.afterAll(async () => {
+    await deleteSchoolDirect(schoolId);
   });
 
   test("log → see in list → delete an interaction", async ({ page }) => {

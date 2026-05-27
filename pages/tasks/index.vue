@@ -1,29 +1,38 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, watch, onMounted } from "vue";
 import { useTasks } from "~/composables/useTasks";
 import { useAuth } from "~/composables/useAuth";
-import { useParentContext } from "~/composables/useParentContext";
+import { useActiveFamily } from "~/composables/useActiveFamily";
 import { calculateCurrentGrade } from "~/utils/gradeHelpers";
 import { calculateDeadlineInfo } from "~/utils/deadlineHelpers";
 import AthleteSwitcher from "~/components/Parent/AthleteSwitcher.vue";
+import DeadlineBadge from "~/components/Timeline/DeadlineBadge.vue";
 import type { TaskWithStatus } from "~/types/timeline";
 
-const { session } = useAuth();
-const {
-  linkedAthletes: linkedAccountsList,
-  isViewingAsParent,
-  currentAthleteId,
-} = useParentContext();
+useHead({ title: "My Tasks" });
 
-// Map LinkedAccount to LinkedAthlete format for AthleteSwitcher
-const linkedAthletes = computed(() =>
-  linkedAccountsList.value.map(
-    (account: (typeof linkedAccountsList.value)[0]) => ({
-      id: account.user_id,
-      name: account.full_name || account.email,
-    }),
-  ),
-);
+const { session } = useAuth();
+// Parent context comes from useActiveFamily (the same source the dashboard uses);
+// activeAthleteId is the viewed athlete and isViewingAsParent gates parent UI.
+const {
+  isViewingAsParent,
+  activeAthleteId: currentAthleteId,
+  parentAccessibleFamilies,
+  switchAthlete,
+} = useActiveFamily();
+
+// Map accessible families to AthleteSwitcher's {id,name} shape, deduped by athlete.
+const linkedAthletes = computed(() => {
+  const seen = new Set<string>();
+  const list: { id: string; name: string }[] = [];
+  for (const f of parentAccessibleFamilies.value) {
+    if (f.athleteId && !seen.has(f.athleteId)) {
+      seen.add(f.athleteId);
+      list.push({ id: f.athleteId, name: f.athleteName || "Athlete" });
+    }
+  }
+  return list;
+});
 const {
   tasksWithStatus,
   loading,
@@ -202,7 +211,10 @@ const handleToggleTask = async (taskId: string, currentStatus: string) => {
     }
 
     // Refetch to update UI
-    await fetchTasksWithStatus(currentGradeLevel.value);
+    await fetchTasksWithStatus(
+    currentGradeLevel.value,
+    isViewingAsParent.value ? currentAthleteId.value || undefined : undefined,
+  );
   } catch (err) {
     console.error("Error updating task status:", err);
     alert(
@@ -216,10 +228,19 @@ const toggleTaskDetails = (taskId: string) => {
   expandedTaskId.value = expandedTaskId.value === taskId ? null : taskId;
 };
 
-const handleAthleteChange = (athleteId: string) => {
+const handleAthleteChange = async (athleteId: string) => {
+  await switchAthlete(athleteId);
   loadFilters();
-  // Note: The actual athlete switching and data loading would be handled by the route param change
+  await fetchTasksWithStatus(currentGradeLevel.value, athleteId);
 };
+
+// useActiveFamily resolves the parent's active athlete asynchronously after
+// mount; refetch the athlete's tasks once it lands (or changes).
+watch(currentAthleteId, async (athleteId) => {
+  if (isViewingAsParent.value && athleteId) {
+    await fetchTasksWithStatus(currentGradeLevel.value, athleteId);
+  }
+});
 
 onMounted(async () => {
   loadFilters();
@@ -231,7 +252,10 @@ onMounted(async () => {
     );
   }
 
-  await fetchTasksWithStatus(currentGradeLevel.value);
+  await fetchTasksWithStatus(
+    currentGradeLevel.value,
+    isViewingAsParent.value ? currentAthleteId.value || undefined : undefined,
+  );
 
   // Load seen locked tasks from localStorage
   const athleteId = currentAthleteId.value || session.value?.user?.id;
@@ -504,6 +528,10 @@ const onUrgencyFilterChange = () => {
                     >
                       Required
                     </span>
+                    <DeadlineBadge
+                      :deadline-date="task.deadline_date"
+                      :is-completed="task.athlete_task?.status === 'completed'"
+                    />
                   </div>
                   <p
                     v-if="task.description"

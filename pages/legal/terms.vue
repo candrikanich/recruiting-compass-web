@@ -9,7 +9,7 @@
           to="/"
           class="text-slate-600 hover:text-slate-900 flex items-center gap-2 transition-colors"
         >
-          <ArrowLeftIcon class="w-4 h-4" />
+          <UIcon name="i-heroicons-arrow-left" class="w-4 h-4"  />
           Back
         </NuxtLink>
         <h1 class="text-2xl font-bold text-slate-900">Terms and Conditions</h1>
@@ -412,7 +412,6 @@
 <script setup lang="ts">
 definePageMeta({ layout: "public" });
 
-import { ArrowLeftIcon } from "@heroicons/vue/24/outline";
 // UPDATE THIS DATE WHENEVER TERMS ARE MODIFIED
 </script>
 

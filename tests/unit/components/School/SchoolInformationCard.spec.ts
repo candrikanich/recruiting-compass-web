@@ -4,14 +4,6 @@ import SchoolInformationCard from "~/components/School/SchoolInformationCard.vue
 import type { School } from "~/types/models";
 
 // Mock icons
-vi.mock("@heroicons/vue/24/outline", () => ({
-  MapPinIcon: { name: "MapPinIcon", template: "<svg />" },
-  ArrowTopRightOnSquareIcon: {
-    name: "ArrowTopRightOnSquareIcon",
-    template: "<svg />",
-  },
-}));
-
 // Mock child components
 vi.mock("~/components/School/SchoolMap.vue", () => ({
   default: {

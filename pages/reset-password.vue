@@ -199,6 +199,7 @@ import { ref, computed, watch, nextTick, onMounted, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
 import FormErrorSummary from "~/components/Validation/FormErrorSummary.vue";
 import PasswordInput from "~/components/PasswordInput.vue";
+import PasswordRequirements from "~/components/Auth/PasswordRequirements.vue";
 import { usePasswordReset } from "~/composables/usePasswordReset";
 import { useFormValidation } from "~/composables/useFormValidation";
 import { useFormErrorFocus } from "~/composables/useFormErrorFocus";

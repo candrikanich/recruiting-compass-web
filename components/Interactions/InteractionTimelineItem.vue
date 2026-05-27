@@ -10,8 +10,8 @@
             class="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
             :class="getTypeIconBg(interaction.type)"
           >
-            <component
-              :is="getTypeIcon(interaction.type)"
+            <UIcon
+              :name="getTypeIcon(interaction.type)"
               class="w-5 h-5"
               :class="getTypeIconColor(interaction.type)"
             />
@@ -72,7 +72,7 @@
             <!-- Meta -->
             <div class="flex items-center gap-4 mt-3 text-xs text-slate-400">
               <span class="flex items-center gap-1">
-                <CalendarIcon class="w-3.5 h-3.5" />
+                <UIcon name="i-heroicons-calendar" class="w-3.5 h-3.5"  />
                 {{ formatDate(interaction.occurred_at) }}
               </span>
             </div>
@@ -93,7 +93,6 @@
 
 <script setup lang="ts">
 import type { Interaction } from "~/types/models";
-import { CalendarIcon } from "@heroicons/vue/24/outline";
 import {
   getTypeIcon,
   getTypeIconBg,

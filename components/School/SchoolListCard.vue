@@ -34,10 +34,10 @@
               : 'text-slate-300 hover:text-yellow-400',
           ]"
         >
-          <StarIcon
+          <UIcon name="i-heroicons-star"
             :class="['w-5 h-5', school.is_favorite ? 'fill-yellow-500' : '']"
             aria-hidden="true"
-          />
+           />
         </button>
       </div>
 
@@ -79,7 +79,7 @@
         :aria-label="`View ${school.name}`"
         class="flex-1 px-4 py-2 text-sm font-medium text-white bg-linear-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition text-center flex items-center justify-center gap-2"
       >
-        <EyeIcon class="w-4 h-4" aria-hidden="true" />
+        <UIcon name="i-heroicons-eye" class="w-4 h-4" aria-hidden="true"  />
         View
       </NuxtLink>
       <button
@@ -87,7 +87,7 @@
         :aria-label="`Delete ${school.name}`"
         class="px-3 py-2 text-sm font-medium text-red-600 border border-red-300 rounded-lg hover:bg-red-50 transition"
       >
-        <TrashIcon class="w-4 h-4" aria-hidden="true" />
+        <UIcon name="i-heroicons-trash" class="w-4 h-4" aria-hidden="true"  />
       </button>
     </div>
   </div>
@@ -96,7 +96,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import type { School } from "~/types";
-import { StarIcon, EyeIcon, TrashIcon } from "@heroicons/vue/24/outline";
 import SchoolLogo from "~/components/School/SchoolLogo.vue";
 import { getCarnegieSize } from "~/utils/schoolSize";
 import {

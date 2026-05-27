@@ -7,7 +7,7 @@
     <div
       class="w-16 h-16 rounded-full bg-amber-50 flex items-center justify-center mb-4"
     >
-      <UsersIcon class="w-8 h-8 text-amber-500" aria-hidden="true" />
+      <UIcon name="i-heroicons-users-solid" class="w-8 h-8 text-amber-500" aria-hidden="true"  />
     </div>
     <h2 class="text-xl font-semibold text-gray-900 mb-2">
       Your athlete isn't connected yet
@@ -26,5 +26,4 @@
 </template>
 
 <script setup lang="ts">
-import { UsersIcon } from "@heroicons/vue/24/solid";
 </script>

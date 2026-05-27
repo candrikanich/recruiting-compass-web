@@ -8,7 +8,7 @@
         <div
           class="w-10 h-10 bg-linear-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-md"
         >
-          <CheckIcon class="w-5 h-5 text-white" aria-hidden="true" />
+          <UIcon name="i-heroicons-check" class="w-5 h-5 text-white" aria-hidden="true"  />
         </div>
         <div class="flex items-center gap-2">
           <h2 class="text-slate-900 font-semibold">Quick Tasks</h2>
@@ -27,7 +27,7 @@
         aria-controls="task-form"
         class="flex items-center gap-2 px-3 py-1.5 bg-linear-to-r from-brand-blue-500 to-brand-blue-600 text-white rounded-lg text-sm font-medium hover:from-brand-blue-600 hover:to-brand-blue-700 transition-all focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
       >
-        <PlusIcon class="w-4 h-4" aria-hidden="true" />
+        <UIcon name="i-heroicons-plus" class="w-4 h-4" aria-hidden="true"  />
         Add Task
       </button>
     </div>
@@ -63,7 +63,7 @@
           aria-label="Save task"
           class="px-3 py-1.5 text-blue-600 hover:text-blue-700 font-medium hover:bg-blue-100 rounded-sm transition-colors focus:ring-2 focus:ring-blue-500"
         >
-          <CheckIcon class="w-4 h-4" />
+          <UIcon name="i-heroicons-check" class="w-4 h-4"  />
         </button>
         <button
           type="button"
@@ -71,7 +71,7 @@
           aria-label="Cancel adding task"
           class="px-3 py-1.5 text-slate-500 hover:text-slate-700 font-medium hover:bg-slate-200 rounded-sm transition-colors focus:ring-2 focus:ring-slate-500"
         >
-          <XMarkIcon class="w-4 h-4" />
+          <UIcon name="i-heroicons-x-mark" class="w-4 h-4"  />
         </button>
       </div>
     </form>
@@ -116,7 +116,7 @@
           :aria-label="`Delete task: ${task.text}`"
           class="opacity-0 group-hover:opacity-100 text-red-500 hover:text-red-600 transition-all p-1 hover:bg-red-50 rounded-sm focus:ring-2 focus:ring-red-500 focus:opacity-100"
         >
-          <XMarkIcon class="w-4 h-4" />
+          <UIcon name="i-heroicons-x-mark" class="w-4 h-4"  />
         </button>
       </li>
     </ul>
@@ -141,8 +141,6 @@
 
 <script setup lang="ts">
 import { ref, computed } from "vue";
-import { CheckIcon, PlusIcon, XMarkIcon } from "@heroicons/vue/24/outline";
-
 interface Task {
   id: string;
   text: string;

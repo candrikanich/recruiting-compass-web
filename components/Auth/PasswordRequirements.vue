@@ -15,11 +15,11 @@
         class="flex items-center gap-2 text-sm"
         role="listitem"
       >
-        <CheckCircleIcon
+        <UIcon name="i-heroicons-check-circle"
           v-if="rule.isValid"
           class="w-5 h-5 text-emerald-600 shrink-0"
           aria-hidden="true"
-        />
+         />
         <svg
           v-else
           class="w-5 h-5 text-slate-300 shrink-0"
@@ -40,8 +40,6 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
-import { CheckCircleIcon } from "@heroicons/vue/24/outline";
-
 const props = withDefaults(
   defineProps<{
     password: string;

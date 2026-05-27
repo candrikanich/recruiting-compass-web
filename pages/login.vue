@@ -17,7 +17,7 @@
             to="/"
             class="text-white hover:text-white/80 transition-colors flex items-center gap-2 focus:ring-2 focus:ring-offset-2 focus:ring-white rounded-sm px-2 py-1"
           >
-            <ArrowLeftIcon class="w-4 h-4" aria-hidden="true" />
+            <UIcon name="i-heroicons-arrow-left" class="w-4 h-4" aria-hidden="true"  />
             Back to Welcome
           </NuxtLink>
         </div>
@@ -96,7 +96,6 @@ import { useFormErrorFocus } from "~/composables/useFormErrorFocus";
 import { useUserStore } from "~/stores/user";
 import { loginSchema } from "~/utils/validation/schemas";
 import { EMAIL_SCHEMA, PASSWORD_SCHEMA } from "~/utils/validation/loginSchemas";
-import { ArrowLeftIcon } from "@heroicons/vue/24/outline";
 import FormErrorSummary from "~/components/Validation/FormErrorSummary.vue";
 import MultiSportFieldBackground from "~/components/Auth/MultiSportFieldBackground.vue";
 import LoginForm from "~/components/Auth/LoginForm.vue";

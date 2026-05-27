@@ -2,6 +2,27 @@
 
 Historical context and completed sessions. Not loaded by default.
 
+## CI/PR Cleanup — 2026-05-25
+
+- **Fixed 3 stale unit failures** reddening develop: `SchoolNotesCard.spec` + `CoachNotesEditor` stub (dead emit contract → rewrote to `saveFn` callback), `tasks-index-advanced.spec` (`useHead` undefined → added `useHead`/`useSeoMeta` to `tests/setup.ts` global stubs). Commit `066d8d43`. Full unit 7165 pass.
+- **Merged** PR #259 (supabase 2.100→2.101), #260 (posthog-js 1.374→1.376); branches deleted.
+- **Reconciled** main↔develop: back-merged main's 6 dependabot commits into develop, clean lockfile, qs override intact, 0 vulns. Dependabot alert #99 (qs DoS) confirmed fixed.
+
+## Family Invite Flow — sessions 1–3 (Feb 2026)
+
+- **Tasks 1–5, 11:** DB migration, invite endpoints, `sendInviteEmail`, `useFamilyInvite`
+- **Tasks 6–7:** Signup flow overhaul, parent onboarding wizard
+- **Task 8:** `player-details.post.ts` + migration `20260228000001`
+- **Task 9:** `pages/join.vue` + 10 unit tests
+- **Task 10:** Player onboarding step 5 → invite parent UI
+- **Tasks 12–14:** Pending invitations UI, iOS universal links, deprecate `accessible.get.ts`
+- **Task 15:** Type errors fixed (`database.ts` for `family_invitations` + `created_by_user_id`)
+- **Task 16:** Lint clean — `\${...}` email template bug, unused vars
+
+## E2E Test Fixes — 2026-03-19 (superseded by 2026-05-25 sweep)
+
+5 root causes fixed: RC-1 `networkidle`→`domcontentloaded` (33 specs + 8 page objects), RC-2 `loginViaForm` removed from beforeEach (10 specs, storageState handles auth), RC-3 password-reset `aria-label` selector, RC-4 auth redirect regex `toHaveURL(/\/login/)`, RC-5 signup redirect accepts `/dashboard`. Round 2: password-reset 25→6 fail, dashboard-8-1 17→1 fail. The 2026-05-25 full sweep (362 pass / 126 skip / 1 flake) supersedes the old "still failing" list.
+
 ## Doc Cleanup — 2026-04-05
 
 - **Auto-deleted:** 17 stale handoff/archived docs

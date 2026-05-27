@@ -2,7 +2,7 @@
   <div v-if="showSwitcher" class="bg-slate-50 border-b border-slate-200 py-3">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex items-center gap-3">
-        <UserCircleIcon class="w-5 h-5 text-slate-500" />
+        <UIcon name="i-heroicons-user-circle" class="w-5 h-5 text-slate-500"  />
         <span class="text-sm font-medium text-slate-700">Viewing:</span>
         <select
           v-model="selectedId"
@@ -27,7 +27,6 @@
 
 <script setup lang="ts">
 import { computed, ref, watch, inject } from "vue";
-import { UserCircleIcon } from "@heroicons/vue/24/outline";
 import { useFamilyContext } from "~/composables/useFamilyContext";
 import type { UseActiveFamilyReturn } from "~/composables/useActiveFamily";
 

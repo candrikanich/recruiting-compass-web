@@ -12,10 +12,10 @@
       data-testid="nav-more-button"
     >
       <span>More</span>
-      <ChevronDownIcon
+      <UIcon name="i-heroicons-chevron-down"
         class="w-4 h-4 transition-transform"
         :class="{ 'rotate-180': isOpen }"
-      />
+       />
     </button>
 
     <!-- Dropdown Menu -->
@@ -45,7 +45,7 @@
             ]"
             @click="isOpen = false"
           >
-            <component :is="item.icon" class="w-4 h-4" />
+            <UIcon :name="item.icon" class="w-4 h-4" />
             <span>{{ item.label }}</span>
           </NuxtLink>
         </div>
@@ -71,26 +71,16 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
 import { useRoute } from "vue-router";
-import {
-  ChevronDownIcon,
-  ChartBarIcon,
-  GiftIcon,
-  DocumentTextIcon,
-  ChartPieIcon,
-  CalendarDaysIcon,
-  ClockIcon,
-} from "@heroicons/vue/24/outline";
-
 const route = useRoute();
 const isOpen = ref(false);
 
 const moreItems = [
-  { to: "/events", label: "Events", icon: CalendarDaysIcon },
-  { to: "/deadlines", label: "Deadlines", icon: ClockIcon },
-  { to: "/performance", label: "Performance", icon: ChartBarIcon },
-  { to: "/offers", label: "Offers", icon: GiftIcon },
-  { to: "/documents", label: "Documents", icon: DocumentTextIcon },
-  { to: "/analytics", label: "Analytics", icon: ChartPieIcon },
+  { to: "/events", label: "Events", icon: "i-heroicons-calendar-days" },
+  { to: "/deadlines", label: "Deadlines", icon: "i-heroicons-clock" },
+  { to: "/performance", label: "Performance", icon: "i-heroicons-chart-bar" },
+  { to: "/offers", label: "Offers", icon: "i-heroicons-gift" },
+  { to: "/documents", label: "Documents", icon: "i-heroicons-document-text" },
+  { to: "/analytics", label: "Analytics", icon: "i-heroicons-chart-pie" },
 ];
 
 const isActive = (path: string): boolean => {

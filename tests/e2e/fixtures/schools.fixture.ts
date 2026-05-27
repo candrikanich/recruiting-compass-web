@@ -527,3 +527,23 @@ export const schoolHelpers = {
     await page.waitForLoadState("domcontentloaded");
   },
 };
+
+/**
+ * Fast school cleanup via Supabase admin API.
+ *
+ * UI delete (click "Delete School" → confirm dialog → wait redirect) takes
+ * 10-60s under load and frequently blows afterAll hook timeouts. This helper
+ * bypasses the UI entirely and deletes the school row directly; FK CASCADE
+ * handles all children (coaches, interactions, offers, events, status history).
+ *
+ * Safe to call even if the school no longer exists (no-op).
+ */
+export async function deleteSchoolDirect(schoolId: string): Promise<void> {
+  if (!schoolId) return;
+  const { getSupabaseAdmin } = await import(
+    "../seed/helpers/supabase-admin"
+  );
+  const supabase = getSupabaseAdmin();
+  await supabase.from("schools").delete().eq("id", schoolId);
+}
+

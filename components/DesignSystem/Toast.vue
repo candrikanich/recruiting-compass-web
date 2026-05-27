@@ -18,16 +18,16 @@
           >
             <div class="flex items-center justify-between gap-3">
               <div class="flex items-center gap-2">
-                <CheckIcon
+                <UIcon name="i-heroicons-check-solid"
                   v-if="toast.type === 'success'"
                   class="w-5 h-5"
                   aria-hidden="true"
-                />
-                <XMarkIcon
+                 />
+                <UIcon name="i-heroicons-x-mark-solid"
                   v-else-if="toast.type === 'error'"
                   class="w-5 h-5"
                   aria-hidden="true"
-                />
+                 />
                 <span v-else class="text-lg" aria-hidden="true">{{
                   getToastIcon(toast.type)
                 }}</span>
@@ -38,7 +38,7 @@
                 :aria-label="`Dismiss ${toast.type} notification: ${toast.message}`"
                 class="hover:opacity-70 transition focus:ring-2 focus:ring-white focus:ring-offset-2"
               >
-                <XMarkIcon class="w-5 h-5" aria-hidden="true" />
+                <UIcon name="i-heroicons-x-mark-solid" class="w-5 h-5" aria-hidden="true"  />
               </button>
             </div>
           </div>
@@ -50,7 +50,6 @@
 
 <script setup lang="ts">
 import { useAppToast } from "~/composables/useAppToast";
-import { XMarkIcon, CheckIcon } from "@heroicons/vue/24/solid";
 import type { ToastType } from "~/types/toast";
 
 const { toasts, removeToast } = useAppToast();

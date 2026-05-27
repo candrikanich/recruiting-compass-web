@@ -9,7 +9,7 @@
           to="/settings"
           class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition mb-3 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         >
-          <ArrowLeftIcon class="w-4 h-4" />
+          <UIcon name="i-heroicons-arrow-left" class="w-4 h-4"  />
           Back to Settings
         </NuxtLink>
         <h1 class="text-2xl font-semibold text-slate-900">
@@ -455,7 +455,6 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-import { ArrowLeftIcon } from "@heroicons/vue/24/outline";
 import { usePreferenceManager } from "~/composables/usePreferenceManager";
 import { useAppToast } from "~/composables/useAppToast";
 import type { SchoolPreference, SchoolPreferences } from "~/types/models";

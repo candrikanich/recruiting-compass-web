@@ -455,10 +455,10 @@ describe("ActiveFilterChips", () => {
           currentUserId,
         },
       });
-
-      expect(wrapper.find("svg").exists()).toBe(true);
-      expect(wrapper.find("svg").classes()).toContain("w-3");
-      expect(wrapper.find("svg").classes()).toContain("h-3");
+      const html = wrapper.html();
+      expect(html).toContain("i-heroicons-x-mark");
+      expect(html).toContain("w-3");
+      expect(html).toContain("h-3");
     });
   });
 
@@ -660,10 +660,10 @@ describe("ActiveFilterChips", () => {
         },
       });
 
-      const icons = wrapper.findAll("svg");
-      icons.forEach((icon) => {
-        expect(icon.attributes("aria-hidden")).toBe("true");
-      });
+      // UIcon does not render <svg> directly in test env; check html instead
+      const html = wrapper.html();
+      expect(html).toContain("i-heroicons-x-mark");
+      expect(html).toContain("aria-hidden=\"true\"");
     });
 
     it("has focus indicators on all chip buttons", () => {

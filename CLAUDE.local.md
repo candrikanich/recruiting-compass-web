@@ -2,60 +2,38 @@
 
 Active session notes only. See [COMPLETED_WORK.md](./COMPLETED_WORK.md) for full history.
 
-## Current Session
+## Standing Preferences (do not archive)
 
-**Status:** NEARLY DONE — E2E suite is 259/0 pass/fail; 10 tests in 3 user-stories specs need selector fixes
-**Branch:** develop (3 commits ahead of origin — NOT YET PUSHED)
-**Build:** not run this session
-**Tests:** Full suite: 259 pass, 133 skip, 27 did not run, 0 fail ✅ (10 flaky in user-stories when run isolated)
-**Lint:** UNKNOWN
-**Type-check:** UNKNOWN
-**Handoff:** `planning/handoff-2026-03-20-e2e-status.md`
+- **Output format by reader, not by default**: For artifacts Chris will read once on a phone or share with someone non-technical — session recaps, status overviews, weekly summaries, "where are we on X" snapshots — invoke the `visual-explainer` skill to produce self-contained HTML. For artifacts that future-Claude or Chris will edit (handoff docs, `planning/*.md`, `COMPLETED_WORK.md`, lesson files, plans) — stay markdown. When unsure: read = HTML, edit = markdown.
+
+## Current Session (2026-05-26 — E2E buckets a/b/c + task-deadline feature)
+
+**Status:** STABLE — a/b/c buckets all retired (3 deferred buckets → 0)
+**Branch:** develop — 4 commits unpushed: `921f4bec` (family-invite), `1d66e81a` (deadline spec), `ba09ad46` (deadline feature), parent-context refactor. `f2a622dc` (dashboard fix) already on origin.
+**Tests:** dashboard-8-3 9/0, family-invite 12/12 (×3), parent-tasks 8/8 (×2); 121 related unit pass. Full e2e run status: see latest.
+**Lint:** 0 errors on changed files
+**Type-check:** PASS
+**Handoff:** `planning/handoff-2026-05-26-buckets-abc-deadline-feature.md`
+**Spec:** `docs/superpowers/specs/2026-05-25-task-deadlines-from-graduation-year-design.md`
+
+### Done this session
+- **(a)** dashboard RecentActivityFeed: read user id from `useUserStore` (was non-singleton `useAuth().session`). 4 unskipped.
+- **(b)** family-invite: `decline()` → `$fetchAuth` (was csrf-only → 401); migration widened `family_invitations` status CHECK to allow `'declined'` (was 500). 8 unskipped, flag removed.
+- **(c)** task-deadline feature (Approach C): `task.deadline_offset_months` + server compute from athlete `graduation_year` + `?athleteId` authz; tasks page rewired `useParentContext`→`useActiveFamily` (linked_accounts was dead). 4 unskipped.
+
+### QA migrations applied (also committed, will hit prod on next main deploy)
+- `family_invitations_allow_declined` — status CHECK + `'declined'`
+- `task_deadline_offset_months` — column + grade-band backfill (12→6,11→18,10→30,9→42)
+- player@test.com `graduation_year` set to 2028 (seed, reset each parent-tasks run)
 
 ## Action Required
 
-1. **Push branch:** `git push`
-2. **Supabase migration:** `player_user_id` migration may still need verifying on remote
-3. **Replace `TEAMID`** in `public/.well-known/apple-app-site-association`
+1. **Seed infrastructure project** — remaining ~92 conditional-data-guard skips (the big bucket).
+2. **2 known flakes** — coaching-philosophy `:34` (session-expired race), smart-inputs `:76` (heavy parallel load).
 
-## E2E Test Fix Summary (2026-03-19 continued)
+## Environment Notes
 
-5 root causes identified and fixed:
-1. ✅ **RC-1 networkidle** — replaced with `domcontentloaded` in all 33 spec files + 8 page objects/fixtures
-2. ✅ **RC-2 loginViaForm in beforeEach** — removed from 10 spec files (storageState handles auth)
-3. ✅ **RC-3 password-reset button selector** — fixed `aria-label` mismatch, added blur+wait before submit
-4. ✅ **RC-4 auth redirect query param** — `toHaveURL(/\/login/)` regex
-5. ✅ **RC-5 signup flow redirect** — AuthPage.ts updated to accept `/dashboard` route
+- **Flaky local DNS** — router resolver `192.168.4.1` intermittently drops `api.github.com`. `git`/`gh` time out at random; pinned-IP curl works. Workaround: retry. NOT a GitHub outage.
+- **Autonomous "agent checkpoint" cron** committing WIP to develop (`wip: agent checkpoint HH:MM`). Sweeps uncommitted edits — fold into proper commits when reviewing.
 
-**Round 2 fixes (2026-03-19):**
-- `password-reset`: 25→6 failing (12 skipped for tests needing real Supabase token)
-- `dashboard-8-1`: 17→1 failing (fixed stat card selectors, console error filter, scroll assertions)
-- `DashboardPage.ts`: waitForDashboardLoad now waits for URL + domcontentloaded first
-- `schools fixture`: placeholder selector fallback for form name field
-
-**Final status (2026-03-19):**
-- `coaches-filtering`: 15/15 PASSING ✅ (Supabase admin seeding + fixed selectors)
-- `password-reset`: 14 pass / 6 fail / 12 skip (API-dependent tests skip when no real token)
-- `dashboard-8-1`: ~20/22 passing ✅
-- Broad 6-spec check: 69 passed, 8 failed, 13 skipped
-
-**Still failing:**
-- `schools-crud`: form reaches /schools/new but CRUD verifications need selector review (detail page)
-- Some `password-reset`: resend button test (needs Supabase to accept test email)
-- `coaches-crud/communication`: converted to beforeAll, likely working but needs verification
-
-## Recently Completed (this session)
-
-- **Task 8:** `player-details.post.ts` + migration `20260228000001`
-- **Task 9:** `pages/join.vue` + 10 unit tests
-- **Task 10:** Player onboarding step 5 → invite parent UI
-- **Tasks 12–14:** Pending invitations UI, iOS universal links, deprecate accessible.get.ts
-- **Task 15:** Fixed all type errors (updated database.ts manually for `family_invitations` + `created_by_user_id`)
-- **Task 16:** Lint clean — fixed `\${...}` email template bug, unused vars
-
-## Prior Sessions
-
-- **Tasks 1–5, 11** (session 1): DB migration, invite endpoints, sendInviteEmail, useFamilyInvite
-- **Tasks 6–7** (session 2): Signup flow overhaul, parent onboarding wizard
-
-See [COMPLETED_WORK.md](./COMPLETED_WORK.md) for full history.
+See [COMPLETED_WORK.md](./COMPLETED_WORK.md) for full history (CI/PR cleanup, family invite flow, E2E fixes archived there).

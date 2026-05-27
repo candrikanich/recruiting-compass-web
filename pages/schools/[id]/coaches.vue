@@ -162,7 +162,7 @@
               :aria-label="`Delete coach ${coach.first_name} ${coach.last_name}`"
               class="absolute -top-2 -right-2 z-10 w-8 h-8 bg-red-600 text-white rounded-full hover:bg-red-700 text-xs font-bold transition flex items-center justify-center"
             >
-              <XMarkIcon class="w-4 h-4" aria-hidden="true" />
+              <UIcon name="i-heroicons-x-mark-solid" class="w-4 h-4" aria-hidden="true"  />
             </button>
             <CoachCard
               :coach="coach"
@@ -207,7 +207,6 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from "vue";
 import { useRoute } from "vue-router";
-import { XMarkIcon } from "@heroicons/vue/24/solid";
 import { useCoaches } from "~/composables/useCoaches";
 import { useSchools } from "~/composables/useSchools";
 import { useInteractions } from "~/composables/useInteractions";

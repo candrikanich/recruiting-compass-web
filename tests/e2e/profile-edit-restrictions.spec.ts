@@ -41,6 +41,14 @@ test.describe("Profile Edit Restrictions (User Story 2.2)", () => {
       await page.goto("/settings/player-details");
       await page.waitForLoadState("domcontentloaded");
 
+      // Wait for the form to render — global-setup seeds the player's
+      // player_details so the linked athlete profile exists when the parent
+      // views it.
+      await page
+        .locator("select")
+        .first()
+        .waitFor({ state: "visible", timeout: 15000 });
+
       // The Basics tab is shown by default. Graduation year and Primary Sport
       // selects both have :disabled="isParentRole"
       const selects = page.locator("select[disabled]");
@@ -57,17 +65,28 @@ test.describe("Profile Edit Restrictions (User Story 2.2)", () => {
       await page.goto("/settings/player-details");
       await page.waitForLoadState("domcontentloaded");
 
+      // Wait for the form to render — selects appear only once isLoading
+      // flips false. global-setup seeds primary_sport=Baseball into the player's
+      // user_preferences.player_details so the Athletics tab renders position
+      // buttons (without it, the tab shows "Select a sport on the Basics tab
+      // to see positions." and there are no position buttons to assert).
+      await page
+        .locator("select")
+        .first()
+        .waitFor({ state: "visible", timeout: 15000 });
+
       // Navigate to Athletics tab (use first match - desktop nav button)
       const athleticsTab = page
         .locator("button", { hasText: "Athletics" })
         .first();
       await athleticsTab.click();
-      await page.waitForTimeout(300);
 
-      // Position buttons use :disabled="isParentRole"
-      const disabledButtons = page.locator("button[disabled]");
+      // Tabs use v-show, so Basics buttons (e.g., "Small (<5K)") stay in the
+      // DOM but with display:none. Filter to :visible so .first() doesn't
+      // resolve to a hidden Basics button before Athletics paints in.
+      const disabledButtons = page.locator("button[disabled]:visible");
+      await expect(disabledButtons.first()).toBeVisible({ timeout: 10000 });
       const count = await disabledButtons.count();
-      // Campus size / cost sensitivity / position buttons are all disabled
       expect(count).toBeGreaterThan(0);
     });
 
@@ -147,7 +166,6 @@ test.describe("Profile Edit Restrictions (User Story 2.2)", () => {
         })
         .first();
       await academicsTab.click();
-      await page.waitForTimeout(300);
 
       // GPA input: placeholder="e.g. 3.85", type="number"
       const gpaInput = page.locator('input[placeholder="e.g. 3.85"]');
@@ -208,7 +226,6 @@ test.describe("Profile Edit Restrictions (User Story 2.2)", () => {
         })
         .first();
       await academicsTab.click();
-      await page.waitForTimeout(300);
 
       await expect(
         page.locator("h2", { hasText: "Academic Standing" }),

@@ -16,7 +16,7 @@
           @click="$emit('close')"
           class="text-slate-600 hover:text-slate-900 transition"
         >
-          <XMarkIcon class="w-6 h-6" />
+          <UIcon name="i-heroicons-x-mark-solid" class="w-6 h-6"  />
         </button>
       </div>
 
@@ -163,7 +163,6 @@
 
 <script setup lang="ts">
 import { ref, computed } from "vue";
-import { XMarkIcon } from "@heroicons/vue/24/solid";
 import { useUserStore } from "~/stores/user";
 import {
   generateIndividualMetricReport,

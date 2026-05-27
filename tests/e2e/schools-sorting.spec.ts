@@ -33,18 +33,18 @@ test.describe("Schools Sorting", () => {
   });
 
   test("should sort schools A-Z by default", async ({ page }) => {
-    // Get all school name elements
-    const schoolNames = await page.locator("h3").all();
+    // Scope to school-card h3s — page-level h3 banners (e.g. "You have 181
+    // schools on your list") would otherwise pollute the sort assertion.
+    const schoolHeadings = page.locator(
+      '[data-testid="school-card"] h3, h3.text-lg',
+    );
     const names: string[] = [];
-
-    for (const name of schoolNames) {
-      const text = await name.textContent();
-      if (text && text.trim().length > 0) {
-        names.push(text.trim());
-      }
+    const count = await schoolHeadings.count();
+    for (let i = 0; i < count; i++) {
+      const text = await schoolHeadings.nth(i).textContent();
+      if (text && text.trim().length > 0) names.push(text.trim());
     }
 
-    // All names should be in non-descending alphabetical order
     if (names.length >= 2) {
       const sorted = [...names].sort((a, b) => a.localeCompare(b));
       expect(names).toEqual(sorted);
@@ -77,7 +77,6 @@ test.describe("Schools Sorting", () => {
       await filterButtons[filterButtons.length - 1].click();
 
       // Wait for re-sort
-      await page.waitForTimeout(200);
 
       // Get new school names
       let reversedNames: string[] = [];
@@ -121,7 +120,7 @@ test.describe("Schools Sorting", () => {
 
       // Check if schools are still visible or if there's a message
       const schoolCards = await page.locator("h3").all();
-      expect(schoolCards.length).toBeGreaterThanOrEqual(0);
+
     }
   });
 
@@ -145,7 +144,6 @@ test.describe("Schools Sorting", () => {
       await lastContactSelect.selectOption("last-contact");
 
       // Wait for re-sort
-      await page.waitForTimeout(300);
 
       // Verify schools are displayed
       const schoolCards = await page.locator("h3").all();
@@ -166,7 +164,7 @@ test.describe("Schools Sorting", () => {
       // If default is a-z, schools should be alphabetical
       if (value === "a-z") {
         const schoolNames = await page.locator("h3").all();
-        expect(schoolNames.length).toBeGreaterThanOrEqual(0);
+
       }
     }
   });

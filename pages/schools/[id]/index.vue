@@ -9,7 +9,7 @@
           to="/schools"
           class="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-sm"
         >
-          <ArrowLeftIcon class="w-4 h-4" aria-hidden="true" />
+          <UIcon name="i-heroicons-arrow-left" class="w-4 h-4" aria-hidden="true"  />
           Back to Schools
         </NuxtLink>
       </div>
@@ -67,8 +67,7 @@
           <SchoolNotesCard
             :notes="school.notes"
             :school-id="id"
-            :is-saving="loading"
-            @update:notes="handleUpdateNotes"
+            :save-fn="handleUpdateNotes"
           />
 
           <!-- Pros and Cons -->
@@ -221,7 +220,6 @@ import type {
   AthleteProfileForFit,
 } from "~/types/schoolFit";
 import type { School } from "~/types/models";
-import { ArrowLeftIcon } from "@heroicons/vue/24/outline";
 import SchoolDetailHeader from "~/components/School/SchoolDetailHeader.vue";
 import DivisionRecommendationCard from "~/components/School/DivisionRecommendationCard.vue";
 import SchoolInformationCard from "~/components/School/SchoolInformationCard.vue";

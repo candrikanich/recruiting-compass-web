@@ -15,20 +15,21 @@ test.describe("Coaching Philosophy - Feature E2E", () => {
    */
   const navigateToSchool = async (page: any) => {
     try {
-      // Go to schools list
       await page.goto("/schools", { waitUntil: "domcontentloaded" });
-
-      // Look for any school link
-      const schoolLinks = await page.locator("a[href*='/schools/']").all();
-      if (schoolLinks.length > 0) {
-        await schoolLinks[0].click();
-
-        // Wait for URL to change to school detail
-        await page.waitForURL(/\/schools\/[^/]+$/, { timeout: 10000 });
-        return true;
+      // Surface any pending "session expired" redirect before sampling — the
+      // first test in this file occasionally lands on /schools with stale
+      // session state and bounces to /login mid-test if we click too early.
+      if (page.url().includes("/login")) {
+        return false;
       }
-      return false;
-    } catch (e) {
+      const firstLink = page
+        .locator("a[href*='/schools/']:not([href$='/new'])")
+        .first();
+      await firstLink.waitFor({ state: "visible", timeout: 10000 });
+      await firstLink.click();
+      await page.waitForURL(/\/schools\/[^/]+$/, { timeout: 10000 });
+      return true;
+    } catch {
       return false;
     }
   };
@@ -39,14 +40,15 @@ test.describe("Coaching Philosophy - Feature E2E", () => {
     const navigated = await navigateToSchool(page);
 
     if (navigated) {
-      // Look for the Coaching Philosophy heading
+      // School detail renders a "Loading school..." shell before the cards
+      // mount; wait past that before asserting on the heading.
+      await page
+        .locator("text=Loading school...")
+        .waitFor({ state: "detached", timeout: 10000 })
+        .catch(() => null);
       const heading = page.locator("h2:has-text('Coaching Philosophy')");
-      const isPresent = await heading
-        .isVisible({ timeout: 5000 })
-        .catch(() => false);
-      expect(isPresent).toBe(true);
+      await expect(heading).toBeVisible({ timeout: 10000 });
     } else {
-      // Skip test if unable to navigate
       test.skip();
     }
   });
@@ -95,7 +97,6 @@ test.describe("Coaching Philosophy - Feature E2E", () => {
         if (isEditVisible) {
           // Click Edit
           await editButton.click();
-          await page.waitForTimeout(300);
 
           // Look for textareas (should appear in edit mode)
           const textareas = page.locator("textarea");
@@ -128,7 +129,6 @@ test.describe("Coaching Philosophy - Feature E2E", () => {
         if (isEditVisible) {
           // Click Edit
           await editButton.click();
-          await page.waitForTimeout(300);
 
           // Look for Save and Cancel buttons
           const saveButton = page.locator("button:has-text('Save Philosophy')");
@@ -170,7 +170,6 @@ test.describe("Coaching Philosophy - Feature E2E", () => {
         if (isEditVisible) {
           // Click Edit
           await editButton.click();
-          await page.waitForTimeout(300);
 
           // Click Cancel
           const cancelButton = page.locator("button:has-text('Cancel')");
@@ -180,7 +179,6 @@ test.describe("Coaching Philosophy - Feature E2E", () => {
 
           if (hasCancelButton) {
             await cancelButton.click();
-            await page.waitForTimeout(300);
 
             // Should see Edit button again (not Cancel)
             const editButtonAgain = page
@@ -220,7 +218,6 @@ test.describe("Coaching Philosophy - Feature E2E", () => {
         if (isEditVisible) {
           // Click Edit
           await editButton.click();
-          await page.waitForTimeout(300);
 
           // Get first textarea and enter text
           const firstTextarea = page.locator("textarea").first();
@@ -267,7 +264,6 @@ test.describe("Coaching Philosophy - Feature E2E", () => {
         if (isEditVisible) {
           // Click Edit
           await editButton.click();
-          await page.waitForTimeout(300);
 
           // Get first textarea
           const firstTextarea = page.locator("textarea").first();
@@ -316,7 +312,6 @@ test.describe("Coaching Philosophy - Feature E2E", () => {
         if (isEditVisible) {
           // Click Edit
           await editButton.click();
-          await page.waitForTimeout(300);
 
           // Get first textarea
           const firstTextarea = page.locator("textarea").first();
@@ -409,7 +404,6 @@ Line 3: Development`;
         if (isEditVisible) {
           // Click Edit to show form
           await editButton.click();
-          await page.waitForTimeout(300);
 
           // Look for field labels
           const expectedLabels = [

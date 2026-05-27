@@ -30,7 +30,7 @@ export const useNotesEditor = (initialValue: Ref<string>) => {
    * @param saveFn - Async function that performs the save operation
    * @returns Promise that resolves when save is complete
    */
-  const save = async (saveFn: (value: string) => Promise<void>) => {
+  const save = async (saveFn: (value: string) => Promise<unknown>) => {
     isSaving.value = true;
     try {
       await saveFn(editedValue.value);

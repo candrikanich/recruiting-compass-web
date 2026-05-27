@@ -18,8 +18,8 @@
           :class="getIconBgClass(stat.color)"
           class="w-10 h-10 rounded-lg flex items-center justify-center"
         >
-          <component
-            :is="stat.icon"
+          <UIcon
+            :name="stat.icon"
             :class="getIconClass(stat.color)"
             class="w-5 h-5"
             aria-hidden="true"
@@ -39,12 +39,10 @@
 </template>
 
 <script setup lang="ts">
-import type { Component } from "vue";
-
 interface StatTile {
   label: string;
   value: number | string;
-  icon?: Component;
+  icon?: string;
   color?: "blue" | "amber" | "green" | "purple" | "slate";
   testId?: string;
 }

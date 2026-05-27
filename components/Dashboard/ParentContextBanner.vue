@@ -8,7 +8,7 @@
     tabindex="0"
   >
     <div class="flex items-center">
-      <EyeIcon class="w-5 h-5 text-indigo-600 mr-3" aria-hidden="true" />
+      <UIcon name="i-heroicons-eye-solid" class="w-5 h-5 text-indigo-600 mr-3" aria-hidden="true"  />
       <p class="text-sm text-indigo-800">
         <strong>Parent View Mode Active:</strong> You're viewing
         <strong>{{ athleteName || "this athlete" }}'s</strong>
@@ -19,8 +19,6 @@
 </template>
 
 <script setup lang="ts">
-import { EyeIcon } from "@heroicons/vue/24/solid";
-
 defineProps<{
   isViewingAsParent: boolean;
   athleteName?: string;

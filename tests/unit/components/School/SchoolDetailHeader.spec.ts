@@ -4,11 +4,6 @@ import SchoolDetailHeader from "~/components/School/SchoolDetailHeader.vue";
 import type { School } from "~/types/models";
 
 // Mock icons
-vi.mock("@heroicons/vue/24/outline", () => ({
-  MapPinIcon: { name: "MapPinIcon", template: "<svg />" },
-  StarIcon: { name: "StarIcon", template: "<svg />" },
-}));
-
 // Mock utils
 vi.mock("~/utils/schoolBadges", () => ({
   getStatusBadgeColor: (status: string) => `color-${status}`,
@@ -222,8 +217,7 @@ describe("SchoolDetailHeader", () => {
 
     it("renders star icon", () => {
       const wrapper = mount(SchoolDetailHeader, { props: defaultProps });
-      const icon = wrapper.findComponent({ name: "StarIcon" });
-      expect(icon.exists()).toBe(true);
+      expect(wrapper.html()).toContain("i-heroicons-star");
     });
 
     it("fills star icon when favorite", () => {
@@ -231,8 +225,7 @@ describe("SchoolDetailHeader", () => {
       const wrapper = mount(SchoolDetailHeader, {
         props: { ...defaultProps, school: favoriteSchool },
       });
-      const icon = wrapper.findComponent({ name: "StarIcon" });
-      expect(icon.classes()).toContain("fill-yellow-500");
+      expect(wrapper.html()).toContain("fill-yellow-500");
     });
   });
 
@@ -246,8 +239,10 @@ describe("SchoolDetailHeader", () => {
 
     it("star icon has aria-hidden", () => {
       const wrapper = mount(SchoolDetailHeader, { props: defaultProps });
-      const icon = wrapper.findComponent({ name: "StarIcon" });
-      expect(icon.attributes("aria-hidden")).toBe("true");
+      const html = wrapper.html();
+      // UIcon renders with aria-hidden when set on element
+      expect(html).toContain("aria-hidden=\"true\"");
+      expect(html).toContain("i-heroicons-star");
     });
   });
 

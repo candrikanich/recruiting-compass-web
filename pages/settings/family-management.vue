@@ -9,7 +9,7 @@
           to="/settings"
           class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition mb-3 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         >
-          <ArrowLeftIcon class="w-4 h-4" />
+          <UIcon name="i-heroicons-arrow-left" class="w-4 h-4"  />
           Back to Settings
         </NuxtLink>
         <h1 class="text-2xl font-semibold text-slate-900">Family Management</h1>
@@ -229,7 +229,6 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from "vue";
-import { ArrowLeftIcon } from "@heroicons/vue/24/outline";
 import { useFamilyCode } from "~/composables/useFamilyCode";
 import { useFamilyInvitations } from "~/composables/useFamilyInvitations";
 import { useFamilyInvite } from "~/composables/useFamilyInvite";
@@ -352,9 +351,13 @@ const fetchFamilyMembers = async () => {
 onMounted(async () => {
   await fetchMyCode();
 
-  // Auto-create family for students without one
-  if (isPlayer.value && !myFamilyCode.value) {
+  // Auto-create a family for any user who doesn't have one yet.
+  // Parents own a family they invite the player into (mirrors onboarding/parent);
+  // players get their own. Without this, a parent who skipped the onboarding
+  // bootstrap has no family_members row and /api/family/invite returns 403.
+  if (!myFamilyCode.value) {
     await createFamily();
+    await fetchMyCode();
   }
 
   if (isPlayer.value && myFamilyId.value) {

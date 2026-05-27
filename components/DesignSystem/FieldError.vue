@@ -8,18 +8,16 @@
       aria-atomic="true"
       class="mt-1 text-sm text-red-600 flex items-start gap-1"
     >
-      <ExclamationCircleIcon
+      <UIcon name="i-heroicons-exclamation-circle-solid"
         class="w-4 h-4 mt-0.5 shrink-0"
         aria-hidden="true"
-      />
+       />
       <span>{{ error }}</span>
     </div>
   </Transition>
 </template>
 
 <script setup lang="ts">
-import { ExclamationCircleIcon } from "@heroicons/vue/24/solid";
-
 defineProps<{
   id?: string;
   error?: string;

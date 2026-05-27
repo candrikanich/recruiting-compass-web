@@ -137,17 +137,12 @@ describe("QuickTasksWidget", () => {
       await wrapper.vm.$nextTick();
       expect(wrapper.find('input[id="new-task-input"]').exists()).toBe(true);
 
-      const cancelButtons = wrapper.findAll("button");
-      const cancelButton = cancelButtons.find((b) => {
-        const svg = b.find("svg");
-        return (
-          svg.exists() && b.classes().some((c) => c.includes("text-slate-500"))
-        );
+      const cancelButton = wrapper.findAll("button").find((b) => {
+        return b.attributes("aria-label") === "Cancel adding task";
       });
-      if (cancelButton) {
-        await cancelButton.trigger("click");
-        await wrapper.vm.$nextTick();
-      }
+      expect(cancelButton).toBeDefined();
+      await cancelButton!.trigger("click");
+      await wrapper.vm.$nextTick();
 
       expect(wrapper.find('input[id="new-task-input"]').exists()).toBe(false);
     });

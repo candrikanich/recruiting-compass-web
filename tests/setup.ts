@@ -15,6 +15,8 @@ global.useState = vi.fn();
 global.useFetch = vi.fn();
 global.useAsyncData = vi.fn();
 global.definePageMeta = vi.fn();
+global.useHead = vi.fn();
+global.useSeoMeta = vi.fn();
 
 // Shared vi.fn() so both auto-import (global) and #app import resolve to the same mock
 const _useNuxtAppMock = vi.fn(
@@ -241,6 +243,14 @@ config.global.stubs = {
   Badge: {
     name: "Badge",
     template: "<span><slot /></span>",
+  },
+  // Nuxt UI icon — render the iconify name into class + data attribute so
+  // tests can assert against `i-heroicons-*` strings in the HTML output.
+  UIcon: {
+    name: "UIcon",
+    props: ["name"],
+    template:
+      '<span :class="name" :data-icon="name" aria-hidden="true"><slot /></span>',
   },
 };
 

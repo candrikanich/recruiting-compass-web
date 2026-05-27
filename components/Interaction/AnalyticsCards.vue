@@ -1,11 +1,4 @@
 <script setup lang="ts">
-import {
-  ChatBubbleLeftRightIcon,
-  ArrowUpIcon,
-  ArrowDownIcon,
-  CalendarIcon,
-} from "@heroicons/vue/24/outline";
-
 type AnalyticsCardsProps = {
   totalCount: number;
   outboundCount: number;
@@ -31,10 +24,10 @@ withDefaults(defineProps<AnalyticsCardsProps>(), {
         <div
           class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center"
         >
-          <ChatBubbleLeftRightIcon
+          <UIcon name="i-heroicons-chat-bubble-left-right"
             aria-hidden="true"
             class="w-5 h-5 text-blue-600"
-          />
+           />
         </div>
         <div>
           <p role="status" class="text-2xl font-bold text-slate-900">
@@ -49,7 +42,7 @@ withDefaults(defineProps<AnalyticsCardsProps>(), {
         <div
           class="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center"
         >
-          <ArrowUpIcon aria-hidden="true" class="w-5 h-5 text-emerald-600" />
+          <UIcon name="i-heroicons-arrow-up" aria-hidden="true" class="w-5 h-5 text-emerald-600"  />
         </div>
         <div>
           <p role="status" class="text-2xl font-bold text-slate-900">
@@ -64,7 +57,7 @@ withDefaults(defineProps<AnalyticsCardsProps>(), {
         <div
           class="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center"
         >
-          <ArrowDownIcon aria-hidden="true" class="w-5 h-5 text-purple-600" />
+          <UIcon name="i-heroicons-arrow-down" aria-hidden="true" class="w-5 h-5 text-purple-600"  />
         </div>
         <div>
           <p role="status" class="text-2xl font-bold text-slate-900">
@@ -79,7 +72,7 @@ withDefaults(defineProps<AnalyticsCardsProps>(), {
         <div
           class="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center"
         >
-          <CalendarIcon aria-hidden="true" class="w-5 h-5 text-amber-600" />
+          <UIcon name="i-heroicons-calendar" aria-hidden="true" class="w-5 h-5 text-amber-600"  />
         </div>
         <div>
           <p role="status" class="text-2xl font-bold text-slate-900">
