@@ -1,7 +1,52 @@
+import { Resend } from "resend";
 import type { NotificationPriority } from "~/types/models";
 import { createLogger } from "~/server/utils/logger";
 
 const logger = createLogger("email");
+
+const DEFAULT_FROM = "The Recruiting Compass <info@therecruitingcompass.com>";
+
+const fromAddress = (): string => process.env.RESEND_FROM_EMAIL ?? DEFAULT_FROM;
+
+let client: Resend | null = null;
+
+function getResend(): Resend {
+  if (!client) {
+    client = new Resend(process.env.RESEND_API_KEY);
+  }
+  return client;
+}
+
+type SendResult = { success: boolean; messageId?: string; error?: string };
+
+async function sendViaResend(
+  payload: { to: string; subject: string; html: string },
+  idempotencyKey?: string,
+): Promise<SendResult> {
+  if (!process.env.RESEND_API_KEY) {
+    logger.warn("RESEND_API_KEY not configured, email notifications disabled");
+    return { success: false, error: "Email service not configured" };
+  }
+
+  try {
+    const { data, error } = await getResend().emails.send(
+      { from: fromAddress(), ...payload },
+      idempotencyKey ? { idempotencyKey } : undefined,
+    );
+
+    if (error) {
+      logger.error("Resend API error:", error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true, messageId: data?.id };
+  } catch (err) {
+    logger.error("Failed to send email:", err);
+    const errorMessage =
+      err instanceof Error ? err.message : "Unknown error sending email";
+    return { success: false, error: errorMessage };
+  }
+}
 
 function escapeHtml(str: string): string {
   return str
@@ -32,24 +77,21 @@ export interface SendNotificationEmailOptions {
   message: string;
   actionUrl?: string;
   priority: NotificationPriority;
+  idempotencyKey?: string;
 }
 
 export interface SendEmailOptions {
   to: string;
   subject: string;
   html: string;
+  idempotencyKey?: string;
 }
 
 export const sendNotificationEmail = async (
   options: SendNotificationEmailOptions,
-) => {
-  const { to, subject, title, message, actionUrl, priority } = options;
-
-  // Check if Resend API key is available
-  if (!process.env.RESEND_API_KEY) {
-    logger.warn("RESEND_API_KEY not configured, email notifications disabled");
-    return { success: false, error: "Email service not configured" };
-  }
+): Promise<SendResult> => {
+  const { to, subject, title, message, actionUrl, priority, idempotencyKey } =
+    options;
 
   const priorityBadge =
     priority === "high"
@@ -85,75 +127,17 @@ export const sendNotificationEmail = async (
     </html>
   `;
 
-  try {
-    const response = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: "The Recruiting Compass <info@therecruitingcompass.com>",
-        to,
-        subject,
-        html: htmlContent,
-      }),
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      logger.error("Resend API error:", error);
-      return { success: false, error: error.message };
-    }
-
-    const data = await response.json();
-    return { success: true, messageId: data.id };
-  } catch (err) {
-    logger.error("Failed to send email:", err);
-    const errorMessage =
-      err instanceof Error ? err.message : "Unknown error sending email";
-    return { success: false, error: errorMessage };
-  }
+  return sendViaResend(
+    { to, subject, html: htmlContent },
+    idempotencyKey,
+  );
 };
 
-export const sendEmail = async (options: SendEmailOptions) => {
-  const { to, subject, html } = options;
-
-  // Check if Resend API key is available
-  if (!process.env.RESEND_API_KEY) {
-    logger.warn("RESEND_API_KEY not configured, email notifications disabled");
-    return { success: false, error: "Email service not configured" };
-  }
-
-  try {
-    const response = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: "The Recruiting Compass <info@therecruitingcompass.com>",
-        to,
-        subject,
-        html,
-      }),
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      logger.error("Resend API error:", error);
-      return { success: false, error: error.message };
-    }
-
-    const data = await response.json();
-    return { success: true, messageId: data.id };
-  } catch (err) {
-    logger.error("Failed to send email:", err);
-    const errorMessage =
-      err instanceof Error ? err.message : "Unknown error sending email";
-    return { success: false, error: errorMessage };
-  }
+export const sendEmail = async (
+  options: SendEmailOptions,
+): Promise<SendResult> => {
+  const { to, subject, html, idempotencyKey } = options;
+  return sendViaResend({ to, subject, html }, idempotencyKey);
 };
 
 export interface SendInviteEmailOptions {
@@ -250,5 +234,6 @@ export const sendInviteEmail = async (
     to,
     subject: `${familyName}'s recruiting journey awaits — you're invited!`,
     html: htmlContent,
+    idempotencyKey: `invite-${token}`,
   });
 };

@@ -3,6 +3,7 @@ import { z } from "zod";
 import {
   renderWeeklyDigestEmail,
   renderDeadlineAlertEmail,
+  sendEmail,
 } from "~/server/utils/emailService";
 import { useLogger } from "~/server/utils/logger";
 import { requireAuth } from "~/server/utils/auth";
@@ -34,40 +35,10 @@ export default defineEventHandler(async (event) => {
           data as Parameters<typeof renderDeadlineAlertEmail>[0],
         );
 
-  const { resendApiKey } = useRuntimeConfig();
-  if (!resendApiKey) {
-    logger.error("RESEND_API_KEY not configured");
-    throw createError({
-      statusCode: 500,
-      statusMessage: "Service configuration error",
-    });
-  }
+  const result = await sendEmail({ to, subject, html });
 
-  const response = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${resendApiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      from: "Recruiting Compass <notifications@recruitingcompass.com>",
-      to,
-      subject,
-      html,
-    }),
-  });
-
-  if (!response.ok) {
-    try {
-      const errorData = await response.json();
-      logger.error("Resend delivery error", errorData);
-    } catch {
-      const textError = await response.text().catch(() => "Unknown error");
-      logger.error("Resend delivery error (non-JSON)", {
-        status: response.status,
-        body: textError,
-      });
-    }
+  if (!result.success) {
+    logger.error("Resend delivery error", { error: result.error });
     throw createError({
       statusCode: 500,
       statusMessage: "Failed to send email",
