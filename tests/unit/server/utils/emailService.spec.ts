@@ -102,6 +102,57 @@ describe("emailService (Resend SDK)", () => {
     });
   });
 
+  describe("sendEmail reliability", () => {
+    it("retries on a 5xx SDK error and succeeds on a later attempt", async () => {
+      vi.useFakeTimers();
+      sendMock.mockResolvedValueOnce({
+        data: null,
+        error: { message: "server error", statusCode: 500, name: "internal_server_error" },
+      });
+      sendMock.mockResolvedValueOnce({
+        data: { id: "email_retry" },
+        error: null,
+      });
+
+      const promise = sendEmail({ to: "a@b.com", subject: "Hi", html: "<p>Hi</p>" });
+      await vi.runAllTimersAsync();
+      const result = await promise;
+      vi.useRealTimers();
+
+      expect(sendMock).toHaveBeenCalledTimes(2);
+      expect(result).toEqual({ success: true, messageId: "email_retry" });
+    });
+
+    it("does not retry a 4xx SDK error", async () => {
+      sendMock.mockResolvedValue({
+        data: null,
+        error: { message: "invalid email", statusCode: 422, name: "validation_error" },
+      });
+
+      const result = await sendEmail({ to: "a@b.com", subject: "Hi", html: "<p>Hi</p>" });
+
+      expect(sendMock).toHaveBeenCalledTimes(1);
+      expect(result.success).toBe(false);
+    });
+
+    it("times out a hung send and retries", async () => {
+      vi.useFakeTimers();
+      sendMock.mockReturnValueOnce(new Promise(() => {})); // never resolves
+      sendMock.mockResolvedValueOnce({
+        data: { id: "email_after_timeout" },
+        error: null,
+      });
+
+      const promise = sendEmail({ to: "a@b.com", subject: "Hi", html: "<p>Hi</p>" });
+      await vi.runAllTimersAsync();
+      const result = await promise;
+      vi.useRealTimers();
+
+      expect(sendMock).toHaveBeenCalledTimes(2);
+      expect(result).toEqual({ success: true, messageId: "email_after_timeout" });
+    });
+  });
+
   describe("sendNotificationEmail", () => {
     it("forwards a provided idempotency key", async () => {
       await sendNotificationEmail({

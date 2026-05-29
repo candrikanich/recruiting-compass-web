@@ -1,10 +1,14 @@
 import { Resend } from "resend";
 import type { NotificationPriority } from "~/types/models";
 import { createLogger } from "~/server/utils/logger";
+import { retryWithBackoff } from "~/server/utils/retry";
 
 const logger = createLogger("email");
 
 const DEFAULT_FROM = "The Recruiting Compass <info@therecruitingcompass.com>";
+const MAX_ATTEMPTS = 3;
+const BASE_DELAY_MS = 1000;
+const SEND_TIMEOUT_MS = 10_000;
 
 const fromAddress = (): string => process.env.RESEND_FROM_EMAIL ?? DEFAULT_FROM;
 
@@ -19,6 +23,48 @@ function getResend(): Resend {
 
 type SendResult = { success: boolean; messageId?: string; error?: string };
 
+class EmailTimeoutError extends Error {
+  constructor() {
+    super("Email send timed out");
+    this.name = "EmailTimeoutError";
+  }
+}
+
+class ResendSendError extends Error {
+  constructor(
+    message: string,
+    readonly statusCode: number | null,
+  ) {
+    super(message);
+    this.name = "ResendSendError";
+  }
+}
+
+function isRetryable(err: unknown): boolean {
+  if (err instanceof EmailTimeoutError) return true;
+  if (err instanceof ResendSendError) {
+    return err.statusCode != null && (err.statusCode >= 500 || err.statusCode === 429);
+  }
+  // Thrown network/transport errors (no structured status) are transient.
+  return err instanceof Error;
+}
+
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => reject(new EmailTimeoutError()), ms);
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (err) => {
+        clearTimeout(timer);
+        reject(err);
+      },
+    );
+  });
+}
+
 async function sendViaResend(
   payload: { to: string; subject: string; html: string },
   idempotencyKey?: string,
@@ -29,17 +75,22 @@ async function sendViaResend(
   }
 
   try {
-    const { data, error } = await getResend().emails.send(
-      { from: fromAddress(), ...payload },
-      idempotencyKey ? { idempotencyKey } : undefined,
+    return await retryWithBackoff(
+      async () => {
+        const { data, error } = await withTimeout(
+          getResend().emails.send(
+            { from: fromAddress(), ...payload },
+            idempotencyKey ? { idempotencyKey } : undefined,
+          ),
+          SEND_TIMEOUT_MS,
+        );
+
+        if (error) throw new ResendSendError(error.message, error.statusCode);
+
+        return { success: true, messageId: data?.id };
+      },
+      { retries: MAX_ATTEMPTS, baseDelayMs: BASE_DELAY_MS, isRetryable },
     );
-
-    if (error) {
-      logger.error("Resend API error:", error);
-      return { success: false, error: error.message };
-    }
-
-    return { success: true, messageId: data?.id };
   } catch (err) {
     logger.error("Failed to send email:", err);
     const errorMessage =
