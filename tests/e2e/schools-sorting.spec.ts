@@ -120,7 +120,6 @@ test.describe("Schools Sorting", () => {
 
       // Check if schools are still visible or if there's a message
       const schoolCards = await page.locator("h3").all();
-
     }
   });
 
@@ -164,7 +163,6 @@ test.describe("Schools Sorting", () => {
       // If default is a-z, schools should be alphabetical
       if (value === "a-z") {
         const schoolNames = await page.locator("h3").all();
-
       }
     }
   });

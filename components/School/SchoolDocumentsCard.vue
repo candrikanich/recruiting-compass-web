@@ -2,7 +2,10 @@
   <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
     <div class="flex items-center justify-between mb-4">
       <div class="flex items-center gap-2">
-        <UIcon name="i-heroicons-document-text" class="w-5 h-5 text-slate-400"  />
+        <UIcon
+          name="i-heroicons-document-text"
+          class="w-5 h-5 text-slate-400"
+        />
         <h2 class="text-lg font-semibold text-slate-900">Shared Documents</h2>
       </div>
       <button

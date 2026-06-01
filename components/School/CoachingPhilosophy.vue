@@ -12,7 +12,7 @@
           @click="toggleEditing"
           class="px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-50 rounded-lg transition flex items-center gap-1"
         >
-          <UIcon name="i-heroicons-pencil" class="w-4 h-4"  />
+          <UIcon name="i-heroicons-pencil" class="w-4 h-4" />
           {{ isEditing ? "Cancel" : "Edit" }}
         </button>
       </div>

@@ -180,7 +180,9 @@ test.describe("/settings/profile — Profile Settings", () => {
     // first <input> is the hidden avatar file picker (display:none), so
     // .first() resolves to it and toBeVisible never satisfies. Filter to
     // :visible so the wait latches onto a real, paint-visible form control.
-    const inputs = page.locator("input:visible, textarea:visible, select:visible");
+    const inputs = page.locator(
+      "input:visible, textarea:visible, select:visible",
+    );
     await expect(inputs.first()).toBeVisible({ timeout: 10000 });
     expect(await inputs.count()).toBeGreaterThan(0);
   });

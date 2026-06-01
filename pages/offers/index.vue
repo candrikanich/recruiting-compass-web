@@ -16,7 +16,7 @@
           @click="showComparison = true"
           class="px-3 py-2 text-sm font-medium border border-blue-300 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition flex items-center gap-2"
         >
-          <UIcon name="i-heroicons-scale" class="w-4 h-4"  />
+          <UIcon name="i-heroicons-scale" class="w-4 h-4" />
           Compare ({{ selectedOffers.length }})
         </button>
         <button
@@ -24,7 +24,7 @@
           @click="showAddForm = !showAddForm"
           class="px-4 py-2 text-sm font-medium text-white bg-linear-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition flex items-center gap-2"
         >
-          <UIcon name="i-heroicons-plus" class="w-4 h-4"  />
+          <UIcon name="i-heroicons-plus" class="w-4 h-4" />
           {{ showAddForm ? "Cancel" : "Log Offer" }}
         </button>
       </template>
@@ -38,7 +38,10 @@
             <div
               class="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center"
             >
-              <UIcon name="i-heroicons-check-circle" class="w-5 h-5 text-emerald-600"  />
+              <UIcon
+                name="i-heroicons-check-circle"
+                class="w-5 h-5 text-emerald-600"
+              />
             </div>
             <div>
               <p class="text-2xl font-bold text-slate-900">
@@ -53,7 +56,7 @@
             <div
               class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center"
             >
-              <UIcon name="i-heroicons-clock" class="w-5 h-5 text-blue-600"  />
+              <UIcon name="i-heroicons-clock" class="w-5 h-5 text-blue-600" />
             </div>
             <div>
               <p class="text-2xl font-bold text-slate-900">
@@ -68,7 +71,7 @@
             <div
               class="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center"
             >
-              <UIcon name="i-heroicons-x-circle" class="w-5 h-5 text-red-600"  />
+              <UIcon name="i-heroicons-x-circle" class="w-5 h-5 text-red-600" />
             </div>
             <div>
               <p class="text-2xl font-bold text-slate-900">
@@ -259,9 +262,10 @@
               >Search</label
             >
             <div class="relative">
-              <UIcon name="i-heroicons-magnifying-glass"
+              <UIcon
+                name="i-heroicons-magnifying-glass"
                 class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-               />
+              />
               <input
                 v-model="filters.schoolSearch"
                 type="text"
@@ -346,7 +350,10 @@
         v-else-if="offers.length === 0"
         class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
       >
-        <UIcon name="i-heroicons-gift" class="w-12 h-12 text-slate-300 mx-auto mb-4"  />
+        <UIcon
+          name="i-heroicons-gift"
+          class="w-12 h-12 text-slate-300 mx-auto mb-4"
+        />
         <p class="text-slate-900 font-medium mb-2">No offers logged yet</p>
         <p class="text-sm text-slate-500">
           Log scholarship offers as you receive them
@@ -358,7 +365,10 @@
         v-else-if="filteredOffers.length === 0"
         class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
       >
-        <UIcon name="i-heroicons-magnifying-glass" class="w-12 h-12 text-slate-300 mx-auto mb-4"  />
+        <UIcon
+          name="i-heroicons-magnifying-glass"
+          class="w-12 h-12 text-slate-300 mx-auto mb-4"
+        />
         <p class="text-slate-900 font-medium mb-2">
           No offers match your filters
         </p>

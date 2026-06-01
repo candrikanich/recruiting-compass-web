@@ -540,10 +540,7 @@ export const schoolHelpers = {
  */
 export async function deleteSchoolDirect(schoolId: string): Promise<void> {
   if (!schoolId) return;
-  const { getSupabaseAdmin } = await import(
-    "../seed/helpers/supabase-admin"
-  );
+  const { getSupabaseAdmin } = await import("../seed/helpers/supabase-admin");
   const supabase = getSupabaseAdmin();
   await supabase.from("schools").delete().eq("id", schoolId);
 }
-

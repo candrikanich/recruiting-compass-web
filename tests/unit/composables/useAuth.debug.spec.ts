@@ -117,7 +117,12 @@ describe("useAuth — _debug helpers", () => {
       };
 
       const auth = useAuth() as ReturnType<typeof useAuth> & {
-        _debug: { getAuthState: () => Promise<{ isConsistent: boolean; issues: string[] }> };
+        _debug: {
+          getAuthState: () => Promise<{
+            isConsistent: boolean;
+            issues: string[];
+          }>;
+        };
       };
       const state = await auth._debug.getAuthState();
 
@@ -128,7 +133,9 @@ describe("useAuth — _debug helpers", () => {
     it("flags mismatched user IDs", async () => {
       const user = buildUser({ id: "u-1", email: "a@b.com" });
       mockAuth.getUser.mockResolvedValue({ data: { user } });
-      mockAuth.getSession.mockResolvedValue({ data: { session: buildSession(user) } });
+      mockAuth.getSession.mockResolvedValue({
+        data: { session: buildSession(user) },
+      });
       storeState = {
         user: { id: "u-2", email: "a@b.com" },
         isAuthenticated: true,
@@ -136,18 +143,27 @@ describe("useAuth — _debug helpers", () => {
       };
 
       const auth = useAuth() as ReturnType<typeof useAuth> & {
-        _debug: { getAuthState: () => Promise<{ isConsistent: boolean; issues: string[] }> };
+        _debug: {
+          getAuthState: () => Promise<{
+            isConsistent: boolean;
+            issues: string[];
+          }>;
+        };
       };
       const state = await auth._debug.getAuthState();
 
       expect(state.isConsistent).toBe(false);
-      expect(state.issues.some((i) => i.includes("doesn't match store user ID"))).toBe(true);
+      expect(
+        state.issues.some((i) => i.includes("doesn't match store user ID")),
+      ).toBe(true);
     });
 
     it("flags mismatched emails", async () => {
       const user = buildUser({ id: "u-1", email: "a@b.com" });
       mockAuth.getUser.mockResolvedValue({ data: { user } });
-      mockAuth.getSession.mockResolvedValue({ data: { session: buildSession(user) } });
+      mockAuth.getSession.mockResolvedValue({
+        data: { session: buildSession(user) },
+      });
       storeState = {
         user: { id: "u-1", email: "other@b.com" },
         isAuthenticated: true,
@@ -155,27 +171,43 @@ describe("useAuth — _debug helpers", () => {
       };
 
       const auth = useAuth() as ReturnType<typeof useAuth> & {
-        _debug: { getAuthState: () => Promise<{ isConsistent: boolean; issues: string[] }> };
+        _debug: {
+          getAuthState: () => Promise<{
+            isConsistent: boolean;
+            issues: string[];
+          }>;
+        };
       };
       const state = await auth._debug.getAuthState();
 
       expect(state.isConsistent).toBe(false);
-      expect(state.issues.some((i) => i.includes("doesn't match store email"))).toBe(true);
+      expect(
+        state.issues.some((i) => i.includes("doesn't match store email")),
+      ).toBe(true);
     });
 
     it("flags when auth is set but store is empty", async () => {
       const user = buildUser({ id: "u-1", email: "a@b.com" });
       mockAuth.getUser.mockResolvedValue({ data: { user } });
-      mockAuth.getSession.mockResolvedValue({ data: { session: buildSession(user) } });
+      mockAuth.getSession.mockResolvedValue({
+        data: { session: buildSession(user) },
+      });
       storeState = { user: null, isAuthenticated: false, loading: false };
 
       const auth = useAuth() as ReturnType<typeof useAuth> & {
-        _debug: { getAuthState: () => Promise<{ isConsistent: boolean; issues: string[] }> };
+        _debug: {
+          getAuthState: () => Promise<{
+            isConsistent: boolean;
+            issues: string[];
+          }>;
+        };
       };
       const state = await auth._debug.getAuthState();
 
       expect(state.isConsistent).toBe(false);
-      expect(state.issues).toContain("User is authenticated but store is empty");
+      expect(state.issues).toContain(
+        "User is authenticated but store is empty",
+      );
     });
 
     it("flags when store is populated but auth is empty", async () => {
@@ -188,7 +220,12 @@ describe("useAuth — _debug helpers", () => {
       };
 
       const auth = useAuth() as ReturnType<typeof useAuth> & {
-        _debug: { getAuthState: () => Promise<{ isConsistent: boolean; issues: string[] }> };
+        _debug: {
+          getAuthState: () => Promise<{
+            isConsistent: boolean;
+            issues: string[];
+          }>;
+        };
       };
       const state = await auth._debug.getAuthState();
 
@@ -210,12 +247,19 @@ describe("useAuth — _debug helpers", () => {
       };
 
       const auth = useAuth() as ReturnType<typeof useAuth> & {
-        _debug: { getAuthState: () => Promise<{ isConsistent: boolean; issues: string[] }> };
+        _debug: {
+          getAuthState: () => Promise<{
+            isConsistent: boolean;
+            issues: string[];
+          }>;
+        };
       };
       const state = await auth._debug.getAuthState();
 
       expect(state.isConsistent).toBe(false);
-      expect(state.issues.some((i) => i.includes("Session user ID"))).toBe(true);
+      expect(state.issues.some((i) => i.includes("Session user ID"))).toBe(
+        true,
+      );
     });
 
     it("returns nulls when nothing is set", async () => {
@@ -246,7 +290,9 @@ describe("useAuth — _debug helpers", () => {
     it("returns the same state object getAuthState would", async () => {
       const user = buildUser({ id: "u-1", email: "a@b.com" });
       mockAuth.getUser.mockResolvedValue({ data: { user } });
-      mockAuth.getSession.mockResolvedValue({ data: { session: buildSession(user) } });
+      mockAuth.getSession.mockResolvedValue({
+        data: { session: buildSession(user) },
+      });
       storeState = {
         user: { id: "u-1", email: "a@b.com" },
         isAuthenticated: true,
@@ -279,7 +325,10 @@ describe("useAuth — _debug helpers", () => {
     it("returns undefined when no changes detected", async () => {
       const auth = useAuth() as ReturnType<typeof useAuth> & {
         _debug: {
-          compareAuthStates: (a: typeof baseState, b: typeof baseState) => Promise<unknown>;
+          compareAuthStates: (
+            a: typeof baseState,
+            b: typeof baseState,
+          ) => Promise<unknown>;
         };
       };
       const result = await auth._debug.compareAuthStates(baseState, baseState);
@@ -292,7 +341,9 @@ describe("useAuth — _debug helpers", () => {
           compareAuthStates: (
             a: typeof baseState,
             b: typeof baseState,
-          ) => Promise<Record<string, { before: string | null; after: string | null }>>;
+          ) => Promise<
+            Record<string, { before: string | null; after: string | null }>
+          >;
         };
       };
       const next = { ...baseState, authUserId: "u-2" };
@@ -330,7 +381,9 @@ describe("useAuth — _debug helpers", () => {
     it("returns areStable=true when ids never change across three measurements", async () => {
       const user = buildUser({ id: "u-1", email: "a@b.com" });
       mockAuth.getUser.mockResolvedValue({ data: { user } });
-      mockAuth.getSession.mockResolvedValue({ data: { session: buildSession(user) } });
+      mockAuth.getSession.mockResolvedValue({
+        data: { session: buildSession(user) },
+      });
       storeState = {
         user: { id: "u-1", email: "a@b.com" },
         isAuthenticated: true,
@@ -358,7 +411,9 @@ describe("useAuth — _debug helpers", () => {
         .mockResolvedValueOnce({ data: { user: userA } })
         .mockResolvedValueOnce({ data: { user: userB } })
         .mockResolvedValueOnce({ data: { user: userB } });
-      mockAuth.getSession.mockResolvedValue({ data: { session: buildSession(userA) } });
+      mockAuth.getSession.mockResolvedValue({
+        data: { session: buildSession(userA) },
+      });
       storeState = {
         user: { id: "u-1", email: "a@b.com" },
         isAuthenticated: true,

@@ -26,7 +26,11 @@
             class="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition focus:ring-2 focus:ring-brand-blue-500 focus:ring-offset-2"
             data-testid="nav-search-button"
           >
-            <UIcon name="i-heroicons-magnifying-glass" class="w-5 h-5" aria-hidden="true"  />
+            <UIcon
+              name="i-heroicons-magnifying-glass"
+              class="w-5 h-5"
+              aria-hidden="true"
+            />
           </NuxtLink>
           <NotificationCenter />
           <HeaderProfile class="hidden md:block" />
@@ -40,12 +44,18 @@
             aria-controls="mobile-nav-menu"
             class="md:hidden p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition focus:ring-2 focus:ring-brand-blue-500 focus:ring-offset-2"
           >
-            <UIcon name="i-heroicons-bars-3"
+            <UIcon
+              name="i-heroicons-bars-3"
               v-if="!isMobileMenuOpen"
               class="w-6 h-6"
               aria-hidden="true"
-             />
-            <UIcon name="i-heroicons-x-mark" v-else class="w-6 h-6" aria-hidden="true"  />
+            />
+            <UIcon
+              name="i-heroicons-x-mark"
+              v-else
+              class="w-6 h-6"
+              aria-hidden="true"
+            />
           </button>
         </div>
       </div>
@@ -129,7 +139,11 @@
               @click="handleLogout"
               class="flex items-center gap-3 w-full px-3 py-3 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
             >
-              <UIcon name="i-heroicons-arrow-right-on-rectangle" class="w-5 h-5" aria-hidden="true"  />
+              <UIcon
+                name="i-heroicons-arrow-right-on-rectangle"
+                class="w-5 h-5"
+                aria-hidden="true"
+              />
               <span>Log Out</span>
             </button>
           </div>
@@ -162,26 +176,46 @@ const navItems = [
   { to: "/dashboard", label: "Dashboard", icon: "i-heroicons-home" },
   { to: "/schools", label: "Schools", icon: "i-heroicons-building-library" },
   { to: "/coaches", label: "Coaches", icon: "i-heroicons-user-group" },
-  { to: "/interactions", label: "Interactions", icon: "i-heroicons-chat-bubble-left-right" },
+  {
+    to: "/interactions",
+    label: "Interactions",
+    icon: "i-heroicons-chat-bubble-left-right",
+  },
   { to: "/events", label: "Events", icon: "i-heroicons-calendar-days" },
   { to: "/timeline", label: "Timeline", icon: "i-heroicons-clock" },
   { to: "/performance", label: "Performance", icon: "i-heroicons-chart-bar" },
   { to: "/offers", label: "Offers", icon: "i-heroicons-gift" },
   { to: "/documents", label: "Documents", icon: "i-heroicons-document-text" },
-  { to: "/settings", label: "Settings", icon: "i-heroicons-adjustments-horizontal" },
+  {
+    to: "/settings",
+    label: "Settings",
+    icon: "i-heroicons-adjustments-horizontal",
+  },
   { to: "/search", label: "Search", icon: "i-heroicons-magnifying-glass" },
   { to: "/analytics", label: "Analytics", icon: "i-heroicons-chart-pie" },
 ];
 
 const settingsItems = [
-  { to: "/settings/location", label: "Home Location", icon: "i-heroicons-home" },
-  { to: "/settings/player-details", label: "Player Details", icon: "i-heroicons-user" },
+  {
+    to: "/settings/location",
+    label: "Home Location",
+    icon: "i-heroicons-home",
+  },
+  {
+    to: "/settings/player-details",
+    label: "Player Details",
+    icon: "i-heroicons-user",
+  },
   {
     to: "/settings/school-preferences",
     label: "School Preferences",
     icon: "i-heroicons-adjustments-horizontal",
   },
-  { to: "/settings/notifications", label: "Notifications", icon: "i-heroicons-bell" },
+  {
+    to: "/settings/notifications",
+    label: "Notifications",
+    icon: "i-heroicons-bell",
+  },
   {
     to: "/settings/communication-templates",
     label: "Templates",

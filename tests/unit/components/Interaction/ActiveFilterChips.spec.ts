@@ -663,7 +663,7 @@ describe("ActiveFilterChips", () => {
       // UIcon does not render <svg> directly in test env; check html instead
       const html = wrapper.html();
       expect(html).toContain("i-heroicons-x-mark");
-      expect(html).toContain("aria-hidden=\"true\"");
+      expect(html).toContain('aria-hidden="true"');
     });
 
     it("has focus indicators on all chip buttons", () => {

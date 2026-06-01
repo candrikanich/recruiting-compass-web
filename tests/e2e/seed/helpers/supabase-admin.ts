@@ -73,7 +73,9 @@ export async function seedSchoolsWithInteractions(
     .insert(schoolRows)
     .select("id");
   if (schoolErr || !schools) {
-    throw new Error(`seedSchoolsWithInteractions schools: ${schoolErr?.message}`);
+    throw new Error(
+      `seedSchoolsWithInteractions schools: ${schoolErr?.message}`,
+    );
   }
   const schoolIds = schools.map((s) => s.id as string);
 
@@ -98,7 +100,9 @@ export async function seedSchoolsWithInteractions(
   if (intErr) {
     // Roll back the schools so we don't leak partial seed.
     await supabase.from("schools").delete().in("id", schoolIds);
-    throw new Error(`seedSchoolsWithInteractions interactions: ${intErr.message}`);
+    throw new Error(
+      `seedSchoolsWithInteractions interactions: ${intErr.message}`,
+    );
   }
 
   return {
@@ -113,7 +117,10 @@ export async function deleteSeededSchools(
   seeded: SeededSchools,
 ): Promise<void> {
   if (seeded.interactionIds.length > 0) {
-    await supabase.from("interactions").delete().in("id", seeded.interactionIds);
+    await supabase
+      .from("interactions")
+      .delete()
+      .in("id", seeded.interactionIds);
   }
   if (seeded.schoolIds.length > 0) {
     await supabase.from("schools").delete().in("id", seeded.schoolIds);

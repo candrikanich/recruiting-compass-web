@@ -22,7 +22,10 @@
     </div>
 
     <div v-else-if="recentInteractions.length === 0" class="p-6 text-center">
-      <UIcon name="i-heroicons-chat-bubble-left-right" class="w-8 h-8 text-slate-300 mx-auto mb-2"  />
+      <UIcon
+        name="i-heroicons-chat-bubble-left-right"
+        class="w-8 h-8 text-slate-300 mx-auto mb-2"
+      />
       <p class="text-slate-600 text-sm">
         No interactions logged yet by your athlete
       </p>
