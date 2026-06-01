@@ -2,6 +2,12 @@
 
 Historical context and completed sessions. Not loaded by default.
 
+## Doc Cleanup — 2026-06-01
+
+- **Auto-deleted:** 1 stale handoff doc (`planning/2026-05-22-atomic-crud-handoff.md` — atomic CRUD pattern superseded by Pinia store rollout).
+- **Compressed:** 0 files.
+- **Flagged for review:** 183 files (no action — manual review required).
+
 ## CI/PR Cleanup — 2026-05-25
 
 - **Fixed 3 stale unit failures** reddening develop: `SchoolNotesCard.spec` + `CoachNotesEditor` stub (dead emit contract → rewrote to `saveFn` callback), `tasks-index-advanced.spec` (`useHead` undefined → added `useHead`/`useSeoMeta` to `tests/setup.ts` global stubs). Commit `066d8d43`. Full unit 7165 pass.
