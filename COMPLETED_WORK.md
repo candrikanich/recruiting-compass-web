@@ -2,6 +2,12 @@
 
 Historical context and completed sessions. Not loaded by default.
 
+## Doc Cleanup — 2026-06-02
+
+- **Auto-deleted:** 4 stale handoff docs (`planning/2026-05-22-playwright-rewrite-handoff.md`, `planning/handoff-2026-05-25-e2e-bucket-work.md`, `planning/handoff-2026-05-25-skipped-tests-cleanup.md`, `planning/handoff-2026-05-26-buckets-abc-deadline-feature.md` — superseded by completed E2E sweep and feature work).
+- **Compressed:** 0 files.
+- **Flagged for review:** 187 files (no action — manual review required).
+
 ## Doc Cleanup — 2026-06-01
 
 - **Auto-deleted:** 1 stale handoff doc (`planning/2026-05-22-atomic-crud-handoff.md` — atomic CRUD pattern superseded by Pinia store rollout).
