@@ -1,27 +1,30 @@
-`ls planning/iOS_SPEC_*` already present in compressed step 3, `claude/ios.md` already present in iOS section. Both inline code spans intact. Returning file with code confirmed in place:
-
 # CLAUDE.md
 
 **The Recruiting Compass** — Nuxt 3 web app (Vue 3, TypeScript, Supabase)
 
 Dual codebase: Nuxt/TypeScript web app + SwiftUI iOS app. iOS work: web app spec/implementation = source of truth. Web work: no touch iOS files unless asked.
 
+## Read Before You Touch (progressive disclosure)
+
+Tier-0 (this file) is always loaded. Read the matching file FIRST before working in that domain:
+
+| Touching... | Read first |
+|---|---|
+| Supabase, migrations, queries, cascade-delete | `claude/database.md` |
+| `server/api/**` — logging, error handling | `claude/logging.md` |
+| Writing tests | `claude/testing.md` |
+| Invite / confirm / multi-step flows + settings pages | `claude/patterns/multi-step-workflows.md` |
+| Deploying, build/runtime config | `claude/deployment.md` |
+| Commit blocked by hook, `.secrets.baseline` | `claude/git-hooks.md` |
+| iOS / SwiftUI (rare here) | `claude/ios.md` |
+| Any UI code | `docs/design/tokens.md`, `docs/design/components.md` |
+
 ## Workflow
 
 - **Plan mode first** (Shift+Tab twice): iterate plan before auto-accept
 - **Verify work**: run `npm test`, `npm run type-check` after code changes
 - **Format on commit**: PostToolUse hook auto-formats edits
-
-## Session Workflow
-
-- End of any multi-phase session: create handoff doc (in `/planning/` or fitting location). Include: done, remaining, test status, known issues.
-
-## Git & Pre-commit Hooks
-
-- **detect-secrets**: false positive in source → update `.secrets.baseline` via `python3 -m detect_secrets scan > .secrets.baseline`. NEVER add inline pragma comments to `.vue` template attributes — parsed as props, break TypeScript. NEVER use `sed`/`perl` to edit source to dodge detect-secrets.
-- **Blocked commits**: hooks block after many tries → use `git commit --no-verify`. Do NOT fix hook issues by editing source — corrupts files. Update secrets baseline or use `--no-verify`.
-- **Type checking**: push only (not commit). CI runs type-check on every push to `develop` and PR to `main`.
-- Test files, `.claude/skills/`, `planning/`, `documentation/` excluded from secret scanning.
+- **End of multi-phase session**: create handoff doc in `/planning/` (done, remaining, test status, known issues)
 
 ## Core Stack
 
@@ -37,11 +40,9 @@ Dual codebase: Nuxt/TypeScript web app + SwiftUI iOS app. iOS work: web app spec
 Page → Composable (useXxx) → Pinia Store → Supabase/API
 ```
 
-**Three layers:**
-
-1. **Composables** - fetch data, orchestrate logic, return refs/computed
-2. **Stores** - centralized state, getters, actions (mutate here only)
-3. **Components** - UI only, consume composables and stores
+1. **Composables** — fetch data, orchestrate logic, return refs/computed
+2. **Stores** — centralized state, getters, actions (mutate here only)
+3. **Components** — UI only, consume composables and stores
 
 ## Directories
 
@@ -68,34 +69,13 @@ Call via: `$fetch('/api/endpoint', { method: 'POST', body: {...} })`
 
 Return `{ data: ref, loading: ref, error: ref, fetchData }`. Try/catch with user-friendly errors. onMounted for auto-fetch.
 
-## Multi-Step Workflows
+## UI Code (enforced by `npm run audit:tokens`)
 
-Track states: sentItems (I initiated), receivedItems (sent to me), pendingItems (awaiting confirmation), completedItems (done).
+Read `docs/design/tokens.md` + `docs/design/components.md` before any UI work. Enforced rules:
 
-**Notifications:** Step 2 (HIGH to next actor), Step 3 (MEDIUM to both). Include `action_url`. Don't block on failure.
-
-## Settings Page Pattern
-
-Organize by action: 1) Pending Confirmations (amber), 2) Received Invitations (blue), 3) Sent Invitations (gray), 4) Completed (green). Separate card component per state.
-
-## Database & Common Patterns
-
-@claude/database.md
-
-## Logging
-
-@claude/logging.md
-
-## UI Code
-
-Before writing/modifying any UI code, read:
-- `docs/design/tokens.md` — semantic CSS variables (`--background`, `--muted`, `--shadow-card`, etc.)
-- `docs/design/components.md` — `<Badge>`, `<Button>`, `<Card>`, skeletons, empty/error states
-
-**Rules (enforced by `npm run audit:tokens`):**
 - Never raw hex (`#3b82f6`) or `rgba(...)` in `<style>` blocks or inline `style=`
 - Use CSS variables from `theme.css` or Tailwind brand utilities (`bg-brand-blue-600`, `text-brand-slate-700`)
-- Chart.js/canvas configs need raw hex — add `// audit-ignore` to suppress audit warnings on those lines
+- Chart.js/canvas configs need raw hex — add `// audit-ignore` on those lines
 - Use `<DesignSystem*>` components for empty/loading/error states — don't build inline
 
 ## Code Quality
@@ -118,11 +98,9 @@ npm run test:e2e         # Playwright E2E tests
 npm run test:e2e:ui      # Playwright interactive UI
 ```
 
-## Build & Compilation
+## Build & Verification
 
 Fix ALL errors in single pass before rebuilding. Batch fixes.
-
-## Verification
 
 **Tests passing ≠ code working. Run the thing.**
 
@@ -131,36 +109,22 @@ Fix ALL errors in single pass before rebuilding. Batch fixes.
 - [ ] UI changes: open in browser → no blank screen, data loads, no console errors
 - [ ] `git push` succeeds (hooks pass)
 
-## Testing
-
-@claude/testing.md
-
-## Deployment
-
-- **Host**: Vercel (from `main` branch)
-- **Build**: `npm run build`
-- **Publish**: `.vercel/output/`
-- **Env vars**: set in Vercel project dashboard
-- **Runtime**: Node.js (serverless functions for API routes)
-
 ## Orient Before Acting
 
-Before any feature work — web or iOS — spend 60 seconds orienting:
+Before any feature work — spend 60 seconds:
 
-1. **Confirm feature exists** — grep both codebases for feature name:
+1. **Confirm feature exists** — grep for the feature name:
    ```bash
    grep -ril "[feature]" pages/ components/ composables/ server/api/ --include="*.{ts,vue}"
    grep -ril "[feature]" /Volumes/AlphabetSoup/TheRecruitingCompass/code/recruiting-compass-ios --include="*.swift"
    ```
-2. **Confirm right one** — multiple matches → read most relevant file first. Don't assume feature identity from name alone (e.g., "Profile" ≠ "About").
+2. **Confirm right one** — multiple matches → read most relevant file first. Don't assume identity from name (e.g., "Profile" ≠ "About").
 3. **Check for prior spec** — `ls planning/iOS_SPEC_*` before generating new iOS spec.
 
-This 60-second check prevents most common wrong-approach failure: starting on wrong feature or already-done version.
+## Testing
 
-## iOS / SwiftUI
-
-iOS/SwiftUI work rare in this web repo. When doing it, read `claude/ios.md` (build settings, simulator troubleshooting, API verification).
+@claude/testing.md
 
 ## Learnings
 
-See [planning/lessons.md](./planning/lessons.md) for evolving patterns, recurring issues, anti-patterns found during development.
+See [planning/lessons.md](./planning/lessons.md) for evolving patterns, recurring issues, anti-patterns.
