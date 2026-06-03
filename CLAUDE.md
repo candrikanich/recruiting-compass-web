@@ -1,32 +1,34 @@
+`ls planning/iOS_SPEC_*` already present in compressed step 3, `claude/ios.md` already present in iOS section. Both inline code spans intact. Returning file with code confirmed in place:
+
 # CLAUDE.md
 
 **The Recruiting Compass** — Nuxt 3 web app (Vue 3, TypeScript, Supabase)
 
-This project uses a dual codebase: a Nuxt/TypeScript web app and a SwiftUI iOS app. When working on iOS, always check the web app spec/implementation as the source of truth. When working on the web app, do not modify iOS files unless explicitly asked.
+Dual codebase: Nuxt/TypeScript web app + SwiftUI iOS app. iOS work: web app spec/implementation = source of truth. Web work: no touch iOS files unless asked.
 
 ## Workflow
 
-- **Plan mode first** (Shift+Tab twice): Iterate on plan before auto-accept
-- **Verify work**: Run `npm test`, `npm run type-check` after code changes
-- **Format on commit**: PostToolUse hook auto-formats all edits
+- **Plan mode first** (Shift+Tab twice): iterate plan before auto-accept
+- **Verify work**: run `npm test`, `npm run type-check` after code changes
+- **Format on commit**: PostToolUse hook auto-formats edits
 
 ## Session Workflow
 
-- Always create a handoff document (in `/planning/` or project-appropriate location) at the end of any multi-phase implementation session. Include: what was completed, what remains, test status, and any known issues.
+- End of any multi-phase session: create handoff doc (in `/planning/` or fitting location). Include: done, remaining, test status, known issues.
 
 ## Git & Pre-commit Hooks
 
-- **detect-secrets**: If the hook flags false positives in source files, update `.secrets.baseline` by running `python3 -m detect_secrets scan > .secrets.baseline`. NEVER add inline pragma comments to `.vue` template attributes — they get parsed as props and break TypeScript. NEVER use `sed`/`perl` to modify source files to work around detect-secrets.
-- **Blocked commits**: If detect-secrets or pre-commit hooks block the commit after multiple attempts, use `git commit --no-verify`. Do NOT attempt to fix pre-commit hook issues by modifying source files — this frequently corrupts files. Instead, update the secrets baseline or use `--no-verify`.
-- **Type checking**: Runs on push only (not on commit). CI also runs type-check on every push to `develop` and PR to `main`.
-- Test files, `.claude/skills/`, `planning/`, and `documentation/` are excluded from secret scanning.
+- **detect-secrets**: false positive in source → update `.secrets.baseline` via `python3 -m detect_secrets scan > .secrets.baseline`. NEVER add inline pragma comments to `.vue` template attributes — parsed as props, break TypeScript. NEVER use `sed`/`perl` to edit source to dodge detect-secrets.
+- **Blocked commits**: hooks block after many tries → use `git commit --no-verify`. Do NOT fix hook issues by editing source — corrupts files. Update secrets baseline or use `--no-verify`.
+- **Type checking**: push only (not commit). CI runs type-check on every push to `develop` and PR to `main`.
+- Test files, `.claude/skills/`, `planning/`, `documentation/` excluded from secret scanning.
 
 ## Core Stack
 
-- Nuxt 3 (Vue 3) with file-based routing
-- Pinia for state management (no direct mutations in components — bypasses devtools tracking, makes state changes untraceable)
+- Nuxt 3 (Vue 3), file-based routing
+- Pinia state (no direct mutations in components — bypasses devtools tracking, makes changes untraceable)
 - Supabase PostgreSQL + Auth + Storage
-- Nitro for API endpoints (`/server/api/**`)
+- Nitro API endpoints (`/server/api/**`)
 - TypeScript strict mode, TailwindCSS
 
 ## Architecture
@@ -37,8 +39,8 @@ Page → Composable (useXxx) → Pinia Store → Supabase/API
 
 **Three layers:**
 
-1. **Composables** - Fetch data, orchestrate logic, return refs/computed
-2. **Stores** - Centralized state, getters, actions (mutate here only)
+1. **Composables** - fetch data, orchestrate logic, return refs/computed
+2. **Stores** - centralized state, getters, actions (mutate here only)
 3. **Components** - UI only, consume composables and stores
 
 ## Directories
@@ -74,7 +76,7 @@ Track states: sentItems (I initiated), receivedItems (sent to me), pendingItems 
 
 ## Settings Page Pattern
 
-Organize by action: 1) Pending Confirmations (amber), 2) Received Invitations (blue), 3) Sent Invitations (gray), 4) Completed (green). Separate card components per state.
+Organize by action: 1) Pending Confirmations (amber), 2) Received Invitations (blue), 3) Sent Invitations (gray), 4) Completed (green). Separate card component per state.
 
 ## Database & Common Patterns
 
@@ -86,19 +88,19 @@ Organize by action: 1) Pending Confirmations (amber), 2) Received Invitations (b
 
 ## UI Code
 
-Before writing or modifying any UI code, read:
+Before writing/modifying any UI code, read:
 - `docs/design/tokens.md` — semantic CSS variables (`--background`, `--muted`, `--shadow-card`, etc.)
 - `docs/design/components.md` — `<Badge>`, `<Button>`, `<Card>`, skeletons, empty/error states
 
 **Rules (enforced by `npm run audit:tokens`):**
-- Never write raw hex colors (`#3b82f6`) or `rgba(...)` in `<style>` blocks or inline `style=` attributes
+- Never raw hex (`#3b82f6`) or `rgba(...)` in `<style>` blocks or inline `style=`
 - Use CSS variables from `theme.css` or Tailwind brand utilities (`bg-brand-blue-600`, `text-brand-slate-700`)
-- Chart.js/canvas configs require raw hex — add `// audit-ignore` to suppress audit warnings on those lines
-- Use `<DesignSystem*>` components for empty states, loading states, and errors — do not build these inline
+- Chart.js/canvas configs need raw hex — add `// audit-ignore` to suppress audit warnings on those lines
+- Use `<DesignSystem*>` components for empty/loading/error states — don't build inline
 
 ## Code Quality
 
-- **TypeScript**: Strict mode, no `any` (except tests), `as const` for enums. When a type fix would cascade to 50+ files, prefer targeted `as SomeType` casts or narrowing at the call site — do not chase the root cause through the entire codebase in a single pass.
+- **TypeScript**: strict mode, no `any` (except tests), `as const` for enums. Type fix cascading to 50+ files → prefer targeted `as SomeType` casts or call-site narrowing — don't chase root cause through whole codebase in one pass.
 - **Vue**: `<script setup>`, `withDefaults(defineProps<{}>(), {})`, `defineEmits<{}>()`
 - **Styling**: TailwindCSS utilities only, component-scoped `<style scoped>` when needed
 - **Naming**: Composables `useXxx`, Stores `useXxxStore`, Components `PascalCase`, Pages `kebab-case`
@@ -118,15 +120,15 @@ npm run test:e2e:ui      # Playwright interactive UI
 
 ## Build & Compilation
 
-Fix ALL errors in single pass before rebuilding. Batch fixes together.
+Fix ALL errors in single pass before rebuilding. Batch fixes.
 
 ## Verification
 
 **Tests passing ≠ code working. Run the thing.**
 
 - [ ] `npm run type-check`, `npm run lint`, `npm run test` pass
-- [ ] For new/changed API routes: `npm run dev` → `curl` the endpoint, check response shape
-- [ ] For UI changes: open in browser → no blank screen, data loads, no console errors
+- [ ] New/changed API routes: `npm run dev` → `curl` endpoint, check response shape
+- [ ] UI changes: open in browser → no blank screen, data loads, no console errors
 - [ ] `git push` succeeds (hooks pass)
 
 ## Testing
@@ -138,27 +140,27 @@ Fix ALL errors in single pass before rebuilding. Batch fixes together.
 - **Host**: Vercel (from `main` branch)
 - **Build**: `npm run build`
 - **Publish**: `.vercel/output/`
-- **Env vars**: Set in Vercel project dashboard
+- **Env vars**: set in Vercel project dashboard
 - **Runtime**: Node.js (serverless functions for API routes)
 
 ## Orient Before Acting
 
-Before starting any feature work — web or iOS — spend 60 seconds orienting:
+Before any feature work — web or iOS — spend 60 seconds orienting:
 
-1. **Confirm the feature exists** — grep both codebases for the feature name:
+1. **Confirm feature exists** — grep both codebases for feature name:
    ```bash
    grep -ril "[feature]" pages/ components/ composables/ server/api/ --include="*.{ts,vue}"
    grep -ril "[feature]" /Volumes/AlphabetSoup/TheRecruitingCompass/code/recruiting-compass-ios --include="*.swift"
    ```
-2. **Confirm you have the right one** — if multiple matches, read the most relevant file before proceeding. Do not assume feature identity from the name alone (e.g., "Profile" and "About" are different features).
-3. **Check for a prior spec** — `ls planning/iOS_SPEC_*` before generating a new iOS spec.
+2. **Confirm right one** — multiple matches → read most relevant file first. Don't assume feature identity from name alone (e.g., "Profile" ≠ "About").
+3. **Check for prior spec** — `ls planning/iOS_SPEC_*` before generating new iOS spec.
 
-This 60-second check prevents the most common wrong-approach failure: starting work on the wrong feature or the already-completed version of a feature.
+This 60-second check prevents most common wrong-approach failure: starting on wrong feature or already-done version.
 
 ## iOS / SwiftUI
 
-@claude/ios.md
+iOS/SwiftUI work rare in this web repo. When doing it, read `claude/ios.md` (build settings, simulator troubleshooting, API verification).
 
 ## Learnings
 
-See [planning/lessons.md](./planning/lessons.md) for evolving patterns, recurring issues, and anti-patterns discovered during development.
+See [planning/lessons.md](./planning/lessons.md) for evolving patterns, recurring issues, anti-patterns found during development.
