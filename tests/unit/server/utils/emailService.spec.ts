@@ -24,6 +24,8 @@ import {
   sendEmail,
   sendNotificationEmail,
   sendInviteEmail,
+  renderWeeklyDigestEmail,
+  renderDeadlineAlertEmail,
 } from "~/server/utils/emailService";
 
 describe("emailService (Resend SDK)", () => {
@@ -83,6 +85,30 @@ describe("emailService (Resend SDK)", () => {
 
       const [, options] = sendMock.mock.calls[0];
       expect(options).toMatchObject({ idempotencyKey: "feedback-42" });
+    });
+
+    it("adds List-Unsubscribe headers when a listUnsubscribeUrl is provided", async () => {
+      const url =
+        "https://app.test/api/email/unsubscribe?email=a%40b.com&token=abc";
+      await sendEmail({
+        to: "a@b.com",
+        subject: "Digest",
+        html: "<p>Digest</p>",
+        listUnsubscribeUrl: url,
+      });
+
+      const [payload] = sendMock.mock.calls[0];
+      expect(payload.headers).toEqual({
+        "List-Unsubscribe": `<${url}>`,
+        "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+      });
+    });
+
+    it("omits headers when no listUnsubscribeUrl is provided", async () => {
+      await sendEmail({ to: "a@b.com", subject: "Hi", html: "<p>Hi</p>" });
+
+      const [payload] = sendMock.mock.calls[0];
+      expect(payload.headers).toBeUndefined();
     });
 
     it("maps an SDK error response to a failure result without throwing", async () => {
@@ -166,6 +192,35 @@ describe("emailService (Resend SDK)", () => {
 
       const [, options] = sendMock.mock.calls[0];
       expect(options).toMatchObject({ idempotencyKey: "notif-99" });
+    });
+  });
+
+  describe("recurring-email footer unsubscribe link", () => {
+    const url = "https://app.test/api/email/unsubscribe?email=a%40b.com&token=t";
+
+    it("renders an unsubscribe link in the weekly digest footer when given a url", () => {
+      const html = renderWeeklyDigestEmail(
+        { lines: ["hi"], upcomingDeadlines: [] },
+        url,
+      );
+      expect(html).toContain(`href="${url}"`);
+      expect(html.toLowerCase()).toContain("unsubscribe");
+    });
+
+    it("omits the unsubscribe link when no url is given", () => {
+      const html = renderWeeklyDigestEmail({
+        lines: ["hi"],
+        upcomingDeadlines: [],
+      });
+      expect(html.toLowerCase()).not.toContain("unsubscribe");
+    });
+
+    it("renders an unsubscribe link in the deadline alert footer when given a url", () => {
+      const html = renderDeadlineAlertEmail(
+        { label: "App", daysUntil: 1, deadline_date: "2026-07-01" },
+        url,
+      );
+      expect(html).toContain(`href="${url}"`);
     });
   });
 

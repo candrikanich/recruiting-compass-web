@@ -5,6 +5,11 @@ import {
   renderDeadlineAlertEmail,
   sendEmail,
 } from "~/server/utils/emailService";
+import {
+  generateUnsubscribeToken,
+  normalizeEmail,
+} from "~/server/utils/unsubscribeToken";
+import { isOptedOut } from "~/server/utils/emailOptouts";
 import { useLogger } from "~/server/utils/logger";
 import { requireAuth } from "~/server/utils/auth";
 
@@ -15,6 +20,10 @@ const schema = z.object({
   data: z.record(z.string(), z.unknown()),
 });
 
+// NOTE: This endpoint is the designated entry point for recurring (marketing-class)
+// emails but currently has no internal caller — recurring sends are dormant. Kept
+// wired so a future scheduler/cron can drive it. Both templates here are recurring,
+// so every send is suppression-checked and carries List-Unsubscribe headers.
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "email/send");
   await requireAuth(event);
@@ -26,16 +35,35 @@ export default defineEventHandler(async (event) => {
   }
 
   const { to, subject, template, data } = parsed.data;
+  const normalized = normalizeEmail(to);
+
+  if (await isOptedOut(normalized)) {
+    logger.info("Recipient opted out, skipping recurring email", { template });
+    return { success: true, skipped: true };
+  }
+
+  const baseUrl =
+    process.env.PUBLIC_BASE_URL ?? "https://myrecruitingcompass.com";
+  const token = generateUnsubscribeToken(
+    normalized,
+    useRuntimeConfig().unsubscribeSecret,
+  );
+  const listUnsubscribeUrl = `${baseUrl}/api/email/unsubscribe?email=${encodeURIComponent(
+    normalized,
+  )}&token=${token}`;
+
   const html =
     template === "weekly-digest"
       ? renderWeeklyDigestEmail(
           data as Parameters<typeof renderWeeklyDigestEmail>[0],
+          listUnsubscribeUrl,
         )
       : renderDeadlineAlertEmail(
           data as Parameters<typeof renderDeadlineAlertEmail>[0],
+          listUnsubscribeUrl,
         );
 
-  const result = await sendEmail({ to, subject, html });
+  const result = await sendEmail({ to, subject, html, listUnsubscribeUrl });
 
   if (!result.success) {
     logger.error("Resend delivery error", { error: result.error });

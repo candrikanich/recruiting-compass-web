@@ -65,21 +65,39 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
   });
 }
 
+interface SendViaResendOptions {
+  idempotencyKey?: string;
+  listUnsubscribeUrl?: string;
+}
+
+function unsubscribeHeaders(
+  url?: string,
+): { "List-Unsubscribe": string; "List-Unsubscribe-Post": string } | undefined {
+  if (!url) return undefined;
+  return {
+    "List-Unsubscribe": `<${url}>`,
+    "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+  };
+}
+
 async function sendViaResend(
   payload: { to: string; subject: string; html: string },
-  idempotencyKey?: string,
+  opts: SendViaResendOptions = {},
 ): Promise<SendResult> {
   if (!process.env.RESEND_API_KEY) {
     logger.warn("RESEND_API_KEY not configured, email notifications disabled");
     return { success: false, error: "Email service not configured" };
   }
 
+  const { idempotencyKey, listUnsubscribeUrl } = opts;
+  const headers = unsubscribeHeaders(listUnsubscribeUrl);
+
   try {
     return await retryWithBackoff(
       async () => {
         const { data, error } = await withTimeout(
           getResend().emails.send(
-            { from: fromAddress(), ...payload },
+            { from: fromAddress(), ...payload, ...(headers ? { headers } : {}) },
             idempotencyKey ? { idempotencyKey } : undefined,
           ),
           SEND_TIMEOUT_MS,
@@ -129,6 +147,7 @@ export interface SendNotificationEmailOptions {
   actionUrl?: string;
   priority: NotificationPriority;
   idempotencyKey?: string;
+  listUnsubscribeUrl?: string;
 }
 
 export interface SendEmailOptions {
@@ -136,13 +155,22 @@ export interface SendEmailOptions {
   subject: string;
   html: string;
   idempotencyKey?: string;
+  listUnsubscribeUrl?: string;
 }
 
 export const sendNotificationEmail = async (
   options: SendNotificationEmailOptions,
 ): Promise<SendResult> => {
-  const { to, subject, title, message, actionUrl, priority, idempotencyKey } =
-    options;
+  const {
+    to,
+    subject,
+    title,
+    message,
+    actionUrl,
+    priority,
+    idempotencyKey,
+    listUnsubscribeUrl,
+  } = options;
 
   const priorityBadge =
     priority === "high"
@@ -180,15 +208,18 @@ export const sendNotificationEmail = async (
 
   return sendViaResend(
     { to, subject, html: htmlContent },
-    idempotencyKey,
+    { idempotencyKey, listUnsubscribeUrl },
   );
 };
 
 export const sendEmail = async (
   options: SendEmailOptions,
 ): Promise<SendResult> => {
-  const { to, subject, html, idempotencyKey } = options;
-  return sendViaResend({ to, subject, html }, idempotencyKey);
+  const { to, subject, html, idempotencyKey, listUnsubscribeUrl } = options;
+  return sendViaResend(
+    { to, subject, html },
+    { idempotencyKey, listUnsubscribeUrl },
+  );
 };
 
 export interface SendInviteEmailOptions {
@@ -199,10 +230,18 @@ export interface SendInviteEmailOptions {
   token: string;
 }
 
-export function renderWeeklyDigestEmail(data: {
-  lines: string[];
-  upcomingDeadlines: Array<{ label: string; deadline_date: string }>;
-}): string {
+function unsubscribeFooterLink(url?: string): string {
+  if (!url) return "";
+  return ` <a href="${sanitizeUrl(url)}" style="color:#888">Unsubscribe</a>.`;
+}
+
+export function renderWeeklyDigestEmail(
+  data: {
+    lines: string[];
+    upcomingDeadlines: Array<{ label: string; deadline_date: string }>;
+  },
+  unsubscribeUrl?: string,
+): string {
   const lineItems = data.lines
     .map((l) => `<li style="margin:4px 0">${escapeHtml(l)}</li>`)
     .join("");
@@ -220,16 +259,19 @@ export function renderWeeklyDigestEmail(data: {
     <h3 style="color:#1a1a1a">Upcoming Deadlines</h3>
     <ul style="padding-left:20px">${deadlineItems}</ul>
     <p style="color:#888;font-size:12px;margin-top:32px">
-      You're receiving this because you have a Recruiting Compass account.
+      You're receiving this because you have a Recruiting Compass account.${unsubscribeFooterLink(unsubscribeUrl)}
     </p>
   </body></html>`;
 }
 
-export function renderDeadlineAlertEmail(data: {
-  label: string;
-  daysUntil: number;
-  deadline_date: string;
-}): string {
+export function renderDeadlineAlertEmail(
+  data: {
+    label: string;
+    daysUntil: number;
+    deadline_date: string;
+  },
+  unsubscribeUrl?: string,
+): string {
   const urgency =
     data.daysUntil === 0
       ? "TODAY"
@@ -238,7 +280,7 @@ export function renderDeadlineAlertEmail(data: {
     <h2 style="color:#dc2626">Deadline ${urgency}</h2>
     <p><strong>${escapeHtml(data.label)}</strong> is due ${urgency} (${escapeHtml(data.deadline_date)}).</p>
     <p style="color:#888;font-size:12px;margin-top:32px">
-      You're receiving this because you have a Recruiting Compass account.
+      You're receiving this because you have a Recruiting Compass account.${unsubscribeFooterLink(unsubscribeUrl)}
     </p>
   </body></html>`;
 }
