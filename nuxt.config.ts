@@ -151,6 +151,10 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     adminTokenSecret: process.env.NUXT_ADMIN_TOKEN_SECRET || "",
+    unsubscribeSecret:
+      process.env.NUXT_UNSUBSCRIBE_SECRET ||
+      process.env.NUXT_ADMIN_TOKEN_SECRET ||
+      "",
     collegeScorecardApiKey: process.env.NUXT_COLLEGE_SCORECARD_API_KEY || "",
     public: {
       supabaseUrl: process.env.NUXT_PUBLIC_SUPABASE_URL || "",

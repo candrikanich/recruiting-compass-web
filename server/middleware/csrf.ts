@@ -31,6 +31,9 @@ const CSRF_EXEMPT_PREFIXES = [
 // Exact full paths that are CSRF-exempt
 const CSRF_EXEMPT_EXACT_PATHS = [
   "/api/athlete/fit-scores/recalculate-all",
+  // RFC 8058 one-click unsubscribe: mail clients POST with no cookies/CSRF token.
+  // The HMAC unsubscribe token is the authorization.
+  "/api/email/unsubscribe",
 ] as const;
 
 export default defineEventHandler((event) => {
