@@ -112,9 +112,8 @@ describe("useSearchConsolidated (extended)", () => {
     setActivePinia(createPinia());
     querySelectMock.mockReset();
     installNuxtApp();
-    ({ useSearchConsolidated } = await import(
-      "~/composables/useSearchConsolidated"
-    ));
+    ({ useSearchConsolidated } =
+      await import("~/composables/useSearchConsolidated"));
   });
 
   afterEach(() => {
@@ -275,7 +274,9 @@ describe("useSearchConsolidated (extended)", () => {
       await c.performSearch("x");
       await flushDebounce();
 
-      const call = querySelectMock.mock.calls.find((args) => args[0] === "schools");
+      const call = querySelectMock.mock.calls.find(
+        (args) => args[0] === "schools",
+      );
       expect(call?.[1].filters).toMatchObject({
         user_id: "user-1",
         division: "D1",
@@ -302,7 +303,9 @@ describe("useSearchConsolidated (extended)", () => {
       await c.performSearch("x");
       await flushDebounce();
 
-      const call = querySelectMock.mock.calls.find((args) => args[0] === "coaches");
+      const call = querySelectMock.mock.calls.find(
+        (args) => args[0] === "coaches",
+      );
       expect(call?.[1].filters).toMatchObject({
         sport: "basketball",
         verified: true,

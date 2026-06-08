@@ -29,9 +29,7 @@ export class DashboardPage extends BasePage {
     // Stats cards are anchor elements with aria-label like
     // "Coaches section: N total coaches." Pull the leading integer from the
     // aria-label to avoid scraping the card's nested DOM.
-    const statCard = this.page.locator(
-      `a[aria-label*="${label} section"]`,
-    );
+    const statCard = this.page.locator(`a[aria-label*="${label} section"]`);
     const aria = (await statCard.getAttribute("aria-label")) ?? "";
     const match = aria.match(/:\s*(\d+)/);
     return match?.[1] ?? "0";

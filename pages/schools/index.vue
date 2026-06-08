@@ -18,7 +18,7 @@
           @click="handleExportCSV"
           class="px-3 py-2 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50 transition flex items-center gap-2 text-slate-700"
         >
-          <UIcon name="i-heroicons-arrow-down-tray" class="w-4 h-4"  />
+          <UIcon name="i-heroicons-arrow-down-tray" class="w-4 h-4" />
           CSV
         </button>
         <button
@@ -26,14 +26,14 @@
           @click="handleExportPDF"
           class="px-3 py-2 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50 transition flex items-center gap-2 text-slate-700"
         >
-          <UIcon name="i-heroicons-arrow-down-tray" class="w-4 h-4"  />
+          <UIcon name="i-heroicons-arrow-down-tray" class="w-4 h-4" />
           PDF
         </button>
         <NuxtLink
           to="/schools/new"
           class="px-4 py-2 text-sm font-medium text-white bg-linear-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition flex items-center gap-2"
         >
-          <UIcon name="i-heroicons-plus" class="w-4 h-4"  />
+          <UIcon name="i-heroicons-plus" class="w-4 h-4" />
           Add School
         </NuxtLink>
       </template>
@@ -165,7 +165,10 @@
         v-else-if="!loading && filteredSchools.length === 0"
         class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
       >
-        <UIcon name="i-heroicons-magnifying-glass" class="w-16 h-16 text-slate-300 mx-auto mb-4"  />
+        <UIcon
+          name="i-heroicons-magnifying-glass"
+          class="w-16 h-16 text-slate-300 mx-auto mb-4"
+        />
         <h3 class="text-lg font-semibold text-slate-900 mb-2">
           No schools match your filters
         </h3>

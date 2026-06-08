@@ -58,7 +58,10 @@ test.describe("Admin Dashboard - Bulk Delete Users", () => {
           email,
           password: "TestPass123!",
           email_confirm: true,
-          user_metadata: { e2e_deletable: true, display_name: `Deletable ${i}` },
+          user_metadata: {
+            e2e_deletable: true,
+            display_name: `Deletable ${i}`,
+          },
         });
         if (!error && data?.user?.id) {
           created.push(data.user.id);
@@ -89,10 +92,7 @@ test.describe("Admin Dashboard - Bulk Delete Users", () => {
 
     const currentUrl = await adminPage.getURL();
     if (!currentUrl.includes("/admin")) {
-      test.skip(
-        true,
-        `Redirected away from /admin (url=${currentUrl})`,
-      );
+      test.skip(true, `Redirected away from /admin (url=${currentUrl})`);
     }
 
     // /admin defaults to the "overview" tab; the bulk-delete UI lives under

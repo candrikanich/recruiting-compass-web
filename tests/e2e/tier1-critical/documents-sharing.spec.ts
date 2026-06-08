@@ -90,9 +90,15 @@ test.describe("Document sharing", () => {
     await expect(heading).toBeVisible();
 
     // Recipient school appears in the "Add Schools" checkbox list
-    await expect(page.locator(`label:has-text("${recipientSchoolName}")`)).toBeVisible();
+    await expect(
+      page.locator(`label:has-text("${recipientSchoolName}")`),
+    ).toBeVisible();
 
-    await page.locator('h3:has-text("Share Document")').locator("..").locator('button:has-text("Close")').click();
+    await page
+      .locator('h3:has-text("Share Document")')
+      .locator("..")
+      .locator('button:has-text("Close")')
+      .click();
     await expect(heading).toBeHidden();
   });
 

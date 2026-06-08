@@ -231,9 +231,7 @@ test.describe("User Story 9.1 - Athlete Views Their Task List", () => {
         .catch(() => null),
     ]);
 
-    const hasAnyTasks = await page
-      .locator('[data-testid="task-item"]')
-      .count();
+    const hasAnyTasks = await page.locator('[data-testid="task-item"]').count();
     const hasEmptyState = await emptyStateMessage.count();
 
     if (hasAnyTasks === 0) {

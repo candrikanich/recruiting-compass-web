@@ -72,7 +72,7 @@
             <!-- Meta -->
             <div class="flex items-center gap-4 mt-3 text-xs text-slate-400">
               <span class="flex items-center gap-1">
-                <UIcon name="i-heroicons-calendar" class="w-3.5 h-3.5"  />
+                <UIcon name="i-heroicons-calendar" class="w-3.5 h-3.5" />
                 {{ formatDate(interaction.occurred_at) }}
               </span>
             </div>
