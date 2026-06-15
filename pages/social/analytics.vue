@@ -109,14 +109,20 @@
             </h3>
             <div class="flex items-center justify-center gap-8">
               <div class="text-center">
-                <UIcon name="i-heroicons-share" class="w-12 h-12 mx-auto mb-2 text-blue-600"  />
+                <UIcon
+                  name="i-heroicons-share"
+                  class="w-12 h-12 mx-auto mb-2 text-blue-600"
+                />
                 <p class="text-2xl font-bold text-blue-600">
                   {{ twitterCount }}
                 </p>
                 <p class="text-sm text-gray-600">Twitter/X</p>
               </div>
               <div class="text-center">
-                <UIcon name="i-heroicons-photo" class="w-12 h-12 mx-auto mb-2 text-pink-600"  />
+                <UIcon
+                  name="i-heroicons-photo"
+                  class="w-12 h-12 mx-auto mb-2 text-pink-600"
+                />
                 <p class="text-2xl font-bold text-pink-600">
                   {{ instagramCount }}
                 </p>
@@ -218,11 +224,16 @@
               class="border-l-4 border-green-400 pl-4 py-2"
             >
               <div class="flex items-center gap-2 mb-1">
-                <UIcon name="i-heroicons-share"
+                <UIcon
+                  name="i-heroicons-share"
                   v-if="post.platform === 'twitter'"
                   class="w-4 h-4 text-blue-600"
-                 />
-                <UIcon name="i-heroicons-photo" v-else class="w-4 h-4 text-pink-600"  />
+                />
+                <UIcon
+                  name="i-heroicons-photo"
+                  v-else
+                  class="w-4 h-4 text-pink-600"
+                />
                 <span class="font-medium text-gray-900"
                   >@{{ post.author_handle }}</span
                 >

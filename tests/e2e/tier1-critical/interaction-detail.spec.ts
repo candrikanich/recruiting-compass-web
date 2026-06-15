@@ -65,7 +65,9 @@ test.describe("Interaction detail page", () => {
         addForm.locator('button[type="submit"]').click(),
       ]);
       const body = await response.json();
-      interactionId = Array.isArray(body) ? body[0]?.id ?? "" : body?.id ?? "";
+      interactionId = Array.isArray(body)
+        ? (body[0]?.id ?? "")
+        : (body?.id ?? "");
     } finally {
       await ctx.close();
     }

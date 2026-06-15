@@ -9,10 +9,11 @@
   >
     <div class="flex items-center justify-between gap-4 flex-wrap">
       <div class="flex items-center gap-3">
-        <UIcon name="i-heroicons-user-plus-solid"
+        <UIcon
+          name="i-heroicons-user-plus-solid"
           class="w-5 h-5 text-amber-600 shrink-0"
           aria-hidden="true"
-         />
+        />
         <p class="text-sm text-amber-800">
           <strong>Connect your athlete to get started</strong> — invite them to
           join your family or share your family code.
@@ -36,10 +37,11 @@
     class="bg-green-50 border-l-4 border-green-500 p-4 rounded-r-lg mb-6"
   >
     <div class="flex items-center gap-3">
-      <UIcon name="i-heroicons-check-circle-solid"
+      <UIcon
+        name="i-heroicons-check-circle-solid"
         class="w-5 h-5 text-green-600 shrink-0"
         aria-hidden="true"
-       />
+      />
       <p class="text-sm text-green-800">
         <strong>You're connected!</strong> Your athlete has joined your family.
       </p>

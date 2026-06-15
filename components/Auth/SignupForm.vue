@@ -56,10 +56,11 @@
         <span class="text-red-600 ml-1" aria-label="required">*</span>
       </label>
       <div class="relative">
-        <UIcon name="i-heroicons-calendar"
+        <UIcon
+          name="i-heroicons-calendar"
           class="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
           aria-hidden="true"
-         />
+        />
         <input
           id="dateOfBirth"
           :value="dateOfBirth"
@@ -134,10 +135,11 @@
           <span class="text-red-600 ml-1" aria-label="required">*</span>
         </label>
         <div class="relative">
-          <UIcon name="i-heroicons-lock-closed"
+          <UIcon
+            name="i-heroicons-lock-closed"
             class="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
             aria-hidden="true"
-           />
+          />
           <input
             id="confirmPassword"
             :value="confirmPassword"

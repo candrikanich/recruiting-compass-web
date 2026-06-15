@@ -11,7 +11,7 @@
           to="/settings"
           class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition mb-3 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         >
-          <UIcon name="i-heroicons-arrow-left" class="w-4 h-4"  />
+          <UIcon name="i-heroicons-arrow-left" class="w-4 h-4" />
           Back to Settings
         </NuxtLink>
         <h1 class="text-2xl font-semibold text-slate-900">Home Location</h1>
@@ -83,7 +83,7 @@
           class="bg-emerald-50 border border-emerald-200 rounded-lg p-4"
         >
           <p class="text-emerald-700 flex items-center gap-2">
-            <UIcon name="i-heroicons-check-circle" class="w-5 h-5"  />
+            <UIcon name="i-heroicons-check-circle" class="w-5 h-5" />
             Home location saved successfully
           </p>
         </div>

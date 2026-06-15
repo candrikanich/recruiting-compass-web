@@ -4,10 +4,9 @@ import type { Rule, RuleContext } from "~/server/utils/rules/index";
 import type { SuggestionData, Suggestion } from "~/types/timeline";
 
 vi.mock("~/server/utils/rules/index", async () => {
-  const actual =
-    await vi.importActual<typeof import("~/server/utils/rules/index")>(
-      "~/server/utils/rules/index",
-    );
+  const actual = await vi.importActual<
+    typeof import("~/server/utils/rules/index")
+  >("~/server/utils/rules/index");
   return {
     ...actual,
     findExistingSuggestion: vi.fn(),

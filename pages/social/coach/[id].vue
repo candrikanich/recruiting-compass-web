@@ -55,7 +55,10 @@
             class="grid grid-cols-1 md:grid-cols-2 gap-4 py-4 border-t border-gray-200"
           >
             <div v-if="coach.twitter_handle" class="flex items-center">
-              <UIcon name="i-heroicons-share" class="w-5 h-5 text-blue-400 mr-3"  />
+              <UIcon
+                name="i-heroicons-share"
+                class="w-5 h-5 text-blue-400 mr-3"
+              />
               <div>
                 <p class="text-xs text-gray-500">Twitter/X</p>
                 <a
@@ -70,7 +73,10 @@
             </div>
 
             <div v-if="coach.instagram_handle" class="flex items-center">
-              <UIcon name="i-heroicons-photo" class="w-5 h-5 text-pink-600 mr-3"  />
+              <UIcon
+                name="i-heroicons-photo"
+                class="w-5 h-5 text-pink-600 mr-3"
+              />
               <div>
                 <p class="text-xs text-gray-500">Instagram</p>
                 <a

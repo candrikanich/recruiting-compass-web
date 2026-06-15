@@ -1,10 +1,9 @@
 import { defineEventHandler, setHeader, createError } from "h3";
 import { useLogger } from "~/server/utils/logger";
 
-const SITE_URL = (process.env.NUXT_PUBLIC_SITE_URL ?? "https://myrecruitingcompass.com").replace(
-  /\/$/,
-  "",
-);
+const SITE_URL = (
+  process.env.NUXT_PUBLIC_SITE_URL ?? "https://myrecruitingcompass.com"
+).replace(/\/$/, "");
 
 export default defineEventHandler((event) => {
   const logger = useLogger(event, ".well-known/oauth-protected-resource");

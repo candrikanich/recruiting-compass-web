@@ -41,7 +41,10 @@
             {{ formatStatus(entry.previous_status) }}
           </span>
           <span v-else class="text-xs text-slate-400">Initial</span>
-          <UIcon name="i-heroicons-arrow-right" class="w-4 h-4 text-slate-400 shrink-0"  />
+          <UIcon
+            name="i-heroicons-arrow-right"
+            class="w-4 h-4 text-slate-400 shrink-0"
+          />
           <span
             class="px-2 py-1 text-xs font-medium rounded-full"
             :class="getStatusColor(entry.new_status)"

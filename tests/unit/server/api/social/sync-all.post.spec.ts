@@ -25,9 +25,7 @@ vi.mock("~/server/utils/logger", () => ({
 // Force shared-secret check to depend purely on string equality so tests don't
 // need real timing-safe-equal buffers.
 vi.mock("~/server/utils/secrets", () => ({
-  verifySharedSecret: vi.fn(
-    (a: string, b: string) => !!a && !!b && a === b,
-  ),
+  verifySharedSecret: vi.fn((a: string, b: string) => !!a && !!b && a === b),
 }));
 
 // Tracked service mocks

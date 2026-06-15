@@ -21,7 +21,11 @@
           @click="handleExportCSV"
           class="px-3 py-2 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50 transition flex items-center gap-2 text-slate-700 focus:outline-2 focus:outline-blue-600 focus:outline-offset-1"
         >
-          <UIcon name="i-heroicons-arrow-down-tray" class="w-4 h-4" aria-hidden="true"  />
+          <UIcon
+            name="i-heroicons-arrow-down-tray"
+            class="w-4 h-4"
+            aria-hidden="true"
+          />
           CSV
         </button>
         <button
@@ -29,7 +33,11 @@
           @click="handleExportPDF"
           class="px-3 py-2 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50 transition flex items-center gap-2 text-slate-700 focus:outline-2 focus:outline-blue-600 focus:outline-offset-1"
         >
-          <UIcon name="i-heroicons-arrow-down-tray" class="w-4 h-4" aria-hidden="true"  />
+          <UIcon
+            name="i-heroicons-arrow-down-tray"
+            class="w-4 h-4"
+            aria-hidden="true"
+          />
           PDF
         </button>
         <NuxtLink
@@ -37,7 +45,7 @@
           data-testid="log-interaction-button"
           class="px-4 py-2 text-sm font-medium text-white bg-linear-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition flex items-center gap-2 focus:outline-2 focus:outline-blue-600 focus:outline-offset-1"
         >
-          <UIcon name="i-heroicons-plus" class="w-4 h-4" aria-hidden="true"  />
+          <UIcon name="i-heroicons-plus" class="w-4 h-4" aria-hidden="true" />
           Log Interaction
         </NuxtLink>
       </template>
@@ -118,10 +126,11 @@
         class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
         role="status"
       >
-        <UIcon name="i-heroicons-user-group"
+        <UIcon
+          name="i-heroicons-user-group"
           class="w-12 h-12 text-slate-400 mx-auto mb-4"
           aria-hidden="true"
-         />
+        />
         <h2 class="text-slate-900 font-semibold mb-2">Add a coach first</h2>
         <p class="text-slate-600 mb-6">
           Interactions are linked to coaches. Visit a school page to add coaches
@@ -141,10 +150,11 @@
         class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
         role="status"
       >
-        <UIcon name="i-heroicons-chat-bubble-left-right"
+        <UIcon
+          name="i-heroicons-chat-bubble-left-right"
           class="w-12 h-12 text-slate-400 mx-auto mb-4"
           aria-hidden="true"
-         />
+        />
         <h2 class="text-slate-900 font-semibold mb-2">No interactions yet</h2>
         <p class="text-slate-600 mb-6">
           Start logging your recruiting conversations with coaches.
@@ -165,10 +175,11 @@
         role="status"
         class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
       >
-        <UIcon name="i-heroicons-magnifying-glass"
+        <UIcon
+          name="i-heroicons-magnifying-glass"
           class="w-12 h-12 text-slate-300 mx-auto mb-4"
           aria-hidden="true"
-         />
+        />
         <p class="text-slate-900 font-medium mb-2">
           No interactions match your filters
         </p>

@@ -105,9 +105,10 @@
         v-if="!loading && interactions.length === 0"
         class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
       >
-        <UIcon name="i-heroicons-chat-bubble-left-right"
+        <UIcon
+          name="i-heroicons-chat-bubble-left-right"
           class="w-12 h-12 text-slate-300 mx-auto mb-4"
-         />
+        />
         <p class="text-slate-900 font-medium mb-2">
           No interactions logged yet
         </p>
@@ -128,9 +129,10 @@
         "
         class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
       >
-        <UIcon name="i-heroicons-chat-bubble-left-right"
+        <UIcon
+          name="i-heroicons-chat-bubble-left-right"
           class="w-12 h-12 text-slate-300 mx-auto mb-4"
-         />
+        />
         <p class="text-slate-900 font-medium mb-2">
           No interactions match your filters
         </p>

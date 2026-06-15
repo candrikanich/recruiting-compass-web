@@ -9,7 +9,7 @@
           :disabled="collegeDataLoading"
           class="px-3 py-1.5 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50 transition flex items-center gap-1 disabled:opacity-50"
         >
-          <UIcon name="i-heroicons-map-pin" class="w-4 h-4"  />
+          <UIcon name="i-heroicons-map-pin" class="w-4 h-4" />
           {{ collegeDataLoading ? "Looking up..." : "Lookup" }}
         </button>
         <button
@@ -137,7 +137,7 @@
             class="p-3 bg-slate-50 rounded-lg"
           >
             <p class="text-xs text-slate-600 mb-1 flex items-center gap-1">
-              <UIcon name="i-heroicons-map-pin" class="w-3.5 h-3.5"  />
+              <UIcon name="i-heroicons-map-pin" class="w-3.5 h-3.5" />
               Campus Address
             </p>
             <p class="text-sm font-medium text-slate-900">
@@ -189,7 +189,10 @@
               class="text-blue-600 hover:text-blue-700 text-sm flex items-center gap-1"
             >
               {{ school.website }}
-              <UIcon name="i-heroicons-arrow-top-right-on-square" class="w-3 h-3"  />
+              <UIcon
+                name="i-heroicons-arrow-top-right-on-square"
+                class="w-3 h-3"
+              />
             </a>
           </div>
           <div v-if="school.twitter_handle" class="flex items-start gap-2">
@@ -200,7 +203,10 @@
               class="text-blue-600 hover:text-blue-700 text-sm flex items-center gap-1"
             >
               {{ school.twitter_handle }}
-              <UIcon name="i-heroicons-arrow-top-right-on-square" class="w-3 h-3"  />
+              <UIcon
+                name="i-heroicons-arrow-top-right-on-square"
+                class="w-3 h-3"
+              />
             </a>
           </div>
         </div>

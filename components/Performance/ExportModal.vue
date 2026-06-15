@@ -16,7 +16,7 @@
           @click="$emit('close')"
           class="text-slate-600 hover:text-slate-900 transition"
         >
-          <UIcon name="i-heroicons-x-mark-solid" class="w-6 h-6"  />
+          <UIcon name="i-heroicons-x-mark-solid" class="w-6 h-6" />
         </button>
       </div>
 

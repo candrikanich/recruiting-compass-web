@@ -7,11 +7,12 @@
     ]"
   >
     <!-- Drag handle -->
-    <UIcon name="i-heroicons-bars-3-solid"
+    <UIcon
+      name="i-heroicons-bars-3-solid"
       v-if="!disabled"
       class="w-4 h-4 text-slate-400 shrink-0 drag-handle"
       aria-hidden="true"
-     />
+    />
     <div v-else class="w-4 h-4 shrink-0" />
 
     <!-- Label -->
@@ -27,7 +28,11 @@
       class="shrink-0 p-1 text-slate-400 hover:text-slate-700 transition-colors rounded"
       @click.stop="$emit('move-up')"
     >
-      <UIcon name="i-heroicons-chevron-up" class="w-3.5 h-3.5" aria-hidden="true"  />
+      <UIcon
+        name="i-heroicons-chevron-up"
+        class="w-3.5 h-3.5"
+        aria-hidden="true"
+      />
     </button>
     <button
       v-if="!disabled"
@@ -36,7 +41,11 @@
       class="shrink-0 p-1 text-slate-400 hover:text-slate-700 transition-colors rounded"
       @click.stop="$emit('move-down')"
     >
-      <UIcon name="i-heroicons-chevron-down" class="w-3.5 h-3.5" aria-hidden="true"  />
+      <UIcon
+        name="i-heroicons-chevron-down"
+        class="w-3.5 h-3.5"
+        aria-hidden="true"
+      />
     </button>
 
     <!-- Size badge -->
@@ -63,8 +72,8 @@
       class="shrink-0 text-slate-400 hover:text-slate-700 transition-colors"
       @click.stop="$emit('toggle')"
     >
-      <UIcon name="i-heroicons-eye" v-if="visible" class="w-4 h-4"  />
-      <UIcon name="i-heroicons-eye-slash" v-else class="w-4 h-4"  />
+      <UIcon name="i-heroicons-eye" v-if="visible" class="w-4 h-4" />
+      <UIcon name="i-heroicons-eye-slash" v-else class="w-4 h-4" />
     </button>
   </div>
 </template>

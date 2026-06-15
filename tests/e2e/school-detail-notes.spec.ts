@@ -103,7 +103,6 @@ test.describe("School Detail - Notes Management", () => {
       expect(isDisabled).toBe(true);
     }
     // Wait for save to complete
-
   });
 
   test("should handle special characters in notes", async ({ page }) => {
