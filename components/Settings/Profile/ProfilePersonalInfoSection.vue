@@ -54,8 +54,8 @@
 
       <div class="flex items-center gap-3 pt-2">
         <UButton type="submit" :loading="loading">Save</UButton>
-        <p v-if="saved" class="text-sm text-emerald-600">Saved!</p>
-        <p v-if="error" class="text-sm text-red-600">{{ error }}</p>
+        <p v-if="saved" role="status" aria-live="polite" class="text-sm text-emerald-600">Saved!</p>
+        <p v-if="error" role="alert" class="text-sm text-red-600">{{ error }}</p>
       </div>
     </form>
   </section>

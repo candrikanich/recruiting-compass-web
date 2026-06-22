@@ -80,15 +80,18 @@
         <!-- Success/Error Messages -->
         <div
           v-if="saveSuccess"
+          role="status"
+          aria-live="polite"
           class="bg-emerald-50 border border-emerald-200 rounded-lg p-4"
         >
           <p class="text-emerald-700 flex items-center gap-2">
-            <UIcon name="i-heroicons-check-circle" class="w-5 h-5"  />
+            <UIcon name="i-heroicons-check-circle" class="w-5 h-5" aria-hidden="true" />
             Home location saved successfully
           </p>
         </div>
         <div
           v-if="error"
+          role="alert"
           class="bg-red-50 border border-red-200 rounded-lg p-4"
         >
           <p class="text-red-700">Error: {{ error }}</p>
