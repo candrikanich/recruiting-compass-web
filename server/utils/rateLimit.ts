@@ -26,10 +26,17 @@ function createLimiter(options: RateLimitOptions): Ratelimit | null {
   const url = process.env.UPSTASH_REDIS_REST_URL;
   const token = process.env.UPSTASH_REDIS_REST_TOKEN;
   if (!url || !token) return null;
-  return new Ratelimit({
-    redis: new Redis({ url, token }),
-    limiter: Ratelimit.slidingWindow(options.requests, options.window),
-  });
+  // A present-but-invalid value makes the Upstash constructor throw
+  // synchronously. Rate limiting is optional — never let a bad env var 500 the
+  // request. Degrade to "no limiter" (bypass) instead.
+  try {
+    return new Ratelimit({
+      redis: new Redis({ url, token }),
+      limiter: Ratelimit.slidingWindow(options.requests, options.window),
+    });
+  } catch {
+    return null;
+  }
 }
 
 async function safeLimit(
