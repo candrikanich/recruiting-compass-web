@@ -16,6 +16,17 @@ config({ path: resolve(process.cwd(), ".env.local") }); // .env.local overrides
 async function globalSetup(_config: FullConfig) {
   console.log("🧪 E2E Global Setup...");
 
+  // Fail fast on Node < 22. The Supabase client requires a native global
+  // WebSocket (added in Node 22); on Node 20 it throws during server auth,
+  // surfacing as confusing 401s on every request rather than a clear cause.
+  // CI pins Node 24 (.nvmrc); this guard protects local runs.
+  if (typeof globalThis.WebSocket === "undefined") {
+    throw new Error(
+      `E2E requires Node >= 22 (native WebSocket). Detected ${process.version}. ` +
+        `Run \`nvm use\` (see .nvmrc) then retry.`,
+    );
+  }
+
   // Always provision test accounts (idempotent — safe to run every time).
   // Required for CRUD tests: accounts need onboarding_complete + family_unit.
   try {

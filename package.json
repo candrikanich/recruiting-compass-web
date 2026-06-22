@@ -4,6 +4,9 @@
   "description": "High school athlete recruiting guide for parents and students",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "dev": "nuxi dev",
     "build": "nuxi build",
