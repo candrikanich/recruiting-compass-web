@@ -113,6 +113,7 @@
               <div class="text-gray-400">
                 <svg
                   class="w-5 h-5"
+                  aria-hidden="true"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -166,10 +167,12 @@
                 </button>
                 <button
                   @click="removePreference(index)"
+                  :aria-label="`Remove ${getPreferenceLabel(pref)} preference`"
                   class="p-1 text-gray-400 hover:text-red-600 transition"
                 >
                   <svg
                     class="w-5 h-5"
+                    aria-hidden="true"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -194,10 +197,16 @@
           @click.self="showAddPreference = false"
         >
           <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="add-preference-title"
             class="bg-white rounded-lg shadow-xl max-w-lg w-full mx-4 max-h-[80vh] overflow-y-auto"
           >
             <div class="p-6">
-              <h3 class="text-xl font-bold text-gray-900 mb-4">
+              <h3
+                id="add-preference-title"
+                class="text-xl font-bold text-gray-900 mb-4"
+              >
                 Add Preference
               </h3>
 

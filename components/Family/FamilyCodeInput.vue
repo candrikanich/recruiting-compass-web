@@ -8,10 +8,14 @@
 
     <form @submit.prevent="handleSubmit">
       <div class="mb-4">
-        <label class="block text-sm font-medium text-gray-700 mb-2">
+        <label
+          for="family-code-input"
+          class="block text-sm font-medium text-gray-700 mb-2"
+        >
           Family Code
         </label>
         <input
+          id="family-code-input"
           v-model="codeInput"
           type="text"
           placeholder="FAM-XXXXXX"
