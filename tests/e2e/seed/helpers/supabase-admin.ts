@@ -146,6 +146,67 @@ export async function findUserIdByEmail(
   return ((data as { id?: string } | null)?.id as string | undefined) ?? null;
 }
 
+/**
+ * Safety net: delete schools (and their coaches/interactions) that earlier runs
+ * leaked into the shared test accounts without tearing down. Leaked test schools
+ * accumulate and bloat the dashboard, which previously broke dashboard-8-2 (the
+ * contact-frequency widget rendered past its timeout). Matches by test-generated
+ * name prefixes, scoped to the test accounts' own schools (user_id), and chunks
+ * deletes to keep request URLs within server limits. Idempotent — safe to run at
+ * the start of every E2E run.
+ */
+export async function purgeLeakedTestSchools(
+  supabase: ReturnType<typeof getSupabaseAdmin>,
+): Promise<number> {
+  const NAME_PREFIXES = [
+    "[e2e-",
+    "[probe-",
+    "Filter Test",
+    "History Test",
+    "No History",
+    "Timeline Test",
+    "Sharing Reci",
+    "Initial Test",
+  ];
+
+  // Leaked schools are owned by the test accounts; resolve their user ids.
+  const emails = Object.values(TEST_ACCOUNTS).map((a) => a.email);
+  const { data: users } = await supabase
+    .from("users")
+    .select("id")
+    .in("email", emails);
+  const userIds = (users ?? []).map((u) => (u as { id: string }).id);
+  if (userIds.length === 0) return 0;
+
+  // Collect leaked school ids (test-named, owned by a test account).
+  const idSet = new Set<string>();
+  for (const prefix of NAME_PREFIXES) {
+    const { data } = await supabase
+      .from("schools")
+      .select("id")
+      .in("user_id", userIds)
+      .like("name", `${prefix}%`);
+    for (const row of data ?? []) idSet.add((row as { id: string }).id);
+  }
+  const ids = [...idSet];
+  if (ids.length === 0) return 0;
+
+  const CHUNK = 100;
+  const deleteByChunks = async (table: string, col: string) => {
+    for (let i = 0; i < ids.length; i += CHUNK) {
+      await supabase
+        .from(table)
+        .delete()
+        .in(col, ids.slice(i, i + CHUNK));
+    }
+  };
+  await deleteByChunks("interactions", "school_id");
+  await deleteByChunks("coaches", "school_id");
+  await deleteByChunks("schools", "id");
+
+  return ids.length;
+}
+
 export async function createTestAccounts() {
   const supabase = getSupabaseAdmin();
 

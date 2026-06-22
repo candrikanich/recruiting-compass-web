@@ -4,7 +4,11 @@ import { execSync } from "child_process";
 import { config } from "dotenv";
 import fs from "fs/promises";
 import { resolve } from "path";
-import { createTestAccounts } from "./seed/helpers/supabase-admin";
+import {
+  createTestAccounts,
+  getSupabaseAdmin,
+  purgeLeakedTestSchools,
+} from "./seed/helpers/supabase-admin";
 import { TEST_ACCOUNTS } from "./config/test-accounts";
 
 const AUTH_DIR = resolve(process.cwd(), "tests/e2e/.auth");
@@ -38,6 +42,15 @@ async function globalSetup(_config: FullConfig) {
     console.warn(
       "   CRUD tests may fail if accounts/onboarding are not set up",
     );
+  }
+
+  // Sweep up schools leaked by suites that create-without-teardown. Left
+  // unchecked these accumulate (hit 712 once) and bloat the dashboard.
+  try {
+    const purged = await purgeLeakedTestSchools(getSupabaseAdmin());
+    if (purged > 0) console.log(`🧹 Purged ${purged} leaked test school(s)`);
+  } catch (error) {
+    console.warn("⚠️  Leaked-school purge failed (non-fatal):", error);
   }
 
   // Provision storageState for each test account.
