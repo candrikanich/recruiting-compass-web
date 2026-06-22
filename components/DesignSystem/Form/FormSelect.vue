@@ -62,6 +62,7 @@ const handleBlur = () => {
       :id="inputId"
       :value="modelValue"
       :required="required"
+      :aria-required="required || undefined"
       :disabled="disabled"
       :aria-invalid="!!error"
       :aria-describedby="error ? `${inputId}-error` : undefined"

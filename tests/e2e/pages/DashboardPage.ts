@@ -11,12 +11,39 @@ export class DashboardPage extends BasePage {
   }
 
   async waitForDashboardLoad() {
-    // Ensure we're on the dashboard URL, then wait for h1 to render
-    await this.page.waitForURL(/\/dashboard/, { timeout: 10000 });
+    // Ensure we're on the dashboard URL, then wait for the header to render.
+    await this.page.waitForURL(/\/dashboard/, { timeout: 15000 });
     await this.page.waitForLoadState("domcontentloaded");
-    await this.page.waitForSelector("h1:has-text('Dashboard')", {
-      timeout: 15000,
-    });
+    // Web-first assertion auto-retries until the header is rendered — far more
+    // robust than a one-shot waitForSelector under parallel CI load, which was
+    // the primary source of dashboard-8-2 flakiness.
+    await expect(
+      this.page.getByRole("heading", { level: 1, name: "Dashboard" }),
+    ).toBeVisible({ timeout: 30000 });
+  }
+
+  /**
+   * Wait for the Contact Frequency widget to reach a settled state: visible and
+   * showing EITHER populated metrics OR the explicit empty state. The widget
+   * mounts before its async data fetch resolves, so reading metrics immediately
+   * after waitForDashboardLoad() races the fetch — the root cause of the
+   * intermittent textContent()/isVisible() timeouts. Call this before asserting
+   * on widget contents.
+   */
+  async waitForContactFrequencySettled() {
+    const widget = this.page.locator(
+      '[data-testid="contact-frequency-widget"]',
+    );
+    await expect(widget).toBeVisible({ timeout: 30000 });
+    await expect(async () => {
+      const hasMetrics = await widget
+        .locator('[data-testid="metric-total-schools"]')
+        .isVisible();
+      const isEmpty = await widget
+        .getByText("No schools tracked yet")
+        .isVisible();
+      expect(hasMetrics || isEmpty).toBe(true);
+    }).toPass({ timeout: 30000 });
   }
 
   async expectStatsCardVisible(label: string) {

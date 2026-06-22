@@ -60,6 +60,7 @@ const isApproachingLimit = computed(() => {
       :value="modelValue"
       :placeholder="placeholder"
       :required="required"
+      :aria-required="required || undefined"
       :disabled="disabled"
       :rows="rows"
       :maxlength="maxlength"

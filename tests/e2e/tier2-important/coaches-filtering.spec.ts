@@ -109,6 +109,19 @@ test.describe("Coach Search and Filtering", () => {
     }
   });
 
+  // Tear down the seeded school + its coaches so they don't accumulate in the
+  // shared player account (leaked test schools bloat the dashboard over time).
+  test.afterAll(async () => {
+    if (!schoolId) return;
+    try {
+      const supabase = getSupabaseAdmin();
+      await supabase.from("coaches").delete().eq("school_id", schoolId);
+      await supabase.from("schools").delete().eq("id", schoolId);
+    } catch (err) {
+      console.warn("⚠️  coaches-filtering afterAll teardown failed:", err);
+    }
+  });
+
   test.beforeEach(async ({ page }) => {
     if (!schoolId) {
       test.skip(true, "beforeAll setup failed (Supabase unavailable)");

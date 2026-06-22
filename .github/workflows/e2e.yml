@@ -97,7 +97,9 @@ jobs:
         run: npm ci
 
       - name: Install Playwright WebKit browser
-        run: npx playwright install --with-deps webkit
+        # chromium is also required: global-setup.ts captures auth storageState
+        # via chromium.launch() (portable across browsers) before the webkit run.
+        run: npx playwright install --with-deps webkit chromium
 
       - name: Prepare Nuxt
         run: npx nuxi prepare

@@ -3,11 +3,15 @@
     :class="[
       'p-3 rounded-lg transition-colors group',
       event.clickable
-        ? 'cursor-pointer bg-slate-50 hover:bg-slate-100'
+        ? 'cursor-pointer bg-slate-50 hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500'
         : 'bg-slate-50',
     ]"
+    :role="event.clickable ? 'button' : undefined"
+    :tabindex="event.clickable ? 0 : undefined"
     :data-testid="`activity-event-item`"
     @click="handleClick"
+    @keydown.enter="handleClick"
+    @keydown.space.prevent="event.clickable && handleClick()"
   >
     <div class="flex items-start gap-3">
       <div class="text-2xl shrink-0 mt-0.5">{{ event.icon }}</div>

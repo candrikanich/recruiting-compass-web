@@ -29,7 +29,14 @@
       </div>
 
       <!-- Screen Container -->
-      <div class="bg-white rounded-lg shadow-lg p-8 mb-8">
+      <div
+        ref="stepContainer"
+        role="region"
+        tabindex="-1"
+        :aria-label="`Step ${currentStep} of ${totalSteps}`"
+        :aria-busy="loading"
+        class="bg-white rounded-lg shadow-lg p-8 mb-8 focus:outline-none"
+      >
         <!-- Screen 1: Welcome -->
         <div v-if="currentStep === 1" class="space-y-6">
           <div class="text-center">
@@ -49,10 +56,14 @@
 
           <!-- Graduation Year -->
           <div>
-            <label class="block text-sm font-medium text-slate-700 mb-2">
+            <label
+              for="onboarding-graduation-year"
+              class="block text-sm font-medium text-slate-700 mb-2"
+            >
               Expected Graduation Year *
             </label>
             <select
+              id="onboarding-graduation-year"
               v-model="onboardingData.graduation_year"
               class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               required
@@ -66,10 +77,14 @@
 
           <!-- Primary Sport -->
           <div>
-            <label class="block text-sm font-medium text-slate-700 mb-2">
+            <label
+              for="onboarding-primary-sport"
+              class="block text-sm font-medium text-slate-700 mb-2"
+            >
               Primary Sport *
             </label>
             <select
+              id="onboarding-primary-sport"
               v-model="onboardingData.primary_sport"
               @change="onSportChange"
               class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -84,10 +99,14 @@
 
           <!-- Position -->
           <div v-if="onboardingData.primary_sport">
-            <label class="block text-sm font-medium text-slate-700 mb-2">
+            <label
+              for="onboarding-primary-position"
+              class="block text-sm font-medium text-slate-700 mb-2"
+            >
               Primary Position *
             </label>
             <select
+              id="onboarding-primary-position"
               v-model="onboardingData.primary_position"
               class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               required
@@ -241,12 +260,14 @@
                 v-if="myFamilyCode"
                 type="button"
                 class="text-slate-400 hover:text-slate-700 transition-colors"
+                :aria-label="codeCopied ? 'Code copied' : 'Copy family code'"
                 :title="codeCopied ? 'Copied!' : 'Copy code'"
                 @click="copyCode"
               >
                 <svg
                   v-if="!codeCopied"
                   xmlns="http://www.w3.org/2000/svg"
+                  aria-hidden="true"
                   class="w-5 h-5"
                   fill="none"
                   viewBox="0 0 24 24"
@@ -261,6 +282,7 @@
                 <svg
                   v-else
                   xmlns="http://www.w3.org/2000/svg"
+                  aria-hidden="true"
                   class="w-5 h-5 text-green-500"
                   fill="none"
                   viewBox="0 0 24 24"
@@ -275,9 +297,15 @@
         </div>
 
         <!-- Loading state -->
-        <div v-if="loading" class="text-center py-8">
+        <div
+          v-if="loading"
+          role="status"
+          aria-live="polite"
+          class="text-center py-8"
+        >
           <div class="inline-block">
             <div
+              aria-hidden="true"
               class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"
             ></div>
           </div>
@@ -287,6 +315,7 @@
         <!-- Error message -->
         <div
           v-if="error"
+          role="alert"
           class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4"
         >
           <p class="text-red-800">{{ error }}</p>
@@ -337,7 +366,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch, nextTick } from "vue";
 import { useOnboarding } from "~/composables/useOnboarding";
 import { usePreferenceManager } from "~/composables/usePreferenceManager";
 import { useFamilyCode } from "~/composables/useFamilyCode";
@@ -366,6 +395,15 @@ async function copyCode() {
 }
 
 const currentStep = ref(1);
+const stepContainer = ref<HTMLElement | null>(null);
+
+// Move focus to the step region on advance so keyboard/screen-reader users
+// land on the new step and hear its "Step N of M" label announced.
+watch(currentStep, async () => {
+  await nextTick();
+  stepContainer.value?.focus();
+});
+
 const onboardingData = ref<Record<string, unknown>>({});
 const loading = ref(false);
 const error = ref<string | null>(null);

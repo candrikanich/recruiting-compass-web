@@ -97,8 +97,17 @@
       class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
       @click="cancelDelete"
     >
-      <div class="bg-white rounded-lg shadow-lg p-6 max-w-sm mx-4" @click.stop>
-        <h3 class="text-lg font-semibold text-slate-900 mb-4">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="remove-photo-title"
+        class="bg-white rounded-lg shadow-lg p-6 max-w-sm mx-4"
+        @click.stop
+      >
+        <h3
+          id="remove-photo-title"
+          class="text-lg font-semibold text-slate-900 mb-4"
+        >
           Remove Profile Photo?
         </h3>
         <p class="text-slate-600 mb-6">

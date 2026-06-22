@@ -4,7 +4,11 @@ import { execSync } from "child_process";
 import { config } from "dotenv";
 import fs from "fs/promises";
 import { resolve } from "path";
-import { createTestAccounts } from "./seed/helpers/supabase-admin";
+import {
+  createTestAccounts,
+  getSupabaseAdmin,
+  purgeLeakedTestSchools,
+} from "./seed/helpers/supabase-admin";
 import { TEST_ACCOUNTS } from "./config/test-accounts";
 
 const AUTH_DIR = resolve(process.cwd(), "tests/e2e/.auth");
@@ -15,6 +19,17 @@ config({ path: resolve(process.cwd(), ".env.local") }); // .env.local overrides
 
 async function globalSetup(_config: FullConfig) {
   console.log("🧪 E2E Global Setup...");
+
+  // Fail fast on Node < 22. The Supabase client requires a native global
+  // WebSocket (added in Node 22); on Node 20 it throws during server auth,
+  // surfacing as confusing 401s on every request rather than a clear cause.
+  // CI pins Node 24 (.nvmrc); this guard protects local runs.
+  if (typeof globalThis.WebSocket === "undefined") {
+    throw new Error(
+      `E2E requires Node >= 22 (native WebSocket). Detected ${process.version}. ` +
+        `Run \`nvm use\` (see .nvmrc) then retry.`,
+    );
+  }
 
   // Always provision test accounts (idempotent — safe to run every time).
   // Required for CRUD tests: accounts need onboarding_complete + family_unit.
@@ -27,6 +42,15 @@ async function globalSetup(_config: FullConfig) {
     console.warn(
       "   CRUD tests may fail if accounts/onboarding are not set up",
     );
+  }
+
+  // Sweep up schools leaked by suites that create-without-teardown. Left
+  // unchecked these accumulate (hit 712 once) and bloat the dashboard.
+  try {
+    const purged = await purgeLeakedTestSchools(getSupabaseAdmin());
+    if (purged > 0) console.log(`🧹 Purged ${purged} leaked test school(s)`);
+  } catch (error) {
+    console.warn("⚠️  Leaked-school purge failed (non-fatal):", error);
   }
 
   // Provision storageState for each test account.
