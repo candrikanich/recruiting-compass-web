@@ -7,15 +7,26 @@ const logger = createLogger("redis");
  * Construct the Upstash client defensively.
  *
  * Caching is optional infrastructure — a missing OR malformed Upstash env var
- * must never crash the server. A present-but-invalid value (e.g. a URL that
- * does not start with https://) makes `new Redis()` throw synchronously at
- * module load, which previously took down every route with a 500. Degrade to
- * "no cache" (null) instead and let callers fall back to their source of truth.
+ * must never crash the server. The real-world failure was an env value with a
+ * trailing newline (a paste artifact in the Vercel dashboard): it is truthy so
+ * it passes a presence check, the Upstash constructor only `console.warn`s
+ * about the whitespace, and the newline then breaks the underlying `fetch()`
+ * at request time — taking down every route with a 500.
+ *
+ * Defense: `.trim()` the values (strips stray newlines/spaces) and require a
+ * well-formed https URL. Anything else degrades to "no cache" (null) and lets
+ * callers fall back to their source of truth instead of crashing.
  */
 function createRedisClient(): Redis | null {
-  const url = process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  const url = process.env.UPSTASH_REDIS_REST_URL?.trim();
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN?.trim();
   if (!url || !token) return null;
+  if (!/^https:\/\/[^\s]+$/.test(url)) {
+    logger.error(
+      "UPSTASH_REDIS_REST_URL is not a valid https URL; caching disabled",
+    );
+    return null;
+  }
   try {
     return new Redis({ url, token });
   } catch (err) {
