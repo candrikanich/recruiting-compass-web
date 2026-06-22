@@ -107,25 +107,37 @@ export const useDashboardData = () => {
       return;
     }
 
-    const {
-      data: coachesData,
-      count: coachesCount,
-      error: coachesError,
-    } = await supabase
-      .from("coaches")
-      .select(
-        "id, first_name, last_name, role, email, phone, school_id, twitter_handle, instagram_handle, last_contact_date, created_at, updated_at",
-        { count: "exact" },
-      )
-      .in("school_id", schoolIds);
-
-    if (coachesError) {
-      logger.error("Error fetching coaches:", coachesError);
-      throw coachesError;
+    // Chunk the school IDs: a single `.in()` with hundreds of UUIDs builds an
+    // over-long request URL that the server rejects (HTTP 400 / fetch failure),
+    // breaking the entire dashboard load for families with many schools.
+    const CHUNK_SIZE = 150;
+    const chunks: string[][] = [];
+    for (let i = 0; i < schoolIds.length; i += CHUNK_SIZE) {
+      chunks.push(schoolIds.slice(i, i + CHUNK_SIZE));
     }
 
-    allCoaches.value = coachesData || [];
-    coachCount.value = coachesCount || 0;
+    const results = await Promise.all(
+      chunks.map((chunk) =>
+        supabase
+          .from("coaches")
+          .select(
+            "id, first_name, last_name, role, email, phone, school_id, twitter_handle, instagram_handle, last_contact_date, created_at, updated_at",
+          )
+          .in("school_id", chunk),
+      ),
+    );
+
+    const coachesData: NonNullable<(typeof results)[number]["data"]> = [];
+    for (const { data, error: coachesError } of results) {
+      if (coachesError) {
+        logger.error("Error fetching coaches:", coachesError);
+        throw coachesError;
+      }
+      if (data) coachesData.push(...data);
+    }
+
+    allCoaches.value = coachesData;
+    coachCount.value = coachesData.length;
   };
 
   /**
