@@ -158,13 +158,21 @@ def validate_inline_codes(orig, comp, result):
     if c1 != c2:
         lost = set(c1.keys()) - set(c2.keys())
         added = set(c2.keys()) - set(c1.keys())
+        gained = set()
         for code, count in c1.items():
             if code in c2 and c2[code] < count:
                 lost.add(f"{code} (lost {count - c2[code]} of {count} occurrences)")
+            elif code in c2 and c2[code] > count:
+                gained.add(f"{code} (+{c2[code] - count})")
         if lost:
             result.add_error(f"Inline code lost: {lost}")
         if added:
             result.add_warning(f"Inline code added: {added}")
+        # Net increase in occurrences of existing inline code usually means the
+        # model leaked preamble/postamble chatter that quoted file paths or
+        # commands (e.g. "Returning `claude/ios.md` ..."). Surface it loudly.
+        if gained:
+            result.add_warning(f"Inline code occurrences increased: {gained}")
 
 
 # ---------- Main ----------

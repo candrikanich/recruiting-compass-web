@@ -1,7 +1,121 @@
+import { Resend } from "resend";
 import type { NotificationPriority } from "~/types/models";
 import { createLogger } from "~/server/utils/logger";
+import { retryWithBackoff } from "~/server/utils/retry";
 
 const logger = createLogger("email");
+
+const DEFAULT_FROM = "The Recruiting Compass <info@therecruitingcompass.com>";
+const MAX_ATTEMPTS = 3;
+const BASE_DELAY_MS = 1000;
+const SEND_TIMEOUT_MS = 10_000;
+
+const fromAddress = (): string => process.env.RESEND_FROM_EMAIL ?? DEFAULT_FROM;
+
+let client: Resend | null = null;
+
+function getResend(): Resend {
+  if (!client) {
+    client = new Resend(process.env.RESEND_API_KEY);
+  }
+  return client;
+}
+
+type SendResult = { success: boolean; messageId?: string; error?: string };
+
+class EmailTimeoutError extends Error {
+  constructor() {
+    super("Email send timed out");
+    this.name = "EmailTimeoutError";
+  }
+}
+
+class ResendSendError extends Error {
+  constructor(
+    message: string,
+    readonly statusCode: number | null,
+  ) {
+    super(message);
+    this.name = "ResendSendError";
+  }
+}
+
+function isRetryable(err: unknown): boolean {
+  if (err instanceof EmailTimeoutError) return true;
+  if (err instanceof ResendSendError) {
+    return err.statusCode != null && (err.statusCode >= 500 || err.statusCode === 429);
+  }
+  // Thrown network/transport errors (no structured status) are transient.
+  return err instanceof Error;
+}
+
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => reject(new EmailTimeoutError()), ms);
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (err) => {
+        clearTimeout(timer);
+        reject(err);
+      },
+    );
+  });
+}
+
+interface SendViaResendOptions {
+  idempotencyKey?: string;
+  listUnsubscribeUrl?: string;
+}
+
+function unsubscribeHeaders(
+  url?: string,
+): { "List-Unsubscribe": string; "List-Unsubscribe-Post": string } | undefined {
+  if (!url) return undefined;
+  return {
+    "List-Unsubscribe": `<${url}>`,
+    "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+  };
+}
+
+async function sendViaResend(
+  payload: { to: string; subject: string; html: string },
+  opts: SendViaResendOptions = {},
+): Promise<SendResult> {
+  if (!process.env.RESEND_API_KEY) {
+    logger.warn("RESEND_API_KEY not configured, email notifications disabled");
+    return { success: false, error: "Email service not configured" };
+  }
+
+  const { idempotencyKey, listUnsubscribeUrl } = opts;
+  const headers = unsubscribeHeaders(listUnsubscribeUrl);
+
+  try {
+    return await retryWithBackoff(
+      async () => {
+        const { data, error } = await withTimeout(
+          getResend().emails.send(
+            { from: fromAddress(), ...payload, ...(headers ? { headers } : {}) },
+            idempotencyKey ? { idempotencyKey } : undefined,
+          ),
+          SEND_TIMEOUT_MS,
+        );
+
+        if (error) throw new ResendSendError(error.message, error.statusCode);
+
+        return { success: true, messageId: data?.id };
+      },
+      { retries: MAX_ATTEMPTS, baseDelayMs: BASE_DELAY_MS, isRetryable },
+    );
+  } catch (err) {
+    logger.error("Failed to send email:", err);
+    const errorMessage =
+      err instanceof Error ? err.message : "Unknown error sending email";
+    return { success: false, error: errorMessage };
+  }
+}
 
 function escapeHtml(str: string): string {
   return str
@@ -32,24 +146,31 @@ export interface SendNotificationEmailOptions {
   message: string;
   actionUrl?: string;
   priority: NotificationPriority;
+  idempotencyKey?: string;
+  listUnsubscribeUrl?: string;
 }
 
 export interface SendEmailOptions {
   to: string;
   subject: string;
   html: string;
+  idempotencyKey?: string;
+  listUnsubscribeUrl?: string;
 }
 
 export const sendNotificationEmail = async (
   options: SendNotificationEmailOptions,
-) => {
-  const { to, subject, title, message, actionUrl, priority } = options;
-
-  // Check if Resend API key is available
-  if (!process.env.RESEND_API_KEY) {
-    logger.warn("RESEND_API_KEY not configured, email notifications disabled");
-    return { success: false, error: "Email service not configured" };
-  }
+): Promise<SendResult> => {
+  const {
+    to,
+    subject,
+    title,
+    message,
+    actionUrl,
+    priority,
+    idempotencyKey,
+    listUnsubscribeUrl,
+  } = options;
 
   const priorityBadge =
     priority === "high"
@@ -85,75 +206,20 @@ export const sendNotificationEmail = async (
     </html>
   `;
 
-  try {
-    const response = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: "The Recruiting Compass <info@therecruitingcompass.com>",
-        to,
-        subject,
-        html: htmlContent,
-      }),
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      logger.error("Resend API error:", error);
-      return { success: false, error: error.message };
-    }
-
-    const data = await response.json();
-    return { success: true, messageId: data.id };
-  } catch (err) {
-    logger.error("Failed to send email:", err);
-    const errorMessage =
-      err instanceof Error ? err.message : "Unknown error sending email";
-    return { success: false, error: errorMessage };
-  }
+  return sendViaResend(
+    { to, subject, html: htmlContent },
+    { idempotencyKey, listUnsubscribeUrl },
+  );
 };
 
-export const sendEmail = async (options: SendEmailOptions) => {
-  const { to, subject, html } = options;
-
-  // Check if Resend API key is available
-  if (!process.env.RESEND_API_KEY) {
-    logger.warn("RESEND_API_KEY not configured, email notifications disabled");
-    return { success: false, error: "Email service not configured" };
-  }
-
-  try {
-    const response = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: "The Recruiting Compass <info@therecruitingcompass.com>",
-        to,
-        subject,
-        html,
-      }),
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      logger.error("Resend API error:", error);
-      return { success: false, error: error.message };
-    }
-
-    const data = await response.json();
-    return { success: true, messageId: data.id };
-  } catch (err) {
-    logger.error("Failed to send email:", err);
-    const errorMessage =
-      err instanceof Error ? err.message : "Unknown error sending email";
-    return { success: false, error: errorMessage };
-  }
+export const sendEmail = async (
+  options: SendEmailOptions,
+): Promise<SendResult> => {
+  const { to, subject, html, idempotencyKey, listUnsubscribeUrl } = options;
+  return sendViaResend(
+    { to, subject, html },
+    { idempotencyKey, listUnsubscribeUrl },
+  );
 };
 
 export interface SendInviteEmailOptions {
@@ -164,10 +230,18 @@ export interface SendInviteEmailOptions {
   token: string;
 }
 
-export function renderWeeklyDigestEmail(data: {
-  lines: string[];
-  upcomingDeadlines: Array<{ label: string; deadline_date: string }>;
-}): string {
+function unsubscribeFooterLink(url?: string): string {
+  if (!url) return "";
+  return ` <a href="${sanitizeUrl(url)}" style="color:#888">Unsubscribe</a>.`;
+}
+
+export function renderWeeklyDigestEmail(
+  data: {
+    lines: string[];
+    upcomingDeadlines: Array<{ label: string; deadline_date: string }>;
+  },
+  unsubscribeUrl?: string,
+): string {
   const lineItems = data.lines
     .map((l) => `<li style="margin:4px 0">${escapeHtml(l)}</li>`)
     .join("");
@@ -185,16 +259,19 @@ export function renderWeeklyDigestEmail(data: {
     <h3 style="color:#1a1a1a">Upcoming Deadlines</h3>
     <ul style="padding-left:20px">${deadlineItems}</ul>
     <p style="color:#888;font-size:12px;margin-top:32px">
-      You're receiving this because you have a Recruiting Compass account.
+      You're receiving this because you have a Recruiting Compass account.${unsubscribeFooterLink(unsubscribeUrl)}
     </p>
   </body></html>`;
 }
 
-export function renderDeadlineAlertEmail(data: {
-  label: string;
-  daysUntil: number;
-  deadline_date: string;
-}): string {
+export function renderDeadlineAlertEmail(
+  data: {
+    label: string;
+    daysUntil: number;
+    deadline_date: string;
+  },
+  unsubscribeUrl?: string,
+): string {
   const urgency =
     data.daysUntil === 0
       ? "TODAY"
@@ -203,7 +280,7 @@ export function renderDeadlineAlertEmail(data: {
     <h2 style="color:#dc2626">Deadline ${urgency}</h2>
     <p><strong>${escapeHtml(data.label)}</strong> is due ${urgency} (${escapeHtml(data.deadline_date)}).</p>
     <p style="color:#888;font-size:12px;margin-top:32px">
-      You're receiving this because you have a Recruiting Compass account.
+      You're receiving this because you have a Recruiting Compass account.${unsubscribeFooterLink(unsubscribeUrl)}
     </p>
   </body></html>`;
 }
@@ -250,5 +327,6 @@ export const sendInviteEmail = async (
     to,
     subject: `${familyName}'s recruiting journey awaits — you're invited!`,
     html: htmlContent,
+    idempotencyKey: `invite-${token}`,
   });
 };

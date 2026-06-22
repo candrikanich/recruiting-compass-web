@@ -16,6 +16,14 @@ OUTER_FENCE_REGEX = re.compile(
     r"\A\s*(`{3,}|~{3,})[^\n]*\n(.*)\n\1\s*\Z", re.DOTALL
 )
 
+# Sentinels the model is asked to wrap its output in, so preamble/postamble
+# chatter ("Here is the compressed file:", "Returning file ...:") lands OUTSIDE
+# the markers and is sliced off. Rare strings unlikely to appear in real content.
+SENTINEL_BEGIN = "===CAVEMAN_OUTPUT_BEGIN==="
+SENTINEL_END = "===CAVEMAN_OUTPUT_END==="
+
+ATX_HEADING_REGEX = re.compile(r"^#{1,6}\s", re.MULTILINE)
+
 # Filenames and paths that almost certainly hold secrets or PII. Compressing
 # them ships raw bytes to the Anthropic API — a third-party data boundary that
 # developers on sensitive codebases cannot cross. detect.py already skips .env
@@ -62,6 +70,50 @@ def strip_llm_wrapper(text: str) -> str:
     if m:
         return m.group(2)
     return text
+
+
+def extract_between_sentinels(text: str):
+    """Return the content between the output sentinels, or None if absent.
+
+    Uses find/rfind so stray sentinel-like strings in the body do not break
+    extraction — we take the outermost pair.
+    """
+    start = text.find(SENTINEL_BEGIN)
+    end = text.rfind(SENTINEL_END)
+    if start == -1 or end == -1 or end <= start:
+        return None
+    return text[start + len(SENTINEL_BEGIN):end].strip("\n")
+
+
+def strip_leading_preamble(text: str, original_text: str) -> str:
+    """Drop model preamble before the first heading.
+
+    Only fires when the ORIGINAL starts with an ATX heading (`# ...`), which is
+    the overwhelming case for CLAUDE.md / memory files. In that case the
+    compressed output must also start with a heading; anything before the first
+    heading is model chatter ("Returning file ...:"). For files that do not
+    start with a heading we cannot safely tell preamble from real content, so we
+    leave the text untouched.
+    """
+    if not ATX_HEADING_REGEX.match(original_text.lstrip("\n")):
+        return text
+    stripped = text.lstrip("\n")
+    if ATX_HEADING_REGEX.match(stripped):
+        return text  # already starts with a heading, nothing to strip
+    m = ATX_HEADING_REGEX.search(text)
+    if not m:
+        return text  # no heading found — don't guess, let validation catch it
+    return text[m.start():]
+
+
+def clean_llm_output(raw: str, original_text: str) -> str:
+    """Remove sentinels / outer fence / preamble from a raw model response."""
+    inner = extract_between_sentinels(raw)
+    if inner is not None:
+        raw = inner
+    raw = strip_llm_wrapper(raw)
+    raw = strip_leading_preamble(raw, original_text)
+    return raw.strip()
 
 from .detect import should_compress
 from .validate import validate
@@ -111,9 +163,19 @@ STRICT RULES:
 - Preserve ALL URLs exactly
 - Preserve ALL headings exactly
 - Preserve file paths and commands
-- Return ONLY the compressed markdown body — do NOT wrap the entire output in a ```markdown fence or any other fence. Inner code blocks from the original stay as-is; do not add a new outer fence around the whole file.
+- Inner code blocks from the original stay as-is; do not add a new outer fence around the whole file.
 
 Only compress natural language.
+
+OUTPUT FORMAT — STRICT:
+Emit the compressed file body between the two sentinel lines below, with NOTHING
+before the first sentinel and NOTHING after the last. No preamble, no
+explanation, no "Here is the file:". The first character after {SENTINEL_BEGIN}
+must be the first character of the file.
+
+{SENTINEL_BEGIN}
+<compressed file body here>
+{SENTINEL_END}
 
 TEXT:
 {original}
@@ -145,7 +207,13 @@ ORIGINAL (reference only):
 COMPRESSED (fix this):
 {compressed}
 
-Return ONLY the fixed compressed file. No explanation.
+OUTPUT FORMAT — STRICT:
+Emit the fixed file body between the two sentinel lines below, with NOTHING
+before the first sentinel and NOTHING after the last. No explanation.
+
+{SENTINEL_BEGIN}
+<fixed file body here>
+{SENTINEL_END}
 """
 
 
@@ -195,7 +263,7 @@ def compress_file(filepath: Path) -> bool:
 
     # Step 1: Compress
     print("Compressing with Claude...")
-    compressed = call_claude(build_compress_prompt(original_text))
+    compressed = clean_llm_output(call_claude(build_compress_prompt(original_text)), original_text)
 
     if compressed is None or not compressed.strip():
         print("❌ Compression aborted: Claude returned an empty response.")
@@ -246,8 +314,9 @@ def compress_file(filepath: Path) -> bool:
             return False
 
         print("Fixing with Claude...")
-        compressed = call_claude(
-            build_fix_prompt(original_text, compressed, result.errors)
+        compressed = clean_llm_output(
+            call_claude(build_fix_prompt(original_text, compressed, result.errors)),
+            original_text,
         )
         filepath.write_text(compressed)
 
