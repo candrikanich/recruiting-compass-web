@@ -23,12 +23,13 @@ const BYPASS_RESULT: RateLimitResult = {
 };
 
 function createLimiter(options: RateLimitOptions): Ratelimit | null {
-  const url = process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
-  if (!url || !token) return null;
-  // A present-but-invalid value makes the Upstash constructor throw
-  // synchronously. Rate limiting is optional — never let a bad env var 500 the
-  // request. Degrade to "no limiter" (bypass) instead.
+  // Trim to strip paste-artifact whitespace/newlines (a trailing newline in
+  // the URL passes a presence check but breaks fetch() at request time).
+  // Rate limiting is optional — a malformed env value degrades to "no limiter"
+  // (bypass) rather than 500-ing the request.
+  const url = process.env.UPSTASH_REDIS_REST_URL?.trim();
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN?.trim();
+  if (!url || !token || !/^https:\/\/[^\s]+$/.test(url)) return null;
   try {
     return new Ratelimit({
       redis: new Redis({ url, token }),
