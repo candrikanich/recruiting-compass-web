@@ -6,7 +6,7 @@
       class="relative p-2 text-gray-700 hover:text-blue-600 transition"
       :aria-label="`Notifications (${unreadCount} unread)`"
     >
-      <UIcon name="i-heroicons-bell-solid" class="w-6 h-6"  />
+      <UIcon name="i-heroicons-bell-solid" class="w-6 h-6" />
       <span
         v-if="unreadCount > 0"
         class="absolute top-1 right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center"
@@ -54,10 +54,11 @@
               class="w-full px-4 py-3 hover:bg-blue-50 transition text-left"
             >
               <div class="flex items-start gap-2">
-                <UIcon name="i-heroicons-bell-solid"
+                <UIcon
+                  name="i-heroicons-bell-solid"
                   v-if="notification.type === 'follow_up_reminder'"
                   class="w-5 h-5 text-blue-600 shrink-0 mt-0.5"
-                 />
+                />
                 <span v-else class="text-lg">{{
                   getNotificationEmoji(notification.type)
                 }}</span>

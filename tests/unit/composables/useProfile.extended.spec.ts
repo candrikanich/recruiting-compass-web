@@ -8,9 +8,11 @@ import { useProfile } from "~/composables/useProfile";
 
 const setProfilePhotoUrlMock = vi.fn();
 
-let mockUser:
-  | { id: string; email: string; profile_photo_url?: string | null }
-  | null = {
+let mockUser: {
+  id: string;
+  email: string;
+  profile_photo_url?: string | null;
+} | null = {
   id: "user-123",
   email: "test@example.com",
   profile_photo_url: null,
@@ -26,11 +28,15 @@ vi.mock("~/stores/user", () => ({
   }),
 }));
 
-const validateImageFileMock = vi.fn(() => ({ isValid: true, error: undefined }));
+const validateImageFileMock = vi.fn(() => ({
+  isValid: true,
+  error: undefined,
+}));
 const compressImageMock = vi.fn(async (file: File) => file);
 
 vi.mock("~/utils/image/compressImage", () => ({
-  validateImageFile: (...args: unknown[]) => validateImageFileMock(...(args as [File])),
+  validateImageFile: (...args: unknown[]) =>
+    validateImageFileMock(...(args as [File])),
   compressImage: (...args: unknown[]) => compressImageMock(...(args as [File])),
 }));
 
@@ -118,8 +124,7 @@ function resetStubs() {
   };
 }
 
-const makeFile = () =>
-  new File(["x"], "photo.jpg", { type: "image/jpeg" });
+const makeFile = () => new File(["x"], "photo.jpg", { type: "image/jpeg" });
 
 // ============================================================================
 // TESTS
@@ -456,9 +461,7 @@ describe("useProfile (extended)", () => {
         {
           timestamp: "2024-02-01",
           changed_by: "user-123",
-          changes: [
-            { field: "high_school", old_value: "A", new_value: "B" },
-          ],
+          changes: [{ field: "high_school", old_value: "A", new_value: "B" }],
         },
       ];
       preferencesFetchResult = {
@@ -489,9 +492,7 @@ describe("useProfile (extended)", () => {
             {
               timestamp: "2024-01-01",
               changed_by: "u",
-              changes: [
-                { field: "unknown_field", old_value: 1, new_value: 2 },
-              ],
+              changes: [{ field: "unknown_field", old_value: 1, new_value: 2 }],
             },
           ],
         },

@@ -30,7 +30,7 @@
         <p class="text-sm text-slate-500 mt-1">{{ description }}</p>
       </div>
       <div class="shrink-0 text-slate-400">
-        <UIcon name="i-heroicons-chevron-right" class="w-5 h-5"  />
+        <UIcon name="i-heroicons-chevron-right" class="w-5 h-5" />
       </div>
     </div>
   </NuxtLink>

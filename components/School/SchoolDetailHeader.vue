@@ -7,7 +7,11 @@
           {{ school.name }}
         </h1>
         <div class="flex items-center gap-2 text-slate-600 mb-3">
-          <UIcon name="i-heroicons-map-pin" class="w-4 h-4" aria-hidden="true"  />
+          <UIcon
+            name="i-heroicons-map-pin"
+            class="w-4 h-4"
+            aria-hidden="true"
+          />
           {{ school.location }}
         </div>
         <div class="flex flex-wrap gap-2">
@@ -69,11 +73,12 @@
             : 'text-slate-300 hover:text-yellow-400'
         "
       >
-        <UIcon name="i-heroicons-star"
+        <UIcon
+          name="i-heroicons-star"
           class="w-6 h-6"
           :class="school.is_favorite ? 'fill-yellow-500' : ''"
           aria-hidden="true"
-         />
+        />
       </button>
     </div>
   </div>

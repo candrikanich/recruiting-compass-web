@@ -22,7 +22,9 @@ test.describe("Notifications Page", () => {
         TEST_ACCOUNTS.player.email,
       );
       if (!playerUserId) {
-        console.warn("⚠️  notifications seed: player user not found — skipping");
+        console.warn(
+          "⚠️  notifications seed: player user not found — skipping",
+        );
         return;
       }
 
@@ -230,10 +232,7 @@ test.describe("Notifications Page", () => {
     await expect(followUpsBtn).toHaveClass(/bg-blue-600/);
 
     // "All" filter button only — exclude "Mark all as read" which also contains "All"
-    const allBtn = page
-      .locator("button")
-      .filter({ hasText: /^All$/ })
-      .first();
+    const allBtn = page.locator("button").filter({ hasText: /^All$/ }).first();
     await expect(allBtn).not.toHaveClass(/bg-blue-600/);
   });
 
@@ -250,11 +249,7 @@ test.describe("Notifications Page", () => {
     await page.locator('button:has-text("Offers")').first().click();
 
     // Switch back to All — exact match to avoid "Mark all as read" collision
-    await page
-      .locator("button")
-      .filter({ hasText: /^All$/ })
-      .first()
-      .click();
+    await page.locator("button").filter({ hasText: /^All$/ }).first().click();
 
     const restoredCount = await page.locator(".border-l-4").count();
     expect(restoredCount).toBe(initialCount);

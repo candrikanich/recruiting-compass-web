@@ -165,7 +165,12 @@ describe("generateOfferNotifications", () => {
         offers: {
           list: {
             data: [
-              { id: "o-1", school_id: "s-1", deadline_date: null, status: "pending" },
+              {
+                id: "o-1",
+                school_id: "s-1",
+                deadline_date: null,
+                status: "pending",
+              },
             ],
             error: null,
           },
@@ -210,7 +215,9 @@ describe("generateOfferNotifications", () => {
     // 1 day is also within 14/7/3 windows, but each window only inserts once per offer.
     // The function loops [14,7,3,1] — all match for a 1-day-out offer (4 inserts).
     expect(result.count).toBeGreaterThanOrEqual(1);
-    const offerInserts = inserts.calls.filter((c) => c.table === "notifications");
+    const offerInserts = inserts.calls.filter(
+      (c) => c.table === "notifications",
+    );
     expect(offerInserts.length).toBeGreaterThan(0);
     const firstRow = (offerInserts[0].rows as Row[])[0] as Row;
     expect(firstRow.user_id).toBe("u-1");
@@ -245,13 +252,17 @@ describe("generateOfferNotifications", () => {
         schools: {
           list: { data: [{ id: "s-1", name: "UGA" }], error: null },
         },
-        notifications: { maybeSingle: { data: { id: "n-existing" }, error: null } },
+        notifications: {
+          maybeSingle: { data: { id: "n-existing" }, error: null },
+        },
       },
       inserts,
     );
     const result = await generateOfferNotifications("u-1", supabase);
     expect(result.count).toBe(0);
-    expect(inserts.calls.filter((c) => c.table === "notifications")).toHaveLength(0);
+    expect(
+      inserts.calls.filter((c) => c.table === "notifications"),
+    ).toHaveLength(0);
   });
 
   it("returns 0 when notification-exists check errors", async () => {
@@ -332,7 +343,9 @@ describe("generateOfferNotifications", () => {
     );
     const result = await generateOfferNotifications("u-1", supabase);
     expect(result.count).toBe(0);
-    expect(inserts.calls.filter((c) => c.table === "notifications")).toHaveLength(0);
+    expect(
+      inserts.calls.filter((c) => c.table === "notifications"),
+    ).toHaveLength(0);
   });
 });
 
@@ -530,9 +543,7 @@ describe("generateEventNotifications", () => {
       {
         events: {
           list: {
-            data: [
-              { id: "e-1", name: "Combine", start_date: daysFromNow(1) },
-            ],
+            data: [{ id: "e-1", name: "Combine", start_date: daysFromNow(1) }],
             error: null,
           },
         },
@@ -554,9 +565,7 @@ describe("generateEventNotifications", () => {
       {
         events: {
           list: {
-            data: [
-              { id: "e-1", name: "Camp", start_date: daysFromNow(6) },
-            ],
+            data: [{ id: "e-1", name: "Camp", start_date: daysFromNow(6) }],
             error: null,
           },
         },
@@ -576,9 +585,7 @@ describe("generateEventNotifications", () => {
       {
         events: {
           list: {
-            data: [
-              { id: "e-1", name: "Camp", start_date: daysFromNow(1) },
-            ],
+            data: [{ id: "e-1", name: "Camp", start_date: daysFromNow(1) }],
             error: null,
           },
         },
@@ -588,7 +595,9 @@ describe("generateEventNotifications", () => {
     );
     const result = await generateEventNotifications("u-1", supabase);
     expect(result.count).toBe(0);
-    expect(inserts.calls.filter((c) => c.table === "notifications")).toHaveLength(0);
+    expect(
+      inserts.calls.filter((c) => c.table === "notifications"),
+    ).toHaveLength(0);
   });
 
   it("returns 0 when dup-check errors", async () => {
@@ -868,7 +877,9 @@ describe("generateDailyDigest", () => {
     );
     const result = await generateDailyDigest("u-1", supabase);
     expect(result.count).toBe(1);
-    const row = (inserts.calls.find((c) => c.table === "notifications")!.rows as Row[])[0] as Row;
+    const row = (
+      inserts.calls.find((c) => c.table === "notifications")!.rows as Row[]
+    )[0] as Row;
     expect(row.message).toContain("1 interaction logged");
     expect(row.message).toContain("0 events attended");
     expect(row.message).toContain("0 performance metrics recorded");

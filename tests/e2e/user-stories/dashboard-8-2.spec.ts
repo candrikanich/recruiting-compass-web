@@ -321,7 +321,6 @@ test.describe("User Story 8.2: Contact Frequency Summary", () => {
       if (await logInteractionBtn.isVisible()) {
         await logInteractionBtn.click();
         // Wait for navigation or modal
-
       }
     }
   });
@@ -384,9 +383,7 @@ test.describe("User Story 8.2: Contact Frequency Summary", () => {
     }
   });
 
-  test("Color-coded schools display properly stacked", async ({
-    page,
-  }) => {
+  test("Color-coded schools display properly stacked", async ({ page }) => {
     // TODO: test account has 0 schools. Skipped until seed data added.
     dashboardPage = new DashboardPage(page);
     await dashboardPage.goto();
@@ -416,9 +413,7 @@ test.describe("User Story 8.2: Contact Frequency Summary", () => {
     }
   });
 
-  test("Summary metrics are accurate for tracked schools", async ({
-    page,
-  }) => {
+  test("Summary metrics are accurate for tracked schools", async ({ page }) => {
     // TODO: test account has 0 schools. Assertion that (0 <= 0) is vacuous.
     // Skipped until seed data added.
     dashboardPage = new DashboardPage(page);

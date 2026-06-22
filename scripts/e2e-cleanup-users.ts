@@ -154,7 +154,9 @@ async function main() {
     // Pace ~20 req/s to stay under Supabase admin limits.
     await sleep(50);
     if ((i + 1) % 50 === 0 || i === debris.length - 1) {
-      process.stdout.write(`\r  ${i + 1}/${debris.length} (${deleted} ok, ${failed} fail)`);
+      process.stdout.write(
+        `\r  ${i + 1}/${debris.length} (${deleted} ok, ${failed} fail)`,
+      );
     }
   }
   process.stdout.write("\n");
