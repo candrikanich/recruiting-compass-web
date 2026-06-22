@@ -43,29 +43,32 @@
           <button
             v-if="coach.email"
             @click="handleEmail(coach)"
+            :aria-label="`Email ${coach.first_name} ${coach.last_name}`"
             :title="`Email ${coach.email}`"
             class="p-2 rounded-sm transition bg-blue-100 text-blue-700 hover:bg-blue-200"
           >
-            ✉️
+            <span aria-hidden="true">✉️</span>
           </button>
 
           <!-- Text Button -->
           <button
             v-if="coach.phone"
             @click="handleText(coach)"
+            :aria-label="`Text ${coach.first_name} ${coach.last_name}`"
             :title="`Text ${coach.phone}`"
             class="p-2 rounded-sm transition bg-emerald-100 text-emerald-700 hover:bg-emerald-200"
           >
-            💬
+            <span aria-hidden="true">💬</span>
           </button>
 
           <!-- View Profile -->
           <NuxtLink
             :to="`/coaches/${coach.id}`"
+            :aria-label="`View ${coach.first_name} ${coach.last_name} profile`"
             title="View full profile"
             class="p-2 rounded-sm transition bg-blue-100 text-blue-700 hover:bg-blue-200"
           >
-            👁️
+            <span aria-hidden="true">👁️</span>
           </NuxtLink>
         </div>
       </div>

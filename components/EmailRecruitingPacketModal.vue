@@ -7,21 +7,26 @@
         @click.self="handleClose"
       >
         <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="email-packet-title"
           class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
         >
           <!-- Header -->
           <div
             class="sticky top-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between"
           >
-            <h2 class="text-xl font-bold text-slate-900">
+            <h2 id="email-packet-title" class="text-xl font-bold text-slate-900">
               Email Recruiting Packet
             </h2>
             <button
               @click="handleClose"
+              aria-label="Close dialog"
               class="text-slate-500 hover:text-slate-700 transition-colors"
             >
               <svg
                 class="w-6 h-6"
+                aria-hidden="true"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -98,9 +103,10 @@
                   <button
                     @click="removeRecipient(idx)"
                     type="button"
+                    :aria-label="`Remove ${email}`"
                     class="ml-2 hover:text-blue-600"
                   >
-                    ×
+                    <span aria-hidden="true">×</span>
                   </button>
                 </div>
               </div>

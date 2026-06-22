@@ -33,8 +33,12 @@
       <div
         v-for="interaction in recentInteractions"
         :key="interaction.id"
-        class="px-6 py-4 hover:bg-slate-50 transition cursor-pointer"
+        role="button"
+        tabindex="0"
+        class="px-6 py-4 hover:bg-slate-50 transition cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-inset"
         @click="navigateToInteraction(interaction.id)"
+        @keydown.enter="navigateToInteraction(interaction.id)"
+        @keydown.space.prevent="navigateToInteraction(interaction.id)"
       >
         <div class="flex items-start gap-3">
           <!-- Type Icon -->
