@@ -26,6 +26,11 @@ const DECLINE_TOKEN = `e2e-decline-${RUN_ID}`;
 const DECLINE_VIEW_TOKEN = `e2e-decline-view-${RUN_ID}`;
 const LOGIN_CONNECT_TOKEN = `e2e-login-connect-${RUN_ID}`;
 const REVOKE_TOKEN = `e2e-revoke-${RUN_ID}`;
+// Unique per run: a STATIC invited_email let prior runs + parallel workers pile
+// invites onto the same address, so the revoke test's card count oscillated
+// (debris) and "count drops by 1" raced. A run-scoped email seeds exactly one
+// matching card → deterministic.
+const REVOKE_EMAIL = `e2e-revoke-${RUN_ID}@example.com`;
 
 let seedReady = false;
 let seedError: string | null = null;
@@ -156,7 +161,7 @@ test.describe("Family Invite Flow", () => {
         .insert({
           family_unit_id: familyUnitId,
           invited_by: playerUserId,
-          invited_email: "e2e-revoke@example.com",
+          invited_email: REVOKE_EMAIL,
           role: "parent",
           token: REVOKE_TOKEN,
           status: "pending",
@@ -378,17 +383,16 @@ test.describe("Family Invite Flow", () => {
       await page.goto("/settings/family-management");
       await page.waitForLoadState("domcontentloaded");
 
-      // Scope to our own seeded email — other workers mutate this shared family
-      // unit's invite list in parallel, so absolute counts race. Only this test
-      // creates e2e-revoke@example.com (possibly >1 from prior debris runs), so
-      // revoking one and asserting the matching count drops by one is stable.
+      // Scope to this run's unique invited_email (REVOKE_EMAIL is RUN_ID-keyed),
+      // so neither prior-run debris nor parallel workers can perturb the count —
+      // exactly one matching card is seeded. Revoke it and assert it's gone.
       const revokeCards = page.locator('[data-testid="pending-invite-card"]', {
-        hasText: "e2e-revoke@example.com",
+        hasText: REVOKE_EMAIL,
       });
       await expect(revokeCards.first()).toBeVisible({ timeout: 10000 });
       const matchingBefore = await revokeCards.count();
 
-      // Revoke fires DELETE then refetches — poll until one of ours disappears.
+      // Revoke fires DELETE then refetches — poll until ours disappears.
       await revokeCards
         .first()
         .locator('[data-testid="revoke-invite-button"]')
