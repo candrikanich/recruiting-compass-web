@@ -142,8 +142,24 @@ Triage list (errors still uncaptured — gate blocked). Known signal:
 - `dashboard-8-1:238` slow-3G throttle: `goto` timeout. Likely too-tight budget under throttle, not an app bug → adjust timeout or mark as perf-tier.
 - Others (`bulk-delete select-all`, `notes special chars`, `analytics heading`, `athlete-9-1 progress/mobile`, `athlete logs email`): capture errors in Phase 1, fix or quarantine.
 
-### Phase 3 — Flake hardening
+### 🔧 Phase 3 — Flake hardening — IN PROGRESS (2026-06-29)
 
+Method: persistent **warm** dev server + `--repeat-each` to reproduce flakes deterministically (isolates real races from cold-compile noise). Fixed only what actually reproduced.
+
+**Done + committed (`12558a51`):**
+- `dashboard-8-3:216` (was 3/3 fail) — client-side Vue Router nav; `waitForLoadState` doesn't await SPA routing → `expect(page).not.toHaveURL(initialUrl)` polls. Now 3/3 pass.
+- `smart-inputs` 4 tests (autocomplete) — debounced search over ~27k-row nces_schools; 5s too tight → 15s; escape-hatch click hit a `text=` node in a re-rendering dropdown → target button by role; `beforeEach` blind `waitForTimeout(500)` → `networkidle` + input-enabled wait (so `.fill()` doesn't fire pre-hydration). Now **48/48 (8×6)**.
+
+**Reclassified (NOT flakes):**
+- `coaching-philosophy` — does not fail; **skips** when no school seeded / nav guard. Coverage gap → Phase 4 (seed), not a flake. (mint-based verified session likely killed the old `:34` session-expired race.)
+- `school-detail-status-history` (:12, :40) — **passes warm** (0 fails ×3). Was cold-compile first-load only → Phase 5 (run local against `preview`).
+
+**Remaining (need decision / shared-code risk):**
+- `auth.spec:65, :72` — UI **hydration** race (validation/checkbox not settled). Fixable but touches `AuthPage`/`BasePage` (shared → blast radius). They bypass the good `loginViaForm` helper.
+- `auth.spec:22 (signup), :38 (login)` — **GoTrue rate-limit**: create real Supabase users every run (free-tier ~3 signups/hr). `:22` *is* signup under test → needs infra (test project/mock), not a code fix. `:38` can admin-mint setup user + UI-login only.
+- `family-invite-flow:373` — revoke card-count race (full-2 only); not yet re-tested.
+
+#### Phase 3 — original plan
 - Known flakes: `coaching-philosophy:34` (session-expired race), `smart-inputs:76` (heavy parallel load). Root-cause, don't just retry.
 - Decide local retry policy (currently `retries: 0` local, `1` CI) — consider `retries: 1` local to surface flakes as flaky-not-failed.
 - Review `workers: 4` local — parallel load is implicated in smart-inputs flake; measure.
