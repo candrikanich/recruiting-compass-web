@@ -116,7 +116,14 @@ Root problem: storageState is captured by driving a **real UI login** per accoun
 - Capture clean pass/fail/flake/skip counts + per-failure traces (`trace: on-first-retry` already set).
 - Re-classify the 8 full-1 failures: deterministic-real vs flake.
 
-### Phase 2 — Fix deterministic test failures (the real bugs among the 8)
+### ✅ Phase 2 — Fix deterministic test failures — DONE (2026-06-29)
+
+All 4 deterministic failures fixed + verified green (27 passed across the 3 specs, 0 fail):
+- **`athlete-interactions.spec.ts:21`** — added `.first()` to the 3 post-submit assertions. player@test.com is shared and accumulates interactions, so `text=Recruiting Inquiry`/`Email`/`You` legitimately match multiple cards → strict-mode violation. `.first()` asserts presence correctly.
+- **`bulk-delete-users.spec.ts:151`** — was a brittle test assumption, **not an app bug**. Users sort `created_at DESC`; admin@test.com is old → off page 1 → 0 current-user rows visible → select-all checks all 25. Test wrongly expected `userCount-1`. Now asserts `selectedCount === getSelectableUserCount()` (new `AdminPage` helper counting rendered `user-checkbox`). Current-user exclusion stays covered by the dedicated `:255` test.
+- **`user-story-9-1.spec.ts` Scenario 2 + 6** — progress-bar fill is `width: percentComplete%`; player had 0 completions → 0-width → Playwright "hidden". Added `seedCompletedTaskForAthlete` (+`deleteSeededTask`) in `supabase-admin.ts`: seeds one completed `athlete_task` for the athlete's **computed grade** (mirrors page: `graduation_year ? calculateCurrentGrade : 10`), wired via `beforeAll`/`afterAll`. Date-robust, idempotent (unique `athlete_id,task_id`), cleaned up. NOT masked (no min-width hack / track-targeting).
+
+### Phase 2 — Fix deterministic test failures (the real bugs among the 8) — original notes
 
 Triage list (errors still uncaptured — gate blocked). Known signal:
 - `dashboard-8-3:216` clicking activity → details: URL stayed `/dashboard`. Either app bug (row not navigable) or missing seed activity. Verify in-app first.

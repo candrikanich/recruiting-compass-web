@@ -1,6 +1,35 @@
 import { test, expect } from "@playwright/test";
+import {
+  getSupabaseAdmin,
+  seedCompletedTaskForAthlete,
+  deleteSeededTask,
+  type SeededTask,
+} from "../seed/helpers/supabase-admin";
+import { TEST_ACCOUNTS } from "../config/test-accounts";
 
 test.describe("User Story 9.1 - Athlete Views Their Task List", () => {
+  // The progress scenarios assert the progress-bar fill is visible, which
+  // requires a non-zero completion percentage. player@test.com starts with no
+  // completed tasks, so seed exactly one grade-appropriate completion.
+  let seededTask: SeededTask | null = null;
+
+  test.beforeAll(async () => {
+    try {
+      seededTask = await seedCompletedTaskForAthlete(
+        getSupabaseAdmin(),
+        TEST_ACCOUNTS.player.email,
+      );
+    } catch (error) {
+      console.warn("⚠️  user-story-9-1: failed to seed completed task:", error);
+    }
+  });
+
+  test.afterAll(async () => {
+    if (seededTask) {
+      await deleteSeededTask(getSupabaseAdmin(), seededTask);
+    }
+  });
+
   test.beforeEach(async ({ page }) => {
     // Navigate to task list page
     await page.goto("/tasks");

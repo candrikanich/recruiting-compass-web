@@ -45,6 +45,16 @@ export class AdminPage extends BasePage {
     return await selectedCheckboxes.count();
   }
 
+  /**
+   * Count rows that render a selectable checkbox on the visible page. The
+   * current admin's row renders a "Current" label instead of a checkbox, so
+   * this is the true number select-all should check — independent of where the
+   * current admin lands in the (created_at DESC) pagination.
+   */
+  async getSelectableUserCount(): Promise<number> {
+    return await this.page.locator('[data-testid="user-checkbox"]').count();
+  }
+
   // Bulk delete operations
   async clickBulkDeleteButton() {
     await this.click('[data-testid="bulk-delete-btn"]');
