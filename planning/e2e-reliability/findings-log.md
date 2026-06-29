@@ -154,10 +154,12 @@ Method: persistent **warm** dev server + `--repeat-each` to reproduce flakes det
 - `coaching-philosophy` — does not fail; **skips** when no school seeded / nav guard. Coverage gap → Phase 4 (seed), not a flake. (mint-based verified session likely killed the old `:34` session-expired race.)
 - `school-detail-status-history` (:12, :40) — **passes warm** (0 fails ×3). Was cold-compile first-load only → Phase 5 (run local against `preview`).
 
-**Remaining (need decision / shared-code risk):**
-- `auth.spec:65, :72` — UI **hydration** race (validation/checkbox not settled). Fixable but touches `AuthPage`/`BasePage` (shared → blast radius). They bypass the good `loginViaForm` helper.
-- `auth.spec:22 (signup), :38 (login)` — **GoTrue rate-limit**: create real Supabase users every run (free-tier ~3 signups/hr). `:22` *is* signup under test → needs infra (test project/mock), not a code fix. `:38` can admin-mint setup user + UI-login only.
-- `family-invite-flow:373` — revoke card-count race (full-2 only); not yet re-tested.
+**Also done + committed:**
+- `auth.spec:65, :72` (hydration) — `1c67f7d6`. `AuthPage.goto` waits `networkidle` before fill/blur (validators need hydration); `expectError` 5s→10s; `:72` waits checkbox stable after the user-type re-render. Verified 12/12 (3×4).
+- `family-invite-flow:373` (revoke count race) — `c5242514`. Reproduced 2/4; root cause = STATIC `invited_email` so debris/parallel piled invites on one address. Run-unique `REVOKE_EMAIL` → exactly one card. Verified 4/4.
+
+**Remaining — signup rate-limit refactor (deferred, needs care):**
+- `auth.spec:22 (signup), :38 (login), :121 session, :140 logout, :171 redirect, :189 return-redirect` — all call `authPage.signup()` creating real Supabase users → GoTrue free-tier signup rate-limit (~3/hr). Only surfaced after a day of heavy runs (passed in normal full-1/full-2). **Decision (user):** admin-mint setup users, keep `:22` as the one real signup-UI test (tag `@flaky`/serial, non-blocking). **Complication:** minted users aren't onboarded → UI-login lands on `/onboarding`, not `/dashboard`, breaking the dashboard/redirect assertions. Needs an **onboarded-mint helper** (replicate `setupTestAccountData`: onboarding_completed + family_unit) + careful rewrite of 6 tests + per-test verify. Deferred from this session (large multi-file refactor; do with fresh context). Helpers ready to build on: `createOneOffTestUser`/`deleteOneOffTestUser` in `supabase-admin.ts`.
 
 #### Phase 3 — original plan
 - Known flakes: `coaching-philosophy:34` (session-expired race), `smart-inputs:76` (heavy parallel load). Root-cause, don't just retry.
