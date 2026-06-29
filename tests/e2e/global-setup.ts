@@ -1,4 +1,5 @@
 import type { FullConfig } from "@playwright/test";
+import type { Browser } from "@playwright/test";
 import { chromium } from "@playwright/test";
 import { execSync } from "child_process";
 import { config } from "dotenv";
@@ -9,7 +10,74 @@ import {
   getSupabaseAdmin,
   purgeLeakedTestSchools,
 } from "./seed/helpers/supabase-admin";
+import { mintStorageState } from "./seed/helpers/auth-session";
 import { TEST_ACCOUNTS } from "./config/test-accounts";
+
+/** Run `fn`, retrying on failure with linear backoff. Returns on first success. */
+async function withRetry<T>(
+  label: string,
+  attempts: number,
+  fn: (attempt: number) => Promise<T>,
+): Promise<T> {
+  let lastError: unknown;
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    try {
+      return await fn(attempt);
+    } catch (error) {
+      lastError = error;
+      const msg = error instanceof Error ? error.message : String(error);
+      console.warn(`  ⚠️  ${label} attempt ${attempt}/${attempts} failed: ${msg}`);
+      if (attempt < attempts) {
+        await new Promise((r) => setTimeout(r, attempt * 1000));
+      }
+    }
+  }
+  throw lastError;
+}
+
+/**
+ * Fallback path: capture storageState by driving the real /login UI.
+ * Only used if direct token minting fails. Kept because it exercises the same
+ * code path a user does, so it catches login-flow regressions the mint path
+ * would silently skip.
+ */
+async function captureViaUi(
+  browser: Browser,
+  baseUrl: string,
+  email: string,
+  password: string,
+  outPath: string,
+): Promise<void> {
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  try {
+    await page.goto(`${baseUrl}/login`, { waitUntil: "domcontentloaded" });
+    // Wait for hydration to settle so the click hits a wired-up handler,
+    // not a static pre-hydration form that would native-submit and reload.
+    await page.waitForLoadState("networkidle");
+
+    await page.locator('input[type="email"]').fill(email);
+    await page.locator('input[type="email"]').blur();
+    await page.locator('input[type="password"]').fill(password);
+    await page.locator('input[type="password"]').blur();
+
+    await page
+      .locator('[data-testid="login-button"]')
+      .waitFor({ state: "visible" });
+    await page.waitForFunction(
+      () =>
+        !document
+          .querySelector('[data-testid="login-button"]')
+          ?.hasAttribute("disabled"),
+    );
+    await page.click('[data-testid="login-button"]');
+    await page.waitForURL(/\/(dashboard|onboarding)/, { timeout: 15000 });
+
+    await context.storageState({ path: outPath });
+  } finally {
+    await context.close();
+  }
+}
 
 const AUTH_DIR = resolve(process.cwd(), "tests/e2e/.auth");
 
@@ -53,51 +121,54 @@ async function globalSetup(_config: FullConfig) {
     console.warn("⚠️  Leaked-school purge failed (non-fatal):", error);
   }
 
-  // Provision storageState for each test account.
-  // This allows every test to start pre-authenticated — no per-test login needed.
-  // If any account fails to capture, throw to abort the entire run. Continuing with
-  // stale/empty storageState produces 30-minute hangs as every test 401s on Supabase.
+  // Provision storageState for each test account so every test starts
+  // pre-authenticated — no per-test login needed.
+  //
+  // Primary path mints the session token directly via the Supabase password
+  // grant (server-side, no browser) and writes the storageState file. This is
+  // deterministic and fast. If minting fails, we fall back to driving the real
+  // /login UI. Each path is retried. If an account still can't be provisioned,
+  // we throw to abort the run — continuing with stale/empty storageState
+  // produces 30-minute hangs as every test 401s on Supabase.
+  const baseUrl = process.env.BASE_URL || "http://localhost:3003";
   const browser = await chromium.launch();
   await fs.mkdir(AUTH_DIR, { recursive: true });
   const failures: { role: string; error: unknown }[] = [];
   try {
     for (const [role, account] of Object.entries(TEST_ACCOUNTS)) {
-      console.log(`🔐 Capturing storageState for ${role}...`);
-      const context = await browser.newContext();
-      const page = await context.newPage();
+      const outPath = `${AUTH_DIR}/${role}.json`;
+      console.log(`🔐 Provisioning storageState for ${role}...`);
       try {
-        const baseUrl = process.env.BASE_URL || "http://localhost:3003";
-        await page.goto(`${baseUrl}/login`, { waitUntil: "domcontentloaded" });
-
-        // Fill form with blur events (Vue reactive validation requires blur to enable submit)
-        await page.locator('input[type="email"]').fill(account.email);
-        await page.locator('input[type="email"]').blur();
-        await page.locator('input[type="password"]').fill(account.password);
-        await page.locator('input[type="password"]').blur();
-
-        // Wait for the submit button to become enabled
-        await page
-          .locator('[data-testid="login-button"]')
-          .waitFor({ state: "visible" });
-        await page.waitForFunction(
-          () =>
-            !document
-              .querySelector('[data-testid="login-button"]')
-              ?.hasAttribute("disabled"),
+        await withRetry(`mint ${role}`, 3, async () => {
+          const state = await mintStorageState(
+            baseUrl,
+            account.email,
+            account.password,
+          );
+          await fs.writeFile(outPath, JSON.stringify(state));
+        });
+        console.log(`  ✅ Minted ${role}.json`);
+      } catch (mintError) {
+        const msg =
+          mintError instanceof Error ? mintError.message : String(mintError);
+        console.warn(
+          `  ↪︎ mint failed for ${role} (${msg}); falling back to UI login`,
         );
-        await page.click('[data-testid="login-button"]');
-        await page.waitForURL(/\/(dashboard|onboarding)/, { timeout: 15000 });
-
-        await context.storageState({ path: `${AUTH_DIR}/${role}.json` });
-        console.log(`  ✅ Saved ${role}.json`);
-      } catch (error) {
-        console.error(
-          `  ❌ Failed to capture storageState for ${role}:`,
-          error,
-        );
-        failures.push({ role, error });
-      } finally {
-        await context.close();
+        try {
+          await withRetry(`UI login ${role}`, 2, () =>
+            captureViaUi(
+              browser,
+              baseUrl,
+              account.email,
+              account.password,
+              outPath,
+            ),
+          );
+          console.log(`  ✅ Saved ${role}.json (UI fallback)`);
+        } catch (uiError) {
+          console.error(`  ❌ Failed to provision ${role}:`, uiError);
+          failures.push({ role, error: uiError });
+        }
       }
     }
   } finally {
@@ -107,7 +178,7 @@ async function globalSetup(_config: FullConfig) {
   if (failures.length > 0) {
     const roles = failures.map((f) => f.role).join(", ");
     throw new Error(
-      `globalSetup: failed to capture storageState for ${failures.length} account(s): ${roles}. ` +
+      `globalSetup: failed to provision storageState for ${failures.length} account(s): ${roles}. ` +
         `Aborting to avoid a full test run with stale auth — the silent fall-through has caused 30-minute CI hangs in the past.`,
     );
   }
