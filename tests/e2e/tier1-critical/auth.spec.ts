@@ -73,6 +73,7 @@ test.describe("Tier 1: Authentication - Critical User Flows", () => {
     authPage = new AuthPage(page);
     // Navigate to signup first
     await page.goto("/signup");
+    await page.waitForLoadState("networkidle"); // let the form hydrate
     // Select user type first (new signup flow requires this step)
     await page.locator('[data-testid="user-type-player"]').click();
     await page.waitForSelector("#firstName");
@@ -83,8 +84,11 @@ test.describe("Tier 1: Authentication - Critical User Flows", () => {
     await authPage.fillAndValidate("#password", "weak");
     await authPage.fillAndValidate("#confirmPassword", "weak");
 
-    // Check terms checkbox
+    // Check terms checkbox — wait for it to be stable/actionable first. The
+    // form re-renders after the user-type selection, so checking too early
+    // raced the re-render and timed out.
     const checkbox = page.locator('input[type="checkbox"]');
+    await checkbox.waitFor({ state: "visible" });
     await checkbox.check();
 
     // Try to submit - should show validation error
