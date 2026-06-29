@@ -2,8 +2,6 @@ import { test, expect } from "@playwright/test";
 import {
   getSupabaseAdmin,
   seedCompletedTaskForAthlete,
-  deleteSeededTask,
-  type SeededTask,
 } from "../seed/helpers/supabase-admin";
 import { TEST_ACCOUNTS } from "../config/test-accounts";
 
@@ -11,22 +9,22 @@ test.describe("User Story 9.1 - Athlete Views Their Task List", () => {
   // The progress scenarios assert the progress-bar fill is visible, which
   // requires a non-zero completion percentage. player@test.com starts with no
   // completed tasks, so seed exactly one grade-appropriate completion.
-  let seededTask: SeededTask | null = null;
-
+  //
+  // NOTE: seed only, NO afterAll cleanup. The suite runs fullyParallel, so
+  // beforeAll/afterAll execute per worker; the progress scenarios land on
+  // different workers and share player@test.com. An afterAll delete on one
+  // worker would race-wipe the row another worker's test is still reading,
+  // intermittently dropping completion to 0% (the historical flake). The seed
+  // is idempotent (unique athlete_id,task_id) and one completed task is valid
+  // baseline state for the shared athlete, so we leave it.
   test.beforeAll(async () => {
     try {
-      seededTask = await seedCompletedTaskForAthlete(
+      await seedCompletedTaskForAthlete(
         getSupabaseAdmin(),
         TEST_ACCOUNTS.player.email,
       );
     } catch (error) {
       console.warn("⚠️  user-story-9-1: failed to seed completed task:", error);
-    }
-  });
-
-  test.afterAll(async () => {
-    if (seededTask) {
-      await deleteSeededTask(getSupabaseAdmin(), seededTask);
     }
   });
 
@@ -73,19 +71,23 @@ test.describe("User Story 9.1 - Athlete Views Their Task List", () => {
   });
 
   test("Scenario 2: Athlete sees progress", async ({ page }) => {
-    // Verify progress counter text is visible
+    // Verify progress counter text is visible (allow for async task-data load)
     const progressText = page.locator("text=/You've completed/");
-    await expect(progressText).toBeVisible();
+    await expect(progressText).toBeVisible({ timeout: 15000 });
 
-    // Verify percentage is shown in the text
-    const progressWithPercent = page.locator("text=/\\(\\d+%\\)/");
-    await expect(progressWithPercent).toBeVisible();
+    // Wait for a NON-ZERO percentage. The progress-bar fill width is bound to
+    // percentComplete, so it is 0-width (and Playwright-"hidden") until the
+    // tasks API returns the seeded completion. A bare `\d+%` regex matches
+    // "(0%)" and would pass before data arrives, then the 0-width fill would
+    // fail — that race is the historical flake. Gating on non-zero removes it.
+    await expect(page.locator("text=/\\([1-9]\\d*%\\)/")).toBeVisible({
+      timeout: 15000,
+    });
 
-    // Verify progress bar exists
+    // Fill now has non-zero width and is visible
     const progressBar = page.locator(".bg-blue-600").first();
     await expect(progressBar).toBeVisible();
 
-    // Get the progress bar width to verify it's displaying correctly
     const bbox = await progressBar.boundingBox();
     expect(bbox).toBeTruthy();
   });
@@ -193,15 +195,21 @@ test.describe("User Story 9.1 - Athlete Views Their Task List", () => {
     // Set mobile viewport
     await page.setViewportSize({ width: 375, height: 667 });
 
-    // Verify page loads and is readable
+    // Verify page loads and is readable (allow for async task-data load)
     const heading = page.locator('h1:has-text("My Tasks")');
-    await expect(heading).toBeVisible();
+    await expect(heading).toBeVisible({ timeout: 15000 });
 
     // Verify progress counter is visible on mobile
     const progressCounter = page.locator("text=/You've completed/");
-    await expect(progressCounter).toBeVisible();
+    await expect(progressCounter).toBeVisible({ timeout: 15000 });
 
-    // Verify progress bar is visible
+    // Wait for non-zero percentage so the fill has width before asserting it —
+    // see Scenario 2 for why a bare `\d+%` match races the data load.
+    await expect(page.locator("text=/\\([1-9]\\d*%\\)/")).toBeVisible({
+      timeout: 15000,
+    });
+
+    // Verify progress bar fill is visible
     const progressBar = page.locator(".bg-blue-600").first();
     await expect(progressBar).toBeVisible();
 

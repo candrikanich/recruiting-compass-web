@@ -116,6 +116,18 @@ Root problem: storageState is captured by driving a **real UI login** per accoun
 - Capture clean pass/fail/flake/skip counts + per-failure traces (`trace: on-first-retry` already set).
 - Re-classify the 8 full-1 failures: deterministic-real vs flake.
 
+### ⚠️ Phase 2 follow-up — re-baseline exposed deeper issues, corrected (2026-06-29)
+
+full-3 re-baseline (both fixes in): **428✓ / 9✗ / 50 skip but 15.5m (3× normal)** — a degraded, untrustworthy run. Investigation:
+
+- **athlete-interactions:21** — my first fix (`.first()`) was **wrong**: `text=Email` then matched the hidden `<option value="email">Email</option>` in the page's type-filter, and `text=You` only ever matched incidental "Your" copy (no per-card "You" badge exists). **Corrected**: scope to the interaction card via its unique subject (`div.rounded-xl` filtered by "Recruiting Inquiry"), assert `toContainText("Email")`. Now passes first-try (3.2s).
+- **9-1 Scenario 2 & 6** — real root cause was a **cross-worker race**, NOT cold-compile (that was a red herring I chased — it only contributed to heading-timeout flakes). `playwright.config` is `fullyParallel: true`, so `beforeAll`/`afterAll` run per worker; the two scenarios land on different workers sharing player@test.com, and one worker's `afterAll` deleted the same `athlete_task` row (`limit 1` → same task) the other was still reading → 0% → "hidden". Verified the API itself is correct via direct call (20 grade-10 tasks, 1 completed, 5%). **Corrected**: removed the racing `afterAll` delete (seed is idempotent; one completed task is valid baseline), and gate the fill assertion on a **non-zero** percentage (`\([1-9]\d*%\)`, 15s) so it waits for async data instead of racing it. Verified deterministic: 2/2 no-retry runs, 18✓/0✗.
+- **Method note:** proved the fixes against a **persistent warm dev server** + direct DB/API calls, isolating logic from `npm run dev` first-load compile cost. Single-spec verify4 passed by luck; the race was always latent. Lesson: a green isolated run ≠ race-free under `fullyParallel`.
+
+**Remaining full-3 flakes → Phase 3** (not regressions, not my code): `auth.spec.ts` ×4 (UI signup/login `waitForURL` timeout — same UI-login fragility the gate fix bypassed, + cumulative GoTrue pressure from a day of runs), `school-detail-status-history:40`, `dashboard-8-3:216`.
+
+**Local-runtime finding:** local e2e uses `npm run dev` (CI uses `npm run preview`), so each fresh run pays Vite client-compile on first hit per route → first-load timeouts on a loaded machine. Mitigations for Phase 5: run local against `preview`, or raise action timeouts, or keep a warm server.
+
 ### ✅ Phase 2 — Fix deterministic test failures — DONE (2026-06-29)
 
 All 4 deterministic failures fixed + verified green (27 passed across the 3 specs, 0 fail):
