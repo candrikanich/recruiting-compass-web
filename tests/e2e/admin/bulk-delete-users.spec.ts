@@ -158,11 +158,18 @@ test.describe("Admin Dashboard - Bulk Delete Users", () => {
     // Click select all
     await adminPage.selectAllUsers();
 
-    // All users except the current admin should be selected — the row for
-    // the logged-in user intentionally has no checkbox (verified by the
-    // "should not allow selecting current user" test below).
+    // Select-all should check every *selectable* row on the visible page. The
+    // current admin's row renders a "Current" label instead of a checkbox, but
+    // it only lands on the visible page when the admin sorts near the top —
+    // users are ordered created_at DESC and admin@test.com is an old account,
+    // so it's usually off page 1 (0 excluded rows visible). Asserting against
+    // userCount-1 wrongly assumes the admin is always visible. Compare against
+    // the actual selectable-checkbox count instead. (Current-user exclusion is
+    // covered separately by "should not allow selecting current user".)
+    const selectableCount = await adminPage.getSelectableUserCount();
+    expect(selectableCount).toBeGreaterThan(0);
     const selectedCount = await adminPage.getSelectedUserCount();
-    expect(selectedCount).toBe(userCount - 1);
+    expect(selectedCount).toBe(selectableCount);
   });
 
   test("should show bulk delete button when users selected", async ({

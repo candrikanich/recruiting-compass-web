@@ -58,10 +58,19 @@ test.describe("User Story 5.3: Athlete Logs Own Interactions", () => {
         waitUntil: "domcontentloaded",
       });
 
-      // Verify interaction appears in list with "You" badge
-      await expect(page.locator("text=Recruiting Inquiry")).toBeVisible();
-      await expect(page.locator("text=Email")).toBeVisible();
-      await expect(page.locator("text=You")).toBeVisible();
+      // Verify the just-logged interaction appears as a timeline card,
+      // identified by its unique subject. Scope the type assertion to THAT card
+      // — loose page-wide `text=Email` matched the hidden type-filter
+      // <option value="email">Email</option>, and `text=You` matched incidental
+      // "Your" copy (the list renders no per-card "You" badge), so both were
+      // ambiguous/flaky. player@test.com is shared and accumulates interactions,
+      // so .first() selects the most recent matching card.
+      const loggedCard = page
+        .locator("div.rounded-xl")
+        .filter({ hasText: "Recruiting Inquiry" })
+        .first();
+      await expect(loggedCard).toBeVisible();
+      await expect(loggedCard).toContainText("Email");
     });
 
     test("Scenario 3: Athlete sees only their interactions", async ({

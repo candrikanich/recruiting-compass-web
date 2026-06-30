@@ -31,6 +31,18 @@ export default defineNuxtConfig({
   css: ["~/assets/css/main.css"],
   modules: ["@pinia/nuxt", "@sentry/nuxt/module", "@nuxt/ui"],
 
+  // SPA mode (ssr: false) means @nuxt/icon has no server to serve icons, so by
+  // default it fetches each icon from https://api.iconify.design at runtime —
+  // which the production CSP connect-src blocks, so icons silently disappear.
+  // Bundle the icons we use into the client build instead: no runtime fetch,
+  // no external dependency, no CSP exception needed.
+  icon: {
+    clientBundle: {
+      scan: true,
+      sizeLimitKb: 256,
+    },
+  },
+
   app: {
     head: {
       htmlAttrs: {

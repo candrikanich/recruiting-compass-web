@@ -4,6 +4,7 @@ import {
 } from "@supabase/supabase-js";
 import ws from "ws";
 import { TEST_ACCOUNTS } from "../../config/test-accounts";
+import { calculateCurrentGrade } from "../../../../utils/gradeHelpers";
 
 // supabase-js eagerly constructs a RealtimeClient inside createClient. On
 // Node < 22 (no native global WebSocket) that constructor throws unless a
@@ -118,6 +119,81 @@ export async function deleteSeededSchools(
   if (seeded.schoolIds.length > 0) {
     await supabase.from("schools").delete().in("id", seeded.schoolIds);
   }
+}
+
+export interface SeededTask {
+  athleteId: string;
+  taskId: string;
+}
+
+/**
+ * Mark one grade-appropriate task complete for an athlete so the /tasks
+ * progress bar renders a non-zero-width fill.
+ *
+ * The tasks page derives the displayed grade exactly as we do here:
+ * `graduation_year ? calculateCurrentGrade(graduation_year) : 10` (default 10).
+ * Stats are computed only against tasks of that grade, so the completed task
+ * MUST match it — otherwise `percentComplete` stays 0 and the fill is 0-width
+ * (Playwright treats that as hidden). Idempotent via the
+ * (athlete_id, task_id) unique constraint. Returns ids for afterAll cleanup.
+ */
+export async function seedCompletedTaskForAthlete(
+  supabase: ReturnType<typeof getSupabaseAdmin>,
+  email: string,
+): Promise<SeededTask> {
+  const athleteId = await findUserIdByEmail(supabase, email);
+  if (!athleteId) {
+    throw new Error(`seedCompletedTaskForAthlete: user not found: ${email}`);
+  }
+
+  const { data: userRow } = await supabase
+    .from("users")
+    .select("graduation_year")
+    .eq("id", athleteId)
+    .maybeSingle();
+  const gradYear = (userRow as { graduation_year?: number } | null)
+    ?.graduation_year;
+  const gradeLevel = gradYear ? calculateCurrentGrade(gradYear) : 10;
+
+  const { data: task, error: taskErr } = await supabase
+    .from("task")
+    .select("id")
+    .eq("grade_level", gradeLevel)
+    .limit(1)
+    .maybeSingle();
+  if (taskErr || !task) {
+    throw new Error(
+      `seedCompletedTaskForAthlete: no task for grade ${gradeLevel}: ${taskErr?.message ?? "none found"}`,
+    );
+  }
+  const taskId = (task as { id: string }).id;
+
+  const { error: upsertErr } = await supabase.from("athlete_task").upsert(
+    {
+      athlete_id: athleteId,
+      task_id: taskId,
+      status: "completed",
+      completed_at: new Date().toISOString(),
+    },
+    { onConflict: "athlete_id,task_id" },
+  );
+  if (upsertErr) {
+    throw new Error(`seedCompletedTaskForAthlete upsert: ${upsertErr.message}`);
+  }
+
+  return { athleteId, taskId };
+}
+
+/** Remove the athlete_task row seeded by seedCompletedTaskForAthlete. */
+export async function deleteSeededTask(
+  supabase: ReturnType<typeof getSupabaseAdmin>,
+  seeded: SeededTask,
+): Promise<void> {
+  await supabase
+    .from("athlete_task")
+    .delete()
+    .eq("athlete_id", seeded.athleteId)
+    .eq("task_id", seeded.taskId);
 }
 
 /**

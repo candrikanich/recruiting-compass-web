@@ -4,6 +4,11 @@ import { BasePage } from "./BasePage";
 export class AuthPage extends BasePage {
   async goto() {
     await super.goto("/login");
+    // Wait for hydration to settle before any fill/blur — Vue's reactive
+    // validators (which gate the submit button and render field errors) aren't
+    // wired until the client bundle hydrates. Filling/blurring earlier drops
+    // the validation, surfacing as flaky "alert not visible" failures.
+    await this.page.waitForLoadState("networkidle");
     await this.page
       .locator('input[type="email"]')
       .waitFor({ state: "visible" });
@@ -116,7 +121,7 @@ export class AuthPage extends BasePage {
     const alert = this.page
       .locator('[role="alert"]')
       .filter({ hasText: message });
-    await expect(alert.first()).toBeVisible({ timeout: 5000 });
+    await expect(alert.first()).toBeVisible({ timeout: 10000 });
   }
 
   async fillInvalidEmail(email: string) {

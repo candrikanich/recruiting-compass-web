@@ -229,12 +229,11 @@ test.describe("User Story 8.3 - Recent Activity Feed", () => {
         // Click the item
         await firstItem.click();
 
-        // Wait for navigation
-        await page.waitForLoadState("domcontentloaded").catch(() => {});
-
-        // Should have navigated
-        const newUrl = page.url();
-        expect(newUrl).not.toBe(initialUrl);
+        // Navigation is client-side (Vue Router), so waitForLoadState
+        // ("domcontentloaded") returns immediately without awaiting the route
+        // change — asserting the URL right after the click raced the SPA nav.
+        // expect(page).not.toHaveURL polls until the URL actually changes.
+        await expect(page).not.toHaveURL(initialUrl, { timeout: 10_000 });
 
         // Go back to dashboard
         await page.goBack();

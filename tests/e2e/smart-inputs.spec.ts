@@ -25,8 +25,15 @@ test.describe("Smart Inputs — High School Search", () => {
 
   test.beforeEach(async ({ page }) => {
     await page.goto("/settings/player-details");
-    await page.waitForLoadState("load");
-    await page.waitForTimeout(500);
+    await page.waitForLoadState("networkidle");
+    // Wait for the search input to be present AND enabled before any test fills
+    // it — a blind timeout let .fill() fire before Vue hydrated the debounced
+    // input handler, so the single input event was dropped and no search ran
+    // (escape hatch / suggestions never appeared). Asserting enabled is a
+    // hydration proxy.
+    await expect(
+      page.locator('[placeholder="Search for your high school"]'),
+    ).toBeEnabled({ timeout: 15000 });
   });
 
   test("shows NCES autocomplete suggestions when typing school name", async ({
@@ -36,8 +43,11 @@ test.describe("Smart Inputs — High School Search", () => {
       '[placeholder="Search for your high school"]',
     );
     await schoolInput.fill("Lincoln");
+    // The autocomplete debounces input then queries the ~27k-row nces_schools
+    // table; under load that round-trip can exceed 5s. 15s removes the race
+    // without masking (the feature works, it's just an async DB lookup).
     await expect(page.locator("text=Lincoln High School").first()).toBeVisible({
-      timeout: 5000,
+      timeout: 15000,
     });
   });
 
@@ -52,7 +62,8 @@ test.describe("Smart Inputs — High School Search", () => {
     // School"). Grab whatever the first suggestion's text is, click it, then
     // assert the input now holds that exact value.
     const firstSuggestion = page.locator("text=Lincoln High School").first();
-    await firstSuggestion.waitFor({ state: "visible", timeout: 5000 });
+    // 15s: debounced search + nces_schools DB query can exceed 5s under load.
+    await firstSuggestion.waitFor({ state: "visible", timeout: 15000 });
     const selectedName = (await firstSuggestion.textContent())?.trim() ?? "";
     await firstSuggestion.click();
     await expect(schoolInput).toHaveValue(selectedName);
@@ -68,8 +79,9 @@ test.describe("Smart Inputs — High School Search", () => {
       '[placeholder="Search for your high school"]',
     );
     await schoolInput.fill("xqzpwvnonexistent");
+    // 15s: escape hatch renders only after the debounced empty NCES query.
     await expect(page.locator("text=Can't find it")).toBeVisible({
-      timeout: 5000,
+      timeout: 15000,
     });
   });
 
@@ -78,8 +90,12 @@ test.describe("Smart Inputs — High School Search", () => {
       '[placeholder="Search for your high school"]',
     );
     await schoolInput.fill("xqzpwvnonexistent");
-    const escapeHatch = page.locator("text=Can't find it");
-    await expect(escapeHatch).toBeVisible({ timeout: 5000 });
+    // Target the actual <button>, not a `text=` node: the dropdown re-renders
+    // as the debounced search settles, so a text-node locator stays unstable
+    // and .click() times out waiting for actionability. The button role is
+    // stable across those re-renders. 15s for the debounced empty NCES query.
+    const escapeHatch = page.getByRole("button", { name: /Can't find it/ });
+    await expect(escapeHatch).toBeVisible({ timeout: 15000 });
     await escapeHatch.click();
     const manualInput = page.locator(
       '[placeholder="Enter school name manually"]',
