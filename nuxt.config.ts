@@ -38,7 +38,14 @@ export default defineNuxtConfig({
   // no external dependency, no CSP exception needed.
   icon: {
     clientBundle: {
-      scan: true,
+      // @nuxt/icon's default scan globs cover .vue/.jsx/.md only, so icons
+      // bound dynamically (`:name="stat.icon"`) whose names live as string
+      // literals in .ts composables/stores are never bundled — they'd fall
+      // back to a runtime fetch the prod CSP blocks. Widen the scan to include
+      // .ts/.js so those names get picked up and bundled too.
+      scan: {
+        globInclude: ["**/*.{vue,jsx,tsx,ts,mts,cts,js,mjs,cjs,md,mdc,mdx,yml,yaml}"],
+      },
       sizeLimitKb: 256,
     },
   },
