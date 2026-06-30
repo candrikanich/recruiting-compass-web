@@ -101,7 +101,7 @@
               :disabled="loading"
               variant="ghost"
               color="neutral"
-              @click="confirmStep = false"
+              @click="() => { confirmStep = false }"
             >
               Cancel
             </UButton>
@@ -122,7 +122,7 @@
             data-testid="request-deletion-button"
             color="error"
             variant="outline"
-            @click="confirmStep = true"
+            @click="() => { confirmStep = true }"
           >
             Request Account Deletion
           </UButton>
