@@ -55,7 +55,7 @@
     "browser-image-compression": "^2.0.2",
     "chart.js": "^4.5.1",
     "chartjs-adapter-date-fns": "^3.0.0",
-    "date-fns": "^4.3.0",
+    "date-fns": "^4.4.0",
     "fuse.js": "^7.3.0",
     "html2canvas": "^1.4.1",
     "jspdf": "^4.2.1",
