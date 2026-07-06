@@ -162,9 +162,7 @@ const {
 const formData = ref({
   name: props.template?.name || "",
   type: (props.template?.type || "email") as
-    | "email"
-    | "message"
-    | "phone_script",
+    "email" | "message" | "phone_script",
   subject: props.template?.subject || "",
   body: props.template?.body || "",
 });

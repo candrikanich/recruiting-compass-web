@@ -185,8 +185,7 @@ export const useActiveFamily = () => {
 
             // Set current athlete: route param > localStorage > closest to graduation > first
             const athleteIdFromRoute = route.query.athlete_id as
-              | string
-              | undefined;
+              string | undefined;
 
             if (
               athleteIdFromRoute &&

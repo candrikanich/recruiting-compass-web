@@ -32,8 +32,7 @@ export const prioritySchoolReminderRule: Rule = {
         })[0];
 
       const lastInteractionRecord = lastInteraction as
-        | Record<string, unknown>
-        | undefined;
+        Record<string, unknown> | undefined;
       const daysSinceContact = lastInteractionRecord
         ? Math.floor(
             (Date.now() -

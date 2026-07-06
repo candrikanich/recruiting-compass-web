@@ -3,13 +3,7 @@ import { resolveComponent } from "vue";
 
 export type ButtonVariant = "gradient" | "outline" | "solid" | "ghost";
 export type ButtonColor =
-  | "blue"
-  | "purple"
-  | "emerald"
-  | "orange"
-  | "indigo"
-  | "slate"
-  | "red";
+  "blue" | "purple" | "emerald" | "orange" | "indigo" | "slate" | "red";
 export type ButtonSize = "sm" | "md" | "lg";
 
 interface Props {

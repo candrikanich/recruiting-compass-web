@@ -26,7 +26,9 @@ async function withRetry<T>(
     } catch (error) {
       lastError = error;
       const msg = error instanceof Error ? error.message : String(error);
-      console.warn(`  ⚠️  ${label} attempt ${attempt}/${attempts} failed: ${msg}`);
+      console.warn(
+        `  ⚠️  ${label} attempt ${attempt}/${attempts} failed: ${msg}`,
+      );
       if (attempt < attempts) {
         await new Promise((r) => setTimeout(r, attempt * 1000));
       }

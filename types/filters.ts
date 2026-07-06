@@ -4,12 +4,7 @@
  */
 
 export type FilterType =
-  | "text"
-  | "select"
-  | "multiselect"
-  | "daterange"
-  | "boolean"
-  | "range";
+  "text" | "select" | "multiselect" | "daterange" | "boolean" | "range";
 
 export type FilterValue =
   | string

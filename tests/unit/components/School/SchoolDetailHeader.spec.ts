@@ -241,7 +241,7 @@ describe("SchoolDetailHeader", () => {
       const wrapper = mount(SchoolDetailHeader, { props: defaultProps });
       const html = wrapper.html();
       // UIcon renders with aria-hidden when set on element
-      expect(html).toContain("aria-hidden=\"true\"");
+      expect(html).toContain('aria-hidden="true"');
       expect(html).toContain("i-heroicons-star");
     });
   });

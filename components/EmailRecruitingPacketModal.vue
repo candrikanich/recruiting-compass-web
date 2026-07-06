@@ -16,7 +16,10 @@
           <div
             class="sticky top-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between"
           >
-            <h2 id="email-packet-title" class="text-xl font-bold text-slate-900">
+            <h2
+              id="email-packet-title"
+              class="text-xl font-bold text-slate-900"
+            >
               Email Recruiting Packet
             </h2>
             <button

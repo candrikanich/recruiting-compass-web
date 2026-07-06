@@ -73,8 +73,7 @@ export const useTasks = (): {
         queryParams.append("gradeLevel", params.gradeLevel.toString());
       if (params?.category) queryParams.append("category", params.category);
       if (params?.division) queryParams.append("division", params.division);
-      if (params?.athleteId)
-        queryParams.append("athleteId", params.athleteId);
+      if (params?.athleteId) queryParams.append("athleteId", params.athleteId);
 
       const response = await $fetchAuth("/api/tasks", {
         query: Object.fromEntries(queryParams),

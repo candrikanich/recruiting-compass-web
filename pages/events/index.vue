@@ -13,7 +13,7 @@
           data-testid="add-event-button"
           class="px-4 py-2 text-sm font-medium text-white bg-linear-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition flex items-center gap-2 shadow-xs"
         >
-          <UIcon name="i-heroicons-plus" class="w-4 h-4"  />
+          <UIcon name="i-heroicons-plus" class="w-4 h-4" />
           Add Event
         </NuxtLink>
       </template>
@@ -34,9 +34,10 @@
               >Search</label
             >
             <div class="relative">
-              <UIcon name="i-heroicons-magnifying-glass"
+              <UIcon
+                name="i-heroicons-magnifying-glass"
                 class="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"
-               />
+              />
               <input
                 v-model="searchQuery"
                 type="text"
@@ -125,7 +126,10 @@
         v-else-if="events.length === 0"
         class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
       >
-        <UIcon name="i-heroicons-calendar" class="w-12 h-12 text-slate-400 mx-auto mb-4"  />
+        <UIcon
+          name="i-heroicons-calendar"
+          class="w-12 h-12 text-slate-400 mx-auto mb-4"
+        />
         <p class="text-slate-600 mb-2">No events yet</p>
         <p class="text-sm text-slate-500">
           Create your first event to start tracking camps and showcases
@@ -144,7 +148,7 @@
                 @click="previousMonth"
                 class="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition"
               >
-                <UIcon name="i-heroicons-chevron-left" class="w-5 h-5"  />
+                <UIcon name="i-heroicons-chevron-left" class="w-5 h-5" />
               </button>
               <span
                 class="px-4 py-1 font-semibold text-slate-900 min-w-[160px] text-center"
@@ -155,7 +159,7 @@
                 @click="nextMonth"
                 class="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition"
               >
-                <UIcon name="i-heroicons-chevron-right" class="w-5 h-5"  />
+                <UIcon name="i-heroicons-chevron-right" class="w-5 h-5" />
               </button>
             </div>
           </div>
@@ -240,14 +244,17 @@
                   @click="deleteEvent(event.id)"
                   class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
                 >
-                  <UIcon name="i-heroicons-trash" class="w-5 h-5"  />
+                  <UIcon name="i-heroicons-trash" class="w-5 h-5" />
                 </button>
               </div>
 
               <!-- Event Details Grid -->
               <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div v-if="event.start_time" class="flex items-center gap-2">
-                  <UIcon name="i-heroicons-clock" class="w-4 h-4 text-slate-400"  />
+                  <UIcon
+                    name="i-heroicons-clock"
+                    class="w-4 h-4 text-slate-400"
+                  />
                   <div>
                     <p class="text-xs text-slate-500">Start Time</p>
                     <p class="font-medium text-slate-900">
@@ -256,7 +263,10 @@
                   </div>
                 </div>
                 <div v-if="event.cost" class="flex items-center gap-2">
-                  <UIcon name="i-heroicons-currency-dollar" class="w-4 h-4 text-slate-400"  />
+                  <UIcon
+                    name="i-heroicons-currency-dollar"
+                    class="w-4 h-4 text-slate-400"
+                  />
                   <div>
                     <p class="text-xs text-slate-500">Cost</p>
                     <p class="font-medium text-slate-900">
@@ -268,7 +278,10 @@
                   v-if="event.address || event.city"
                   class="flex items-center gap-2"
                 >
-                  <UIcon name="i-heroicons-map-pin" class="w-4 h-4 text-slate-400"  />
+                  <UIcon
+                    name="i-heroicons-map-pin"
+                    class="w-4 h-4 text-slate-400"
+                  />
                   <div>
                     <p class="text-xs text-slate-500">Location</p>
                     <p class="font-medium text-slate-900">
@@ -297,7 +310,10 @@
           v-if="filteredEvents.length === 0 && events.length > 0"
           class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
         >
-          <UIcon name="i-heroicons-funnel" class="w-12 h-12 text-slate-400 mx-auto mb-4"  />
+          <UIcon
+            name="i-heroicons-funnel"
+            class="w-12 h-12 text-slate-400 mx-auto mb-4"
+          />
           <p class="text-slate-600 mb-2">No events match your filters</p>
           <button
             @click="clearFilters"

@@ -116,8 +116,7 @@ export const useEntitySearch = () => {
         .limit(20);
 
       const schoolFilters = filters.schools as
-        | Record<string, unknown>
-        | undefined;
+        Record<string, unknown> | undefined;
       if (schoolFilters?.division) {
         queryBuilder = queryBuilder.eq(
           "division",
@@ -177,8 +176,7 @@ export const useEntitySearch = () => {
         .limit(20);
 
       const coachFilters = filters.coaches as
-        | Record<string, unknown>
-        | undefined;
+        Record<string, unknown> | undefined;
       if (coachFilters?.sport) {
         queryBuilder = queryBuilder.eq("sport", coachFilters.sport as string);
       }
@@ -242,8 +240,7 @@ export const useEntitySearch = () => {
         .limit(20);
 
       const interactionFilters = filters.interactions as
-        | Record<string, unknown>
-        | undefined;
+        Record<string, unknown> | undefined;
       if (interactionFilters?.sentiment) {
         queryBuilder = queryBuilder.eq(
           "sentiment_label",
@@ -304,8 +301,7 @@ export const useEntitySearch = () => {
         .limit(20);
 
       const metricFilters = filters.metrics as
-        | Record<string, unknown>
-        | undefined;
+        Record<string, unknown> | undefined;
       if (metricFilters?.metricType) {
         queryBuilder = queryBuilder.eq(
           "metric_type",

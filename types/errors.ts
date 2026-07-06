@@ -1,10 +1,5 @@
 export type ErrorType =
-  | "validation"
-  | "notfound"
-  | "forbidden"
-  | "conflict"
-  | "external"
-  | "server";
+  "validation" | "notfound" | "forbidden" | "conflict" | "external" | "server";
 
 export class AppError extends Error {
   constructor(

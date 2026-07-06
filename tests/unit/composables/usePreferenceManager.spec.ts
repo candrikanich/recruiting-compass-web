@@ -72,9 +72,8 @@ vi.mock("~/utils/logger", () => ({
 }));
 
 // Import after mocks are registered
-const { usePreferenceManager } = await import(
-  "~/composables/usePreferenceManager"
-);
+const { usePreferenceManager } =
+  await import("~/composables/usePreferenceManager");
 
 function getInstance(category: string): V2Instance {
   return v2Instances.get(category)!;
@@ -537,9 +536,7 @@ describe("usePreferenceManager", () => {
       };
       const layout = pm.getDashboardLayout();
       expect(layout.statsCards.coaches).toBe(false);
-      expect(layout.leftColumn).toEqual([
-        { id: "quickTasks", visible: true },
-      ]);
+      expect(layout.leftColumn).toEqual([{ id: "quickTasks", visible: true }]);
       expect(layout.rightColumn).toEqual([
         { id: "eventsSummary", visible: false },
       ]);
@@ -663,11 +660,7 @@ describe("usePreferenceManager", () => {
       mockFetchAuth.mockRejectedValue(new Error("history-down"));
 
       await expect(
-        pm.trackPreferenceChange(
-          "player",
-          { a: 1 },
-          { a: 2 },
-        ),
+        pm.trackPreferenceChange("player", { a: 1 }, { a: 2 }),
       ).resolves.toBeUndefined();
     });
   });

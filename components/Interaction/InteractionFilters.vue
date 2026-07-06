@@ -15,10 +15,11 @@
           >Search</label
         >
         <div class="relative">
-          <UIcon name="i-heroicons-magnifying-glass"
+          <UIcon
+            name="i-heroicons-magnifying-glass"
             aria-hidden="true"
             class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-           />
+          />
           <input
             id="filter-search"
             type="text"

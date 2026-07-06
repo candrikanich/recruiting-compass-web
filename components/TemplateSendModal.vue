@@ -18,7 +18,7 @@
           class="transition text-slate-600 hover:text-slate-900"
           aria-label="Close"
         >
-          <UIcon name="i-heroicons-x-mark-solid" class="w-6 h-6"  />
+          <UIcon name="i-heroicons-x-mark-solid" class="w-6 h-6" />
         </button>
       </div>
 

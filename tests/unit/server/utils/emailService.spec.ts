@@ -114,7 +114,11 @@ describe("emailService (Resend SDK)", () => {
     it("maps an SDK error response to a failure result without throwing", async () => {
       sendMock.mockResolvedValueOnce({
         data: null,
-        error: { message: "domain not verified", statusCode: 403, name: "invalid_access" },
+        error: {
+          message: "domain not verified",
+          statusCode: 403,
+          name: "invalid_access",
+        },
       });
 
       const result = await sendEmail({
@@ -133,14 +137,22 @@ describe("emailService (Resend SDK)", () => {
       vi.useFakeTimers();
       sendMock.mockResolvedValueOnce({
         data: null,
-        error: { message: "server error", statusCode: 500, name: "internal_server_error" },
+        error: {
+          message: "server error",
+          statusCode: 500,
+          name: "internal_server_error",
+        },
       });
       sendMock.mockResolvedValueOnce({
         data: { id: "email_retry" },
         error: null,
       });
 
-      const promise = sendEmail({ to: "a@b.com", subject: "Hi", html: "<p>Hi</p>" });
+      const promise = sendEmail({
+        to: "a@b.com",
+        subject: "Hi",
+        html: "<p>Hi</p>",
+      });
       await vi.runAllTimersAsync();
       const result = await promise;
       vi.useRealTimers();
@@ -152,10 +164,18 @@ describe("emailService (Resend SDK)", () => {
     it("does not retry a 4xx SDK error", async () => {
       sendMock.mockResolvedValue({
         data: null,
-        error: { message: "invalid email", statusCode: 422, name: "validation_error" },
+        error: {
+          message: "invalid email",
+          statusCode: 422,
+          name: "validation_error",
+        },
       });
 
-      const result = await sendEmail({ to: "a@b.com", subject: "Hi", html: "<p>Hi</p>" });
+      const result = await sendEmail({
+        to: "a@b.com",
+        subject: "Hi",
+        html: "<p>Hi</p>",
+      });
 
       expect(sendMock).toHaveBeenCalledTimes(1);
       expect(result.success).toBe(false);
@@ -169,13 +189,20 @@ describe("emailService (Resend SDK)", () => {
         error: null,
       });
 
-      const promise = sendEmail({ to: "a@b.com", subject: "Hi", html: "<p>Hi</p>" });
+      const promise = sendEmail({
+        to: "a@b.com",
+        subject: "Hi",
+        html: "<p>Hi</p>",
+      });
       await vi.runAllTimersAsync();
       const result = await promise;
       vi.useRealTimers();
 
       expect(sendMock).toHaveBeenCalledTimes(2);
-      expect(result).toEqual({ success: true, messageId: "email_after_timeout" });
+      expect(result).toEqual({
+        success: true,
+        messageId: "email_after_timeout",
+      });
     });
   });
 
@@ -196,7 +223,8 @@ describe("emailService (Resend SDK)", () => {
   });
 
   describe("recurring-email footer unsubscribe link", () => {
-    const url = "https://app.test/api/email/unsubscribe?email=a%40b.com&token=t";
+    const url =
+      "https://app.test/api/email/unsubscribe?email=a%40b.com&token=t";
 
     it("renders an unsubscribe link in the weekly digest footer when given a url", () => {
       const html = renderWeeklyDigestEmail(

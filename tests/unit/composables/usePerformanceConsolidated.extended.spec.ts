@@ -88,7 +88,9 @@ const buildMockQuery = (): MockQuery => {
   return q;
 };
 
-const createMockMetric = (overrides: Partial<PerformanceMetric> = {}): PerformanceMetric => ({
+const createMockMetric = (
+  overrides: Partial<PerformanceMetric> = {},
+): PerformanceMetric => ({
   id: "metric-123",
   user_id: "user-123",
   event_id: null,
@@ -453,10 +455,7 @@ describe("usePerformanceConsolidated (extended)", () => {
       const now = Date.now();
       const inLastWeek = new Date(now - 3 * 24 * 60 * 60 * 1000).toISOString();
       const inPrevWeek = new Date(now - 10 * 24 * 60 * 60 * 1000).toISOString();
-      const perfs = [
-        makePerf(inPrevWeek, 100),
-        makePerf(inLastWeek, 150),
-      ];
+      const perfs = [makePerf(inPrevWeek, 100), makePerf(inLastWeek, 150)];
       const result = comparePeriods(perfs, "value", 7);
       expect(result.currentPeriod).toBe(150);
       expect(result.previousPeriod).toBe(100);

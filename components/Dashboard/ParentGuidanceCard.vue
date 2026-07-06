@@ -14,7 +14,7 @@
 
     <div v-else class="flex items-start gap-4">
       <div class="shrink-0 mt-1">
-        <UIcon name="i-heroicons-light-bulb" class="w-6 h-6 text-indigo-600"  />
+        <UIcon name="i-heroicons-light-bulb" class="w-6 h-6 text-indigo-600" />
       </div>
       <div class="flex-1">
         <h3 class="font-semibold text-lg text-slate-800 mb-2">
@@ -27,7 +27,7 @@
           class="text-sm text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1"
         >
           Learn more about this phase
-          <UIcon name="i-heroicons-arrow-right" class="w-4 h-4"  />
+          <UIcon name="i-heroicons-arrow-right" class="w-4 h-4" />
         </button>
       </div>
     </div>
@@ -48,7 +48,10 @@
                 @click="showLearnMore = false"
                 class="p-1 hover:bg-slate-100 rounded-lg transition"
               >
-                <UIcon name="i-heroicons-x-mark" class="w-5 h-5 text-slate-500"  />
+                <UIcon
+                  name="i-heroicons-x-mark"
+                  class="w-5 h-5 text-slate-500"
+                />
               </button>
             </div>
 
