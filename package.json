@@ -65,7 +65,7 @@
     "nuxt": "^3.21.6",
     "pinia": "^3.0.4",
     "posthog-js": "^1.392.0",
-    "resend": "^6.12.3",
+    "resend": "^6.17.1",
     "sanitize-html": "^2.17.5",
     "sortablejs": "^1.15.6",
     "vue": "^3.5.39",
