@@ -90,7 +90,7 @@
     "eslint": "^9.39.4",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-vue": "^9.32.0",
-    "happy-dom": "^20.9.0",
+    "happy-dom": "^20.10.6",
     "pa11y-ci": "^4.1.1",
     "postcss": "^8.5.16",
     "prettier": "^3.9.4",
