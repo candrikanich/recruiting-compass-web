@@ -192,3 +192,14 @@ Source: this session (WCAG a11y audit of dashboard / invite / settings / forms)
 - **Parallelize independent audit surfaces, gate every commit the same way**: 3 areas (forms/settings/invite) → 3 Explore agents in one message. Each fix batch passed the same gate: `type-check` + `audit:tokens` + full `vitest` (7665) before commit. Attribute-only a11y edits still need type-check (catches the `watch`/`ref` import) and the token audit (no raw hex slipped in).
 - **Attribute fixes are static-verifiable; logic fixes need the running app**: aria-label / role / id-for changes are confirmed by type-check + tests. The one fix with real logic — `watch(currentStep)` → `focus()` step region — required driving the actual page (Playwright + e2e `storageState`, Node 22, dev port 3003 to match the storageState origin). The decisive probe: blur focus to `<body>` first, *then* click the nav button — focus still landed on the `role=region` div, proving the watcher (not click bubbling) moved it. A click can't focus a div; only `focus()` can.
 - **Skill beats static checklist for a11y**: the existing `accessibility` skill surfaced ~18 real `file:line` fixes across 4 surfaces in one session — what a copy-into-repo markdown ruleset (e.g. A11Y.md) cannot do. Don't install static a11y doc repos; run the skill.
+
+---
+
+## The Goldilocks select height — 2026-07-07
+Source: https://jakearchibald.com/2026/goldilocks-select-height/
+
+- **`calc-size()` unlocks intrinsic sizes in math**: `min()`/`clamp()` reject intrinsic keywords (`fit-content`, `stretch`), so you can't clamp a content-sized box directly; wrap it — `max-block-size: calc-size(stretch, min(size, var(--max-size)))` — where `size` is the intrinsic result. Chrome-only right now; Firefox/Safari have open tickets.
+- **Customizable-select picker sizing is three custom props**: for `appearance: base-select` pickers, drive UX with `--viewport-margin` (safety buffer, e.g. `1em`), `--min-size` (min usable height ~`12em`), `--max-size` (max comfortable ~`30em`) instead of hardcoded heights — self-documents intent and stays tweakable.
+- **`@supports not (...)` gates bleeding-edge CSS**: guard `calc-size()` behind `@supports not (min-block-size: calc-size(fit-content, min(size, 1px)))` and ship a degraded fallback (drop min-size, cap at `fit-content` for short lists) — critical here since our targets aren't all Chrome. Prefer feature queries over UA sniffing.
+- **`position-try-fallbacks` + margin flipping**: anchor-positioned poppers reposition with `position-try-fallbacks: flip-block, flip-inline, flip-block flip-inline`; Chrome/Safari flip the margin with the box, Firefox does not — verify margin behavior per-browser when a popover flips above vs below its trigger.
+- **`max-block-size: stretch` needs a `100%` fallback**: `stretch` prevents viewport overflow on Chrome/Safari but is unsupported in Firefox — supply `max-block-size: 100%` as the fallback declaration before the `stretch` one.
