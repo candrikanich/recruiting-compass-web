@@ -43,7 +43,11 @@
         v-if="coach.twitter_handle"
         class="flex items-center text-sm text-slate-900"
       >
-        <UIcon name="i-heroicons-share" class="w-4 h-4 text-blue-400 mr-2" aria-hidden="true"  />
+        <UIcon
+          name="i-heroicons-share"
+          class="w-4 h-4 text-blue-400 mr-2"
+          aria-hidden="true"
+        />
         <a
           :href="`https://twitter.com/${coach.twitter_handle.replace('@', '')}`"
           target="_blank"
@@ -58,7 +62,11 @@
         v-if="coach.instagram_handle"
         class="flex items-center text-sm text-slate-900"
       >
-        <UIcon name="i-heroicons-photo" class="w-4 h-4 text-pink-600 mr-2" aria-hidden="true"  />
+        <UIcon
+          name="i-heroicons-photo"
+          class="w-4 h-4 text-pink-600 mr-2"
+          aria-hidden="true"
+        />
         <a
           :href="`https://instagram.com/${coach.instagram_handle.replace('@', '')}`"
           target="_blank"

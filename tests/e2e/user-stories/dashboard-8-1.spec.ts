@@ -286,7 +286,6 @@ test.describe("User Story 8.1: Dashboard Overview", () => {
 
     // Test keyboard interaction
     await page.keyboard.press("Enter");
-
   });
 
   test("Dashboard displays correct stat counts", async ({ page }) => {

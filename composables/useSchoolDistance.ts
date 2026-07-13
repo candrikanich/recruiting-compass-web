@@ -57,9 +57,7 @@ export function useSchoolDistance(
  */
 function extractCoordinates(
   location:
-    | { latitude?: number | null; longitude?: number | null }
-    | null
-    | undefined,
+    { latitude?: number | null; longitude?: number | null } | null | undefined,
 ): { latitude: number; longitude: number } | null {
   if (!location?.latitude || !location?.longitude) return null;
   return {

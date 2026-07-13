@@ -15,9 +15,7 @@ export async function isOptedOut(email: string): Promise<boolean> {
   return data != null;
 }
 
-export async function recordOptOut(
-  email: string,
-): Promise<{ error: unknown }> {
+export async function recordOptOut(email: string): Promise<{ error: unknown }> {
   const { error } = await useSupabaseAdmin()
     .from("email_optouts")
     .upsert({ email: normalizeEmail(email) }, { onConflict: "email" });

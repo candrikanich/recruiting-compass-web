@@ -1,11 +1,6 @@
 <script setup lang="ts">
 export type BadgeColor =
-  | "blue"
-  | "purple"
-  | "emerald"
-  | "orange"
-  | "slate"
-  | "red";
+  "blue" | "purple" | "emerald" | "orange" | "slate" | "red";
 export type BadgeVariant = "solid" | "light";
 export type BadgeSize = "sm" | "md";
 

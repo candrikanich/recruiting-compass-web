@@ -48,7 +48,9 @@ test.describe("Email verification page", () => {
     await page.waitForLoadState("domcontentloaded");
     expect(page.url()).toContain("/verify-email");
     // Either a loading, success, error, or pending status panel must render
-    await expect(page.locator('[role="status"], [role="alert"]').first()).toBeVisible();
+    await expect(
+      page.locator('[role="status"], [role="alert"]').first(),
+    ).toBeVisible();
   });
 
   test("resend button is interactive (enabled or in cooldown)", async ({

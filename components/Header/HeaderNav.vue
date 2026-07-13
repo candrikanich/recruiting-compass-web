@@ -37,7 +37,11 @@ const navItems: NavItem[] = [
   { to: "/dashboard", label: "Dashboard", icon: "i-heroicons-home" },
   { to: "/schools", label: "Schools", icon: "i-heroicons-building-library" },
   { to: "/coaches", label: "Coaches", icon: "i-heroicons-user-group" },
-  { to: "/interactions", label: "Interactions", icon: "i-heroicons-chat-bubble-left-right" },
+  {
+    to: "/interactions",
+    label: "Interactions",
+    icon: "i-heroicons-chat-bubble-left-right",
+  },
   { to: "/timeline", label: "Timeline", icon: "i-heroicons-clock" },
 ];
 

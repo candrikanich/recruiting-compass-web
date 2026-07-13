@@ -52,7 +52,9 @@ test.describe("User Story 6.1: Parent Views Recruiting Stage Guidance", () => {
   });
 
   // QUARANTINED 2026-05-22: depends on seeded data.
-  test.skip("Scenario 3: Parent views Common Worries section", async ({ page }) => {
+  test.skip("Scenario 3: Parent views Common Worries section", async ({
+    page,
+  }) => {
     // Verify "Common Worries" section is visible
     const worriesHeader = page.locator("text=Common Worries");
     await expect(worriesHeader).toBeVisible();

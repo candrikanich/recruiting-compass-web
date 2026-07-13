@@ -167,7 +167,7 @@
             <span
               class="inline-flex items-center gap-1 px-2 py-1 text-xs bg-green-100 text-green-800 rounded-sm"
             >
-              <UIcon name="i-heroicons-check-solid" class="w-3 h-3"  />
+              <UIcon name="i-heroicons-check-solid" class="w-3 h-3" />
               <span>Verified</span>
             </span>
           </div>
@@ -235,7 +235,7 @@
             <div v-if="metric.verified">
               <p class="text-xs text-gray-600">Status</p>
               <p class="font-semibold text-green-600 flex items-center gap-1">
-                <UIcon name="i-heroicons-check-solid" class="w-4 h-4"  />
+                <UIcon name="i-heroicons-check-solid" class="w-4 h-4" />
                 <span>Verified</span>
               </p>
             </div>
@@ -264,7 +264,7 @@
                 @click="showEditForm = false"
                 class="text-gray-600 hover:text-gray-900"
               >
-                <UIcon name="i-heroicons-x-mark-solid" class="w-6 h-6"  />
+                <UIcon name="i-heroicons-x-mark-solid" class="w-6 h-6" />
               </button>
             </div>
 

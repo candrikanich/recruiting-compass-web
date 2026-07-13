@@ -5,32 +5,17 @@
 
 // Enums
 export type TaskCategory =
-  | "academic"
-  | "athletic"
-  | "recruiting"
-  | "exposure"
-  | "mindset";
+  "academic" | "athletic" | "recruiting" | "exposure" | "mindset";
 export type TaskStatus =
-  | "not_started"
-  | "in_progress"
-  | "completed"
-  | "skipped";
+  "not_started" | "in_progress" | "completed" | "skipped";
 export type Division = "DI" | "DII" | "DIII" | "NAIA" | "JUCO" | "ALL";
 export type Phase =
-  | "freshman"
-  | "sophomore"
-  | "junior"
-  | "senior"
-  | "committed";
+  "freshman" | "sophomore" | "junior" | "senior" | "committed";
 export type StatusLabel = "on_track" | "slightly_behind" | "at_risk";
 export type FitTier = "reach" | "match" | "safety" | "unlikely";
 export type Urgency = "low" | "medium" | "high";
 export type DeadlineUrgency =
-  | "critical"
-  | "urgent"
-  | "upcoming"
-  | "future"
-  | "none";
+  "critical" | "urgent" | "upcoming" | "future" | "none";
 
 // Core Task Types
 export interface Task {

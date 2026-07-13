@@ -39,11 +39,15 @@ vi.mock("h3", async (importOriginal) => {
   return {
     ...actual,
     readBody: vi.fn(),
-    createError: vi.fn((opts: { statusCode: number; statusMessage: string }) => {
-      const err = new Error(opts.statusMessage) as Error & { statusCode: number };
-      err.statusCode = opts.statusCode;
-      return err;
-    }),
+    createError: vi.fn(
+      (opts: { statusCode: number; statusMessage: string }) => {
+        const err = new Error(opts.statusMessage) as Error & {
+          statusCode: number;
+        };
+        err.statusCode = opts.statusCode;
+        return err;
+      },
+    ),
   };
 });
 
@@ -68,7 +72,10 @@ beforeEach(() => {
 
 describe("POST /api/email/send suppression", () => {
   it("skips the send when the recipient has opted out", async () => {
-    maybeSingleMock.mockResolvedValue({ data: { email: RECIPIENT }, error: null });
+    maybeSingleMock.mockResolvedValue({
+      data: { email: RECIPIENT },
+      error: null,
+    });
     const h3 = await import("h3");
     vi.mocked(h3.readBody).mockResolvedValue(validBody);
 

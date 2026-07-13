@@ -27,7 +27,7 @@
       <!-- Metadata -->
       <div class="space-y-1 mt-3 text-xs text-slate-600">
         <p v-if="schoolName" class="flex items-center gap-1">
-          <UIcon name="i-heroicons-building-library" class="w-4 h-4"  />
+          <UIcon name="i-heroicons-building-library" class="w-4 h-4" />
           <span>{{ schoolName }}</span>
         </p>
         <p v-if="document.version">📌 Version {{ document.version }}</p>
@@ -38,7 +38,7 @@
           "
           class="flex items-center gap-1 text-emerald-600"
         >
-          <UIcon name="i-heroicons-check" class="w-4 h-4"  />
+          <UIcon name="i-heroicons-check" class="w-4 h-4" />
           <span
             >Shared with
             {{ document.shared_with_schools.length }} school(s)</span

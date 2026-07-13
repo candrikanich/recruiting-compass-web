@@ -17,7 +17,11 @@
             to="/"
             class="text-white hover:text-white/80 transition-colors flex items-center gap-2 rounded-sm px-2 py-1 focus:outline-2 focus:outline-offset-2 focus:outline-white"
           >
-            <UIcon name="i-heroicons-arrow-left" class="w-4 h-4" aria-hidden="true"  />
+            <UIcon
+              name="i-heroicons-arrow-left"
+              class="w-4 h-4"
+              aria-hidden="true"
+            />
             Back to Welcome
           </NuxtLink>
         </div>
