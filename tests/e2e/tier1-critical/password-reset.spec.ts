@@ -56,9 +56,7 @@ async function navigateWithRecoverySession(page: Page, email: string) {
   await page.waitForLoadState("domcontentloaded");
   // The form contains an aria-label="Create new password" on both the form
   // wrapper and the icon container, so wait for the actual <input> by id.
-  await page
-    .locator("#password")
-    .waitFor({ state: "visible", timeout: 10000 });
+  await page.locator("#password").waitFor({ state: "visible", timeout: 10000 });
 }
 
 test.describe("Password Reset Flow", () => {
@@ -354,7 +352,9 @@ test.describe("Password Reset Flow", () => {
       }) => {
         const passwordInput = page.locator("#password");
         const confirmInput = page.locator("#confirmPassword");
-        const submitButton = page.locator('[data-testid="reset-password-button"]');
+        const submitButton = page.locator(
+          '[data-testid="reset-password-button"]',
+        );
 
         await passwordInput.fill("ValidPassword123");
         await confirmInput.fill("DifferentPassword123");
@@ -366,7 +366,9 @@ test.describe("Password Reset Flow", () => {
       }) => {
         const passwordInput = page.locator("#password");
         const confirmInput = page.locator("#confirmPassword");
-        const submitButton = page.locator('[data-testid="reset-password-button"]');
+        const submitButton = page.locator(
+          '[data-testid="reset-password-button"]',
+        );
 
         await passwordInput.fill("ValidPassword123");
         await confirmInput.fill("ValidPassword123");
@@ -499,7 +501,9 @@ test.describe("Password Reset Flow", () => {
 
       // Use #password ID to avoid strict mode (getByLabel matches form + div + input)
       const passwordInput = page.locator("#password");
-      const submitButton = page.locator('[data-testid="reset-password-button"]');
+      const submitButton = page.locator(
+        '[data-testid="reset-password-button"]',
+      );
 
       const invalidPasswords = [
         "short", // Too short

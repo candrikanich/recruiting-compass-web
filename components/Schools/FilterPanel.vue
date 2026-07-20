@@ -11,10 +11,11 @@
           Find Schools
         </label>
         <div class="relative group">
-          <UIcon name="i-heroicons-magnifying-glass"
+          <UIcon
+            name="i-heroicons-magnifying-glass"
             class="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors"
             aria-hidden="true"
-           />
+          />
           <input
             id="school-search"
             type="text"
@@ -171,7 +172,11 @@
             :aria-label="`Remove ${value} filter`"
             class="ml-1 text-blue-400 hover:text-blue-600 transition-colors group-hover:opacity-100"
           >
-            <UIcon name="i-heroicons-x-mark" class="w-3.5 h-3.5" aria-hidden="true"  />
+            <UIcon
+              name="i-heroicons-x-mark"
+              class="w-3.5 h-3.5"
+              aria-hidden="true"
+            />
           </button>
         </span>
       </div>

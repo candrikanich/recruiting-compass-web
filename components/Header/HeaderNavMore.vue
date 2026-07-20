@@ -12,10 +12,11 @@
       data-testid="nav-more-button"
     >
       <span>More</span>
-      <UIcon name="i-heroicons-chevron-down"
+      <UIcon
+        name="i-heroicons-chevron-down"
         class="w-4 h-4 transition-transform"
         :class="{ 'rotate-180': isOpen }"
-       />
+      />
     </button>
 
     <!-- Dropdown Menu -->

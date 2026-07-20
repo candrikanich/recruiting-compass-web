@@ -2091,14 +2091,11 @@ describe("Dashboard Page Logic", () => {
 
         const fetchCounts = async (params: {
           schoolsResponse:
-            | SupabaseErrorResponse
-            | SupabaseSuccessResponse<School[]>;
+            SupabaseErrorResponse | SupabaseSuccessResponse<School[]>;
           coachesResponse:
-            | SupabaseErrorResponse
-            | SupabaseSuccessResponse<Coach[]>;
+            SupabaseErrorResponse | SupabaseSuccessResponse<Coach[]>;
           interactionsResponse:
-            | SupabaseErrorResponse
-            | SupabaseSuccessResponse<Interaction[]>;
+            SupabaseErrorResponse | SupabaseSuccessResponse<Interaction[]>;
           offersResponse:
             | SupabaseErrorResponse
             | SupabaseSuccessResponse<ReturnType<typeof createMockOffer>[]>;

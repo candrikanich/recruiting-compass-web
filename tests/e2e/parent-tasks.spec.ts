@@ -163,9 +163,9 @@ test.describe("Parent Task Viewing Workflow", () => {
     // Grade-10 task templates carry a deadline_offset_months; the server
     // computes deadline_date from the athlete's graduation_year, so badges
     // render once tasks load.
-    await expect(
-      page.locator("[data-testid='task-item']").first(),
-    ).toBeVisible({ timeout: 15000 });
+    await expect(page.locator("[data-testid='task-item']").first()).toBeVisible(
+      { timeout: 15000 },
+    );
     const badges = page.locator("[data-testid='deadline-badge']");
     await expect(badges.first()).toBeVisible({ timeout: 15000 });
     expect(await badges.count()).toBeGreaterThan(0);
@@ -193,9 +193,7 @@ test.describe("Parent Task Viewing Workflow", () => {
       // Parent context resolves asynchronously after tasks first render, so the
       // checkbox can mount enabled and then disable once isViewingAsParent lands.
       // Poll for the disabled state rather than reading it once.
-      const checkbox = page
-        .locator("[data-testid*='task-checkbox-']")
-        .first();
+      const checkbox = page.locator("[data-testid*='task-checkbox-']").first();
       await expect(checkbox).toBeVisible({ timeout: 15000 });
       await expect(checkbox).toBeDisabled({ timeout: 15000 });
     });

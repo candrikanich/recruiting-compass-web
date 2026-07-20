@@ -87,4 +87,3 @@ test.describe("Auth Enforcement - Public Routes", () => {
     expect(page.url()).toContain("/");
   });
 });
-

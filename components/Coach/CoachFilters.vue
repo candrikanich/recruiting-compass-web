@@ -9,10 +9,11 @@
         Search coaches
       </label>
       <div class="relative">
-        <UIcon name="i-heroicons-magnifying-glass"
+        <UIcon
+          name="i-heroicons-magnifying-glass"
           class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
           aria-hidden="true"
-         />
+        />
         <input
           id="coaches-search"
           type="text"

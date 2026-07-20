@@ -164,9 +164,7 @@ export const useActivityFeed = () => {
         occurred_at: string | null;
         created_at: string;
         schools:
-          | { id: string; name: string }
-          | { id: string; name: string }[]
-          | null;
+          { id: string; name: string } | { id: string; name: string }[] | null;
       };
       const interactionsResult = await supabase
         .from("interactions")
@@ -179,8 +177,7 @@ export const useActivityFeed = () => {
 
       const interactionsError = interactionsResult.error;
       const interactionsWithSchools = interactionsResult.data as unknown as
-        | InteractionWithSchool[]
-        | null;
+        InteractionWithSchool[] | null;
 
       if (interactionsError) {
         logger.error("Error fetching interactions:", interactionsError);
@@ -221,9 +218,7 @@ export const useActivityFeed = () => {
         notes: string | null;
         changed_at: string;
         schools:
-          | { id: string; name: string }
-          | { id: string; name: string }[]
-          | null;
+          { id: string; name: string } | { id: string; name: string }[] | null;
       };
       const statusResult = await supabase
         .from("school_status_history")
@@ -236,8 +231,7 @@ export const useActivityFeed = () => {
 
       const statusError = statusResult.error;
       const statusChanges = statusResult.data as unknown as
-        | StatusChangeWithSchool[]
-        | null;
+        StatusChangeWithSchool[] | null;
 
       if (statusError) {
         logger.error("Error fetching status changes:", statusError);

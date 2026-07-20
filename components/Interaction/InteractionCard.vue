@@ -93,7 +93,11 @@ const handleView = () => {
             <!-- Meta -->
             <div class="flex items-center gap-4 mt-3 text-xs text-slate-400">
               <span class="flex items-center gap-1">
-                <UIcon name="i-heroicons-calendar" class="w-3.5 h-3.5" aria-hidden="true"  />
+                <UIcon
+                  name="i-heroicons-calendar"
+                  class="w-3.5 h-3.5"
+                  aria-hidden="true"
+                />
                 {{
                   formatInteractionDateTime(
                     interaction.occurred_at || interaction.created_at,
@@ -106,7 +110,11 @@ const handleView = () => {
                 "
                 class="flex items-center gap-1"
               >
-                <UIcon name="i-heroicons-paper-clip" class="w-3.5 h-3.5" aria-hidden="true"  />
+                <UIcon
+                  name="i-heroicons-paper-clip"
+                  class="w-3.5 h-3.5"
+                  aria-hidden="true"
+                />
                 {{ interaction.attachments.length }} file(s)
               </span>
             </div>

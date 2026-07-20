@@ -474,8 +474,7 @@ const isDayAvailable = (date: Date): boolean => {
   const dayIndex = date.getDay();
   const dayName = DAYS[dayIndex === 0 ? 6 : dayIndex - 1];
   const dayData = availability.value[dayName as keyof CoachAvailability] as
-    | DayAvailability
-    | undefined;
+    DayAvailability | undefined;
   return dayData?.available || false;
 };
 

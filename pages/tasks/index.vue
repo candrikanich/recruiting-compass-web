@@ -212,9 +212,9 @@ const handleToggleTask = async (taskId: string, currentStatus: string) => {
 
     // Refetch to update UI
     await fetchTasksWithStatus(
-    currentGradeLevel.value,
-    isViewingAsParent.value ? currentAthleteId.value || undefined : undefined,
-  );
+      currentGradeLevel.value,
+      isViewingAsParent.value ? currentAthleteId.value || undefined : undefined,
+    );
   } catch (err) {
     console.error("Error updating task status:", err);
     alert(

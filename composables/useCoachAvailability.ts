@@ -133,8 +133,7 @@ export const useCoachAvailability = () => {
     const dayIndex = date.getDay();
     const dayName = DAYS[dayIndex === 0 ? 6 : dayIndex - 1]; // Convert to 0-6 Monday-Sunday
     const dayData = availability[dayName as keyof CoachAvailability] as
-      | DayAvailability
-      | undefined;
+      DayAvailability | undefined;
 
     if (!dayData || !dayData.available) {
       return false;
@@ -181,8 +180,7 @@ export const useCoachAvailability = () => {
       const dayIndex = currentDate.getDay();
       const dayName = DAYS[dayIndex === 0 ? 6 : dayIndex - 1];
       const dayData = availability[dayName as keyof CoachAvailability] as
-        | DayAvailability
-        | undefined;
+        DayAvailability | undefined;
 
       if (dayData?.available) {
         return currentDate;
@@ -201,8 +199,7 @@ export const useCoachAvailability = () => {
     const availability = getCoachAvailability(coachId);
     const available = DAYS.filter((day) => {
       const dayData = availability[day as keyof CoachAvailability] as
-        | DayAvailability
-        | undefined;
+        DayAvailability | undefined;
       return dayData?.available;
     });
 

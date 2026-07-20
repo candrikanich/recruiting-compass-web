@@ -36,12 +36,13 @@
             selected === 'parent' ? 'bg-emerald-500' : 'bg-emerald-100',
           ]"
         >
-          <UIcon name="i-heroicons-user-circle"
+          <UIcon
+            name="i-heroicons-user-circle"
             :class="[
               'w-7 h-7',
               selected === 'parent' ? 'text-white' : 'text-emerald-600',
             ]"
-           />
+          />
         </div>
         <div class="flex-1 min-w-0">
           <p
@@ -104,12 +105,13 @@
             selected === 'player' ? 'bg-emerald-500' : 'bg-emerald-100',
           ]"
         >
-          <UIcon name="i-heroicons-trophy"
+          <UIcon
+            name="i-heroicons-trophy"
             :class="[
               'w-7 h-7',
               selected === 'player' ? 'text-white' : 'text-emerald-600',
             ]"
-           />
+          />
         </div>
         <div class="flex-1 min-w-0">
           <p

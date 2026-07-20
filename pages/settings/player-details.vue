@@ -16,7 +16,7 @@
             class="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-full transition"
             title="Back to Settings"
           >
-            <UIcon name="i-heroicons-arrow-left" class="w-5 h-5"  />
+            <UIcon name="i-heroicons-arrow-left" class="w-5 h-5" />
           </NuxtLink>
           <div class="flex items-center gap-2">
             <h1 class="text-sm font-bold text-slate-900 hidden sm:block">
@@ -35,7 +35,7 @@
               v-else
               class="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-emerald-600 font-bold"
             >
-              <UIcon name="i-heroicons-check-circle" class="w-3 h-3"  />
+              <UIcon name="i-heroicons-check-circle" class="w-3 h-3" />
               Saved
             </div>
           </div>
@@ -119,7 +119,10 @@
         v-if="isParentRole && !isLoading"
         class="mb-8 rounded-xl bg-amber-50 border border-amber-200 p-4 flex gap-3 shadow-sm"
       >
-        <UIcon name="i-heroicons-exclamation-circle" class="h-5 w-5 text-amber-500 shrink-0"  />
+        <UIcon
+          name="i-heroicons-exclamation-circle"
+          class="h-5 w-5 text-amber-500 shrink-0"
+        />
         <div>
           <h3 class="text-sm font-bold text-amber-900">Read-only view</h3>
           <p class="text-xs text-amber-700 mt-0.5 font-medium leading-relaxed">
@@ -338,7 +341,7 @@
             <h2
               class="text-base font-bold text-slate-900 mb-6 flex items-center gap-2"
             >
-              <UIcon name="i-heroicons-bolt" class="w-5 h-5 text-blue-600"  />
+              <UIcon name="i-heroicons-bolt" class="w-5 h-5 text-blue-600" />
               Physical Profile
             </h2>
 
@@ -611,7 +614,7 @@
                   class="p-2 text-slate-400 hover:text-red-500 transition rounded-lg hover:bg-red-50"
                   title="Remove"
                 >
-                  <UIcon name="i-heroicons-x-mark" class="w-4 h-4"  />
+                  <UIcon name="i-heroicons-x-mark" class="w-4 h-4" />
                 </button>
               </div>
 
@@ -621,7 +624,7 @@
                 type="button"
                 class="inline-flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-700 py-2"
               >
-                <UIcon name="i-heroicons-plus" class="w-4 h-4"  />
+                <UIcon name="i-heroicons-plus" class="w-4 h-4" />
                 Add Video Link
               </button>
               <p
@@ -646,7 +649,10 @@
             <h2
               class="text-base font-bold text-slate-900 mb-6 flex items-center gap-2"
             >
-              <UIcon name="i-heroicons-academic-cap" class="w-5 h-5 text-blue-600"  />
+              <UIcon
+                name="i-heroicons-academic-cap"
+                class="w-5 h-5 text-blue-600"
+              />
               Academic Standing
             </h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -718,7 +724,7 @@
                     class="text-blue-400 hover:text-blue-600 transition"
                     :aria-label="`Remove ${course}`"
                   >
-                    <UIcon name="i-heroicons-x-mark" class="w-3.5 h-3.5"  />
+                    <UIcon name="i-heroicons-x-mark" class="w-3.5 h-3.5" />
                   </button>
                 </div>
               </div>
@@ -844,9 +850,10 @@
                     @change="triggerSave"
                     class="peer h-6 w-6 cursor-pointer appearance-none rounded-lg border border-slate-300 bg-white checked:bg-blue-600 checked:border-blue-600 transition-all shadow-sm"
                   />
-                  <UIcon name="i-heroicons-check"
+                  <UIcon
+                    name="i-heroicons-check"
                     class="absolute h-4 w-4 text-white opacity-0 peer-checked:opacity-100 left-1 top-1 pointer-events-none stroke-[3]"
-                   />
+                  />
                 </div>
                 <span
                   class="text-sm font-bold text-slate-600 group-hover:text-slate-900 transition"
@@ -861,9 +868,10 @@
                     @change="triggerSave"
                     class="peer h-6 w-6 cursor-pointer appearance-none rounded-lg border border-slate-300 bg-white checked:bg-blue-600 checked:border-blue-600 transition-all shadow-sm"
                   />
-                  <UIcon name="i-heroicons-check"
+                  <UIcon
+                    name="i-heroicons-check"
                     class="absolute h-4 w-4 text-white opacity-0 peer-checked:opacity-100 left-1 top-1 pointer-events-none stroke-[3]"
-                   />
+                  />
                 </div>
                 <span
                   class="text-sm font-bold text-slate-600 group-hover:text-slate-900 transition"
@@ -909,7 +917,7 @@
             <h2
               class="text-base font-bold text-slate-900 mb-6 flex items-center gap-2"
             >
-              <UIcon name="i-heroicons-clock" class="w-5 h-5 text-blue-600"  />
+              <UIcon name="i-heroicons-clock" class="w-5 h-5 text-blue-600" />
               High School Career
             </h2>
             <div class="space-y-6">
@@ -1043,7 +1051,11 @@ const currentTab = ref("basics");
 const tabs = [
   { id: "basics", name: "Basics", icon: "i-heroicons-identification" },
   { id: "athletics", name: "Athletics", icon: "i-heroicons-bolt" },
-  { id: "academics", name: "Academics & Social", icon: "i-heroicons-academic-cap" },
+  {
+    id: "academics",
+    name: "Academics & Social",
+    icon: "i-heroicons-academic-cap",
+  },
   { id: "history", name: "History", icon: "i-heroicons-clock" },
   { id: "public-profile", name: "Public Profile", icon: "i-heroicons-share" },
 ];

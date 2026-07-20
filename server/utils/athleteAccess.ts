@@ -44,11 +44,15 @@ export async function resolveTargetAthleteId(
       .map((m) => m.family_unit_id),
   );
   const shareUnit = (memberships ?? []).some(
-    (m) => m.user_id === requestedAthleteId && callerUnits.has(m.family_unit_id),
+    (m) =>
+      m.user_id === requestedAthleteId && callerUnits.has(m.family_unit_id),
   );
 
   if (!shareUnit) {
-    logger.warn("Cross-athlete access denied", { callerId, requestedAthleteId });
+    logger.warn("Cross-athlete access denied", {
+      callerId,
+      requestedAthleteId,
+    });
     throw createError({
       statusCode: 403,
       statusMessage: "Not authorized to view this athlete",
