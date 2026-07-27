@@ -453,7 +453,6 @@ const handleSignup = async () => {
         validated.fullName as string,
         "parent",
       );
-      console.log("Auth signup returned:", authData);
 
       if (!authData?.data?.user?.id) {
         throw new Error("No user returned from signup");
