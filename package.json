@@ -62,14 +62,14 @@
     "jspdf-autotable": "^5.0.8",
     "jszip": "^3.10.1",
     "leaflet": "^1.9.4",
-    "nuxt": "^3.21.6",
+    "nuxt": "^3.21.10",
     "pinia": "^3.0.4",
     "posthog-js": "^1.392.0",
     "resend": "^6.12.3",
-    "sanitize-html": "^2.17.5",
+    "sanitize-html": "^2.17.6",
     "sortablejs": "^1.15.6",
-    "vue": "^3.5.39",
-    "vue-chartjs": "^5.3.3",
+    "vue": "^3.5.40",
+    "vue-chartjs": "^5.3.4",
     "zod": "^4.4.3"
   },
   "devDependencies": {
