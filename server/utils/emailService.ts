@@ -43,7 +43,10 @@ class ResendSendError extends Error {
 function isRetryable(err: unknown): boolean {
   if (err instanceof EmailTimeoutError) return true;
   if (err instanceof ResendSendError) {
-    return err.statusCode != null && (err.statusCode >= 500 || err.statusCode === 429);
+    return (
+      err.statusCode != null &&
+      (err.statusCode >= 500 || err.statusCode === 429)
+    );
   }
   // Thrown network/transport errors (no structured status) are transient.
   return err instanceof Error;
@@ -97,7 +100,11 @@ async function sendViaResend(
       async () => {
         const { data, error } = await withTimeout(
           getResend().emails.send(
-            { from: fromAddress(), ...payload, ...(headers ? { headers } : {}) },
+            {
+              from: fromAddress(),
+              ...payload,
+              ...(headers ? { headers } : {}),
+            },
             idempotencyKey ? { idempotencyKey } : undefined,
           ),
           SEND_TIMEOUT_MS,

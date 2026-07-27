@@ -33,7 +33,7 @@ describe("InteractionCard", () => {
       props: defaultProps,
       global: {
         components: {
-          LoggedByBadge
+          LoggedByBadge,
         },
       },
     });
@@ -54,7 +54,7 @@ describe("InteractionCard", () => {
       props: defaultProps,
       global: {
         components: {
-          LoggedByBadge
+          LoggedByBadge,
         },
       },
     });
@@ -77,7 +77,7 @@ describe("InteractionCard", () => {
       },
       global: {
         components: {
-          LoggedByBadge
+          LoggedByBadge,
         },
       },
     });
@@ -276,7 +276,7 @@ describe("InteractionCard", () => {
       props: defaultProps,
       global: {
         components: {
-          LoggedByBadge
+          LoggedByBadge,
         },
       },
     });
@@ -298,7 +298,7 @@ describe("InteractionCard", () => {
       },
       global: {
         components: {
-          LoggedByBadge
+          LoggedByBadge,
         },
       },
     });
@@ -311,7 +311,7 @@ describe("InteractionCard", () => {
       props: defaultProps,
       global: {
         components: {
-          LoggedByBadge
+          LoggedByBadge,
         },
       },
     });
@@ -386,7 +386,7 @@ describe("InteractionCard", () => {
       props: defaultProps,
       global: {
         components: {
-          LoggedByBadge
+          LoggedByBadge,
         },
       },
     });
@@ -597,7 +597,7 @@ describe("InteractionCard", () => {
         props: defaultProps,
         global: {
           components: {
-            LoggedByBadge
+            LoggedByBadge,
           },
         },
       });

@@ -6,7 +6,7 @@
         <div
           class="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center"
         >
-          <UIcon name="i-heroicons-check" class="w-4 h-4 text-emerald-600"  />
+          <UIcon name="i-heroicons-check" class="w-4 h-4 text-emerald-600" />
         </div>
         Pros
       </h3>
@@ -21,7 +21,7 @@
             @click="emit('remove-pro', index)"
             class="text-emerald-400 hover:text-red-500 transition"
           >
-            <UIcon name="i-heroicons-x-mark" class="w-4 h-4"  />
+            <UIcon name="i-heroicons-x-mark" class="w-4 h-4" />
           </button>
         </div>
         <div v-if="!pros.length" class="text-slate-400 text-sm">
@@ -52,7 +52,7 @@
         <div
           class="w-6 h-6 rounded-full bg-red-100 flex items-center justify-center"
         >
-          <UIcon name="i-heroicons-x-mark" class="w-4 h-4 text-red-600"  />
+          <UIcon name="i-heroicons-x-mark" class="w-4 h-4 text-red-600" />
         </div>
         Cons
       </h3>
@@ -67,7 +67,7 @@
             @click="emit('remove-con', index)"
             class="text-red-400 hover:text-red-600 transition"
           >
-            <UIcon name="i-heroicons-x-mark" class="w-4 h-4"  />
+            <UIcon name="i-heroicons-x-mark" class="w-4 h-4" />
           </button>
         </div>
         <div v-if="!cons.length" class="text-slate-400 text-sm">

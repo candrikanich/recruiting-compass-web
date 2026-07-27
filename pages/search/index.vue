@@ -51,11 +51,7 @@
           :is-searching="isSearching"
           @update:search-type="
             searchType = $event as
-              | 'all'
-              | 'schools'
-              | 'coaches'
-              | 'interactions'
-              | 'metrics'
+              'all' | 'schools' | 'coaches' | 'interactions' | 'metrics'
           "
           @search="handleSearch"
           @suggestions="handleSuggestions"

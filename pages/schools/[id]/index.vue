@@ -9,7 +9,11 @@
           to="/schools"
           class="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-sm"
         >
-          <UIcon name="i-heroicons-arrow-left" class="w-4 h-4" aria-hidden="true"  />
+          <UIcon
+            name="i-heroicons-arrow-left"
+            class="w-4 h-4"
+            aria-hidden="true"
+          />
           Back to Schools
         </NuxtLink>
       </div>

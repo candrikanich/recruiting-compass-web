@@ -11,11 +11,16 @@
     <div class="flex items-start justify-between mb-4">
       <div class="flex-1">
         <div class="flex items-center gap-2 mb-2">
-          <UIcon name="i-heroicons-share"
+          <UIcon
+            name="i-heroicons-share"
             v-if="post.platform === 'twitter'"
             class="w-6 h-6 text-blue-600"
-           />
-          <UIcon name="i-heroicons-photo" v-else class="w-6 h-6 text-purple-600"  />
+          />
+          <UIcon
+            name="i-heroicons-photo"
+            v-else
+            class="w-6 h-6 text-purple-600"
+          />
           <div>
             <p class="font-semibold text-slate-900">{{ post.author_name }}</p>
             <p class="text-sm text-slate-600">@{{ post.author_handle }}</p>
