@@ -46,8 +46,23 @@ export default defineEventHandler(async (event) => {
       });
     }
 
+    // Family invites are strictly email-bound: the authenticated user must
+    // match the invited email exactly, otherwise a forwarded link could join
+    // a stranger to the family and expose a minor's data.
     const emailMismatch =
       user.email?.toLowerCase() !== invitation.invited_email.toLowerCase();
+
+    if (emailMismatch) {
+      logger.warn("Invite acceptance blocked: email mismatch", {
+        invitationId: invitation.id,
+        userId: user.id,
+      });
+      throw createError({
+        statusCode: 403,
+        statusMessage:
+          "This invite was sent to a different email address. Please sign in with the account that received the invite.",
+      });
+    }
 
     // Check if already a member (idempotent)
     const { data: existing } = await supabase
@@ -80,15 +95,56 @@ export default defineEventHandler(async (event) => {
       .update({ status: "accepted", accepted_at: new Date().toISOString() })
       .eq("id", invitation.id);
 
+    // Athlete PII (name, grad year, sport, position) is only released here —
+    // after the authenticated caller has proven they are the invitee.
+    let prefill:
+      | {
+          firstName: string;
+          lastName: string;
+          graduationYear?: number;
+          sport?: string;
+          position?: string;
+        }
+      | undefined;
+
+    if (invitation.role === "player") {
+      const { data: familyUnit } = await supabase
+        .from("family_units")
+        .select("pending_player_details")
+        .eq("id", invitation.family_unit_id)
+        .single();
+
+      const pendingDetails = (
+        familyUnit as { pending_player_details?: Record<string, unknown> }
+      )?.pending_player_details;
+      if (pendingDetails?.playerName) {
+        const parts = (pendingDetails.playerName as string)
+          .trim()
+          .split(/\s+/);
+        prefill = {
+          firstName: parts[0] ?? "",
+          lastName: parts.slice(1).join(" "),
+          ...(pendingDetails.graduationYear
+            ? { graduationYear: pendingDetails.graduationYear as number }
+            : {}),
+          ...(pendingDetails.sport
+            ? { sport: pendingDetails.sport as string }
+            : {}),
+          ...(pendingDetails.position
+            ? { position: pendingDetails.position as string }
+            : {}),
+        };
+      }
+    }
+
     logger.info("Invitation accepted", {
       invitationId: invitation.id,
       userId: user.id,
-      emailMismatch,
     });
     return {
       success: true,
       familyUnitId: invitation.family_unit_id,
-      emailMismatch,
+      ...(prefill ? { prefill } : {}),
     };
   } catch (err) {
     if (err instanceof Error && "statusCode" in err) throw err;

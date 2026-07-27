@@ -22,13 +22,20 @@ interface InviteDetails {
   invitationId: string;
   role: "player" | "parent";
   familyName: string;
-  prefill?: {
-    firstName: string;
-    lastName: string;
-    graduationYear?: number;
-    sport?: string;
-    position?: string;
-  };
+}
+
+interface AcceptPrefill {
+  firstName: string;
+  lastName: string;
+  graduationYear?: number;
+  sport?: string;
+  position?: string;
+}
+
+interface AcceptResponse {
+  success: boolean;
+  familyUnitId?: string;
+  prefill?: AcceptPrefill;
 }
 
 const invite = ref<InviteDetails | null>(null);
@@ -94,10 +101,14 @@ async function accept() {
     $posthog?.capture("family_invite_accepted");
     await navigateTo("/dashboard");
   } catch (err: unknown) {
+    // Prefer the server's friendly statusMessage (e.g. email-mismatch
+    // rejection) over the generic ofetch error message when present.
+    const e = err as { statusMessage?: string };
     loginError.value =
-      err instanceof Error
+      e?.statusMessage ??
+      (err instanceof Error
         ? err.message
-        : "Login failed. Please check your credentials.";
+        : "Login failed. Please check your credentials.");
   } finally {
     loading.value = false;
   }
@@ -158,9 +169,12 @@ async function signupAndConnect() {
     // Initialize the user store so role is available on the next page
     await userStore.initializeUser();
 
-    await $fetchAuth(`/api/family/invite/${token.value}/accept`, {
-      method: "POST",
-    });
+    // Athlete PII (grad year, sport, position) is only released by the accept
+    // endpoint, after this account has proven it's the invited email.
+    const acceptResult = await $fetchAuth<AcceptResponse>(
+      `/api/family/invite/${token.value}/accept`,
+      { method: "POST" },
+    );
     await activeFamilyCtx?.refetchFamilies();
     showToast("You're connected!", "success");
     const { $posthog: $posthogSignup } = useNuxtApp();
@@ -170,11 +184,11 @@ async function signupAndConnect() {
       await navigateTo("/dashboard");
     } else {
       const query: Record<string, string> = {};
-      if (invite.value.prefill?.graduationYear)
-        query.graduationYear = String(invite.value.prefill.graduationYear);
-      if (invite.value.prefill?.sport) query.sport = invite.value.prefill.sport;
-      if (invite.value.prefill?.position)
-        query.position = invite.value.prefill.position;
+      const prefill = acceptResult?.prefill;
+      if (prefill?.graduationYear)
+        query.graduationYear = String(prefill.graduationYear);
+      if (prefill?.sport) query.sport = prefill.sport;
+      if (prefill?.position) query.position = prefill.position;
       await navigateTo(
         Object.keys(query).length
           ? { path: "/onboarding", query }
@@ -182,8 +196,10 @@ async function signupAndConnect() {
       );
     }
   } catch (err: unknown) {
+    const e = err as { statusMessage?: string };
     signupError.value =
-      err instanceof Error ? err.message : "Could not create account";
+      e?.statusMessage ??
+      (err instanceof Error ? err.message : "Could not create account");
   } finally {
     loading.value = false;
   }
@@ -259,6 +275,14 @@ async function decline() {
       <div v-if="userStore.isAuthenticated">
         <p class="text-sm text-gray-500 mb-4">
           Connecting as {{ userStore.user?.email }}
+        </p>
+        <p
+          v-if="loginError"
+          data-testid="accept-error"
+          class="text-sm text-red-600 mb-3"
+          role="alert"
+        >
+          {{ loginError }}
         </p>
         <div class="flex gap-3">
           <DesignSystemButton
@@ -345,7 +369,6 @@ async function decline() {
             :confirm-password="signupConfirmPassword"
             :agree-to-terms="signupAgreeToTerms"
             :loading="loading"
-            :prefill="invite.prefill"
             @update:email="signupEmail = $event"
             @update:first-name="signupFirstName = $event"
             @update:last-name="signupLastName = $event"

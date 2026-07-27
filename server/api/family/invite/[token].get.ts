@@ -40,45 +40,20 @@ export default defineEventHandler(async (event) => {
       });
     }
 
+    // Unauthenticated preview: family name only. Athlete PII (name, grad year,
+    // sport, position) stays behind acceptance — this endpoint is reachable by
+    // anyone with the link (e.g. a forwarded invite), not just the invitee.
     const { data: familyUnit } = await supabase
       .from("family_units")
-      .select("family_name, pending_player_details")
+      .select("family_name")
       .eq("id", invitation.family_unit_id)
       .single();
-
-    // Build prefill from parent-entered player details (only for player invitees)
-    let prefill:
-      | {
-          firstName: string;
-          lastName: string;
-          graduationYear?: number;
-          sport?: string;
-          position?: string;
-        }
-      | undefined;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const pendingDetails = (familyUnit as any)?.pending_player_details;
-    if (invitation.role === "player" && pendingDetails?.playerName) {
-      const parts = (pendingDetails.playerName as string).trim().split(/\s+/);
-      prefill = {
-        firstName: parts[0] ?? "",
-        lastName: parts.slice(1).join(" "),
-        ...(pendingDetails.graduationYear
-          ? { graduationYear: pendingDetails.graduationYear }
-          : {}),
-        ...(pendingDetails.sport ? { sport: pendingDetails.sport } : {}),
-        ...(pendingDetails.position
-          ? { position: pendingDetails.position }
-          : {}),
-      };
-    }
 
     logger.info("Invitation token lookup", { invitationId: invitation.id });
     return {
       invitationId: invitation.id,
       role: invitation.role,
       familyName: familyUnit?.family_name ?? "My Family",
-      ...(prefill ? { prefill } : {}),
     };
   } catch (err) {
     if (err instanceof Error && "statusCode" in err) throw err;

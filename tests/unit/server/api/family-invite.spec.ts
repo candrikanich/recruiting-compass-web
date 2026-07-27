@@ -17,9 +17,13 @@ const state = {
   existingUser: null as object | null,
   existingMember: null as object | null,
   inviterProfile: { full_name: "Alice Smith" },
-  family: { family_name: "Smith Family" },
+  family: { family_name: "Smith Family" } as {
+    family_name: string;
+    pending_player_details?: Record<string, unknown> | null;
+  },
   insertedInvitation: { id: "invite-abc" } as object | null,
   insertError: null as object | null,
+  familyMemberInsertSpy: vi.fn(() => Promise.resolve({ error: null })),
   // For token lookup
   invitation: null as Record<string, unknown> | null,
   // Overridable request body
@@ -105,7 +109,7 @@ vi.mock("~/server/utils/supabase", () => ({
         };
         return {
           select: () => chain,
-          insert: () => Promise.resolve({ error: null }),
+          insert: state.familyMemberInsertSpy,
         };
       }
       if (table === "users") {
@@ -327,6 +331,8 @@ describe("POST /api/family/invite/[token]/accept", () => {
       status: "pending",
       expires_at: futureDate,
     };
+    state.family = { family_name: "Smith Family", pending_player_details: null };
+    state.familyMemberInsertSpy = vi.fn(() => Promise.resolve({ error: null }));
   });
 
   it("creates family_member record and marks invitation accepted", async () => {
@@ -336,8 +342,9 @@ describe("POST /api/family/invite/[token]/accept", () => {
     expect(result).toMatchObject({
       success: true,
       familyUnitId: "family-123",
-      emailMismatch: false,
     });
+    expect(result).not.toHaveProperty("emailMismatch");
+    expect(state.familyMemberInsertSpy).toHaveBeenCalledTimes(1);
   });
 
   it("is idempotent when already a member", async () => {
@@ -346,5 +353,62 @@ describe("POST /api/family/invite/[token]/accept", () => {
       await import("~/server/api/family/invite/[token]/accept.post");
     const result = await handler({} as Parameters<typeof handler>[0]);
     expect(result).toMatchObject({ success: true });
+  });
+
+  it("rejects with 403 when authenticated email does not match invited email", async () => {
+    state.userEmail = "someone-else@example.com";
+    const { default: handler } =
+      await import("~/server/api/family/invite/[token]/accept.post");
+    await expect(
+      handler({} as Parameters<typeof handler>[0]),
+    ).rejects.toMatchObject({ statusCode: 403 });
+    // Family membership must be unchanged on a rejected mismatch attempt.
+    expect(state.familyMemberInsertSpy).not.toHaveBeenCalled();
+  });
+
+  it("mismatch rejection message offers signing in with the invited account", async () => {
+    state.userEmail = "someone-else@example.com";
+    const { default: handler } =
+      await import("~/server/api/family/invite/[token]/accept.post");
+    await expect(
+      handler({} as Parameters<typeof handler>[0]),
+    ).rejects.toThrow(/sign in|different email/i);
+  });
+
+  it("is case-insensitive when comparing invited and authenticated email", async () => {
+    state.userEmail = "INVITED@EXAMPLE.COM";
+    const { default: handler } =
+      await import("~/server/api/family/invite/[token]/accept.post");
+    const result = await handler({} as Parameters<typeof handler>[0]);
+    expect(result).toMatchObject({ success: true });
+  });
+
+  it("returns prefill for a player-role invite on successful acceptance", async () => {
+    state.invitation = {
+      ...state.invitation!,
+      role: "player",
+    };
+    state.family = {
+      family_name: "Smith Family",
+      pending_player_details: {
+        playerName: "Alex Johnson",
+        graduationYear: 2027,
+        sport: "Soccer",
+        position: "Midfielder",
+      },
+    };
+    const { default: handler } =
+      await import("~/server/api/family/invite/[token]/accept.post");
+    const result = await handler({} as Parameters<typeof handler>[0]);
+    expect(result).toMatchObject({
+      success: true,
+      prefill: {
+        firstName: "Alex",
+        lastName: "Johnson",
+        graduationYear: 2027,
+        sport: "Soccer",
+        position: "Midfielder",
+      },
+    });
   });
 });

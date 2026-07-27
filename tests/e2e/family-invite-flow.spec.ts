@@ -26,6 +26,9 @@ const DECLINE_TOKEN = `e2e-decline-${RUN_ID}`;
 const DECLINE_VIEW_TOKEN = `e2e-decline-view-${RUN_ID}`;
 const LOGIN_CONNECT_TOKEN = `e2e-login-connect-${RUN_ID}`;
 const REVOKE_TOKEN = `e2e-revoke-${RUN_ID}`;
+// Invited email deliberately doesn't match TEST_PARENT — proves a forwarded
+// invite link can't be accepted by the wrong account.
+const MISMATCH_TOKEN = `e2e-mismatch-${RUN_ID}`;
 // Unique per run: a STATIC invited_email let prior runs + parallel workers pile
 // invites onto the same address, so the revoke test's card count oscillated
 // (debris) and "count drops by 1" raced. A run-scoped email seeds exactly one
@@ -45,6 +48,7 @@ let declineInviteId: string | null = null;
 let declineViewInviteId: string | null = null;
 let loginConnectInviteId: string | null = null;
 let revokeInviteId: string | null = null;
+let mismatchInviteId: string | null = null;
 
 async function loginAs(page: Page, email: string, password: string) {
   await loginViaForm(page, email, password, /\/(dashboard|schools|onboarding)/);
@@ -78,7 +82,9 @@ test.describe("Family Invite Flow", () => {
         .insert({
           family_unit_id: familyUnitId,
           invited_by: playerUserId,
-          invited_email: "e2e-invite@example.com",
+          // Matches TEST_PARENT — the authenticated-accept tests below log in
+          // as TEST_PARENT and must pass the email-bound acceptance check.
+          invited_email: TEST_PARENT.email,
           role: "parent",
           token: VALID_TOKEN,
           status: "pending",
@@ -89,6 +95,23 @@ test.describe("Family Invite Flow", () => {
         .select("id")
         .single();
       validInviteId = valid?.id ?? null;
+
+      const { data: mismatch } = await supabase
+        .from("family_invitations")
+        .insert({
+          family_unit_id: familyUnitId,
+          invited_by: playerUserId,
+          invited_email: "e2e-mismatch@example.com",
+          role: "parent",
+          token: MISMATCH_TOKEN,
+          status: "pending",
+          expires_at: new Date(
+            Date.now() + 7 * 24 * 60 * 60 * 1000,
+          ).toISOString(),
+        })
+        .select("id")
+        .single();
+      mismatchInviteId = mismatch?.id ?? null;
 
       const { data: expired } = await supabase
         .from("family_invitations")
@@ -179,11 +202,12 @@ test.describe("Family Invite Flow", () => {
         declineInviteId &&
         declineViewInviteId &&
         loginConnectInviteId &&
-        revokeInviteId
+        revokeInviteId &&
+        mismatchInviteId
       ) {
         seedReady = true;
       } else {
-        seedError = `partial seed: valid=${!!validInviteId} expired=${!!expiredInviteId} decline=${!!declineInviteId} declineView=${!!declineViewInviteId} loginConnect=${!!loginConnectInviteId} revoke=${!!revokeInviteId}`;
+        seedError = `partial seed: valid=${!!validInviteId} expired=${!!expiredInviteId} decline=${!!declineInviteId} declineView=${!!declineViewInviteId} loginConnect=${!!loginConnectInviteId} revoke=${!!revokeInviteId} mismatch=${!!mismatchInviteId}`;
       }
     } catch (e) {
       seedError = e instanceof Error ? e.message : String(e);
@@ -199,6 +223,7 @@ test.describe("Family Invite Flow", () => {
       declineViewInviteId,
       loginConnectInviteId,
       revokeInviteId,
+      mismatchInviteId,
     ].filter(Boolean) as string[];
     if (ids.length === 0) return;
     try {
@@ -299,6 +324,45 @@ test.describe("Family Invite Flow", () => {
       await page.locator('[data-testid="connect-button"]').click();
       await page.waitForURL(/\/dashboard/, { timeout: 15000 });
       await expect(page).toHaveURL(/\/dashboard/);
+    });
+
+    test("authenticated user with a different email is rejected and family membership is unchanged", async ({
+      page,
+    }) => {
+      test.skip(!seedReady, `Invite seed not available: ${seedError}`);
+
+      const supabase = getSupabaseAdmin();
+      const parentUserId = await findUserIdByEmail(supabase, TEST_PARENT.email);
+      const { count: membershipCountBefore } = await supabase
+        .from("family_members")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", parentUserId as string);
+
+      // MISMATCH_TOKEN's invited_email is a different address — a forwarded
+      // link scenario. Logging in as TEST_PARENT must not be able to accept it.
+      await loginAs(page, TEST_PARENT.email, TEST_PARENT.password);
+      await page.goto(`/join?token=${MISMATCH_TOKEN}`);
+      await page.waitForLoadState("domcontentloaded");
+
+      await expect(page.locator('[data-testid="connect-button"]')).toBeVisible({
+        timeout: 10000,
+      });
+      await page.locator('[data-testid="connect-button"]').click();
+
+      await expect(page.locator('[data-testid="accept-error"]')).toBeVisible({
+        timeout: 10000,
+      });
+      await expect(
+        page.locator('[data-testid="accept-error"]'),
+      ).toContainText(/different email|sign in/i);
+      // No navigation away from /join — acceptance was rejected.
+      await expect(page).toHaveURL(/\/join/);
+
+      const { count: membershipCountAfter } = await supabase
+        .from("family_members")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", parentUserId as string);
+      expect(membershipCountAfter).toBe(membershipCountBefore);
     });
   });
 

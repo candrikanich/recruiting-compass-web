@@ -69,7 +69,7 @@ describe("GET /api/family/invite/[token]", () => {
     expect(result).not.toHaveProperty("inviterName");
   });
 
-  it("returns prefill when role is player and pending_player_details has playerName", async () => {
+  it("never returns athlete PII (name, grad year, sport, position) even when pending_player_details is populated", async () => {
     mockState.familyUnit = {
       family_name: "The Smiths",
       pending_player_details: {
@@ -80,32 +80,25 @@ describe("GET /api/family/invite/[token]", () => {
       },
     };
     const result = await handler(mockEvent);
-    expect(result.prefill).toEqual({
-      firstName: "Alex",
-      lastName: "Johnson",
-      graduationYear: 2026,
-      sport: "Soccer",
-      position: "Midfielder",
+    expect(result).toEqual({
+      invitationId: "inv-1",
+      role: "player",
+      familyName: "The Smiths",
     });
+    expect(result).not.toHaveProperty("prefill");
+    expect(JSON.stringify(result)).not.toMatch(
+      /Alex|Johnson|Soccer|Midfielder|2026/,
+    );
   });
 
-  it("returns no prefill when role is parent", async () => {
+  it("returns no prefill field for parent-role invites either", async () => {
     (mockState.invitation as Record<string, unknown>).role = "parent";
     mockState.familyUnit = {
       family_name: "The Smiths",
       pending_player_details: { playerName: "Alex Johnson" },
     };
     const result = await handler(mockEvent);
-    expect(result.prefill).toBeUndefined();
-  });
-
-  it("returns no prefill when pending_player_details is null", async () => {
-    mockState.familyUnit = {
-      family_name: "The Smiths",
-      pending_player_details: null,
-    };
-    const result = await handler(mockEvent);
-    expect(result.prefill).toBeUndefined();
+    expect(result).not.toHaveProperty("prefill");
   });
 
   it("throws 409 when invitation status is accepted", async () => {

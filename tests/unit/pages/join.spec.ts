@@ -356,12 +356,18 @@ describe("/join page", () => {
       expect(global.navigateTo).toHaveBeenCalledWith("/onboarding");
     });
 
-    it("passes grad year, sport, and position as query params when invite has prefill", async () => {
+    it("passes grad year, sport, and position as query params when the accept response has prefill", async () => {
+      // Prefill (athlete PII) is only released by the accept endpoint, after
+      // acceptance — the unauthenticated GET response never carries it.
       mockFetch
         .mockResolvedValueOnce({
           invitationId: "inv-123",
           role: "player",
           familyName: "The Smiths",
+        })
+        .mockResolvedValueOnce({
+          success: true,
+          familyUnitId: "fam-1",
           prefill: {
             firstName: "Owen",
             lastName: "Smith",
@@ -369,8 +375,7 @@ describe("/join page", () => {
             sport: "Soccer",
             position: "Midfielder",
           },
-        })
-        .mockResolvedValueOnce({ success: true, familyUnitId: "fam-1" });
+        });
 
       const wrapper = createWrapper();
       await flushPromises();
