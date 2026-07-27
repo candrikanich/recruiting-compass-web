@@ -34,17 +34,42 @@ CREATE POLICY "Users can delete events for own schools" ON "public"."events"
 --    unnecessary client-facing grants rather than adding an in-function check,
 --    since no client-side caller needs this.
 
+-- EXECUTE was granted to PUBLIC (not just anon/authenticated directly), and
+-- anon/authenticated inherit PUBLIC grants — revoking from the named roles
+-- alone is a no-op while the PUBLIC grant stands. Revoke from PUBLIC too,
+-- then restore explicit grants for the roles that legitimately need it
+-- (postgres, service_role already had their own direct grants, but PUBLIC's
+-- presence made that moot; this makes the intent explicit and revocation-safe).
+REVOKE ALL ON FUNCTION "public"."get_athlete_status"("p_user_id" "uuid") FROM PUBLIC;
 REVOKE ALL ON FUNCTION "public"."get_athlete_status"("p_user_id" "uuid") FROM "anon";
 REVOKE ALL ON FUNCTION "public"."get_athlete_status"("p_user_id" "uuid") FROM "authenticated";
+GRANT EXECUTE ON FUNCTION "public"."get_athlete_status"("p_user_id" "uuid") TO "postgres";
+GRANT EXECUTE ON FUNCTION "public"."get_athlete_status"("p_user_id" "uuid") TO "service_role";
 
 -- 3. family_units_update: no WITH CHECK, so any family member (not just the
 --    creator) could reassign created_by_user_id to themselves and then delete
 --    the whole family via family_units_delete. Add a WITH CHECK that requires
---    created_by_user_id in the new row to match the row's current value. The
---    subquery re-reads the row by primary key; because RLS WITH CHECK runs
---    against the proposed tuple before it lands in the heap, this subquery
---    still observes the pre-update value for that row, so it correctly
---    detects any attempt to change created_by_user_id.
+--    created_by_user_id in the new row to match the row's current value.
+--
+--    A raw subquery re-reading family_units from within its own UPDATE policy
+--    causes Postgres to re-evaluate the SELECT policy on the same table for
+--    that subquery, which itself references the table again — infinite
+--    recursion (42P17), confirmed against a live instance. Route the old-value
+--    lookup through a SECURITY DEFINER function instead: it runs as the
+--    function owner, so it reads the row directly without RLS re-applying.
+
+CREATE OR REPLACE FUNCTION "public"."family_unit_created_by"("p_family_unit_id" "uuid")
+RETURNS "uuid"
+LANGUAGE "sql"
+SECURITY DEFINER
+SET "search_path" = "public"
+STABLE
+AS $$
+  SELECT "created_by_user_id" FROM "public"."family_units" WHERE "id" = "p_family_unit_id";
+$$;
+
+REVOKE ALL ON FUNCTION "public"."family_unit_created_by"("uuid") FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION "public"."family_unit_created_by"("uuid") TO "authenticated";
 
 DROP POLICY IF EXISTS "family_units_update" ON "public"."family_units";
 CREATE POLICY "family_units_update" ON "public"."family_units"
@@ -56,9 +81,7 @@ CREATE POLICY "family_units_update" ON "public"."family_units"
     ("id" IN ( SELECT "family_members"."family_unit_id"
        FROM "public"."family_members"
       WHERE ("family_members"."user_id" = "auth"."uid"())))
-    AND ("created_by_user_id" = ( SELECT "fu"."created_by_user_id"
-           FROM "public"."family_units" "fu"
-          WHERE ("fu"."id" = "family_units"."id")))
+    AND ("created_by_user_id" = "public"."family_unit_created_by"("id"))
   );
 
 -- 4. "Users can insert interactions" (legacy account_links-era policy,
@@ -80,3 +103,16 @@ CREATE POLICY "Users can insert interactions" ON "public"."interactions"
   );
 
 COMMENT ON POLICY "Users can insert interactions" ON "public"."interactions" IS 'Allows authenticated users to create interactions for accessible schools, attributed to themselves (logged_by = auth.uid()).';
+
+-- 5. "Users can insert events for own schools" has the identical school_id
+--    IS NULL escape hatch as fix #1's SELECT/UPDATE/DELETE policies: since
+--    permissive policies OR together, this WITH CHECK passes unconditionally
+--    for any INSERT where school_id is NULL, regardless of user_id or
+--    family_unit_id — letting an authenticated user insert an event row
+--    impersonating another user's ownership. It is fully redundant with
+--    "Users can insert their own events" (user_id = auth.uid()) and "Users
+--    can create events in their families" (family_unit_id membership check),
+--    both of which already cover every legitimate insert path. Drop it
+--    outright rather than duplicate ownership logic a third time.
+
+DROP POLICY IF EXISTS "Users can insert events for own schools" ON "public"."events";

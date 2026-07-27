@@ -14,7 +14,15 @@
  * conditional-data-guard pattern for infra-dependent tests.
  */
 
-import { describe, it, expect, beforeAll, afterAll } from "vitest";
+import { describe, it, expect, beforeAll, afterAll, vi } from "vitest";
+
+// tests/setup.ts globally mocks @supabase/supabase-js (vi.mock in setupFiles)
+// to keep unit/integration specs network-free by default. This file needs
+// the real client — RLS is enforced entirely in Postgres and cannot be
+// exercised against a mocked client — so it opts out for itself only,
+// matching the existing unmock precedent in useAuthFetch.spec.ts.
+vi.unmock("@supabase/supabase-js");
+
 import {
   createClient,
   type SupabaseClient,
@@ -93,6 +101,21 @@ describe.skipIf(!hasLiveSupabase)(
         if (error || !data.user) {
           throw new Error(`createUser(${tag}) failed: ${error?.message}`);
         }
+        // This repo creates public.users rows from application code (see
+        // stores/user.ts createUserProfile) on first login, not via a
+        // database trigger on auth.users — confirmed no trigger exists on
+        // auth.users in this schema. Insert the profile row directly since
+        // these tests never drive the app UI.
+        const { error: profileErr } = await admin.from("users").insert({
+          id: data.user.id,
+          email,
+          role: "player",
+        });
+        if (profileErr) {
+          throw new Error(
+            `seed public.users(${tag}) failed: ${profileErr.message}`,
+          );
+        }
         return { id: data.user.id, email };
       };
 
@@ -100,10 +123,6 @@ describe.skipIf(!hasLiveSupabase)(
       const b = await makeUser("b");
       userAId = a.id;
       userBId = b.id;
-
-      // handle_new_user trigger inserts public.users rows asynchronously off
-      // the auth.users insert within the same transaction — safe to use
-      // immediately since it's SECURITY DEFINER on the same INSERT statement.
 
       userAClient = await signIn(a.email, PASSWORD);
       userBClient = await signIn(b.email, PASSWORD);
