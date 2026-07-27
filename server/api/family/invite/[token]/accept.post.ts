@@ -50,7 +50,8 @@ export default defineEventHandler(async (event) => {
     // match the invited email exactly, otherwise a forwarded link could join
     // a stranger to the family and expose a minor's data.
     const emailMismatch =
-      user.email?.toLowerCase() !== invitation.invited_email.toLowerCase();
+      user.email?.trim().toLowerCase() !==
+      invitation.invited_email.trim().toLowerCase();
 
     if (emailMismatch) {
       logger.warn("Invite acceptance blocked: email mismatch", {
