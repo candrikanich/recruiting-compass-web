@@ -3,8 +3,9 @@
  *
  * `users.current_phase` is the single source of truth for an athlete's phase once
  * they've advanced at least once. It has no DB default (see migration
- * `task_slugs_and_seed`) — `NULL` means "never advanced", in which case callers
- * should fall back to a grade-derived phase computed from `graduation_year`.
+ * `20260727000002_phase_system_repair.sql`) — `NULL` means "never advanced", in
+ * which case callers should fall back to a grade-derived phase computed from
+ * `graduation_year`.
  */
 
 import type { SupabaseClient } from "@supabase/supabase-js";

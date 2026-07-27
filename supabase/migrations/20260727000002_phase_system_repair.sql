@@ -10,10 +10,15 @@
 --
 -- 2. `users.current_phase` — drop the 'freshman' default so NULL can mean "never
 --    explicitly advanced" (server falls back to a grade-derived phase in that
---    case). Existing rows are all still at the untouched 'freshman' default
---    (advancement never fired due to the bug above), so backfilling those to
---    NULL is behavior-neutral for anyone who is genuinely a grade-9 freshman and
---    corrective for anyone else.
+--    case). `current_phase` has one other writer besides this column's default:
+--    composables/useOnboarding.ts sets it from the assessed starting phase at
+--    onboarding completion. Advancement itself never fired (the bug above), so
+--    no row holds a value written by the broken advance path. This backfill
+--    only touches rows still at 'freshman' — untouched-default rows and
+--    onboarded-as-freshman rows alike — to NULL; it never touches onboarding's
+--    sophomore/junior/senior writes, which become the new source of truth
+--    unchanged. Behavior-neutral for a genuine grade-9 freshman, corrective for
+--    anyone whose grade has since advanced past 9.
 
 -- ── 1. task.slug ────────────────────────────────────────────────────────────
 

@@ -8,7 +8,7 @@ import type { Phase, MilestoneProgress } from "~/types/timeline";
 /**
  * Milestone tasks required to advance from one phase to the next.
  *
- * These are stable `task.slug` values (see `supabase/migrations/*_task_slugs.sql`),
+ * These are stable `task.slug` values (see `supabase/migrations/20260727000002_phase_system_repair.sql`),
  * NOT `task.id` UUIDs. `task.id` is a `gen_random_uuid()` and differs per environment/seed
  * run, so milestones can't reference it directly. Callers must resolve slugs to the
  * actual seeded task ids via a `taskIdsBySlug` map (see `resolveMilestoneTaskIds` /
