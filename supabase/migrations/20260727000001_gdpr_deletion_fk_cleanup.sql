@@ -115,10 +115,23 @@ ALTER TABLE "public"."deadline_alert_log"
 
 -- ---------------------------------------------------------------------
 -- CASCADE: account_links.initiator_user_id is NOT NULL, so it cannot take
--- ON DELETE SET NULL. It always equals this row's parent_user_id or
--- player_user_id (both already ON DELETE CASCADE), so matching CASCADE
--- here is a no-op in the common case and removes the last NO ACTION FK
--- that could otherwise block a public.users delete.
+-- ON DELETE SET NULL. In most rows it equals parent_user_id or
+-- player_user_id (both already ON DELETE CASCADE), but not always —
+-- composables/useFamilyInvite.ts's linkParentWithCode sets
+-- initiator_user_id to the player while parent_user_id is the linking
+-- parent and player_user_id is left NULL, so this FK is a real
+-- constraint in that path, not only a no-op mirror of a sibling column.
+-- Deleting the initiator legitimately removes the account_links row.
+--
+-- Caution if account_links ever gains a populated
+-- data_ownership_snapshot.link_id reference (that table is currently
+-- write-only-by-nothing — no code path inserts into it as of this
+-- migration): data_ownership_snapshot.link_id already has its own
+-- ON DELETE CASCADE onto account_links.id, so cascading an account_links
+-- row away via this initiator_user_id FK would cascade-delete its
+-- snapshot too, undermining the SET NULL preservation applied to
+-- data_ownership_snapshot.original_owner_id above. Revisit this FK's
+-- action if that table starts being populated.
 -- ---------------------------------------------------------------------
 
 ALTER TABLE "public"."account_links" DROP CONSTRAINT IF EXISTS "account_links_initiator_user_id_fkey";
