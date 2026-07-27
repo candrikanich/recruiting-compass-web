@@ -20,8 +20,10 @@ export function useDeadlines() {
     loading.value = true;
     error.value = null;
     try {
-      const data = await $fetch<typeof deadlines.value>("/api/deadlines");
-      deadlines.value = data;
+      const response = await $fetch<{ deadlines: typeof deadlines.value }>(
+        "/api/deadlines",
+      );
+      deadlines.value = response.deadlines;
     } catch {
       error.value = "Failed to load deadlines";
     } finally {

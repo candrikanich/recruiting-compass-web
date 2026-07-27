@@ -29,12 +29,29 @@ describe("useDeadlines", () => {
   });
 
   it("fetchDeadlines calls GET /api/deadlines", async () => {
-    const mockFetch = vi.fn().mockResolvedValue([]);
+    const mockFetch = vi.fn().mockResolvedValue({ deadlines: [] });
     vi.stubGlobal("$fetch", mockFetch);
     const { useDeadlines } = await import("~/composables/useDeadlines");
     const { fetchDeadlines } = useDeadlines();
     await fetchDeadlines();
     expect(mockFetch).toHaveBeenCalledWith("/api/deadlines");
+  });
+
+  it("fetchDeadlines unwraps the { deadlines: [...] } envelope the real endpoint returns (server/api/deadlines/index.get.ts) into a plain array", async () => {
+    const item = {
+      id: "dead-1",
+      label: "App deadline",
+      deadline_date: "2026-11-01",
+      category: "application",
+    };
+    const mockFetch = vi.fn().mockResolvedValue({ deadlines: [item] });
+    vi.stubGlobal("$fetch", mockFetch);
+    const { useDeadlines } = await import("~/composables/useDeadlines");
+    const { fetchDeadlines, deadlines } = useDeadlines();
+    await fetchDeadlines();
+
+    expect(Array.isArray(deadlines.value)).toBe(true);
+    expect(deadlines.value).toEqual([item]);
   });
 
   it("fetchDeadlines sets error when $fetch rejects and resets loading to false", async () => {
@@ -57,7 +74,7 @@ describe("useDeadlines", () => {
     const mockFetch = vi
       .fn()
       .mockResolvedValueOnce({ success: true, deadline: newDeadline }) // POST
-      .mockResolvedValueOnce([newDeadline]); // re-fetch GET
+      .mockResolvedValueOnce({ deadlines: [newDeadline] }); // re-fetch GET
     vi.stubGlobal("$fetch", mockFetch);
     const { useDeadlines } = await import("~/composables/useDeadlines");
     const { createDeadline } = useDeadlines();
@@ -96,14 +113,16 @@ describe("useDeadlines", () => {
   it("removeDeadline removes item from local state optimistically", async () => {
     const mockFetch = vi
       .fn()
-      .mockResolvedValueOnce([
-        {
-          id: "dead-1",
-          label: "App deadline",
-          deadline_date: "2026-11-01",
-          category: "application",
-        },
-      ])
+      .mockResolvedValueOnce({
+        deadlines: [
+          {
+            id: "dead-1",
+            label: "App deadline",
+            deadline_date: "2026-11-01",
+            category: "application",
+          },
+        ],
+      })
       .mockResolvedValue(undefined);
     vi.stubGlobal("$fetch", mockFetch);
     const { useDeadlines } = await import("~/composables/useDeadlines");
