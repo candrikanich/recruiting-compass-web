@@ -7,16 +7,16 @@
     <input
       type="checkbox"
       :checked="isCompleted"
-      :disabled="isViewingAsParent.value || isLocked"
+      :disabled="isViewingAsParent || isLocked"
       @change="$emit('toggle-complete', task.id)"
       :class="[
         'mt-1 w-4 h-4 rounded-sm border-slate-300 text-blue-600 shrink-0 transition',
-        isViewingAsParent.value || isLocked
+        isViewingAsParent || isLocked
           ? 'opacity-50 cursor-not-allowed'
           : 'cursor-pointer',
       ]"
       :title="
-        isViewingAsParent.value
+        isViewingAsParent
           ? 'Parents can view tasks but cannot mark them complete'
           : isLocked
             ? 'Complete prerequisites to unlock this task'
@@ -180,13 +180,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, inject } from "vue";
 import { getCategoryColor, formatCategory } from "~/utils/taskHelpers";
 import type { TaskWithStatus } from "~/types/timeline";
 import StatusIndicator from "~/components/Timeline/StatusIndicator.vue";
 import DependencyWarning from "~/components/Timeline/DependencyWarning.vue";
 import DeadlineBadge from "~/components/Timeline/DeadlineBadge.vue";
-import { useParentContext } from "~/composables/useParentContext";
+import { useActiveFamily } from "~/composables/useActiveFamily";
+import { useFamilyContext } from "~/composables/useFamilyContext";
 
 interface Props {
   task: TaskWithStatus;
@@ -212,12 +213,19 @@ defineEmits<{
 }>();
 
 const expanded = ref(false);
-const parentContext = useParentContext();
+// Try the page-provided family context first, falling back to the shared
+// singleton — same precedent as useEvents.ts — so a bare mount (e.g. tests)
+// still resolves rather than throwing on a missing provider.
+const injectedFamily =
+  inject<ReturnType<typeof useActiveFamily>>("activeFamily");
+const activeFamily = injectedFamily || useFamilyContext();
 
 const isCompleted = computed(
   () => props.task.athlete_task?.status === "completed",
 );
-const isViewingAsParent = computed(() => parentContext.isViewingAsParent);
+const isViewingAsParent = computed(
+  () => activeFamily.isViewingAsParent.value,
+);
 const showFailureRisk = computed(
   () => !isCompleted.value && props.phaseProgress >= 75,
 );

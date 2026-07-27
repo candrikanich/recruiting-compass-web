@@ -27,7 +27,7 @@ export const useTasks = (): {
   loading: Ref<boolean>;
   error: Ref<string | null>;
   fetchTasks: (params?: TaskQueryParams) => Promise<Task[]>;
-  fetchAthleteTasks: () => Promise<AthleteTask[]>;
+  fetchAthleteTasks: (athleteId?: string) => Promise<AthleteTask[]>;
   fetchTasksWithStatus: (
     gradeLevel?: number,
     athleteId?: string,
@@ -95,14 +95,23 @@ export const useTasks = (): {
 
   /**
    * Fetch athlete's task statuses
+   *
+   * When a parent is viewing a linked athlete, `athleteId` must be passed
+   * through so the server resolves and authorizes the athlete's own
+   * completion rows — otherwise the endpoint defaults to the caller's own
+   * (empty) rows and every task looks not-started for the parent.
    */
-  const fetchAthleteTasks = async (): Promise<AthleteTask[]> => {
+  const fetchAthleteTasks = async (
+    athleteId?: string,
+  ): Promise<AthleteTask[]> => {
     loading.value = true;
     error.value = null;
 
     try {
       const { $fetchAuth } = useAuthFetch();
-      const response = await $fetchAuth("/api/athlete-tasks");
+      const response = await $fetchAuth("/api/athlete-tasks", {
+        query: athleteId ? { athleteId } : undefined,
+      });
       const typedResponse = response as AthleteTask[];
       athleteTasks.value = typedResponse;
       return typedResponse;
@@ -130,7 +139,7 @@ export const useTasks = (): {
       // Fetch both tasks and athlete tasks in parallel
       const [allTasks, athleteTaskData] = await Promise.all([
         fetchTasks({ gradeLevel, athleteId }),
-        fetchAthleteTasks(),
+        fetchAthleteTasks(athleteId),
       ]);
 
       // Create map for quick athlete task lookup

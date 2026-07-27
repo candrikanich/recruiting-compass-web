@@ -152,7 +152,9 @@ describe("useTasks", () => {
       const { fetchAthleteTasks, athleteTasks } = useTasks();
       const result = await fetchAthleteTasks();
 
-      expect(mockFetchAuth).toHaveBeenCalledWith("/api/athlete-tasks");
+      expect(mockFetchAuth).toHaveBeenCalledWith("/api/athlete-tasks", {
+        query: undefined,
+      });
       expect(result).toEqual([mockAthleteTask]);
       expect(athleteTasks.value).toEqual([mockAthleteTask]);
     });
@@ -174,6 +176,32 @@ describe("useTasks", () => {
 
       await expect(fetchAthleteTasks()).rejects.toThrow("Network error");
       expect(error.value).toBe("Network error");
+    });
+
+    // Bug: composables/useTasks.ts:131-134 + server/api/athlete-tasks/index.get.ts:18-22
+    // (planning/audit-2026-07-27-findings.md). A parent viewing a linked
+    // athlete must pass athleteId through to the endpoint, or the server
+    // silently falls back to the caller's (parent's) own empty rows.
+    it("should pass athleteId as a query param when viewing a linked athlete", async () => {
+      mockFetchAuth.mockResolvedValue([mockAthleteTask]);
+
+      const { fetchAthleteTasks } = useTasks();
+      await fetchAthleteTasks("athlete-999");
+
+      expect(mockFetchAuth).toHaveBeenCalledWith("/api/athlete-tasks", {
+        query: { athleteId: "athlete-999" },
+      });
+    });
+
+    it("should omit the query entirely when no athleteId is given (caller's own tasks)", async () => {
+      mockFetchAuth.mockResolvedValue([mockAthleteTask]);
+
+      const { fetchAthleteTasks } = useTasks();
+      await fetchAthleteTasks();
+
+      expect(mockFetchAuth).toHaveBeenCalledWith("/api/athlete-tasks", {
+        query: undefined,
+      });
     });
   });
 
@@ -238,6 +266,26 @@ describe("useTasks", () => {
       // First call should be to fetchTasks with grade level
       expect(mockFetchAuth).toHaveBeenCalledWith("/api/tasks", {
         query: { gradeLevel: "11" },
+      });
+    });
+
+    // Bug: composables/useTasks.ts:131-134 (planning/audit-2026-07-27-findings.md)
+    // — fetchTasksWithStatus fetched tasks WITH the athleteId param but called
+    // fetchAthleteTasks() with none, so the merged view showed the athlete's
+    // deadlines next to the parent's own (empty) completion rows.
+    it("should forward athleteId to both the tasks fetch and the athlete-tasks fetch", async () => {
+      mockFetchAuth
+        .mockResolvedValueOnce([mockTask])
+        .mockResolvedValueOnce([mockAthleteTask]);
+
+      const { fetchTasksWithStatus } = useTasks();
+      await fetchTasksWithStatus(10, "athlete-999");
+
+      expect(mockFetchAuth).toHaveBeenNthCalledWith(1, "/api/tasks", {
+        query: { gradeLevel: "10", athleteId: "athlete-999" },
+      });
+      expect(mockFetchAuth).toHaveBeenNthCalledWith(2, "/api/athlete-tasks", {
+        query: { athleteId: "athlete-999" },
       });
     });
   });

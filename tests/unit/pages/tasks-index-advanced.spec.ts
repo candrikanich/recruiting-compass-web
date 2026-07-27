@@ -44,15 +44,6 @@ vi.mock("~/composables/useAuth", () => ({
   })),
 }));
 
-// Mock useParentContext at module level
-vi.mock("~/composables/useParentContext", () => ({
-  useParentContext: vi.fn(() => ({
-    linkedAthletes: { value: [] },
-    isViewingAsParent: { value: false },
-    currentAthleteId: { value: null },
-  })),
-}));
-
 import TasksPage from "~/pages/tasks/index.vue";
 
 describe("Tasks Page - Advanced Coverage", () => {

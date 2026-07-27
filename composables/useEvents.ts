@@ -78,6 +78,15 @@ export const useEvents = (): {
   }) => {
     if (!userStore.user) return;
 
+    // Fetch by the same data-owner id createEvent inserts under — a parent
+    // viewing an athlete must see events filed under the athlete's id, not
+    // the parent's own (empty) id, or a parent-created event never reappears.
+    const dataOwnerUserId = activeFamily.getDataOwnerUserId();
+    if (!dataOwnerUserId) {
+      error.value = "Family context is still loading. Please try again.";
+      return;
+    }
+
     loading.value = true;
     error.value = null;
 
@@ -87,7 +96,7 @@ export const useEvents = (): {
         .select(
           "id, user_id, school_id, type, name, location, address, city, state, start_date, end_date, start_time, end_time, checkin_time, description, url, event_source, coaches_present, performance_notes, stats_recorded, cost, registered, attended, created_by, updated_by, created_at, updated_at",
         )
-        .eq("user_id", userStore.user.id);
+        .eq("user_id", dataOwnerUserId);
 
       if (filters?.schoolId) {
         query = query.eq("school_id", filters.schoolId);
@@ -133,6 +142,12 @@ export const useEvents = (): {
     if (!userStore.user) return null;
     if (!id || id.trim() === "" || id === "new") return null;
 
+    const dataOwnerUserId = activeFamily.getDataOwnerUserId();
+    if (!dataOwnerUserId) {
+      error.value = "Family context is still loading. Please try again.";
+      return null;
+    }
+
     loading.value = true;
     error.value = null;
 
@@ -143,7 +158,7 @@ export const useEvents = (): {
           "id, user_id, school_id, type, name, location, address, city, state, start_date, end_date, start_time, end_time, checkin_time, description, url, event_source, coaches_present, performance_notes, stats_recorded, cost, registered, attended, created_by, updated_by, created_at, updated_at",
         )
         .eq("id", id)
-        .eq("user_id", userStore.user.id)
+        .eq("user_id", dataOwnerUserId)
         .single();
 
       if (fetchError) throw fetchError;
@@ -165,6 +180,17 @@ export const useEvents = (): {
   ) => {
     if (!userStore.user) throw new Error("User not authenticated");
 
+    // The data-owner id may not have resolved yet (family context loads
+    // async after mount) — attempting the insert with a null user_id would
+    // otherwise surface as a raw NOT NULL constraint violation from Postgres.
+    const dataOwnerUserId = activeFamily.getDataOwnerUserId();
+    if (!dataOwnerUserId) {
+      const message =
+        "Family context is still loading. Please try again in a moment.";
+      error.value = message;
+      throw new Error(message);
+    }
+
     loading.value = true;
     error.value = null;
 
@@ -177,7 +203,7 @@ export const useEvents = (): {
           .insert([
             {
               ...validated,
-              user_id: activeFamily.getDataOwnerUserId(),
+              user_id: dataOwnerUserId,
             },
           ])
           .select()
@@ -205,6 +231,14 @@ export const useEvents = (): {
   const updateEvent = async (id: string, updates: Partial<Event>) => {
     if (!userStore.user) throw new Error("User not authenticated");
 
+    const dataOwnerUserId = activeFamily.getDataOwnerUserId();
+    if (!dataOwnerUserId) {
+      const message =
+        "Family context is still loading. Please try again in a moment.";
+      error.value = message;
+      throw new Error(message);
+    }
+
     loading.value = true;
     error.value = null;
 
@@ -218,7 +252,7 @@ export const useEvents = (): {
             updated_at: new Date().toISOString(),
           })
           .eq("id", id)
-          .eq("user_id", userStore.user.id)
+          .eq("user_id", dataOwnerUserId)
           .select()
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           .single()) as { data: Event; error: any };
@@ -244,6 +278,14 @@ export const useEvents = (): {
   const deleteEvent = async (id: string) => {
     if (!userStore.user) throw new Error("User not authenticated");
 
+    const dataOwnerUserId = activeFamily.getDataOwnerUserId();
+    if (!dataOwnerUserId) {
+      const message =
+        "Family context is still loading. Please try again in a moment.";
+      error.value = message;
+      throw new Error(message);
+    }
+
     loading.value = true;
     error.value = null;
 
@@ -252,7 +294,7 @@ export const useEvents = (): {
         .from("events")
         .delete()
         .eq("id", id)
-        .eq("user_id", userStore.user.id);
+        .eq("user_id", dataOwnerUserId);
 
       if (deleteError) throw deleteError;
 
