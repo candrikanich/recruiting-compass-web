@@ -344,6 +344,22 @@ export const useCoachStore = defineStore("coaches", () => {
     coaches.value = coaches.value.filter((c) => c.id !== id);
   }
 
+  /**
+   * Reset all store state to its initial values.
+   * Called on logout/account-switch (via the auth lifecycle orchestrator) and
+   * on parent athlete-switch, since fetchAllCoaches/fetchCoachesBySchools have
+   * no per-family scoping of their own — resetting forces a clean refetch
+   * instead of showing coaches carried over from a different family/athlete.
+   */
+  function reset() {
+    coaches.value = [];
+    loading.value = false;
+    error.value = null;
+    isFetched.value = false;
+    lastFetchedWithFilters.value = false;
+    isFetchedBySchools.value = {};
+  }
+
   return {
     coaches,
     loading,
@@ -359,5 +375,6 @@ export const useCoachStore = defineStore("coaches", () => {
     updateCoach,
     deleteCoach,
     removeCoach,
+    reset,
   };
 });

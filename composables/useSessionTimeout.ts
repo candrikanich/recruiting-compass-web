@@ -100,9 +100,14 @@ export const useSessionTimeout = () => {
 
     localStorage.removeItem("session_preferences");
 
-    const { useUserStore } = await import("~/stores/user");
-    const userStore = useUserStore();
-    await userStore.logout();
+    // Route through the shared orchestrator so inactivity timeout behaves
+    // identically to manual logout: Supabase provider sign-out + every
+    // domain store + family context reset. Previously this only cleared
+    // Pinia state (userStore.logout()) and never called
+    // supabase.auth.signOut(), so a reload after "timeout" silently
+    // re-authenticated from the still-valid token in localStorage.
+    const { useAuthLifecycle } = await import("~/composables/useAuthLifecycle");
+    await useAuthLifecycle().logoutEverywhere();
 
     if (typeof window !== "undefined") {
       await navigateTo("/login?reason=timeout");

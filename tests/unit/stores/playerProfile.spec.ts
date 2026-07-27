@@ -60,4 +60,19 @@ describe("usePlayerProfileStore", () => {
     expect(store.error).toBe("Network error");
     expect(store.loading).toBe(false);
   });
+
+  describe("reset", () => {
+    it("clears profile, loading, and error back to initial state", async () => {
+      mockFetchFn.mockResolvedValueOnce(mockProfileData);
+      const store = usePlayerProfileStore();
+      await store.fetchProfile();
+      expect(store.profile).not.toBeNull();
+
+      store.reset();
+
+      expect(store.profile).toBeNull();
+      expect(store.loading).toBe(false);
+      expect(store.error).toBeNull();
+    });
+  });
 });

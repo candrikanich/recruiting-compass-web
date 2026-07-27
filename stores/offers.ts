@@ -23,6 +23,8 @@ export const useOffersStore = defineStore("offers", () => {
   const loading = ref(false);
   const error = ref<string | null>(null);
   const isFetched = ref(false);
+  // Family-keyed fetch guard — see fetchOffers()
+  const fetchedFamilyId = ref<string | null>(null);
   const totalCount = ref(0);
   const currentPage = ref(0);
 
@@ -92,6 +94,7 @@ export const useOffersStore = defineStore("offers", () => {
       }
       currentPage.value = page;
       isFetched.value = true;
+      fetchedFamilyId.value = familyId;
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : "Failed to fetch offers";
@@ -103,7 +106,13 @@ export const useOffersStore = defineStore("offers", () => {
   }
 
   async function fetchOffers(options: { force?: boolean } = {}) {
-    if (isFetched.value && !options.force) return;
+    const familyId = activeFamily.activeFamilyId.value;
+    if (
+      isFetched.value &&
+      !options.force &&
+      fetchedFamilyId.value === familyId
+    )
+      return;
     await fetchPage(0);
   }
 
@@ -278,6 +287,7 @@ export const useOffersStore = defineStore("offers", () => {
   function reset() {
     offers.value = [];
     isFetched.value = false;
+    fetchedFamilyId.value = null;
     totalCount.value = 0;
     currentPage.value = 0;
     loading.value = false;
@@ -289,6 +299,7 @@ export const useOffersStore = defineStore("offers", () => {
     loading,
     error,
     isFetched,
+    fetchedFamilyId,
     totalCount,
     currentPage,
     acceptedOffers,

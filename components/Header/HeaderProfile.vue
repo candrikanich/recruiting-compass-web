@@ -172,14 +172,14 @@
 <script setup lang="ts">
 import { ref, computed, nextTick, onMounted, watch } from "vue";
 import { useUserStore } from "~/stores/user";
-import { useAuth } from "~/composables/useAuth";
+import { useAuthLifecycle } from "~/composables/useAuthLifecycle";
 import { useFamilyCode } from "~/composables/useFamilyCode";
 import { createClientLogger } from "~/utils/logger";
 
 const logger = createClientLogger("Header/HeaderProfile");
 
 const userStore = useUserStore();
-const { logout } = useAuth();
+const { logoutEverywhere } = useAuthLifecycle();
 const { myFamilyCode, fetchMyCode } = useFamilyCode();
 const isOpen = ref(false);
 const codeCopied = ref(false);
@@ -288,8 +288,7 @@ const handleImageError = () => {
 
 const handleLogout = async () => {
   isOpen.value = false;
-  await logout();
-  userStore.logout();
+  await logoutEverywhere();
   await navigateTo("/login");
 };
 </script>

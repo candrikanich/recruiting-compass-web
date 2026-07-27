@@ -2,7 +2,7 @@
 import { ref, computed, watch, onMounted } from "vue";
 import { useTasks } from "~/composables/useTasks";
 import { useAuth } from "~/composables/useAuth";
-import { useActiveFamily } from "~/composables/useActiveFamily";
+import { useFamilyCtx } from "~/composables/useFamilyCtx";
 import { calculateCurrentGrade } from "~/utils/gradeHelpers";
 import { calculateDeadlineInfo } from "~/utils/deadlineHelpers";
 import AthleteSwitcher from "~/components/Parent/AthleteSwitcher.vue";
@@ -12,14 +12,16 @@ import type { TaskWithStatus } from "~/types/timeline";
 useHead({ title: "My Tasks" });
 
 const { session } = useAuth();
-// Parent context comes from useActiveFamily (the same source the dashboard uses);
-// activeAthleteId is the viewed athlete and isViewingAsParent gates parent UI.
+// Parent context comes from useFamilyCtx (inject('activeFamily') falling back
+// to the shared useFamilyContext singleton) — the same shared instance every
+// other page/composable reads, instead of a standalone useActiveFamily() call
+// that would desync from athlete switches made elsewhere in the app.
 const {
   isViewingAsParent,
   activeAthleteId: currentAthleteId,
   parentAccessibleFamilies,
   switchAthlete,
-} = useActiveFamily();
+} = useFamilyCtx();
 
 // Map accessible families to AthleteSwitcher's {id,name} shape, deduped by athlete.
 const linkedAthletes = computed(() => {

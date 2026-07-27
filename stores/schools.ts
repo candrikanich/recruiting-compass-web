@@ -44,6 +44,11 @@ export const useSchoolStore = defineStore("schools", () => {
   const loading = ref(false);
   const error = ref<string | null>(null);
   const isFetched = ref(false);
+  // Family-keyed fetch guard: which family's data isFetched refers to. When the
+  // active family changes (parent switches athlete, or a different account
+  // logs in), the previously-fetched family id no longer matches and the
+  // fetchSchools guard below treats the store as not-fetched.
+  const fetchedFamilyId = ref<string | null>(null);
   const filters = ref<SchoolFilters>({
     division: "",
     state: "",
@@ -108,8 +113,13 @@ export const useSchoolStore = defineStore("schools", () => {
    * Guards against redundant fetches with isFetched flag
    */
   async function fetchSchools(familyId: string) {
-    // Guard: don't refetch if already loaded
-    if (isFetched.value && schools.value.length > 0) return;
+    // Guard: don't refetch if already loaded for this same family
+    if (
+      isFetched.value &&
+      fetchedFamilyId.value === familyId &&
+      schools.value.length > 0
+    )
+      return;
 
     loading.value = true;
     error.value = null;
@@ -136,6 +146,7 @@ export const useSchoolStore = defineStore("schools", () => {
 
       schools.value = data || [];
       isFetched.value = true;
+      fetchedFamilyId.value = familyId;
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : "Failed to fetch schools";
@@ -511,6 +522,26 @@ export const useSchoolStore = defineStore("schools", () => {
     error.value = null;
   }
 
+  /**
+   * Reset all store state to its initial values.
+   * Called on logout/account-switch (via the auth lifecycle orchestrator) so a
+   * newly-authenticated account never sees the previous account's schools.
+   */
+  function reset() {
+    schools.value = [];
+    selectedSchoolId.value = null;
+    loading.value = false;
+    error.value = null;
+    isFetched.value = false;
+    fetchedFamilyId.value = null;
+    filters.value = {
+      division: "",
+      state: "",
+      verified: null,
+    };
+    statusHistory.value = {};
+  }
+
   return {
     // State
     schools,
@@ -518,6 +549,7 @@ export const useSchoolStore = defineStore("schools", () => {
     loading,
     error,
     isFetched,
+    fetchedFamilyId,
     filters,
     statusHistory,
     // Computed getters
@@ -542,5 +574,6 @@ export const useSchoolStore = defineStore("schools", () => {
     setFilters,
     resetFilters,
     clearError,
+    reset,
   };
 });

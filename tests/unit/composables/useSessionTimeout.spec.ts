@@ -8,6 +8,16 @@ vi.mock("~/stores/user", () => ({
   })),
 }));
 
+// handleTimeout must route through the shared auth-lifecycle orchestrator
+// (not just userStore.logout()) so a timed-out session actually calls
+// supabase.auth.signOut() — previously it only cleared Pinia state, leaving
+// a still-valid token in localStorage that silently re-authenticated on
+// reload.
+const mockLogoutEverywhere = vi.fn().mockResolvedValue(undefined);
+vi.mock("~/composables/useAuthLifecycle", () => ({
+  useAuthLifecycle: () => ({ logoutEverywhere: mockLogoutEverywhere }),
+}));
+
 vi.stubGlobal("navigateTo", vi.fn());
 import { useSessionTimeout } from "~/composables/useSessionTimeout";
 import type { SessionPreferences } from "~/types/session";
@@ -212,6 +222,27 @@ describe("useSessionTimeout", () => {
 
       // Should clear preferences and possibly trigger logout
       expect(localStorage.getItem("session_preferences")).toBeNull();
+    });
+
+    it("routes inactivity timeout through the auth lifecycle orchestrator (provider sign-out, not just Pinia)", async () => {
+      setSessionPreferences(true);
+
+      const prefs: SessionPreferences = {
+        rememberMe: true,
+        lastActivity: Date.now() - 31 * 24 * 60 * 60 * 1000,
+        expiresAt: Date.now() - 1 * 60 * 1000, // already expired
+      };
+      localStorage.setItem("session_preferences", JSON.stringify(prefs));
+
+      const { checkTimeout } = useSessionTimeout();
+      checkTimeout();
+
+      // handleTimeout does `await import("~/composables/useAuthLifecycle")`
+      // before calling logoutEverywhere() — advance fake timers by 0ms to
+      // flush the pending microtask/dynamic-import queue.
+      await vi.advanceTimersByTimeAsync(0);
+
+      expect(mockLogoutEverywhere).toHaveBeenCalledTimes(1);
     });
 
     it("should countdown before logout when warning is visible", () => {

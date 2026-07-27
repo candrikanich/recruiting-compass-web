@@ -25,7 +25,7 @@
 import { onBeforeMount, provide } from "vue";
 import { useSessionTimeout } from "~/composables/useSessionTimeout";
 import { useUserStore } from "~/stores/user";
-import { useActiveFamily } from "~/composables/useActiveFamily";
+import { useFamilyContext } from "~/composables/useFamilyContext";
 import SessionTimeoutWarning from "~/components/Auth/SessionTimeoutWarning.vue";
 import { SpeedInsights } from "@vercel/speed-insights/vue";
 import { createClientLogger } from "~/utils/logger";
@@ -39,8 +39,13 @@ const { isWarningVisible, secondsUntilLogout, dismissWarning, handleTimeout } =
 
 const userStore = useUserStore();
 
-// Provide family context to all pages and composables
-const activeFamily = useActiveFamily();
+// Provide family context to all pages and composables. Using the shared
+// singleton (rather than a fresh useActiveFamily() call) means app.vue's
+// provided instance and the module-scope fallback used by non-component
+// callers (e.g. Pinia store actions) are always the exact same object — one
+// source of truth, and one thing for the auth lifecycle orchestrator to
+// reset on logout.
+const activeFamily = useFamilyContext();
 provide("activeFamily", activeFamily);
 
 // Single point of user initialization at app startup

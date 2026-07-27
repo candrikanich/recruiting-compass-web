@@ -146,13 +146,13 @@
 import { ref, computed, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import { useUserStore } from "~/stores/user";
-import { useAuth } from "~/composables/useAuth";
+import { useAuthLifecycle } from "~/composables/useAuthLifecycle";
 import AthleteSwitcher from "~/components/AthleteSwitcher.vue";
 import HeaderNav from "~/components/Header/HeaderNav.vue";
 import HeaderProfile from "~/components/Header/HeaderProfile.vue";
 import NotificationCenter from "~/components/Header/NotificationCenter.vue";
 const route = useRoute();
-const authComposable = useAuth();
+const authLifecycle = useAuthLifecycle();
 
 const userStore = useUserStore();
 const user = computed(() => userStore.user || null);
@@ -222,8 +222,7 @@ const closeMobileMenu = () => {
 const handleLogout = async () => {
   if (!userStore?.user) return;
   closeMobileMenu();
-  await authComposable.logout();
-  userStore.logout();
+  await authLifecycle.logoutEverywhere();
   await navigateTo("/login");
 };
 

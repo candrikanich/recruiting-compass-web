@@ -282,6 +282,21 @@ export const useActiveFamily = () => {
       localStorage.setItem("parent_last_viewed_athlete", athleteId);
     }
 
+    // Clear domain-store entity lists synchronously so the UI shows an
+    // empty/loading state rather than a stale flash of the previous
+    // athlete's schools/coaches/offers while the new family's data loads.
+    // Dynamic imports avoid a hard dependency cycle (stores don't import
+    // useActiveFamily at module scope).
+    const [{ useSchoolStore }, { useCoachStore }, { useOffersStore }] =
+      await Promise.all([
+        import("~/stores/schools"),
+        import("~/stores/coaches"),
+        import("~/stores/offers"),
+      ]);
+    useSchoolStore().reset();
+    useCoachStore().reset();
+    useOffersStore().reset();
+
     // Fetch new family members
     await fetchFamilyMembers();
   };
@@ -361,6 +376,25 @@ export const useActiveFamily = () => {
     await fetchFamilyMembers();
   };
 
+  /**
+   * Clear this instance's internal state back to its just-created defaults.
+   * Called by the auth lifecycle orchestrator on logout so the shared
+   * useFamilyContext singleton (which survives across login/logout in the
+   * same tab) doesn't leak a prior account's family/athlete selection into
+   * the next account's session.
+   */
+  const reset = () => {
+    loading.value = false;
+    error.value = null;
+    playerFamilyId.value = null;
+    parentAccessibleFamilies.value = [];
+    currentAthleteId.value = null;
+    familyMembers.value = [];
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("parent_last_viewed_athlete");
+    }
+  };
+
   return {
     // State
     loading,
@@ -383,6 +417,7 @@ export const useActiveFamily = () => {
     getDisplayContext,
     getDataOwnerUserId,
     refetchFamilies,
+    reset,
 
     // Debug
     _debugInstanceId,

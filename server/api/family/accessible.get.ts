@@ -59,7 +59,9 @@ export default defineEventHandler(async (event) => {
     const [playerMembersResult, familiesResult] = await Promise.all([
       supabase
         .from("family_members")
-        .select("family_unit_id, user_id, users!inner(id, full_name, email)")
+        .select(
+          "family_unit_id, user_id, users!inner(id, full_name, email, graduation_year)",
+        )
         .in("family_unit_id", familyUnitIds)
         .eq("role", "player"),
       supabase
@@ -96,7 +98,12 @@ export default defineEventHandler(async (event) => {
     type PlayerMemberRow = {
       family_unit_id: string;
       user_id: string;
-      users: { id: string; full_name: string | null; email: string | null };
+      users: {
+        id: string;
+        full_name: string | null;
+        email: string | null;
+        graduation_year: number | null;
+      };
     };
     const typedPlayerMembers = (playerMembers ?? []) as PlayerMemberRow[];
 
@@ -123,7 +130,7 @@ export default defineEventHandler(async (event) => {
         familyUnitId: family.id,
         athleteId: pm.user_id as string | null,
         athleteName: pm.users.full_name || pm.users.email || "Unknown Athlete",
-        graduationYear: null as number | null,
+        graduationYear: pm.users.graduation_year ?? null,
         familyName: family.family_name || "Family",
       }));
     });

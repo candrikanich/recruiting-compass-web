@@ -778,4 +778,49 @@ describe("useActiveFamily", () => {
       expect(mockFetchFn).toHaveBeenCalled();
     });
   });
+
+  describe("reset", () => {
+    it("clears playerFamilyId, parentAccessibleFamilies, currentAthleteId, and familyMembers", async () => {
+      mockFetchFn.mockResolvedValue({
+        families: [
+          {
+            familyUnitId: "family-1",
+            athleteId: "athlete-1",
+            athleteName: "Player A",
+            graduationYear: 2025,
+            familyName: "Test Family",
+          },
+        ],
+      });
+
+      const userStore = useUserStore();
+      userStore.user = { id: "parent-1", role: "parent" } as any;
+
+      const activeFamily = useActiveFamily();
+      await activeFamily.initializeFamily();
+      await activeFamily.switchAthlete("athlete-1");
+      expect(activeFamily.activeAthleteId.value).toBe("athlete-1");
+
+      activeFamily.reset();
+
+      expect(activeFamily.activeFamilyId.value).toBeNull();
+      expect(activeFamily.activeAthleteId.value).toBe("parent-1"); // falls back to own id
+      expect(activeFamily.parentAccessibleFamilies.value).toEqual([]);
+      expect(activeFamily.familyMembers.value).toEqual([]);
+      expect(activeFamily.error.value).toBeNull();
+      expect(activeFamily.loading.value).toBe(false);
+    });
+
+    it("clears the persisted parent_last_viewed_athlete preference", async () => {
+      localStorage.setItem("parent_last_viewed_athlete", "athlete-1");
+
+      const userStore = useUserStore();
+      userStore.user = { id: "parent-1", role: "parent" } as any;
+
+      const activeFamily = useActiveFamily();
+      activeFamily.reset();
+
+      expect(localStorage.getItem("parent_last_viewed_athlete")).toBeNull();
+    });
+  });
 });

@@ -49,6 +49,17 @@ export const usePlayerProfileStore = defineStore("playerProfile", () => {
     }
   }
 
+  /**
+   * Reset all store state to its initial values.
+   * Called on logout/account-switch (via the auth lifecycle orchestrator) so
+   * a newly-authenticated account never sees the previous account's profile.
+   */
+  function reset() {
+    profile.value = null;
+    loading.value = false;
+    error.value = null;
+  }
+
   return {
     profile,
     loading,
@@ -57,5 +68,6 @@ export const usePlayerProfileStore = defineStore("playerProfile", () => {
     profileUrl,
     fetchProfile,
     updateProfile,
+    reset,
   };
 });

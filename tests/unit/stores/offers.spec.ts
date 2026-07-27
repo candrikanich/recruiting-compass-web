@@ -123,6 +123,28 @@ describe("useOffersStore", () => {
       expect(chain.range).toHaveBeenCalledTimes(2);
     });
 
+    it("refetches when the active family id changes (family-keyed fetch guard)", async () => {
+      chain.range
+        .mockResolvedValueOnce({ data: [makeOffer()], error: null, count: 1 })
+        .mockResolvedValueOnce({
+          data: [makeOffer({ id: "offer-2", family_unit_id: "family-456" })],
+          error: null,
+          count: 1,
+        });
+
+      const store = useOffersStore();
+      await store.fetchOffers();
+      expect(store.fetchedFamilyId).toBe("family-123");
+
+      mockActiveFamily.activeFamilyId.value = "family-456";
+      await store.fetchOffers();
+
+      expect(chain.range).toHaveBeenCalledTimes(2);
+      expect(store.fetchedFamilyId).toBe("family-456");
+
+      mockActiveFamily.activeFamilyId.value = "family-123";
+    });
+
     it("sets error and leaves offers empty when fetch fails", async () => {
       chain.range.mockResolvedValueOnce({
         data: null,
@@ -406,6 +428,7 @@ describe("useOffersStore", () => {
 
       expect(store.offers).toEqual([]);
       expect(store.isFetched).toBe(false);
+      expect(store.fetchedFamilyId).toBeNull();
       expect(store.totalCount).toBe(0);
       expect(store.currentPage).toBe(0);
     });

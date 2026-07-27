@@ -27,3 +27,16 @@ export const useFamilyContext = () => {
   }
   return familyContextInstance;
 };
+
+/**
+ * Reset the shared family-context singleton's internal state.
+ *
+ * Intentionally keeps the same object reference (does NOT null it out) —
+ * app.vue's `provide("activeFamily", ...)` and every already-injected
+ * component/composable hold onto this exact object, so replacing it would
+ * leave them pointing at stale, un-reset state. Called by the auth lifecycle
+ * orchestrator on logout/account-switch.
+ */
+export const resetFamilyContext = () => {
+  familyContextInstance?.reset();
+};

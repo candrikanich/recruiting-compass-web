@@ -488,4 +488,35 @@ describe("useCoachStore", () => {
       ).toBeUndefined();
     });
   });
+
+  describe("reset", () => {
+    it("clears coaches, fetch guards, loading, and error state", async () => {
+      const mockCoach = createMockCoach();
+      mockQuery.order.mockResolvedValue({ data: [mockCoach], error: null });
+      await coachStore.fetchCoaches("school-123");
+      coachStore.error = "some error";
+
+      coachStore.reset();
+
+      expect(coachStore.coaches).toEqual([]);
+      expect(coachStore.loading).toBe(false);
+      expect(coachStore.error).toBeNull();
+      expect(coachStore.isFetched).toBe(false);
+      expect(coachStore.lastFetchedWithFilters).toBe(false);
+      expect(coachStore.isFetchedBySchools).toEqual({});
+    });
+
+    it("allows a fresh fetch for a previously-fetched school immediately after reset", async () => {
+      const mockCoach = createMockCoach();
+      mockQuery.order.mockResolvedValue({ data: [mockCoach], error: null });
+      await coachStore.fetchCoaches("school-123");
+      coachStore.reset();
+
+      mockQuery.order.mockResolvedValue({ data: [mockCoach], error: null });
+      await coachStore.fetchCoaches("school-123");
+
+      expect(coachStore.coaches).toHaveLength(1);
+      expect(coachStore.isFetchedBySchools["school-123"]).toBe(true);
+    });
+  });
 });

@@ -238,8 +238,13 @@ export const useDashboardData = () => {
       return;
     }
 
+    // Clear prior entity data synchronously, before the async fetches start.
+    // Previously the old family/athlete's data stayed visible in allSchools/
+    // allCoaches/etc. until the new data arrived (a "stale flash" on parent
+    // athlete-switch), and a swallowed per-entity fetch error left the old
+    // data in place indefinitely with no error surfaced for that entity.
+    reset();
     loading.value = true;
-    error.value = null;
 
     try {
       // Step 1: Fetch schools (needed for coaches)

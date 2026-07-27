@@ -31,7 +31,12 @@ export default defineNuxtRouteMiddleware(async (to, _from) => {
     if (userStore.user?.role !== "parent") return;
 
     const { logParentView } = useViewLogging();
-    const { familyMembers } = useActiveFamily();
+    // Use the shared family-context singleton, not a standalone
+    // useActiveFamily() — this runs outside component context (route
+    // middleware), so a fresh instance's initializeFamily() would never be
+    // awaited and familyMembers would always read back empty.
+    const { useFamilyContext } = await import("~/composables/useFamilyContext");
+    const { familyMembers } = useFamilyContext();
 
     // Get family members from active family
     if (!familyMembers.value || !Array.isArray(familyMembers.value)) return;

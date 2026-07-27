@@ -587,4 +587,72 @@ describe("useSchoolStore", () => {
       expect(schoolStore.error).toBeNull();
     });
   });
+
+  describe("fetchSchools — family-keyed fetch guard", () => {
+    it("skips a redundant fetch for the same family", async () => {
+      mockQuery.order.mockResolvedValue({
+        data: [{ id: "s1" }],
+        error: null,
+      });
+
+      await schoolStore.fetchSchools("family-1");
+      await schoolStore.fetchSchools("family-1");
+
+      expect(mockSupabase.from).toHaveBeenCalledTimes(1);
+    });
+
+    it("refetches when the active family id changes (e.g. parent switches athlete)", async () => {
+      mockQuery.order.mockResolvedValue({
+        data: [{ id: "s1" }],
+        error: null,
+      });
+
+      await schoolStore.fetchSchools("family-1");
+      await schoolStore.fetchSchools("family-2");
+
+      expect(mockSupabase.from).toHaveBeenCalledTimes(2);
+      expect(schoolStore.fetchedFamilyId).toBe("family-2");
+    });
+  });
+
+  describe("reset", () => {
+    it("clears schools, selection, fetch guard, filters, and status history", async () => {
+      mockQuery.order.mockResolvedValue({
+        data: [{ id: "s1" }],
+        error: null,
+      });
+      await schoolStore.fetchSchools("family-1");
+      schoolStore.setSelectedSchool("s1");
+      schoolStore.setFilters({ division: "D1" });
+      schoolStore.error = "some error";
+      schoolStore.statusHistory = { s1: [{ id: "h1" } as any] };
+
+      schoolStore.reset();
+
+      expect(schoolStore.schools).toEqual([]);
+      expect(schoolStore.selectedSchoolId).toBeNull();
+      expect(schoolStore.loading).toBe(false);
+      expect(schoolStore.error).toBeNull();
+      expect(schoolStore.isFetched).toBe(false);
+      expect(schoolStore.fetchedFamilyId).toBeNull();
+      expect(schoolStore.filters).toEqual({
+        division: "",
+        state: "",
+        verified: null,
+      });
+      expect(schoolStore.statusHistory).toEqual({});
+    });
+
+    it("allows a fresh fetch for the same family immediately after reset", async () => {
+      mockQuery.order.mockResolvedValue({
+        data: [{ id: "s1" }],
+        error: null,
+      });
+      await schoolStore.fetchSchools("family-1");
+      schoolStore.reset();
+      await schoolStore.fetchSchools("family-1");
+
+      expect(mockSupabase.from).toHaveBeenCalledTimes(2);
+    });
+  });
 });
