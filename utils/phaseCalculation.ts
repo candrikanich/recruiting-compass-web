@@ -6,8 +6,14 @@
 import type { Phase, MilestoneProgress } from "~/types/timeline";
 
 /**
- * Milestone tasks required to advance from one phase to the next
- * These task IDs should match the database seeded tasks
+ * Milestone tasks required to advance from one phase to the next.
+ *
+ * These are stable `task.slug` values (see `supabase/migrations/*_task_slugs.sql`),
+ * NOT `task.id` UUIDs. `task.id` is a `gen_random_uuid()` and differs per environment/seed
+ * run, so milestones can't reference it directly. Callers must resolve slugs to the
+ * actual seeded task ids via a `taskIdsBySlug` map (see `resolveMilestoneTaskIds` /
+ * `server/utils/athletePhase.ts#getTaskIdsBySlug`) before comparing against a list of
+ * completed task ids.
  */
 export const PHASE_MILESTONES: Record<string, string[]> = {
   freshmanToSophomore: [
@@ -83,12 +89,37 @@ export const PHASE_INFO: Record<
 };
 
 /**
+ * Map of `task.slug` -> `task.id`, as returned by
+ * `server/utils/athletePhase.ts#getTaskIdsBySlug`. Used to resolve the slug-keyed
+ * `PHASE_MILESTONES` lists to real seeded task ids at evaluation time.
+ */
+export type TaskIdsBySlug = Record<string, string>;
+
+/**
+ * Resolve milestone slugs to real task ids via the slug -> id map.
+ *
+ * A slug that isn't present in `taskIdsBySlug` (e.g. seed data missing or not yet
+ * migrated) resolves to `undefined` rather than being silently dropped from the
+ * requirement list — that milestone is then unsatisfiable until the task exists,
+ * so gating fails closed instead of accidentally becoming easier to pass.
+ */
+function isMilestoneTaskComplete(
+  slug: string,
+  completedTaskIds: string[],
+  taskIdsBySlug: TaskIdsBySlug,
+): boolean {
+  const taskId = taskIdsBySlug[slug];
+  return taskId !== undefined && completedTaskIds.includes(taskId);
+}
+
+/**
  * Calculate which phase athlete should be in based on milestone completion
  * Returns the highest phase for which all milestones are complete
  */
 export function calculatePhase(
   completedTaskIds: string[],
   hasSignedNLI: boolean,
+  taskIdsBySlug: TaskIdsBySlug,
 ): Phase {
   // Check if NLI signed (highest phase)
   if (hasSignedNLI) {
@@ -98,8 +129,8 @@ export function calculatePhase(
   // Check junior to senior transition
   const juniorToSeniorMilestones = PHASE_MILESTONES.juniorToSenior;
   if (
-    juniorToSeniorMilestones.every((taskId) =>
-      completedTaskIds.includes(taskId),
+    juniorToSeniorMilestones.every((slug) =>
+      isMilestoneTaskComplete(slug, completedTaskIds, taskIdsBySlug),
     )
   ) {
     return "senior";
@@ -108,8 +139,8 @@ export function calculatePhase(
   // Check sophomore to junior transition
   const sophomoreToJuniorMilestones = PHASE_MILESTONES.sophomoreToJunior;
   if (
-    sophomoreToJuniorMilestones.every((taskId) =>
-      completedTaskIds.includes(taskId),
+    sophomoreToJuniorMilestones.every((slug) =>
+      isMilestoneTaskComplete(slug, completedTaskIds, taskIdsBySlug),
     )
   ) {
     return "junior";
@@ -118,8 +149,8 @@ export function calculatePhase(
   // Check freshman to sophomore transition
   const freshmanToSophomoreMilestones = PHASE_MILESTONES.freshmanToSophomore;
   if (
-    freshmanToSophomoreMilestones.every((taskId) =>
-      completedTaskIds.includes(taskId),
+    freshmanToSophomoreMilestones.every((slug) =>
+      isMilestoneTaskComplete(slug, completedTaskIds, taskIdsBySlug),
     )
   ) {
     return "sophomore";
@@ -130,11 +161,17 @@ export function calculatePhase(
 }
 
 /**
- * Get milestone progress for a specific phase
+ * Get milestone progress for a specific phase.
+ *
+ * `required`/`completed`/`remaining` remain slug-keyed (not resolved task ids) —
+ * consumers (composables/components) only ever read their `.length`, never the
+ * slug values themselves, so this keeps the public shape stable while fixing the
+ * underlying resolution bug internally.
  */
 export function getMilestoneProgress(
   phase: Phase,
   completedTaskIds: string[],
+  taskIdsBySlug: TaskIdsBySlug,
 ): MilestoneProgress {
   let required: string[] = [];
 
@@ -161,11 +198,11 @@ export function getMilestoneProgress(
       };
   }
 
-  const completed = required.filter((taskId) =>
-    completedTaskIds.includes(taskId),
+  const completed = required.filter((slug) =>
+    isMilestoneTaskComplete(slug, completedTaskIds, taskIdsBySlug),
   );
   const remaining = required.filter(
-    (taskId) => !completedTaskIds.includes(taskId),
+    (slug) => !isMilestoneTaskComplete(slug, completedTaskIds, taskIdsBySlug),
   );
   const percentComplete =
     required.length > 0 ? (completed.length / required.length) * 100 : 0;
@@ -185,23 +222,32 @@ export function getMilestoneProgress(
 export function canAdvancePhase(
   currentPhase: Phase,
   completedTaskIds: string[],
+  taskIdsBySlug: TaskIdsBySlug,
 ): boolean {
   switch (currentPhase) {
     case "freshman": {
       const milestones = PHASE_MILESTONES.freshmanToSophomore;
-      return milestones.every((taskId) => completedTaskIds.includes(taskId));
+      return milestones.every((slug) =>
+        isMilestoneTaskComplete(slug, completedTaskIds, taskIdsBySlug),
+      );
     }
     case "sophomore": {
       const milestones = PHASE_MILESTONES.sophomoreToJunior;
-      return milestones.every((taskId) => completedTaskIds.includes(taskId));
+      return milestones.every((slug) =>
+        isMilestoneTaskComplete(slug, completedTaskIds, taskIdsBySlug),
+      );
     }
     case "junior": {
       const milestones = PHASE_MILESTONES.juniorToSenior;
-      return milestones.every((taskId) => completedTaskIds.includes(taskId));
+      return milestones.every((slug) =>
+        isMilestoneTaskComplete(slug, completedTaskIds, taskIdsBySlug),
+      );
     }
     case "senior": {
       const milestones = PHASE_MILESTONES.seniorToCommitted;
-      return milestones.every((taskId) => completedTaskIds.includes(taskId));
+      return milestones.every((slug) =>
+        isMilestoneTaskComplete(slug, completedTaskIds, taskIdsBySlug),
+      );
     }
     case "committed":
       return false;
@@ -267,6 +313,7 @@ export interface PhaseMilestoneData {
 export function buildPhaseMilestoneData(
   phase: Phase,
   completedTaskIds: string[],
+  taskIdsBySlug: TaskIdsBySlug,
 ): PhaseMilestoneData {
   const phaseSequence: Phase[] = [
     "freshman",
@@ -293,7 +340,7 @@ export function buildPhaseMilestoneData(
   >;
 
   phaseSequence.forEach((p) => {
-    const progress = getMilestoneProgress(p, completedTaskIds);
+    const progress = getMilestoneProgress(p, completedTaskIds, taskIdsBySlug);
     milestones_by_phase[p] = {
       required: progress.required,
       completed: progress.completed,

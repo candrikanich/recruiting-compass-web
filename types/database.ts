@@ -2560,6 +2560,7 @@ export type Database = {
           grade_level: number
           id: string
           required: boolean | null
+          slug: string
           title: string
           updated_at: string | null
           why_it_matters: string | null
@@ -2575,6 +2576,7 @@ export type Database = {
           grade_level: number
           id?: string
           required?: boolean | null
+          slug: string
           title: string
           updated_at?: string | null
           why_it_matters?: string | null
@@ -2590,6 +2592,7 @@ export type Database = {
           grade_level?: number
           id?: string
           required?: boolean | null
+          slug?: string
           title?: string
           updated_at?: string | null
           why_it_matters?: string | null

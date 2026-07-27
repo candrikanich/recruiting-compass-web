@@ -13,19 +13,10 @@ import {
   getMilestoneProgress,
   canAdvancePhase,
 } from "~/utils/phaseCalculation";
-import { calculateCurrentGrade } from "~/utils/gradeHelpers";
-
-/**
- * Map grade level (9-12) to phase
- */
-function gradeToPhase(grade: number): Phase {
-  if (grade === 9) return "freshman";
-  if (grade === 10) return "sophomore";
-  if (grade === 11) return "junior";
-  if (grade === 12) return "senior";
-  // Default to freshman if grade is out of range
-  return "freshman";
-}
+import {
+  computePhaseFromGraduationYear,
+  getTaskIdsBySlug,
+} from "~/server/utils/athletePhase";
 
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "athlete/phase");
@@ -62,23 +53,56 @@ export default defineEventHandler(async (event) => {
       }
     }
 
-    // Fetch graduation year from user_preferences (player category).
-    // maybeSingle() returns { data: null, error: null } when 0 rows exist —
-    // no need to special-case PGRST116. Only real errors (connection failures,
-    // RLS violations, duplicate rows) surface as prefError.
-    const { data: prefData, error: prefError } = await supabase
-      .from("user_preferences")
-      .select("data")
-      .eq("user_id", athleteId)
-      .eq("category", "player")
-      .maybeSingle();
+    // users.current_phase is the source of truth once an athlete has explicitly
+    // advanced (via POST /api/athlete/phase/advance). NULL means "never advanced" —
+    // fall back to a grade-derived phase below.
+    const { data: userData, error: userError } = await supabase
+      .from("users")
+      .select("current_phase")
+      .eq("id", athleteId)
+      .single();
 
-    if (prefError) {
-      logger.error("Error fetching player preferences", prefError);
+    if (userError) {
+      logger.error("Error fetching user phase", userError);
       throw createError({
         statusCode: 500,
-        statusMessage: "Failed to fetch player preferences",
+        statusMessage: "Failed to fetch user phase",
       });
+    }
+
+    const storedPhase = (userData?.current_phase ?? null) as Phase | null;
+
+    let currentPhase: Phase;
+
+    if (storedPhase) {
+      currentPhase = storedPhase;
+    } else {
+      // Fetch graduation year from user_preferences (player category).
+      // maybeSingle() returns { data: null, error: null } when 0 rows exist —
+      // no need to special-case PGRST116. Only real errors (connection failures,
+      // RLS violations, duplicate rows) surface as prefError.
+      const { data: prefData, error: prefError } = await supabase
+        .from("user_preferences")
+        .select("data")
+        .eq("user_id", athleteId)
+        .eq("category", "player")
+        .maybeSingle();
+
+      if (prefError) {
+        logger.error("Error fetching player preferences", prefError);
+        throw createError({
+          statusCode: 500,
+          statusMessage: "Failed to fetch player preferences",
+        });
+      }
+
+      const playerData = prefData?.data as Record<string, unknown> | null;
+      const graduationYear =
+        typeof playerData?.graduation_year === "number"
+          ? playerData.graduation_year
+          : null;
+
+      currentPhase = computePhaseFromGraduationYear(graduationYear);
     }
 
     // Fetch athlete's completed tasks
@@ -100,27 +124,22 @@ export default defineEventHandler(async (event) => {
       ?.map((at: { task_id: string }) => at.task_id)
       .filter(Boolean) as string[];
 
-    // Calculate current phase based on graduation year from player preferences
-    const playerData = prefData?.data as Record<string, unknown> | null;
-    const graduationYear =
-      typeof playerData?.graduation_year === "number"
-        ? playerData.graduation_year
-        : null;
-
-    let currentPhase: Phase;
-
-    if (graduationYear) {
-      const currentGrade = calculateCurrentGrade(graduationYear);
-      currentPhase = gradeToPhase(currentGrade);
-    } else {
-      currentPhase = "freshman";
-    }
+    // Resolve PHASE_MILESTONES slugs to real seeded task ids
+    const taskIdsBySlug = await getTaskIdsBySlug(supabase);
 
     // Get milestone progress for current phase
-    const progress = getMilestoneProgress(currentPhase, completedTaskIds);
+    const progress = getMilestoneProgress(
+      currentPhase,
+      completedTaskIds,
+      taskIdsBySlug,
+    );
 
     // Check if can advance
-    const canAdvance = canAdvancePhase(currentPhase, completedTaskIds);
+    const canAdvance = canAdvancePhase(
+      currentPhase,
+      completedTaskIds,
+      taskIdsBySlug,
+    );
 
     const response: AthleteAPI.GetPhaseResponse = {
       phase: currentPhase,

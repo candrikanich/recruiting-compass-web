@@ -15,6 +15,10 @@ import {
   getNextPhase,
   buildPhaseMilestoneData,
 } from "~/utils/phaseCalculation";
+import {
+  computePhaseFromGraduationYear,
+  getTaskIdsBySlug,
+} from "~/server/utils/athletePhase";
 
 interface AdvancePhaseResponse {
   success: boolean;
@@ -31,7 +35,8 @@ export default defineEventHandler(async (event) => {
   await assertNotParent(user.id, supabase);
 
   try {
-    // Get current phase
+    // Get current phase — always operates on the requesting user's own record,
+    // so there is no separate "athleteId" param that could target someone else's phase.
     const { data: userData, error: userError } = await supabase
       .from("users")
       .select("current_phase")
@@ -46,8 +51,39 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    const userRecord = userData as { current_phase?: Phase };
-    const currentPhase: Phase = userRecord?.current_phase || "freshman";
+    const storedPhase = (userData?.current_phase ?? null) as Phase | null;
+
+    let currentPhase: Phase;
+
+    if (storedPhase) {
+      currentPhase = storedPhase;
+    } else {
+      // Never explicitly advanced — fall back to the same grade-derived default
+      // GET /api/athlete/phase uses, so advance semantics stay consistent with
+      // what the athlete currently sees.
+      const { data: prefData, error: prefError } = await supabase
+        .from("user_preferences")
+        .select("data")
+        .eq("user_id", user.id)
+        .eq("category", "player")
+        .maybeSingle();
+
+      if (prefError) {
+        logger.error("Error fetching player preferences", prefError);
+        throw createError({
+          statusCode: 500,
+          statusMessage: "Failed to fetch player preferences",
+        });
+      }
+
+      const playerData = prefData?.data as Record<string, unknown> | null;
+      const graduationYear =
+        typeof playerData?.graduation_year === "number"
+          ? playerData.graduation_year
+          : null;
+
+      currentPhase = computePhaseFromGraduationYear(graduationYear);
+    }
 
     // Fetch completed tasks
     const { data: athleteTasksData, error: tasksError } = await supabase
@@ -68,16 +104,11 @@ export default defineEventHandler(async (event) => {
       (at: { task_id: string }) => at.task_id,
     );
 
-    // Check if can advance
-    if (!canAdvancePhase(currentPhase, completedTaskIds)) {
-      return {
-        success: false,
-        phase: currentPhase,
-        message: "Cannot advance phase - not all milestones completed",
-      } as AdvancePhaseResponse;
-    }
+    // Resolve PHASE_MILESTONES slugs to real seeded task ids
+    const taskIdsBySlug = await getTaskIdsBySlug(supabase);
 
-    // Get next phase
+    // Get next phase first: an athlete already at "committed" (the final phase)
+    // gets a clear idempotent response rather than a confusing gating failure.
     const nextPhase = getNextPhase(currentPhase);
 
     if (!nextPhase) {
@@ -88,10 +119,20 @@ export default defineEventHandler(async (event) => {
       } as AdvancePhaseResponse;
     }
 
+    // Check if can advance
+    if (!canAdvancePhase(currentPhase, completedTaskIds, taskIdsBySlug)) {
+      return {
+        success: false,
+        phase: currentPhase,
+        message: "Cannot advance phase - not all milestones completed",
+      } as AdvancePhaseResponse;
+    }
+
     // Update user's phase
     const phaseMilestoneData = buildPhaseMilestoneData(
       nextPhase,
       completedTaskIds,
+      taskIdsBySlug,
     );
 
     // phase_milestone_data is a custom JSONB column not captured in generated types

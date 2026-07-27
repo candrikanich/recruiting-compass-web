@@ -1,5 +1,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { H3Event } from "h3";
+import {
+  createMockSupabase,
+  installCreateErrorPolyfill,
+  freshmanMilestoneTaskRows,
+} from "./phaseTestSupport";
 
 // Mock dependencies
 vi.mock("~/server/utils/supabase", () => ({
@@ -28,76 +33,13 @@ vi.mock("h3", async (importOriginal) => {
   };
 });
 
-// createError is a Nuxt auto-import (global) — polyfill it for the test environment
-const createErrorGlobal = (config: {
-  statusCode: number;
-  statusMessage: string;
-}) => {
-  const err = new Error(config.statusMessage) as Error & { statusCode: number };
-  err.statusCode = config.statusCode;
-  return err;
-};
-(globalThis as any).createError = createErrorGlobal;
+installCreateErrorPolyfill();
 
-function createMockSupabase(graduationYear: number | null) {
-  const mockSupabase = {
-    from: vi.fn().mockReturnThis(),
-    select: vi.fn().mockReturnThis(),
-    eq: vi.fn().mockReturnThis(),
-    single: vi.fn(),
-    // user_preferences query uses maybeSingle; returns null error when 0 rows (no PGRST116)
-    maybeSingle: vi.fn().mockResolvedValue({
-      data: graduationYear
-        ? { data: { graduation_year: graduationYear } }
-        : null,
-      error: null,
-    }),
-  };
-
-  // Handle athlete_task query (no .single(), resolves as array)
-  mockSupabase.eq.mockImplementation((field: string, value: unknown) => {
-    if (field === "status" && value === "completed") {
-      return Promise.resolve({ data: [], error: null });
-    }
-    return mockSupabase;
-  });
-
-  return mockSupabase;
-}
-
-function createMockSupabaseWithErrors(opts: {
-  prefError?: object | null;
-  prefData?: object | null;
-  tasksError?: object | null;
-}) {
-  const mockSupabase = {
-    from: vi.fn().mockReturnThis(),
-    select: vi.fn().mockReturnThis(),
-    eq: vi.fn().mockReturnThis(),
-    single: vi.fn(),
-    // user_preferences query uses maybeSingle — wire to opts so error tests work
-    maybeSingle: vi.fn().mockResolvedValue({
-      data: opts.prefData ?? null,
-      error: opts.prefError ?? null,
-    }),
-  };
-
-  mockSupabase.single.mockResolvedValue({
-    data: opts.prefData ?? null,
-    error: opts.prefError ?? null,
-  });
-
-  mockSupabase.eq.mockImplementation((field: string, value: unknown) => {
-    if (field === "status" && value === "completed") {
-      return Promise.resolve({
-        data: opts.tasksError ? null : [],
-        error: opts.tasksError ?? null,
-      });
-    }
-    return mockSupabase;
-  });
-
-  return mockSupabase;
+function mockEvent() {
+  return {
+    context: {},
+    node: { req: {}, res: {} },
+  } as H3Event;
 }
 
 describe("/api/athlete/phase.get", () => {
@@ -110,7 +52,7 @@ describe("/api/athlete/phase.get", () => {
     vi.useRealTimers();
   });
 
-  describe("Phase calculation based on graduation year", () => {
+  describe("Phase calculation: grade-derived fallback (current_phase never set)", () => {
     it("should return sophomore phase for Class of 2028 in February 2026", async () => {
       vi.setSystemTime(new Date("2026-02-14T12:00:00Z"));
 
@@ -125,15 +67,16 @@ describe("/api/athlete/phase.get", () => {
       });
 
       vi.mocked(createServerSupabaseClient).mockReturnValue(
-        createMockSupabase(2028) as any,
+        createMockSupabase({
+          user: { data: { current_phase: null }, error: null },
+          userPreferences: {
+            data: { data: { graduation_year: 2028 } },
+            error: null,
+          },
+        }) as any,
       );
 
-      const mockEvent = {
-        context: {},
-        node: { req: {}, res: {} },
-      } as H3Event;
-
-      const response = await handler(mockEvent);
+      const response = await handler(mockEvent());
 
       expect(response.phase).toBe("sophomore");
     });
@@ -152,15 +95,16 @@ describe("/api/athlete/phase.get", () => {
       });
 
       vi.mocked(createServerSupabaseClient).mockReturnValue(
-        createMockSupabase(2029) as any,
+        createMockSupabase({
+          user: { data: { current_phase: null }, error: null },
+          userPreferences: {
+            data: { data: { graduation_year: 2029 } },
+            error: null,
+          },
+        }) as any,
       );
 
-      const mockEvent = {
-        context: {},
-        node: { req: {}, res: {} },
-      } as H3Event;
-
-      const response = await handler(mockEvent);
+      const response = await handler(mockEvent());
 
       expect(response.phase).toBe("freshman");
     });
@@ -179,15 +123,16 @@ describe("/api/athlete/phase.get", () => {
       });
 
       vi.mocked(createServerSupabaseClient).mockReturnValue(
-        createMockSupabase(2027) as any,
+        createMockSupabase({
+          user: { data: { current_phase: null }, error: null },
+          userPreferences: {
+            data: { data: { graduation_year: 2027 } },
+            error: null,
+          },
+        }) as any,
       );
 
-      const mockEvent = {
-        context: {},
-        node: { req: {}, res: {} },
-      } as H3Event;
-
-      const response = await handler(mockEvent);
+      const response = await handler(mockEvent());
 
       expect(response.phase).toBe("junior");
     });
@@ -206,15 +151,13 @@ describe("/api/athlete/phase.get", () => {
       });
 
       vi.mocked(createServerSupabaseClient).mockReturnValue(
-        createMockSupabase(null) as any,
+        createMockSupabase({
+          user: { data: { current_phase: null }, error: null },
+          userPreferences: { data: null, error: null },
+        }) as any,
       );
 
-      const mockEvent = {
-        context: {},
-        node: { req: {}, res: {} },
-      } as H3Event;
-
-      const response = await handler(mockEvent);
+      const response = await handler(mockEvent());
 
       expect(response.phase).toBe("freshman");
     });
@@ -233,21 +176,151 @@ describe("/api/athlete/phase.get", () => {
       });
 
       vi.mocked(createServerSupabaseClient).mockReturnValue(
-        createMockSupabase(2026) as any,
+        createMockSupabase({
+          user: { data: { current_phase: null }, error: null },
+          userPreferences: {
+            data: { data: { graduation_year: 2026 } },
+            error: null,
+          },
+        }) as any,
       );
 
-      const mockEvent = {
-        context: {},
-        node: { req: {}, res: {} },
-      } as H3Event;
-
-      const response = await handler(mockEvent);
+      const response = await handler(mockEvent());
 
       expect(response.phase).toBe("senior");
     });
   });
 
+  describe("Phase read: users.current_phase as source of truth", () => {
+    it("returns the stored phase, ignoring graduation year, once the athlete has explicitly advanced", async () => {
+      vi.setSystemTime(new Date("2026-02-14T12:00:00Z"));
+
+      const { createServerSupabaseClient } =
+        await import("~/server/utils/supabase");
+      const { requireAuth } = await import("~/server/utils/auth");
+      const handler = (await import("~/server/api/athlete/phase.get")).default;
+
+      vi.mocked(requireAuth).mockResolvedValue({
+        id: "test-user-id",
+        email: "test@example.com",
+      });
+
+      // Grad year 2029 alone would compute "freshman" — but current_phase is
+      // already "sophomore" from a prior explicit advance, and that must win.
+      vi.mocked(createServerSupabaseClient).mockReturnValue(
+        createMockSupabase({
+          user: { data: { current_phase: "sophomore" }, error: null },
+          userPreferences: {
+            data: { data: { graduation_year: 2029 } },
+            error: null,
+          },
+        }) as any,
+      );
+
+      const response = await handler(mockEvent());
+
+      expect(response.phase).toBe("sophomore");
+    });
+
+    it("reports nonzero milestone progress for a partially-complete athlete", async () => {
+      vi.setSystemTime(new Date("2026-02-14T12:00:00Z"));
+
+      const { createServerSupabaseClient } =
+        await import("~/server/utils/supabase");
+      const { requireAuth } = await import("~/server/utils/auth");
+      const handler = (await import("~/server/api/athlete/phase.get")).default;
+
+      vi.mocked(requireAuth).mockResolvedValue({
+        id: "test-user-id",
+        email: "test@example.com",
+      });
+
+      const taskRows = freshmanMilestoneTaskRows();
+
+      vi.mocked(createServerSupabaseClient).mockReturnValue(
+        createMockSupabase({
+          user: { data: { current_phase: null }, error: null },
+          userPreferences: { data: null, error: null }, // -> freshman default
+          tasks: { data: taskRows, error: null },
+          // Athlete has completed 1 of 4 required freshman milestone tasks
+          athleteTasks: {
+            data: [{ task_id: taskRows[0].id }],
+            error: null,
+          },
+        }) as any,
+      );
+
+      const response = await handler(mockEvent());
+
+      expect(response.phase).toBe("freshman");
+      expect(response.milestoneProgress.percentComplete).toBeGreaterThan(0);
+      expect(response.milestoneProgress.percentComplete).toBeLessThan(100);
+      expect(response.canAdvance).toBe(false);
+    });
+
+    it("reports canAdvance true once all required milestone tasks are complete", async () => {
+      vi.setSystemTime(new Date("2026-02-14T12:00:00Z"));
+
+      const { createServerSupabaseClient } =
+        await import("~/server/utils/supabase");
+      const { requireAuth } = await import("~/server/utils/auth");
+      const handler = (await import("~/server/api/athlete/phase.get")).default;
+
+      vi.mocked(requireAuth).mockResolvedValue({
+        id: "test-user-id",
+        email: "test@example.com",
+      });
+
+      const taskRows = freshmanMilestoneTaskRows();
+
+      vi.mocked(createServerSupabaseClient).mockReturnValue(
+        createMockSupabase({
+          user: { data: { current_phase: null }, error: null },
+          userPreferences: { data: null, error: null },
+          tasks: { data: taskRows, error: null },
+          athleteTasks: {
+            data: taskRows.map((t) => ({ task_id: t.id })),
+            error: null,
+          },
+        }) as any,
+      );
+
+      const response = await handler(mockEvent());
+
+      expect(response.milestoneProgress.percentComplete).toBe(100);
+      expect(response.canAdvance).toBe(true);
+    });
+  });
+
   describe("Error handling", () => {
+    it("throws 500 when the users.current_phase query returns an error", async () => {
+      vi.setSystemTime(new Date("2026-02-14T12:00:00Z"));
+
+      const { createServerSupabaseClient } =
+        await import("~/server/utils/supabase");
+      const { requireAuth } = await import("~/server/utils/auth");
+      const handler = (await import("~/server/api/athlete/phase.get")).default;
+
+      vi.mocked(requireAuth).mockResolvedValue({
+        id: "test-user-id",
+        email: "test@example.com",
+      });
+
+      vi.mocked(createServerSupabaseClient).mockReturnValue(
+        createMockSupabase({
+          user: {
+            data: null,
+            error: { code: "42P01", message: "relation does not exist" },
+          },
+        }) as any,
+      );
+
+      await expect(handler(mockEvent())).rejects.toMatchObject({
+        statusCode: 500,
+        message: "Failed to fetch user phase",
+      });
+    });
+
     it("throws 500 when preferences DB query returns a non-PGRST116 error", async () => {
       vi.setSystemTime(new Date("2026-02-14T12:00:00Z"));
 
@@ -262,17 +335,16 @@ describe("/api/athlete/phase.get", () => {
       });
 
       vi.mocked(createServerSupabaseClient).mockReturnValue(
-        createMockSupabaseWithErrors({
-          prefError: { code: "42P01", message: "relation does not exist" },
+        createMockSupabase({
+          user: { data: { current_phase: null }, error: null },
+          userPreferences: {
+            data: null,
+            error: { code: "42P01", message: "relation does not exist" },
+          },
         }) as any,
       );
 
-      const mockEvent = {
-        context: {},
-        node: { req: {}, res: {} },
-      } as H3Event;
-
-      await expect(handler(mockEvent)).rejects.toMatchObject({
+      await expect(handler(mockEvent())).rejects.toMatchObject({
         statusCode: 500,
         message: "Failed to fetch player preferences",
       });
@@ -292,18 +364,16 @@ describe("/api/athlete/phase.get", () => {
       });
 
       vi.mocked(createServerSupabaseClient).mockReturnValue(
-        createMockSupabaseWithErrors({
-          prefData: { data: { graduation_year: 2027 } },
-          tasksError: { code: "42P01", message: "relation does not exist" },
+        createMockSupabase({
+          user: { data: { current_phase: "junior" }, error: null },
+          athleteTasks: {
+            data: null,
+            error: { code: "42P01", message: "relation does not exist" },
+          },
         }) as any,
       );
 
-      const mockEvent = {
-        context: {},
-        node: { req: {}, res: {} },
-      } as H3Event;
-
-      await expect(handler(mockEvent)).rejects.toMatchObject({
+      await expect(handler(mockEvent())).rejects.toMatchObject({
         statusCode: 500,
         message: "Failed to fetch athlete tasks",
       });
@@ -322,17 +392,14 @@ describe("/api/athlete/phase.get", () => {
         email: "test@example.com",
       });
       vi.mocked(createServerSupabaseClient).mockReturnValue(
-        createMockSupabase(2027) as any,
+        createMockSupabase({
+          user: { data: { current_phase: "junior" }, error: null },
+        }) as any,
       );
       // getUserRole is called inside the try block — throw Unauthorized from there
       vi.mocked(getUserRole).mockRejectedValue(new Error("Unauthorized"));
 
-      const mockEvent = {
-        context: {},
-        node: { req: {}, res: {} },
-      } as H3Event;
-
-      await expect(handler(mockEvent)).rejects.toMatchObject({
+      await expect(handler(mockEvent())).rejects.toMatchObject({
         statusCode: 401,
         message: "Unauthorized",
       });
@@ -351,19 +418,16 @@ describe("/api/athlete/phase.get", () => {
         email: "test@example.com",
       });
       vi.mocked(createServerSupabaseClient).mockReturnValue(
-        createMockSupabase(2027) as any,
+        createMockSupabase({
+          user: { data: { current_phase: "junior" }, error: null },
+        }) as any,
       );
       // getUserRole throws a non-Unauthorized, non-H3 error inside the try block
       vi.mocked(getUserRole).mockRejectedValue(
         new Error("unexpected DB failure"),
       );
 
-      const mockEvent = {
-        context: {},
-        node: { req: {}, res: {} },
-      } as H3Event;
-
-      await expect(handler(mockEvent)).rejects.toMatchObject({
+      await expect(handler(mockEvent())).rejects.toMatchObject({
         statusCode: 500,
         message: "Failed to fetch phase",
       });

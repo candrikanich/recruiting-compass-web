@@ -8,9 +8,45 @@ import {
   getNextPhase,
   getPreviousPhase,
   buildPhaseMilestoneData,
+  type TaskIdsBySlug,
 } from "~/utils/phaseCalculation";
 
+/**
+ * Fake `task.slug` -> `task.id` map standing in for a real seeded task table.
+ * Every PHASE_MILESTONES slug gets a distinct UUID-shaped id — this is what
+ * `server/utils/athletePhase.ts#getTaskIdsBySlug` would return against real
+ * seeded data (see supabase/migrations/20260727000002_phase_system_repair.sql).
+ *
+ * Using real (non-slug) ids as "completed task ids" throughout this file is the
+ * whole point: it proves slug resolution actually happens, instead of the old
+ * tests which fed slug strings straight in as fake task ids and never verified
+ * they resolve to anything.
+ */
+function buildTaskIdsBySlug(): TaskIdsBySlug {
+  const allSlugs = [
+    ...PHASE_MILESTONES.freshmanToSophomore,
+    ...PHASE_MILESTONES.sophomoreToJunior,
+    ...PHASE_MILESTONES.juniorToSenior,
+    ...PHASE_MILESTONES.seniorToCommitted,
+  ];
+  const map: TaskIdsBySlug = {};
+  allSlugs.forEach((slug, index) => {
+    map[slug] = `11111111-0000-4000-8000-${String(index).padStart(12, "0")}`;
+  });
+  return map;
+}
+
+function idsFor(taskIdsBySlug: TaskIdsBySlug, slugs: string[]): string[] {
+  return slugs.map((slug) => {
+    const id = taskIdsBySlug[slug];
+    if (!id) throw new Error(`fixture missing id for slug ${slug}`);
+    return id;
+  });
+}
+
 describe("phaseCalculation", () => {
+  const taskIdsBySlug = buildTaskIdsBySlug();
+
   // ─── Constants ──────────────────────────────────────────────────────────────
 
   describe("PHASE_MILESTONES", () => {
@@ -21,18 +57,19 @@ describe("phaseCalculation", () => {
       expect(PHASE_MILESTONES).toHaveProperty("seniorToCommitted");
     });
 
-    it("each transition has at least one task ID", () => {
+    it("each transition has at least one task slug", () => {
       expect(PHASE_MILESTONES.freshmanToSophomore.length).toBeGreaterThan(0);
       expect(PHASE_MILESTONES.sophomoreToJunior.length).toBeGreaterThan(0);
       expect(PHASE_MILESTONES.juniorToSenior.length).toBeGreaterThan(0);
       expect(PHASE_MILESTONES.seniorToCommitted.length).toBeGreaterThan(0);
     });
 
-    it("all task IDs are non-empty strings", () => {
-      Object.values(PHASE_MILESTONES).forEach((tasks) => {
-        tasks.forEach((id) => {
-          expect(typeof id).toBe("string");
-          expect(id.length).toBeGreaterThan(0);
+    it("all slugs are non-empty kebab-case strings", () => {
+      Object.values(PHASE_MILESTONES).forEach((slugs) => {
+        slugs.forEach((slug) => {
+          expect(typeof slug).toBe("string");
+          expect(slug.length).toBeGreaterThan(0);
+          expect(slug).toMatch(/^[a-z0-9-]+$/);
         });
       });
     });
@@ -88,59 +125,109 @@ describe("phaseCalculation", () => {
 
   describe("calculatePhase", () => {
     it("returns committed when hasSignedNLI is true regardless of completed tasks", () => {
-      expect(calculatePhase([], true)).toBe("committed");
-      expect(calculatePhase(PHASE_MILESTONES.juniorToSenior, true)).toBe(
-        "committed",
-      );
+      expect(calculatePhase([], true, taskIdsBySlug)).toBe("committed");
+      expect(
+        calculatePhase(
+          idsFor(taskIdsBySlug, PHASE_MILESTONES.juniorToSenior),
+          true,
+          taskIdsBySlug,
+        ),
+      ).toBe("committed");
     });
 
     it("returns freshman when no tasks are completed", () => {
-      expect(calculatePhase([], false)).toBe("freshman");
+      expect(calculatePhase([], false, taskIdsBySlug)).toBe("freshman");
     });
 
     it("returns freshman when only some freshman milestones are completed", () => {
-      const partial = PHASE_MILESTONES.freshmanToSophomore.slice(0, 1);
-      expect(calculatePhase(partial, false)).toBe("freshman");
+      const partial = idsFor(
+        taskIdsBySlug,
+        PHASE_MILESTONES.freshmanToSophomore.slice(0, 1),
+      );
+      expect(calculatePhase(partial, false, taskIdsBySlug)).toBe("freshman");
     });
 
     it("returns sophomore when all freshmanToSophomore tasks are completed", () => {
-      expect(calculatePhase(PHASE_MILESTONES.freshmanToSophomore, false)).toBe(
+      const completedIds = idsFor(
+        taskIdsBySlug,
+        PHASE_MILESTONES.freshmanToSophomore,
+      );
+      expect(calculatePhase(completedIds, false, taskIdsBySlug)).toBe(
         "sophomore",
       );
     });
 
     it("returns junior when all sophomoreToJunior tasks are completed", () => {
-      const completedIds = [
+      const completedIds = idsFor(taskIdsBySlug, [
         ...PHASE_MILESTONES.freshmanToSophomore,
         ...PHASE_MILESTONES.sophomoreToJunior,
-      ];
-      expect(calculatePhase(completedIds, false)).toBe("junior");
+      ]);
+      expect(calculatePhase(completedIds, false, taskIdsBySlug)).toBe(
+        "junior",
+      );
     });
 
     it("returns junior even without freshman tasks if sophomore milestones are done (highest-phase check)", () => {
-      // The function checks phases from highest to lowest; sophomoreToJunior tasks alone qualify for junior
-      expect(calculatePhase(PHASE_MILESTONES.sophomoreToJunior, false)).toBe(
+      const completedIds = idsFor(
+        taskIdsBySlug,
+        PHASE_MILESTONES.sophomoreToJunior,
+      );
+      expect(calculatePhase(completedIds, false, taskIdsBySlug)).toBe(
         "junior",
       );
     });
 
     it("returns senior when all juniorToSenior tasks are completed", () => {
-      const completedIds = [
+      const completedIds = idsFor(taskIdsBySlug, [
         ...PHASE_MILESTONES.freshmanToSophomore,
         ...PHASE_MILESTONES.sophomoreToJunior,
         ...PHASE_MILESTONES.juniorToSenior,
-      ];
-      expect(calculatePhase(completedIds, false)).toBe("senior");
+      ]);
+      expect(calculatePhase(completedIds, false, taskIdsBySlug)).toBe(
+        "senior",
+      );
     });
 
     it("returns senior even without earlier tasks if juniorToSenior milestones are done", () => {
-      expect(calculatePhase(PHASE_MILESTONES.juniorToSenior, false)).toBe(
+      const completedIds = idsFor(
+        taskIdsBySlug,
+        PHASE_MILESTONES.juniorToSenior,
+      );
+      expect(calculatePhase(completedIds, false, taskIdsBySlug)).toBe(
         "senior",
       );
     });
 
     it("returns freshman when no milestones match", () => {
-      expect(calculatePhase(["unrelated-task-id"], false)).toBe("freshman");
+      expect(
+        calculatePhase(["unrelated-task-id"], false, taskIdsBySlug),
+      ).toBe("freshman");
+    });
+
+    it("does not resolve raw slug strings as completed task ids (regression guard)", () => {
+      // This is the exact bug this phase fixes: passing slugs directly (as the
+      // old tests did) must NOT satisfy milestones — only resolved task ids can.
+      expect(
+        calculatePhase(
+          PHASE_MILESTONES.freshmanToSophomore,
+          false,
+          taskIdsBySlug,
+        ),
+      ).toBe("freshman");
+    });
+
+    it("fails closed when a milestone slug has no corresponding seeded task", () => {
+      const incompleteMap: TaskIdsBySlug = { ...taskIdsBySlug };
+      delete incompleteMap[PHASE_MILESTONES.freshmanToSophomore[0]];
+      const completedIds = idsFor(
+        taskIdsBySlug,
+        PHASE_MILESTONES.freshmanToSophomore.slice(1),
+      );
+      // Even with every *resolvable* milestone completed, the phase can't advance
+      // because one slug never resolved to a real task id.
+      expect(calculatePhase(completedIds, false, incompleteMap)).toBe(
+        "freshman",
+      );
     });
   });
 
@@ -148,7 +235,7 @@ describe("phaseCalculation", () => {
 
   describe("getMilestoneProgress", () => {
     it("returns 100% complete for committed phase regardless of task IDs", () => {
-      const progress = getMilestoneProgress("committed", []);
+      const progress = getMilestoneProgress("committed", [], taskIdsBySlug);
       expect(progress.phase).toBe("committed");
       expect(progress.percentComplete).toBe(100);
       expect(progress.required).toEqual([]);
@@ -157,7 +244,7 @@ describe("phaseCalculation", () => {
     });
 
     it("returns 0% complete for freshman with no completed tasks", () => {
-      const progress = getMilestoneProgress("freshman", []);
+      const progress = getMilestoneProgress("freshman", [], taskIdsBySlug);
       expect(progress.percentComplete).toBe(0);
       expect(progress.required).toEqual(PHASE_MILESTONES.freshmanToSophomore);
       expect(progress.completed).toEqual([]);
@@ -165,50 +252,66 @@ describe("phaseCalculation", () => {
     });
 
     it("returns 100% complete for freshman with all milestone tasks done", () => {
+      const completedIds = idsFor(
+        taskIdsBySlug,
+        PHASE_MILESTONES.freshmanToSophomore,
+      );
       const progress = getMilestoneProgress(
         "freshman",
-        PHASE_MILESTONES.freshmanToSophomore,
+        completedIds,
+        taskIdsBySlug,
       );
       expect(progress.percentComplete).toBe(100);
       expect(progress.completed).toEqual(PHASE_MILESTONES.freshmanToSophomore);
       expect(progress.remaining).toEqual([]);
     });
 
-    it("calculates partial progress for freshman", () => {
+    it("calculates partial (nonzero) progress for freshman", () => {
       const total = PHASE_MILESTONES.freshmanToSophomore.length;
-      const completedOne = [PHASE_MILESTONES.freshmanToSophomore[0]];
-      const progress = getMilestoneProgress("freshman", completedOne);
+      const completedOne = idsFor(taskIdsBySlug, [
+        PHASE_MILESTONES.freshmanToSophomore[0],
+      ]);
+      const progress = getMilestoneProgress(
+        "freshman",
+        completedOne,
+        taskIdsBySlug,
+      );
+      expect(progress.percentComplete).toBeGreaterThan(0);
       expect(progress.percentComplete).toBeCloseTo((1 / total) * 100);
       expect(progress.completed).toHaveLength(1);
       expect(progress.remaining).toHaveLength(total - 1);
     });
 
     it("uses sophomoreToJunior milestones for sophomore phase", () => {
-      const progress = getMilestoneProgress("sophomore", []);
+      const progress = getMilestoneProgress("sophomore", [], taskIdsBySlug);
       expect(progress.required).toEqual(PHASE_MILESTONES.sophomoreToJunior);
     });
 
     it("uses juniorToSenior milestones for junior phase", () => {
-      const progress = getMilestoneProgress("junior", []);
+      const progress = getMilestoneProgress("junior", [], taskIdsBySlug);
       expect(progress.required).toEqual(PHASE_MILESTONES.juniorToSenior);
     });
 
     it("uses seniorToCommitted milestones for senior phase", () => {
-      const progress = getMilestoneProgress("senior", []);
+      const progress = getMilestoneProgress("senior", [], taskIdsBySlug);
       expect(progress.required).toEqual(PHASE_MILESTONES.seniorToCommitted);
     });
 
     it("ignores extra completed task IDs not in the required list", () => {
       const completedIds = [
-        ...PHASE_MILESTONES.freshmanToSophomore,
+        ...idsFor(taskIdsBySlug, PHASE_MILESTONES.freshmanToSophomore),
         "extra-task-not-in-list",
       ];
-      const progress = getMilestoneProgress("freshman", completedIds);
+      const progress = getMilestoneProgress(
+        "freshman",
+        completedIds,
+        taskIdsBySlug,
+      );
       expect(progress.percentComplete).toBe(100);
     });
 
     it("includes phase in returned object", () => {
-      const progress = getMilestoneProgress("junior", []);
+      const progress = getMilestoneProgress("junior", [], taskIdsBySlug);
       expect(progress.phase).toBe("junior");
     });
   });
@@ -217,56 +320,87 @@ describe("phaseCalculation", () => {
 
   describe("canAdvancePhase", () => {
     it("freshman: returns false with no completed tasks", () => {
-      expect(canAdvancePhase("freshman", [])).toBe(false);
+      expect(canAdvancePhase("freshman", [], taskIdsBySlug)).toBe(false);
     });
 
     it("freshman: returns true when all freshmanToSophomore tasks complete", () => {
-      expect(
-        canAdvancePhase("freshman", PHASE_MILESTONES.freshmanToSophomore),
-      ).toBe(true);
+      const completedIds = idsFor(
+        taskIdsBySlug,
+        PHASE_MILESTONES.freshmanToSophomore,
+      );
+      expect(canAdvancePhase("freshman", completedIds, taskIdsBySlug)).toBe(
+        true,
+      );
     });
 
     it("freshman: returns false when only some tasks complete", () => {
-      const partial = PHASE_MILESTONES.freshmanToSophomore.slice(0, 2);
-      expect(canAdvancePhase("freshman", partial)).toBe(false);
+      const partial = idsFor(
+        taskIdsBySlug,
+        PHASE_MILESTONES.freshmanToSophomore.slice(0, 2),
+      );
+      expect(canAdvancePhase("freshman", partial, taskIdsBySlug)).toBe(false);
     });
 
     it("sophomore: returns true when all sophomoreToJunior tasks complete", () => {
-      expect(
-        canAdvancePhase("sophomore", PHASE_MILESTONES.sophomoreToJunior),
-      ).toBe(true);
+      const completedIds = idsFor(
+        taskIdsBySlug,
+        PHASE_MILESTONES.sophomoreToJunior,
+      );
+      expect(canAdvancePhase("sophomore", completedIds, taskIdsBySlug)).toBe(
+        true,
+      );
     });
 
     it("sophomore: returns false with no completed tasks", () => {
-      expect(canAdvancePhase("sophomore", [])).toBe(false);
+      expect(canAdvancePhase("sophomore", [], taskIdsBySlug)).toBe(false);
     });
 
     it("junior: returns true when all juniorToSenior tasks complete", () => {
-      expect(canAdvancePhase("junior", PHASE_MILESTONES.juniorToSenior)).toBe(
+      const completedIds = idsFor(
+        taskIdsBySlug,
+        PHASE_MILESTONES.juniorToSenior,
+      );
+      expect(canAdvancePhase("junior", completedIds, taskIdsBySlug)).toBe(
         true,
       );
     });
 
     it("junior: returns false with no completed tasks", () => {
-      expect(canAdvancePhase("junior", [])).toBe(false);
+      expect(canAdvancePhase("junior", [], taskIdsBySlug)).toBe(false);
     });
 
     it("senior: returns true when sign-nli task is complete", () => {
-      expect(canAdvancePhase("senior", ["sign-nli"])).toBe(true);
+      const completedIds = idsFor(taskIdsBySlug, ["sign-nli"]);
+      expect(canAdvancePhase("senior", completedIds, taskIdsBySlug)).toBe(
+        true,
+      );
     });
 
     it("senior: returns false without sign-nli", () => {
-      expect(canAdvancePhase("senior", [])).toBe(false);
+      expect(canAdvancePhase("senior", [], taskIdsBySlug)).toBe(false);
     });
 
     it("committed: always returns false (no further advancement)", () => {
-      const allTasks = [
+      const allTasks = idsFor(taskIdsBySlug, [
         ...PHASE_MILESTONES.freshmanToSophomore,
         ...PHASE_MILESTONES.sophomoreToJunior,
         ...PHASE_MILESTONES.juniorToSenior,
         ...PHASE_MILESTONES.seniorToCommitted,
-      ];
-      expect(canAdvancePhase("committed", allTasks)).toBe(false);
+      ]);
+      expect(canAdvancePhase("committed", allTasks, taskIdsBySlug)).toBe(
+        false,
+      );
+    });
+
+    it("returns false (fails closed) when a required slug has no seeded task id", () => {
+      const brokenMap: TaskIdsBySlug = {};
+      const completedIds = idsFor(
+        taskIdsBySlug,
+        PHASE_MILESTONES.freshmanToSophomore,
+      );
+      expect(canAdvancePhase("freshman", completedIds, brokenMap)).toBe(
+        false,
+      );
     });
   });
 
@@ -322,12 +456,12 @@ describe("phaseCalculation", () => {
 
   describe("buildPhaseMilestoneData", () => {
     it("returns current_phase matching the provided phase", () => {
-      const data = buildPhaseMilestoneData("junior", []);
+      const data = buildPhaseMilestoneData("junior", [], taskIdsBySlug);
       expect(data.current_phase).toBe("junior");
     });
 
     it("returns milestones_by_phase with entries for all 5 phases", () => {
-      const data = buildPhaseMilestoneData("freshman", []);
+      const data = buildPhaseMilestoneData("freshman", [], taskIdsBySlug);
       const phases = Object.keys(data.milestones_by_phase);
       expect(phases).toContain("freshman");
       expect(phases).toContain("sophomore");
@@ -337,7 +471,7 @@ describe("phaseCalculation", () => {
     });
 
     it("each phase entry in milestones_by_phase has required shape", () => {
-      const data = buildPhaseMilestoneData("freshman", []);
+      const data = buildPhaseMilestoneData("freshman", [], taskIdsBySlug);
       Object.values(data.milestones_by_phase).forEach((entry) => {
         expect(Array.isArray(entry.required)).toBe(true);
         expect(Array.isArray(entry.completed)).toBe(true);
@@ -346,25 +480,32 @@ describe("phaseCalculation", () => {
     });
 
     it("reflects completed tasks in milestones_by_phase", () => {
-      const freshmanTasks = PHASE_MILESTONES.freshmanToSophomore;
-      const data = buildPhaseMilestoneData("sophomore", freshmanTasks);
+      const freshmanTaskIds = idsFor(
+        taskIdsBySlug,
+        PHASE_MILESTONES.freshmanToSophomore,
+      );
+      const data = buildPhaseMilestoneData(
+        "sophomore",
+        freshmanTaskIds,
+        taskIdsBySlug,
+      );
       expect(data.milestones_by_phase.freshman.percent_complete).toBe(100);
       expect(data.milestones_by_phase.sophomore.percent_complete).toBe(0);
     });
 
     it("committed phase entry always shows 100% complete", () => {
-      const data = buildPhaseMilestoneData("senior", []);
+      const data = buildPhaseMilestoneData("senior", [], taskIdsBySlug);
       expect(data.milestones_by_phase.committed.percent_complete).toBe(100);
     });
 
     it("returns last_phase_update as a valid ISO string", () => {
-      const data = buildPhaseMilestoneData("freshman", []);
+      const data = buildPhaseMilestoneData("freshman", [], taskIdsBySlug);
       const date = new Date(data.last_phase_update);
       expect(isNaN(date.getTime())).toBe(false);
     });
 
     it("with empty completed IDs, all non-committed phases have 0% progress", () => {
-      const data = buildPhaseMilestoneData("freshman", []);
+      const data = buildPhaseMilestoneData("freshman", [], taskIdsBySlug);
       expect(data.milestones_by_phase.freshman.percent_complete).toBe(0);
       expect(data.milestones_by_phase.sophomore.percent_complete).toBe(0);
       expect(data.milestones_by_phase.junior.percent_complete).toBe(0);
