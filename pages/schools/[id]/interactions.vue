@@ -182,6 +182,7 @@ import { useCoaches } from "~/composables/useCoaches";
 import { useSchools } from "~/composables/useSchools";
 import type { Interaction } from "~/types/models";
 import { useLiveRegion } from "~/composables/useLiveRegion";
+import { parseLocalDateOnly } from "~/utils/localDate";
 
 const route = useRoute();
 const id = route.params.id as string;
@@ -319,7 +320,13 @@ const handleAddInteraction = async (data: InteractionSubmitData) => {
 
     if (data.reminderEnabled && data.reminderDate && createdInteraction?.id) {
       try {
-        const reminderDateTime = new Date(data.reminderDate).toISOString();
+        // `data.reminderDate` comes from a date-only `<input type="date">` —
+        // parse as LOCAL midnight before storing, or the reminder's due_date
+        // ends up at UTC midnight, which is the previous evening in every
+        // US timezone (reminder shows/expires a day early).
+        const reminderDateTime = parseLocalDateOnly(
+          data.reminderDate,
+        ).toISOString();
         await createReminder(
           `Follow up on ${data.subject || "interaction"}`,
           reminderDateTime,

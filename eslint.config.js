@@ -40,6 +40,69 @@ const noSupabaseInComposables = {
   },
 };
 
+// Phase 7 (audit-remediation): `new Date("YYYY-MM-DD")` parses a date-only
+// string as UTC midnight, which renders/compares one calendar day early in
+// every US timezone. Force date-only values through utils/localDate.ts
+// instead. Also flags the `toISOString().split("T")[0]` idiom used to derive
+// a UTC-anchored "today", which has the same class of bug in reverse.
+const DATE_ONLY_LITERAL = /^\d{4}-\d{2}-\d{2}$/;
+
+const noDateOnlyStringConstructor = {
+  meta: { type: "problem", schema: [] },
+  create(context) {
+    const filename = context.getFilename();
+    // The utility module itself is the one place allowed to parse date-only
+    // strings — it does so using local date parts, not `new Date(string)`.
+    if (filename.endsWith("utils/localDate.ts")) return {};
+
+    return {
+      NewExpression(node) {
+        if (
+          node.callee.type !== "Identifier" ||
+          node.callee.name !== "Date" ||
+          node.arguments.length !== 1
+        ) {
+          return;
+        }
+        const [arg] = node.arguments;
+        if (arg.type === "Literal" && typeof arg.value === "string") {
+          if (DATE_ONLY_LITERAL.test(arg.value)) {
+            context.report({
+              node,
+              message:
+                "new Date(\"YYYY-MM-DD\") parses as UTC midnight, which renders/compares a day early in US timezones. Use parseLocalDateOnly() from ~/utils/localDate instead.",
+            });
+          }
+        }
+      },
+      // Matches `<expr>.toISOString().split("T")[0]` — a UTC-anchored
+      // "today"/date-only string that drifts a day after ~5-8pm US local time.
+      CallExpression(node) {
+        if (
+          node.callee.type !== "MemberExpression" ||
+          node.callee.property.type !== "Identifier" ||
+          node.callee.property.name !== "split"
+        ) {
+          return;
+        }
+        const target = node.callee.object;
+        if (
+          target.type === "CallExpression" &&
+          target.callee.type === "MemberExpression" &&
+          target.callee.property.type === "Identifier" &&
+          target.callee.property.name === "toISOString"
+        ) {
+          context.report({
+            node,
+            message:
+              "toISOString().split(\"T\")[0] derives a UTC-anchored date string, which drifts a day after ~5-8pm US local time. Use formatLocalDateOnly()/getLocalToday() from ~/utils/localDate instead.",
+          });
+        }
+      },
+    };
+  },
+};
+
 export default [
   {
     ignores: [
@@ -91,12 +154,21 @@ export default [
     },
   },
   {
-    files: ["composables/**/*.ts"],
+    files: ["**/*.ts"],
     plugins: {
       local: {
-        rules: { "no-supabase-in-composables": noSupabaseInComposables },
+        rules: {
+          "no-supabase-in-composables": noSupabaseInComposables,
+          "no-date-only-string-constructor": noDateOnlyStringConstructor,
+        },
       },
     },
+    rules: {
+      "local/no-date-only-string-constructor": "error",
+    },
+  },
+  {
+    files: ["composables/**/*.ts"],
     rules: {
       "local/no-supabase-in-composables": "error",
     },

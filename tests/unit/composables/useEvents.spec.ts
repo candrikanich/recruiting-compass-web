@@ -93,6 +93,7 @@ describe("useEvents — parent/athlete identity consistency", () => {
       eq: vi.fn().mockReturnThis(),
       gte: vi.fn().mockReturnThis(),
       lte: vi.fn().mockReturnThis(),
+      lt: vi.fn().mockReturnThis(),
       order: vi.fn().mockResolvedValue({ data: [], error: null }),
       insert: vi.fn().mockReturnThis(),
       update: vi.fn().mockReturnThis(),
@@ -124,6 +125,34 @@ describe("useEvents — parent/athlete identity consistency", () => {
 
       expect(mockSupabase.from).not.toHaveBeenCalled();
       expect(error.value).toMatch(/still loading/i);
+    });
+
+    // Bug: `start_date` is a date-only `date` column; the filter used to
+    // round-trip through `new Date(...).toISOString()`, which shifts the
+    // whole window by the local UTC offset and (via an inclusive `lte` of
+    // the end day's UTC midnight) drops the entire end day — a same-day
+    // range returned nothing.
+    describe("date-range filter (end-day inclusion, exclusive upper bound)", () => {
+      beforeEach(() => {
+        mockGetDataOwnerUserId.mockReturnValue("athlete-1");
+      });
+
+      it("passes start_date filters as plain date-only strings, not UTC timestamps", async () => {
+        const { fetchEvents } = useEvents();
+        await fetchEvents({ startDate: "2027-06-10", endDate: "2027-06-10" });
+
+        expect(mockQuery.gte).toHaveBeenCalledWith("start_date", "2027-06-10");
+        // Exclusive upper bound: start of the day AFTER endDate.
+        expect(mockQuery.lt).toHaveBeenCalledWith("start_date", "2027-06-11");
+        expect(mockQuery.lte).not.toHaveBeenCalled();
+      });
+
+      it("rolls the exclusive upper bound over a month/year boundary", async () => {
+        const { fetchEvents } = useEvents();
+        await fetchEvents({ endDate: "2027-12-31" });
+
+        expect(mockQuery.lt).toHaveBeenCalledWith("start_date", "2028-01-01");
+      });
     });
   });
 

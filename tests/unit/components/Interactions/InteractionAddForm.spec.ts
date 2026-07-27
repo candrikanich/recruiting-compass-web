@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { mount } from "@vue/test-utils";
 import InteractionAddForm from "~/components/Interactions/InteractionAddForm.vue";
 import type { Coach } from "~/types/models";
@@ -39,6 +39,34 @@ describe("InteractionAddForm Component", () => {
       expect(wrapper.find('select[id="direction"]').exists()).toBe(true);
       expect(wrapper.find('textarea[id="content"]').exists()).toBe(true);
       expect(wrapper.find('input[id="occurred_at"]').exists()).toBe(true);
+    });
+
+    describe("non-UTC timezone regression (datetime-local default)", () => {
+      const originalTz = process.env.TZ;
+
+      afterEach(() => {
+        process.env.TZ = originalTz;
+        vi.useRealTimers();
+      });
+
+      it.each(["America/New_York", "America/Los_Angeles"])(
+        "defaults occurred_at to LOCAL now, not UTC now, in %s",
+        (tz) => {
+          process.env.TZ = tz;
+          // Pick a moment where UTC and local calendar dates differ (late
+          // evening US time is already "tomorrow" in UTC) — the old
+          // `toISOString().slice(0, 16)` default would show the wrong day.
+          vi.useFakeTimers();
+          vi.setSystemTime(new Date(2026, 5, 15, 23, 30)); // Jun 15, 11:30pm local
+          const wrapper = mount(InteractionAddForm, {
+            props: { coaches: mockCoaches, loading: false },
+          });
+          const value = (
+            wrapper.find('input[id="occurred_at"]').element as HTMLInputElement
+          ).value;
+          expect(value).toBe("2026-06-15T23:30");
+        },
+      );
     });
 
     it("should render coach dropdown with all coaches", () => {

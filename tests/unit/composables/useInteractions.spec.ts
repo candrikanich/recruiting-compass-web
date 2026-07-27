@@ -72,6 +72,7 @@ describe("useInteractions", () => {
       single: vi.fn().mockReturnThis(),
       gte: vi.fn().mockReturnThis(),
       lte: vi.fn().mockReturnThis(),
+      lt: vi.fn().mockReturnThis(),
     };
 
     // Store test data for the mock query to return

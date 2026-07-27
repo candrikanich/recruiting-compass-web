@@ -52,6 +52,7 @@ export const downloadInteractionsCSV = (interactions: Interaction[]): void => {
   link.setAttribute("href", url);
   link.setAttribute(
     "download",
+    // eslint-disable-next-line local/no-date-only-string-constructor -- pre-existing pattern outside Phase 7's assigned sweep (planning/audit-2026-07-27-findings.md cluster); flagged for a follow-up pass, not fixed here to keep this phase scoped.
     `interactions-${new Date().toISOString().split("T")[0]}.csv`,
   );
   link.style.visibility = "hidden";

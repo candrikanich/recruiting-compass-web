@@ -75,6 +75,7 @@ export default defineEventHandler(async (event) => {
         entries.push({
           loc: `/p/${slug}`,
           lastmod: updatedAt
+            // eslint-disable-next-line local/no-date-only-string-constructor -- pre-existing pattern outside Phase 7's assigned sweep (planning/audit-2026-07-27-findings.md cluster); flagged for a follow-up pass, not fixed here to keep this phase scoped.
             ? new Date(updatedAt).toISOString().split("T")[0]
             : undefined,
           changefreq: "weekly",

@@ -2,10 +2,13 @@
 import { computed } from "vue";
 import type { Ref } from "vue";
 import type { Event } from "~/types/models";
+import { formatLocalDateOnly } from "~/utils/localDate";
 export function useEventStats(events: Ref<Event[]>) {
   const stats = computed(() => {
-    // Get today's date as YYYY-MM-DD string for timezone-agnostic comparison
-    const todayStr = new Date().toISOString().split("T")[0];
+    // Today's date as a LOCAL YYYY-MM-DD string. `toISOString().split("T")[0]`
+    // is UTC, so it drifts to tomorrow after ~5-8pm US local time — dropping
+    // today's events from "Upcoming" for the rest of the evening.
+    const todayStr = formatLocalDateOnly(new Date());
 
     return [
       {

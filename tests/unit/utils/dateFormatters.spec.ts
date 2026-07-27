@@ -85,6 +85,36 @@ describe("dateFormatters", () => {
     });
   });
 
+  describe("date-only values (e.g. last_contact_date) under non-UTC TZ", () => {
+    const originalTz = process.env.TZ;
+
+    afterEach(() => {
+      process.env.TZ = originalTz;
+    });
+
+    it.each(["America/New_York", "America/Los_Angeles"])(
+      "formatDate renders the stored calendar day, not a day early, in %s",
+      (tz) => {
+        process.env.TZ = tz;
+        // A `date` column value for Dec 1 has no time component. The bug:
+        // `new Date("2027-12-01")` parses as UTC midnight, which is Nov 30
+        // evening in every US timezone.
+        expect(formatDate("2027-12-01")).toContain("Dec 1");
+        expect(formatDate("2027-12-01")).not.toContain("Nov 30");
+      },
+    );
+
+    it.each(["America/New_York", "America/Los_Angeles"])(
+      "daysAgo counts from the stored calendar day in %s",
+      (tz) => {
+        process.env.TZ = tz;
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date(2027, 11, 11, 9, 0)); // Dec 11, local morning
+        expect(daysAgo("2027-12-01")).toBe(10);
+      },
+    );
+  });
+
   describe("formatDateTime", () => {
     it("returns 'Unknown' for undefined", () => {
       expect(formatDateTime(undefined)).toBe("Unknown");

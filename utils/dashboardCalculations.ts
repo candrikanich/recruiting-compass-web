@@ -5,6 +5,7 @@
 
 import { getCarnegieSize } from "./schoolSize";
 import type { School, Interaction, Offer } from "~/types/models";
+import { getLocalToday, parseLocalDateOnly } from "./localDate";
 
 /**
  * Calculate school size breakdown by Carnegie classification
@@ -72,12 +73,16 @@ export const calculateAcceptedOffers = (offers: Offer[]): number => {
 export const getUpcomingEvents = <T extends { start_date: string }>(
   events: T[],
 ): T[] => {
-  const now = new Date();
+  // `start_date` is a date-only DB column — compare as LOCAL midnight, or
+  // today's event drops off the list after ~5-8pm US local time (UTC
+  // midnight of "today" has already passed).
+  const today = getLocalToday();
   return events
-    .filter((event) => new Date(event.start_date) >= now)
+    .filter((event) => parseLocalDateOnly(event.start_date) >= today)
     .sort(
       (a, b) =>
-        new Date(a.start_date).getTime() - new Date(b.start_date).getTime(),
+        parseLocalDateOnly(a.start_date).getTime() -
+        parseLocalDateOnly(b.start_date).getTime(),
     )
     .slice(0, 5);
 };

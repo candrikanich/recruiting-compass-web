@@ -7,6 +7,7 @@ import { createClientLogger } from "~/utils/logger";
 import { eventSchema } from "~/utils/validation/schemas";
 import type { Event } from "~/types/models";
 import type { Database } from "~/types/database";
+import { exclusiveEndOfDayString } from "~/utils/localDate";
 
 const logger = createClientLogger("useEvents");
 
@@ -107,17 +108,19 @@ export const useEvents = (): {
       }
 
       // Move date filtering to SQL (10x less data transferred, faster)
+      // `start_date` is a date-only DB column and `filters.startDate`/
+      // `endDate` are already `YYYY-MM-DD` — compare as plain dates rather
+      // than converting through a UTC timestamp, which shifted the whole
+      // window and (via an inclusive `lte` of UTC midnight) dropped the
+      // entire end day. The end bound is EXCLUSIVE (start of the day after).
       if (filters?.startDate) {
-        query = query.gte(
-          "start_date",
-          new Date(filters.startDate).toISOString(),
-        );
+        query = query.gte("start_date", filters.startDate);
       }
 
       if (filters?.endDate) {
-        query = query.lte(
+        query = query.lt(
           "start_date",
-          new Date(filters.endDate).toISOString(),
+          exclusiveEndOfDayString(filters.endDate),
         );
       }
 

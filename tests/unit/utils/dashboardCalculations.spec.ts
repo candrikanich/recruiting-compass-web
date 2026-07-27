@@ -318,6 +318,26 @@ describe("getUpcomingEvents", () => {
     expect(result).toHaveLength(5);
     expect(result[0].name).toBe("Future 1");
   });
+
+  describe("non-UTC timezone regression (today's event drops off in the evening)", () => {
+    const originalTz = process.env.TZ;
+
+    afterEach(() => {
+      process.env.TZ = originalTz;
+    });
+
+    it.each(["America/New_York", "America/Los_Angeles"])(
+      "keeps today's date-only event visible late in the evening, in %s",
+      (tz) => {
+        process.env.TZ = tz;
+        // 11pm local on Jan 15 is already Jan 16 in UTC. A UTC-anchored
+        // "today" would drop this event; local-date comparison must not.
+        vi.setSystemTime(new Date(2026, 0, 15, 23, 0));
+        const events = [{ start_date: "2026-01-15", name: "Today's Event" }];
+        expect(getUpcomingEvents(events)).toHaveLength(1);
+      },
+    );
+  });
 });
 
 // ---------------------------------------------------------------------------

@@ -16,6 +16,7 @@ const createMockQuery = () => {
     single: vi.fn(),
     gte: vi.fn(),
     lte: vi.fn(),
+    lt: vi.fn(),
   };
 
   // Make each chainable method return the mock query itself
@@ -28,6 +29,7 @@ const createMockQuery = () => {
   mockQuery.single.mockReturnValue(mockQuery);
   mockQuery.gte.mockReturnValue(mockQuery);
   mockQuery.lte.mockReturnValue(mockQuery);
+  mockQuery.lt.mockReturnValue(mockQuery);
 
   // Make mockQuery thenable with a proper .then() method
   Object.defineProperty(mockQuery, "then", {
@@ -193,12 +195,50 @@ describe("useInteractions - Extended", () => {
         "occurred_at",
         expect.any(String),
       );
-      expect(mockQuery.lte).toHaveBeenCalledWith(
+      // End bound is EXCLUSIVE (start of the day after endDate) — `lte` of
+      // UTC midnight silently dropped the entire end day.
+      expect(mockQuery.lt).toHaveBeenCalledWith(
         "occurred_at",
         expect.any(String),
       );
       expect(interactions.value).toEqual([validInteraction]);
       expect(interactions.value.length).toBe(1);
+    });
+
+    describe("non-UTC timezone regression (same-day range excludes end day)", () => {
+      const originalTz = process.env.TZ;
+
+      afterEach(() => {
+        process.env.TZ = originalTz;
+      });
+
+      it.each(["America/New_York", "America/Los_Angeles"])(
+        "a same-day range's exclusive bound covers the entire local end day, in %s",
+        async (tz) => {
+          process.env.TZ = tz;
+          mockQuery.__setTestResponse({ data: [], error: null });
+
+          const { fetchInteractions } = useInteractions();
+          await fetchInteractions({
+            startDate: "2027-06-10",
+            endDate: "2027-06-10",
+          });
+
+          const [, gteBound] = mockQuery.gte.mock.calls[0];
+          const [, ltBound] = mockQuery.lt.mock.calls[0];
+
+          // An interaction at 11:59pm local on the end day must fall
+          // strictly before the exclusive upper bound.
+          const lastMomentOfEndDay = new Date(2027, 5, 10, 23, 59, 59, 999);
+          expect(lastMomentOfEndDay.getTime()).toBeLessThan(
+            new Date(ltBound).getTime(),
+          );
+          // The lower bound must be at/before local midnight of the start day.
+          expect(new Date(gteBound).getTime()).toBeLessThanOrEqual(
+            new Date(2027, 5, 10, 0, 0, 0, 0).getTime(),
+          );
+        },
+      );
     });
 
     it("should handle fetch errors gracefully", async () => {

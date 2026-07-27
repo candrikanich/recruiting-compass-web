@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { setActivePinia, createPinia } from "pinia";
 import { useUserStore } from "~/stores/user";
 
@@ -410,6 +410,29 @@ describe("useOffersStore", () => {
       );
       expect(days).toBeGreaterThanOrEqual(9);
       expect(days).toBeLessThanOrEqual(10);
+    });
+
+    describe("non-UTC timezone regression (offer flips overdue evening before)", () => {
+      const originalTz = process.env.TZ;
+
+      afterEach(() => {
+        process.env.TZ = originalTz;
+        vi.useRealTimers();
+      });
+
+      it.each(["America/New_York", "America/Los_Angeles"])(
+        "an offer due today is not yet overdue late in the evening, in %s",
+        (tz) => {
+          process.env.TZ = tz;
+          vi.useFakeTimers();
+          vi.setSystemTime(new Date(2026, 0, 15, 23, 0)); // 11pm local, still the 15th
+          const store = useOffersStore();
+          const days = store.daysUntilDeadline(
+            makeOffer({ deadline_date: "2026-01-15" }) as never,
+          );
+          expect(days).toBe(0);
+        },
+      );
     });
   });
 

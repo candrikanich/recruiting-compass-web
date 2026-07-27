@@ -1,5 +1,5 @@
 // tests/unit/composables/useEventStats.spec.ts
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { ref } from "vue";
 import { useEventStats } from "~/composables/useEventStats";
 import type { Event } from "~/types/models";
@@ -155,5 +155,34 @@ describe("useEventStats", () => {
     const { stats } = useEventStats(events);
 
     expect(stats.value[1].value).toBe(2); // Both today and tomorrow are upcoming
+  });
+
+  describe("non-UTC timezone regression (UTC-anchored 'today' drift)", () => {
+    const originalTz = process.env.TZ;
+
+    afterEach(() => {
+      process.env.TZ = originalTz;
+    });
+
+    it.each(["America/New_York", "America/Los_Angeles"])(
+      "counts today's date-only event as 'Upcoming' late in the evening, in %s",
+      (tz) => {
+        process.env.TZ = tz;
+        // 11pm local Feb 15 is already Feb 16 in UTC. `toISOString().split`
+        // would compute todayStr as "2026-02-16", excluding today's event.
+        vi.setSystemTime(new Date(2026, 1, 15, 23, 0));
+        const events = ref<Event[]>([
+          {
+            id: "1",
+            name: "Today's Event",
+            start_date: "2026-02-15",
+            family_unit_id: "f1",
+          } as Event,
+        ]);
+
+        const { stats } = useEventStats(events);
+        expect(stats.value[1].value).toBe(1);
+      },
+    );
   });
 });

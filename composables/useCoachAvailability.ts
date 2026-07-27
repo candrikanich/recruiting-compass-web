@@ -124,6 +124,7 @@ export const useCoachAvailability = () => {
     const availability = getCoachAvailability(coachId);
 
     // Check blackout dates
+    // eslint-disable-next-line local/no-date-only-string-constructor -- pre-existing pattern outside Phase 7's assigned sweep (planning/audit-2026-07-27-findings.md cluster); flagged for a follow-up pass, not fixed here to keep this phase scoped.
     const dateStr = date.toISOString().split("T")[0];
     if (availability.blackout_dates.includes(dateStr)) {
       return false;
@@ -170,6 +171,7 @@ export const useCoachAvailability = () => {
 
     // Check up to 60 days ahead
     for (let i = 0; i < 60; i++) {
+      // eslint-disable-next-line local/no-date-only-string-constructor -- pre-existing pattern outside Phase 7's assigned sweep (planning/audit-2026-07-27-findings.md cluster); flagged for a follow-up pass, not fixed here to keep this phase scoped.
       const dateStr = currentDate.toISOString().split("T")[0];
 
       // Skip blackout dates

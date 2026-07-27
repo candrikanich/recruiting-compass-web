@@ -70,6 +70,7 @@ describe("useInteractions - Athlete Features", () => {
       single: vi.fn().mockReturnThis(),
       gte: vi.fn().mockReturnThis(),
       lte: vi.fn().mockReturnThis(),
+      lt: vi.fn().mockReturnThis(),
       in: vi.fn().mockReturnThis(),
       limit: vi.fn().mockReturnThis(),
     };

@@ -4,6 +4,13 @@
 
 import type { Interaction, School, Offer, Coach } from "~/types/models";
 import { downloadFile } from "./exportHelpers";
+import { parseLocalDateOnly, formatLocalDateOnly } from "./localDate";
+
+// `deadline_date` and `last_contact_date` are date-only DB columns —
+// `new Date("YYYY-MM-DD")` parses as UTC midnight, which renders a day
+// early in every US timezone. Parse as LOCAL midnight before formatting.
+const formatDateOnly = (dateOnlyString: string): string =>
+  parseLocalDateOnly(dateOnlyString).toLocaleDateString();
 
 // Extend jsPDF type to include autoTable
 declare module "jspdf" {
@@ -77,7 +84,7 @@ export const exportInteractionsToCSV = (
   ]);
 
   const csv = toCSV(headers, rows);
-  const date = new Date().toISOString().split("T")[0];
+  const date = formatLocalDateOnly(new Date());
   downloadFile(
     csv,
     filename || `interactions-${date}.csv`,
@@ -130,14 +137,14 @@ export const exportSchoolComparisonToCSV = (
     s.offer?.scholarship_percentage ? `${s.offer.scholarship_percentage}%` : "",
     s.offer ? formatOfferStatus(s.offer.status) : "",
     s.offer?.deadline_date
-      ? new Date(s.offer.deadline_date).toLocaleDateString()
+      ? formatDateOnly(s.offer.deadline_date)
       : "",
     (s.pros || []).join("; "),
     (s.cons || []).join("; "),
   ]);
 
   const csv = toCSV(headers, rows);
-  const date = new Date().toISOString().split("T")[0];
+  const date = formatLocalDateOnly(new Date());
   downloadFile(
     csv,
     filename || `school-comparison-${date}.csv`,
@@ -407,7 +414,7 @@ export const generateSchoolComparisonPDF = (
           s.offer
             ? `
           <p><strong>Offer:</strong> ${formatOfferType(s.offer.offer_type)} - ${s.offer.scholarship_percentage || 0}% scholarship
-          ${s.offer.deadline_date ? ` (Deadline: ${new Date(s.offer.deadline_date).toLocaleDateString()})` : ""}</p>
+          ${s.offer.deadline_date ? ` (Deadline: ${formatDateOnly(s.offer.deadline_date)})` : ""}</p>
         `
             : ""
         }
@@ -556,7 +563,7 @@ export const exportAnalyticsPDF = async (
     }
 
     // Download
-    const date = new Date().toISOString().split("T")[0];
+    const date = formatLocalDateOnly(new Date());
     doc.save(filename || `analytics-report-${date}.pdf`);
   } catch (error) {
     console.error("Failed to export analytics PDF:", error);
@@ -774,13 +781,13 @@ export const exportCoachesToCSV = (
     c.twitter_handle || "",
     c.instagram_handle || "",
     c.last_contact_date
-      ? new Date(c.last_contact_date).toLocaleDateString()
+      ? formatDateOnly(c.last_contact_date)
       : "",
     c.notes || "",
   ]);
 
   const csv = toCSV(headers, rows);
-  const date = new Date().toISOString().split("T")[0];
+  const date = formatLocalDateOnly(new Date());
   downloadFile(
     csv,
     filename || `coaches-${date}.csv`,
@@ -845,7 +852,7 @@ export const generateCoachesPDF = (
               <td><span class="badge ${getRoleBadgeClass(c.role)}">${formatRole(c.role)}</span></td>
               <td>${c.email || "-"}</td>
               <td>${c.phone || "-"}</td>
-              <td>${c.last_contact_date ? new Date(c.last_contact_date).toLocaleDateString() : "-"}</td>
+              <td>${c.last_contact_date ? formatDateOnly(c.last_contact_date) : "-"}</td>
             </tr>
           `,
             )

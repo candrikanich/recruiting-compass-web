@@ -320,6 +320,14 @@ import { getRoleLabel } from "~/utils/coachLabels";
 const MAX_SUBJECT_LENGTH = 500;
 const MAX_CONTENT_LENGTH = 10000;
 
+// `<input type="datetime-local">` expects/displays its value in LOCAL time.
+// `new Date().toISOString()` is UTC — defaulting to it pre-fills the form
+// with the wrong local clock time (off by the timezone offset).
+const formatLocalDatetimeInputValue = (date: Date): string => {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+};
+
 const props = defineProps<{
   coaches: Coach[];
   loading: boolean;
@@ -351,7 +359,7 @@ const createInitialForm = () => ({
   subject: "",
   content: "",
   sentiment: "",
-  occurred_at: new Date().toISOString().slice(0, 16),
+  occurred_at: formatLocalDatetimeInputValue(new Date()),
 });
 const newInteraction = ref(createInitialForm());
 

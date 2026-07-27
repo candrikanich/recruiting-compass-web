@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import {
   toCSV,
   exportInteractionsToCSV,
@@ -344,6 +344,40 @@ describe("exportUtils", () => {
       expect(downloadFile).toHaveBeenCalled();
       const [, filename] = vi.mocked(downloadFile).mock.calls[0];
       expect(filename).toMatch(/school-comparison-\d{4}-\d{2}-\d{2}.csv/);
+    });
+
+    describe("non-UTC timezone regression (deadline renders a day early)", () => {
+      const originalTz = process.env.TZ;
+
+      afterEach(() => {
+        process.env.TZ = originalTz;
+      });
+
+      it.each(["America/New_York", "America/Los_Angeles"])(
+        "renders the offer deadline's stored calendar day in %s",
+        (tz) => {
+          process.env.TZ = tz;
+          const schools = [
+            createSchool({
+              offer: {
+                id: "offer-1",
+                offer_type: "full_scholarship" as const,
+                scholarship_percentage: 100,
+                status: "pending" as const,
+                deadline_date: "2024-05-01",
+                created_at: "2024-01-01",
+                updated_at: "2024-01-01",
+              } as Offer,
+            }),
+          ];
+
+          exportSchoolComparisonToCSV(schools);
+
+          const [content] = vi.mocked(downloadFile).mock.calls[0];
+          expect(content).toContain("5/1/2024");
+          expect(content).not.toContain("4/30/2024");
+        },
+      );
     });
   });
 

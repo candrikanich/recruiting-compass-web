@@ -1,4 +1,5 @@
 import type { DeadlineInfo, DeadlineUrgency } from "~/types/timeline";
+import { getLocalToday, parseLocalDateOnly } from "./localDate";
 
 export function calculateDeadlineInfo(
   deadlineDate: string | null,
@@ -13,20 +14,11 @@ export function calculateDeadlineInfo(
     };
   }
 
-  const now = new Date();
-  const deadline = new Date(deadlineDate);
-
-  // Normalize to midnight for day comparison
-  const todayMidnight = new Date(
-    now.getFullYear(),
-    now.getMonth(),
-    now.getDate(),
-  );
-  const deadlineMidnight = new Date(
-    deadline.getFullYear(),
-    deadline.getMonth(),
-    deadline.getDate(),
-  );
+  // `deadline_date` is a date-only DB column — parse as LOCAL midnight.
+  // `new Date(deadlineDate)` parses as UTC midnight, which rolls back to
+  // the previous local day in every US timezone.
+  const todayMidnight = getLocalToday();
+  const deadlineMidnight = parseLocalDateOnly(deadlineDate);
 
   const diffMs = deadlineMidnight.getTime() - todayMidnight.getTime();
   const daysRemaining = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
@@ -62,20 +54,8 @@ export function formatDeadlineDate(deadlineDate: string | null): string {
     return "";
   }
 
-  const now = new Date();
-  const deadline = new Date(deadlineDate);
-
-  // Normalize to midnight for day comparison
-  const todayMidnight = new Date(
-    now.getFullYear(),
-    now.getMonth(),
-    now.getDate(),
-  );
-  const deadlineMidnight = new Date(
-    deadline.getFullYear(),
-    deadline.getMonth(),
-    deadline.getDate(),
-  );
+  const todayMidnight = getLocalToday();
+  const deadlineMidnight = parseLocalDateOnly(deadlineDate);
 
   const diffMs = deadlineMidnight.getTime() - todayMidnight.getTime();
   const daysRemaining = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
@@ -92,7 +72,7 @@ export function formatDeadlineDate(deadlineDate: string | null): string {
       month: "short",
       day: "numeric",
     });
-    return formatter.format(deadline);
+    return formatter.format(deadlineMidnight);
   }
 }
 

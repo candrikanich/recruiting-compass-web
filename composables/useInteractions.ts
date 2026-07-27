@@ -9,6 +9,7 @@ import { interactionSchema } from "~/utils/validation/schemas";
 import { sanitizeHtml } from "~/utils/validation/sanitize";
 import { createClientLogger } from "~/utils/logger";
 import { useAuthFetch } from "~/composables/useAuthFetch";
+import { parseLocalDateOnly, exclusiveEndOfDay } from "~/utils/localDate";
 
 const logger = createClientLogger("useInteractions");
 
@@ -146,17 +147,22 @@ export const useInteractions = () => {
         query = query.eq("logged_by", filters.loggedBy);
       }
 
+      // `filters.startDate`/`endDate` are date-only (`YYYY-MM-DD`) calendar
+      // days from a date-range picker; `occurred_at` is a full timestamp.
+      // Bound by LOCAL midnight, and make the end bound EXCLUSIVE (start of
+      // the day after `endDate`) — `lte(endDate T00:00Z)` silently drops the
+      // entire end day.
       if (filters?.startDate) {
         query = query.gte(
           "occurred_at",
-          new Date(filters.startDate).toISOString(),
+          parseLocalDateOnly(filters.startDate).toISOString(),
         );
       }
 
       if (filters?.endDate) {
-        query = query.lte(
+        query = query.lt(
           "occurred_at",
-          new Date(filters.endDate).toISOString(),
+          exclusiveEndOfDay(filters.endDate).toISOString(),
         );
       }
 

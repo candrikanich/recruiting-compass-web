@@ -16,6 +16,7 @@ const createMockQuery = () => {
     single: vi.fn(),
     gte: vi.fn(),
     lte: vi.fn(),
+    lt: vi.fn(),
   };
 
   // Make each chainable method return the mock query itself
@@ -28,6 +29,7 @@ const createMockQuery = () => {
   mockQuery.single.mockReturnValue(mockQuery);
   mockQuery.gte.mockReturnValue(mockQuery);
   mockQuery.lte.mockReturnValue(mockQuery);
+  mockQuery.lt.mockReturnValue(mockQuery);
 
   // Make mockQuery thenable with a proper .then() method
   Object.defineProperty(mockQuery, "then", {

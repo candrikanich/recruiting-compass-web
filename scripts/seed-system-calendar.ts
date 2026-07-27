@@ -50,7 +50,9 @@ const periodRows = RECRUITING_CALENDAR_2026.map((p) => ({
   sport: "baseball",
   division: normalizeDivision(p.division),
   label: p.description,
+  // eslint-disable-next-line local/no-date-only-string-constructor -- pre-existing pattern outside Phase 7's assigned sweep (planning/audit-2026-07-27-findings.md cluster); flagged for a follow-up pass, not fixed here to keep this phase scoped.
   start_date: p.start.toISOString().split("T")[0],
+  // eslint-disable-next-line local/no-date-only-string-constructor -- pre-existing pattern outside Phase 7's assigned sweep (planning/audit-2026-07-27-findings.md cluster); flagged for a follow-up pass, not fixed here to keep this phase scoped.
   end_date: p.end.toISOString().split("T")[0],
   season_year: 2026,
 }));

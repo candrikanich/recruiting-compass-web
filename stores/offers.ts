@@ -6,6 +6,7 @@ import { useSupabase } from "~/composables/useSupabase";
 import { useFamilyCtx } from "~/composables/useFamilyCtx";
 import { useUserStore } from "./user";
 import { offerSchema } from "~/utils/validation/schemas";
+import { getLocalToday, parseLocalDateOnly } from "~/utils/localDate";
 
 const logger = createClientLogger("stores/offers");
 
@@ -278,9 +279,12 @@ export const useOffersStore = defineStore("offers", () => {
 
   function daysUntilDeadline(offer: Offer): number | null {
     if (!offer.deadline_date) return null;
-    const now = new Date();
-    const deadline = new Date(offer.deadline_date);
-    const diffTime = deadline.getTime() - now.getTime();
+    // `deadline_date` is a date-only DB column — parse/compare as LOCAL
+    // midnight so an offer doesn't flip to "overdue" the evening before
+    // (US timezones parse `new Date("YYYY-MM-DD")` as the previous local day).
+    const today = getLocalToday();
+    const deadline = parseLocalDateOnly(offer.deadline_date);
+    const diffTime = deadline.getTime() - today.getTime();
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   }
 
