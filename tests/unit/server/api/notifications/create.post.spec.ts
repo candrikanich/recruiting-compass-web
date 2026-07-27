@@ -153,6 +153,27 @@ describe("POST /api/notifications/create", () => {
     expect(result.success).toBe(true);
   });
 
+  it("accepts priority 'normal' (matches DB CHECK constraint)", async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (mockState as any).body = {
+      type: "follow_up_reminder",
+      title: "Test",
+      priority: "normal",
+    };
+    const result = await handler(mockEvent);
+    expect(result.success).toBe(true);
+  });
+
+  it("throws 422 for priority 'medium' (not a valid DB value; use 'normal')", async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (mockState as any).body = {
+      type: "follow_up_reminder",
+      title: "Test",
+      priority: "medium",
+    };
+    await expect(handler(mockEvent)).rejects.toMatchObject({ statusCode: 422 });
+  });
+
   it("throws 500 when DB insert returns an error", async () => {
     mockState.insertError = { message: "DB write failed" };
     await expect(handler(mockEvent)).rejects.toMatchObject({ statusCode: 500 });

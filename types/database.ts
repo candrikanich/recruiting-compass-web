@@ -1446,6 +1446,7 @@ export type Database = {
       }
       notifications: {
         Row: {
+          action_url: string | null
           created_at: string | null
           email_sent: boolean | null
           email_sent_at: string | null
@@ -1462,6 +1463,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          action_url?: string | null
           created_at?: string | null
           email_sent?: boolean | null
           email_sent_at?: string | null
@@ -1478,6 +1480,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          action_url?: string | null
           created_at?: string | null
           email_sent?: boolean | null
           email_sent_at?: string | null
@@ -3031,6 +3034,8 @@ export type Database = {
         | "deadline_alert"
         | "daily_digest"
         | "inbound_interaction"
+        | "offer"
+        | "event"
       recommendation_status:
         | "not_requested"
         | "requested"
@@ -3224,6 +3229,8 @@ export const Constants = {
         "deadline_alert",
         "daily_digest",
         "inbound_interaction",
+        "offer",
+        "event",
       ],
       recommendation_status: [
         "not_requested",

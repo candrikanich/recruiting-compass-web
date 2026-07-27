@@ -20,7 +20,8 @@ const createNotificationSchema = z.object({
   ]),
   title: z.string().min(1).max(200),
   message: z.string().max(1000).optional(),
-  priority: z.enum(["low", "medium", "high"]).optional().default("low"),
+  // Must match the DB CHECK constraint on notifications.priority (low/normal/high)
+  priority: z.enum(["low", "normal", "high"]).optional().default("low"),
   // Only allow relative paths to prevent open redirect / phishing via arbitrary URLs
   action_url: z
     .string()

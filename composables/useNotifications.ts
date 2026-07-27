@@ -121,7 +121,8 @@ export const useNotifications = (): {
 
       if (insertError) throw insertError;
 
-      notifications.value.unshift(data);
+      // shallowRef requires reassignment (not in-place mutation) to trigger reactivity
+      notifications.value = [data, ...notifications.value];
       return data;
     } catch (err: unknown) {
       const message =
@@ -155,7 +156,12 @@ export const useNotifications = (): {
 
       const index = notifications.value.findIndex((n) => n.id === id);
       if (index !== -1) {
-        notifications.value[index] = data;
+        // shallowRef requires reassignment (not in-place mutation) to trigger reactivity
+        notifications.value = [
+          ...notifications.value.slice(0, index),
+          data,
+          ...notifications.value.slice(index + 1),
+        ];
       }
 
       return data;
