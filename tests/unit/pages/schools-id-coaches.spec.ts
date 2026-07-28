@@ -652,8 +652,9 @@ describe("pages/schools/[id]/coaches.vue", () => {
       await flushPromises();
 
       expect(console.error).toHaveBeenCalledWith(
-        "Failed to add coach:",
-        expect.any(Error),
+        expect.stringContaining("[SchoolCoaches]"),
+        "Failed to add coach",
+        expect.objectContaining({ name: "Error", message: expect.any(String) }),
       );
     });
   });
@@ -730,7 +731,8 @@ describe("pages/schools/[id]/coaches.vue", () => {
       await flushPromises();
 
       expect(console.error).toHaveBeenCalledWith(
-        "Failed to delete coach:",
+        expect.stringContaining("[SchoolCoaches]"),
+        "Failed to delete coach",
         "Delete failed",
       );
     });
