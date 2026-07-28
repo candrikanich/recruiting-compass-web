@@ -308,6 +308,17 @@
         </div>
       </div>
     </main>
+
+    <DesignSystemConfirmDialog
+      :is-open="isDeleteDialogOpen"
+      title="Delete Event"
+      message="Are you sure you want to delete this event? This action cannot be undone."
+      confirm-text="Delete"
+      cancel-text="Cancel"
+      variant="danger"
+      @confirm="confirmDeleteEvent"
+      @cancel="cancelDeleteEvent"
+    />
   </div>
 </template>
 
@@ -315,6 +326,7 @@
 import { ref, onMounted, computed } from "vue";
 import { useEvents } from "~/composables/useEvents";
 import { useEventStats } from "~/composables/useEventStats";
+import { useAppToast } from "~/composables/useAppToast";
 import StatsTiles from "~/components/shared/StatsTiles.vue";
 import type { Event } from "~/types/models";
 
@@ -328,6 +340,7 @@ const {
   fetchEvents,
   deleteEvent: deleteEventAPI,
 } = useEvents();
+const { showToast } = useAppToast();
 
 // Summary statistics
 const { stats: eventStats } = useEventStats(computed(() => events.value));
@@ -569,14 +582,33 @@ const formatDateRange = (
   return `${startStr} - ${endStr}`;
 };
 
-const deleteEvent = async (eventId: string) => {
-  if (confirm("Are you sure you want to delete this event?")) {
-    try {
-      await deleteEventAPI(eventId);
-    } catch (err) {
-      console.error("Failed to delete event:", err);
-    }
+const isDeleteDialogOpen = ref(false);
+const eventToDeleteId = ref<string | null>(null);
+
+const deleteEvent = (eventId: string) => {
+  eventToDeleteId.value = eventId;
+  isDeleteDialogOpen.value = true;
+};
+
+const confirmDeleteEvent = async () => {
+  const eventId = eventToDeleteId.value;
+  isDeleteDialogOpen.value = false;
+  eventToDeleteId.value = null;
+  if (!eventId) return;
+  try {
+    await deleteEventAPI(eventId);
+  } catch (err) {
+    console.error("Failed to delete event:", err);
+    showToast(
+      "Something went wrong deleting this event. Please try again.",
+      "error",
+    );
   }
+};
+
+const cancelDeleteEvent = () => {
+  isDeleteDialogOpen.value = false;
+  eventToDeleteId.value = null;
 };
 
 onMounted(async () => {

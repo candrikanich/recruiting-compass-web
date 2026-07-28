@@ -224,6 +224,28 @@
         </p>
       </div>
     </main>
+
+    <DesignSystemConfirmDialog
+      :is-open="isRegenerateDialogOpen"
+      title="Regenerate Family Code"
+      message="Are you sure you want to regenerate your family code? The old code will no longer work."
+      confirm-text="Regenerate"
+      cancel-text="Cancel"
+      variant="warning"
+      @confirm="confirmRegenerateCode"
+      @cancel="cancelRegenerateCode"
+    />
+
+    <DesignSystemConfirmDialog
+      :is-open="isRemoveMemberDialogOpen"
+      title="Remove Family Member"
+      :message="`Are you sure you want to remove ${memberToRemoveName}? They will lose access to your recruiting data.`"
+      confirm-text="Remove"
+      cancel-text="Cancel"
+      variant="danger"
+      @confirm="confirmRemoveMember"
+      @cancel="cancelRemoveMember"
+    />
   </div>
 </template>
 
@@ -375,28 +397,60 @@ const handleCopyCode = async (code: string) => {
   await copyCodeToClipboard(code);
 };
 
-const handleRegenerateCode = async () => {
-  const confirmed = confirm(
-    "Are you sure you want to regenerate your family code? The old code will no longer work.",
+const isRegenerateDialogOpen = ref(false);
+const isRemoveMemberDialogOpen = ref(false);
+const memberToRemoveId = ref<string | null>(null);
+
+const memberToRemoveName = computed(() => {
+  const member = familyMembers.value.find(
+    (m) => m.id === memberToRemoveId.value,
   );
-  if (confirmed) {
-    await regenerateCode();
+  return member?.users?.full_name || member?.users?.email || "this member";
+});
+
+const handleRegenerateCode = () => {
+  isRegenerateDialogOpen.value = true;
+};
+
+const confirmRegenerateCode = async () => {
+  isRegenerateDialogOpen.value = false;
+  const success = await regenerateCode();
+  if (!success) {
+    showToast(
+      "Something went wrong regenerating your family code. Please try again.",
+      "error",
+    );
   }
 };
 
-const handleRemoveMember = async (memberId: string) => {
-  const member = familyMembers.value.find((m) => m.id === memberId);
-  const memberName =
-    member?.users?.full_name || member?.users?.email || "this member";
+const cancelRegenerateCode = () => {
+  isRegenerateDialogOpen.value = false;
+};
 
-  const confirmed = confirm(
-    `Are you sure you want to remove ${memberName}? They will lose access to your recruiting data.`,
-  );
-  if (!confirmed) return;
+const handleRemoveMember = (memberId: string) => {
+  memberToRemoveId.value = memberId;
+  isRemoveMemberDialogOpen.value = true;
+};
+
+const confirmRemoveMember = async () => {
+  const memberId = memberToRemoveId.value;
+  isRemoveMemberDialogOpen.value = false;
+  memberToRemoveId.value = null;
+  if (!memberId) return;
 
   const success = await removeFamilyMember(memberId);
   if (success) {
     await fetchFamilyMembers();
+  } else {
+    showToast(
+      "Something went wrong removing this member. Please try again.",
+      "error",
+    );
   }
+};
+
+const cancelRemoveMember = () => {
+  isRemoveMemberDialogOpen.value = false;
+  memberToRemoveId.value = null;
 };
 </script>

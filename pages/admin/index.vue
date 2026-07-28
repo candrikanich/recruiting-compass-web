@@ -526,6 +526,17 @@
     @confirm="bulkDeleteUsers"
     @cancel="showBulkDeleteModal = false"
   />
+
+  <DesignSystemConfirmDialog
+    :is-open="isDeleteUserDialogOpen"
+    title="Delete User"
+    :message="`Are you sure you want to delete ${userToDeleteEmail}? This action cannot be undone.`"
+    confirm-text="Delete"
+    cancel-text="Cancel"
+    variant="danger"
+    @confirm="confirmDeleteUser"
+    @cancel="cancelDeleteUser"
+  />
 </template>
 
 <script setup lang="ts">
@@ -877,26 +888,29 @@ const toggleSelectAll = () => {
 
 const deleteByEmailInput = ref("");
 
-const deleteUserByEmail = async () => {
+const deleteUserByEmail = () => {
   const email = deleteByEmailInput.value.trim();
   if (!email) return;
-  await deleteUser(email);
-  if (!error.value) deleteByEmailInput.value = "";
+  deleteUser(email);
 };
 
-const deleteUser = async (email: string) => {
+const isDeleteUserDialogOpen = ref(false);
+const userToDeleteEmail = ref<string | null>(null);
+
+const deleteUser = (email: string) => {
   if (email === currentUserEmailComputed.value) {
     showToast("Cannot delete your own account", "error");
     return;
   }
+  userToDeleteEmail.value = email;
+  isDeleteUserDialogOpen.value = true;
+};
 
-  if (
-    !confirm(
-      `Are you sure you want to delete ${email}? This action cannot be undone.`,
-    )
-  ) {
-    return;
-  }
+const confirmDeleteUser = async () => {
+  const email = userToDeleteEmail.value;
+  isDeleteUserDialogOpen.value = false;
+  userToDeleteEmail.value = null;
+  if (!email) return;
 
   deleting.value = email;
 
@@ -909,6 +923,9 @@ const deleteUser = async (email: string) => {
     if (response.success) {
       users.value = users.value.filter((u) => u.email !== email);
       showToast(`User ${email} deleted successfully`, "success");
+      if (deleteByEmailInput.value.trim() === email) {
+        deleteByEmailInput.value = "";
+      }
     }
   } catch (err) {
     const errMessage =
@@ -919,6 +936,11 @@ const deleteUser = async (email: string) => {
   } finally {
     deleting.value = null;
   }
+};
+
+const cancelDeleteUser = () => {
+  isDeleteUserDialogOpen.value = false;
+  userToDeleteEmail.value = null;
 };
 
 const bulkDeleteUsers = async () => {

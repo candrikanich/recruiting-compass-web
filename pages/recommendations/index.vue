@@ -364,12 +364,24 @@
         </div>
       </div>
     </main>
+
+    <DesignSystemConfirmDialog
+      :is-open="isDeleteDialogOpen"
+      title="Delete Recommendation Letter"
+      message="Are you sure you want to delete this recommendation letter record? This action cannot be undone."
+      confirm-text="Delete"
+      cancel-text="Cancel"
+      variant="danger"
+      @confirm="confirmDelete"
+      @cancel="cancelDelete"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import { useRecommendationLetters } from "~/composables/useRecommendationLetters";
+import { useAppToast } from "~/composables/useAppToast";
 import type { Database } from "~/types/database";
 
 definePageMeta({
@@ -381,6 +393,7 @@ type RecommendationLetter =
 
 const { letters, loading, error, fetchLetters, saveLetter, deleteLetter } =
   useRecommendationLetters();
+const { showToast } = useAppToast();
 
 const showAddForm = ref(false);
 const editingId = ref<string | null>(null);
@@ -521,10 +534,33 @@ const handleSave = async () => {
   if (!error.value) cancelEdit();
 };
 
-const handleDelete = async (id: string) => {
-  if (confirm("Delete this recommendation letter record?")) {
+const isDeleteDialogOpen = ref(false);
+const letterToDeleteId = ref<string | null>(null);
+
+const handleDelete = (id: string) => {
+  letterToDeleteId.value = id;
+  isDeleteDialogOpen.value = true;
+};
+
+const confirmDelete = async () => {
+  const id = letterToDeleteId.value;
+  isDeleteDialogOpen.value = false;
+  letterToDeleteId.value = null;
+  if (!id) return;
+  try {
     await deleteLetter(id);
+  } catch (err) {
+    console.error("Failed to delete recommendation letter:", err);
+    showToast(
+      "Something went wrong deleting this recommendation letter. Please try again.",
+      "error",
+    );
   }
+};
+
+const cancelDelete = () => {
+  isDeleteDialogOpen.value = false;
+  letterToDeleteId.value = null;
 };
 
 onMounted(() => {

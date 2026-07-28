@@ -731,6 +731,28 @@
         @close="showExportModal = false"
       />
     </div>
+
+    <DesignSystemConfirmDialog
+      :is-open="isDeleteMetricDialogOpen"
+      title="Delete Metric"
+      message="Are you sure you want to delete this metric? This action cannot be undone."
+      confirm-text="Delete"
+      cancel-text="Cancel"
+      variant="danger"
+      @confirm="confirmDeleteMetric"
+      @cancel="cancelDeleteMetric"
+    />
+
+    <DesignSystemConfirmDialog
+      :is-open="isDeleteEventDialogOpen"
+      title="Delete Event"
+      message="Are you sure you want to delete this event? This action cannot be undone."
+      confirm-text="Delete"
+      cancel-text="Cancel"
+      variant="danger"
+      @confirm="confirmDeleteEvent"
+      @cancel="cancelDeleteEvent"
+    />
   </div>
 </template>
 
@@ -741,6 +763,7 @@ import { useEvents } from "~/composables/useEvents";
 import { usePerformance } from "~/composables/usePerformance";
 import { useCoaches } from "~/composables/useCoaches";
 import { useInteractions } from "~/composables/useInteractions";
+import { useAppToast } from "~/composables/useAppToast";
 import ExportButton from "~/components/Performance/ExportButton.vue";
 const ExportModal = defineAsyncComponent(
   () => import("~/components/Performance/ExportModal.vue"),
@@ -772,6 +795,7 @@ const { fetchEvent, deleteEvent: deleteEventAPI, updateEvent } = useEvents();
 const { createMetric, deleteMetric: deleteMetricAPI } = usePerformance();
 const { fetchCoaches } = useCoaches();
 const { createInteraction } = useInteractions();
+const { showToast } = useAppToast();
 
 const event = ref<Event | null>(null);
 const eventMetrics = ref<PerformanceMetric[]>([]);
@@ -993,7 +1017,10 @@ const handleQuickLogInteraction = async () => {
     showQuickLogModal.value = false;
   } catch (err) {
     console.error("Failed to log interaction:", err);
-    alert("Failed to log interaction. Please try again.");
+    showToast(
+      "Something went wrong logging this interaction. Please try again.",
+      "error",
+    );
   }
 };
 
@@ -1035,26 +1062,58 @@ const handleAddMetric = async () => {
   }
 };
 
-const deleteMetric = async (metricId: string) => {
-  if (confirm("Delete this metric?")) {
-    try {
-      await deleteMetricAPI(metricId);
-      await loadEventMetrics();
-    } catch (err) {
-      console.error("Failed to delete metric:", err);
-    }
+const isDeleteMetricDialogOpen = ref(false);
+const metricToDeleteId = ref<string | null>(null);
+
+const deleteMetric = (metricId: string) => {
+  metricToDeleteId.value = metricId;
+  isDeleteMetricDialogOpen.value = true;
+};
+
+const confirmDeleteMetric = async () => {
+  const metricId = metricToDeleteId.value;
+  isDeleteMetricDialogOpen.value = false;
+  metricToDeleteId.value = null;
+  if (!metricId) return;
+  try {
+    await deleteMetricAPI(metricId);
+    await loadEventMetrics();
+  } catch (err) {
+    console.error("Failed to delete metric:", err);
+    showToast(
+      "Something went wrong deleting this metric. Please try again.",
+      "error",
+    );
   }
 };
 
-const deleteEvent = async () => {
-  if (confirm("Delete this event?")) {
-    try {
-      await deleteEventAPI(eventId);
-      await router.push("/events");
-    } catch (err) {
-      console.error("Failed to delete event:", err);
-    }
+const cancelDeleteMetric = () => {
+  isDeleteMetricDialogOpen.value = false;
+  metricToDeleteId.value = null;
+};
+
+const isDeleteEventDialogOpen = ref(false);
+
+const deleteEvent = () => {
+  isDeleteEventDialogOpen.value = true;
+};
+
+const confirmDeleteEvent = async () => {
+  isDeleteEventDialogOpen.value = false;
+  try {
+    await deleteEventAPI(eventId);
+    await router.push("/events");
+  } catch (err) {
+    console.error("Failed to delete event:", err);
+    showToast(
+      "Something went wrong deleting this event. Please try again.",
+      "error",
+    );
   }
+};
+
+const cancelDeleteEvent = () => {
+  isDeleteEventDialogOpen.value = false;
 };
 
 const openEditForm = () => {

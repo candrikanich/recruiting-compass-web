@@ -415,12 +415,24 @@
         @metric-created="handleMetricCreated"
       />
     </main>
+
+    <DesignSystemConfirmDialog
+      :is-open="isDeleteDialogOpen"
+      title="Delete Metric"
+      message="Are you sure you want to delete this metric? This action cannot be undone."
+      confirm-text="Delete"
+      cancel-text="Cancel"
+      variant="danger"
+      @confirm="confirmDeleteMetric"
+      @cancel="cancelDeleteMetric"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, reactive, computed, defineAsyncComponent } from "vue";
 import { usePerformance } from "~/composables/usePerformance";
+import { useAppToast } from "~/composables/useAppToast";
 import type { PerformanceMetric } from "~/types/models";
 import { Line } from "vue-chartjs";
 import ExportButton from "~/components/Performance/ExportButton.vue";
@@ -464,6 +476,7 @@ const {
   deleteMetric: deleteMetricAPI,
   updateMetric,
 } = usePerformance();
+const { showToast } = useAppToast();
 
 const showAddForm = ref(false);
 const showEditForm = ref(false);
@@ -710,14 +723,33 @@ const handleMetricCreated = async () => {
   await fetchMetrics();
 };
 
-const deleteMetric = async (metricId: string) => {
-  if (confirm("Are you sure you want to delete this metric?")) {
-    try {
-      await deleteMetricAPI(metricId);
-    } catch (err) {
-      console.error("Failed to delete metric:", err);
-    }
+const isDeleteDialogOpen = ref(false);
+const metricToDeleteId = ref<string | null>(null);
+
+const deleteMetric = (metricId: string) => {
+  metricToDeleteId.value = metricId;
+  isDeleteDialogOpen.value = true;
+};
+
+const confirmDeleteMetric = async () => {
+  const metricId = metricToDeleteId.value;
+  isDeleteDialogOpen.value = false;
+  metricToDeleteId.value = null;
+  if (!metricId) return;
+  try {
+    await deleteMetricAPI(metricId);
+  } catch (err) {
+    console.error("Failed to delete metric:", err);
+    showToast(
+      "Something went wrong deleting this metric. Please try again.",
+      "error",
+    );
   }
+};
+
+const cancelDeleteMetric = () => {
+  isDeleteDialogOpen.value = false;
+  metricToDeleteId.value = null;
 };
 
 const openEditForm = (metric: PerformanceMetric) => {
