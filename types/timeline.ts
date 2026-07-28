@@ -130,13 +130,6 @@ export interface MilestoneProgress {
   percentComplete: number;
 }
 
-export const PHASE_MILESTONES: Record<string, string[]> = {
-  freshmanToSophomore: ["task-9-a1", "task-9-at1", "task-9-f1", "task-9-f2"],
-  sophomoreToJunior: ["task-10-r1", "task-10-r3", "task-10-r5", "task-10-a2"],
-  juniorToSenior: ["task-11-a1", "task-11-a3", "task-11-r3", "task-11-r1"],
-  seniorToCommitted: ["task-12-d3"],
-};
-
 // Status Scoring Types
 export interface StatusScoreInputs {
   taskCompletionRate: number;
@@ -274,19 +267,3 @@ export interface UseStatusScoreState {
   error: string | null;
 }
 
-// Auto-completion trigger mappings
-export interface TaskTriggerMapping {
-  [key: string]: string[];
-}
-
-export const AUTO_TASK_TRIGGERS: TaskTriggerMapping = {
-  school_added: [],
-  video_uploaded: [],
-  interaction_logged: [],
-  visit_scheduled: [],
-  eligibility_registered: [],
-  test_score_recorded: [],
-  event_attended: [],
-  camp_attended: [],
-  coach_contacted: [],
-};
