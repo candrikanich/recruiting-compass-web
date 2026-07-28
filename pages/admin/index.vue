@@ -931,7 +931,7 @@ const confirmDeleteUser = async () => {
     const errMessage =
       err instanceof Error ? err.message : "Failed to delete user";
     error.value = errMessage;
-    showToast(errMessage, "error");
+    showToast("Failed to delete user. Please try again.", "error");
     console.error(errMessage, err);
   } finally {
     deleting.value = null;

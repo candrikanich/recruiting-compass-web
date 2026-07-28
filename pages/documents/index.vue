@@ -282,17 +282,6 @@
         </div>
       </div>
     </main>
-
-    <DesignSystemConfirmDialog
-      :is-open="isDeleteDialogOpen"
-      title="Delete Document"
-      message="Are you sure you want to delete this document? This action cannot be undone."
-      confirm-text="Delete"
-      cancel-text="Cancel"
-      variant="danger"
-      @confirm="confirmDeleteDocument"
-      @cancel="cancelDeleteDocument"
-    />
   </div>
 </template>
 
@@ -326,8 +315,6 @@ const { schools: allSchools, fetchSchools } = useSchools();
 const { getErrorMessage, logError } = useErrorHandler();
 const { showToast } = useAppToast();
 
-const isDeleteDialogOpen = ref(false);
-const documentToDeleteId = ref<string | null>(null);
 const schools = ref<any[]>([]);
 const sortBy = ref("newest");
 const viewMode = ref<"grid" | "list">("grid");
@@ -553,18 +540,12 @@ const getSchoolName = (schoolId: string | null | undefined): string => {
   return schools.value.find((s) => s.id === schoolId)?.name || "Unknown";
 };
 
-const handleDeleteDocument = (docId: string) => {
-  documentToDeleteId.value = docId;
-  isDeleteDialogOpen.value = true;
-};
-
-const confirmDeleteDocument = async () => {
-  if (!documentToDeleteId.value) return;
-  const deletingId = documentToDeleteId.value;
-  isDeleteDialogOpen.value = false;
-  documentToDeleteId.value = null;
+// DocumentCard already gates deletion behind its own confirmation dialog
+// and only emits `delete` after the user confirms once — do not add a
+// second confirmation here.
+const handleDeleteDocument = async (docId: string) => {
   try {
-    const success = await deleteDocumentAPI(deletingId);
+    const success = await deleteDocumentAPI(docId);
     if (!success) {
       const message = getErrorMessage(new Error("Failed to delete document"));
       error.value = message;
@@ -582,11 +563,6 @@ const confirmDeleteDocument = async () => {
       "error",
     );
   }
-};
-
-const cancelDeleteDocument = () => {
-  isDeleteDialogOpen.value = false;
-  documentToDeleteId.value = null;
 };
 
 onMounted(async () => {

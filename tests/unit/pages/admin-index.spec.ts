@@ -25,8 +25,14 @@ vi.mock("~/composables/useSupabase", () => ({
   })),
 }));
 
+const showToastMock = vi.fn();
 vi.mock("~/composables/useAppToast", () => ({
-  useAppToast: vi.fn(() => ({ showToast: vi.fn() })),
+  useAppToast: vi.fn(() => ({ showToast: showToastMock })),
+}));
+
+const fetchAuthMock = vi.fn();
+vi.mock("~/composables/useAuthFetch", () => ({
+  useAuthFetch: vi.fn(() => ({ $fetchAuth: fetchAuthMock })),
 }));
 
 const BulkDeleteConfirmModalStub = {
@@ -171,5 +177,37 @@ describe("Admin Dashboard (index.vue)", () => {
 
     expect(wrapper.text()).toContain("Invite admin user");
     expect(wrapper.text()).toContain("Batch fetch school logos");
+  });
+
+  describe("delete user error handling", () => {
+    it("shows a generic toast (not raw fetch/Postgres error text) when delete fails", async () => {
+      fetchAuthMock.mockRejectedValue(
+        new Error('duplicate key value violates unique constraint "users_pkey"'),
+      );
+
+      const wrapper = mount(AdminIndex, {
+        global: {
+          plugins: [createPinia()],
+          stubs: {
+            NuxtLink: { template: "<a><slot /></a>", props: ["to"] },
+            BulkDeleteConfirmModal: BulkDeleteConfirmModalStub,
+          },
+        },
+      });
+
+      await wrapper.vm.$nextTick();
+      const vm = wrapper.vm as any;
+
+      vm.userToDeleteEmail = "someone@test.com";
+      await vm.confirmDeleteUser();
+      await wrapper.vm.$nextTick();
+
+      expect(fetchAuthMock).toHaveBeenCalled();
+      expect(showToastMock).toHaveBeenCalledTimes(1);
+      const [message, type] = showToastMock.mock.calls[0];
+      expect(type).toBe("error");
+      expect(message).toBe("Failed to delete user. Please try again.");
+      expect(message).not.toMatch(/duplicate key|constraint|users_pkey/i);
+    });
   });
 });
