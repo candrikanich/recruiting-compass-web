@@ -274,7 +274,7 @@ test.describe("User Story 6.1: Parent Views Recruiting Stage Guidance", () => {
 
     const count = await milestoneLinks.count();
     if (count === 0) {
-      test.skip();
+      test.skip(true, "no seeded milestone links present on this page for this run; awaiting seed infrastructure project — see CLAUDE.local.md Action Required");
       return;
     }
 

@@ -199,7 +199,7 @@ test.describe("Notifications Page", () => {
   test("search filters notification list", async ({ page }) => {
     const hasNotifications = (await page.locator(".border-l-4").count()) > 0;
     if (!hasNotifications) {
-      test.skip();
+      test.skip(true, "no seeded notifications present for this run; awaiting seed infrastructure project — see CLAUDE.local.md Action Required");
       return;
     }
 
@@ -240,7 +240,7 @@ test.describe("Notifications Page", () => {
   test("switching back to All filter restores full list", async ({ page }) => {
     const hasNotifications = (await page.locator(".border-l-4").count()) > 0;
     if (!hasNotifications) {
-      test.skip();
+      test.skip(true, "no seeded notifications present for this run; awaiting seed infrastructure project — see CLAUDE.local.md Action Required");
       return;
     }
 
@@ -268,7 +268,7 @@ test.describe("Notifications Page", () => {
     const cards = page.locator(".border-l-4");
     const count = await cards.count();
     if (count === 0) {
-      test.skip();
+      test.skip(true, "no seeded notifications present for this run; awaiting seed infrastructure project — see CLAUDE.local.md Action Required");
       return;
     }
 
@@ -286,7 +286,7 @@ test.describe("Notifications Page", () => {
     const unread = page.locator(".border-l-4.border-blue-500");
     const count = await unread.count();
     if (count === 0) {
-      test.skip();
+      test.skip(true, "no seeded notifications present for this run; awaiting seed infrastructure project — see CLAUDE.local.md Action Required");
       return;
     }
     await expect(unread.first()).toBeVisible();
@@ -297,7 +297,7 @@ test.describe("Notifications Page", () => {
     const read = page.locator(".border-l-4.border-gray-300");
     const count = await read.count();
     if (count === 0) {
-      test.skip();
+      test.skip(true, "no seeded notifications present for this run; awaiting seed infrastructure project — see CLAUDE.local.md Action Required");
       return;
     }
     await expect(read.first()).toBeVisible();
@@ -309,7 +309,7 @@ test.describe("Notifications Page", () => {
     const unread = page.locator(".border-l-4.border-blue-500");
     const hasUnread = (await unread.count()) > 0;
     if (!hasUnread) {
-      test.skip();
+      test.skip(true, "no seeded notifications present for this run; awaiting seed infrastructure project — see CLAUDE.local.md Action Required");
       return;
     }
 
@@ -340,7 +340,7 @@ test.describe("Notifications Page", () => {
     const markAllBtn = page.locator('button:has-text("Mark all as read")');
     const isVisible = await markAllBtn.isVisible().catch(() => false);
     if (!isVisible) {
-      test.skip();
+      test.skip(true, "no seeded notifications present for this run; awaiting seed infrastructure project — see CLAUDE.local.md Action Required");
       return;
     }
 
@@ -362,7 +362,7 @@ test.describe("Notifications Page", () => {
     const cards = page.locator(".border-l-4");
     const initialCount = await cards.count();
     if (initialCount === 0) {
-      test.skip();
+      test.skip(true, "no seeded notifications present for this run; awaiting seed infrastructure project — see CLAUDE.local.md Action Required");
       return;
     }
 
@@ -402,7 +402,7 @@ test.describe("Notifications Page", () => {
     const cards = page.locator(".border-l-4");
     const count = await cards.count();
     if (count === 0) {
-      test.skip();
+      test.skip(true, "no seeded notifications present for this run; awaiting seed infrastructure project — see CLAUDE.local.md Action Required");
       return;
     }
 

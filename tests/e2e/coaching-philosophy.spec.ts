@@ -49,7 +49,7 @@ test.describe("Coaching Philosophy - Feature E2E", () => {
       const heading = page.locator("h2:has-text('Coaching Philosophy')");
       await expect(heading).toBeVisible({ timeout: 10000 });
     } else {
-      test.skip();
+      test.skip(true, "no seeded school available to navigate to in this run (navigateToSchool() returned false); awaiting seed infrastructure project — see CLAUDE.local.md Action Required");
     }
   });
 
@@ -73,7 +73,7 @@ test.describe("Coaching Philosophy - Feature E2E", () => {
         expect(isEditVisible).toBe(true);
       }
     } else {
-      test.skip();
+      test.skip(true, "no seeded school available to navigate to in this run (navigateToSchool() returned false); awaiting seed infrastructure project — see CLAUDE.local.md Action Required");
     }
   });
 
@@ -105,7 +105,7 @@ test.describe("Coaching Philosophy - Feature E2E", () => {
         }
       }
     } else {
-      test.skip();
+      test.skip(true, "no seeded school available to navigate to in this run (navigateToSchool() returned false); awaiting seed infrastructure project — see CLAUDE.local.md Action Required");
     }
   });
 
@@ -146,7 +146,7 @@ test.describe("Coaching Philosophy - Feature E2E", () => {
         }
       }
     } else {
-      test.skip();
+      test.skip(true, "no seeded school available to navigate to in this run (navigateToSchool() returned false); awaiting seed infrastructure project — see CLAUDE.local.md Action Required");
     }
   });
 
@@ -192,7 +192,7 @@ test.describe("Coaching Philosophy - Feature E2E", () => {
         }
       }
     } else {
-      test.skip();
+      test.skip(true, "no seeded school available to navigate to in this run (navigateToSchool() returned false); awaiting seed infrastructure project — see CLAUDE.local.md Action Required");
     }
   });
 
@@ -238,7 +238,7 @@ test.describe("Coaching Philosophy - Feature E2E", () => {
         }
       }
     } else {
-      test.skip();
+      test.skip(true, "no seeded school available to navigate to in this run (navigateToSchool() returned false); awaiting seed infrastructure project — see CLAUDE.local.md Action Required");
     }
   });
 
@@ -286,7 +286,7 @@ test.describe("Coaching Philosophy - Feature E2E", () => {
         }
       }
     } else {
-      test.skip();
+      test.skip(true, "no seeded school available to navigate to in this run (navigateToSchool() returned false); awaiting seed infrastructure project — see CLAUDE.local.md Action Required");
     }
   });
 
@@ -335,7 +335,7 @@ Line 3: Development`;
         }
       }
     } else {
-      test.skip();
+      test.skip(true, "no seeded school available to navigate to in this run (navigateToSchool() returned false); awaiting seed infrastructure project — see CLAUDE.local.md Action Required");
     }
   });
 
@@ -378,7 +378,7 @@ Line 3: Development`;
         }
       }
     } else {
-      test.skip();
+      test.skip(true, "no seeded school available to navigate to in this run (navigateToSchool() returned false); awaiting seed infrastructure project — see CLAUDE.local.md Action Required");
     }
   });
 
@@ -424,7 +424,7 @@ Line 3: Development`;
         }
       }
     } else {
-      test.skip();
+      test.skip(true, "no seeded school available to navigate to in this run (navigateToSchool() returned false); awaiting seed infrastructure project — see CLAUDE.local.md Action Required");
     }
   });
 });
