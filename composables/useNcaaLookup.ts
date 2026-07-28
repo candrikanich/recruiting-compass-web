@@ -6,8 +6,8 @@
  */
 
 import { ref } from "vue";
-import { DIVISION_SCHOOLS } from "./ncaaDatabase";
-import type { NcaaDivision, SchoolInfo } from "./ncaaDatabase";
+import { DIVISION_SCHOOLS } from "~/utils/ncaaDatabase";
+import type { NcaaDivision, SchoolInfo } from "~/utils/ncaaDatabase";
 import ncaaMetadata from "~/data/ncaa_metadata.json";
 
 /**
