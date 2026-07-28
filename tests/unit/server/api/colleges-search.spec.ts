@@ -249,4 +249,69 @@ describe("GET /api/colleges/search", () => {
     expect(fetchCall).toContain("per_page=20");
     expect(fetchCall).not.toContain("per_page=100");
   });
+
+  describe("cache key includes fields/per_page (not just q)", () => {
+    it("computes distinct Redis keys for the same q with different fields/per_page", async () => {
+      const { CACHE_KEYS } = await import("~/server/utils/redis");
+
+      const narrowShape = CACHE_KEYS.COLLEGE_SEARCH("florida", "id,school.name", "5");
+      const wideShape = CACHE_KEYS.COLLEGE_SEARCH(
+        "florida",
+        "id,school.name,school.city,school.state",
+        "10",
+      );
+
+      // Bug: a key built from `q` alone would make these equal, so the
+      // first caller's requested field-shape/page-size gets served to
+      // every later caller regardless of what THEY asked for.
+      expect(narrowShape).not.toBe(wideShape);
+    });
+
+    it("GET /api/colleges/search reads/writes the cache using a key that includes fields and per_page", async () => {
+      vi.resetModules();
+      const { requireAuth } = await import("~/server/utils/auth");
+      const h3 = await import("h3");
+      vi.mocked(requireAuth).mockResolvedValue(undefined);
+      vi.mocked(h3.getQuery).mockReturnValue({
+        q: "Florida",
+        fields: "id,school.name",
+        per_page: "5",
+      });
+
+      const redisGet = vi.fn().mockResolvedValue(null);
+      const redisSet = vi.fn().mockResolvedValue(undefined);
+      vi.doMock("~/server/utils/redis", () => ({
+        redis: { get: redisGet, set: redisSet },
+        CACHE_KEYS: {
+          COLLEGE_SEARCH: (q: string, fields = "", perPage = "") =>
+            `college:search:${q.toLowerCase()}:${fields.toLowerCase()}:${perPage}`,
+          COLLEGE_ID: (id: string) => `college:id:${id}`,
+        },
+        TTL: { THIRTY_DAYS: 2592000 },
+      }));
+
+      const mockResults = { metadata: { total: 0 }, results: [] };
+      vi.stubGlobal(
+        "fetch",
+        vi.fn().mockResolvedValue({
+          ok: true,
+          json: () => Promise.resolve(mockResults),
+        }),
+      );
+
+      const { default: handler } =
+        await import("~/server/api/colleges/search.get");
+      await handler(mockEvent);
+
+      const expectedKey = "college:search:florida:id,school.name:5";
+      expect(redisGet).toHaveBeenCalledWith(expectedKey);
+      expect(redisSet).toHaveBeenCalledWith(
+        expectedKey,
+        mockResults,
+        expect.any(Object),
+      );
+
+      vi.doUnmock("~/server/utils/redis");
+    });
+  });
 });

@@ -29,7 +29,11 @@ export default defineEventHandler(async (event) => {
   // 1. Check Redis cache first
   const cacheKey = id
     ? CACHE_KEYS.COLLEGE_ID(String(id))
-    : CACHE_KEYS.COLLEGE_SEARCH(String(q));
+    : CACHE_KEYS.COLLEGE_SEARCH(
+        String(q),
+        fields ? String(fields) : "",
+        per_page ? String(per_page) : "",
+      );
 
   if (redis) {
     try {

@@ -127,8 +127,20 @@ export default defineEventHandler(async (event) => {
       );
       logger.warn("College Scorecard API key missing, skipping cache warmup");
     } else {
+      // Match the shape the real client caller (useSearchConsolidated's
+      // getCollegeSuggestions) requests, so the cache key this warms up is
+      // actually the one production traffic reads — see
+      // server/api/colleges/search.get.ts's fields/per_page-aware cache key.
+      const WARM_FIELDS =
+        "id,school.name,school.city,school.state,location.lat,location.lon";
+      const WARM_PER_PAGE = "10";
+
       for (const query of WARM_QUERIES) {
-        const cacheKey = CACHE_KEYS.COLLEGE_SEARCH(query);
+        const cacheKey = CACHE_KEYS.COLLEGE_SEARCH(
+          query,
+          WARM_FIELDS,
+          WARM_PER_PAGE,
+        );
 
         try {
           // Skip if already cached (TTL is 30 days — only stale entries need warming)
@@ -141,7 +153,8 @@ export default defineEventHandler(async (event) => {
           const params = new URLSearchParams({
             api_key: apiKey,
             "school.name": query,
-            per_page: "10",
+            fields: WARM_FIELDS,
+            per_page: WARM_PER_PAGE,
           });
 
           const scorecardController = new AbortController();

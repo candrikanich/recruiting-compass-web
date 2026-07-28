@@ -44,8 +44,11 @@ export const redis: Redis | null = createRedisClient();
  * Common cache key prefixes for consistency
  */
 export const CACHE_KEYS = {
-  COLLEGE_SEARCH: (query: string) =>
-    `college:search:${query.toLowerCase().trim()}`,
+  // Cache key must incorporate every parameter that shapes the response
+  // (fields, per_page) — a key on `query` alone would serve the first
+  // caller's requested field-shape/page-size to every later caller.
+  COLLEGE_SEARCH: (query: string, fields = "", perPage = "") =>
+    `college:search:${query.toLowerCase().trim()}:${fields.toLowerCase().trim()}:${perPage.trim()}`,
   COLLEGE_ID: (id: string) => `college:id:${id}`,
   NCAA_METADATA: "ncaa:metadata:all",
   NCES_SEARCH: (q: string, state: string) =>
