@@ -257,6 +257,9 @@ import { useCoaches } from "~/composables/useCoaches";
 import { useSchools } from "~/composables/useSchools";
 import { useInteractions } from "~/composables/useInteractions";
 import type { Interaction } from "~/types/models";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("CoachCommunications");
 
 definePageMeta({
   middleware: "auth",
@@ -442,7 +445,7 @@ onMounted(async () => {
       }
     }
   } catch (err) {
-    console.error("Failed to load communications:", err);
+    logger.error("Failed to load communications", err);
   } finally {
     loading.value = false;
   }

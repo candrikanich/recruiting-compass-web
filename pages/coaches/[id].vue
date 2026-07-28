@@ -168,6 +168,9 @@ import CoachStatsGrid from "~/components/Coach/CoachStatsGrid.vue";
 import CoachNotesEditor from "~/components/Coach/CoachNotesEditor.vue";
 import CoachRecentInteractions from "~/components/Coach/CoachRecentInteractions.vue";
 import type { Coach, Interaction } from "~/types/models";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("CoachDetail");
 
 definePageMeta({
   middleware: "auth",
@@ -308,7 +311,7 @@ const deleteCoach = async () => {
     const message =
       err instanceof Error ? err.message : "Failed to delete coach";
     error.value = message;
-    console.error("Failed to delete coach:", err);
+    logger.error("Failed to delete coach", err);
   }
 };
 

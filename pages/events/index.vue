@@ -329,6 +329,9 @@ import { useEventStats } from "~/composables/useEventStats";
 import { useAppToast } from "~/composables/useAppToast";
 import StatsTiles from "~/components/shared/StatsTiles.vue";
 import type { Event } from "~/types/models";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("EventsList");
 
 definePageMeta({
   middleware: "auth",
@@ -598,7 +601,7 @@ const confirmDeleteEvent = async () => {
   try {
     await deleteEventAPI(eventId);
   } catch (err) {
-    console.error("Failed to delete event:", err);
+    logger.error("Failed to delete event", err);
     showToast(
       "Something went wrong deleting this event. Please try again.",
       "error",

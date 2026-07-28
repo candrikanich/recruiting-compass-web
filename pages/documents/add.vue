@@ -2,6 +2,9 @@
 import { useDocumentsConsolidated } from "~/composables/useDocumentsConsolidated";
 import { useUserStore } from "~/stores/user";
 import type { Database } from "~/types/database";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("DocumentAdd");
 
 type DocumentType = Database["public"]["Enums"]["document_type"];
 
@@ -32,10 +35,10 @@ const handleSubmit = async (formData: any) => {
     if (result.success) {
       await navigateTo("/documents");
     } else {
-      console.error("Upload failed:", uploadError.value);
+      logger.error("Upload failed", uploadError.value);
     }
   } catch (err) {
-    console.error("Failed to upload document:", err);
+    logger.error("Failed to upload document", err);
   }
 };
 

@@ -55,6 +55,9 @@
 import { ref } from "vue";
 import { navigateTo } from "#app";
 import { useCoaches } from "~/composables/useCoaches";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("CoachNew");
 
 definePageMeta({
   middleware: "auth",
@@ -74,7 +77,7 @@ const handleCoachFormSubmit = async (coachData: any) => {
   try {
     // Validate that a school was selected
     if (!selectedSchoolId.value) {
-      console.error("Failed to create coach: No school selected");
+      logger.error("Failed to create coach: no school selected");
       return;
     }
 
@@ -85,7 +88,7 @@ const handleCoachFormSubmit = async (coachData: any) => {
   } catch (err) {
     const message =
       err instanceof Error ? err.message : "Failed to create coach";
-    console.error("Failed to create coach:", message);
+    logger.error("Failed to create coach", { message, err });
   }
 };
 </script>

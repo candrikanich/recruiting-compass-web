@@ -772,8 +772,12 @@ import { getRoleLabel } from "~/utils/coachLabels";
 import type { Event, PerformanceMetric, Coach } from "~/types/models";
 import type { Database } from "~/types/database";
 
+import { createClientLogger } from "~/utils/logger";
+
 type InteractionType = Database["public"]["Enums"]["interaction_type"];
 type SentimentType = Database["public"]["Enums"]["interaction_sentiment"];
+
+const logger = createClientLogger("EventDetail");
 
 definePageMeta({
   middleware: "auth",
@@ -933,7 +937,7 @@ const loadCoaches = async () => {
       presentIds.includes(c.id),
     );
   } catch (err) {
-    console.error("Failed to load coaches:", err);
+    logger.error("Failed to load coaches", err);
   }
 };
 
@@ -954,7 +958,7 @@ const addCoach = async () => {
     selectedCoachId.value = "";
     await loadCoaches();
   } catch (err) {
-    console.error("Failed to add coach:", err);
+    logger.error("Failed to add coach", err);
   }
 };
 
@@ -972,7 +976,7 @@ const removeCoach = async (coachId: string) => {
 
     await loadCoaches();
   } catch (err) {
-    console.error("Failed to remove coach:", err);
+    logger.error("Failed to remove coach", err);
   }
 };
 
@@ -985,7 +989,7 @@ const markAsAttended = async () => {
     // Show quick interaction logging modal
     showQuickLogModal.value = true;
   } catch (err) {
-    console.error("Failed to mark event as attended:", err);
+    logger.error("Failed to mark event as attended", err);
   }
 };
 
@@ -1016,7 +1020,7 @@ const handleQuickLogInteraction = async () => {
     quickLogData.sentiment = "positive";
     showQuickLogModal.value = false;
   } catch (err) {
-    console.error("Failed to log interaction:", err);
+    logger.error("Failed to log interaction", err);
     showToast(
       "Something went wrong logging this interaction. Please try again.",
       "error",
@@ -1056,7 +1060,7 @@ const handleAddMetric = async () => {
     // Reload metrics
     await loadEventMetrics();
   } catch (err) {
-    console.error("Failed to log metric:", err);
+    logger.error("Failed to log metric", err);
   } finally {
     metricLoading.value = false;
   }
@@ -1079,7 +1083,7 @@ const confirmDeleteMetric = async () => {
     await deleteMetricAPI(metricId);
     await loadEventMetrics();
   } catch (err) {
-    console.error("Failed to delete metric:", err);
+    logger.error("Failed to delete metric", err);
     showToast(
       "Something went wrong deleting this metric. Please try again.",
       "error",
@@ -1104,7 +1108,7 @@ const confirmDeleteEvent = async () => {
     await deleteEventAPI(eventId);
     await router.push("/events");
   } catch (err) {
-    console.error("Failed to delete event:", err);
+    logger.error("Failed to delete event", err);
     showToast(
       "Something went wrong deleting this event. Please try again.",
       "error",
@@ -1158,7 +1162,7 @@ const handleUpdateEvent = async () => {
     event.value = await fetchEvent(eventId);
     showEditForm.value = false;
   } catch (err) {
-    console.error("Failed to update event:", err);
+    logger.error("Failed to update event", err);
     error.value = err instanceof Error ? err.message : "Failed to update event";
   } finally {
     isUpdating.value = false;
@@ -1171,7 +1175,7 @@ const loadEventMetrics = async () => {
     await fetchMetrics({ eventId });
     eventMetrics.value = metrics.value.filter((m) => m.event_id === eventId);
   } catch (err) {
-    console.error("Failed to load event metrics:", err);
+    logger.error("Failed to load event metrics", err);
   }
 };
 

@@ -20,6 +20,9 @@ import { onMounted } from "vue";
 import { useEvents } from "~/composables/useEvents";
 import { useSchools } from "~/composables/useSchools";
 import { useRouter } from "vue-router";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("EventCreate");
 
 definePageMeta({
   middleware: "auth",
@@ -34,7 +37,7 @@ const handleFormSubmit = async (data: any) => {
     const newEvent = await createEvent(data);
     await router.push(`/events/${newEvent.id}`);
   } catch (err) {
-    console.error("Failed to create event:", err);
+    logger.error("Failed to create event", err);
   }
 };
 

@@ -408,6 +408,9 @@ import { useErrorHandler } from "~/composables/useErrorHandler";
 import { useAppToast } from "~/composables/useAppToast";
 import VideoPlayer from "~/components/VideoPlayer.vue";
 import type { Document } from "~/types/models";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("DocumentView");
 
 definePageMeta({
   middleware: "auth",
@@ -528,7 +531,7 @@ const saveDocument = async () => {
     await fetchDocuments();
   } catch (err) {
     error.value = "Failed to save document";
-    console.error("Error saving document:", err);
+    logger.error("Error saving document", err);
   }
 };
 

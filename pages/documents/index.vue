@@ -298,6 +298,9 @@ import UniversalFilter from "~/components/UniversalFilter.vue";
 import { useUserStore } from "~/stores/user";
 import type { Document } from "~/types/models";
 import type { FilterConfig } from "~/types/filters";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("DocumentsList");
 
 definePageMeta({
   middleware: "auth",
@@ -572,7 +575,7 @@ onMounted(async () => {
     schools.value = allSchools.value;
     await fetchDocuments();
   } catch (err) {
-    console.error("Error loading data:", err);
+    logger.error("Error loading data", err);
   }
 });
 </script>

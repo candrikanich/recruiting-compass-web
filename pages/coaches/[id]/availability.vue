@@ -350,6 +350,9 @@ import { useCoaches } from "~/composables/useCoaches";
 import { useSchools } from "~/composables/useSchools";
 import { useCoachAvailability } from "~/composables/useCoachAvailability";
 import type { CoachAvailability, DayAvailability } from "~/types/models";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("CoachAvailability");
 
 definePageMeta({
   middleware: "auth",
@@ -504,7 +507,7 @@ onMounted(async () => {
       }
     }
   } catch (err) {
-    console.error("Failed to load availability:", err);
+    logger.error("Failed to load availability", err);
   } finally {
     loading.value = false;
   }
