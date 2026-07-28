@@ -454,7 +454,7 @@ export type Database = {
           entity_type: string
           id: string
           link_id: string
-          original_owner_id: string
+          original_owner_id: string | null
         }
         Insert: {
           created_at?: string | null
@@ -462,7 +462,7 @@ export type Database = {
           entity_type: string
           id?: string
           link_id: string
-          original_owner_id: string
+          original_owner_id?: string | null
         }
         Update: {
           created_at?: string | null
@@ -470,7 +470,7 @@ export type Database = {
           entity_type?: string
           id?: string
           link_id?: string
-          original_owner_id?: string
+          original_owner_id?: string | null
         }
         Relationships: [
           {
@@ -1071,7 +1071,7 @@ export type Database = {
         Row: {
           code_generated_at: string | null
           created_at: string | null
-          created_by_user_id: string
+          created_by_user_id: string | null
           family_code: string | null
           family_name: string | null
           id: string
@@ -1081,7 +1081,7 @@ export type Database = {
         Insert: {
           code_generated_at?: string | null
           created_at?: string | null
-          created_by_user_id: string
+          created_by_user_id?: string | null
           family_code?: string | null
           family_name?: string | null
           id?: string
@@ -1091,7 +1091,7 @@ export type Database = {
         Update: {
           code_generated_at?: string | null
           created_at?: string | null
-          created_by_user_id?: string
+          created_by_user_id?: string | null
           family_code?: string | null
           family_name?: string | null
           id?: string
@@ -2035,7 +2035,7 @@ export type Database = {
       school_status_history: {
         Row: {
           changed_at: string
-          changed_by: string
+          changed_by: string | null
           created_at: string | null
           id: string
           new_status: string
@@ -2045,7 +2045,7 @@ export type Database = {
         }
         Insert: {
           changed_at?: string
-          changed_by: string
+          changed_by?: string | null
           created_at?: string | null
           id?: string
           new_status: string
@@ -2055,7 +2055,7 @@ export type Database = {
         }
         Update: {
           changed_at?: string
-          changed_by?: string
+          changed_by?: string | null
           created_at?: string | null
           id?: string
           new_status?: string
@@ -2940,6 +2940,10 @@ export type Database = {
         Returns: undefined
       }
       expire_old_invitations: { Args: never; Returns: undefined }
+      family_unit_created_by: {
+        Args: { p_family_unit_id: string }
+        Returns: string
+      }
       get_accessible_athletes: {
         Args: never
         Returns: {
