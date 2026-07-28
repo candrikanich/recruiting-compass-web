@@ -1,4 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { defineComponent, h } from "vue";
+import { mount } from "@vue/test-utils";
 import { useAutoSave } from "~/composables/useAutoSave";
 
 // Mock useAppToast at module level
@@ -139,6 +141,63 @@ describe("useAutoSave", () => {
     await vi.runAllTimersAsync();
 
     expect(mockSave).toHaveBeenCalled();
+
+    vi.useRealTimers();
+  });
+
+  it("flushes a pending debounced save on unmount instead of silently dropping it", async () => {
+    vi.useFakeTimers();
+    const mockSave = vi.fn().mockResolvedValue(undefined);
+
+    const TestComponent = defineComponent({
+      setup() {
+        const { triggerSave } = useAutoSave({
+          onSave: mockSave,
+          debounceMs: 500,
+        });
+        return { triggerSave };
+      },
+      render() {
+        return h("div");
+      },
+    });
+
+    const wrapper = mount(TestComponent);
+    wrapper.vm.triggerSave();
+
+    // Well within the debounce window — nothing has saved yet.
+    vi.advanceTimersByTime(100);
+    expect(mockSave).not.toHaveBeenCalled();
+
+    // Navigate away before the debounce timer fires.
+    wrapper.unmount();
+    await vi.runAllTimersAsync();
+
+    // The pending edit must still be saved, not silently lost.
+    expect(mockSave).toHaveBeenCalledTimes(1);
+
+    vi.useRealTimers();
+  });
+
+  it("does not flush on unmount when there is no pending debounced save", async () => {
+    vi.useFakeTimers();
+    const mockSave = vi.fn().mockResolvedValue(undefined);
+
+    const TestComponent = defineComponent({
+      setup() {
+        useAutoSave({ onSave: mockSave, debounceMs: 500 });
+        return {};
+      },
+      render() {
+        return h("div");
+      },
+    });
+
+    const wrapper = mount(TestComponent);
+    wrapper.unmount();
+    await vi.runAllTimersAsync();
+
+    expect(mockSave).not.toHaveBeenCalled();
 
     vi.useRealTimers();
   });
