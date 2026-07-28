@@ -203,10 +203,13 @@ import { ref, computed, onMounted } from "vue";
 import { useSocialMedia } from "~/composables/useSocialMedia";
 import { useSchools } from "~/composables/useSchools";
 import { useCoaches } from "~/composables/useCoaches";
+import { createClientLogger } from "~/utils/logger";
 
 definePageMeta({
   middleware: "auth",
 });
+
+const logger = createClientLogger("SocialFeed");
 
 const {
   posts: allPosts,
@@ -296,7 +299,7 @@ const togglePostFlag = async (postId: string, flagged: boolean) => {
   try {
     await toggleFlagged(postId, flagged);
   } catch (err) {
-    console.error("Failed to toggle post flag:", err);
+    logger.error("Failed to toggle post flag", err);
   }
 };
 
@@ -304,7 +307,7 @@ const deletePost = async (postId: string) => {
   try {
     await deleteSocialPost(postId);
   } catch (err) {
-    console.error("Failed to delete post:", err);
+    logger.error("Failed to delete post", err);
   }
 };
 
@@ -312,7 +315,7 @@ const savePostNotes = async (postId: string, notes: string) => {
   try {
     await updatePost(postId, { notes });
   } catch (err) {
-    console.error("Failed to save notes:", err);
+    logger.error("Failed to save notes", err);
   }
 };
 
@@ -351,7 +354,7 @@ const syncPosts = async () => {
     syncMessageType.value = "error";
     syncMessage.value =
       err instanceof Error ? err.message : "Failed to sync posts";
-    console.error("Sync error:", err);
+    logger.error("Sync error", err);
   } finally {
     syncing.value = false;
   }
@@ -376,7 +379,7 @@ onMounted(async () => {
     // Fetch social posts
     await fetchPosts();
   } catch (err) {
-    console.error("Error loading data:", err);
+    logger.error("Error loading data", err);
   }
 });
 </script>

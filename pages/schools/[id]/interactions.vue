@@ -183,6 +183,9 @@ import { useSchools } from "~/composables/useSchools";
 import type { Interaction } from "~/types/models";
 import { useLiveRegion } from "~/composables/useLiveRegion";
 import { parseLocalDateOnly } from "~/utils/localDate";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("SchoolInteractions");
 
 const route = useRoute();
 const id = route.params.id as string;
@@ -338,14 +341,14 @@ const handleAddInteraction = async (data: InteractionSubmitData) => {
           createdInteraction.id,
         );
       } catch (reminderErr) {
-        console.error("Failed to create reminder:", reminderErr);
+        logger.error("Failed to create reminder", reminderErr);
       }
     }
 
     showAddForm.value = false;
     await fetchInteractions({ schoolId: id });
   } catch (err) {
-    console.error("Failed to log interaction:", err);
+    logger.error("Failed to log interaction", err);
     const errorMsg =
       err instanceof Error ? err.message : "Unknown error occurred";
     announce(`Failed to log interaction: ${errorMsg}`);
@@ -373,7 +376,7 @@ const executeDeleteInteraction = async () => {
     const errorMessage =
       err instanceof Error ? err.message : "Failed to delete interaction";
     announce(errorMessage);
-    console.error("Failed to delete interaction:", errorMessage);
+    logger.error("Failed to delete interaction", errorMessage);
   }
 };
 
@@ -395,7 +398,7 @@ onMounted(async () => {
       coachMap.value[coach.id] = `${coach.first_name} ${coach.last_name}`;
     });
   } catch (err) {
-    console.error("Error loading interactions page:", err);
+    logger.error("Error loading interactions page", err);
   }
 });
 </script>

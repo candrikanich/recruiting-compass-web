@@ -161,11 +161,13 @@ import { useSchools } from "~/composables/useSchools";
 import { useSocialMedia } from "~/composables/useSocialMedia";
 import { getRoleLabel } from "~/utils/coachLabels";
 import type { Coach } from "~/types/models";
+import { createClientLogger } from "~/utils/logger";
 
 definePageMeta({
   middleware: "auth",
 });
 
+const logger = createClientLogger("SocialCoachDetail");
 const route = useRoute();
 const coachId = route.params.id as string;
 
@@ -202,7 +204,7 @@ const togglePostFlag = async (postId: string, flagged: boolean) => {
   try {
     await toggleFlagged(postId, flagged);
   } catch (err) {
-    console.error("Failed to toggle post flag:", err);
+    logger.error("Failed to toggle post flag", err);
   }
 };
 
@@ -210,7 +212,7 @@ const deletePost = async (postId: string) => {
   try {
     await deleteSocialPost(postId);
   } catch (err) {
-    console.error("Failed to delete post:", err);
+    logger.error("Failed to delete post", err);
   }
 };
 
@@ -218,7 +220,7 @@ const savePostNotes = async (postId: string, notes: string) => {
   try {
     await updatePost(postId, { notes });
   } catch (err) {
-    console.error("Failed to save notes:", err);
+    logger.error("Failed to save notes", err);
   }
 };
 
@@ -241,7 +243,7 @@ onMounted(async () => {
       await fetchPosts({ coachId });
     }
   } catch (err) {
-    console.error("Error loading data:", err);
+    logger.error("Error loading data", err);
   }
 });
 </script>

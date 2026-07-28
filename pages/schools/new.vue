@@ -98,6 +98,9 @@ import {
 } from "~/composables/useCollegeData";
 import type { CollegeSearchResult } from "~/types/api";
 import type { School } from "~/types/models";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("SchoolNew");
 
 const { createSchool, loading, error } = useSchools();
 const { lookupDivision } = useNcaaLookup();
@@ -134,12 +137,15 @@ const handleCollegeSelect = async (college: CollegeSearchResult) => {
     // NCAA lookup for division, conference, logo
     // Pass the ID (UnitID) for 100% accuracy if it's in our metadata
     lookupDivision(college.name, college.id).catch((err) => {
-      console.debug("NCAA lookup failed for:", college.name, err);
+      logger.debug("NCAA lookup failed", { collegeName: college.name, err });
       return null;
     }),
     // College Scorecard for academic data + lat/lng
     fetchByName(college.name).catch((err) => {
-      console.debug("College Scorecard lookup failed for:", college.name, err);
+      logger.debug("College Scorecard lookup failed", {
+        collegeName: college.name,
+        err,
+      });
       return null;
     }),
   ]);
@@ -226,7 +232,7 @@ const createSchoolWithData = async (formData: any) => {
   } catch (err) {
     const message =
       err instanceof Error ? err.message : "Failed to create school";
-    console.error("Failed to create school:", message);
+    logger.error("Failed to create school", message);
   }
 };
 </script>

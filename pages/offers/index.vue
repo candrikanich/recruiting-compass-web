@@ -506,11 +506,13 @@ import { useFamilyCtx } from "~/composables/useFamilyCtx";
 import OfferComparison from "~/components/OfferComparison.vue";
 import { useAppToast } from "~/composables/useAppToast";
 import type { Offer } from "~/types/models";
+import { createClientLogger } from "~/utils/logger";
 
 definePageMeta({
   middleware: "auth",
 });
 
+const logger = createClientLogger("OffersList");
 const offersStore = useOffersStore();
 const {
   offers,
@@ -708,7 +710,7 @@ const handleAddOffer = async () => {
     newOffer.notes = "";
     showAddForm.value = false;
   } catch (err) {
-    console.error("Failed to log offer:", err);
+    logger.error("Failed to log offer", err);
     showToast(
       "Something went wrong logging this offer. Please try again.",
       "error",
@@ -732,7 +734,7 @@ const confirmDeleteOffer = async () => {
   try {
     await deleteOfferAPI(deletingId);
   } catch (err) {
-    console.error("Failed to delete offer:", err);
+    logger.error("Failed to delete offer", err);
     showToast(
       "Something went wrong deleting this offer. Please try again.",
       "error",

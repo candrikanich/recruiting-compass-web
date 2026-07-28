@@ -370,11 +370,13 @@ import { useOffersStore } from "~/stores/offers";
 import { useSchools } from "~/composables/useSchools";
 import ScholarshipCalculator from "~/components/ScholarshipCalculator.vue";
 import type { Offer } from "~/types/models";
+import { createClientLogger } from "~/utils/logger";
 
 definePageMeta({
   middleware: "auth",
 });
 
+const logger = createClientLogger("OfferDetail");
 const route = useRoute();
 const router = useRouter();
 const offersStore = useOffersStore();
@@ -492,7 +494,7 @@ const saveOffer = async () => {
     isEditing.value = false;
   } catch (err) {
     error.value = "Failed to save offer";
-    console.error("Error saving offer:", err);
+    logger.error("Error saving offer", err);
   }
 };
 
@@ -509,7 +511,7 @@ const confirmDeleteOffer = async () => {
     await router.push("/offers");
   } catch (err) {
     error.value = "Failed to delete offer";
-    console.error("Error deleting offer:", err);
+    logger.error("Error deleting offer", err);
   }
 };
 

@@ -212,6 +212,7 @@ import { useDeleteModal } from "~/composables/useDeleteModal";
 import { useSingleSchoolDistance } from "~/composables/useSchoolDistance";
 import { createUpdateHandler } from "~/utils/updateHandler";
 import { getCarnegieSize } from "~/utils/schoolSize";
+import { createClientLogger } from "~/utils/logger";
 import type { Document, AcademicInfo } from "~/types/models";
 import type { DivisionRecommendation } from "~/types/timeline";
 import type {
@@ -232,6 +233,8 @@ const EmailSendModal = defineAsyncComponent(
   () => import("~/components/EmailSendModal.vue"),
 );
 import DesignSystemConfirmDialog from "~/components/DesignSystem/ConfirmDialog.vue";
+
+const logger = createClientLogger("SchoolDetail");
 
 const route = useRoute();
 const id = route.params.id as string;
@@ -419,7 +422,7 @@ const handleEmailConfirmed = async () => {
     announce("Email interaction logged successfully");
   } catch (err) {
     const errorMsg = err instanceof Error ? err.message : "Unknown error";
-    console.error("Failed to log email interaction:", errorMsg);
+    logger.error("Failed to log email interaction", errorMsg);
     announce(`Failed to log interaction: ${errorMsg}`);
   }
 };
@@ -450,7 +453,7 @@ const executeDelete = async () => {
         ? err.message
         : "Failed to delete school. Please try again.";
     announce(errorMessage);
-    console.error("Failed to delete school:", err);
+    logger.error("Failed to delete school", err);
   }
 };
 

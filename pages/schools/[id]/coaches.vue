@@ -220,6 +220,9 @@ import {
   openEmail,
   openSMS,
 } from "~/utils/socialMediaHandlers";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("SchoolCoaches");
 import { useCoachFilters } from "~/composables/useCoachFilters";
 import type { CoachSortOption } from "~/composables/useCoachFilters";
 import { useEntityNames } from "~/composables/useEntityNames";
@@ -333,7 +336,7 @@ const handleCoachFormSubmit = async (formData: any) => {
     // Refresh list
     await fetchCoaches(id);
   } catch (err) {
-    console.error("Failed to add coach:", err);
+    logger.error("Failed to add coach", err);
   }
 };
 
@@ -358,7 +361,7 @@ const executeDeleteCoach = async () => {
     const errorMessage =
       err instanceof Error ? err.message : "Failed to delete coach";
     announce(errorMessage);
-    console.error("Failed to delete coach:", errorMessage);
+    logger.error("Failed to delete coach", errorMessage);
   }
 };
 

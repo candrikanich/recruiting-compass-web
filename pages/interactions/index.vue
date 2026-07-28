@@ -219,11 +219,13 @@ import {
   generateInteractionsPDF,
   type InteractionExportData,
 } from "~/utils/exportUtils";
+import { createClientLogger } from "~/utils/logger";
 
 definePageMeta({
   middleware: "auth",
 });
 
+const logger = createClientLogger("InteractionsList");
 const userStore = useUserStore();
 const activeFamily = useFamilyCtx();
 const { activeFamilyId } = activeFamily;
@@ -303,9 +305,9 @@ watch(
   () => activeFamilyId.value,
   async (newFamilyId) => {
     if (newFamilyId) {
-      console.debug(
-        `[Interactions] Family changed: familyId=${newFamilyId}, re-fetching interactions`,
-      );
+      logger.debug("Family changed, re-fetching interactions", {
+        familyId: newFamilyId,
+      });
       await fetchInteractions();
     }
   },
@@ -341,7 +343,7 @@ onMounted(async () => {
     const message =
       err instanceof Error ? err.message : "Failed to load interactions";
     error.value = message;
-    console.error("Error loading interactions:", err);
+    logger.error("Error loading interactions", err);
   } finally {
     loading.value = false;
   }

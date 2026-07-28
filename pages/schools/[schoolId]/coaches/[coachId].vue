@@ -248,11 +248,13 @@ import { useSchools } from "~/composables/useSchools";
 import { getRoleLabel } from "~/utils/coachLabels";
 import { useAppToast } from "~/composables/useAppToast";
 import type { Coach } from "~/types/models";
+import { createClientLogger } from "~/utils/logger";
 
 definePageMeta({
   middleware: "auth",
 });
 
+const logger = createClientLogger("SchoolCoachDetail");
 const route = useRoute();
 const supabase = useSupabase();
 const { schools, fetchSchools } = useSchools();
@@ -310,7 +312,7 @@ const saveCoach = async () => {
       editingContact.value = false;
     }
   } catch (err) {
-    console.error("Failed to save coach:", err);
+    logger.error("Failed to save coach", err);
   } finally {
     loading.value = false;
   }
@@ -336,7 +338,7 @@ const saveNotes = async () => {
       editingNotes.value = false;
     }
   } catch (err) {
-    console.error("Failed to save notes:", err);
+    logger.error("Failed to save notes", err);
   } finally {
     loading.value = false;
   }
@@ -357,7 +359,7 @@ const confirmDeleteCoach = async () => {
     if (error) throw error;
     await navigateTo(`/schools/${schoolId}/coaches`);
   } catch (err) {
-    console.error("Failed to delete coach:", err);
+    logger.error("Failed to delete coach", err);
     showToast(
       "Something went wrong deleting this coach. Please try again.",
       "error",
@@ -399,7 +401,7 @@ onMounted(async () => {
       };
     }
   } catch (err) {
-    console.error("Failed to load coach:", err);
+    logger.error("Failed to load coach", err);
   } finally {
     loading.value = false;
   }

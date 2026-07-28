@@ -5,11 +5,13 @@ import { useInteractions } from "~/composables/useInteractions";
 import { useUserStore } from "~/stores/user";
 import { useAppToast } from "~/composables/useAppToast";
 import type { Interaction } from "~/types/models";
+import { createClientLogger } from "~/utils/logger";
 
 definePageMeta({
   middleware: "auth",
 });
 
+const logger = createClientLogger("InteractionAdd");
 const userStore = useUserStore();
 const { createInteraction, loading } = useInteractions();
 const { showToast } = useAppToast();
@@ -40,7 +42,7 @@ const handleSubmit = async (formData: any) => {
 
     await navigateTo("/interactions");
   } catch (err) {
-    console.error("Failed to log interaction:", err);
+    logger.error("Failed to log interaction", err);
     showToast(
       "Something went wrong logging this interaction. Please try again.",
       "error",
