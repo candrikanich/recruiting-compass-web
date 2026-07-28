@@ -763,6 +763,58 @@ describe("useInteractions", () => {
       );
       expect(deleteQueryEq).toHaveBeenCalledWith("logged_by", "user-123");
     });
+
+    it("treats a 0-row delete (RLS-blocked, no error) as a failure — item stays in local state", async () => {
+      const { deleteInteraction, interactions, fetchInteractions } =
+        useInteractions();
+
+      mockQuery.__setTestData([createMockInteraction()]);
+      await fetchInteractions();
+      expect(interactions.value).toHaveLength(1);
+
+      // RLS silently blocks the delete: no error, but 0 rows actually
+      // affected — this is what count: "exact" surfaces.
+      const deleteQueryEq = vi.fn().mockReturnThis();
+      const deleteQuery = {
+        eq: deleteQueryEq,
+        then: vi
+          .fn()
+          .mockImplementation((onFulfilled) =>
+            Promise.resolve({ error: null, count: 0 }).then(onFulfilled),
+          ),
+      };
+      mockQuery.delete.mockReturnValue(deleteQuery);
+
+      await expect(
+        deleteInteraction("550e8400-e29b-41d4-a716-446655440000"),
+      ).rejects.toThrow();
+
+      // Must NOT have been optimistically removed — it would just
+      // reappear on the next fetch otherwise.
+      expect(
+        interactions.value.find(
+          (i) => i.id === "550e8400-e29b-41d4-a716-446655440000",
+        ),
+      ).toBeDefined();
+    });
+
+    it("passes { count: 'exact' } to delete() so 0-row blocks are detectable", async () => {
+      const deleteQueryEq = vi.fn().mockReturnThis();
+      const deleteQuery = {
+        eq: deleteQueryEq,
+        then: vi
+          .fn()
+          .mockImplementation((onFulfilled) =>
+            Promise.resolve({ error: null, count: 1 }).then(onFulfilled),
+          ),
+      };
+      mockQuery.delete.mockReturnValue(deleteQuery);
+
+      const { deleteInteraction } = useInteractions();
+      await deleteInteraction("550e8400-e29b-41d4-a716-446655440000");
+
+      expect(mockQuery.delete).toHaveBeenCalledWith({ count: "exact" });
+    });
   });
 
   describe("Edge Cases", () => {

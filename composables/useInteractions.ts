@@ -390,14 +390,23 @@ export const useInteractions = () => {
     errorRef.value = null;
 
     try {
-      const { error: deleteError } = await supabase
+      const { error: deleteError, count } = await supabase
         .from("interactions")
-        .delete()
+        .delete({ count: "exact" })
         .eq("id", id)
         .eq("family_unit_id", activeFamily.activeFamilyId.value)
         .eq("logged_by", userStore.user.id);
 
       if (deleteError) throw deleteError;
+
+      // An RLS-blocked delete returns no error but affects 0 rows — treat
+      // that as a failure instead of optimistically removing the item
+      // locally (it would just reappear on the next fetch).
+      if (count === 0) {
+        throw new Error(
+          "Interaction could not be deleted — it may no longer exist or you may not have permission.",
+        );
+      }
 
       interactions.value = interactions.value.filter((i) => i.id !== id);
     } catch (err: unknown) {
