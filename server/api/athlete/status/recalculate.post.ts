@@ -98,10 +98,18 @@ export default defineEventHandler(async (event) => {
     );
 
     // Fetch all schools and interactions in single query to avoid N+1
-    const { data: schoolsData } = await supabase
+    const { data: schoolsData, error: schoolsError } = await supabase
       .from("schools")
       .select("id")
       .eq("user_id", user.id);
+
+    if (schoolsError) {
+      logger.error("Error fetching schools", schoolsError);
+      throw createError({
+        statusCode: 500,
+        statusMessage: "Failed to fetch schools",
+      });
+    }
 
     const targetSchools = (schoolsData || []).length;
 
@@ -112,10 +120,22 @@ export default defineEventHandler(async (event) => {
       .eq("logged_by", user.id)
       .order("created_at", { ascending: false });
 
+    // A transient query error must fail the request, not silently score this
+    // sub-component as 0 — that zeroed value gets PERSISTED to
+    // users.status_score below, permanently depressing the athlete's score
+    // for a purely transient DB hiccup.
+    if (interactionsError) {
+      logger.error("Error fetching interactions", interactionsError);
+      throw createError({
+        statusCode: 500,
+        statusMessage: "Failed to fetch interactions",
+      });
+    }
+
     let interactionFrequencyScore = 0;
     let coachInterestScore = 0;
 
-    if (!interactionsError && interactionsData && interactionsData.length > 0) {
+    if (interactionsData && interactionsData.length > 0) {
       const interactionsRecords = interactionsData as Array<{
         created_at: string;
         sentiment?: string;
@@ -154,11 +174,19 @@ export default defineEventHandler(async (event) => {
     }
 
     // Calculate academic standing score from actual user data
-    const { data: academicData } = await supabase
+    const { data: academicData, error: academicError } = await supabase
       .from("users")
       .select("gpa, sat_score, act_score")
       .eq("id", user.id)
       .single();
+
+    if (academicError) {
+      logger.error("Error fetching academic data", academicError);
+      throw createError({
+        statusCode: 500,
+        statusMessage: "Failed to fetch academic data",
+      });
+    }
 
     const academicRecord = academicData
       ? (academicData as unknown as {
