@@ -467,6 +467,9 @@ import { ref, onMounted } from "vue";
 import { usePreferenceManager } from "~/composables/usePreferenceManager";
 import { useAppToast } from "~/composables/useAppToast";
 import type { SchoolPreference, SchoolPreferences } from "~/types/models";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("SettingsSchoolPreferences");
 
 definePageMeta({
   middleware: "auth",
@@ -757,7 +760,7 @@ const handleSave = async () => {
     await setSchoolPreferences(data);
     showToast("School preferences saved successfully", "success");
   } catch (err) {
-    console.error("Failed to save school preferences:", err);
+    logger.error("Failed to save school preferences", err);
     showToast("Failed to save school preferences", "error");
   } finally {
     saving.value = false;

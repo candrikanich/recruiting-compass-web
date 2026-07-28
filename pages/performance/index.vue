@@ -433,7 +433,10 @@
 import { ref, onMounted, reactive, computed, defineAsyncComponent } from "vue";
 import { usePerformance } from "~/composables/usePerformance";
 import { useAppToast } from "~/composables/useAppToast";
+import { createClientLogger } from "~/utils/logger";
 import type { PerformanceMetric } from "~/types/models";
+
+const logger = createClientLogger("Performance");
 import { Line } from "vue-chartjs";
 import ExportButton from "~/components/Performance/ExportButton.vue";
 const ExportModal = defineAsyncComponent(
@@ -715,7 +718,7 @@ const handleAddMetric = async () => {
 
     await fetchMetrics();
   } catch (err) {
-    console.error("Failed to log metric:", err);
+    logger.error("Failed to log metric", err);
   }
 };
 
@@ -739,7 +742,7 @@ const confirmDeleteMetric = async () => {
   try {
     await deleteMetricAPI(metricId);
   } catch (err) {
-    console.error("Failed to delete metric:", err);
+    logger.error("Failed to delete metric", err);
     showToast(
       "Something went wrong deleting this metric. Please try again.",
       "error",
@@ -776,7 +779,7 @@ const handleUpdateMetric = async () => {
     showEditForm.value = false;
     editingMetric.value = null;
   } catch (err) {
-    console.error("Failed to update metric:", err);
+    logger.error("Failed to update metric", err);
   } finally {
     isUpdating.value = false;
   }

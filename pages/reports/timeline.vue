@@ -267,6 +267,9 @@ import { useInteractions } from "~/composables/useInteractions";
 import { useOffersStore } from "~/stores/offers";
 import { useEvents } from "~/composables/useEvents";
 import { useSchoolStore } from "~/stores/schools";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("ReportsTimeline");
 
 definePageMeta({
   middleware: "auth",
@@ -650,7 +653,7 @@ onMounted(async () => {
       allStatusHistories.value = allHistories.flat();
     }
   } catch (error) {
-    console.error("Error loading timeline data:", error);
+    logger.error("Error loading timeline data", error);
   } finally {
     loading.value = false;
   }

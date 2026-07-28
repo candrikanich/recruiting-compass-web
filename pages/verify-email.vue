@@ -232,6 +232,9 @@ definePageMeta({ layout: "public" });
 import { ref, computed, watch, nextTick, onMounted, onUnmounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useEmailVerification } from "~/composables/useEmailVerification";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("VerifyEmail");
 
 const router = useRouter();
 const route = useRoute();
@@ -295,7 +298,7 @@ const handleTokenVerification = async () => {
     }
   } catch (error) {
     // Error is handled by emailVerification composable
-    console.error("Token verification error:", error);
+    logger.error("Token verification error", error);
   } finally {
     loading.value = false;
   }
@@ -316,7 +319,7 @@ const checkVerificationStatus = async () => {
     }
   } catch (error) {
     // Error is handled by emailVerification composable
-    console.error("Verification status check error:", error);
+    logger.error("Verification status check error", error);
   } finally {
     loading.value = false;
   }

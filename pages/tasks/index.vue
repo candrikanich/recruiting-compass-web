@@ -9,6 +9,9 @@ import { calculateDeadlineInfo } from "~/utils/deadlineHelpers";
 import AthleteSwitcher from "~/components/Parent/AthleteSwitcher.vue";
 import DeadlineBadge from "~/components/Timeline/DeadlineBadge.vue";
 import type { TaskWithStatus } from "~/types/timeline";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("Tasks");
 
 useHead({ title: "My Tasks" });
 
@@ -76,7 +79,7 @@ const loadFilters = () => {
       statusFilter.value = filters.statusFilter || "all";
       urgencyFilter.value = filters.urgencyFilter || "all";
     } catch (e) {
-      console.error("Failed to load filters:", e);
+      logger.error("Failed to load filters", e);
     }
   }
 };
@@ -221,7 +224,7 @@ const handleToggleTask = async (taskId: string, currentStatus: string) => {
     isViewingAsParent.value ? currentAthleteId.value || undefined : undefined,
   );
   } catch (err) {
-    console.error("Error updating task status:", err);
+    logger.error("Error updating task status", err);
     showToast(
       "Something went wrong updating this task. Please try again.",
       "error",
@@ -271,7 +274,7 @@ onMounted(async () => {
       try {
         seenLockedTasks.value = new Set(JSON.parse(stored));
       } catch (e) {
-        console.error("Failed to load seen locked tasks:", e);
+        logger.error("Failed to load seen locked tasks", e);
       }
     }
   }

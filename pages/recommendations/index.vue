@@ -382,7 +382,10 @@
 import { ref, computed, onMounted } from "vue";
 import { useRecommendationLetters } from "~/composables/useRecommendationLetters";
 import { useAppToast } from "~/composables/useAppToast";
+import { createClientLogger } from "~/utils/logger";
 import type { Database } from "~/types/database";
+
+const logger = createClientLogger("Recommendations");
 
 definePageMeta({
   middleware: "auth",
@@ -550,7 +553,7 @@ const confirmDelete = async () => {
   try {
     await deleteLetter(id);
   } catch (err) {
-    console.error("Failed to delete recommendation letter:", err);
+    logger.error("Failed to delete recommendation letter", err);
     showToast(
       "Something went wrong deleting this recommendation letter. Please try again.",
       "error",

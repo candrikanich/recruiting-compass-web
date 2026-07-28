@@ -146,6 +146,9 @@ import FunnelChart from "~/components/Analytics/FunnelChart.vue";
 import ScatterChart from "~/components/Analytics/ScatterChart.vue";
 import { useDashboardData } from "~/composables/useDashboardData";
 import { useFamilyCtx } from "~/composables/useFamilyCtx";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("Analytics");
 
 definePageMeta({ middleware: "auth" });
 import { useUserStore } from "~/stores/user";
@@ -229,7 +232,7 @@ const handleInteractionTypeClick = (
   value: number,
   index: number,
 ) => {
-  console.log(`Clicked interaction type: ${label} (${value})`);
+  logger.debug(`Clicked interaction type: ${label} (${value})`);
   // TODO: Navigate to detailed view or filter interactions
 };
 
@@ -238,12 +241,12 @@ const handlePipelineStageClick = (
   value: number,
   index: number,
 ) => {
-  console.log(`Clicked pipeline stage: ${label} (${value})`);
+  logger.debug(`Clicked pipeline stage: ${label} (${value})`);
   // TODO: Show details or drill down into stage
 };
 
 const handleExport = (format: "csv" | "excel" | "pdf") => {
-  console.log(`Exporting analytics as ${format}`);
+  logger.debug(`Exporting analytics as ${format}`);
   // TODO: Implement export functionality
 };
 

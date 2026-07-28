@@ -220,7 +220,10 @@ import UpcomingMilestones from "~/components/Timeline/UpcomingMilestones.vue";
 import { getWhatMattersNow } from "~/utils/whatMattersNow";
 import { getCommonWorries } from "~/utils/parentWorries";
 import { getReassuranceMessages } from "~/utils/parentReassurance";
+import { createClientLogger } from "~/utils/logger";
 import { getUpcomingMilestones } from "~/utils/ncaaRecruitingCalendar";
+
+const logger = createClientLogger("Timeline");
 
 definePageMeta({
   middleware: "auth",
@@ -349,7 +352,7 @@ const handleTaskToggle = async (taskId: string) => {
     // Refresh phase to check if milestones were completed
     await fetchPhase();
   } catch (err) {
-    console.error("Failed to update task status:", err);
+    logger.error("Failed to update task status", err);
     showToast(
       "Something went wrong updating this task. Please try again.",
       "error",

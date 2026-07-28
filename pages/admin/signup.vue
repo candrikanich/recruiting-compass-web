@@ -315,6 +315,9 @@ import { adminSignupSchema } from "~/utils/validation/schemas";
 import { z } from "zod";
 import FormErrorSummary from "~/components/Validation/FormErrorSummary.vue";
 import FieldError from "~/components/DesignSystem/FieldError.vue";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("AdminSignup");
 
 const firstName = ref("");
 const lastName = ref("");
@@ -458,6 +461,9 @@ const handleSignup = async () => {
         throw new Error("No user returned from signup");
       }
 
+      // Do not log authData directly — it contains the session/tokens.
+      logger.debug("Signup response received");
+
       userId = authData.data.user.id;
     } catch (signupErr: unknown) {
       // Handle "User already registered" error
@@ -465,7 +471,7 @@ const handleSignup = async () => {
         signupErr instanceof Error ? signupErr.message : String(signupErr);
 
       if (errMessage.includes("already registered")) {
-        console.log("User already registered, checking current session...");
+        logger.debug("User already registered, checking current session...");
 
         // Try to get the current session
         const {
@@ -473,7 +479,7 @@ const handleSignup = async () => {
         } = await supabase.auth.getSession();
 
         if (session?.user?.id) {
-          console.log(
+          logger.debug(
             "Session exists for user, proceeding with profile creation",
           );
           userId = session.user.id;
@@ -503,7 +509,7 @@ const handleSignup = async () => {
       );
     });
 
-    console.log("Admin profile created successfully");
+    logger.info("Admin profile created successfully");
 
     // Redirect to email verification page
     await navigateTo(
@@ -513,7 +519,7 @@ const handleSignup = async () => {
     const message = err instanceof Error ? err.message : "Signup failed";
     // Set form-level error
     setErrors([{ field: "form", message }]);
-    console.error("Signup error:", err);
+    logger.error("Signup error", err);
     loading.value = false;
   }
 };

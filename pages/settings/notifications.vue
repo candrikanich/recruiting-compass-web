@@ -70,6 +70,9 @@
 <script setup lang="ts">
 import { useSupabase } from "~/composables/useSupabase";
 import { useUserStore } from "~/stores/user";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("SettingsNotifications");
 
 const NOTIFICATION_TYPES = [
   {
@@ -167,7 +170,7 @@ async function togglePush(type: string) {
   } catch (err) {
     // Revert on failure
     pushPrefs.value[type] = originalValue;
-    console.error("Failed to update push notification preference:", err);
+    logger.error("Failed to update push notification preference", err);
   }
 }
 
@@ -187,7 +190,7 @@ async function toggleEmail(type: string) {
   } catch (err) {
     // Revert on failure
     emailPrefs.value[type] = originalValue;
-    console.error("Failed to update email notification preference:", err);
+    logger.error("Failed to update email notification preference", err);
   }
 }
 </script>

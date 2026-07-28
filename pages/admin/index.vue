@@ -545,6 +545,9 @@ import { useAuth } from "~/composables/useAuth";
 import { useSupabase } from "~/composables/useSupabase";
 import { useAppToast } from "~/composables/useAppToast";
 import { useAuthFetch } from "~/composables/useAuthFetch";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("AdminDashboard");
 const BulkDeleteConfirmModal = defineAsyncComponent(
   () => import("~/components/Admin/BulkDeleteConfirmModal.vue"),
 );
@@ -853,7 +856,7 @@ const loadUsers = async () => {
     users.value = all;
   } catch (err) {
     error.value = err instanceof Error ? err.message : "Failed to load users";
-    console.error("[Admin] Error loading users:", error.value, err);
+    logger.error("Error loading users", { message: error.value, err });
   } finally {
     loading.value = false;
   }
@@ -932,7 +935,7 @@ const confirmDeleteUser = async () => {
       err instanceof Error ? err.message : "Failed to delete user";
     error.value = errMessage;
     showToast("Failed to delete user. Please try again.", "error");
-    console.error(errMessage, err);
+    logger.error(errMessage, err);
   } finally {
     deleting.value = null;
   }
@@ -980,7 +983,7 @@ const bulkDeleteUsers = async () => {
 
     // Show error details if any
     if (response.failed > 0 && response.errors.length > 0) {
-      console.error("Bulk delete errors:", response.errors);
+      logger.error("Bulk delete errors", response.errors);
       const errorDetails = response.errors
         .map((e: any) => `${e.email}: ${e.reason}`)
         .join("\n");
@@ -991,7 +994,7 @@ const bulkDeleteUsers = async () => {
       err instanceof Error ? err.message : "Failed to bulk delete users";
     error.value = errMessage;
     showToast(errMessage, "error");
-    console.error(errMessage, err);
+    logger.error(errMessage, err);
   } finally {
     bulkDeleting.value = false;
   }

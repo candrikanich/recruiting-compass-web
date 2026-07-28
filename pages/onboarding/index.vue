@@ -372,6 +372,9 @@ import { usePreferenceManager } from "~/composables/usePreferenceManager";
 import { useFamilyCode } from "~/composables/useFamilyCode";
 import { useFamilyInvite } from "~/composables/useFamilyInvite";
 import { useAppToast } from "~/composables/useAppToast";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("Onboarding");
 
 definePageMeta({ layout: "default" });
 
@@ -679,7 +682,7 @@ onMounted(async () => {
       await fetchMyCode();
     }
   } catch (err) {
-    console.error("Failed to restore progress:", err);
+    logger.error("Failed to restore progress", err);
   }
 });
 </script>
