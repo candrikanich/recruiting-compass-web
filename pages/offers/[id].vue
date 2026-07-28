@@ -347,6 +347,18 @@
         </div>
       </div>
     </div>
+
+    <!-- Confirm Delete Dialog -->
+    <DesignSystemConfirmDialog
+      :is-open="isDeleteDialogOpen"
+      title="Delete Offer"
+      message="Are you sure you want to delete this offer? This action cannot be undone."
+      confirm-text="Delete"
+      cancel-text="Cancel"
+      variant="danger"
+      @confirm="confirmDeleteOffer"
+      @cancel="isDeleteDialogOpen = false"
+    />
   </div>
 </template>
 
@@ -484,15 +496,20 @@ const saveOffer = async () => {
   }
 };
 
-const deleteOffer = async () => {
-  if (confirm("Are you sure you want to delete this offer?")) {
-    try {
-      await deleteOfferAPI(offerId.value);
-      await router.push("/offers");
-    } catch (err) {
-      error.value = "Failed to delete offer";
-      console.error("Error deleting offer:", err);
-    }
+const isDeleteDialogOpen = ref(false);
+
+const deleteOffer = () => {
+  isDeleteDialogOpen.value = true;
+};
+
+const confirmDeleteOffer = async () => {
+  isDeleteDialogOpen.value = false;
+  try {
+    await deleteOfferAPI(offerId.value);
+    await router.push("/offers");
+  } catch (err) {
+    error.value = "Failed to delete offer";
+    console.error("Error deleting offer:", err);
   }
 };
 

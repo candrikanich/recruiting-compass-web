@@ -209,6 +209,7 @@ import { ref, computed, onMounted, nextTick } from "vue";
 import { useTasks } from "~/composables/useTasks";
 import { usePhaseCalculation } from "~/composables/usePhaseCalculation";
 import { useStatusScore } from "~/composables/useStatusScore";
+import { useAppToast } from "~/composables/useAppToast";
 import type { Phase, StatusLabel } from "~/types/timeline";
 import PhaseCardInline from "~/components/Timeline/PhaseCardInline.vue";
 import TimelineStatPills from "~/components/Timeline/TimelineStatPills.vue";
@@ -233,6 +234,7 @@ const {
   error: tasksError,
   fetchTasksWithStatus,
 } = useTasks();
+const { showToast } = useAppToast();
 const {
   currentPhase,
   milestoneProgress,
@@ -348,6 +350,10 @@ const handleTaskToggle = async (taskId: string) => {
     await fetchPhase();
   } catch (err) {
     console.error("Failed to update task status:", err);
+    showToast(
+      "Something went wrong updating this task. Please try again.",
+      "error",
+    );
   }
 };
 
