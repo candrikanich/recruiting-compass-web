@@ -1,5 +1,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { useAppToast } from "~/composables/useAppToast";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("interactions/attachments");
 
 /**
  * Validate file before upload
@@ -57,7 +60,7 @@ export const uploadInteractionAttachments = async (
         uploadedPaths.push(data.path);
       }
     } catch (err) {
-      console.error(`Failed to upload file ${file.name}:`, err);
+      logger.error(`Failed to upload file ${file.name}`, err);
       useAppToast().showToast(
         `Failed to upload "${file.name}". The interaction was saved without this attachment — try re-adding it.`,
         "error",

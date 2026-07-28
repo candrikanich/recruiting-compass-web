@@ -3,6 +3,10 @@
  * Provides standardized error message extraction, error handling, and async error handling.
  */
 
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("errorHandling");
+
 /**
  * Custom application error with context information
  */
@@ -87,7 +91,7 @@ export function handleError(
   }
 
   // Log with context for debugging
-  console.error("Error:", {
+  logger.error("Error", {
     message: appError.message,
     code: appError.code,
     statusCode: appError.statusCode,
@@ -197,7 +201,7 @@ export function safeJsonParse<T = unknown>(
   try {
     return JSON.parse(json) as T;
   } catch (error) {
-    console.warn("Failed to parse JSON:", error);
+    logger.warn("Failed to parse JSON", error);
     return fallback;
   }
 }

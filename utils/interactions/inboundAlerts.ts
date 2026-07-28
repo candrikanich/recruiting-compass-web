@@ -1,6 +1,9 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Interaction } from "~/types/models";
 import type { Database } from "~/types/database";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("interactions/inboundAlerts");
 
 type NotificationInsert =
   Database["public"]["Tables"]["notifications"]["Insert"];
@@ -43,10 +46,10 @@ export const createInboundInteractionAlert = async ({
 
     // Log warnings for failed queries (don't cascade)
     if (prefsRes.status === "rejected") {
-      console.warn("Failed to fetch user preferences:", prefsRes.reason);
+      logger.warn("Failed to fetch user preferences", prefsRes.reason);
     }
     if (coachRes.status === "rejected") {
-      console.warn("Failed to fetch coach data:", coachRes.reason);
+      logger.warn("Failed to fetch coach data", coachRes.reason);
     }
 
     if (
@@ -73,7 +76,7 @@ export const createInboundInteractionAlert = async ({
       ] as NotificationInsert[]);
     }
   } catch (err) {
-    console.error("Failed to create inbound interaction alert:", err);
+    logger.error("Failed to create inbound interaction alert", err);
     // Don't throw - this shouldn't block interaction creation
   }
 };

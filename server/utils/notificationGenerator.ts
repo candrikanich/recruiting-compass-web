@@ -511,7 +511,7 @@ export async function generateDailyDigest(
 
     return { count: 1, type: "daily_digest" };
   } catch (err) {
-    console.error("Error generating daily digest:", err);
+    logger.error("Error generating daily digest", err);
     return { count: 0, type: "daily_digest" };
   }
 }

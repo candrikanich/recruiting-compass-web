@@ -6,6 +6,9 @@
  */
 
 import type { PlayerProfile } from "~/types/onboarding";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("profileCompletenessCalculation");
 
 // Weight configuration: each field's contribution to total completion
 const WEIGHTS = {
@@ -23,7 +26,7 @@ const WEIGHTS = {
 // Verify weights sum to 1.0 (100%)
 const TOTAL_WEIGHT = Object.values(WEIGHTS).reduce((a, b) => a + b, 0);
 if (Math.abs(TOTAL_WEIGHT - 1) > 0.0001) {
-  console.warn(
+  logger.warn(
     `Profile completeness weights do not sum to 1.0: ${TOTAL_WEIGHT}`,
   );
 }

@@ -1,3 +1,7 @@
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("performance");
+
 interface PerformanceMetric {
   name: string;
   duration: number;
@@ -19,7 +23,7 @@ class PerformanceMonitor {
   ): number {
     const startTime = this.marks.get(label);
     if (!startTime) {
-      console.warn("No start mark found for", label);
+      logger.warn("No start mark found for", label);
       return 0;
     }
 
@@ -35,7 +39,7 @@ class PerformanceMonitor {
 
     if (duration > 1000) {
       const fixed = duration.toFixed(2);
-      console.warn("Slow operation: " + label + " took " + fixed + "ms");
+      logger.warn("Slow operation: " + label + " took " + fixed + "ms");
     }
 
     return duration;
@@ -127,14 +131,14 @@ class PerformanceMonitor {
 
   log(): void {
     const stats = this.getStats();
-    console.table({
+    logger.debug("Performance summary", {
       "Total Operations": stats.total,
       "Average Duration": stats.average.toFixed(2) + "ms",
       "Min Duration": stats.min.toFixed(2) + "ms",
       "Max Duration": stats.max.toFixed(2) + "ms",
     });
 
-    console.table(stats.byCategory);
+    logger.debug("Performance by category", stats.byCategory);
   }
 }
 

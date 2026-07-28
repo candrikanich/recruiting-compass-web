@@ -1,4 +1,7 @@
 import type { PerformanceMetric } from "~/types/models";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("performanceExport");
 
 /**
  * Export performance metrics to CSV format
@@ -134,7 +137,7 @@ export const exportMetricsToPDF = async (
     const pdf = doc.output("blob");
     return pdf;
   } catch (error) {
-    console.error("PDF export error:", error);
+    logger.error("PDF export error", error);
     throw new Error("Failed to generate PDF");
   }
 };

@@ -5,6 +5,9 @@
  */
 
 import { useSupabase } from "~/composables/useSupabase";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("authFetch");
 
 /**
  * Make authenticated fetch call with auto-injected auth header
@@ -34,7 +37,7 @@ export const fetchAuth = async (
       headers,
     });
   } catch (err) {
-    console.error(`Auth fetch error for ${url}:`, err);
+    logger.error(`Auth fetch error for ${url}`, err);
     throw err;
   }
 };

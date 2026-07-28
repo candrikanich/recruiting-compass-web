@@ -5,6 +5,10 @@
  * Replaces useGeocoding composable for stateless operations
  */
 
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("geocoding");
+
 export interface GeocodingResult {
   latitude: number;
   longitude: number;
@@ -54,7 +58,7 @@ export const geocodeAddress = async (
   } catch (err) {
     const errorMessage =
       err instanceof Error ? err.message : "Geocoding failed";
-    console.error("Geocoding error:", err);
+    logger.error("Geocoding error", err);
     throw new Error(errorMessage);
   }
 };
@@ -94,7 +98,7 @@ export const reverseGeocode = async (
   } catch (err) {
     const errorMessage =
       err instanceof Error ? err.message : "Reverse geocoding failed";
-    console.error("Reverse geocoding error:", err);
+    logger.error("Reverse geocoding error", err);
     throw new Error(errorMessage);
   }
 };

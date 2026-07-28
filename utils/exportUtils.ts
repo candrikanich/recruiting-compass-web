@@ -5,6 +5,9 @@
 import type { Interaction, School, Offer, Coach } from "~/types/models";
 import { downloadFile } from "./exportHelpers";
 import { parseLocalDateOnly, formatLocalDateOnly } from "./localDate";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("exportUtils");
 
 // `deadline_date` and `last_contact_date` are date-only DB columns —
 // `new Date("YYYY-MM-DD")` parses as UTC midnight, which renders a day
@@ -557,7 +560,7 @@ export const exportAnalyticsPDF = async (
         doc.addImage(imgData, "PNG", margin, yOffset, imgWidth, imgHeight);
         yOffset += imgHeight + 15;
       } catch (error) {
-        console.error(`Failed to export chart: ${chart.title}`, error);
+        logger.error(`Failed to export chart: ${chart.title}`, error);
         // Continue with other charts
       }
     }
@@ -566,7 +569,7 @@ export const exportAnalyticsPDF = async (
     const date = formatLocalDateOnly(new Date());
     doc.save(filename || `analytics-report-${date}.pdf`);
   } catch (error) {
-    console.error("Failed to export analytics PDF:", error);
+    logger.error("Failed to export analytics PDF", error);
     throw error;
   }
 };
@@ -617,7 +620,7 @@ export const generateAnalyticsReport = async (
         </div>
       `;
     } catch (error) {
-      console.error(`Failed to convert chart: ${chart.title}`, error);
+      logger.error(`Failed to convert chart: ${chart.title}`, error);
     }
   }
 

@@ -13,6 +13,9 @@
 
 import { getErrorMessage } from "./errorHandling";
 import { useSupabase } from "~/composables/useSupabase";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("supabaseQuery");
 
 /**
  * Standard response type for all queries
@@ -159,7 +162,7 @@ export async function querySelect<T>(
     }
 
     if (!ctx?.silent) {
-      console.log(
+      logger.debug(
         `[querySelect] ${table}${ctx?.context ? ` (${ctx.context})` : ""}`,
         `returned ${Array.isArray(data) ? data.length : 0} records`,
       );
@@ -169,10 +172,9 @@ export async function querySelect<T>(
   } catch (err) {
     const error = err instanceof Error ? err : new Error(String(err));
     if (!ctx?.silent) {
-      console.error(
-        `[querySelect] ${table}${ctx?.context ? ` (${ctx.context})` : ""}:`,
-        error.message,
-        ctx?.metadata,
+      logger.error(
+        `[querySelect] ${table}${ctx?.context ? ` (${ctx.context})` : ""}`,
+        { message: error.message, metadata: ctx?.metadata },
       );
     }
     return { data: null, error };
@@ -218,7 +220,7 @@ export async function querySingle<T>(
     }
 
     if (!ctx?.silent) {
-      console.log(
+      logger.debug(
         `[querySingle] ${table}${ctx?.context ? ` (${ctx.context})` : ""} found`,
       );
     }
@@ -227,8 +229,8 @@ export async function querySingle<T>(
   } catch (err) {
     const error = err instanceof Error ? err : new Error(String(err));
     if (!ctx?.silent) {
-      console.error(
-        `[querySingle] ${table}${ctx?.context ? ` (${ctx.context})` : ""}:`,
+      logger.error(
+        `[querySingle] ${table}${ctx?.context ? ` (${ctx.context})` : ""}`,
         error.message,
       );
     }
@@ -266,7 +268,7 @@ export async function queryInsert<T>(
     }
 
     if (!ctx?.silent) {
-      console.log(
+      logger.debug(
         `[queryInsert] ${table}${ctx?.context ? ` (${ctx.context})` : ""}`,
         `inserted ${Array.isArray(records) ? records.length : 1} record(s)`,
       );
@@ -279,8 +281,8 @@ export async function queryInsert<T>(
   } catch (err) {
     const error = err instanceof Error ? err : new Error(String(err));
     if (!ctx?.silent) {
-      console.error(
-        `[queryInsert] ${table}${ctx?.context ? ` (${ctx.context})` : ""}:`,
+      logger.error(
+        `[queryInsert] ${table}${ctx?.context ? ` (${ctx.context})` : ""}`,
         error.message,
       );
     }
@@ -326,7 +328,7 @@ export async function queryUpdate<T>(
     }
 
     if (!ctx?.silent) {
-      console.log(
+      logger.debug(
         `[queryUpdate] ${table}${ctx?.context ? ` (${ctx.context})` : ""}`,
         `updated ${Array.isArray(data) ? data.length : 0} record(s)`,
       );
@@ -336,8 +338,8 @@ export async function queryUpdate<T>(
   } catch (err) {
     const error = err instanceof Error ? err : new Error(String(err));
     if (!ctx?.silent) {
-      console.error(
-        `[queryUpdate] ${table}${ctx?.context ? ` (${ctx.context})` : ""}:`,
+      logger.error(
+        `[queryUpdate] ${table}${ctx?.context ? ` (${ctx.context})` : ""}`,
         error.message,
       );
     }
@@ -380,7 +382,7 @@ export async function queryDelete(
     }
 
     if (!ctx?.silent) {
-      console.log(
+      logger.debug(
         `[queryDelete] ${table}${ctx?.context ? ` (${ctx.context})` : ""}`,
         "deleted",
       );
@@ -390,8 +392,8 @@ export async function queryDelete(
   } catch (err) {
     const error = err instanceof Error ? err : new Error(String(err));
     if (!ctx?.silent) {
-      console.error(
-        `[queryDelete] ${table}${ctx?.context ? ` (${ctx.context})` : ""}:`,
+      logger.error(
+        `[queryDelete] ${table}${ctx?.context ? ` (${ctx.context})` : ""}`,
         error.message,
       );
     }
