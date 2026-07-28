@@ -78,8 +78,8 @@
 </template>
 
 <script setup lang="ts">
-import type { Milestone } from "~/server/utils/ncaaRecruitingCalendar";
-import { getMilestoneTypeIcon as getIcon } from "~/server/utils/ncaaRecruitingCalendar";
+import type { Milestone } from "~/utils/ncaaRecruitingCalendar";
+import { getMilestoneTypeIcon as getIcon } from "~/utils/ncaaRecruitingCalendar";
 
 interface Props {
   milestones: Milestone[];

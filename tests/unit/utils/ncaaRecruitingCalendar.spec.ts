@@ -12,7 +12,7 @@ import {
   ACT_TEST_DATES_2026,
   COLLEGE_APPLICATION_DEADLINES_2026,
   BASEBALL_SIGNING_PERIODS_2026,
-} from "~/server/utils/ncaaRecruitingCalendar";
+} from "~/utils/ncaaRecruitingCalendar";
 
 describe("ncaaRecruitingCalendar", () => {
   describe("milestone arrays exist", () => {

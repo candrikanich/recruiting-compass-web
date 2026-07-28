@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { mount } from "@vue/test-utils";
 import UpcomingMilestones from "~/components/Timeline/UpcomingMilestones.vue";
-import type { Milestone } from "~/server/utils/ncaaRecruitingCalendar";
+import type { Milestone } from "~/utils/ncaaRecruitingCalendar";
 
 describe("UpcomingMilestones Component", () => {
   it("should render with title", () => {

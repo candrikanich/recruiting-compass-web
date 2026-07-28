@@ -177,7 +177,7 @@ import { useRecruitingPacket } from "~/composables/useRecruitingPacket";
 import { useDashboardData } from "~/composables/useDashboardData";
 import { useDashboardCalculations } from "~/composables/useDashboardCalculations";
 import { usePreferenceManager } from "~/composables/usePreferenceManager";
-import { getDeadPeriodMessage } from "~/server/utils/ncaaRecruitingCalendar";
+import { getDeadPeriodMessage } from "~/utils/ncaaRecruitingCalendar";
 import { WIDGET_SIZES } from "~/types/models";
 import type { WidgetId, WidgetEntry } from "~/types/models";
 import ParentContextBanner from "~/components/Dashboard/ParentContextBanner.vue";

@@ -220,7 +220,7 @@ import UpcomingMilestones from "~/components/Timeline/UpcomingMilestones.vue";
 import { getWhatMattersNow } from "~/utils/whatMattersNow";
 import { getCommonWorries } from "~/utils/parentWorries";
 import { getReassuranceMessages } from "~/utils/parentReassurance";
-import { getUpcomingMilestones } from "~/server/utils/ncaaRecruitingCalendar";
+import { getUpcomingMilestones } from "~/utils/ncaaRecruitingCalendar";
 
 definePageMeta({
   middleware: "auth",
