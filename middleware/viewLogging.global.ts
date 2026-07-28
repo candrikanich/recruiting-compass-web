@@ -13,6 +13,10 @@
  *
  * Failures are silent to avoid breaking navigation
  */
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("middleware/viewLogging");
+
 export default defineNuxtRouteMiddleware(async (to, _from) => {
   // Only run on client
   if (process.server) return;
@@ -57,8 +61,7 @@ export default defineNuxtRouteMiddleware(async (to, _from) => {
     await logParentView(itemType, playerMember.user_id, itemId);
   } catch (error) {
     // Silently fail - don't break navigation if view logging fails
-    console.debug(
-      "[viewLogging middleware]",
+    logger.debug(
       error instanceof Error ? error.message : "Unknown error",
     );
   }

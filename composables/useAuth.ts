@@ -426,7 +426,7 @@ export const useAuth = () => {
           "color: orange; font-weight: bold;",
         );
         state.issues.forEach((issue) => {
-          console.warn(`• ${issue}`);
+          logger.warn(`• ${issue}`);
         });
         console.groupEnd();
       }
@@ -470,10 +470,7 @@ export const useAuth = () => {
 
     if (Object.keys(changes).length === 0) {
       if (import.meta.dev) {
-        console.log(
-          "%c✅ No auth state changes detected",
-          "color: green; font-weight: bold;",
-        );
+        logger.debug("No auth state changes detected");
       }
       return;
     }
@@ -492,10 +489,7 @@ export const useAuth = () => {
 
   const verifyUserIdStability = async () => {
     if (import.meta.dev) {
-      console.log(
-        "%c🔍 Starting User ID Stability Test",
-        "color: blue; font-weight: bold; font-size: 1.2em;",
-      );
+      logger.debug("Starting User ID Stability Test");
     }
 
     const measurements = [];
@@ -503,21 +497,21 @@ export const useAuth = () => {
     const state1 = await getAuthState();
     measurements.push({ step: "Initial", ...state1 });
     if (import.meta.dev) {
-      console.log("Measurement 1 (Initial):", state1);
+      logger.debug("Measurement 1 (Initial)", state1);
     }
 
     await new Promise((resolve) => setTimeout(resolve, 100));
     const state2 = await getAuthState();
     measurements.push({ step: "After 100ms", ...state2 });
     if (import.meta.dev) {
-      console.log("Measurement 2 (After 100ms):", state2);
+      logger.debug("Measurement 2 (After 100ms)", state2);
     }
 
     await supabase.auth.getSession();
     const state3 = await getAuthState();
     measurements.push({ step: "After getSession()", ...state3 });
     if (import.meta.dev) {
-      console.log("Measurement 3 (After getSession):", state3);
+      logger.debug("Measurement 3 (After getSession)", state3);
     }
 
     const areStable =
@@ -532,15 +526,9 @@ export const useAuth = () => {
         "color: blue; font-weight: bold;",
       );
       if (areStable) {
-        console.log(
-          "%c✅ User IDs are STABLE across all operations",
-          "color: green; font-weight: bold;",
-        );
+        logger.debug("User IDs are STABLE across all operations");
       } else {
-        console.error(
-          "%c❌ User IDs CHANGED during test - this is a bug!",
-          "color: red; font-weight: bold;",
-        );
+        logger.error("User IDs CHANGED during test - this is a bug!");
         console.table(measurements);
       }
       console.groupEnd();

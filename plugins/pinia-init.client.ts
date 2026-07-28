@@ -1,3 +1,7 @@
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("plugins/piniaInit");
+
 export default defineNuxtPlugin(async () => {
   // Initialize user store on app startup
   if (process.client) {
@@ -13,7 +17,7 @@ export default defineNuxtPlugin(async () => {
         await userStore.initializeUser();
       }
     } catch (error) {
-      console.error("Failed to initialize auth:", error);
+      logger.error("Failed to initialize auth", error);
     }
   }
 });

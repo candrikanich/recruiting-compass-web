@@ -179,6 +179,29 @@ export default [
       "@typescript-eslint/no-explicit-any": "off",
     },
   },
+  // Phase 10b (audit-remediation): raw console.* calls bypass the structured
+  // client/server loggers (createClientLogger/useLogger/createLogger) —
+  // no redaction, no correlation ID, no level gating. Enforce logger usage
+  // everywhere except: the logger implementations themselves (they ARE the
+  // sink), the global top-level error-handler catch-all (deliberately logs
+  // raw before Nuxt's normal handling can run), and build/CLI scripts under
+  // scripts/ (run outside the app runtime, never bundled to client/server).
+  {
+    files: ["**/*.ts", "**/*.js"],
+    ignores: [
+      "utils/logger.ts",
+      "server/utils/logger.ts",
+      "plugins/error-handler.client.ts",
+      "scripts/**/*",
+    ],
+    rules: {
+      // `console.group`/`groupEnd`/`table` have no logger equivalent (rich
+      // formatted dev-only output, e.g. useAuth.ts's `import.meta.dev`-gated
+      // auth-state debug helpers) — allow those specifically, still forbid
+      // log/warn/error/debug/info which all have a structured-logger path.
+      "no-console": ["error", { allow: ["group", "groupEnd", "table"] }],
+    },
+  },
   {
     files: ["scripts/**/*.js", "scripts/**/*.mjs", "scripts/**/*.cjs"],
     languageOptions: {

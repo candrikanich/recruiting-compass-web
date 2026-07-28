@@ -1,6 +1,9 @@
 // composables/useAutoSave.ts
 import { ref, onBeforeUnmount } from "vue";
 import { useAppToast } from "./useAppToast";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("useAutoSave");
 
 export interface AutoSaveOptions {
   debounceMs?: number;
@@ -32,9 +35,9 @@ export const useAutoSave = (options: AutoSaveOptions) => {
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error));
       saveError.value = err;
-      console.error("Auto-save failed:", err);
+      logger.error("Auto-save failed", err);
       // Never surface raw error/Postgres text to the user — log it for
-      // debugging (via onError/console) and show a generic, actionable message.
+      // debugging (via onError/logger) and show a generic, actionable message.
       showToast(
         "Something went wrong saving your changes. Please try again.",
         "error",

@@ -5,6 +5,9 @@
 
 import { useSupabase } from "~/composables/useSupabase";
 import { useAuth } from "~/composables/useAuth";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("middleware/onboarding");
 
 export default defineNuxtRouteMiddleware(async (to, _from) => {
   // Skip onboarding check for onboarding page itself
@@ -31,7 +34,7 @@ export default defineNuxtRouteMiddleware(async (to, _from) => {
       .single()) as { data: { phase_milestone_data: any } | null; error: any };
 
     if (error) {
-      console.error("Failed to check onboarding status:", error);
+      logger.error("Failed to check onboarding status", error);
       return;
     }
 
@@ -44,7 +47,7 @@ export default defineNuxtRouteMiddleware(async (to, _from) => {
       return navigateTo("/onboarding");
     }
   } catch (err) {
-    console.error("Onboarding middleware error:", err);
+    logger.error("Onboarding middleware error", err);
     // Don't block on error - let user continue
   }
 });
