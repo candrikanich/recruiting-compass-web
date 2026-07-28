@@ -3,6 +3,7 @@ import { ref, computed, watch, onMounted } from "vue";
 import { useTasks } from "~/composables/useTasks";
 import { useAuth } from "~/composables/useAuth";
 import { useFamilyCtx } from "~/composables/useFamilyCtx";
+import { useAppToast } from "~/composables/useAppToast";
 import { calculateCurrentGrade } from "~/utils/gradeHelpers";
 import { calculateDeadlineInfo } from "~/utils/deadlineHelpers";
 import AthleteSwitcher from "~/components/Parent/AthleteSwitcher.vue";
@@ -12,6 +13,7 @@ import type { TaskWithStatus } from "~/types/timeline";
 useHead({ title: "My Tasks" });
 
 const { session } = useAuth();
+const { showToast } = useAppToast();
 // Parent context comes from useFamilyCtx (inject('activeFamily') falling back
 // to the shared useFamilyContext singleton) — the same shared instance every
 // other page/composable reads, instead of a standalone useActiveFamily() call
@@ -195,8 +197,9 @@ const handleToggleTask = async (taskId: string, currentStatus: string) => {
       .map((dep) => dep.title);
 
     if (incompleteTitles.length > 0) {
-      alert(
-        `Cannot complete task. Please complete these prerequisites first:\n\n${incompleteTitles.join("\n")}`,
+      showToast(
+        `Complete these prerequisites first: ${incompleteTitles.join(", ")}`,
+        "warning",
       );
       return;
     }
@@ -219,9 +222,9 @@ const handleToggleTask = async (taskId: string, currentStatus: string) => {
   );
   } catch (err) {
     console.error("Error updating task status:", err);
-    alert(
-      "Error updating task: " +
-        (err instanceof Error ? err.message : "Unknown error"),
+    showToast(
+      "Something went wrong updating this task. Please try again.",
+      "error",
     );
   }
 };

@@ -19,20 +19,28 @@ vi.mock("~/composables/useAuthFetch", () => ({
   })),
 }));
 
-// Mock useTasks at module level
+// Mock useTasks at module level. tasksWithStatus/updateTaskStatus/isTaskLocked
+// are shared, mutable references so individual tests can control resolved
+// values and assert on call args (each useTasks() call must return the SAME
+// mock instances, not fresh ones, or assertions from the test body can never
+// see them).
+const tasksWithStatusRef = { value: [] as any[] };
+const updateTaskStatusMock = vi.fn().mockResolvedValue(undefined);
+const isTaskLockedMock = vi.fn(() => false);
+
 vi.mock("~/composables/useTasks", () => ({
   useTasks: vi.fn(() => ({
-    tasksWithStatus: { value: [] },
+    tasksWithStatus: tasksWithStatusRef,
     loading: { value: false },
     error: { value: null },
     fetchTasksWithStatus: vi.fn().mockResolvedValue([]),
-    updateTaskStatus: vi.fn(),
+    updateTaskStatus: updateTaskStatusMock,
     getCompletionStats: vi.fn(() => ({
       completed: 0,
       total: 0,
       percentComplete: 0,
     })),
-    isTaskLocked: vi.fn(() => false),
+    isTaskLocked: isTaskLockedMock,
     lockedTaskIds: { value: [] },
   })),
 }));
@@ -42,6 +50,11 @@ vi.mock("~/composables/useAuth", () => ({
   useAuth: vi.fn(() => ({
     session: { value: { user: { id: "user-1" } } },
   })),
+}));
+
+const showToastMock = vi.fn();
+vi.mock("~/composables/useAppToast", () => ({
+  useAppToast: () => ({ showToast: showToastMock }),
 }));
 
 import TasksPage from "~/pages/tasks/index.vue";
@@ -442,6 +455,70 @@ describe("Tasks Page - Advanced Coverage", () => {
       });
 
       expect(wrapper.vm.$nextTick).toBeDefined();
+    });
+  });
+
+  describe("Task toggle error surfacing (no native alert)", () => {
+    const mountPage = () =>
+      mount(TasksPage, {
+        global: {
+          plugins: [pinia],
+          stubs: {
+            NuxtLayout: true,
+            ClientOnly: false,
+            AthleteSwitcher: true,
+          },
+        },
+      });
+
+    it("shows a visible, generic error toast (never window.alert) when the status update fails", async () => {
+      tasksWithStatusRef.value = [
+        {
+          id: "task-1",
+          title: "Complete NCAA registration",
+          dependency_task_ids: [],
+          athlete_task: { status: "not_started" },
+        },
+      ];
+      updateTaskStatusMock.mockRejectedValueOnce(
+        new Error('permission denied for table "athlete_tasks"'),
+      );
+      wrapper = mountPage();
+      await (wrapper.vm as any).handleToggleTask("task-1", "not_started");
+      await wrapper.vm.$nextTick();
+
+      expect(updateTaskStatusMock).toHaveBeenCalledWith("task-1", "completed");
+      expect(showToastMock).toHaveBeenCalledTimes(1);
+
+      const [message, type] = showToastMock.mock.calls[0];
+      expect(type).toBe("error");
+      expect(message).toMatch(/something went wrong/i);
+      expect(message).not.toMatch(/permission denied|athlete_tasks/i);
+    });
+
+    it("warns via toast (not window.alert) instead of completing a locked task", async () => {
+      tasksWithStatusRef.value = [
+        {
+          id: "task-2",
+          title: "Send highlight video",
+          dependency_task_ids: ["task-1"],
+          athlete_task: { status: "not_started" },
+        },
+        {
+          id: "task-1",
+          title: "Complete NCAA registration",
+          dependency_task_ids: [],
+          athlete_task: { status: "not_started" },
+        },
+      ];
+      isTaskLockedMock.mockReturnValueOnce(true);
+      wrapper = mountPage();
+      await (wrapper.vm as any).handleToggleTask("task-2", "not_started");
+      await wrapper.vm.$nextTick();
+
+      expect(updateTaskStatusMock).not.toHaveBeenCalled();
+      expect(showToastMock).toHaveBeenCalledTimes(1);
+      expect(showToastMock.mock.calls[0][1]).toBe("warning");
     });
   });
 });
