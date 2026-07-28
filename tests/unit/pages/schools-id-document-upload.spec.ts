@@ -142,14 +142,19 @@ describe("School Detail Page - Document Upload", () => {
     mockFetchDocuments.mockResolvedValue(undefined);
   });
 
-  describe("Document Upload Modal Integration", () => {
-    it("should refresh documents after successful upload", async () => {
-      // When DocumentUploadModal emits 'success' event
-      // The handleDocumentUploadSuccess handler should be called
-      // which calls fetchDocuments()
-      expect(mockFetchDocuments).toBeDefined();
-    });
-  });
+  // "Document Upload Modal Integration" and the "should share document with
+  // current school after upload" test below were removed here: both only
+  // asserted `expect(mockXxx).toBeDefined()` on a function the test itself
+  // created, which can never fail. Writing a real test requires more than a
+  // local fix — the page (pages/schools/[id]/index.vue) now sources
+  // documents/upload/share from useDocumentsConsolidated, but
+  // useDocuments/useDocumentUpload/useDocumentSharing (mocked above) are
+  // either gone (useDocuments.ts no longer exists) or unused by this page.
+  // A real assertion needs the mocks updated to useDocumentsConsolidated AND
+  // the actual page mounted with its current child components (e.g.
+  // SchoolDocumentsCard, which now owns the upload/share UI instead of the
+  // DocumentUploadModal mocked in this file) — a larger rewrite of this
+  // spec's fixtures than this remediation pass covers.
 
   describe("Document Filtering for School", () => {
     it("should filter documents by shared_with_schools array", async () => {
@@ -243,32 +248,10 @@ describe("School Detail Page - Document Upload", () => {
     });
   });
 
-  describe("Document Sharing after Upload", () => {
-    it("should share document with current school after upload", async () => {
-      // The DocumentUploadModal composable should call:
-      // shareDocument(documentId, [schoolId])
-      // This adds the schoolId to the document's shared_with_schools array
-      expect(mockShareDocument).toBeDefined();
-    });
-
-    it("should maintain document metadata when sharing", async () => {
-      // Document title, description, type should remain unchanged
-      // Only the shared_with_schools array should be updated
-      const doc: Document = {
-        id: "doc-1",
-        user_id: "user-1",
-        type: "resume",
-        title: "Spring 2025 Resume",
-        description: "Updated resume with new skills",
-        file_url: "https://example.com/resume.pdf",
-        is_current: true,
-        shared_with_schools: [],
-      };
-
-      expect(doc.title).toBe("Spring 2025 Resume");
-      expect(doc.description).toBe("Updated resume with new skills");
-      expect(doc.type).toBe("resume");
-    });
-  });
-
+  // "should maintain document metadata when sharing" was also removed here:
+  // it only asserted an object literal against the same literal's own field
+  // values (self-referential, cannot fail), and never called shareDocument.
+  // Real metadata-preservation coverage for shareDocument already exists in
+  // tests/unit/composables/useDocumentsConsolidated.spec.ts, so this was a
+  // tautological duplicate rather than a gap to fill.
 });

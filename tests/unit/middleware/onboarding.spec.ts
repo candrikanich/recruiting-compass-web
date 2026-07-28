@@ -7,6 +7,27 @@ vi.mock("#app", () => ({
   sendRedirect: vi.fn(),
 }));
 
+// middleware/onboarding.ts (the real client-side route middleware) relies on
+// Nuxt's auto-imported globals, which aren't wired up under Vitest — stub
+// them directly so the test below exercises the actual file instead of a
+// hand-copied reimplementation.
+const mockNavigateTo = vi.fn((path: string) => ({ __navigateTo: path }));
+vi.stubGlobal("defineNuxtRouteMiddleware", (fn: unknown) => fn);
+vi.stubGlobal("navigateTo", mockNavigateTo);
+
+const mockSession: { value: { user: { id: string } } | null } = {
+  value: null,
+};
+vi.mock("~/composables/useAuth", () => ({
+  useAuth: () => ({ session: mockSession }),
+}));
+vi.mock("~/composables/useSupabase", () => ({
+  useSupabase: () => ({}),
+}));
+vi.mock("~/utils/logger", () => ({
+  createClientLogger: () => ({ error: vi.fn() }),
+}));
+
 describe("onboarding middleware", () => {
   let mockEvent: any;
   let mockGetHeader: any;
@@ -63,9 +84,26 @@ describe("onboarding middleware", () => {
   };
 
   describe("Middleware Logic", () => {
-    it("should allow access to /onboarding routes for unauthenticated users", () => {
-      const middleware = loadMiddleware();
-      expect(middleware).toBeDefined();
+    it("should allow access to /onboarding routes for unauthenticated users", async () => {
+      // Exercises the REAL middleware/onboarding.ts, not a reimplementation:
+      // with no session, the middleware must return early (no redirect) and
+      // let the auth middleware handle unauthenticated users instead.
+      mockSession.value = null;
+      mockNavigateTo.mockClear();
+
+      const mod = await import("~/middleware/onboarding");
+      const middleware = mod.default as (
+        to: { path: string; fullPath: string },
+        from: unknown,
+      ) => unknown;
+
+      const result = await middleware(
+        { path: "/onboarding/step-1", fullPath: "/onboarding/step-1" },
+        {},
+      );
+
+      expect(result).toBeUndefined();
+      expect(mockNavigateTo).not.toHaveBeenCalled();
     });
 
     it("should check onboarding completion status for authenticated users", async () => {

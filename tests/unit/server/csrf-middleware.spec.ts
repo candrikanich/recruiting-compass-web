@@ -121,8 +121,18 @@ describe("exported constants match what the middleware actually enforces", () =>
     );
   });
 
-  it("CSRF_EXEMPT_PREFIXES and CSRF_EXEMPT_EXACT_PATHS are non-empty and exported for drift-visibility", () => {
-    expect(CSRF_EXEMPT_PREFIXES.length).toBeGreaterThan(0);
-    expect(CSRF_EXEMPT_EXACT_PATHS.length).toBeGreaterThan(0);
+  it("CSRF_EXEMPT_PREFIXES contains exactly the exempt prefixes the middleware enforces", () => {
+    expect([...CSRF_EXEMPT_PREFIXES]).toEqual([
+      "/api/csrf-token",
+      "/api/health",
+      "/api/auth",
+    ]);
+  });
+
+  it("CSRF_EXEMPT_EXACT_PATHS contains exactly the exempt exact paths the middleware enforces", () => {
+    expect([...CSRF_EXEMPT_EXACT_PATHS]).toEqual([
+      "/api/athlete/fit-scores/recalculate-all",
+      "/api/email/unsubscribe",
+    ]);
   });
 });

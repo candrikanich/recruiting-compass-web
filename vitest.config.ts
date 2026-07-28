@@ -51,15 +51,20 @@ export default defineConfig({
       // "6. Testing"): actual coverage after removing 208 tautological tests and
       // adding real coverage for parent-access-control, auth/onboarding, the
       // athlete-access authz helper, all 4 cron jobs, several previously-untested
-      // endpoints, and 3 high-risk composables measured at lines 84.07% / functions
-      // 76.92% / branches 71.05% / statements 82.99% (npm run test:coverage,
-      // 2026-07-28). Set ~1-2pts below that honest floor to catch real regressions
-      // without flaking on run-to-run branch-count noise.
+      // endpoints, and 3 high-risk composables. Measured twice, 2026-07-28:
+      // - Local, live Supabase available (9 integration specs run): lines 84.07% /
+      //   functions 76.92% / branches 71.05% / statements 82.99%
+      // - CI-equivalent (.env.local absent, those 9 specs skip, matching
+      //   .github/workflows/test.yml which has no Supabase credentials): lines
+      //   83.26% / functions 76.25% / branches 70.31% / statements 82.13%
+      // Thresholds are set ~1pt below the LOWER (CI-equivalent) measurement, since
+      // that's what the CI gate will actually see — setting them from the local
+      // number would fail the first CI run on the live-DB specs' missing coverage.
       thresholds: {
-        lines: 83,
-        functions: 76,
-        branches: 70,
-        statements: 82,
+        lines: 82,
+        functions: 75,
+        branches: 69,
+        statements: 81,
       },
       exclude: [
         "node_modules/",
