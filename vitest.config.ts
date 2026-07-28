@@ -47,11 +47,19 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       reporter: ["text", "json", "html", "lcov"],
+      // Raised from 71/69/59/70 per Phase 11 (planning/audit-2026-07-27-findings.md,
+      // "6. Testing"): actual coverage after removing 208 tautological tests and
+      // adding real coverage for parent-access-control, auth/onboarding, the
+      // athlete-access authz helper, all 4 cron jobs, several previously-untested
+      // endpoints, and 3 high-risk composables measured at lines 84.07% / functions
+      // 76.92% / branches 71.05% / statements 82.99% (npm run test:coverage,
+      // 2026-07-28). Set ~1-2pts below that honest floor to catch real regressions
+      // without flaking on run-to-run branch-count noise.
       thresholds: {
-        lines: 71,
-        functions: 69,
-        branches: 59,
-        statements: 70,
+        lines: 83,
+        functions: 76,
+        branches: 70,
+        statements: 82,
       },
       exclude: [
         "node_modules/",
