@@ -340,20 +340,22 @@ describe("useSearchConsolidated (extended)", () => {
       expect(c.interactionResults.value.map((i) => i.id)).toEqual(["i1"]);
     });
 
-    it("metrics metricType filter into querySelect; min/max/notes post-filter", async () => {
+    it("metrics metricType filter + notes search term flow into querySelect; min/max still post-filter client-side", async () => {
       const c = useSearchConsolidated();
       c.searchType.value = "metrics";
       c.filters.value.metrics.metricType = "sprint";
       c.filters.value.metrics.minValue = 10;
       c.filters.value.metrics.maxValue = 50;
 
+      // The notes/"sprint" term match is now pushed into the DB query (via
+      // querySelect's `search` option) instead of filtered client-side —
+      // querySelect (mocked here) is trusted to have already applied it, so
+      // the mock only returns rows a real ilike("notes", "%sprint%") would.
       querySelectMock.mockResolvedValue(
         ok([
           { id: "m1", value: 25, notes: "good sprint" },
           { id: "m2", value: 5, notes: "good sprint" }, // below min
           { id: "m3", value: 75, notes: "good sprint" }, // above max
-          { id: "m4", value: 30, notes: "different note" }, // notes mismatch
-          { id: "m5", value: 20, notes: null }, // null notes → passes notes filter
         ]),
       );
 
@@ -364,10 +366,11 @@ describe("useSearchConsolidated (extended)", () => {
         (args) => args[0] === "performance_metrics",
       );
       expect(call?.[1].filters).toMatchObject({ metric_type: "sprint" });
-      expect(c.metricsResults.value.map((m) => m.id).sort()).toEqual([
-        "m1",
-        "m5",
-      ]);
+      expect(call?.[1].search).toEqual({
+        columns: ["notes"],
+        term: "sprint",
+      });
+      expect(c.metricsResults.value.map((m) => m.id).sort()).toEqual(["m1"]);
     });
   });
 
@@ -655,14 +658,20 @@ describe("useSearchConsolidated (extended)", () => {
       expect(await c.getSchoolSuggestions("D")).toEqual([]);
     });
 
-    it("returns matching school names (prefix match, case-insensitive)", async () => {
+    it("pushes the prefix into querySelect as a startsWith search (DB-side, not client-filtered) and returns names", async () => {
       setUser();
-      querySelectMock.mockResolvedValue(
-        ok([{ name: "Duke" }, { name: "Duquesne" }, { name: "Harvard" }]),
-      );
+      // querySelect (mocked) is trusted to have already applied the
+      // startsWith("du") filter — a real ilike("name", "du%") wouldn't
+      // return "Harvard", so it's intentionally absent from the mock.
+      querySelectMock.mockResolvedValue(ok([{ name: "Duke" }, { name: "Duquesne" }]));
       const c = useSearchConsolidated();
       const r = await c.getSchoolSuggestions("du");
       expect(r).toEqual(["Duke", "Duquesne"]);
+      expect(querySelectMock.mock.calls[0][1].search).toEqual({
+        columns: ["name"],
+        term: "du",
+        pattern: "startsWith",
+      });
     });
 
     it("returns [] when querySelect returns error", async () => {
@@ -692,16 +701,21 @@ describe("useSearchConsolidated (extended)", () => {
       expect(await c.getCoachSuggestions("J")).toEqual([]);
     });
 
-    it("returns matching coach names", async () => {
+    it("pushes the prefix into querySelect as a startsWith search (DB-side, not client-filtered) and returns names", async () => {
       setUser();
       querySelectMock.mockResolvedValue(
-        ok([{ name: "John Smith" }, { name: "Joe Brown" }, { name: "Alice" }]),
+        ok([{ name: "John Smith" }, { name: "Joe Brown" }]),
       );
       const c = useSearchConsolidated();
       expect(await c.getCoachSuggestions("Jo")).toEqual([
         "John Smith",
         "Joe Brown",
       ]);
+      expect(querySelectMock.mock.calls[0][1].search).toEqual({
+        columns: ["name"],
+        term: "Jo",
+        pattern: "startsWith",
+      });
     });
 
     it("returns [] when querySelect errors", async () => {

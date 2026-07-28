@@ -200,6 +200,10 @@ export const useSearchConsolidated = () => {
         {
           select: "*",
           filters: filterObj,
+          // Push the term into the DB query BEFORE limiting — filtering
+          // client-side after limit(20) silently misses matches beyond
+          // the first 20 rows in arbitrary DB order.
+          search: { columns: ["name", "address", "city", "state"], term: searchQuery },
           limit: 20,
         },
         { context: "searchSchools" },
@@ -244,6 +248,8 @@ export const useSearchConsolidated = () => {
         {
           select: "*",
           filters: filterObj,
+          // Push the term into the DB query BEFORE limiting — see searchSchools.
+          search: { columns: ["name", "school", "email", "phone"], term: searchQuery },
           limit: 20,
         },
         { context: "searchCoaches" },
@@ -298,6 +304,8 @@ export const useSearchConsolidated = () => {
         {
           select: "*",
           filters: filterObj,
+          // Push the term into the DB query BEFORE limiting — see searchSchools.
+          search: { columns: ["subject", "notes"], term: searchQuery },
           order: { column: "recorded_date", ascending: false },
           limit: 20,
         },
@@ -355,6 +363,10 @@ export const useSearchConsolidated = () => {
         {
           select: "*",
           filters: filterObj,
+          // Push the term into the DB query BEFORE limiting — see searchSchools.
+          ...(searchQuery.trim()
+            ? { search: { columns: ["notes"], term: searchQuery } }
+            : {}),
           order: { column: "recorded_date", ascending: false },
           limit: 20,
         },
@@ -373,15 +385,6 @@ export const useSearchConsolidated = () => {
       if (results && filters.value.metrics.maxValue < 100) {
         results = results.filter(
           (m) => (m.value || 0) <= filters.value.metrics.maxValue,
-        );
-      }
-
-      // Filter by search query in notes
-      if (results && searchQuery.trim()) {
-        results = results.filter(
-          (m) =>
-            !m.notes ||
-            m.notes.toLowerCase().includes(searchQuery.toLowerCase()),
         );
       }
 
@@ -594,6 +597,8 @@ export const useSearchConsolidated = () => {
         {
           select: "name",
           filters: { user_id: userStore.user.id },
+          // Push the prefix into the DB query BEFORE limiting — see searchSchools.
+          search: { columns: ["name"], term: prefix, pattern: "startsWith" },
           limit: 10,
         },
         { context: "getSchoolSuggestions", silent: true },
@@ -601,9 +606,7 @@ export const useSearchConsolidated = () => {
 
       if (error) return [];
 
-      return (data || [])
-        .filter((s) => s.name.toLowerCase().startsWith(prefix.toLowerCase()))
-        .map((s) => s.name);
+      return (data || []).map((s) => s.name);
     } catch {
       return [];
     }
@@ -621,6 +624,8 @@ export const useSearchConsolidated = () => {
         {
           select: "name",
           filters: { user_id: userStore.user.id },
+          // Push the prefix into the DB query BEFORE limiting — see searchSchools.
+          search: { columns: ["name"], term: prefix, pattern: "startsWith" },
           limit: 10,
         },
         { context: "getCoachSuggestions", silent: true },
@@ -628,9 +633,7 @@ export const useSearchConsolidated = () => {
 
       if (error) return [];
 
-      return (data || [])
-        .filter((c) => c.name.toLowerCase().startsWith(prefix.toLowerCase()))
-        .map((c) => c.name);
+      return (data || []).map((c) => c.name);
     } catch {
       return [];
     }

@@ -58,11 +58,57 @@ export type SupabaseQueryBuilder = ReturnType<
  *   { context: 'fetchCoaches' }
  * )
  */
+/**
+ * Escape a raw search term for safe use inside a PostgREST `ilike` pattern:
+ * backslash/`%`/`_` are LIKE wildcard metacharacters and must be escaped so
+ * user input can't inject unintended wildcard matches.
+ */
+function escapeIlikeWildcards(term: string): string {
+  return term
+    .replace(/\\/g, "\\\\")
+    .replace(/%/g, "\\%")
+    .replace(/_/g, "\\_");
+}
+
+/**
+ * Escape a value for embedding inside a PostgREST `.or()` filter list, where
+ * commas and parentheses are syntactically significant. Wrapping in double
+ * quotes and escaping backslash/quote characters lets arbitrary user input
+ * (including commas) pass through as a literal value instead of being
+ * parsed as filter syntax.
+ */
+function escapeForOrFilterValue(value: string): string {
+  return `"${value.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
+}
+
+/**
+ * Build a `column1.ilike.%term%,column2.ilike.%term%,...` fragment for
+ * Supabase's `.or()`, safely escaping the term for both LIKE wildcards and
+ * PostgREST or-filter syntax.
+ */
+export function buildIlikeOrFilter(
+  columns: string[],
+  term: string,
+  pattern: "contains" | "startsWith" = "contains",
+): string {
+  const escaped = escapeIlikeWildcards(term);
+  const wildcarded = pattern === "startsWith" ? `${escaped}%` : `%${escaped}%`;
+  const quoted = escapeForOrFilterValue(wildcarded);
+  return columns.map((column) => `${column}.ilike.${quoted}`).join(",");
+}
+
 export async function querySelect<T>(
   table: string,
   options?: {
     select?: string;
     filters?: Record<string, unknown>;
+    /**
+     * Push a text search term into the DB query via `.or(col.ilike...)`
+     * BEFORE `limit` is applied, instead of fetching `limit` rows and
+     * filtering client-side afterward (which silently misses matches
+     * outside the first `limit` rows returned in arbitrary DB order).
+     */
+    search?: { columns: string[]; term: string; pattern?: "contains" | "startsWith" };
     order?: { column: string; ascending?: boolean };
     limit?: number;
   },
@@ -81,6 +127,17 @@ export async function querySelect<T>(
           query = query.eq(key, value as string | number | boolean);
         }
       }
+    }
+
+    // Apply text search (must run before `limit` — see search option docs)
+    if (options?.search && options.search.term.trim()) {
+      query = query.or(
+        buildIlikeOrFilter(
+          options.search.columns,
+          options.search.term,
+          options.search.pattern,
+        ),
+      );
     }
 
     // Apply ordering

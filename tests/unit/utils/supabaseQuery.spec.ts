@@ -8,6 +8,7 @@ import {
   isQuerySuccess,
   isQueryError,
   getQueryErrorMessage,
+  buildIlikeOrFilter,
   type QueryResult,
 } from "~/utils/supabaseQuery";
 import { useSupabase } from "~/composables/useSupabase";
@@ -32,6 +33,7 @@ describe("supabaseQuery utilities", () => {
       is: vi.fn().mockReturnThis(),
       order: vi.fn().mockReturnThis(),
       limit: vi.fn().mockReturnThis(),
+      or: vi.fn().mockReturnThis(),
       insert: vi.fn().mockReturnThis(),
       update: vi.fn().mockReturnThis(),
       delete: vi.fn().mockReturnThis(),
@@ -129,6 +131,39 @@ describe("supabaseQuery utilities", () => {
 
       expect(mockSupabase.limit).toHaveBeenCalledWith(3);
       expect(result.data).toEqual(mockData);
+    });
+
+    it("should apply the search term via .or(ilike) BEFORE limit is applied — not client-side after fetching `limit` rows", async () => {
+      const mockData = [{ id: "1", name: "Stanford University" }];
+
+      const callOrder: string[] = [];
+      mockSupabase.or.mockImplementation(function (this: unknown) {
+        callOrder.push("or");
+        return mockSupabase;
+      });
+      mockSupabase.limit.mockImplementation(function (this: unknown) {
+        callOrder.push("limit");
+        return Promise.resolve({ data: mockData, error: null });
+      });
+
+      const result = await querySelect("schools", {
+        search: { columns: ["name", "city"], term: "Stanford" },
+        limit: 20,
+      });
+
+      expect(mockSupabase.or).toHaveBeenCalledWith(
+        'name.ilike."%Stanford%",city.ilike."%Stanford%"',
+      );
+      expect(callOrder).toEqual(["or", "limit"]);
+      expect(result.data).toEqual(mockData);
+    });
+
+    it("should not call .or() when the search term is empty/whitespace", async () => {
+      mockSupabase.select.mockResolvedValueOnce({ data: [], error: null });
+
+      await querySelect("schools", { search: { columns: ["name"], term: "  " } });
+
+      expect(mockSupabase.or).not.toHaveBeenCalled();
     });
 
     it("should handle Supabase error", async () => {
@@ -541,6 +576,36 @@ describe("supabaseQuery utilities", () => {
       const message = getQueryErrorMessage(error, "Custom default");
 
       expect(message).toBeDefined();
+    });
+  });
+
+  describe("buildIlikeOrFilter", () => {
+    it("builds a contains-pattern ilike or-filter across multiple columns", () => {
+      expect(buildIlikeOrFilter(["name", "city"], "Stanford")).toBe(
+        'name.ilike."%Stanford%",city.ilike."%Stanford%"',
+      );
+    });
+
+    it("builds a startsWith-pattern ilike filter when requested", () => {
+      expect(buildIlikeOrFilter(["name"], "Stan", "startsWith")).toBe(
+        'name.ilike."Stan%"',
+      );
+    });
+
+    it("escapes LIKE wildcard metacharacters in the term", () => {
+      expect(buildIlikeOrFilter(["name"], "100%_off\\")).toBe(
+        'name.ilike."%100\\\\%\\\\_off\\\\\\\\%"',
+      );
+    });
+
+    it("escapes commas so PostgREST doesn't parse them as filter separators", () => {
+      const result = buildIlikeOrFilter(["name"], "Smith, John");
+      expect(result).toBe('name.ilike."%Smith, John%"');
+    });
+
+    it("escapes embedded double quotes", () => {
+      const result = buildIlikeOrFilter(["name"], 'Say "hi"');
+      expect(result).toBe('name.ilike."%Say \\"hi\\"%"');
     });
   });
 });
