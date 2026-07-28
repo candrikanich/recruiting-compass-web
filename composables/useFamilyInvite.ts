@@ -6,13 +6,17 @@ import { createClientLogger } from "~/utils/logger";
 /**
  * Composable for managing family invitations
  *
- * Handles sending parent invites via email and linking parents to players using family codes.
- * Includes email validation and family code management.
+ * Handles sending parent invites via email. Email validation included.
+ *
+ * The real family-code join flow lives in useFamilyCode + the
+ * /api/family/code/join endpoint (family_units/family_members tables). A
+ * prior linkParentWithCode() here queried a nonexistent users.family_code
+ * column (family_code only exists on family_units) and was deleted as dead
+ * ghost-schema code — see planning/audit-2026-07-27-findings.md.
  *
  * @example
- * const { sendParentInvite, linkParentWithCode } = useFamilyInvite()
+ * const { sendParentInvite } = useFamilyInvite()
  * await sendParentInvite('parent@example.com')
- * const playerData = await linkParentWithCode('FAM-ABC123')
  */
 const logger = createClientLogger("useFamilyInvite");
 
@@ -99,80 +103,6 @@ export const useFamilyInvite = () => {
   };
 
   /**
-   * Link parent to player using family code
-   * Parent must be authenticated
-   * Returns the linked player's user data
-   */
-  const linkParentWithCode = async (
-    familyCode: string,
-  ): Promise<Record<string, unknown>> => {
-    loading.value = true;
-    error.value = null;
-
-    try {
-      // Verify parent is authenticated
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (!session?.user?.id) {
-        throw new Error("Not authenticated");
-      }
-
-      // Normalize family code (add FAM- prefix if missing)
-      let normalizedCode = familyCode;
-      if (!normalizedCode.startsWith("FAM-")) {
-        normalizedCode = `FAM-${familyCode}`;
-      }
-
-      // Find user by family code
-      const { data: playerUser, error: userError } = (await supabase
-        .from("users")
-        .select("*")
-        .eq("family_code", normalizedCode.toUpperCase())
-        .single()) as {
-        data: Record<string, unknown> | null;
-        error: unknown;
-      };
-
-      if (userError || !playerUser) {
-        throw new Error("Family code not found");
-      }
-
-      // Create account link record to establish parent-player relationship
-      const linkData = {
-        initiator_user_id: playerUser.id as string,
-        parent_user_id: session.user.id,
-        invited_email: session.user.email,
-        status: "confirmed",
-        initiator_role: "player",
-      };
-      const { error: linkError } = (await (
-        supabase.from("account_links") as unknown as {
-          insert: (data: typeof linkData) => Promise<{ error: unknown }>;
-        }
-      ).insert(linkData)) as { error: unknown };
-
-      if (linkError) {
-        // Non-blocking: a link record may already exist if the parent previously
-        // used this family code. The player data is still returned so the UI
-        // can proceed. If duplicate-link errors should be treated as fatal in
-        // the future, throw linkError here instead.
-        logger.warn("Account link creation failed (non-blocking):", linkError);
-      }
-
-      return playerUser;
-    } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Failed to link with family code";
-      error.value = message;
-      logger.error("Family link error:", err);
-      throw err;
-    } finally {
-      loading.value = false;
-    }
-  };
-
-  /**
    * Send an email invitation via the new /api/family/invite endpoint.
    * Works for both player and parent roles.
    */
@@ -214,6 +144,5 @@ export const useFamilyInvite = () => {
     // Actions
     sendInvite,
     sendParentInvite,
-    linkParentWithCode,
   };
 };

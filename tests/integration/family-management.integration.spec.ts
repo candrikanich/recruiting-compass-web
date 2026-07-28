@@ -16,11 +16,6 @@ describe("Family Management Integration", () => {
       expect(typeof familyInvite.sendParentInvite).toBe("function");
     });
 
-    it("should have linkParentWithCode method", () => {
-      const familyInvite = useFamilyInvite();
-      expect(typeof familyInvite.linkParentWithCode).toBe("function");
-    });
-
     it("should start with no loading", () => {
       const familyInvite = useFamilyInvite();
       expect(familyInvite.loading.value).toBe(false);
@@ -73,10 +68,9 @@ describe("Family Management Integration", () => {
   });
 
   describe("Family management workflow", () => {
-    it("parent invite workflow should have both methods available", () => {
+    it("parent invite workflow should have sendParentInvite available", () => {
       const familyInvite = useFamilyInvite();
       expect(typeof familyInvite.sendParentInvite).toBe("function");
-      expect(typeof familyInvite.linkParentWithCode).toBe("function");
     });
 
     it("preview mode workflow should have both methods available", () => {

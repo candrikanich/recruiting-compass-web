@@ -15,5 +15,4 @@ export {
 export {
   validateFamilyCodeInput,
   formatFamilyCodeInput,
-  validateFamilyCodeForOnboarding,
 } from "../familyCodeValidation";

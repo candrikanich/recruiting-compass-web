@@ -201,7 +201,6 @@ describe("Parent Onboarding", () => {
         loading: ref(false),
         error: ref(null),
         sendParentInvite: vi.fn(),
-        linkParentWithCode: vi.fn(),
         lastInvitedEmail: ref(null),
       });
 
