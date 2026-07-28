@@ -25,6 +25,9 @@
 import { computed, ref, onMounted } from "vue";
 import { useUserStore } from "~/stores/user";
 import { useViewLogging } from "~/composables/useViewLogging";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("ViewIndicator");
 
 const userStore = useUserStore();
 const viewLogging = useViewLogging();
@@ -73,7 +76,7 @@ const loadViewStatus = async () => {
       lastViewTime.value = (lastView as ParentViewLog).viewed_at;
     }
   } catch (err) {
-    console.debug("Failed to load view status:", err);
+    logger.debug("Failed to load view status", err);
   }
 };
 

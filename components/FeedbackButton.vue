@@ -180,6 +180,9 @@
 <script setup lang="ts">
 import { ref, reactive } from "vue";
 import { useAuthFetch } from "~/composables/useAuthFetch";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("FeedbackButton");
 
 const { $fetchAuth } = useAuthFetch();
 const isOpen = ref(false);
@@ -236,7 +239,7 @@ const submitFeedback = async () => {
   } catch (err: any) {
     error.value =
       err.data?.message || "Failed to send feedback. Please try again.";
-    console.error("Feedback submission error:", err);
+    logger.error("Feedback submission error", err);
   } finally {
     loading.value = false;
   }

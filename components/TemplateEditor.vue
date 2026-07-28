@@ -151,6 +151,9 @@ import {
 } from "~/composables/useCommunicationTemplates";
 import { AVAILABLE_VARIABLES } from "~/utils/templateVariables";
 import { useAppToast } from "~/composables/useAppToast";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("TemplateEditor");
 
 const { showToast } = useAppToast();
 
@@ -279,7 +282,7 @@ const confirmDeleteTemplate = async () => {
     await deleteFromComposable(templateId);
     emit("delete", templateId);
   } catch (err) {
-    console.error("Failed to delete template:", err);
+    logger.error("Failed to delete template", err);
     showToast(
       "Something went wrong deleting this template. Please try again.",
       "error",

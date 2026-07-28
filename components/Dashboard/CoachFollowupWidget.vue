@@ -102,6 +102,9 @@ import { useCoaches } from "~/composables/useCoaches";
 import { useUserStore } from "~/stores/user";
 import { useCommunication } from "~/composables/useCommunication";
 import type { Coach, School } from "~/types/models";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("CoachFollowupWidget");
 
 const { schools: allSchools, fetchSchools } = useSchools();
 const { coaches: allCoachesData, fetchAllCoaches } = useCoaches();
@@ -194,7 +197,7 @@ const fetchData = async () => {
   try {
     await Promise.all([fetchSchools(), fetchAllCoaches()]);
   } catch (err) {
-    console.error("Error fetching follow-up data:", err);
+    logger.error("Error fetching follow-up data", err);
   }
 };
 
@@ -206,7 +209,7 @@ const onInteractionLogged = async (interactionData: any) => {
       fetchData,
     );
   } catch (err) {
-    console.error("Error logging interaction:", err);
+    logger.error("Error logging interaction", err);
   }
 };
 

@@ -82,6 +82,9 @@ import { ref, onMounted } from "vue";
 import type { SchoolStatusHistory } from "~/types/models";
 import { useSchoolStore } from "~/stores/schools";
 import { useUserStore } from "~/stores/user";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("SchoolStatusHistory");
 interface Props {
   schoolId: string;
 }
@@ -158,7 +161,7 @@ const fetchHistory = async () => {
     const message =
       err instanceof Error ? err.message : "Failed to load status history";
     error.value = message;
-    console.error("Error fetching status history:", err);
+    logger.error("Error fetching status history", err);
   } finally {
     loading.value = false;
   }

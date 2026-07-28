@@ -161,6 +161,9 @@ import {
   type TemplateWithUnlockStatus,
 } from "~/composables/useCommunicationTemplates";
 import type { CommunicationTemplate } from "~/types/models";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("TemplateSelector");
 
 interface Props {
   isOpen: boolean;
@@ -205,7 +208,7 @@ const initializeTemplates = async () => {
     templatesWithUnlock.value =
       await getTemplatesWithUnlockStatus(allTemplates);
   } catch (err) {
-    console.error("Error initializing templates:", err);
+    logger.error("Error initializing templates", err);
   } finally {
     loadingUnlockStatus.value = false;
   }

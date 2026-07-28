@@ -140,6 +140,9 @@
 import { ref, computed } from "vue";
 import { useProfilePhoto } from "~/composables/useProfilePhoto";
 import { useUserStore } from "~/stores/user";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("ProfilePhotoUpload");
 
 const fileInput = ref<HTMLInputElement>();
 const showDeleteConfirm = ref(false);
@@ -192,13 +195,13 @@ const handleFileSelect = async (event: Event) => {
       target.value = "";
     }
   } catch (err) {
-    console.error("Upload error:", err);
+    logger.error("Upload error", err);
   }
 };
 
 const handleImageError = () => {
   // Image failed to load, this might happen if URL is no longer valid
-  console.error("Failed to load profile photo");
+  logger.error("Failed to load profile photo");
 };
 
 const confirmDelete = () => {
@@ -214,7 +217,7 @@ const confirmDeleteAction = async () => {
     await deleteProfilePhoto();
     showDeleteConfirm.value = false;
   } catch (err) {
-    console.error("Delete error:", err);
+    logger.error("Delete error", err);
     showDeleteConfirm.value = false;
   }
 };

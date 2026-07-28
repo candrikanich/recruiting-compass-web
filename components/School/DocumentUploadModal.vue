@@ -163,6 +163,9 @@ import { ref, reactive, computed } from "vue";
 import { useDocumentsConsolidated } from "~/composables/useDocumentsConsolidated";
 import { useFormValidation } from "~/composables/useFormValidation";
 import type { Database } from "~/types/database";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("DocumentUploadModal");
 
 type DocumentType = Database["public"]["Enums"]["document_type"];
 
@@ -266,7 +269,7 @@ const handleUpload = async () => {
       emit("close");
     }
   } catch (err) {
-    console.error("Failed to upload document:", err);
+    logger.error("Failed to upload document", err);
   }
 };
 </script>

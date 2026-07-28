@@ -26,6 +26,9 @@ import { computed, ref, onMounted, watch, inject } from "vue";
 import { useFamilyContext } from "~/composables/useFamilyContext";
 import type { UseActiveFamilyReturn } from "~/composables/useActiveFamily";
 import { useUserStore } from "~/stores/user";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("AthleteSelector");
 
 const activeFamily =
   inject<UseActiveFamilyReturn>("activeFamily") || useFamilyContext();
@@ -50,7 +53,7 @@ const handleSwitch = async () => {
   try {
     await activeFamily.switchAthlete(selectedAthleteId.value);
   } catch (err) {
-    console.error("Failed to switch athlete:", err);
+    logger.error("Failed to switch athlete", err);
   } finally {
     loading.value = false;
   }

@@ -37,6 +37,9 @@
 import { ref, onMounted, computed, watch } from "vue";
 import { useSchoolLogos } from "~/composables/useSchoolLogos";
 import type { School } from "~/types/models";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("SchoolLogo");
 
 interface Props {
   school: School;
@@ -87,9 +90,10 @@ const isLoading = computed(() => isFetching.value || composableLoading.value);
 
 const handleImageError = () => {
   imageError.value = true;
-  console.warn(
-    `Image failed to load for ${props.school.name}: ${logoUrl.value}`,
-  );
+  logger.warn("Image failed to load", {
+    schoolName: props.school.name,
+    logoUrl: logoUrl.value,
+  });
 };
 
 const fetchLogo = async () => {
@@ -106,10 +110,10 @@ const fetchLogo = async () => {
     logoUrl.value = url;
     imageError.value = false;
   } catch (error) {
-    console.warn(
-      `[SchoolLogo] Failed to fetch logo for ${props.school.name}:`,
+    logger.warn("Failed to fetch logo", {
+      schoolName: props.school.name,
       error,
-    );
+    });
     logoUrl.value = null;
   } finally {
     isFetching.value = false;

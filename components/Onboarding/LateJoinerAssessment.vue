@@ -276,6 +276,9 @@ import {
   type OnboardingAssessment,
 } from "~/composables/useOnboarding";
 import { useRouter } from "vue-router";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("LateJoinerAssessment");
 
 const router = useRouter();
 const { completeOnboarding, loading: isSubmitting } = useOnboarding();
@@ -351,13 +354,13 @@ const handleSubmit = async () => {
 
   try {
     const result = await completeOnboarding(assessment.value);
-    console.log("Onboarding completed:", result);
+    logger.info("Onboarding completed", result);
     // Redirect to dashboard
     await router.push("/dashboard");
   } catch (err) {
     error.value =
       err instanceof Error ? err.message : "Failed to complete onboarding";
-    console.error("Onboarding submission error:", err);
+    logger.error("Onboarding submission error", err);
   }
 };
 </script>

@@ -177,6 +177,9 @@ import {
 import { getMetricLabel } from "~/utils/textTemplates";
 import { useAppToast } from "~/composables/useAppToast";
 import type { PerformanceMetric, Event } from "~/types/models";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("ExportModal");
 
 const { showToast } = useAppToast();
 
@@ -302,7 +305,7 @@ const handleExport = async () => {
 
     emit("close");
   } catch (error) {
-    console.error("Export failed:", error);
+    logger.error("Export failed", error);
     showToast(
       "Something went wrong generating the report. Please try again.",
       "error",

@@ -158,6 +158,9 @@
 import { ref, computed, watch } from "vue";
 import type { School } from "~/types/models";
 import NotesHistory from "~/components/School/NotesHistory.vue";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("CoachingPhilosophy");
 
 const props = defineProps<{
   school: School;
@@ -209,7 +212,7 @@ const savePhilosophy = async () => {
     emit("update", editedCoachingData.value);
     isEditing.value = false;
   } catch (error) {
-    console.error("Error saving coaching philosophy:", error);
+    logger.error("Error saving coaching philosophy", error);
   } finally {
     loading.value = false;
   }

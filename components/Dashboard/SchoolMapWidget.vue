@@ -134,6 +134,9 @@ import L from "leaflet";
 import { useUserStore } from "~/stores/user";
 import { usePreferenceManager } from "~/composables/usePreferenceManager";
 import type { School } from "~/types/models";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("SchoolMapWidget");
 
 interface Props {
   schools: School[];
@@ -303,7 +306,7 @@ const initializeMap = () => {
 
     isInitializing = false;
   } catch (error) {
-    console.error("[SchoolMapWidget] Error initializing map:", error);
+    logger.error("Error initializing map", error);
     isInitializing = false;
   }
 };

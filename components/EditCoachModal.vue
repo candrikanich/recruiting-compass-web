@@ -198,6 +198,9 @@
 import { reactive, ref, watch, toRefs, nextTick } from "vue";
 import { useFocusTrap } from "~/composables/useFocusTrap";
 import type { Coach } from "~/types/models";
+import { createClientLogger } from "~/utils/logger";
+
+const logger = createClientLogger("EditCoachModal");
 
 interface Props {
   coach: Coach;
@@ -262,7 +265,7 @@ const handleSubmit = async () => {
     emit("updated", updated);
     handleClose();
   } catch (err) {
-    console.error("Failed to update coach:", err);
+    logger.error("Failed to update coach", err);
   } finally {
     loading.value = false;
   }
