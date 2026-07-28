@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { useAppToast } from "~/composables/useAppToast";
 
 /**
  * Validate file before upload
@@ -57,6 +58,10 @@ export const uploadInteractionAttachments = async (
       }
     } catch (err) {
       console.error(`Failed to upload file ${file.name}:`, err);
+      useAppToast().showToast(
+        `Failed to upload "${file.name}". The interaction was saved without this attachment — try re-adding it.`,
+        "error",
+      );
     }
   }
 

@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, computed } from "vue";
+import { navigateTo } from "#app";
 import { useInteractions } from "~/composables/useInteractions";
 import { useUserStore } from "~/stores/user";
+import { useAppToast } from "~/composables/useAppToast";
 import type { Interaction } from "~/types/models";
 
 definePageMeta({
@@ -10,6 +12,7 @@ definePageMeta({
 
 const userStore = useUserStore();
 const { createInteraction, loading } = useInteractions();
+const { showToast } = useAppToast();
 
 const pageTitle = computed(() => {
   return userStore.isAthlete ? "Log My Interaction" : "Log Interaction";
@@ -38,6 +41,10 @@ const handleSubmit = async (formData: any) => {
     await navigateTo("/interactions");
   } catch (err) {
     console.error("Failed to log interaction:", err);
+    showToast(
+      "Something went wrong logging this interaction. Please try again.",
+      "error",
+    );
   }
 };
 

@@ -5,6 +5,11 @@ import {
 } from "~/utils/interactions/attachments";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+const showToastMock = vi.fn();
+vi.mock("~/composables/useAppToast", () => ({
+  useAppToast: () => ({ showToast: showToastMock }),
+}));
+
 describe("Interaction Attachments", () => {
   let mockSupabase: any;
 
@@ -16,6 +21,7 @@ describe("Interaction Attachments", () => {
       },
     };
     vi.spyOn(console, "error").mockImplementation(() => {});
+    showToastMock.mockClear();
   });
 
   // ============================================
@@ -301,6 +307,10 @@ describe("Interaction Attachments", () => {
 
       expect(result).toHaveLength(0);
       expect(console.error).toHaveBeenCalled();
+      expect(showToastMock).toHaveBeenCalledWith(
+        expect.stringContaining("test.pdf"),
+        "error",
+      );
     });
 
     it("should continue uploading after one file fails", async () => {
