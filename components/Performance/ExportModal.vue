@@ -175,7 +175,10 @@ import {
   getMimeType,
 } from "~/utils/exportHelpers";
 import { getMetricLabel } from "~/utils/textTemplates";
+import { useAppToast } from "~/composables/useAppToast";
 import type { PerformanceMetric, Event } from "~/types/models";
+
+const { showToast } = useAppToast();
 
 const props = defineProps<{
   metrics: PerformanceMetric[];
@@ -300,7 +303,10 @@ const handleExport = async () => {
     emit("close");
   } catch (error) {
     console.error("Export failed:", error);
-    alert("Failed to generate report. Please try again.");
+    showToast(
+      "Something went wrong generating the report. Please try again.",
+      "error",
+    );
   } finally {
     isExporting.value = false;
   }

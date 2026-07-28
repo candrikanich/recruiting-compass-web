@@ -129,6 +129,17 @@
         </button>
       </div>
     </form>
+
+    <DesignSystemConfirmDialog
+      :is-open="isDeleteDialogOpen"
+      title="Delete Template"
+      message="Are you sure you want to delete this template? This action cannot be undone."
+      confirm-text="Delete"
+      cancel-text="Cancel"
+      variant="danger"
+      @confirm="confirmDeleteTemplate"
+      @cancel="cancelDeleteTemplate"
+    />
   </div>
 </template>
 
@@ -139,6 +150,9 @@ import {
   type CommunicationTemplate,
 } from "~/composables/useCommunicationTemplates";
 import { AVAILABLE_VARIABLES } from "~/utils/templateVariables";
+import { useAppToast } from "~/composables/useAppToast";
+
+const { showToast } = useAppToast();
 
 interface Props {
   template?: CommunicationTemplate;
@@ -225,7 +239,7 @@ const preview = computed(() => {
 
 const saveTemplate = async () => {
   if (!formData.value.name || !formData.value.body) {
-    alert("Please fill in all required fields");
+    showToast("Please fill in all required fields", "warning");
     return;
   }
 
@@ -250,11 +264,31 @@ const saveTemplate = async () => {
   }
 };
 
-const deleteTemplate = async () => {
-  if (props.template && confirm("Delete this template?")) {
-    await deleteFromComposable(props.template.id);
-    emit("delete", props.template.id);
+const isDeleteDialogOpen = ref(false);
+
+const deleteTemplate = () => {
+  if (!props.template) return;
+  isDeleteDialogOpen.value = true;
+};
+
+const confirmDeleteTemplate = async () => {
+  isDeleteDialogOpen.value = false;
+  if (!props.template) return;
+  const templateId = props.template.id;
+  try {
+    await deleteFromComposable(templateId);
+    emit("delete", templateId);
+  } catch (err) {
+    console.error("Failed to delete template:", err);
+    showToast(
+      "Something went wrong deleting this template. Please try again.",
+      "error",
+    );
   }
+};
+
+const cancelDeleteTemplate = () => {
+  isDeleteDialogOpen.value = false;
 };
 
 const formatVariableDisplay = (key: string): string => {

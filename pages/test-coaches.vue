@@ -76,6 +76,9 @@
 
 <script setup lang="ts">
 import { ref } from "vue";
+import { useAppToast } from "~/composables/useAppToast";
+
+const { showToast } = useAppToast();
 
 const showForm = ref(false);
 const coaches = ref<any[]>([]);
@@ -95,7 +98,7 @@ const onFormChange = () => {
 
 const addCoach = () => {
   if (!form.value.role || !form.value.firstName || !form.value.lastName) {
-    alert("Fill all fields");
+    showToast("Fill all fields", "warning");
     return;
   }
 

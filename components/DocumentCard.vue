@@ -67,10 +67,22 @@
         Delete
       </button>
     </div>
+
+    <DesignSystemConfirmDialog
+      :is-open="isDeleteDialogOpen"
+      title="Delete Document"
+      message="Are you sure you want to delete this document? This action cannot be undone."
+      confirm-text="Delete"
+      cancel-text="Cancel"
+      variant="danger"
+      @confirm="confirmDelete"
+      @cancel="cancelDelete"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
+import { ref } from "vue";
 import type { Document } from "~/types/models";
 
 interface Props {
@@ -122,9 +134,18 @@ const formatDate = (dateStr?: string): string => {
   });
 };
 
+const isDeleteDialogOpen = ref(false);
+
 const handleDelete = () => {
-  if (confirm("Delete this document?")) {
-    emit("delete", props.document.id);
-  }
+  isDeleteDialogOpen.value = true;
+};
+
+const confirmDelete = () => {
+  isDeleteDialogOpen.value = false;
+  emit("delete", props.document.id);
+};
+
+const cancelDelete = () => {
+  isDeleteDialogOpen.value = false;
 };
 </script>

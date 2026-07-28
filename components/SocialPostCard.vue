@@ -147,6 +147,17 @@
     >
       <p class="text-sm text-slate-900">{{ post.notes }}</p>
     </div>
+
+    <DesignSystemConfirmDialog
+      :is-open="isDeleteDialogOpen"
+      title="Delete Post"
+      message="Are you sure you want to delete this post? This action cannot be undone."
+      confirm-text="Delete"
+      cancel-text="Cancel"
+      variant="danger"
+      @confirm="confirmDelete"
+      @cancel="cancelDelete"
+    />
   </div>
 </template>
 
@@ -218,10 +229,19 @@ const toggleFlag = () => {
   emit("flag-toggle", !props.post.flagged_for_review);
 };
 
+const isDeleteDialogOpen = ref(false);
+
 const deletePost = () => {
-  if (confirm("Delete this post?")) {
-    emit("delete");
-  }
+  isDeleteDialogOpen.value = true;
+};
+
+const confirmDelete = () => {
+  isDeleteDialogOpen.value = false;
+  emit("delete");
+};
+
+const cancelDelete = () => {
+  isDeleteDialogOpen.value = false;
 };
 
 const saveNotes = () => {
