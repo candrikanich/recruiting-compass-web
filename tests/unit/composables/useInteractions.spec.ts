@@ -119,6 +119,43 @@ describe("useInteractions", () => {
     ...overrides,
   });
 
+  describe("fetchInteractions — sequence-token stale-response guard", () => {
+    it("discards an older, slower fetch's result when a newer fetch already resolved (latest-wins)", async () => {
+      const resolvers: Array<(value: { data: unknown[]; error: null }) => void> = [];
+      mockQuery.order.mockImplementation(
+        () =>
+          new Promise((resolve) => {
+            resolvers.push(resolve);
+          }),
+      );
+
+      const { fetchInteractions, interactions } = useInteractions();
+
+      // Dispatch A (older), then dispatch B (newer) before A resolves.
+      // No post-order() filters here — .order() is the last call in the
+      // chain for an unfiltered fetch, matching where the mock resolves.
+      const fetchA = fetchInteractions();
+      const fetchB = fetchInteractions();
+      expect(resolvers).toHaveLength(2);
+
+      // Resolve B first (the newer request wins the race), then A late.
+      resolvers[1]({
+        data: [createMockInteraction({ id: "b-1", type: "phone_call" })],
+        error: null,
+      });
+      await fetchB;
+
+      resolvers[0]({
+        data: [createMockInteraction({ id: "a-1", type: "email" })],
+        error: null,
+      });
+      await fetchA;
+
+      // B's result must win — A's late arrival must not clobber it.
+      expect(interactions.value.map((i) => i.id)).toEqual(["b-1"]);
+    });
+  });
+
   describe("fetchInteractions", () => {
     it("should fetch all interactions when no filters provided", async () => {
       const mockInteractions = [

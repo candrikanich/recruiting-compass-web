@@ -65,6 +65,11 @@ export const useInteractions = () => {
   const loadingRef = ref(false);
   const errorRef = ref<string | null>(null);
 
+  // Sequence token: guards against an older, slower fetchInteractions()
+  // call resolving after a newer one and clobbering fresher data (e.g.
+  // rapid athlete switching or filter changes firing overlapping requests).
+  let fetchSequence = 0;
+
   // Computed proxies for return type compatibility
   const loading = computed(() => loadingRef.value);
   const error = computed(() => errorRef.value);
@@ -95,6 +100,7 @@ export const useInteractions = () => {
       return;
     }
 
+    const requestSequence = ++fetchSequence;
     loadingRef.value = true;
     errorRef.value = null;
 
@@ -175,14 +181,21 @@ export const useInteractions = () => {
 
       if (fetchError) throw fetchError;
 
+      // Discard this result if a newer fetchInteractions() call has since
+      // started — an older, slower response must never clobber fresher data.
+      if (requestSequence !== fetchSequence) return;
+
       interactions.value = data || [];
     } catch (err: unknown) {
+      if (requestSequence !== fetchSequence) return;
       const message =
         err instanceof Error ? err.message : "Failed to fetch interactions";
       logger.error("[useInteractions] fetchInteractions error:", err);
       errorRef.value = message;
     } finally {
-      loadingRef.value = false;
+      if (requestSequence === fetchSequence) {
+        loadingRef.value = false;
+      }
     }
   };
 

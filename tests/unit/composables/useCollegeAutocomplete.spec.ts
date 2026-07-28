@@ -146,6 +146,46 @@ describe("useCollegeAutocomplete", () => {
     expect(results.value).toEqual([]);
   });
 
+  it("discards an older, slower search's result when a newer search already resolved (latest-wins)", async () => {
+    const resolvers: Array<(v: unknown) => void> = [];
+    mockFetchAuth.mockImplementation(
+      () => new Promise((resolve) => resolvers.push(resolve)),
+    );
+    const { searchColleges, results } = useCollegeAutocomplete();
+
+    const searchA = searchColleges("Florida");
+    const searchB = searchColleges("Florida State");
+    expect(resolvers).toHaveLength(2);
+
+    resolvers[1]({
+      metadata: { total: 1 },
+      results: [
+        {
+          id: 2,
+          "school.name": "B School",
+          "school.city": "City",
+          "school.state": "FL",
+        },
+      ],
+    });
+    await searchB;
+
+    resolvers[0]({
+      metadata: { total: 1 },
+      results: [
+        {
+          id: 1,
+          "school.name": "A School",
+          "school.city": "City",
+          "school.state": "FL",
+        },
+      ],
+    });
+    await searchA;
+
+    expect(results.value.map((r) => r.name)).toEqual(["B School"]);
+  });
+
   it("sets loading true during fetch and false after", async () => {
     let resolveFetch!: (value: unknown) => void;
     mockFetchAuth.mockReturnValue(

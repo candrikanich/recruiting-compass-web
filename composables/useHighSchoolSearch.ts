@@ -21,7 +21,12 @@ export const useHighSchoolSearch = (stateHint?: string) => {
   const loading = ref(false);
   const error = ref<string | null>(null);
 
+  // Sequence token: guards against an older, slower search resolving after
+  // a newer one (rapid typing) and clobbering fresher results.
+  let searchSequence = 0;
+
   const _doSearch = async (q: string) => {
+    const requestSequence = ++searchSequence;
     if (!q || q.trim().length < 2) {
       results.value = [];
       return;
@@ -31,15 +36,20 @@ export const useHighSchoolSearch = (stateHint?: string) => {
     try {
       const params = new URLSearchParams({ q: q.trim() });
       if (stateHint) params.set("state", stateHint);
-      results.value = await $fetch<NcesSchool[]>(
+      const response = await $fetch<NcesSchool[]>(
         `/api/schools/high-school-search?${params.toString()}`,
       );
+      if (requestSequence !== searchSequence) return;
+      results.value = response;
     } catch (err) {
+      if (requestSequence !== searchSequence) return;
       logger.warn("High school search failed", err);
       error.value = "School search unavailable";
       results.value = [];
     } finally {
-      loading.value = false;
+      if (requestSequence === searchSequence) {
+        loading.value = false;
+      }
     }
   };
 

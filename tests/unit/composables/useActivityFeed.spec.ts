@@ -153,6 +153,64 @@ describe("useActivityFeed", () => {
     expect(typeof loading.value).toBe("boolean");
   });
 
+  it("discards an older, slower fetchActivities() result when a newer fetch already resolved (latest-wins)", async () => {
+    const resolvers: Array<(v: unknown) => void> = [];
+    fromSpy.mockImplementation((table: string) => ({
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      in: vi.fn().mockResolvedValue({ data: [], error: null }),
+      order: vi.fn().mockReturnThis(),
+      limit: vi.fn(() => {
+        if (table === "interactions") {
+          return new Promise((resolve) => resolvers.push(resolve));
+        }
+        return Promise.resolve({ data: [], error: null });
+      }),
+    }));
+
+    const { fetchActivities, activities } = useActivityFeed();
+
+    const fetchA = fetchActivities();
+    const fetchB = fetchActivities();
+    expect(resolvers).toHaveLength(2);
+
+    resolvers[1]({
+      data: [
+        {
+          id: "b-1",
+          school_id: "s1",
+          type: "email",
+          content: "B",
+          subject: null,
+          occurred_at: new Date().toISOString(),
+          created_at: new Date().toISOString(),
+          schools: { id: "s1", name: "B School" },
+        },
+      ],
+      error: null,
+    });
+    await fetchB;
+
+    resolvers[0]({
+      data: [
+        {
+          id: "a-1",
+          school_id: "s2",
+          type: "email",
+          content: "A",
+          subject: null,
+          occurred_at: new Date().toISOString(),
+          created_at: new Date().toISOString(),
+          schools: { id: "s2", name: "A School" },
+        },
+      ],
+      error: null,
+    });
+    await fetchA;
+
+    expect(activities.value.map((a) => a.id)).toEqual(["interaction-b-1"]);
+  });
+
   it("returns readonly error state", () => {
     const { error } = useActivityFeed();
 

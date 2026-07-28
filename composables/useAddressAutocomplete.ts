@@ -19,21 +19,31 @@ export const useAddressAutocomplete = () => {
   const suggestions = ref<AddressSuggestion[]>([]);
   const loading = ref(false);
 
+  // Sequence token: guards against an older, slower search resolving after
+  // a newer one (rapid typing) and clobbering fresher results.
+  let searchSequence = 0;
+
   const _doSearch = async (q: string) => {
+    const requestSequence = ++searchSequence;
     if (!q || q.trim().length < 3) {
       suggestions.value = [];
       return;
     }
     loading.value = true;
     try {
-      suggestions.value = await $fetch<AddressSuggestion[]>(
+      const response = await $fetch<AddressSuggestion[]>(
         `/api/address/autocomplete?q=${encodeURIComponent(q.trim())}`,
       );
+      if (requestSequence !== searchSequence) return;
+      suggestions.value = response;
     } catch (err) {
+      if (requestSequence !== searchSequence) return;
       logger.warn("Address autocomplete search failed", err);
       suggestions.value = [];
     } finally {
-      loading.value = false;
+      if (requestSequence === searchSequence) {
+        loading.value = false;
+      }
     }
   };
 

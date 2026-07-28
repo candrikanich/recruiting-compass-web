@@ -44,10 +44,22 @@ export const useDashboardData = () => {
   const loading = ref(false);
   const error = ref<string | null>(null);
 
+  // Sequence token: guards against an older, slower fetchAll() call (e.g.
+  // rapid parent athlete-switching firing overlapping loads) continuing to
+  // apply results/loading state after a newer fetchAll() has superseded it.
+  let dashboardSequence = 0;
+
+  // fetchSchools writes directly to allSchools regardless of caller
+  // (fetchAll or a standalone call) — it needs its own token so an older,
+  // slower fetchSchools() call can't clobber a newer one's write even when
+  // fetchAll's own outer guard has already moved past this step.
+  let schoolsSequence = 0;
+
   /**
    * Fetch schools for a family unit
    */
   const fetchSchools = async (familyId: string): Promise<void> => {
+    const requestSequence = ++schoolsSequence;
     const { data: schoolsData, error: schoolsError } = await supabase
       .from("schools")
       .select(
@@ -90,6 +102,10 @@ export const useDashboardData = () => {
       logger.error("Error fetching schools:", schoolsError);
       throw schoolsError;
     }
+
+    // Discard this result if a newer fetchSchools() call has since started
+    // — an older, slower response must never clobber fresher data.
+    if (requestSequence !== schoolsSequence) return;
 
     if (schoolsData) {
       allSchools.value = schoolsData;
@@ -238,6 +254,8 @@ export const useDashboardData = () => {
       return;
     }
 
+    const requestSequence = ++dashboardSequence;
+
     // Clear prior entity data synchronously, before the async fetches start.
     // Previously the old family/athlete's data stayed visible in allSchools/
     // allCoaches/etc. until the new data arrived (a "stale flash" on parent
@@ -250,6 +268,11 @@ export const useDashboardData = () => {
       // Step 1: Fetch schools (needed for coaches)
       await fetchSchools(familyId);
 
+      // A newer fetchAll() call has since superseded this one (e.g. the
+      // parent switched athletes again mid-load) — stop before continuing
+      // to fetch/apply data for the now-stale family/user.
+      if (requestSequence !== dashboardSequence) return;
+
       // Step 2: Fetch remaining data in parallel
       const schoolIds = allSchools.value.map((s) => s.id);
       await Promise.all([
@@ -259,13 +282,18 @@ export const useDashboardData = () => {
         fetchEvents(userId),
         fetchMetrics(userId),
       ]);
+
+      if (requestSequence !== dashboardSequence) return;
     } catch (err) {
+      if (requestSequence !== dashboardSequence) return;
       error.value =
         err instanceof Error ? err.message : "Failed to fetch dashboard data";
       logger.error("Dashboard data fetch error:", err);
       throw err;
     } finally {
-      loading.value = false;
+      if (requestSequence === dashboardSequence) {
+        loading.value = false;
+      }
     }
   };
 

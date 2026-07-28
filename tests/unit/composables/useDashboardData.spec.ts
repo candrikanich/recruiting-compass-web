@@ -165,4 +165,47 @@ describe("useDashboardData.fetchAll — no stale flash on athlete switch", () =>
 
     expect(dashboardData.allOffers.value).toEqual([]);
   });
+
+  it("discards an older, slower fetchAll() call's data when a newer fetchAll() already applied its result (latest-wins)", async () => {
+    const dashboardData = useDashboardData();
+
+    // Make fetchSchools controllable per-call so we can resolve the two
+    // fetchAll() invocations out of order.
+    const schoolResolvers: Array<
+      (v: { data: unknown[]; error: null }) => void
+    > = [];
+    mockSupabase.from.mockImplementation((table: string) => ({
+      select: () => ({
+        eq: () => {
+          if (table === "schools") {
+            return new Promise((resolve) => schoolResolvers.push(resolve));
+          }
+          return Promise.resolve({
+            data: tableResponses[table]?.data ?? [],
+            error: tableResponses[table]?.error ?? null,
+            count: tableResponses[table]?.count,
+          });
+        },
+        in: () =>
+          Promise.resolve({
+            data: tableResponses[table]?.data ?? [],
+            error: tableResponses[table]?.error ?? null,
+          }),
+      }),
+    }));
+
+    // Dispatch A (older), then dispatch B (newer) before A resolves.
+    const fetchA = dashboardData.fetchAll("family-a", "athlete-a");
+    const fetchB = dashboardData.fetchAll("family-b", "athlete-b");
+    expect(schoolResolvers).toHaveLength(2);
+
+    // Resolve B first (the newer request wins), then A late.
+    schoolResolvers[1]({ data: [{ id: "school-b" }], error: null });
+    await fetchB;
+
+    schoolResolvers[0]({ data: [{ id: "school-a" }], error: null });
+    await fetchA;
+
+    expect(dashboardData.allSchools.value).toEqual([{ id: "school-b" }]);
+  });
 });

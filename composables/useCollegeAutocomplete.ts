@@ -14,6 +14,10 @@ export const useCollegeAutocomplete = () => {
   const loading = ref(false);
   const error = ref<string | null>(null);
 
+  // Sequence token: guards against an older, slower searchColleges() call
+  // resolving after a newer one (rapid typing) and clobbering fresher results.
+  let searchSequence = 0;
+
   /**
    * Format website URL to include protocol
    * Prepends http:// to URLs that don't have a protocol
@@ -55,6 +59,8 @@ export const useCollegeAutocomplete = () => {
    * Minimum 3 characters required to avoid excessive API calls
    */
   const searchColleges = async (query: string): Promise<void> => {
+    const requestSequence = ++searchSequence;
+
     // Clear previous results
     results.value = [];
     error.value = null;
@@ -81,6 +87,7 @@ export const useCollegeAutocomplete = () => {
       try {
         data = await $fetchAuth<CollegeScorecardResponse>(url);
       } catch (err: unknown) {
+        if (requestSequence !== searchSequence) return;
         const status = (err as { statusCode?: number })?.statusCode;
         if (status === 429) {
           logger.warn("College search rate limited (429)");
@@ -92,6 +99,10 @@ export const useCollegeAutocomplete = () => {
         }
         return;
       }
+
+      // Discard this result if a newer searchColleges() call has since
+      // started — an older, slower response must never clobber fresher data.
+      if (requestSequence !== searchSequence) return;
 
       if (!data.results || data.results.length === 0) {
         error.value = null; // No error, just no results
@@ -110,12 +121,15 @@ export const useCollegeAutocomplete = () => {
 
       results.value = Array.from(uniqueSchools.values()).map(transformResult);
     } catch (err) {
+      if (requestSequence !== searchSequence) return;
       logger.error("Unexpected error in college search", err);
       const errorMessage = err instanceof Error ? err.message : "Unknown error";
       error.value = `Failed to search colleges: ${errorMessage}`;
       results.value = [];
     } finally {
-      loading.value = false;
+      if (requestSequence === searchSequence) {
+        loading.value = false;
+      }
     }
   };
 

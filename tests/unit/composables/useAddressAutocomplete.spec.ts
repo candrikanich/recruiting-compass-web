@@ -69,6 +69,28 @@ describe("useAddressAutocomplete", () => {
     expect(suggestions.value).toEqual([]);
   });
 
+  it("discards an older, slower search's result when a newer search already resolved (latest-wins)", async () => {
+    const resolvers: Array<(v: unknown) => void> = [];
+    mockFetch.mockImplementation(
+      () => new Promise((resolve) => resolvers.push(resolve)),
+    );
+    const { useAddressAutocomplete } =
+      await import("~/composables/useAddressAutocomplete");
+    const { search, suggestions } = useAddressAutocomplete();
+
+    const searchA = search("1428 Elm");
+    const searchB = search("1428 Elm St");
+    expect(resolvers).toHaveLength(2);
+
+    resolvers[1]([{ ...suggestion, label: "B result" }]);
+    await searchB;
+
+    resolvers[0]([{ ...suggestion, label: "A result" }]);
+    await searchA;
+
+    expect(suggestions.value.map((s) => s.label)).toEqual(["B result"]);
+  });
+
   it("clears suggestions on empty query", async () => {
     mockFetch.mockResolvedValue([suggestion]);
     const { useAddressAutocomplete } =

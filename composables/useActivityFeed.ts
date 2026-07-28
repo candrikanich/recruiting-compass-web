@@ -68,6 +68,10 @@ export const useActivityFeed = () => {
   const offset = ref(0);
   let subscription: ReturnType<typeof supabase.channel> | null = null;
 
+  // Sequence token: guards against an older, slower fetchActivities() call
+  // resolving after a newer one and clobbering fresher data.
+  let fetchSequence = 0;
+
   onUnmounted(() => {
     if (subscription) {
       subscription.unsubscribe();
@@ -145,6 +149,7 @@ export const useActivityFeed = () => {
     const userId = userStore.user?.id;
     if (!userId) return;
 
+    const requestSequence = ++fetchSequence;
     loading.value = true;
     error.value = null;
 
@@ -320,14 +325,21 @@ export const useActivityFeed = () => {
         };
       });
 
+      // Discard this result if a newer fetchActivities() call has since
+      // started — an older, slower response must never clobber fresher data.
+      if (requestSequence !== fetchSequence) return;
+
       activities.value = paginatedEvents;
     } catch (err) {
+      if (requestSequence !== fetchSequence) return;
       error.value =
         err instanceof Error ? err.message : "Failed to fetch activities";
       logger.error("Error fetching activities:", err);
       activities.value = [];
     } finally {
-      loading.value = false;
+      if (requestSequence === fetchSequence) {
+        loading.value = false;
+      }
     }
   };
 

@@ -22,6 +22,11 @@ export const useCoachStore = defineStore("coaches", () => {
   const lastFetchedWithFilters = ref<boolean>(false);
   const isFetchedBySchools = ref<Record<string, boolean>>({});
 
+  // Sequence token: guards against an older, slower fetchAllCoaches() call
+  // resolving after a newer one (e.g. rapid filter changes) and clobbering
+  // fresher data.
+  let fetchAllSequence = 0;
+
   const coachesBySchool = (schoolId: string) =>
     coaches.value.filter((c) => c.school_id === schoolId);
 
@@ -84,6 +89,7 @@ export const useCoachStore = defineStore("coaches", () => {
     )
       return;
 
+    const requestSequence = ++fetchAllSequence;
     loading.value = true;
     error.value = null;
 
@@ -119,15 +125,22 @@ export const useCoachStore = defineStore("coaches", () => {
         );
       }
 
+      // Discard this result if a newer fetchAllCoaches() call has since
+      // started — an older, slower response must never clobber fresher data.
+      if (requestSequence !== fetchAllSequence) return;
+
       coaches.value = result;
       isFetched.value = true;
       lastFetchedWithFilters.value = !!filterOptions;
     } catch (err: unknown) {
+      if (requestSequence !== fetchAllSequence) return;
       error.value =
         err instanceof Error ? err.message : "Failed to fetch coaches";
       logger.error("Failed to fetch all coaches", err);
     } finally {
-      loading.value = false;
+      if (requestSequence === fetchAllSequence) {
+        loading.value = false;
+      }
     }
   }
 

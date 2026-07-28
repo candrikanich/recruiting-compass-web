@@ -181,6 +181,34 @@ describe("useCoachStore", () => {
 
       expect(coachStore.coaches).toHaveLength(1);
     });
+
+    it("discards an older, slower fetchAllCoaches() result when a newer fetch already resolved (latest-wins)", async () => {
+      const resolvers: Array<
+        (v: { data: unknown[]; error: null }) => void
+      > = [];
+      mockQuery.order.mockImplementation(
+        () => new Promise((resolve) => resolvers.push(resolve)),
+      );
+
+      // Dispatch A (older), then dispatch B (newer) before A resolves.
+      const fetchA = coachStore.fetchAllCoaches({ role: "head" });
+      const fetchB = coachStore.fetchAllCoaches({ role: "assistant" });
+      expect(resolvers).toHaveLength(2);
+
+      resolvers[1]({
+        data: [createMockCoach({ id: "b-1", role: "assistant" })],
+        error: null,
+      });
+      await fetchB;
+
+      resolvers[0]({
+        data: [createMockCoach({ id: "a-1", role: "head" })],
+        error: null,
+      });
+      await fetchA;
+
+      expect(coachStore.coaches.map((c) => c.id)).toEqual(["b-1"]);
+    });
   });
 
   describe("fetchCoachesBySchools", () => {

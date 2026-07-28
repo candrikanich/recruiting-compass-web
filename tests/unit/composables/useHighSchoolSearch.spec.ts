@@ -78,6 +78,30 @@ describe("useHighSchoolSearch", () => {
     expect(loading.value).toBe(false);
   });
 
+  it("discards an older, slower search's result when a newer search already resolved (latest-wins)", async () => {
+    const resolvers: Array<(v: unknown) => void> = [];
+    mockFetch.mockImplementation(
+      () => new Promise((resolve) => resolvers.push(resolve)),
+    );
+    const { useHighSchoolSearch } =
+      await import("~/composables/useHighSchoolSearch");
+    const { search, results } = useHighSchoolSearch();
+
+    // Dispatch A (older), then dispatch B (newer) before A resolves.
+    const searchA = search("Lincoln");
+    const searchB = search("Lincoln High");
+    expect(resolvers).toHaveLength(2);
+
+    // Resolve B first (the newer request wins the race), then A late.
+    resolvers[1]([{ nces_id: "b", name: "B School", city: "X", state: "IA" }]);
+    await searchB;
+
+    resolvers[0]([{ nces_id: "a", name: "A School", city: "X", state: "IA" }]);
+    await searchA;
+
+    expect(results.value.map((r) => r.nces_id)).toEqual(["b"]);
+  });
+
   it("clears results on empty search", async () => {
     mockFetch.mockResolvedValue([
       { nces_id: "1", name: "Lincoln", city: "X", state: "IA" },
