@@ -1,11 +1,9 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { useSearch } from "~/composables/useSearch";
 import { useSavedSearches } from "~/composables/useSavedSearches";
 import { useCommunicationTemplates } from "~/composables/useCommunicationTemplates";
 import { useInteractions } from "~/composables/useInteractions";
 import { useInteractionReminders } from "~/composables/useInteractionReminders";
 import { useReports } from "~/composables/useReports";
-import { useCollaboration } from "~/composables/useCollaboration";
 import { createPinia, setActivePinia } from "pinia";
 import { useUserStore } from "~/stores/user";
 
@@ -42,10 +40,6 @@ const createMockQuery = (tableName?: string) => {
       mockRecord.use_count = 0;
       mockRecord.is_default = false;
       mockRecord.is_favorite = false;
-    }
-
-    if (tableName === "shared_records") {
-      mockRecord.shared_with_user_id = "mock-user-id"; // Simulate user lookup
     }
 
     if (tableName === "follow_up_reminders") {
@@ -130,25 +124,6 @@ const mockReminders = [
   },
 ];
 
-const mockSharedRecords = [
-  {
-    id: "share-1",
-    entity_type: "school",
-    entity_id: "school-1",
-    access_level: "view",
-  },
-];
-
-const mockComments = [
-  {
-    id: "comment-1",
-    entity_type: "school",
-    entity_id: "school-1",
-    content: "Great opportunity",
-    mentions: ["coach-123"],
-  },
-];
-
 // Mock the user store
 vi.mock("~/stores/user", () => ({
   useUserStore: () => ({
@@ -179,15 +154,14 @@ describe("Phase 4 Integration Tests", () => {
   });
 
   describe("Search & Saved Searches Workflow", () => {
-    it("should perform search and save result as template", async () => {
-      const search = useSearch();
+    it("should save a search result as a saved search", async () => {
+      // useSearch/useEntitySearch were deleted as dead ghost-schema code
+      // (queried nonexistent coaches.name/school/sport,
+      // interactions.notes/user_id/sentiment_label columns — see
+      // planning/audit-2026-07-27-findings.md). Live search UI
+      // (pages/search/index.vue) uses useSearchConsolidated instead;
+      // this test now only exercises the still-live useSavedSearches.
       const saved = useSavedSearches();
-
-      // Perform search
-      await search.performSearch("D1 Schools");
-
-      // Verify results exist
-      expect(search.totalResults.value).toBeGreaterThanOrEqual(0);
 
       // Save search with complete filter object
       const savedSearch = await saved.saveSearch(
@@ -351,50 +325,16 @@ describe("Phase 4 Integration Tests", () => {
     });
   });
 
-  describe("Collaboration Workflow", () => {
-    it("should share record and manage access", async () => {
-      const collaboration = useCollaboration();
-
-      const share = await collaboration.shareRecord(
-        "school",
-        "school-123",
-        "view",
-      );
-
-      expect(share).not.toBeNull();
-      expect(share?.access_level).toBe("view");
-
-      if (share) {
-        const updated = await collaboration.updateAccessLevel(share.id, "edit");
-        expect(updated).toBe(true);
-      }
-    });
-
-    it("should add comments to shared records", async () => {
-      const collaboration = useCollaboration();
-
-      const comment = await collaboration.addComment(
-        "school",
-        "school-123",
-        "Great opportunity for player",
-        ["coach-123"],
-      );
-
-      expect(comment).not.toBeNull();
-      expect(comment?.mentions).toContain("coach-123");
-    });
-  });
+  // useCollaboration was deleted as dead ghost-schema code (queried a
+  // `shared_records` table that exists in no migration — see
+  // planning/audit-2026-07-27-findings.md). No page/component ever called
+  // it in production.
 
   describe("Full Workflow Scenario", () => {
     it("should execute complete recruiting workflow", async () => {
-      const search = useSearch();
       const saved = useSavedSearches();
       const templates = useCommunicationTemplates();
       const reminders = useInteractionReminders();
-      const collaboration = useCollaboration();
-
-      await search.performSearch("D1 baseball programs");
-      expect(search.totalResults.value).toBeGreaterThanOrEqual(0);
 
       const savedSearch = await saved.saveSearch(
         "D1 Programs",
@@ -422,20 +362,6 @@ describe("Phase 4 Integration Tests", () => {
         "high",
       );
       expect(reminder).not.toBeNull();
-
-      const share = await collaboration.shareRecord(
-        "school",
-        "school-1",
-        "view",
-      );
-      expect(share).not.toBeNull();
-
-      const comment = await collaboration.addComment(
-        "school",
-        "school-1",
-        "Strong program",
-      );
-      expect(comment).not.toBeNull();
     });
   });
 });

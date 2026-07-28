@@ -15,10 +15,10 @@ import type {
 /**
  * Consolidated composable for comprehensive search functionality
  *
- * Merges functionality from:
- * - useEntitySearch (search schools, coaches, interactions, metrics)
- * - useSearchFilters (filter management)
- * - useCachedSearch (result caching with debouncing)
+ * Originally consolidated functionality from useEntitySearch, useSearchFilters,
+ * and useCachedSearch. useEntitySearch (and its deprecated wrapper useSearch)
+ * were later deleted as dead ghost-schema code — see
+ * planning/audit-2026-07-27-findings.md.
  *
  * Provides unified interface for global search with:
  * - Multi-entity search (schools, coaches, interactions, metrics)
