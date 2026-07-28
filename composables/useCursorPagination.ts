@@ -34,6 +34,31 @@ type AnyRecord = Record<string, unknown>;
  * }
  * ```
  */
+/**
+ * A single-column cursor on a non-unique column (e.g. a timestamp) silently
+ * skips rows that share the exact value of the last item's cursor column —
+ * a real risk with bulk imports/seeded data where many rows share a
+ * timestamp. Pairing the cursor with `id` (assumed unique) as a tiebreaker
+ * makes the seek deterministic: `WHERE (cursorCol, id) < (lastValue, lastId)`
+ * (or `>` for ascending), expressed via `.or()` as
+ * `cursorCol.lt.V,and(cursorCol.eq.V,id.lt.ID)`.
+ */
+interface CompoundCursor {
+  value: string | number;
+  id: string;
+}
+
+function buildCompoundCursorFilter(
+  cursorColumn: string,
+  cursor: CompoundCursor,
+  order: "asc" | "desc",
+): string {
+  const op = order === "desc" ? "lt" : "gt";
+  const cursorValue =
+    typeof cursor.value === "number" ? cursor.value : `"${cursor.value}"`;
+  return `${cursorColumn}.${op}.${cursorValue},and(${cursorColumn}.eq.${cursorValue},id.${op}.${cursor.id})`;
+}
+
 export const useCursorPagination = <T extends AnyRecord>(
   queryBuilder: ReturnType<SupabaseClient["from"]>,
   cursorColumn: keyof T,
@@ -43,7 +68,7 @@ export const useCursorPagination = <T extends AnyRecord>(
   const items: Ref<T[]> = ref([]);
   const loading = ref(false);
   const error = ref<string | null>(null);
-  const lastCursor: Ref<string | number | null> = ref(null);
+  const lastCursor: Ref<CompoundCursor | null> = ref(null);
   const hasMore = ref(true);
 
   /**
@@ -58,25 +83,21 @@ export const useCursorPagination = <T extends AnyRecord>(
     try {
       let query = queryBuilder.select("*").limit(pageSize + 1); // Fetch one extra to check if more exist
 
-      // Apply cursor filter
+      // Apply compound (cursorColumn, id) cursor filter — see buildCompoundCursorFilter
       if (lastCursor.value !== null) {
-        if (order === "desc") {
-          query = query.lt(
+        query = query.or(
+          buildCompoundCursorFilter(
             cursorColumn as string,
-            lastCursor.value as string | number,
-          );
-        } else {
-          query = query.gt(
-            cursorColumn as string,
-            lastCursor.value as string | number,
-          );
-        }
+            lastCursor.value,
+            order,
+          ),
+        );
       }
 
-      // Apply ordering
-      query = query.order(cursorColumn as string, {
-        ascending: order === "asc",
-      });
+      // Apply ordering — both columns, same direction, id as the tiebreaker
+      query = query
+        .order(cursorColumn as string, { ascending: order === "asc" })
+        .order("id", { ascending: order === "asc" });
 
       const { data, error: fetchError } = (await query) as {
         data: T[] | null;
@@ -99,10 +120,13 @@ export const useCursorPagination = <T extends AnyRecord>(
         hasMore.value = false;
       }
 
-      // Update cursor to the last item's cursor value
+      // Update cursor to the last item's (cursorColumn, id) pair
       if (data.length > 0) {
         const lastItem = data[data.length - 1];
-        lastCursor.value = lastItem[cursorColumn] as string | number;
+        lastCursor.value = {
+          value: lastItem[cursorColumn] as string | number,
+          id: lastItem.id as string,
+        };
       }
 
       // Append to items list
@@ -171,7 +195,7 @@ export const useTypedCursorPagination = <T extends AnyRecord>(
   const items: Ref<T[]> = ref([]);
   const loading = ref(false);
   const error = ref<string | null>(null);
-  const lastCursor: Ref<string | number | null> = ref(null);
+  const lastCursor: Ref<CompoundCursor | null> = ref(null);
   const hasMore = ref(true);
 
   const loadMore = async (): Promise<void> => {
@@ -193,25 +217,21 @@ export const useTypedCursorPagination = <T extends AnyRecord>(
         }
       }
 
-      // Apply cursor filter
+      // Apply compound (cursorColumn, id) cursor filter — see buildCompoundCursorFilter
       if (lastCursor.value !== null) {
-        if (order === "desc") {
-          query = query.lt(
+        query = query.or(
+          buildCompoundCursorFilter(
             cursorColumn as string,
-            lastCursor.value as string | number,
-          );
-        } else {
-          query = query.gt(
-            cursorColumn as string,
-            lastCursor.value as string | number,
-          );
-        }
+            lastCursor.value,
+            order,
+          ),
+        );
       }
 
-      // Apply ordering
-      query = query.order(cursorColumn as string, {
-        ascending: order === "asc",
-      });
+      // Apply ordering — both columns, same direction, id as the tiebreaker
+      query = query
+        .order(cursorColumn as string, { ascending: order === "asc" })
+        .order("id", { ascending: order === "asc" });
 
       const { data, error: fetchError } = (await query) as {
         data: T[] | null;
@@ -236,7 +256,10 @@ export const useTypedCursorPagination = <T extends AnyRecord>(
       // Update cursor
       if (data.length > 0) {
         const lastItem = data[data.length - 1];
-        lastCursor.value = lastItem[cursorColumn] as string | number;
+        lastCursor.value = {
+          value: lastItem[cursorColumn] as string | number,
+          id: lastItem.id as string,
+        };
       }
 
       items.value = [...items.value, ...data];
