@@ -68,14 +68,6 @@ describe("onboarding middleware", () => {
       expect(middleware).toBeDefined();
     });
 
-    it("should check if user is authenticated", () => {
-      expect(true).toBe(true); // Placeholder for auth checking logic
-    });
-
-    it("should redirect unauthenticated users accessing protected routes to login", () => {
-      expect(true).toBe(true); // Placeholder test
-    });
-
     it("should check onboarding completion status for authenticated users", async () => {
       const middleware = await loadMiddleware();
       const mockSupabase = {
@@ -181,9 +173,6 @@ describe("onboarding middleware", () => {
       expect(isOnboarding).toBe(false);
     });
 
-    it("should allow access to public routes without authentication", () => {
-      expect(true).toBe(true); // Public routes bypass middleware
-    });
   });
 
   describe("Error Handling", () => {
@@ -262,17 +251,4 @@ describe("onboarding middleware", () => {
     });
   });
 
-  describe("Redirect Behavior", () => {
-    it("should redirect incomplete onboarding users to /onboarding", () => {
-      expect(true).toBe(true); // Redirect logic tested in integration tests
-    });
-
-    it("should preserve redirect URL when redirecting to login", () => {
-      expect(true).toBe(true); // Redirect URL handling tested in integration tests
-    });
-
-    it("should not redirect if user is accessing /onboarding routes", () => {
-      expect(true).toBe(true); // Access control logic verified above
-    });
-  });
 });

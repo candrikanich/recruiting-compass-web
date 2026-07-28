@@ -143,19 +143,6 @@ describe("School Detail Page - Document Upload", () => {
   });
 
   describe("Document Upload Modal Integration", () => {
-    it("should have upload button in document section", async () => {
-      // This test verifies the upload button exists in the template
-      // The actual page component has the button added to the document section
-      expect(true).toBe(true);
-    });
-
-    it("should open modal when upload button is clicked", async () => {
-      // When user clicks the "+ Upload" button in the Shared Documents section
-      // The showUploadModal ref should be set to true
-      // This will conditionally render the DocumentUploadModal component
-      expect(true).toBe(true);
-    });
-
     it("should refresh documents after successful upload", async () => {
       // When DocumentUploadModal emits 'success' event
       // The handleDocumentUploadSuccess handler should be called
@@ -256,22 +243,6 @@ describe("School Detail Page - Document Upload", () => {
     });
   });
 
-  describe("Modal Close Behavior", () => {
-    it("should close modal on cancel", async () => {
-      // When user clicks Cancel button in DocumentUploadModal
-      // Modal emits 'close' event
-      // showUploadModal ref is set to false
-      expect(true).toBe(true);
-    });
-
-    it("should close modal on successful upload", async () => {
-      // When DocumentUploadModal successfully uploads and shares document
-      // Modal emits 'close' event
-      // showUploadModal ref is set to false
-      expect(true).toBe(true);
-    });
-  });
-
   describe("Document Sharing after Upload", () => {
     it("should share document with current school after upload", async () => {
       // The DocumentUploadModal composable should call:
@@ -300,19 +271,4 @@ describe("School Detail Page - Document Upload", () => {
     });
   });
 
-  describe("Error Handling", () => {
-    it("should handle upload failure gracefully", async () => {
-      // If upload fails, modal should display error message
-      // Document should NOT be shared with school
-      // Modal should remain open for retry
-      expect(true).toBe(true);
-    });
-
-    it("should handle sharing failure gracefully", async () => {
-      // If upload succeeds but sharing fails
-      // Modal should display error message
-      // User should be able to retry or cancel
-      expect(true).toBe(true);
-    });
-  });
 });

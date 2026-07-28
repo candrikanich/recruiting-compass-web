@@ -681,19 +681,68 @@ describe("exportUtils", () => {
   // ============================================
 
   describe("exportAnalyticsPDF", () => {
-    it("should not throw when called", async () => {
-      const charts: Array<{ title: string; element: HTMLElement }> = [];
+    const buildMockDoc = () => {
+      const doc: any = {
+        internal: { pageSize: { getWidth: () => 210, getHeight: () => 297 } },
+        setFontSize: vi.fn(),
+        setTextColor: vi.fn(),
+        text: vi.fn(),
+        addPage: vi.fn(),
+        save: vi.fn(),
+        autoTable: vi.fn(function (this: any) {
+          this.lastAutoTable = { finalY: 100 };
+        }),
+      };
+      return doc;
+    };
+
+    it("should render the report and save a PDF without throwing", async () => {
+      const mockDoc = buildMockDoc();
+      const { jsPDF } = vi.mocked(await import("jspdf"));
+      (jsPDF as unknown as ReturnType<typeof vi.fn>).mockImplementation(
+        function (this: any) {
+          return mockDoc;
+        } as any,
+      );
+
+      const canvas = { toDataURL: vi.fn().mockReturnValue("data:image/png;base64,x") };
+      vi.mocked(await import("html2canvas")).default.mockResolvedValue(
+        canvas as any,
+      );
+
+      const chartElement = document.createElement("div");
+      const charts = [{ title: "Progress", element: chartElement }];
       const dateRange = { start: "2024-01-01", end: "2024-02-04" };
       const summaryStats = [{ label: "Total", value: 100 }];
 
-      // exportAnalyticsPDF uses dynamic imports for jsPDF
-      // This test verifies it doesn't throw during instantiation
-      try {
-        await exportAnalyticsPDF(charts, dateRange, summaryStats);
-      } catch {
-        // Expected - jsPDF mock not set up
-      }
-      expect(true).toBe(true);
+      await exportAnalyticsPDF(charts, dateRange, summaryStats, "report.pdf");
+
+      expect(mockDoc.text).toHaveBeenCalledWith(
+        "Analytics Report",
+        expect.any(Number),
+        expect.any(Number),
+      );
+      expect(mockDoc.autoTable).toHaveBeenCalled();
+      expect(mockDoc.save).toHaveBeenCalledWith("report.pdf");
+    });
+
+    it("should still save a PDF when a chart has no summary stats or charts", async () => {
+      const mockDoc = buildMockDoc();
+      const { jsPDF } = vi.mocked(await import("jspdf"));
+      (jsPDF as unknown as ReturnType<typeof vi.fn>).mockImplementation(
+        function (this: any) {
+          return mockDoc;
+        } as any,
+      );
+
+      await exportAnalyticsPDF(
+        [],
+        { start: "2024-01-01", end: "2024-02-04" },
+        [],
+      );
+
+      expect(mockDoc.autoTable).not.toHaveBeenCalled();
+      expect(mockDoc.save).toHaveBeenCalled();
     });
   });
 });

@@ -14,6 +14,8 @@ vi.mock("html2canvas", () => ({
   }),
 }));
 
+export const mockJsPDFInstances: any[] = [];
+
 vi.mock("jspdf", () => {
   class MockJsPDF {
     text = vi.fn();
@@ -25,10 +27,13 @@ vi.mock("jspdf", () => {
     internal = {
       pageSize: { getWidth: () => 210, getHeight: () => 297 },
     };
-    autoTable = vi.fn();
+    lastAutoTable: { finalY: number } | undefined;
+    autoTable = vi.fn(() => {
+      this.lastAutoTable = { finalY: 150 };
+    });
 
     constructor() {
-      // Mock constructor
+      mockJsPDFInstances.push(this);
     }
   }
 
@@ -78,8 +83,11 @@ describe("Analytics Export Utils", () => {
       const element = document.createElement("div");
       await elementToImage(element);
 
-      // Just verify it doesn't throw
-      expect(true).toBe(true);
+      const mockHtml2Canvas = vi.mocked((await import("html2canvas")).default);
+      expect(mockHtml2Canvas).toHaveBeenCalledWith(
+        element,
+        expect.objectContaining({ useCORS: true, backgroundColor: "#ffffff" }),
+      );
     });
 
     it("returns PNG data URL", async () => {
@@ -96,97 +104,99 @@ describe("Analytics Export Utils", () => {
   });
 
   describe("exportAnalyticsPDF", () => {
-    it("creates jsPDF instance", async () => {
-      const mockCharts = [document.createElement("div")];
-      const summaryStats = { total: 100, average: 50 };
+    const chartElements = () => [
+      { title: "Chart A", element: document.createElement("div") },
+    ];
 
-      await exportAnalyticsPDF(mockCharts, summaryStats, {
-        startDate: new Date(),
-        endDate: new Date(),
-      });
+    it("creates a jsPDF instance and titles the report", async () => {
+      await exportAnalyticsPDF(
+        chartElements(),
+        { start: "2025-01-01", end: "2025-12-31" },
+        [{ label: "total", value: 100 }],
+      );
 
-      // Verify PDF creation logic
-      expect(true).toBe(true);
+      const instance = mockJsPDFInstances[mockJsPDFInstances.length - 1];
+      expect(instance.text).toHaveBeenCalledWith(
+        "Analytics Report",
+        expect.any(Number),
+        expect.any(Number),
+      );
     });
 
-    it("adds title and date range", async () => {
-      const mockCharts = [document.createElement("div")];
-      const summaryStats = { total: 100 };
+    it("adds title and date range text", async () => {
+      await exportAnalyticsPDF(
+        chartElements(),
+        { start: "2025-01-01", end: "2025-12-31" },
+        [{ label: "total", value: 100 }],
+      );
 
-      await exportAnalyticsPDF(mockCharts, summaryStats, {
-        startDate: new Date("2025-01-01"),
-        endDate: new Date("2025-12-31"),
-      });
-
-      expect(true).toBe(true);
+      const instance = mockJsPDFInstances[mockJsPDFInstances.length - 1];
+      expect(instance.text).toHaveBeenCalledWith(
+        expect.stringContaining("2025-01-01"),
+        expect.any(Number),
+        expect.any(Number),
+      );
     });
 
-    it("adds summary stats table", async () => {
-      const mockCharts = [document.createElement("div")];
-      const summaryStats = { metric1: 100, metric2: 200 };
+    it("adds a summary stats table via autoTable", async () => {
+      await exportAnalyticsPDF(
+        chartElements(),
+        { start: "2025-01-01", end: "2025-12-31" },
+        [
+          { label: "metric1", value: 100 },
+          { label: "metric2", value: 200 },
+        ],
+      );
 
-      await exportAnalyticsPDF(mockCharts, summaryStats, {
-        startDate: new Date(),
-        endDate: new Date(),
-      });
-
-      expect(true).toBe(true);
+      const instance = mockJsPDFInstances[mockJsPDFInstances.length - 1];
+      expect(instance.autoTable).toHaveBeenCalled();
     });
 
-    it("adds chart images", async () => {
-      const mockCharts = [
-        document.createElement("div"),
-        document.createElement("div"),
-      ];
-      const summaryStats = { total: 100 };
+    it("skips the summary table when there are no stats", async () => {
+      await exportAnalyticsPDF(
+        chartElements(),
+        { start: "2025-01-01", end: "2025-12-31" },
+        [],
+      );
 
-      await exportAnalyticsPDF(mockCharts, summaryStats, {
-        startDate: new Date(),
-        endDate: new Date(),
-      });
-
-      expect(true).toBe(true);
+      const instance = mockJsPDFInstances[mockJsPDFInstances.length - 1];
+      expect(instance.autoTable).not.toHaveBeenCalled();
     });
 
-    it("handles multiple pages", async () => {
-      const mockCharts = Array(5)
+    it("adds a new page when charts overflow the current page", async () => {
+      const manyCharts = Array(5)
         .fill(null)
-        .map(() => document.createElement("div"));
-      const summaryStats = { total: 100 };
+        .map((_, i) => ({
+          title: `Chart ${i}`,
+          element: document.createElement("div"),
+        }));
 
-      await exportAnalyticsPDF(mockCharts, summaryStats, {
-        startDate: new Date(),
-        endDate: new Date(),
-      });
+      await exportAnalyticsPDF(
+        manyCharts,
+        { start: "2025-01-01", end: "2025-12-31" },
+        [],
+      );
 
-      expect(true).toBe(true);
+      const instance = mockJsPDFInstances[mockJsPDFInstances.length - 1];
+      expect(instance.addPage).toHaveBeenCalled();
     });
 
-    it("calls pdf.save with correct filename", async () => {
-      const mockCharts = [document.createElement("div")];
-      const summaryStats = { total: 100 };
+    it("calls pdf.save with the provided filename", async () => {
+      await exportAnalyticsPDF(
+        chartElements(),
+        { start: "2025-01-01", end: "2025-12-31" },
+        [],
+        "custom-report.pdf",
+      );
 
-      await exportAnalyticsPDF(mockCharts, summaryStats, {
-        startDate: new Date(),
-        endDate: new Date(),
-      });
-
-      // Verify save was called
-      expect(true).toBe(true);
+      const instance = mockJsPDFInstances[mockJsPDFInstances.length - 1];
+      expect(instance.save).toHaveBeenCalledWith("custom-report.pdf");
     });
 
-    it("handles errors gracefully", async () => {
-      const mockCharts = [document.createElement("div")];
-      const summaryStats = null as any;
-
-      try {
-        await exportAnalyticsPDF(mockCharts, summaryStats, {
-          startDate: new Date(),
-          endDate: new Date(),
-        });
-      } catch (error) {
-        expect(error).toBeDefined();
-      }
+    it("does not throw when summaryStats is an empty array and charts is empty", async () => {
+      await expect(
+        exportAnalyticsPDF([], { start: "2025-01-01", end: "2025-12-31" }, []),
+      ).resolves.toBeUndefined();
     });
   });
 

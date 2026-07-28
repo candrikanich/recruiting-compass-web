@@ -202,12 +202,5 @@ describe("Password Reset Server Logic", () => {
       // The server code throws if missing
       expect(typeof supabaseUrl).toMatch(/string|undefined/);
     });
-
-    it("should use service role key for admin operations", () => {
-      // Verify that the resend-verification endpoint uses admin client
-      // by checking that createServerSupabaseClient is imported
-      // (The import is verified at module resolution time)
-      expect(true).toBe(true);
-    });
   });
 });

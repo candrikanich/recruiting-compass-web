@@ -300,8 +300,9 @@ describe("Inbound Alerts", () => {
         supabase: mockSupabase as SupabaseClient,
       });
 
-      // Should handle gracefully, not throw
-      expect(true).toBe(true);
+      // Preference fetch failure falls back to no-preferences: alert is
+      // suppressed (not thrown) since enableInboundInteractionAlerts is unset.
+      expect(mockSupabase.insert).not.toHaveBeenCalled();
     });
 
     it("should handle coach query failure gracefully", async () => {
