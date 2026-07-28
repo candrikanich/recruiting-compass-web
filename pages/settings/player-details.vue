@@ -1137,16 +1137,16 @@ const profileCompleteness = computed(() =>
 
 const { isSaving, triggerSave } = useAutoSave({
   debounceMs: 1000,
+  // Let save failures propagate — useAutoSave's own catch is what surfaces
+  // the visible error toast and retains saveError. Swallowing it here would
+  // silently hide the failure from the user (form data itself is untouched
+  // either way, since form.value is never reset on failure).
   onSave: async () => {
-    try {
-      const detailsToSave = {
-        ...form.value,
-        positions: normalizePositions(form.value.positions),
-      };
-      await setPlayerDetails(detailsToSave);
-    } catch (err) {
-      console.error("Auto-save failed:", err);
-    }
+    const detailsToSave = {
+      ...form.value,
+      positions: normalizePositions(form.value.positions),
+    };
+    await setPlayerDetails(detailsToSave);
   },
 });
 

@@ -3,10 +3,12 @@ import { defineComponent, h } from "vue";
 import { mount } from "@vue/test-utils";
 import { useAutoSave } from "~/composables/useAutoSave";
 
+const showToastMock = vi.fn();
+
 // Mock useAppToast at module level
 vi.mock("~/composables/useAppToast", () => ({
   useAppToast: () => ({
-    showToast: vi.fn(),
+    showToast: showToastMock,
   }),
 }));
 
@@ -198,6 +200,27 @@ describe("useAutoSave", () => {
     await vi.runAllTimersAsync();
 
     expect(mockSave).not.toHaveBeenCalled();
+
+    vi.useRealTimers();
+  });
+
+  it("shows a generic error toast without leaking the raw error message", async () => {
+    vi.useFakeTimers();
+    const rawError = new Error(
+      'duplicate key value violates unique constraint "player_details_pkey"',
+    );
+    const mockSave = vi.fn().mockRejectedValue(rawError);
+    const { triggerSave } = useAutoSave({ onSave: mockSave, debounceMs: 0 });
+
+    triggerSave();
+    vi.advanceTimersByTime(100);
+    await vi.runAllTimersAsync();
+
+    expect(showToastMock).toHaveBeenCalledTimes(1);
+    const [message, type] = showToastMock.mock.calls[0];
+    expect(type).toBe("error");
+    expect(message).toMatch(/something went wrong/i);
+    expect(message).not.toMatch(/constraint|player_details_pkey/i);
 
     vi.useRealTimers();
   });

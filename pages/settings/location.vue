@@ -105,6 +105,7 @@
 import { ref, reactive, onMounted } from "vue";
 import { usePreferenceManager } from "~/composables/usePreferenceManager";
 import { useAutoSave } from "~/composables/useAutoSave";
+import { useAppToast } from "~/composables/useAppToast";
 import type { HomeLocation } from "~/types/models";
 import type { AddressSuggestion } from "~/composables/useAddressAutocomplete";
 import { createClientLogger } from "~/utils/logger";
@@ -120,6 +121,7 @@ const {
   setHomeLocation,
   loadAllPreferences,
 } = usePreferenceManager();
+const { showToast } = useAppToast();
 const localLocation = reactive<HomeLocation>({
   address: "",
   city: "",
@@ -179,6 +181,10 @@ const handleSave = async () => {
     setTimeout(() => (saveSuccess.value = false), 3000);
   } catch (err) {
     logger.error("Failed to save home location", err);
+    showToast(
+      "Something went wrong saving your location. Please try again.",
+      "error",
+    );
   } finally {
     saving.value = false;
   }

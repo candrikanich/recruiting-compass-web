@@ -32,7 +32,13 @@ export const useAutoSave = (options: AutoSaveOptions) => {
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error));
       saveError.value = err;
-      showToast(`Failed to save: ${err.message}`, "error");
+      console.error("Auto-save failed:", err);
+      // Never surface raw error/Postgres text to the user — log it for
+      // debugging (via onError/console) and show a generic, actionable message.
+      showToast(
+        "Something went wrong saving your changes. Please try again.",
+        "error",
+      );
       if (onError) {
         onError(err);
       }
