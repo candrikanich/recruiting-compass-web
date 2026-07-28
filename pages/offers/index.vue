@@ -482,6 +482,18 @@
         @close="showComparison = false"
       />
     </main>
+
+    <!-- Confirm Delete Dialog -->
+    <DesignSystemConfirmDialog
+      :is-open="isDeleteDialogOpen"
+      title="Delete Offer"
+      message="Are you sure you want to delete this offer? This action cannot be undone."
+      confirm-text="Delete"
+      cancel-text="Cancel"
+      variant="danger"
+      @confirm="confirmDeleteOffer"
+      @cancel="cancelDeleteOffer"
+    />
   </div>
 </template>
 
@@ -492,6 +504,7 @@ import { useOffersStore } from "~/stores/offers";
 import { useSchools } from "~/composables/useSchools";
 import { useFamilyCtx } from "~/composables/useFamilyCtx";
 import OfferComparison from "~/components/OfferComparison.vue";
+import { useAppToast } from "~/composables/useAppToast";
 import type { Offer } from "~/types/models";
 
 definePageMeta({
@@ -510,6 +523,7 @@ const {
 } = storeToRefs(offersStore);
 const { fetchOffers, createOffer, daysUntilDeadline } = offersStore;
 const deleteOfferAPI = offersStore.deleteOffer;
+const { showToast } = useAppToast();
 const { schools, fetchSchools } = useSchools();
 const activeFamily = useFamilyCtx();
 
@@ -695,17 +709,40 @@ const handleAddOffer = async () => {
     showAddForm.value = false;
   } catch (err) {
     console.error("Failed to log offer:", err);
+    showToast(
+      "Something went wrong logging this offer. Please try again.",
+      "error",
+    );
   }
 };
 
-const deleteOffer = async (offerId: string) => {
-  if (confirm("Are you sure you want to delete this offer?")) {
-    try {
-      await deleteOfferAPI(offerId);
-    } catch (err) {
-      console.error("Failed to delete offer:", err);
-    }
+const isDeleteDialogOpen = ref(false);
+const offerToDeleteId = ref<string | null>(null);
+
+const deleteOffer = (offerId: string) => {
+  offerToDeleteId.value = offerId;
+  isDeleteDialogOpen.value = true;
+};
+
+const confirmDeleteOffer = async () => {
+  if (!offerToDeleteId.value) return;
+  const deletingId = offerToDeleteId.value;
+  isDeleteDialogOpen.value = false;
+  offerToDeleteId.value = null;
+  try {
+    await deleteOfferAPI(deletingId);
+  } catch (err) {
+    console.error("Failed to delete offer:", err);
+    showToast(
+      "Something went wrong deleting this offer. Please try again.",
+      "error",
+    );
   }
+};
+
+const cancelDeleteOffer = () => {
+  isDeleteDialogOpen.value = false;
+  offerToDeleteId.value = null;
 };
 
 // Watch for family context to load — immediate: true handles initial fetch on page load
