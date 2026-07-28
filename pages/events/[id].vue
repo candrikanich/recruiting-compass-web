@@ -199,7 +199,7 @@
                   v-if="metric.verified"
                   class="text-xs text-green-600 mt-2 flex items-center gap-1"
                 >
-                  <UIcon name="i-heroicons-check-solid" class="w-3 h-3"  />
+                  <UIcon name="i-heroicons-check-solid" class="w-3 h-3" />
                   <span>Verified by third party</span>
                 </p>
               </div>
@@ -450,276 +450,22 @@
           </form>
         </div>
 
-        <!-- Edit Event Modal -->
-        <div
-          v-if="showEditForm"
-          class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-        >
-          <div
-            class="bg-white rounded-lg shadow-lg max-w-2xl w-full max-h-screen overflow-y-auto"
-          >
-            <div
-              class="sticky top-0 bg-white border-b border-gray-200 p-6 flex items-center justify-between"
-            >
-              <h2 class="text-2xl font-bold text-gray-900">Edit Event</h2>
-              <button
-                @click="showEditForm = false"
-                class="text-gray-600 hover:text-gray-900"
-              >
-                <UIcon name="i-heroicons-x-mark-solid" class="w-6 h-6"  />
-              </button>
-            </div>
-
-            <form @submit.prevent="handleUpdateEvent" class="p-6 space-y-6">
-              <!-- Event Name -->
-              <div>
-                <label
-                  for="editName"
-                  class="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Event Name <span class="text-red-600">*</span>
-                </label>
-                <input
-                  id="editName"
-                  v-model="editFormData.name"
-                  type="text"
-                  required
-                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-
-              <!-- Event Type -->
-              <div>
-                <label
-                  for="editType"
-                  class="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Event Type <span class="text-red-600">*</span>
-                </label>
-                <select
-                  id="editType"
-                  v-model="editFormData.type"
-                  required
-                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="">Select Type</option>
-                  <option value="camp">Camp</option>
-                  <option value="showcase">Showcase</option>
-                  <option value="game">Game</option>
-                  <option value="official_visit">Official Visit</option>
-                  <option value="unofficial_visit">Unofficial Visit</option>
-                </select>
-              </div>
-
-              <!-- Location -->
-              <div>
-                <label
-                  for="editLocation"
-                  class="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Location
-                </label>
-                <input
-                  id="editLocation"
-                  v-model="editFormData.location"
-                  type="text"
-                  placeholder="e.g., University Stadium, City, State"
-                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-
-              <!-- Dates -->
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label
-                    for="editStartDate"
-                    class="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Start Date <span class="text-red-600">*</span>
-                  </label>
-                  <input
-                    id="editStartDate"
-                    v-model="editFormData.start_date"
-                    type="date"
-                    required
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-                <div>
-                  <label
-                    for="editEndDate"
-                    class="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    End Date
-                  </label>
-                  <input
-                    id="editEndDate"
-                    v-model="editFormData.end_date"
-                    type="date"
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-              </div>
-
-              <!-- Cost -->
-              <div>
-                <label
-                  for="editCost"
-                  class="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Cost ($)
-                </label>
-                <input
-                  id="editCost"
-                  v-model.number="editFormData.cost"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  placeholder="0.00"
-                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-
-              <!-- Performance Notes -->
-              <div>
-                <label
-                  for="editNotes"
-                  class="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Performance Notes
-                </label>
-                <textarea
-                  id="editNotes"
-                  v-model="editFormData.performance_notes"
-                  rows="4"
-                  placeholder="How did it go? Any highlights?"
-                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-
-              <!-- Buttons -->
-              <div class="flex gap-4 justify-end">
-                <button
-                  type="button"
-                  @click="showEditForm = false"
-                  class="px-6 py-2 bg-gray-200 text-gray-900 font-semibold rounded-lg hover:bg-gray-300 transition"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  :disabled="isUpdating"
-                  class="px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
-                >
-                  {{ isUpdating ? "Saving..." : "Save Changes" }}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+        <EventEditModal
+          :is-open="showEditForm"
+          :form-data="editFormData"
+          :is-updating="isUpdating"
+          @submit="handleUpdateEvent"
+          @cancel="showEditForm = false"
+        />
       </div>
 
-      <!-- Quick Interaction Logging Modal -->
-      <Teleport to="body">
-        <div
-          v-if="showQuickLogModal"
-          class="fixed inset-0 z-50 flex items-center justify-center"
-        >
-          <div
-            class="absolute inset-0 bg-black/50"
-            @click="showQuickLogModal = false"
-          ></div>
-          <div
-            class="relative bg-white rounded-xl shadow-xl max-w-lg w-full mx-4 p-6"
-          >
-            <h3 class="text-xl font-bold text-slate-900 mb-2">
-              Log Interactions
-            </h3>
-            <p class="text-sm text-slate-600 mb-6">
-              Did you have any coaching interactions at {{ event?.name }}?
-            </p>
-
-            <form @submit.prevent="handleQuickLogInteraction" class="space-y-4">
-              <!-- Type -->
-              <div>
-                <label class="block text-sm font-medium text-slate-700 mb-2">
-                  Interaction Type
-                </label>
-                <select
-                  v-model="quickLogData.type"
-                  class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="in_person_visit">In-Person Meeting</option>
-                  <option value="phone_call">Phone Call</option>
-                  <option value="email">Email</option>
-                  <option value="game">Game Appearance</option>
-                </select>
-              </div>
-
-              <!-- Direction -->
-              <div>
-                <label class="block text-sm font-medium text-slate-700 mb-2">
-                  Who initiated?
-                </label>
-                <select
-                  v-model="quickLogData.direction"
-                  class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="inbound">Coach contacted us</option>
-                  <option value="outbound">We contacted coach</option>
-                </select>
-              </div>
-
-              <!-- Notes -->
-              <div>
-                <label class="block text-sm font-medium text-slate-700 mb-2">
-                  What was discussed? <span class="text-red-600">*</span>
-                </label>
-                <textarea
-                  v-model="quickLogData.content"
-                  rows="3"
-                  required
-                  placeholder="Brief notes about the interaction..."
-                  class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
-                ></textarea>
-              </div>
-
-              <!-- Sentiment -->
-              <div>
-                <label class="block text-sm font-medium text-slate-700 mb-2">
-                  How did it go?
-                </label>
-                <select
-                  v-model="quickLogData.sentiment"
-                  class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="very_positive">Very Positive</option>
-                  <option value="positive">Positive</option>
-                  <option value="neutral">Neutral</option>
-                  <option value="negative">Negative</option>
-                </select>
-              </div>
-
-              <!-- Buttons -->
-              <div class="flex gap-3 pt-2">
-                <button
-                  type="submit"
-                  class="flex-1 px-4 py-2 bg-linear-to-r from-blue-500 to-blue-600 text-white text-sm font-medium rounded-lg hover:from-blue-600 hover:to-blue-700 transition"
-                >
-                  Log Interaction
-                </button>
-                <button
-                  type="button"
-                  @click="showQuickLogModal = false"
-                  class="flex-1 px-4 py-2 border border-slate-300 text-slate-700 text-sm font-medium rounded-lg hover:bg-slate-50 transition"
-                >
-                  Skip for Now
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </Teleport>
+      <EventQuickLogModal
+        :is-open="showQuickLogModal"
+        :event-name="event?.name"
+        :data="quickLogData"
+        @submit="handleQuickLogInteraction"
+        @close="showQuickLogModal = false"
+      />
 
       <!-- Export Modal -->
       <ExportModal
@@ -757,27 +503,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, reactive, computed, defineAsyncComponent } from "vue";
+import { onMounted, defineAsyncComponent } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { useEvents } from "~/composables/useEvents";
-import { usePerformance } from "~/composables/usePerformance";
-import { useCoaches } from "~/composables/useCoaches";
-import { useInteractions } from "~/composables/useInteractions";
-import { useAppToast } from "~/composables/useAppToast";
 import ExportButton from "~/components/Performance/ExportButton.vue";
 const ExportModal = defineAsyncComponent(
   () => import("~/components/Performance/ExportModal.vue"),
 );
+import EventEditModal from "~/components/Events/EventEditModal.vue";
+import EventQuickLogModal from "~/components/Events/EventQuickLogModal.vue";
 import { getRoleLabel } from "~/utils/coachLabels";
-import type { Event, PerformanceMetric, Coach } from "~/types/models";
-import type { Database } from "~/types/database";
-
-import { createClientLogger } from "~/utils/logger";
-
-type InteractionType = Database["public"]["Enums"]["interaction_type"];
-type SentimentType = Database["public"]["Enums"]["interaction_sentiment"];
-
-const logger = createClientLogger("EventDetail");
+import { useEventDetail } from "~/composables/useEventDetail";
+import { useEventCoaches } from "~/composables/useEventCoaches";
+import { useEventMetricsSection } from "~/composables/useEventMetricsSection";
+import { useEventQuickLog } from "~/composables/useEventQuickLog";
 
 definePageMeta({
   middleware: "auth",
@@ -795,389 +533,60 @@ const isValidEventId = (id: string): boolean => {
   );
 };
 
-const { fetchEvent, deleteEvent: deleteEventAPI, updateEvent } = useEvents();
-const { createMetric, deleteMetric: deleteMetricAPI } = usePerformance();
-const { fetchCoaches } = useCoaches();
-const { createInteraction } = useInteractions();
-const { showToast } = useAppToast();
+const {
+  event,
+  loading,
+  error,
+  showEditForm,
+  isUpdating,
+  editFormData,
+  getEventTypeLabel,
+  getSourceLabel,
+  formatDateRange,
+  openDirections,
+  markAsAttended: markEventAttended,
+  openEditForm,
+  handleUpdateEvent,
+  isDeleteEventDialogOpen,
+  deleteEvent,
+  confirmDeleteEvent,
+  cancelDeleteEvent,
+  load: loadEvent,
+} = useEventDetail(eventId);
 
-const event = ref<Event | null>(null);
-const eventMetrics = ref<PerformanceMetric[]>([]);
-const loading = ref(true);
-const metricLoading = ref(false);
-const error = ref<string | null>(null);
-const showMetricForm = ref(false);
-const showEditForm = ref(false);
-const showExportModal = ref(false);
-const isUpdating = ref(false);
-const showAddCoach = ref(false);
-const selectedCoachId = ref("");
-const schoolCoaches = ref<Coach[]>([]);
-const coachesAtEvent = ref<Coach[]>([]);
-const showQuickLogModal = ref(false);
-const quickLogData = reactive<{
-  type: InteractionType;
-  direction: "inbound" | "outbound";
-  content: string;
-  sentiment: SentimentType;
-}>({
-  type: "in_person_visit",
-  direction: "inbound",
-  content: "",
-  sentiment: "positive",
-});
+const {
+  showAddCoach,
+  selectedCoachId,
+  coachesAtEvent,
+  availableCoaches,
+  loadCoaches,
+  addCoach,
+  removeCoach,
+} = useEventCoaches(eventId, event);
 
-const newMetric = reactive({
-  metric_type: "",
-  value: null as number | null,
-  unit: "",
-  notes: "",
-  verified: false,
-});
+const {
+  eventMetrics,
+  metricLoading,
+  showMetricForm,
+  showExportModal,
+  newMetric,
+  getMetricLabel,
+  loadEventMetrics,
+  handleAddMetric,
+  isDeleteMetricDialogOpen,
+  deleteMetric,
+  confirmDeleteMetric,
+  cancelDeleteMetric,
+} = useEventMetricsSection(eventId, event);
 
-const editFormData = reactive({
-  name: "",
-  type: "",
-  location: "",
-  start_date: "",
-  end_date: "",
-  cost: 0,
-  performance_notes: "",
-});
+const { showQuickLogModal, quickLogData, handleQuickLogInteraction } =
+  useEventQuickLog(eventId, event);
 
-const getEventTypeLabel = (type: string): string => {
-  const labels: Record<string, string> = {
-    showcase: "Showcase",
-    camp: "Camp",
-    official_visit: "Official Visit",
-    unofficial_visit: "Unofficial Visit",
-    game: "Game",
-  };
-  return labels[type] || type;
-};
-
-const formatDateRange = (
-  startDate: string,
-  endDate?: string | null,
-): string => {
-  const [startYear, startMonth, startDay] = startDate.split("-").map(Number);
-  const startStr = new Date(
-    startYear,
-    startMonth - 1,
-    startDay,
-  ).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-  if (!endDate || endDate === startDate) return startStr;
-  const [endYear, endMonth, endDay] = endDate.split("-").map(Number);
-  const endStr = new Date(endYear, endMonth - 1, endDay).toLocaleDateString(
-    "en-US",
-    { month: "short", day: "numeric", year: "numeric" },
-  );
-  return `${startStr} - ${endStr}`;
-};
-
-const getMetricLabel = (type: string): string => {
-  const labels: Record<string, string> = {
-    velocity: "Fastball Velocity",
-    exit_velo: "Exit Velocity",
-    sixty_time: "60-Yard Dash",
-    pop_time: "Pop Time",
-    batting_avg: "Batting Average",
-    era: "ERA",
-    strikeouts: "Strikeouts",
-    other: "Other Metric",
-  };
-  return labels[type] || type;
-};
-
-const eventSchoolId = computed(() => event.value?.school_id);
-
-const availableCoaches = computed(() => {
-  const presentIds = event.value?.coaches_present || [];
-  return schoolCoaches.value.filter((c) => !presentIds.includes(c.id));
-});
-
-const getSourceLabel = (source: string): string => {
-  const labels: Record<string, string> = {
-    email: "Email",
-    flyer: "Flyer",
-    web_search: "Web Search",
-    recommendation: "Recommendation",
-    friend: "Friend",
-    other: "Other",
-  };
-  return labels[source] || source;
-};
-
-const openDirections = () => {
-  if (!event.value) return;
-  let query = "";
-  if (event.value.address) query += event.value.address;
-  if (event.value.city) query += (query ? ", " : "") + event.value.city;
-  if (event.value.state) query += (query ? ", " : "") + event.value.state;
-
-  if (query.trim()) {
-    const encodedQuery = encodeURIComponent(query);
-    window.open(`https://www.google.com/maps/search/${encodedQuery}`, "_blank");
-  }
-};
-
-const loadCoaches = async () => {
-  if (!eventSchoolId.value) return;
-
-  try {
-    await fetchCoaches(eventSchoolId.value);
-
-    const presentIds = event.value?.coaches_present || [];
-    const coaches = schoolCoaches.value;
-    coachesAtEvent.value = coaches.filter((c: any) =>
-      presentIds.includes(c.id),
-    );
-  } catch (err) {
-    logger.error("Failed to load coaches", err);
-  }
-};
-
-const addCoach = async () => {
-  if (!selectedCoachId.value || !event.value) return;
-
-  try {
-    const updatedCoaches = [
-      ...(event.value.coaches_present || []),
-      selectedCoachId.value,
-    ];
-
-    await updateEvent(eventId, {
-      coaches_present: updatedCoaches,
-    });
-
-    showAddCoach.value = false;
-    selectedCoachId.value = "";
-    await loadCoaches();
-  } catch (err) {
-    logger.error("Failed to add coach", err);
-  }
-};
-
-const removeCoach = async (coachId: string) => {
-  if (!event.value) return;
-
-  try {
-    const updatedCoaches = (event.value.coaches_present || []).filter(
-      (id) => id !== coachId,
-    );
-
-    await updateEvent(eventId, {
-      coaches_present: updatedCoaches,
-    });
-
-    await loadCoaches();
-  } catch (err) {
-    logger.error("Failed to remove coach", err);
-  }
-};
-
-const markAsAttended = async () => {
-  if (!event.value) return;
-
-  try {
-    await updateEvent(eventId, { attended: true });
-    event.value.attended = true;
+const markAsAttended = () =>
+  markEventAttended(() => {
     // Show quick interaction logging modal
     showQuickLogModal.value = true;
-  } catch (err) {
-    logger.error("Failed to mark event as attended", err);
-  }
-};
-
-const handleQuickLogInteraction = async () => {
-  if (!event.value || !event.value.school_id) return;
-
-  try {
-    const occurredAt = new Date(event.value.start_date).toISOString();
-
-    await createInteraction({
-      school_id: event.value.school_id,
-      coach_id: null,
-      event_id: eventId,
-      type: quickLogData.type as InteractionType,
-      direction: quickLogData.direction as "outbound" | "inbound",
-      subject: `Interaction at ${event.value.name}`,
-      content: quickLogData.content,
-      sentiment: quickLogData.sentiment as SentimentType,
-      occurred_at: occurredAt,
-      logged_by: "", // Server will set from auth
-      attachments: [],
-    });
-
-    // Reset and close modal
-    quickLogData.type = "in_person_visit";
-    quickLogData.direction = "inbound";
-    quickLogData.content = "";
-    quickLogData.sentiment = "positive";
-    showQuickLogModal.value = false;
-  } catch (err) {
-    logger.error("Failed to log interaction", err);
-    showToast(
-      "Something went wrong logging this interaction. Please try again.",
-      "error",
-    );
-  }
-};
-
-const handleAddMetric = async () => {
-  try {
-    metricLoading.value = true;
-    await createMetric({
-      metric_type: newMetric.metric_type as
-        | "velocity"
-        | "exit_velo"
-        | "sixty_time"
-        | "pop_time"
-        | "batting_avg"
-        | "era"
-        | "strikeouts"
-        | "other",
-      value: newMetric.value!,
-      recorded_date: event.value!.start_date,
-      unit: newMetric.unit || "unit",
-      notes: newMetric.notes || null,
-      verified: newMetric.verified,
-      event_id: eventId,
-    });
-
-    // Reset form
-    newMetric.metric_type = "";
-    newMetric.value = null;
-    newMetric.unit = "";
-    newMetric.notes = "";
-    newMetric.verified = false;
-    showMetricForm.value = false;
-
-    // Reload metrics
-    await loadEventMetrics();
-  } catch (err) {
-    logger.error("Failed to log metric", err);
-  } finally {
-    metricLoading.value = false;
-  }
-};
-
-const isDeleteMetricDialogOpen = ref(false);
-const metricToDeleteId = ref<string | null>(null);
-
-const deleteMetric = (metricId: string) => {
-  metricToDeleteId.value = metricId;
-  isDeleteMetricDialogOpen.value = true;
-};
-
-const confirmDeleteMetric = async () => {
-  const metricId = metricToDeleteId.value;
-  isDeleteMetricDialogOpen.value = false;
-  metricToDeleteId.value = null;
-  if (!metricId) return;
-  try {
-    await deleteMetricAPI(metricId);
-    await loadEventMetrics();
-  } catch (err) {
-    logger.error("Failed to delete metric", err);
-    showToast(
-      "Something went wrong deleting this metric. Please try again.",
-      "error",
-    );
-  }
-};
-
-const cancelDeleteMetric = () => {
-  isDeleteMetricDialogOpen.value = false;
-  metricToDeleteId.value = null;
-};
-
-const isDeleteEventDialogOpen = ref(false);
-
-const deleteEvent = () => {
-  isDeleteEventDialogOpen.value = true;
-};
-
-const confirmDeleteEvent = async () => {
-  isDeleteEventDialogOpen.value = false;
-  try {
-    await deleteEventAPI(eventId);
-    await router.push("/events");
-  } catch (err) {
-    logger.error("Failed to delete event", err);
-    showToast(
-      "Something went wrong deleting this event. Please try again.",
-      "error",
-    );
-  }
-};
-
-const cancelDeleteEvent = () => {
-  isDeleteEventDialogOpen.value = false;
-};
-
-const openEditForm = () => {
-  if (event.value) {
-    editFormData.name = event.value.name;
-    editFormData.type = event.value.type;
-    editFormData.location = event.value.location || "";
-    editFormData.start_date = event.value.start_date.split("T")[0];
-    editFormData.end_date = event.value.end_date
-      ? event.value.end_date.split("T")[0]
-      : "";
-    editFormData.cost = event.value.cost || 0;
-    editFormData.performance_notes = event.value.performance_notes || "";
-    showEditForm.value = true;
-  }
-};
-
-const handleUpdateEvent = async () => {
-  if (!event.value) return;
-
-  try {
-    isUpdating.value = true;
-    await updateEvent(eventId, {
-      name: editFormData.name,
-      type: editFormData.type as
-        | "camp"
-        | "showcase"
-        | "official_visit"
-        | "unofficial_visit"
-        | "game",
-      location: editFormData.location || null,
-      start_date: editFormData.start_date,
-      end_date: editFormData.end_date || null,
-      cost:
-        editFormData.cost && typeof editFormData.cost === "number"
-          ? editFormData.cost
-          : null,
-      performance_notes: editFormData.performance_notes || null,
-    });
-
-    // Reload event data
-    event.value = await fetchEvent(eventId);
-    showEditForm.value = false;
-  } catch (err) {
-    logger.error("Failed to update event", err);
-    error.value = err instanceof Error ? err.message : "Failed to update event";
-  } finally {
-    isUpdating.value = false;
-  }
-};
-
-const loadEventMetrics = async () => {
-  try {
-    const { metrics, fetchMetrics } = usePerformance();
-    await fetchMetrics({ eventId });
-    eventMetrics.value = metrics.value.filter((m) => m.event_id === eventId);
-  } catch (err) {
-    logger.error("Failed to load event metrics", err);
-  }
-};
+  });
 
 onMounted(async () => {
   // Redirect to create page if ID is invalid (e.g., "new")
@@ -1186,20 +595,10 @@ onMounted(async () => {
     return;
   }
 
-  try {
-    loading.value = true;
-    event.value = await fetchEvent(eventId);
-    if (event.value) {
-      await loadEventMetrics();
-      await loadCoaches();
-    } else {
-      error.value = "Event not found";
-    }
-  } catch (err) {
-    const message = err instanceof Error ? err.message : "Failed to load event";
-    error.value = message;
-  } finally {
-    loading.value = false;
+  await loadEvent();
+  if (event.value) {
+    await loadEventMetrics();
+    await loadCoaches();
   }
 });
 </script>
