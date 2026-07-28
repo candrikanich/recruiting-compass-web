@@ -48,9 +48,6 @@ test.describe("Documents CRUD — atomic lifecycle (school-attached)", () => {
   test("upload → view → edit title → delete a document", async ({ page }) => {
     test.skip(!schoolId, "beforeAll school setup failed");
 
-    // Auto-accept the native confirm dialog used by Delete (window.confirm)
-    page.on("dialog", (dialog) => dialog.accept());
-
     const title = `Atomic Doc ${Date.now()}`;
     const updatedTitle = `${title} (updated)`;
 
@@ -101,9 +98,13 @@ test.describe("Documents CRUD — atomic lifecycle (school-attached)", () => {
     await page.waitForLoadState("domcontentloaded");
     await expect(page.locator("h1, h2").first()).toContainText(updatedTitle);
 
-    // 6. DELETE — confirm() handler is registered at the top of the test
+    // 6. DELETE — click Delete, then confirm in the in-app ConfirmDialog
     const docDetailUrl = page.url();
     await page.getByRole("button", { name: "Delete", exact: true }).click();
+    await page
+      .getByRole("dialog")
+      .getByRole("button", { name: "Delete", exact: true })
+      .click();
 
     // Wait for navigation off the document detail page (router.push("/documents"))
     await page.waitForFunction(

@@ -226,6 +226,17 @@
         </NuxtLink>
       </div>
     </div>
+
+    <DesignSystemConfirmDialog
+      :is-open="isDeleteDialogOpen"
+      title="Delete Coach"
+      message="Are you sure you want to delete this coach? This action cannot be undone."
+      confirm-text="Delete"
+      cancel-text="Cancel"
+      variant="danger"
+      @confirm="confirmDeleteCoach"
+      @cancel="cancelDeleteCoach"
+    />
   </div>
 </template>
 
@@ -235,6 +246,7 @@ import { useRoute } from "vue-router";
 import { useSupabase } from "~/composables/useSupabase";
 import { useSchools } from "~/composables/useSchools";
 import { getRoleLabel } from "~/utils/coachLabels";
+import { useAppToast } from "~/composables/useAppToast";
 import type { Coach } from "~/types/models";
 
 definePageMeta({
@@ -244,6 +256,8 @@ definePageMeta({
 const route = useRoute();
 const supabase = useSupabase();
 const { schools, fetchSchools } = useSchools();
+const { showToast } = useAppToast();
+const isDeleteDialogOpen = ref(false);
 
 const schoolId = route.params.schoolId as string;
 const coachId = route.params.coachId as string;
@@ -328,22 +342,33 @@ const saveNotes = async () => {
   }
 };
 
-const confirmDelete = async () => {
-  if (confirm("Are you sure you want to delete this coach?")) {
-    loading.value = true;
-    try {
-      const { error } = await supabase
-        .from("coaches")
-        .delete()
-        .eq("id", coachId);
-      if (error) throw error;
-      await navigateTo(`/schools/${schoolId}/coaches`);
-    } catch (err) {
-      console.error("Failed to delete coach:", err);
-    } finally {
-      loading.value = false;
-    }
+const confirmDelete = () => {
+  isDeleteDialogOpen.value = true;
+};
+
+const confirmDeleteCoach = async () => {
+  isDeleteDialogOpen.value = false;
+  loading.value = true;
+  try {
+    const { error } = await supabase
+      .from("coaches")
+      .delete()
+      .eq("id", coachId);
+    if (error) throw error;
+    await navigateTo(`/schools/${schoolId}/coaches`);
+  } catch (err) {
+    console.error("Failed to delete coach:", err);
+    showToast(
+      "Something went wrong deleting this coach. Please try again.",
+      "error",
+    );
+  } finally {
+    loading.value = false;
   }
+};
+
+const cancelDeleteCoach = () => {
+  isDeleteDialogOpen.value = false;
 };
 
 onMounted(async () => {

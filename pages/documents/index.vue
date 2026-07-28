@@ -282,6 +282,17 @@
         </div>
       </div>
     </main>
+
+    <DesignSystemConfirmDialog
+      :is-open="isDeleteDialogOpen"
+      title="Delete Document"
+      message="Are you sure you want to delete this document? This action cannot be undone."
+      confirm-text="Delete"
+      cancel-text="Cancel"
+      variant="danger"
+      @confirm="confirmDeleteDocument"
+      @cancel="cancelDeleteDocument"
+    />
   </div>
 </template>
 
@@ -292,6 +303,7 @@ import { useSchools } from "~/composables/useSchools";
 import { useUniversalFilter } from "~/composables/useUniversalFilter";
 import { useFormValidation } from "~/composables/useFormValidation";
 import { useErrorHandler } from "~/composables/useErrorHandler";
+import { useAppToast } from "~/composables/useAppToast";
 import FilterPanel from "~/components/FilterPanel.vue";
 import UniversalFilter from "~/components/UniversalFilter.vue";
 import { useUserStore } from "~/stores/user";
@@ -312,7 +324,10 @@ const {
 } = useDocumentsConsolidated();
 const { schools: allSchools, fetchSchools } = useSchools();
 const { getErrorMessage, logError } = useErrorHandler();
+const { showToast } = useAppToast();
 
+const isDeleteDialogOpen = ref(false);
+const documentToDeleteId = ref<string | null>(null);
 const schools = ref<any[]>([]);
 const sortBy = ref("newest");
 const viewMode = ref<"grid" | "list">("grid");
@@ -538,20 +553,40 @@ const getSchoolName = (schoolId: string | null | undefined): string => {
   return schools.value.find((s) => s.id === schoolId)?.name || "Unknown";
 };
 
-const handleDeleteDocument = async (docId: string) => {
-  if (confirm("Delete this document?")) {
-    try {
-      const success = await deleteDocumentAPI(docId);
-      if (!success) {
-        const message = getErrorMessage(new Error("Failed to delete document"));
-        error.value = message;
-      }
-    } catch (err) {
-      const message = getErrorMessage(err);
+const handleDeleteDocument = (docId: string) => {
+  documentToDeleteId.value = docId;
+  isDeleteDialogOpen.value = true;
+};
+
+const confirmDeleteDocument = async () => {
+  if (!documentToDeleteId.value) return;
+  const deletingId = documentToDeleteId.value;
+  isDeleteDialogOpen.value = false;
+  documentToDeleteId.value = null;
+  try {
+    const success = await deleteDocumentAPI(deletingId);
+    if (!success) {
+      const message = getErrorMessage(new Error("Failed to delete document"));
       error.value = message;
-      logError(err);
+      showToast(
+        "Something went wrong deleting this document. Please try again.",
+        "error",
+      );
     }
+  } catch (err) {
+    const message = getErrorMessage(err);
+    error.value = message;
+    logError(err);
+    showToast(
+      "Something went wrong deleting this document. Please try again.",
+      "error",
+    );
   }
+};
+
+const cancelDeleteDocument = () => {
+  isDeleteDialogOpen.value = false;
+  documentToDeleteId.value = null;
 };
 
 onMounted(async () => {

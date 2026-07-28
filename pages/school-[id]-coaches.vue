@@ -342,6 +342,17 @@
         </div>
       </div>
     </div>
+
+    <DesignSystemConfirmDialog
+      :is-open="isDeleteDialogOpen"
+      title="Delete Coach"
+      message="Are you sure you want to delete this coach? This action cannot be undone."
+      confirm-text="Delete"
+      cancel-text="Cancel"
+      variant="danger"
+      @confirm="confirmDeleteCoach"
+      @cancel="cancelDeleteCoach"
+    />
   </div>
 </template>
 
@@ -351,6 +362,7 @@ import { useRoute } from "vue-router";
 import { useCoaches } from "~/composables/useCoaches";
 import { useSchools } from "~/composables/useSchools";
 import { getRoleLabel } from "~/utils/coachLabels";
+import { useAppToast } from "~/composables/useAppToast";
 
 const route = useRoute();
 const id = route.params.id as string;
@@ -373,9 +385,12 @@ const {
   deleteCoach: deleteCoachAPI,
 } = useCoaches();
 const { getSchool } = useSchools();
+const { showToast } = useAppToast();
 
 const showAddForm = ref(false);
 const schoolName = ref("");
+const isDeleteDialogOpen = ref(false);
+const coachToDeleteId = ref<string | null>(null);
 
 const newCoach = reactive({
   role: "",
@@ -420,14 +435,30 @@ const handleAddCoach = async () => {
   }
 };
 
-const deleteCoach = async (coachId: string) => {
-  if (confirm("Are you sure you want to delete this coach?")) {
-    try {
-      await deleteCoachAPI(coachId);
-    } catch (err) {
-      console.error("Failed to delete coach:", err);
-    }
+const deleteCoach = (coachId: string) => {
+  coachToDeleteId.value = coachId;
+  isDeleteDialogOpen.value = true;
+};
+
+const confirmDeleteCoach = async () => {
+  if (!coachToDeleteId.value) return;
+  const deletingId = coachToDeleteId.value;
+  isDeleteDialogOpen.value = false;
+  coachToDeleteId.value = null;
+  try {
+    await deleteCoachAPI(deletingId);
+  } catch (err) {
+    console.error("Failed to delete coach:", err);
+    showToast(
+      "Something went wrong deleting this coach. Please try again.",
+      "error",
+    );
   }
+};
+
+const cancelDeleteCoach = () => {
+  isDeleteDialogOpen.value = false;
+  coachToDeleteId.value = null;
 };
 
 const sendEmail = (coach: (typeof coaches.value)[0]) => {

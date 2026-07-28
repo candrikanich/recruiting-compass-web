@@ -374,6 +374,28 @@
         </div>
       </div>
     </div>
+
+    <DesignSystemConfirmDialog
+      :is-open="isDeleteDialogOpen"
+      title="Delete Document"
+      message="Are you sure you want to delete this document? This action cannot be undone."
+      confirm-text="Delete"
+      cancel-text="Cancel"
+      variant="danger"
+      @confirm="confirmDeleteDocument"
+      @cancel="cancelDeleteDocument"
+    />
+
+    <DesignSystemConfirmDialog
+      :is-open="isRestoreDialogOpen"
+      title="Restore Version"
+      message="Restore this version? The current version will be marked as archived."
+      confirm-text="Restore"
+      cancel-text="Cancel"
+      variant="warning"
+      @confirm="confirmRestoreVersion"
+      @cancel="cancelRestoreVersion"
+    />
   </div>
 </template>
 
@@ -383,6 +405,7 @@ import { useRoute, useRouter } from "vue-router";
 import { useDocumentsConsolidated } from "~/composables/useDocumentsConsolidated";
 import { useSchools } from "~/composables/useSchools";
 import { useErrorHandler } from "~/composables/useErrorHandler";
+import { useAppToast } from "~/composables/useAppToast";
 import VideoPlayer from "~/components/VideoPlayer.vue";
 import type { Document } from "~/types/models";
 
@@ -405,7 +428,11 @@ const {
 } = useDocumentsConsolidated();
 const { schools, fetchSchools } = useSchools();
 const { getErrorMessage, logError } = useErrorHandler();
+const { showToast } = useAppToast();
 
+const isDeleteDialogOpen = ref(false);
+const isRestoreDialogOpen = ref(false);
+const versionToRestoreId = ref<string | null>(null);
 const isEditing = ref(false);
 const showUploadNewVersion = ref(false);
 const showShareModal = ref(false);
@@ -505,23 +532,34 @@ const saveDocument = async () => {
   }
 };
 
-const handleDeleteDocument = async () => {
-  if (
-    confirm(
-      "Are you sure you want to delete this document? This action cannot be undone.",
-    )
-  ) {
-    try {
-      const success = await deleteDocumentAPI(documentId.value);
-      if (success) {
-        await router.push("/documents");
-      } else {
-        logError(new Error("Failed to delete document"));
-      }
-    } catch (err) {
-      logError(err);
+const handleDeleteDocument = () => {
+  isDeleteDialogOpen.value = true;
+};
+
+const confirmDeleteDocument = async () => {
+  isDeleteDialogOpen.value = false;
+  try {
+    const success = await deleteDocumentAPI(documentId.value);
+    if (success) {
+      await router.push("/documents");
+    } else {
+      logError(new Error("Failed to delete document"));
+      showToast(
+        "Something went wrong deleting this document. Please try again.",
+        "error",
+      );
     }
+  } catch (err) {
+    logError(err);
+    showToast(
+      "Something went wrong deleting this document. Please try again.",
+      "error",
+    );
   }
+};
+
+const cancelDeleteDocument = () => {
+  isDeleteDialogOpen.value = false;
 };
 
 const loadDocumentData = () => {
@@ -543,27 +581,39 @@ const fetchDocumentVersions = async () => {
   }
 };
 
-const restoreVersion = async (versionId: string) => {
-  if (
-    confirm(
-      "Restore this version? The current version will be marked as archived.",
-    )
-  ) {
-    try {
-      // Mark current version as not current
-      if (document.value) {
-        await updateDocument(document.value.id, { is_current: false });
-      }
+const restoreVersion = (versionId: string) => {
+  versionToRestoreId.value = versionId;
+  isRestoreDialogOpen.value = true;
+};
 
-      // Mark restored version as current
-      await updateDocument(versionId, { is_current: true });
-
-      await fetchDocuments();
-      await fetchDocumentVersions();
-    } catch (err) {
-      logError(err);
+const confirmRestoreVersion = async () => {
+  if (!versionToRestoreId.value) return;
+  const restoringId = versionToRestoreId.value;
+  isRestoreDialogOpen.value = false;
+  versionToRestoreId.value = null;
+  try {
+    // Mark current version as not current
+    if (document.value) {
+      await updateDocument(document.value.id, { is_current: false });
     }
+
+    // Mark restored version as current
+    await updateDocument(restoringId, { is_current: true });
+
+    await fetchDocuments();
+    await fetchDocumentVersions();
+  } catch (err) {
+    logError(err);
+    showToast(
+      "Something went wrong restoring this version. Please try again.",
+      "error",
+    );
   }
+};
+
+const cancelRestoreVersion = () => {
+  isRestoreDialogOpen.value = false;
+  versionToRestoreId.value = null;
 };
 
 const getSchoolNameById = (schoolId: string): string => {
