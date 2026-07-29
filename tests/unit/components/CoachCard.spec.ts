@@ -459,4 +459,70 @@ describe("CoachCard.vue", () => {
       expect(wrapper.text()).toContain("(555) 123-4567 ext. 890");
     });
   });
+  describe("Accessibility (clickable card)", () => {
+    it("should not expose button semantics when not clickable", () => {
+      const wrapper = mount(CoachCard, { props: { coach: createMockCoach() } });
+
+      expect(wrapper.attributes("role")).toBeUndefined();
+      expect(wrapper.attributes("tabindex")).toBeUndefined();
+    });
+
+    it("should expose button role, tabindex and accessible name when clickable", () => {
+      const wrapper = mount(CoachCard, {
+        props: { coach: createMockCoach(), clickable: true },
+      });
+
+      expect(wrapper.attributes("role")).toBe("button");
+      expect(wrapper.attributes("tabindex")).toBe("0");
+      expect(wrapper.attributes("aria-label")).toBe(
+        "Open profile for John Smith",
+      );
+    });
+
+    it("should emit click when activated by pointer", async () => {
+      const coach = createMockCoach();
+      const wrapper = mount(CoachCard, { props: { coach, clickable: true } });
+
+      await wrapper.trigger("click");
+
+      expect(wrapper.emitted("click")?.[0]).toEqual([coach]);
+    });
+
+    it("should emit click when activated by Enter", async () => {
+      const coach = createMockCoach();
+      const wrapper = mount(CoachCard, { props: { coach, clickable: true } });
+
+      await wrapper.trigger("keydown.enter");
+
+      expect(wrapper.emitted("click")?.[0]).toEqual([coach]);
+    });
+
+    it("should emit click when activated by Space", async () => {
+      const coach = createMockCoach();
+      const wrapper = mount(CoachCard, { props: { coach, clickable: true } });
+
+      await wrapper.trigger("keydown.space");
+
+      expect(wrapper.emitted("click")?.[0]).toEqual([coach]);
+    });
+
+    it("should not emit click on keyboard activation when not clickable", async () => {
+      const wrapper = mount(CoachCard, { props: { coach: createMockCoach() } });
+
+      await wrapper.trigger("keydown.enter");
+      await wrapper.trigger("click");
+
+      expect(wrapper.emitted("click")).toBeUndefined();
+    });
+
+    it("should not emit card click when an action button is pressed", async () => {
+      const coach = createMockCoach();
+      const wrapper = mount(CoachCard, { props: { coach, clickable: true } });
+
+      await wrapper.find('button[title="View details"]').trigger("click");
+
+      expect(wrapper.emitted("view")).toBeTruthy();
+      expect(wrapper.emitted("click")).toBeUndefined();
+    });
+  });
 });

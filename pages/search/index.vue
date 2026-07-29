@@ -51,11 +51,7 @@
           :is-searching="isSearching"
           @update:search-type="
             searchType = $event as
-              | 'all'
-              | 'schools'
-              | 'coaches'
-              | 'interactions'
-              | 'metrics'
+              'all' | 'schools' | 'coaches' | 'interactions' | 'metrics'
           "
           @search="handleSearch"
           @suggestions="handleSuggestions"
@@ -75,17 +71,18 @@
       </div>
 
       <!-- Search Type Tabs -->
-      <div class="mb-6 border-b border-gray-200">
-        <nav class="flex gap-6 -mb-px">
+      <div class="mb-6 border-b border-brand-slate-200">
+        <nav class="flex gap-6 -mb-px" aria-label="Search result types">
           <button
             v-for="type in searchTypes"
             :key="type"
+            :aria-current="searchType === type ? 'true' : undefined"
             @click="searchType = type"
             :class="[
               'pb-3 px-1 border-b-2 font-semibold transition',
               searchType === type
                 ? 'border-blue-600 text-blue-600'
-                : 'border-transparent text-gray-600 hover:text-gray-900',
+                : 'border-transparent text-brand-slate-600 hover:text-brand-slate-900',
             ]"
           >
             {{ getTypeLabel(type) }}
@@ -106,6 +103,21 @@
 
       <!-- Results -->
       <div v-if="searchQuery" class="space-y-8">
+        <!-- Results Count (announced to assistive tech on change) -->
+        <p
+          role="status"
+          aria-live="polite"
+          data-testid="search-results-status"
+          class="text-sm text-brand-slate-600"
+        >
+          <template v-if="!isSearching && !searchError && hasResults">
+            {{ totalResults }}
+            {{ totalResults === 1 ? "result" : "results" }} for "{{
+              searchQuery
+            }}"
+          </template>
+        </p>
+
         <!-- Loading State -->
         <div v-if="isSearching" class="text-center py-12">
           <div class="inline-flex items-center gap-2">
@@ -122,7 +134,7 @@
               style="animation-delay: 300ms"
             ></div>
           </div>
-          <p class="text-gray-600 mt-4">Searching...</p>
+          <p class="text-brand-slate-600 mt-4">Searching...</p>
         </div>
 
         <!-- Error State -->
@@ -135,8 +147,10 @@
 
         <!-- Empty State -->
         <div v-else-if="!hasResults" class="text-center py-12">
-          <p class="text-gray-600">No results found for "{{ searchQuery }}"</p>
-          <p class="text-sm text-gray-500 mt-2">
+          <p class="text-brand-slate-600">
+            No results found for "{{ searchQuery }}"
+          </p>
+          <p class="text-sm text-brand-slate-500 mt-2">
             Try adjusting your search or filters
           </p>
         </div>
@@ -241,7 +255,7 @@
       <!-- Empty Search State -->
       <div v-else class="text-center py-12">
         <svg
-          class="mx-auto h-12 w-12 text-gray-400"
+          class="mx-auto h-12 w-12 text-brand-slate-400"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -253,8 +267,10 @@
             d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
           />
         </svg>
-        <h3 class="mt-4 text-lg font-medium text-gray-900">Search your data</h3>
-        <p class="mt-2 text-gray-600">
+        <h3 class="mt-4 text-lg font-medium text-brand-slate-900">
+          Search your data
+        </h3>
+        <p class="mt-2 text-brand-slate-600">
           Enter a search term above to find schools, coaches, interactions, and
           metrics
         </p>

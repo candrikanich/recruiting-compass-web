@@ -1,6 +1,21 @@
 <template>
   <div
-    class="rounded-lg shadow-md hover:shadow-lg transition-shadow p-5 bg-white"
+    :role="clickable ? 'button' : undefined"
+    :tabindex="clickable ? 0 : undefined"
+    :aria-label="
+      clickable
+        ? `Open profile for ${coach.first_name} ${coach.last_name}`
+        : undefined
+    "
+    :class="[
+      'rounded-lg shadow-md hover:shadow-lg transition-shadow p-5 bg-white',
+      clickable
+        ? 'cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2'
+        : '',
+    ]"
+    @click="handleActivate"
+    @keydown.enter="handleActivate"
+    @keydown.space.prevent="handleActivate"
   >
     <!-- Header with name and role -->
     <div class="flex items-start justify-between mb-4">
@@ -22,6 +37,7 @@
       <div v-if="coach.email" class="flex items-center text-sm text-slate-900">
         <span class="text-blue-600 mr-2" aria-hidden="true">✉️</span>
         <a
+          @click.stop
           :href="`mailto:${coach.email}`"
           class="hover:underline break-all text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 rounded-sm"
         >
@@ -32,6 +48,7 @@
       <div v-if="coach.phone" class="flex items-center text-sm text-slate-900">
         <span class="text-green-600 mr-2" aria-hidden="true">📱</span>
         <a
+          @click.stop
           :href="`tel:${coach.phone}`"
           class="hover:underline text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 rounded-sm"
         >
@@ -43,8 +60,13 @@
         v-if="coach.twitter_handle"
         class="flex items-center text-sm text-slate-900"
       >
-        <UIcon name="i-heroicons-share" class="w-4 h-4 text-blue-400 mr-2" aria-hidden="true"  />
+        <UIcon
+          name="i-heroicons-share"
+          class="w-4 h-4 text-blue-400 mr-2"
+          aria-hidden="true"
+        />
         <a
+          @click.stop
           :href="`https://twitter.com/${coach.twitter_handle.replace('@', '')}`"
           target="_blank"
           rel="noopener noreferrer"
@@ -58,8 +80,13 @@
         v-if="coach.instagram_handle"
         class="flex items-center text-sm text-slate-900"
       >
-        <UIcon name="i-heroicons-photo" class="w-4 h-4 text-pink-600 mr-2" aria-hidden="true"  />
+        <UIcon
+          name="i-heroicons-photo"
+          class="w-4 h-4 text-pink-600 mr-2"
+          aria-hidden="true"
+        />
         <a
+          @click.stop
           :href="`https://instagram.com/${coach.instagram_handle.replace('@', '')}`"
           target="_blank"
           rel="noopener noreferrer"
@@ -93,7 +120,7 @@
         <!-- Email -->
         <button
           v-if="coach.email"
-          @click="emit('email', coach)"
+          @click.stop="emit('email', coach)"
           :aria-label="`Send email to ${coach.first_name} ${coach.last_name}`"
           title="Send email"
           class="px-3 py-1.5 rounded-sm transition bg-blue-100 text-blue-700 hover:bg-blue-200 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
@@ -104,7 +131,7 @@
         <!-- Phone/Text -->
         <button
           v-if="coach.phone"
-          @click="emit('text', coach)"
+          @click.stop="emit('text', coach)"
           :aria-label="`Send text to ${coach.first_name} ${coach.last_name}`"
           title="Send text"
           class="px-3 py-1.5 rounded-sm transition bg-emerald-100 text-emerald-700 hover:bg-emerald-200 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
@@ -115,7 +142,7 @@
         <!-- Twitter -->
         <button
           v-if="coach.twitter_handle"
-          @click="emit('tweet', coach)"
+          @click.stop="emit('tweet', coach)"
           :aria-label="`View ${coach.first_name} ${coach.last_name} on Twitter`"
           title="Visit Twitter"
           class="px-3 py-1.5 rounded-sm transition inline-block bg-blue-100 text-blue-600 hover:bg-blue-200 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
@@ -126,7 +153,7 @@
         <!-- Instagram -->
         <button
           v-if="coach.instagram_handle"
-          @click="emit('instagram', coach)"
+          @click.stop="emit('instagram', coach)"
           :aria-label="`View ${coach.first_name} ${coach.last_name} on Instagram`"
           title="Visit Instagram"
           class="px-3 py-1.5 rounded-sm transition inline-block bg-purple-100 text-purple-700 hover:bg-purple-200 focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
@@ -136,7 +163,7 @@
 
         <!-- View Details -->
         <button
-          @click="emit('view', coach)"
+          @click.stop="emit('view', coach)"
           :aria-label="`View details for ${coach.first_name} ${coach.last_name}`"
           title="View details"
           class="px-3 py-1.5 rounded-sm transition bg-blue-100 text-blue-700 hover:bg-blue-200 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
@@ -152,10 +179,14 @@
 import { getRoleLabel } from "~/utils/coachLabels";
 import type { Coach } from "~/types/models";
 
-defineProps<{
-  coach: Coach;
-  schoolName?: string;
-}>();
+const props = withDefaults(
+  defineProps<{
+    coach: Coach;
+    schoolName?: string;
+    clickable?: boolean;
+  }>(),
+  { clickable: false },
+);
 
 const emit = defineEmits<{
   email: [coach: Coach];
@@ -163,7 +194,13 @@ const emit = defineEmits<{
   tweet: [coach: Coach];
   instagram: [coach: Coach];
   view: [coach: Coach];
+  click: [coach: Coach];
 }>();
+
+const handleActivate = () => {
+  if (!props.clickable) return;
+  emit("click", props.coach);
+};
 
 const formatDate = (dateString: string): string => {
   const date = new Date(dateString);
