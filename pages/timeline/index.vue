@@ -35,6 +35,12 @@
             <div class="text-lg font-bold text-slate-900">
               {{ statusScore }}/100
             </div>
+            <div
+              data-testid="status-label-text"
+              class="text-sm font-medium text-slate-600"
+            >
+              {{ statusLabelText }}
+            </div>
           </div>
         </div>
       </template>
@@ -306,6 +312,17 @@ const whatMattersNow = computed(() =>
   }),
 );
 
+// Status is otherwise conveyed only by the color of the 3px dot, which is
+// invisible to color-blind and screen-reader users.
+const statusLabelText = computed(() => {
+  const labels: Record<StatusLabel, string> = {
+    on_track: "On Track",
+    slightly_behind: "Slightly Behind",
+    at_risk: "At Risk",
+  };
+  return labels[statusLabel.value] ?? "Unknown";
+});
+
 const commonWorries = computed(() => getCommonWorries(currentPhase.value));
 
 const reassuranceMessages = computed(() =>
@@ -408,11 +425,11 @@ const getPhaseDisplayName = (phase: Phase): string => {
 
 const getStatusColorClass = (label: StatusLabel): string => {
   const colors: Record<StatusLabel, string> = {
-    on_track: "bg-green-500",
-    slightly_behind: "bg-yellow-500",
-    at_risk: "bg-red-500",
+    on_track: "bg-brand-emerald-500",
+    slightly_behind: "bg-brand-orange-500",
+    at_risk: "bg-brand-red-500",
   };
-  return colors[label];
+  return colors[label] ?? "bg-brand-slate-300";
 };
 
 // Lifecycle

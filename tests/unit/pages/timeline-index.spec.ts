@@ -39,10 +39,12 @@ vi.mock("~/composables/usePhaseCalculation", () => ({
   }),
 }));
 
+const statusLabelRef = ref<string | null>(null);
+
 vi.mock("~/composables/useStatusScore", () => ({
   useStatusScore: () => ({
     statusScore: ref(0),
-    statusLabel: ref(null),
+    statusLabel: statusLabelRef,
     loading: ref(false),
     error: ref(null),
     fetchStatusScore: vi.fn().mockResolvedValue(undefined),
@@ -55,12 +57,14 @@ describe("pages/timeline/index.vue", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     fetchPhaseMock.mockResolvedValue(undefined);
+    statusLabelRef.value = null;
   });
 
   const mountPage = () =>
     mount(TimelineIndexPage, {
       global: {
         stubs: {
+          PageHeader: { template: '<div><slot name="actions" /></div>' },
           PhaseCardInline: true,
           TimelineStatPills: true,
           WhatMattersNow: true,
@@ -101,5 +105,21 @@ describe("pages/timeline/index.vue", () => {
 
     expect(updateTaskStatusMock).toHaveBeenCalled();
     expect(showToastMock).not.toHaveBeenCalled();
+  });
+
+  it("conveys status with visible text, not color alone", async () => {
+    statusLabelRef.value = "slightly_behind";
+    const wrapper = mountPage();
+    await wrapper.vm.$nextTick();
+
+    const label = wrapper.find("[data-testid='status-label-text']");
+    expect(label.exists()).toBe(true);
+    expect(label.text()).toBe("Slightly Behind");
+
+    statusLabelRef.value = "at_risk";
+    await wrapper.vm.$nextTick();
+    expect(wrapper.find("[data-testid='status-label-text']").text()).toBe(
+      "At Risk",
+    );
   });
 });

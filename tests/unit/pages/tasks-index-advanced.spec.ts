@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { mount } from "@vue/test-utils";
 import { createPinia } from "pinia";
+import { ref } from "vue";
 
 // Mock Supabase at module level
 vi.mock("~/composables/useSupabase", () => ({
@@ -24,15 +25,15 @@ vi.mock("~/composables/useAuthFetch", () => ({
 // values and assert on call args (each useTasks() call must return the SAME
 // mock instances, not fresh ones, or assertions from the test body can never
 // see them).
-const tasksWithStatusRef = { value: [] as any[] };
+const tasksWithStatusRef = ref<any[]>([]);
 const updateTaskStatusMock = vi.fn().mockResolvedValue(undefined);
 const isTaskLockedMock = vi.fn(() => false);
 
 vi.mock("~/composables/useTasks", () => ({
   useTasks: vi.fn(() => ({
     tasksWithStatus: tasksWithStatusRef,
-    loading: { value: false },
-    error: { value: null },
+    loading: ref(false),
+    error: ref(null),
     fetchTasksWithStatus: vi.fn().mockResolvedValue([]),
     updateTaskStatus: updateTaskStatusMock,
     getCompletionStats: vi.fn(() => ({
@@ -41,14 +42,14 @@ vi.mock("~/composables/useTasks", () => ({
       percentComplete: 0,
     })),
     isTaskLocked: isTaskLockedMock,
-    lockedTaskIds: { value: [] },
+    lockedTaskIds: ref([]),
   })),
 }));
 
 // Mock useAuth at module level
 vi.mock("~/composables/useAuth", () => ({
   useAuth: vi.fn(() => ({
-    session: { value: { user: { id: "user-1" } } },
+    session: ref({ user: { id: "user-1" } }),
   })),
 }));
 
@@ -519,6 +520,82 @@ describe("Tasks Page - Advanced Coverage", () => {
       expect(updateTaskStatusMock).not.toHaveBeenCalled();
       expect(showToastMock).toHaveBeenCalledTimes(1);
       expect(showToastMock.mock.calls[0][1]).toBe("warning");
+    });
+  });
+
+  describe("Accessibility", () => {
+    const mountPage = () =>
+      mount(TasksPage, {
+        global: {
+          plugins: [pinia],
+          stubs: {
+            NuxtLayout: true,
+            ClientOnly: false,
+            AthleteSwitcher: true,
+          },
+        },
+      });
+
+    it("names the completion checkbox after the task and its target state", async () => {
+      tasksWithStatusRef.value = [
+        {
+          id: "task-1",
+          title: "Complete NCAA registration",
+          grade_level: 10,
+          dependency_task_ids: [],
+          athlete_task: { status: "not_started" },
+        },
+        {
+          id: "task-2",
+          title: "Send highlight video",
+          grade_level: 10,
+          dependency_task_ids: [],
+          athlete_task: { status: "completed" },
+        },
+      ];
+      wrapper = mountPage();
+      await wrapper.vm.$nextTick();
+
+      expect(
+        wrapper.find("[data-testid='task-checkbox-task-1']").attributes("aria-label"),
+      ).toBe("Mark Complete NCAA registration as complete");
+      expect(
+        wrapper.find("[data-testid='task-checkbox-task-2']").attributes("aria-label"),
+      ).toBe("Mark Send highlight video as incomplete");
+    });
+
+    it("announces the completion confirmation through a polite live region", async () => {
+      wrapper = mountPage();
+      (wrapper.vm as any).showSuccessMessage = true;
+      await wrapper.vm.$nextTick();
+
+      const message = wrapper.find("[data-testid='task-success-message']");
+      expect(message.exists()).toBe(true);
+      expect(message.attributes("role")).toBe("status");
+      expect(message.attributes("aria-live")).toBe("polite");
+    });
+
+    it("reflects task detail expansion state via aria-expanded", async () => {
+      tasksWithStatusRef.value = [
+        {
+          id: "task-1",
+          title: "Complete NCAA registration",
+          grade_level: 10,
+          dependency_task_ids: [],
+          athlete_task: { status: "not_started" },
+        },
+      ];
+      wrapper = mountPage();
+      await wrapper.vm.$nextTick();
+
+      const toggle = wrapper.find("[data-testid='task-title-task-1']");
+      expect(toggle.attributes("aria-expanded")).toBe("false");
+
+      await toggle.trigger("click");
+      expect(toggle.attributes("aria-expanded")).toBe("true");
+
+      await toggle.trigger("click");
+      expect(toggle.attributes("aria-expanded")).toBe("false");
     });
   });
 });

@@ -8,7 +8,11 @@
     ]"
   >
     <!-- Card Header: Always visible -->
-    <button @click="$emit('toggle')" class="w-full p-6 text-left">
+    <button
+      :aria-expanded="expanded"
+      @click="$emit('toggle')"
+      class="w-full p-6 text-left"
+    >
       <div class="flex items-start justify-between gap-4">
         <!-- Left: Phase title + theme -->
         <div class="flex-1">

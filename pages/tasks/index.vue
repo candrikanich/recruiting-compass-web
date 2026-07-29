@@ -177,6 +177,13 @@ const taskCheckboxTitle = (taskId: string): string => {
   return "Mark task complete";
 };
 
+// title attributes are unreliably announced by screen readers, so the checkbox
+// needs its own accessible name naming the task it belongs to.
+const taskCheckboxAriaLabel = (task: TaskWithStatus): string =>
+  task.athlete_task?.status === "completed"
+    ? `Mark ${task.title} as incomplete`
+    : `Mark ${task.title} as complete`;
+
 const handleToggleTask = async (taskId: string, currentStatus: string) => {
   if (isViewingAsParent.value) return;
 
@@ -439,9 +446,12 @@ const onUrgencyFilterChange = () => {
       >
         <div
           v-if="showSuccessMessage"
-          class="mt-4 bg-green-50 border border-green-200 rounded-lg p-4"
+          role="status"
+          aria-live="polite"
+          data-testid="task-success-message"
+          class="mt-4 bg-brand-emerald-50 border border-brand-emerald-200 rounded-lg p-4"
         >
-          <p class="text-green-700 font-semibold">Great job! 🎉</p>
+          <p class="text-brand-emerald-700 font-semibold">Great job! 🎉</p>
         </div>
       </Transition>
     </div>
@@ -500,6 +510,7 @@ const onUrgencyFilterChange = () => {
                 "
                 :class="taskCheckboxClass(task.id)"
                 :title="taskCheckboxTitle(task.id)"
+                :aria-label="taskCheckboxAriaLabel(task)"
               />
 
               <!-- Task Info -->
@@ -507,6 +518,7 @@ const onUrgencyFilterChange = () => {
                 <button
                   type="button"
                   :data-testid="`task-title-${task.id}`"
+                  :aria-expanded="expandedTaskId === task.id"
                   @click="toggleTaskDetails(task.id)"
                   class="w-full text-left hover:opacity-75 transition"
                 >
@@ -554,9 +566,9 @@ const onUrgencyFilterChange = () => {
               <div
                 class="text-xs px-2 py-1 rounded-full whitespace-nowrap shrink-0"
                 :class="{
-                  'bg-green-100 text-green-700':
+                  'bg-brand-emerald-100 text-brand-emerald-700':
                     task.athlete_task?.status === 'completed',
-                  'bg-yellow-100 text-yellow-700':
+                  'bg-brand-orange-100 text-brand-orange-700':
                     task.athlete_task?.status === 'in_progress',
                   'bg-slate-100 text-slate-600':
                     !task.athlete_task ||
