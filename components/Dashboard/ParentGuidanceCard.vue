@@ -76,9 +76,9 @@
                     <div
                       class="w-3 h-3 rounded-full"
                       :class="{
-                        'bg-green-500':
+                        'bg-brand-emerald-500':
                           athleteData?.status_label === 'on_track',
-                        'bg-yellow-500':
+                        'bg-brand-orange-500':
                           athleteData?.status_label === 'slightly_behind',
                         'bg-red-500': athleteData?.status_label === 'at_risk',
                       }"

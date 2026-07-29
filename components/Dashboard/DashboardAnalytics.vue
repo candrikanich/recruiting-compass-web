@@ -60,7 +60,7 @@
           :class="
             !hasGeneratedPacket || recruitingPacketLoading
               ? 'bg-slate-100 text-slate-500 cursor-not-allowed'
-              : 'bg-linear-to-r from-green-600 to-green-700 text-white hover:from-green-700 hover:to-green-800 shadow-xs hover:shadow-md'
+              : 'bg-linear-to-r from-brand-emerald-600 to-brand-emerald-700 text-white hover:from-brand-emerald-700 hover:to-brand-emerald-800 shadow-xs hover:shadow-md'
           "
         >
           <svg

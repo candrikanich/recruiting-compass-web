@@ -7,7 +7,7 @@
     >
       <UIcon name="i-heroicons-clock" class="h-4 w-4" aria-hidden="true" />
       View Edit History
-      <span v-if="!loading && history.length > 0" class="text-gray-500">
+      <span v-if="!loading && history.length > 0" class="text-brand-slate-500">
         ({{ history.length }})
       </span>
     </button>
@@ -22,11 +22,11 @@
       >
         <!-- Header -->
         <div class="flex justify-between items-center mb-6">
-          <h2 class="text-2xl font-bold text-gray-900">Profile Edit History</h2>
+          <h2 class="text-2xl font-bold text-brand-slate-900">Profile Edit History</h2>
           <button
             @click="closeModal"
             aria-label="Close profile edit history"
-            class="text-gray-400 hover:text-gray-600"
+            class="text-brand-slate-400 hover:text-brand-slate-600"
           >
             <UIcon
               name="i-heroicons-x-mark"
@@ -51,7 +51,7 @@
         <!-- Empty State -->
         <div
           v-else-if="history.length === 0"
-          class="text-center py-8 text-gray-500"
+          class="text-center py-8 text-brand-slate-500"
         >
           No edit history available
         </div>
@@ -72,7 +72,7 @@
               ></div>
               <div
                 v-if="index < history.length - 1"
-                class="flex-1 w-0.5 bg-gray-200 mt-1"
+                class="flex-1 w-0.5 bg-brand-slate-200 mt-1"
               ></div>
             </div>
 
@@ -80,7 +80,7 @@
             <div class="ml-8 pb-6">
               <!-- Header with timestamp and badge -->
               <div class="flex items-center gap-2 mb-2">
-                <time class="text-sm font-medium text-gray-900">
+                <time class="text-sm font-medium text-brand-slate-900">
                   {{ formatTimestamp(entry.timestamp) }}
                 </time>
                 <span
@@ -92,30 +92,30 @@
               </div>
 
               <!-- Changed fields -->
-              <div class="bg-gray-50 rounded-lg p-4 space-y-3">
+              <div class="bg-brand-slate-50 rounded-lg p-4 space-y-3">
                 <div
                   v-for="change in entry.changes"
                   :key="change.field"
                   class="grid grid-cols-2 gap-4 text-sm"
                 >
                   <div>
-                    <p class="font-medium text-gray-700 mb-1">
+                    <p class="font-medium text-brand-slate-700 mb-1">
                       {{ change.fieldLabel }}
                     </p>
-                    <div class="bg-white rounded-sm p-2 border border-gray-200">
-                      <span class="text-gray-500">Before:</span>
-                      <span class="ml-2 text-gray-900">
+                    <div class="bg-white rounded-sm p-2 border border-brand-slate-200">
+                      <span class="text-brand-slate-500">Before:</span>
+                      <span class="ml-2 text-brand-slate-900">
                         {{ formatValue(change.old_value) }}
                       </span>
                     </div>
                   </div>
                   <div>
-                    <p class="font-medium text-gray-700 mb-1">&nbsp;</p>
+                    <p class="font-medium text-brand-slate-700 mb-1">&nbsp;</p>
                     <div
-                      class="bg-white rounded-sm p-2 border border-green-200"
+                      class="bg-white rounded-sm p-2 border border-brand-emerald-200"
                     >
-                      <span class="text-green-600">After:</span>
-                      <span class="ml-2 text-gray-900 font-medium">
+                      <span class="text-brand-emerald-600">After:</span>
+                      <span class="ml-2 text-brand-slate-900 font-medium">
                         {{ formatValue(change.new_value) }}
                       </span>
                     </div>
