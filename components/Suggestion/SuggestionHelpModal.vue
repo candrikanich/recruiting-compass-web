@@ -1,14 +1,22 @@
 <template>
-  <div v-if="isOpen" class="fixed inset-0 z-50 overflow-y-auto">
+  <div
+    v-if="isOpen"
+    class="fixed inset-0 z-50 overflow-y-auto"
+    @keydown.escape="handleClose"
+  >
     <!-- Backdrop -->
     <div
-      class="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
-      @click="$emit('close')"
+      class="fixed inset-0 bg-black/50 transition-opacity"
+      @click="handleClose"
     />
 
     <!-- Modal -->
     <div class="flex items-center justify-center min-h-screen p-4">
       <div
+        ref="dialogRef"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="suggestion-help-title"
         class="relative bg-white rounded-2xl shadow-lg max-w-2xl w-full"
         @click.stop
       >
@@ -16,15 +24,17 @@
         <div
           class="flex items-center justify-between p-6 border-b border-slate-200"
         >
-          <h2 class="text-xl font-bold text-slate-900">
+          <h2 id="suggestion-help-title" class="text-xl font-bold text-slate-900">
             {{ helpContent.title }}
           </h2>
           <button
-            @click="$emit('close')"
+            @click="handleClose"
+            aria-label="Close help dialog"
             class="text-slate-500 hover:text-slate-700 transition"
           >
             <svg
               class="w-6 h-6"
+              aria-hidden="true"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -99,7 +109,7 @@
         <!-- Footer -->
         <div class="flex justify-end gap-3 p-6 border-t border-slate-200">
           <button
-            @click="$emit('close')"
+            @click="handleClose"
             class="px-4 py-2 text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg font-medium transition"
           >
             Close
@@ -121,7 +131,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref, watch, nextTick } from "vue";
+import { useFocusTrap } from "~/composables/useFocusTrap";
 
 interface HelpContentItem {
   title: string;
@@ -147,6 +158,26 @@ const emit = defineEmits<{
   close: [];
   action: [];
 }>();
+
+const dialogRef = ref<HTMLElement | null>(null);
+const { activate, deactivate } = useFocusTrap(dialogRef);
+
+const handleClose = () => {
+  deactivate();
+  emit("close");
+};
+
+watch(
+  () => props.isOpen,
+  async (isOpen) => {
+    if (isOpen) {
+      await nextTick();
+      activate();
+    } else {
+      deactivate();
+    }
+  },
+);
 
 const helpContentMap: Record<string, HelpContentItem> = {
   "school-list-building": {
@@ -314,6 +345,6 @@ const urgencyColorClasses = computed(() => {
 
 function handleAction() {
   emit("action");
-  emit("close");
+  handleClose();
 }
 </script>

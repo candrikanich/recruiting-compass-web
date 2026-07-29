@@ -186,4 +186,35 @@ describe("SchoolProsConsCard", () => {
       expect(wrapper.emitted("add-con")![0]).toEqual(["Button con"]);
     });
   });
+
+  describe("Accessibility", () => {
+    it("gives every button a non-empty accessible name", () => {
+      const wrapper = mount(SchoolProsConsCard, { props: defaultProps });
+
+      for (const button of wrapper.findAll("button")) {
+        const name = button.attributes("aria-label") ?? button.text().trim();
+        expect(name).not.toBe("");
+      }
+    });
+
+    it("names each remove button after the item it removes", () => {
+      const wrapper = mount(SchoolProsConsCard, { props: defaultProps });
+      const labels = wrapper
+        .findAll("button")
+        .map((b) => b.attributes("aria-label"));
+
+      expect(labels).toContain("Remove pro: Great campus");
+      expect(labels).toContain("Remove con: Far from home");
+    });
+
+    it("names the icon-only add buttons", () => {
+      const wrapper = mount(SchoolProsConsCard, { props: defaultProps });
+      const labels = wrapper
+        .findAll("button")
+        .map((b) => b.attributes("aria-label"));
+
+      expect(labels).toContain("Add pro");
+      expect(labels).toContain("Add con");
+    });
+  });
 });

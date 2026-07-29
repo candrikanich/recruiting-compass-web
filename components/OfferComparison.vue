@@ -1,17 +1,25 @@
 <template>
   <div
-    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+    class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+    @keydown.escape="handleClose"
   >
     <div
+      ref="dialogRef"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="offer-comparison-title"
       class="rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] flex flex-col bg-white"
     >
       <!-- Header -->
       <div
         class="flex items-center justify-between p-6 border-b border-slate-300"
       >
-        <h2 class="text-2xl font-bold text-slate-900">Compare Offers</h2>
+        <h2 id="offer-comparison-title" class="text-2xl font-bold text-slate-900">
+          Compare Offers
+        </h2>
         <button
-          @click="$emit('close')"
+          @click="handleClose"
+          aria-label="Close compare offers dialog"
           class="text-2xl transition text-slate-600 hover:text-slate-900"
         >
           ×
@@ -68,7 +76,7 @@
                   class="px-4 py-4 text-right font-semibold"
                   :class="
                     isHighestAmount(offer)
-                      ? 'text-emerald-600 bg-emerald-50'
+                      ? 'text-brand-emerald-700 bg-brand-emerald-50'
                       : 'text-slate-900'
                   "
                 >
@@ -77,12 +85,19 @@
                       ? `$${offer.scholarship_amount.toLocaleString()}`
                       : "—"
                   }}
+                  <span
+                    v-if="isHighestAmount(offer)"
+                    data-testid="best-value-badge"
+                    class="mt-1 inline-flex items-center gap-1 rounded-full bg-brand-emerald-100 px-2 py-0.5 text-xs font-semibold text-brand-emerald-800"
+                  >
+                    <span aria-hidden="true">✓</span> Best Value
+                  </span>
                 </td>
                 <td
                   class="px-4 py-4 text-right font-semibold"
                   :class="
                     isHighestPercentage(offer)
-                      ? 'text-emerald-600 bg-emerald-50'
+                      ? 'text-brand-emerald-700 bg-brand-emerald-50'
                       : 'text-slate-900'
                   "
                 >
@@ -91,11 +106,18 @@
                       ? `${offer.scholarship_percentage}%`
                       : "—"
                   }}
+                  <span
+                    v-if="isHighestPercentage(offer)"
+                    data-testid="highest-percentage-badge"
+                    class="mt-1 inline-flex items-center gap-1 rounded-full bg-brand-emerald-100 px-2 py-0.5 text-xs font-semibold text-brand-emerald-800"
+                  >
+                    <span aria-hidden="true">✓</span> Highest %
+                  </span>
                 </td>
                 <td
                   :class="
                     isEarliestDeadline(offer) && offer.deadline_date
-                      ? 'px-4 py-4 font-semibold text-orange-600'
+                      ? 'px-4 py-4 font-semibold text-brand-orange-700'
                       : 'px-4 py-4 text-slate-600'
                   "
                 >
@@ -104,6 +126,13 @@
                     <div class="text-xs mt-0.5 text-slate-600">
                       {{ daysUntil(offer) }}d
                     </div>
+                    <span
+                      v-if="isEarliestDeadline(offer)"
+                      data-testid="most-urgent-badge"
+                      class="mt-1 inline-flex items-center gap-1 rounded-full bg-brand-orange-100 px-2 py-0.5 text-xs font-semibold text-brand-orange-800"
+                    >
+                      <span aria-hidden="true">⏱</span> Most Urgent
+                    </span>
                   </div>
                   <div v-else>—</div>
                 </td>
@@ -132,30 +161,46 @@
 
         <!-- Summary Stats -->
         <div class="mt-8 grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div class="rounded-lg p-4 bg-blue-100 border border-blue-200">
-            <p class="text-sm font-medium mb-1 text-blue-600">Total Offers</p>
-            <p class="text-2xl font-bold text-blue-900">{{ offers.length }}</p>
+          <div
+            class="rounded-lg p-4 bg-brand-blue-100 border border-brand-blue-200"
+          >
+            <p class="text-sm font-medium mb-1 text-brand-blue-700">
+              Total Offers
+            </p>
+            <p class="text-2xl font-bold text-brand-blue-900">
+              {{ offers.length }}
+            </p>
           </div>
 
-          <div class="rounded-lg p-4 bg-emerald-100 border border-emerald-200">
-            <p class="text-sm font-medium mb-1 text-emerald-600">
+          <div
+            class="rounded-lg p-4 bg-brand-emerald-100 border border-brand-emerald-200"
+          >
+            <p class="text-sm font-medium mb-1 text-brand-emerald-700">
               Highest Amount
             </p>
-            <p class="text-2xl font-bold text-emerald-900">
+            <p class="text-2xl font-bold text-brand-emerald-900">
               {{ maxAmount ? `$${maxAmount.toLocaleString()}` : "—" }}
             </p>
           </div>
 
-          <div class="rounded-lg p-4 bg-purple-100 border border-purple-200">
-            <p class="text-sm font-medium mb-1 text-purple-600">Highest %</p>
-            <p class="text-2xl font-bold text-purple-900">
+          <div
+            class="rounded-lg p-4 bg-brand-purple-100 border border-brand-purple-200"
+          >
+            <p class="text-sm font-medium mb-1 text-brand-purple-700">
+              Highest %
+            </p>
+            <p class="text-2xl font-bold text-brand-purple-900">
               {{ maxPercentage ? `${maxPercentage}%` : "—" }}
             </p>
           </div>
 
-          <div class="rounded-lg p-4 bg-orange-100 border border-orange-200">
-            <p class="text-sm font-medium mb-1 text-orange-600">Most Urgent</p>
-            <p class="text-2xl font-bold text-orange-900">
+          <div
+            class="rounded-lg p-4 bg-brand-orange-100 border border-brand-orange-200"
+          >
+            <p class="text-sm font-medium mb-1 text-brand-orange-700">
+              Most Urgent
+            </p>
+            <p class="text-2xl font-bold text-brand-orange-900">
               {{ minDays ? `${minDays}d` : "—" }}
             </p>
           </div>
@@ -165,7 +210,7 @@
       <!-- Footer -->
       <div class="flex justify-end gap-4 p-6 border-t border-slate-300">
         <button
-          @click="$emit('close')"
+          @click="handleClose"
           class="px-6 py-2 font-semibold rounded-lg transition bg-slate-100 text-slate-900 hover:bg-slate-200"
         >
           Close
@@ -176,7 +221,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref, onMounted, nextTick } from "vue";
+import { useFocusTrap } from "~/composables/useFocusTrap";
 import { useSchools } from "~/composables/useSchools";
 import type { Offer } from "~/types/models";
 
@@ -185,9 +231,22 @@ interface Props {
 }
 
 const props = defineProps<Props>();
-defineEmits<{
+const emit = defineEmits<{
   close: [];
 }>();
+
+const dialogRef = ref<HTMLElement | null>(null);
+const { activate, deactivate } = useFocusTrap(dialogRef);
+
+onMounted(async () => {
+  await nextTick();
+  activate();
+});
+
+const handleClose = () => {
+  deactivate();
+  emit("close");
+};
 
 const { schools } = useSchools();
 
@@ -212,12 +271,12 @@ const getStatusLabel = (status: string): string => {
 
 const getStatusBadgeClass = (status: string): string => {
   const classes: Record<string, string> = {
-    pending: "bg-blue-100 text-blue-800",
-    accepted: "bg-emerald-100 text-emerald-800",
-    declined: "bg-red-600 text-white opacity-90",
-    expired: "bg-slate-50 text-slate-900",
+    pending: "bg-brand-blue-100 text-brand-blue-800",
+    accepted: "bg-brand-emerald-100 text-brand-emerald-800",
+    declined: "bg-brand-red-600 text-white opacity-90",
+    expired: "bg-brand-slate-50 text-brand-slate-900",
   };
-  return classes[status] || "bg-slate-50 text-slate-900";
+  return classes[status] || "bg-brand-slate-50 text-brand-slate-900";
 };
 
 const formatDate = (dateStr: string): string => {

@@ -1,17 +1,25 @@
 <template>
   <div
     class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+    @keydown.escape="handleClose"
   >
     <div
+      ref="dialogRef"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="document-upload-title"
       class="rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-auto bg-white border border-slate-200"
     >
       <!-- Header -->
       <div
         class="flex items-center justify-between p-6 border-b border-slate-200"
       >
-        <h2 class="text-2xl font-bold text-slate-900">Upload Document</h2>
+        <h2 id="document-upload-title" class="text-2xl font-bold text-slate-900">
+          Upload Document
+        </h2>
         <button
-          @click="$emit('close')"
+          @click="handleClose"
+          aria-label="Close upload document dialog"
           class="text-2xl text-slate-500 transition hover:text-slate-900"
         >
           ×
@@ -146,7 +154,7 @@
           </button>
           <button
             type="button"
-            @click="$emit('close')"
+            @click="handleClose"
             :disabled="isUploading"
             class="flex-1 px-4 py-2 bg-slate-200 text-slate-900 font-semibold rounded-lg hover:bg-slate-300 transition disabled:opacity-50"
           >
@@ -159,7 +167,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed } from "vue";
+import { ref, reactive, computed, onMounted, nextTick } from "vue";
+import { useFocusTrap } from "~/composables/useFocusTrap";
 import { useDocumentsConsolidated } from "~/composables/useDocumentsConsolidated";
 import { useFormValidation } from "~/composables/useFormValidation";
 import type { Database } from "~/types/database";
@@ -187,6 +196,19 @@ const {
   isUploading,
 } = useDocumentsConsolidated();
 const { validateFile } = useFormValidation();
+
+const dialogRef = ref<HTMLElement | null>(null);
+const { activate, deactivate } = useFocusTrap(dialogRef);
+
+onMounted(async () => {
+  await nextTick();
+  activate();
+});
+
+const handleClose = () => {
+  deactivate();
+  emit("close");
+};
 
 const fileInput = ref<HTMLInputElement | null>(null);
 const selectedFile = ref<File | null>(null);
@@ -266,7 +288,7 @@ const handleUpload = async () => {
 
       // Emit success to parent
       emit("success");
-      emit("close");
+      handleClose();
     }
   } catch (err) {
     logger.error("Failed to upload document", err);

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { watch, ref, onUnmounted } from "vue";
+import { watch, ref, nextTick, onUnmounted } from "vue";
+import { useFocusTrap } from "~/composables/useFocusTrap";
 import type { HelpDefinition } from "./helpDefinitions";
 
 interface Props {
@@ -14,24 +15,33 @@ interface Emits {
 const props = defineProps<Props>();
 const emit = defineEmits<Emits>();
 
-const modalRef = ref<HTMLDivElement | null>(null);
+const dialogRef = ref<HTMLElement | null>(null);
+const { activate, deactivate } = useFocusTrap(dialogRef);
 let originalBodyOverflow = "";
+
+const handleClose = () => {
+  deactivate();
+  emit("close");
+};
 
 const handleKeydown = (e: KeyboardEvent) => {
   if (e.key === "Escape") {
-    emit("close");
+    handleClose();
   }
 };
 watch(
   () => props.isOpen,
-  (isOpen) => {
+  async (isOpen) => {
     if (isOpen) {
       originalBodyOverflow = document.body.style.overflow;
       document.addEventListener("keydown", handleKeydown);
       document.body.style.overflow = "hidden";
+      await nextTick();
+      activate();
     } else {
       document.removeEventListener("keydown", handleKeydown);
       document.body.style.overflow = originalBodyOverflow;
+      deactivate();
     }
   },
 );
@@ -47,24 +57,29 @@ onUnmounted(() => {
     <Transition name="modal">
       <div
         v-if="isOpen"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
-        @click.self="$emit('close')"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+        @click.self="handleClose"
+        @keydown.escape="handleClose"
       >
         <div
-          ref="modalRef"
+          ref="dialogRef"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="help-modal-title"
           class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 max-h-96 overflow-y-auto"
         >
           <!-- Header -->
           <div
             class="sticky top-0 bg-blue-50 border-b border-blue-200 px-6 py-4 flex items-start justify-between"
           >
-            <h2 class="text-xl font-bold text-slate-900">
+            <h2 id="help-modal-title" class="text-xl font-bold text-slate-900">
               {{ helpDefinition.title }}
             </h2>
             <button
               type="button"
+              aria-label="Close help dialog"
               class="text-slate-500 hover:text-slate-700 text-2xl leading-none"
-              @click="$emit('close')"
+              @click="handleClose"
             >
               ×
             </button>
@@ -107,7 +122,7 @@ onUnmounted(() => {
             <button
               type="button"
               class="px-4 py-2 bg-blue-600 text-white rounded-sm hover:bg-blue-700 transition-colors text-sm font-medium"
-              @click="$emit('close')"
+              @click="handleClose"
             >
               Got it
             </button>

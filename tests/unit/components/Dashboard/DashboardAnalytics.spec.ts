@@ -365,4 +365,51 @@ describe("DashboardAnalytics", () => {
       .find((el) => el.text().includes("Add Task"));
     expect(addTaskButton?.exists()).toBe(true);
   });
+
+  describe("Accessibility", () => {
+    const mountWithTasks = () =>
+      mount(DashboardAnalytics, {
+        props: {
+          showTasks: true,
+          tasks: [
+            createMockTask(),
+            createMockTask({ id: "task-2", completed: true }),
+          ],
+        },
+      });
+
+    it("gives every button a non-empty accessible name", async () => {
+      const wrapper = mountWithTasks();
+
+      for (const button of wrapper.findAll("button")) {
+        const name = button.attributes("aria-label") ?? button.text().trim();
+        expect(name).not.toBe("");
+      }
+    });
+
+    it("names the per-task icon-only buttons after the task", () => {
+      const wrapper = mountWithTasks();
+      const labels = wrapper
+        .findAll("button")
+        .map((b) => b.attributes("aria-label"));
+
+      expect(labels).toContain("Mark complete: Call Coach Smith");
+      expect(labels).toContain("Delete task: Call Coach Smith");
+    });
+
+    it("names the icon-only buttons in the add-task form", async () => {
+      const wrapper = mountWithTasks();
+      const addTaskButton = wrapper
+        .findAll("button")
+        .find((el) => el.text().includes("Add Task"));
+      await addTaskButton!.trigger("click");
+
+      const labels = wrapper
+        .findAll("button")
+        .map((b) => b.attributes("aria-label"));
+
+      expect(labels).toContain("Save task");
+      expect(labels).toContain("Cancel adding task");
+    });
+  });
 });

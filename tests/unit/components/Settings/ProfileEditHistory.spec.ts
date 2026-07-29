@@ -37,8 +37,7 @@ describe("ProfileEditHistory Component", () => {
   it("renders the trigger button", () => {
     const wrapper = mount(ProfileEditHistory, {
       global: {
-        stubs: {
-        },
+        stubs: {},
       },
     });
 
@@ -65,8 +64,7 @@ describe("ProfileEditHistory Component", () => {
 
     const wrapper = mount(ProfileEditHistory, {
       global: {
-        stubs: {
-        },
+        stubs: {},
       },
     });
 
@@ -80,8 +78,7 @@ describe("ProfileEditHistory Component", () => {
 
     const wrapper = mount(ProfileEditHistory, {
       global: {
-        stubs: {
-        },
+        stubs: {},
       },
     });
 
@@ -97,8 +94,7 @@ describe("ProfileEditHistory Component", () => {
 
     const wrapper = mount(ProfileEditHistory, {
       global: {
-        stubs: {
-        },
+        stubs: {},
       },
     });
 
@@ -116,8 +112,7 @@ describe("ProfileEditHistory Component", () => {
 
     const wrapper = mount(ProfileEditHistory, {
       global: {
-        stubs: {
-        },
+        stubs: {},
       },
     });
 
@@ -135,8 +130,7 @@ describe("ProfileEditHistory Component", () => {
 
     const wrapper = mount(ProfileEditHistory, {
       global: {
-        stubs: {
-        },
+        stubs: {},
       },
     });
 
@@ -167,8 +161,7 @@ describe("ProfileEditHistory Component", () => {
 
     const wrapper = mount(ProfileEditHistory, {
       global: {
-        stubs: {
-        },
+        stubs: {},
       },
     });
 
@@ -201,8 +194,7 @@ describe("ProfileEditHistory Component", () => {
 
     const wrapper = mount(ProfileEditHistory, {
       global: {
-        stubs: {
-        },
+        stubs: {},
       },
     });
 
@@ -233,8 +225,7 @@ describe("ProfileEditHistory Component", () => {
 
     const wrapper = mount(ProfileEditHistory, {
       global: {
-        stubs: {
-        },
+        stubs: {},
       },
     });
 
@@ -273,8 +264,7 @@ describe("ProfileEditHistory Component", () => {
 
     const wrapper = mount(ProfileEditHistory, {
       global: {
-        stubs: {
-        },
+        stubs: {},
       },
     });
 
@@ -310,8 +300,7 @@ describe("ProfileEditHistory Component", () => {
 
     const wrapper = mount(ProfileEditHistory, {
       global: {
-        stubs: {
-        },
+        stubs: {},
       },
     });
 
@@ -329,8 +318,7 @@ describe("ProfileEditHistory Component", () => {
 
     const wrapper = mount(ProfileEditHistory, {
       global: {
-        stubs: {
-        },
+        stubs: {},
       },
     });
 
@@ -384,8 +372,7 @@ describe("ProfileEditHistory Component", () => {
 
     const wrapper = mount(ProfileEditHistory, {
       global: {
-        stubs: {
-        },
+        stubs: {},
       },
     });
 
@@ -396,5 +383,30 @@ describe("ProfileEditHistory Component", () => {
 
     expect(wrapper.text()).toContain("GPA");
     expect(wrapper.text()).toContain("SAT Score");
+  });
+
+  describe("Accessibility", () => {
+    it("gives every button a non-empty accessible name", async () => {
+      const wrapper = mount(ProfileEditHistory);
+      await wrapper.find("button").trigger("click");
+      await wrapper.vm.$nextTick();
+
+      for (const button of wrapper.findAll("button")) {
+        const name = button.attributes("aria-label") ?? button.text().trim();
+        expect(name).not.toBe("");
+      }
+    });
+
+    it("names the icon-only modal close button", async () => {
+      const wrapper = mount(ProfileEditHistory);
+      await wrapper.find("button").trigger("click");
+      await wrapper.vm.$nextTick();
+
+      const labels = wrapper
+        .findAll("button")
+        .map((b) => b.attributes("aria-label"));
+
+      expect(labels).toContain("Close profile edit history");
+    });
   });
 });

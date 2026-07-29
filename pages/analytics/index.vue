@@ -199,10 +199,10 @@ const chartData = ref({
     { label: "Passed", value: 2 },
   ],
   pipeline: [
-    { label: "Initial Contact", value: 250, color: "#3b82f6" },
-    { label: "Active Discussions", value: 85, color: "#10b981" },
-    { label: "Offers Extended", value: 15, color: "#f59e0b" },
-    { label: "Committed", value: 3, color: "#ef4444" },
+    { label: "Initial Contact", value: 250, color: "#3b82f6" }, // audit-ignore — Chart.js config requires raw hex
+    { label: "Active Discussions", value: 85, color: "#10b981" }, // audit-ignore — Chart.js config requires raw hex
+    { label: "Offers Extended", value: 15, color: "#f59e0b" }, // audit-ignore — Chart.js config requires raw hex
+    { label: "Committed", value: 3, color: "#ef4444" }, // audit-ignore — Chart.js config requires raw hex
   ],
   performanceData: [
     {
@@ -217,7 +217,7 @@ const chartData = ref({
         { x: 86, y: 345, label: "Player G" },
         { x: 89, y: 360, label: "Player H" },
       ],
-      color: "#3b82f6",
+      color: "#3b82f6", // audit-ignore — Chart.js config requires raw hex
     },
   ],
 });

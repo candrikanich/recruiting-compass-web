@@ -3,10 +3,12 @@
     <Transition name="fade">
       <div
         v-if="isOpen"
-        class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+        class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
         @click.self="handleClose"
+        @keydown.escape="handleClose"
       >
         <div
+          ref="dialogRef"
           role="dialog"
           aria-modal="true"
           aria-labelledby="email-packet-title"
@@ -21,7 +23,7 @@
             </h2>
             <button
               @click="handleClose"
-              aria-label="Close dialog"
+              aria-label="Close email recruiting packet dialog"
               class="text-slate-500 hover:text-slate-700 transition-colors"
             >
               <svg
@@ -44,10 +46,13 @@
           <!-- Content -->
           <div class="px-6 py-6 space-y-6">
             <!-- Coach Selection -->
-            <div>
-              <label class="block text-sm font-semibold text-slate-900 mb-3">
+            <div role="group" aria-labelledby="email-packet-recipients-label">
+              <p
+                id="email-packet-recipients-label"
+                class="block text-sm font-semibold text-slate-900 mb-3"
+              >
                 Recipients (Select coaches or enter emails)
-              </label>
+              </p>
 
               <!-- Coach Quick Select -->
               <div v-if="availableCoaches.length > 0" class="mb-4">
@@ -78,10 +83,13 @@
 
               <!-- Manual Email Entry -->
               <div>
-                <label class="text-xs text-slate-600 mb-1 block"
+                <label
+                  for="email-packet-manual"
+                  class="text-xs text-slate-600 mb-1 block"
                   >Add manual emails (comma-separated):</label
                 >
                 <textarea
+                  id="email-packet-manual"
                   v-model="manualEmails"
                   placeholder="coach1@example.com, coach2@example.com"
                   class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
@@ -118,6 +126,7 @@
               >
                 <svg
                   class="w-4 h-4 mr-1"
+                  aria-hidden="true"
                   fill="currentColor"
                   viewBox="0 0 20 20"
                 >
@@ -133,10 +142,14 @@
 
             <!-- Subject Line -->
             <div>
-              <label class="block text-sm font-semibold text-slate-900 mb-2">
+              <label
+                for="email-packet-subject"
+                class="block text-sm font-semibold text-slate-900 mb-2"
+              >
                 Subject
               </label>
               <input
+                id="email-packet-subject"
                 v-model="form.subject"
                 type="text"
                 :maxlength="MAX_SUBJECT_LENGTH"
@@ -150,10 +163,14 @@
 
             <!-- Email Body -->
             <div>
-              <label class="block text-sm font-semibold text-slate-900 mb-2">
+              <label
+                for="email-packet-body"
+                class="block text-sm font-semibold text-slate-900 mb-2"
+              >
                 Message
               </label>
               <textarea
+                id="email-packet-body"
                 v-model="form.body"
                 rows="6"
                 :maxlength="MAX_BODY_LENGTH"
@@ -205,6 +222,7 @@
               <svg
                 v-if="loading"
                 class="w-4 h-4 mr-2 animate-spin"
+                aria-hidden="true"
                 fill="none"
                 viewBox="0 0 24 24"
               >
@@ -232,7 +250,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from "vue";
+import { ref, computed, watch, nextTick } from "vue";
+import { useFocusTrap } from "~/composables/useFocusTrap";
 import type { Coach } from "~/types/models";
 
 const MAX_RECIPIENTS = 10;
@@ -250,6 +269,21 @@ const emit = defineEmits<{
   close: [];
   send: [data: { recipients: string[]; subject: string; body: string }];
 }>();
+
+const dialogRef = ref<HTMLElement | null>(null);
+const { activate, deactivate } = useFocusTrap(dialogRef);
+
+watch(
+  () => props.isOpen,
+  async (isOpen) => {
+    if (isOpen) {
+      await nextTick();
+      activate();
+    } else {
+      deactivate();
+    }
+  },
+);
 
 // State
 const selectedEmails = ref<string[]>([]);
@@ -324,6 +358,7 @@ const removeRecipient = (index: number) => {
 
 const handleClose = () => {
   if (!loading.value) {
+    deactivate();
     emit("close");
     reset();
   }

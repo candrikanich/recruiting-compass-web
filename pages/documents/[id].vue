@@ -126,6 +126,7 @@
           <img
             v-else-if="isImage"
             :src="document.file_url"
+            :alt="`Preview of ${document.title}`"
             class="max-w-full rounded-lg"
             loading="lazy"
           />
@@ -134,6 +135,7 @@
           <iframe
             v-else-if="isPDF"
             :src="document.file_url"
+            :title="`PDF preview of ${document.title}`"
             class="w-full h-96 rounded-lg border border-gray-300"
           />
 

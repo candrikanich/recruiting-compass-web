@@ -6,7 +6,11 @@
         <div
           class="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center"
         >
-          <UIcon name="i-heroicons-check" class="w-4 h-4 text-emerald-600"  />
+          <UIcon
+            name="i-heroicons-check"
+            class="w-4 h-4 text-emerald-600"
+            aria-hidden="true"
+          />
         </div>
         Pros
       </h3>
@@ -19,9 +23,14 @@
           <span>{{ pro }}</span>
           <button
             @click="emit('remove-pro', index)"
+            :aria-label="`Remove pro: ${pro}`"
             class="text-emerald-400 hover:text-red-500 transition"
           >
-            <UIcon name="i-heroicons-x-mark" class="w-4 h-4"  />
+            <UIcon
+              name="i-heroicons-x-mark"
+              class="w-4 h-4"
+              aria-hidden="true"
+            />
           </button>
         </div>
         <div v-if="!pros.length" class="text-slate-400 text-sm">
@@ -39,6 +48,7 @@
         <button
           @click="handleAddPro"
           :disabled="!newProInput.trim()"
+          aria-label="Add pro"
           class="px-3 py-2 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 transition disabled:opacity-50"
         >
           +
@@ -52,7 +62,11 @@
         <div
           class="w-6 h-6 rounded-full bg-red-100 flex items-center justify-center"
         >
-          <UIcon name="i-heroicons-x-mark" class="w-4 h-4 text-red-600"  />
+          <UIcon
+            name="i-heroicons-x-mark"
+            class="w-4 h-4 text-red-600"
+            aria-hidden="true"
+          />
         </div>
         Cons
       </h3>
@@ -65,9 +79,14 @@
           <span>{{ con }}</span>
           <button
             @click="emit('remove-con', index)"
+            :aria-label="`Remove con: ${con}`"
             class="text-red-400 hover:text-red-600 transition"
           >
-            <UIcon name="i-heroicons-x-mark" class="w-4 h-4"  />
+            <UIcon
+              name="i-heroicons-x-mark"
+              class="w-4 h-4"
+              aria-hidden="true"
+            />
           </button>
         </div>
         <div v-if="!cons.length" class="text-slate-400 text-sm">
@@ -85,6 +104,7 @@
         <button
           @click="handleAddCon"
           :disabled="!newConInput.trim()"
+          aria-label="Add con"
           class="px-3 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition disabled:opacity-50"
         >
           +

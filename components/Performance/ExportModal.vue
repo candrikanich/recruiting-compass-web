@@ -1,59 +1,79 @@
 <template>
   <div
-    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+    class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+    @keydown.escape="handleClose"
   >
     <div
+      ref="dialogRef"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="export-modal-title"
       class="rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto bg-white"
     >
       <!-- Header -->
       <div
         class="sticky top-0 p-6 flex items-center justify-between bg-white border-b border-slate-300"
       >
-        <h2 class="text-2xl font-bold text-slate-900">
+        <h2 id="export-modal-title" class="text-2xl font-bold text-slate-900">
           Export Performance Report
         </h2>
         <button
-          @click="$emit('close')"
+          @click="handleClose"
+          aria-label="Close export performance report dialog"
           class="text-slate-600 hover:text-slate-900 transition"
         >
-          <UIcon name="i-heroicons-x-mark-solid" class="w-6 h-6"  />
+          <UIcon
+            name="i-heroicons-x-mark-solid"
+            class="w-6 h-6"
+            aria-hidden="true"
+          />
         </button>
       </div>
 
       <!-- Content -->
       <div class="p-6 space-y-6">
         <!-- Report Type Selection -->
-        <div>
-          <label class="block text-sm font-medium mb-3 text-slate-600"
-            >Report Type</label
+        <div role="group" aria-labelledby="export-report-type-label">
+          <p
+            id="export-report-type-label"
+            class="block text-sm font-medium mb-3 text-slate-600"
           >
+            Report Type
+          </p>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div
+            <button
               v-for="type in reportTypes"
               :key="type.value"
+              type="button"
+              :aria-pressed="selectedType === type.value"
               @click="selectedType = type.value"
-              class="p-4 border-2 rounded-lg cursor-pointer transition"
+              class="p-4 border-2 rounded-lg cursor-pointer transition text-left"
               :class="
                 selectedType === type.value
                   ? 'border-blue-600 bg-blue-50'
                   : 'border-slate-300 bg-white'
               "
             >
-              <div class="text-2xl mb-2">{{ type.icon }}</div>
+              <div class="text-2xl mb-2" aria-hidden="true">
+                {{ type.icon }}
+              </div>
               <div class="font-semibold text-slate-900">{{ type.label }}</div>
               <div class="text-xs mt-1 text-slate-600">
                 {{ type.description }}
               </div>
-            </div>
+            </button>
           </div>
         </div>
 
         <!-- Metric Type Selector (if Individual) -->
         <div v-if="selectedType === 'individual'">
-          <label class="block text-sm font-medium mb-2 text-slate-600"
+          <label
+            for="export-metric"
+            class="block text-sm font-medium mb-2 text-slate-600"
             >Select Metric</label
           >
           <select
+            id="export-metric"
             v-model="selectedMetric"
             class="w-full px-4 py-2 border border-slate-300 bg-white text-slate-900 rounded-lg focus:ring-2 focus:border-transparent"
           >
@@ -69,10 +89,13 @@
         </div>
 
         <!-- Format Selection -->
-        <div>
-          <label class="block text-sm font-medium mb-2 text-slate-600"
-            >Export Format</label
+        <div role="group" aria-labelledby="export-format-label">
+          <p
+            id="export-format-label"
+            class="block text-sm font-medium mb-2 text-slate-600"
           >
+            Export Format
+          </p>
           <div class="flex flex-wrap gap-4">
             <label class="flex items-center cursor-pointer">
               <input
@@ -99,10 +122,13 @@
 
         <!-- Coach Name (for text summary) -->
         <div v-if="formatText">
-          <label class="block text-sm font-medium mb-2 text-slate-600"
+          <label
+            for="export-coach-name"
+            class="block text-sm font-medium mb-2 text-slate-600"
             >Coach Name (for email)</label
           >
           <input
+            id="export-coach-name"
             v-model="coachName"
             type="text"
             placeholder="e.g., Coach Smith"
@@ -112,10 +138,13 @@
 
         <!-- Date Range Filters -->
         <div>
-          <label class="block text-sm font-medium mb-2 text-slate-600"
+          <label
+            for="export-date-range"
+            class="block text-sm font-medium mb-2 text-slate-600"
             >Date Range</label
           >
           <select
+            id="export-date-range"
             v-model="dateRange"
             class="w-full px-4 py-2 border border-slate-300 bg-white text-slate-900 rounded-lg focus:ring-2 focus:border-transparent"
           >
@@ -129,11 +158,14 @@
         <!-- Verified Only -->
         <div class="flex items-center">
           <input
+            id="export-verified-only"
             type="checkbox"
             v-model="verifiedOnly"
             class="w-4 h-4 rounded-sm accent-blue-600"
           />
-          <label class="ml-2 text-sm font-medium text-slate-600"
+          <label
+            for="export-verified-only"
+            class="ml-2 text-sm font-medium text-slate-600"
             >Verified Metrics Only</label
           >
         </div>
@@ -144,7 +176,7 @@
         class="sticky bottom-0 p-6 flex gap-4 justify-end bg-slate-50 border-t border-slate-300"
       >
         <button
-          @click="$emit('close')"
+          @click="handleClose"
           class="px-6 py-2 font-semibold rounded-lg transition bg-slate-200 text-slate-900 hover:bg-slate-300"
         >
           Cancel
@@ -162,7 +194,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, onMounted, nextTick } from "vue";
+import { useFocusTrap } from "~/composables/useFocusTrap";
 import { useUserStore } from "~/stores/user";
 import {
   generateIndividualMetricReport,
@@ -193,6 +226,19 @@ const props = defineProps<{
 const emit = defineEmits<{
   close: [];
 }>();
+
+const dialogRef = ref<HTMLElement | null>(null);
+const { activate, deactivate } = useFocusTrap(dialogRef);
+
+onMounted(async () => {
+  await nextTick();
+  activate();
+});
+
+const handleClose = () => {
+  deactivate();
+  emit("close");
+};
 
 const userStore = useUserStore();
 const selectedType = ref("comprehensive");
@@ -303,7 +349,7 @@ const handleExport = async () => {
       }
     }
 
-    emit("close");
+    handleClose();
   } catch (error) {
     logger.error("Export failed", error);
     showToast(

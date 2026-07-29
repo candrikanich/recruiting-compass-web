@@ -4,16 +4,23 @@
       <div
         v-if="isOpen"
         class="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4"
+        @keydown.escape="handleClose"
       >
         <div
+          ref="dialogRef"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="recovery-modal-title"
           class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-slide-up"
         >
           <!-- Header with gradient -->
           <div
-            class="bg-linear-to-r from-amber-500 to-red-500 text-white px-6 py-8"
+            class="bg-linear-to-r from-brand-orange-500 to-brand-red-500 text-white px-6 py-8"
           >
-            <h2 class="text-2xl font-bold mb-2">Let's Get Back on Track 🎯</h2>
-            <p class="text-amber-50 text-sm">
+            <h2 id="recovery-modal-title" class="text-2xl font-bold mb-2">
+              Let's Get Back on Track 🎯
+            </h2>
+            <p class="text-brand-orange-50 text-sm">
               We noticed you're behind. This is recoverable with a focused plan.
             </p>
           </div>
@@ -21,17 +28,23 @@
           <!-- Plan Content -->
           <div class="px-6 py-6 space-y-6">
             <!-- Trigger Info -->
-            <div class="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-sm">
-              <p class="text-sm text-amber-900 font-medium">{{ plan.title }}</p>
-              <p class="text-xs text-amber-700 mt-1">{{ plan.description }}</p>
+            <div
+              class="bg-brand-orange-50 border-l-4 border-brand-orange-500 p-4 rounded-sm"
+            >
+              <p class="text-sm text-brand-orange-900 font-medium">
+                {{ plan.title }}
+              </p>
+              <p class="text-xs text-brand-orange-700 mt-1">
+                {{ plan.description }}
+              </p>
             </div>
 
             <!-- Duration -->
             <div class="flex items-center gap-3 text-sm">
               <div
-                class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center"
+                class="w-10 h-10 bg-brand-blue-100 rounded-full flex items-center justify-center"
               >
-                <span class="text-lg">⏱️</span>
+                <span class="text-lg" aria-hidden="true">⏱️</span>
               </div>
               <div>
                 <p class="font-semibold text-slate-900">
@@ -53,7 +66,7 @@
                   class="flex gap-3"
                 >
                   <span
-                    class="shrink-0 w-6 h-6 bg-green-100 text-green-700 rounded-full flex items-center justify-center text-xs font-bold"
+                    class="shrink-0 w-6 h-6 bg-brand-emerald-100 text-brand-emerald-700 rounded-full flex items-center justify-center text-xs font-bold"
                   >
                     {{ idx + 1 }}
                   </span>
@@ -63,8 +76,8 @@
             </div>
 
             <!-- Support Message -->
-            <div class="bg-green-50 rounded-sm p-4 text-center">
-              <p class="text-sm text-green-900">
+            <div class="bg-brand-emerald-50 rounded-sm p-4 text-center">
+              <p class="text-sm text-brand-emerald-900">
                 <strong>You've got this!</strong> Many athletes successfully
                 recover from setbacks. Focus on the first step.
               </p>
@@ -77,12 +90,12 @@
           >
             <button
               @click="handleAcknowledge"
-              class="w-full px-4 py-3 bg-linear-to-r from-green-600 to-emerald-600 text-white font-semibold rounded-xl hover:from-green-700 hover:to-emerald-700 transition"
+              class="w-full px-4 py-3 bg-linear-to-r from-brand-emerald-600 to-brand-emerald-500 text-white font-semibold rounded-xl hover:from-brand-emerald-700 hover:to-brand-emerald-600 transition"
             >
               Start Recovery Plan
             </button>
             <button
-              @click="emit('close')"
+              @click="handleClose"
               class="w-full px-4 py-3 bg-white text-slate-700 font-semibold rounded-xl border-2 border-slate-300 hover:bg-slate-50 transition"
             >
               Review Later
@@ -95,6 +108,8 @@
 </template>
 
 <script setup lang="ts">
+import { ref, watch, nextTick } from "vue";
+import { useFocusTrap } from "~/composables/useFocusTrap";
 import type { RecoveryPlan } from "~/composables/useRecovery";
 
 interface Props {
@@ -109,10 +124,30 @@ const emit = defineEmits<{
   (e: "acknowledged"): void;
 }>();
 
-const handleAcknowledge = () => {
-  emit("acknowledged");
+const dialogRef = ref<HTMLElement | null>(null);
+const { activate, deactivate } = useFocusTrap(dialogRef);
+
+const handleClose = () => {
+  deactivate();
   emit("close");
 };
+
+const handleAcknowledge = () => {
+  emit("acknowledged");
+  handleClose();
+};
+
+watch(
+  () => props.isOpen,
+  async (isOpen) => {
+    if (isOpen) {
+      await nextTick();
+      activate();
+    } else {
+      deactivate();
+    }
+  },
+);
 </script>
 
 <style scoped>

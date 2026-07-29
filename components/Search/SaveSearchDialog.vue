@@ -3,18 +3,32 @@
     <Transition name="fade">
       <div
         v-if="isOpen"
-        class="fixed inset-0 bg-black bg-opacity-50 z-40 flex items-center justify-center p-4"
+        class="fixed inset-0 bg-black/50 z-40 flex items-center justify-center p-4"
+        @keydown.escape="closeDialog"
       >
-        <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6 z-50">
+        <div
+          ref="dialogRef"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="save-search-title"
+          class="bg-white rounded-lg shadow-xl max-w-md w-full p-6 z-50"
+        >
           <!-- Header -->
           <div class="flex items-center justify-between mb-4">
-            <h2 class="text-lg font-semibold text-gray-900">Save Search</h2>
+            <h2
+              id="save-search-title"
+              class="text-lg font-semibold text-brand-slate-900"
+            >
+              Save Search
+            </h2>
             <button
               @click="closeDialog"
-              class="text-gray-400 hover:text-gray-600"
+              aria-label="Close save search dialog"
+              class="text-brand-slate-400 hover:text-brand-slate-600"
             >
               <svg
                 class="h-5 w-5"
+                aria-hidden="true"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -33,37 +47,43 @@
           <form @submit.prevent="handleSave" class="space-y-4">
             <!-- Name -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1"
+              <label
+                for="save-search-name"
+                class="block text-sm font-medium text-brand-slate-700 mb-1"
                 >Search Name</label
               >
               <input
+                id="save-search-name"
                 v-model="formData.name"
                 type="text"
                 placeholder="e.g., D1 Schools in California"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                class="w-full px-3 py-2 border border-brand-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                 required
               />
             </div>
 
             <!-- Description -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1"
+              <label
+                for="save-search-description"
+                class="block text-sm font-medium text-brand-slate-700 mb-1"
                 >Description (optional)</label
               >
               <textarea
+                id="save-search-description"
                 v-model="formData.description"
                 placeholder="What is this search for?"
                 rows="3"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 resize-none"
+                class="w-full px-3 py-2 border border-brand-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 resize-none"
               />
             </div>
 
             <!-- Search Info -->
-            <div class="bg-gray-50 rounded-lg p-3 space-y-2">
-              <p class="text-xs font-semibold text-gray-600 uppercase">
+            <div class="bg-brand-slate-50 rounded-lg p-3 space-y-2">
+              <p class="text-xs font-semibold text-brand-slate-600 uppercase">
                 Search Details
               </p>
-              <div class="text-sm text-gray-700">
+              <div class="text-sm text-brand-slate-700">
                 <p><span class="font-medium">Query:</span> {{ searchQuery }}</p>
                 <p>
                   <span class="font-medium">Type:</span>
@@ -80,7 +100,7 @@
               <button
                 type="button"
                 @click="closeDialog"
-                class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition"
+                class="px-4 py-2 border border-brand-slate-300 rounded-lg text-brand-slate-700 hover:bg-brand-slate-50 font-medium transition"
               >
                 Cancel
               </button>
@@ -92,6 +112,7 @@
                 <span v-if="isSaving" class="flex items-center gap-2">
                   <svg
                     class="animate-spin h-4 w-4"
+                    aria-hidden="true"
                     fill="none"
                     viewBox="0 0 24 24"
                   >
@@ -122,7 +143,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from "vue";
+import { ref, reactive, watch, nextTick } from "vue";
+import { useFocusTrap } from "~/composables/useFocusTrap";
 import { useSavedSearches } from "~/composables/useSavedSearches";
 import type { SavedSearch } from "~/types/models";
 
@@ -151,11 +173,27 @@ const formData = reactive({
   description: "",
 });
 
+const dialogRef = ref<HTMLElement | null>(null);
+const { activate, deactivate } = useFocusTrap(dialogRef);
+
 const closeDialog = () => {
   formData.name = "";
   formData.description = "";
+  deactivate();
   emit("close");
 };
+
+watch(
+  () => props.isOpen,
+  async (isOpen) => {
+    if (isOpen) {
+      await nextTick();
+      activate();
+    } else {
+      deactivate();
+    }
+  },
+);
 
 const handleSave = async () => {
   isSaving.value = true;
