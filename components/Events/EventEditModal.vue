@@ -1,17 +1,25 @@
 <template>
   <div
     v-if="isOpen"
-    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+    class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+    @keydown.escape="handleClose"
   >
     <div
+      ref="dialogRef"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="edit-event-title"
       class="bg-white rounded-lg shadow-lg max-w-2xl w-full max-h-screen overflow-y-auto"
     >
       <div
         class="sticky top-0 bg-white border-b border-gray-200 p-6 flex items-center justify-between"
       >
-        <h2 class="text-2xl font-bold text-gray-900">Edit Event</h2>
+        <h2 id="edit-event-title" class="text-2xl font-bold text-gray-900">
+          Edit Event
+        </h2>
         <button
-          @click="emit('cancel')"
+          @click="handleClose"
+          aria-label="Close edit event dialog"
           class="text-gray-600 hover:text-gray-900"
         >
           <UIcon name="i-heroicons-x-mark-solid" class="w-6 h-6" />
@@ -149,7 +157,7 @@
         <div class="flex gap-4 justify-end">
           <button
             type="button"
-            @click="emit('cancel')"
+            @click="handleClose"
             class="px-6 py-2 bg-gray-200 text-gray-900 font-semibold rounded-lg hover:bg-gray-300 transition"
           >
             Cancel
@@ -168,6 +176,9 @@
 </template>
 
 <script setup lang="ts">
+import { ref, watch, nextTick } from "vue";
+import { useFocusTrap } from "~/composables/useFocusTrap";
+
 interface EventEditFormData {
   name: string;
   type: string;
@@ -178,7 +189,7 @@ interface EventEditFormData {
   performance_notes: string;
 }
 
-defineProps<{
+const props = defineProps<{
   isOpen: boolean;
   formData: EventEditFormData;
   isUpdating: boolean;
@@ -188,4 +199,24 @@ const emit = defineEmits<{
   submit: [];
   cancel: [];
 }>();
+
+const dialogRef = ref<HTMLElement | null>(null);
+const { activate, deactivate } = useFocusTrap(dialogRef);
+
+const handleClose = () => {
+  deactivate();
+  emit("cancel");
+};
+
+watch(
+  () => props.isOpen,
+  async (isOpen) => {
+    if (isOpen) {
+      await nextTick();
+      activate();
+    } else {
+      deactivate();
+    }
+  },
+);
 </script>

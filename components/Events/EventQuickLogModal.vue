@@ -3,12 +3,19 @@
     <div
       v-if="isOpen"
       class="fixed inset-0 z-50 flex items-center justify-center"
+      @keydown.escape="handleClose"
     >
-      <div class="absolute inset-0 bg-black/50" @click="emit('close')"></div>
+      <div class="absolute inset-0 bg-black/50" @click="handleClose"></div>
       <div
+        ref="dialogRef"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="quick-log-title"
         class="relative bg-white rounded-xl shadow-xl max-w-lg w-full mx-4 p-6"
       >
-        <h3 class="text-xl font-bold text-slate-900 mb-2">Log Interactions</h3>
+        <h3 id="quick-log-title" class="text-xl font-bold text-slate-900 mb-2">
+          Log Interactions
+        </h3>
         <p class="text-sm text-slate-600 mb-6">
           Did you have any coaching interactions at {{ eventName }}?
         </p>
@@ -84,7 +91,7 @@
             </button>
             <button
               type="button"
-              @click="emit('close')"
+              @click="handleClose"
               class="flex-1 px-4 py-2 border border-slate-300 text-slate-700 text-sm font-medium rounded-lg hover:bg-slate-50 transition"
             >
               Skip for Now
@@ -97,6 +104,9 @@
 </template>
 
 <script setup lang="ts">
+import { ref, watch, nextTick } from "vue";
+import { useFocusTrap } from "~/composables/useFocusTrap";
+
 interface QuickLogData {
   type: string;
   direction: "inbound" | "outbound";
@@ -104,7 +114,7 @@ interface QuickLogData {
   sentiment: string;
 }
 
-defineProps<{
+const props = defineProps<{
   isOpen: boolean;
   eventName: string | undefined;
   data: QuickLogData;
@@ -114,4 +124,24 @@ const emit = defineEmits<{
   submit: [];
   close: [];
 }>();
+
+const dialogRef = ref<HTMLElement | null>(null);
+const { activate, deactivate } = useFocusTrap(dialogRef);
+
+const handleClose = () => {
+  deactivate();
+  emit("close");
+};
+
+watch(
+  () => props.isOpen,
+  async (isOpen) => {
+    if (isOpen) {
+      await nextTick();
+      activate();
+    } else {
+      deactivate();
+    }
+  },
+);
 </script>
