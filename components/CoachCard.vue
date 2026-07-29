@@ -38,6 +38,8 @@
         <span class="text-blue-600 mr-2" aria-hidden="true">✉️</span>
         <a
           @click.stop
+          @keydown.enter.stop
+          @keydown.space.stop
           :href="`mailto:${coach.email}`"
           class="hover:underline break-all text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 rounded-sm"
         >
@@ -49,6 +51,8 @@
         <span class="text-green-600 mr-2" aria-hidden="true">📱</span>
         <a
           @click.stop
+          @keydown.enter.stop
+          @keydown.space.stop
           :href="`tel:${coach.phone}`"
           class="hover:underline text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 rounded-sm"
         >
@@ -67,6 +71,8 @@
         />
         <a
           @click.stop
+          @keydown.enter.stop
+          @keydown.space.stop
           :href="`https://twitter.com/${coach.twitter_handle.replace('@', '')}`"
           target="_blank"
           rel="noopener noreferrer"
@@ -87,6 +93,8 @@
         />
         <a
           @click.stop
+          @keydown.enter.stop
+          @keydown.space.stop
           :href="`https://instagram.com/${coach.instagram_handle.replace('@', '')}`"
           target="_blank"
           rel="noopener noreferrer"
