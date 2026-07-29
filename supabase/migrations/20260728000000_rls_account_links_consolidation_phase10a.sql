@@ -9,8 +9,9 @@
 -- predicate is strictly weaker/broader). Every DROP is guarded so this file
 -- is safe to re-run.
 --
--- Explicitly NOT touched in this migration (see task-10a-report.md for full
--- rationale):
+-- Explicitly NOT touched in this migration (see the "RLS: account_links-era
+-- policies still load-bearing" section of claude/database.md for the
+-- durable, tracked rationale and preconditions to lift each deferral):
 --   - coaches, documents, performance_metrics, social_media_posts,
 --     recommendation_letters: current app code (stores/coaches.ts,
 --     composables/useDocumentsConsolidated.ts, usePerformance*.ts) inserts
