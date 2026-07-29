@@ -524,5 +524,57 @@ describe("CoachCard.vue", () => {
       expect(wrapper.emitted("view")).toBeTruthy();
       expect(wrapper.emitted("click")).toBeUndefined();
     });
+
+    it("should not emit card click when Enter is pressed on a nested action button", async () => {
+      const coach = createMockCoach();
+      const wrapper = mount(CoachCard, { props: { coach, clickable: true } });
+
+      await wrapper
+        .find('button[title="View details"]')
+        .trigger("keydown.enter");
+
+      expect(wrapper.emitted("click")).toBeUndefined();
+    });
+
+    it("should not emit card click when Space is pressed on a nested action button", async () => {
+      const coach = createMockCoach();
+      const wrapper = mount(CoachCard, { props: { coach, clickable: true } });
+
+      await wrapper
+        .find('button[title="View details"]')
+        .trigger("keydown.space");
+
+      expect(wrapper.emitted("click")).toBeUndefined();
+    });
+
+    it("should still activate the card via Enter/Space when focus is not on a nested button", async () => {
+      const coach = createMockCoach();
+      const wrapper = mount(CoachCard, { props: { coach, clickable: true } });
+
+      await wrapper.trigger("keydown.enter");
+      expect(wrapper.emitted("click")?.[0]).toEqual([coach]);
+
+      await wrapper.trigger("keydown.space");
+      expect(wrapper.emitted("click")?.[1]).toEqual([coach]);
+    });
+
+    it.each([
+      ["email", "Send email"],
+      ["text", "Send text"],
+      ["tweet", "Visit Twitter"],
+      ["instagram", "Visit Instagram"],
+      ["view", "View details"],
+    ])(
+      "should only emit the button's own '%s' action on Enter, not the card's click",
+      async (eventName, title) => {
+        const coach = createMockCoach();
+        const wrapper = mount(CoachCard, { props: { coach, clickable: true } });
+
+        await wrapper.find(`button[title="${title}"]`).trigger("click");
+
+        expect(wrapper.emitted(eventName)).toBeTruthy();
+        expect(wrapper.emitted("click")).toBeUndefined();
+      },
+    );
   });
 });

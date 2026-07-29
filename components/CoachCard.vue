@@ -121,6 +121,8 @@
         <button
           v-if="coach.email"
           @click.stop="emit('email', coach)"
+          @keydown.enter.stop
+          @keydown.space.stop
           :aria-label="`Send email to ${coach.first_name} ${coach.last_name}`"
           title="Send email"
           class="px-3 py-1.5 rounded-sm transition bg-blue-100 text-blue-700 hover:bg-blue-200 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
@@ -132,6 +134,8 @@
         <button
           v-if="coach.phone"
           @click.stop="emit('text', coach)"
+          @keydown.enter.stop
+          @keydown.space.stop
           :aria-label="`Send text to ${coach.first_name} ${coach.last_name}`"
           title="Send text"
           class="px-3 py-1.5 rounded-sm transition bg-emerald-100 text-emerald-700 hover:bg-emerald-200 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
@@ -143,6 +147,8 @@
         <button
           v-if="coach.twitter_handle"
           @click.stop="emit('tweet', coach)"
+          @keydown.enter.stop
+          @keydown.space.stop
           :aria-label="`View ${coach.first_name} ${coach.last_name} on Twitter`"
           title="Visit Twitter"
           class="px-3 py-1.5 rounded-sm transition inline-block bg-blue-100 text-blue-600 hover:bg-blue-200 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
@@ -154,6 +160,8 @@
         <button
           v-if="coach.instagram_handle"
           @click.stop="emit('instagram', coach)"
+          @keydown.enter.stop
+          @keydown.space.stop
           :aria-label="`View ${coach.first_name} ${coach.last_name} on Instagram`"
           title="Visit Instagram"
           class="px-3 py-1.5 rounded-sm transition inline-block bg-purple-100 text-purple-700 hover:bg-purple-200 focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
@@ -164,6 +172,8 @@
         <!-- View Details -->
         <button
           @click.stop="emit('view', coach)"
+          @keydown.enter.stop
+          @keydown.space.stop
           :aria-label="`View details for ${coach.first_name} ${coach.last_name}`"
           title="View details"
           class="px-3 py-1.5 rounded-sm transition bg-blue-100 text-blue-700 hover:bg-blue-200 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
