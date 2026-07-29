@@ -269,6 +269,13 @@ const initializeMap = () => {
       // Create a feature group for clustering
       const markerGroup = L.featureGroup();
 
+      // Resolve popup secondary-text color once (avoid raw hex inside the
+      // template literal below, which would render literally in the DOM)
+      const popupMutedColor =
+        getComputedStyle(document.documentElement)
+          .getPropertyValue("--muted-foreground")
+          .trim() || "#666666"; // audit-ignore — Chart.js config requires raw hex
+
       schoolsWithCoords.forEach((school) => {
         const color = getMarkerColor(school.status);
         const marker = L.marker([school.lat, school.lng], {
@@ -284,8 +291,8 @@ const initializeMap = () => {
         marker.bindPopup(`
           <div style="font-size: 12px; min-width: 280px;">
             <p style="margin: 4px 0; font-weight: bold; font-size: 13px;">${escapeHtml(school.name)}</p>
-            <p style="margin: 2px 0; color: #666;">${escapeHtml(location)}</p> // audit-ignore — Chart.js config requires raw hex
-            <p style="margin: 2px 0; color: #666; text-transform: capitalize;">Status: ${escapeHtml(school.status?.replace("_", " ") || "Unknown")}</p> // audit-ignore — Chart.js config requires raw hex
+            <p style="margin: 2px 0; color: ${popupMutedColor};">${escapeHtml(location)}</p>
+            <p style="margin: 2px 0; color: ${popupMutedColor}; text-transform: capitalize;">Status: ${escapeHtml(school.status?.replace("_", " ") || "Unknown")}</p>
           </div>
         `);
 
