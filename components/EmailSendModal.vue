@@ -4,8 +4,15 @@
       <div
         v-if="isOpen"
         class="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-end z-1001 p-4"
+        @keydown.escape="handleClose"
       >
         <div
+          ref="dialogRef"
+          role="dialog"
+          aria-modal="true"
+          :aria-labelledby="
+            step === 'preview' ? 'email-send-title' : 'email-send-confirm-title'
+          "
           class="bg-white rounded-t-2xl w-full max-w-md shadow-2xl overflow-hidden animate-slide-up"
         >
           <!-- Step 1: Email Preview -->
@@ -14,7 +21,9 @@
             <div
               class="bg-linear-to-r from-blue-600 to-blue-700 text-white px-6 py-6"
             >
-              <h2 class="text-xl font-bold mb-1">Send Email</h2>
+              <h2 id="email-send-title" class="text-xl font-bold mb-1">
+                Send Email
+              </h2>
               <p class="text-blue-100 text-sm">
                 Review before sending via your email client
               </p>
@@ -24,12 +33,14 @@
             <div class="flex-1 overflow-y-auto px-6 py-4 space-y-4">
               <!-- Recipient -->
               <div>
-                <label
+                <p
+                  id="email-send-to-label"
                   class="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1"
                 >
                   To
-                </label>
+                </p>
                 <div
+                  aria-labelledby="email-send-to-label"
                   class="px-3 py-2 bg-slate-50 rounded-lg text-sm text-slate-900"
                 >
                   {{ recipientEmail || "No recipient" }}
@@ -38,12 +49,14 @@
 
               <!-- Subject -->
               <div>
-                <label
+                <p
+                  id="email-send-subject-label"
                   class="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1"
                 >
                   Subject
-                </label>
+                </p>
                 <div
+                  aria-labelledby="email-send-subject-label"
                   class="px-3 py-2 bg-slate-50 rounded-lg text-sm text-slate-900"
                 >
                   {{ subject || "(No subject)" }}
@@ -52,12 +65,14 @@
 
               <!-- Body Preview -->
               <div>
-                <label
+                <p
+                  id="email-send-message-label"
                   class="block text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1"
                 >
                   Message
-                </label>
+                </p>
                 <div
+                  aria-labelledby="email-send-message-label"
                   class="px-3 py-3 bg-slate-50 rounded-lg text-sm text-slate-700 whitespace-pre-wrap max-h-48 overflow-y-auto"
                 >
                   {{ body || "(No message)" }}
@@ -85,7 +100,7 @@
                 📧 Send via Email Client
               </button>
               <button
-                @click="emit('close')"
+                @click="handleClose"
                 class="w-full px-4 py-3 bg-white text-slate-700 font-semibold rounded-xl border-2 border-slate-300 hover:bg-slate-50 transition"
               >
                 Cancel
@@ -97,10 +112,12 @@
           <div v-if="step === 'confirmation'" class="flex flex-col">
             <!-- Header -->
             <div
-              class="bg-linear-to-r from-amber-600 to-amber-700 text-white px-6 py-6"
+              class="bg-linear-to-r from-brand-orange-600 to-brand-orange-700 text-white px-6 py-6"
             >
-              <h2 class="text-xl font-bold mb-1">Confirm Email Sent</h2>
-              <p class="text-amber-100 text-sm">
+              <h2 id="email-send-confirm-title" class="text-xl font-bold mb-1">
+                Confirm Email Sent
+              </h2>
+              <p class="text-brand-orange-100 text-sm">
                 Did you send the email from your email client?
               </p>
             </div>
@@ -108,9 +125,9 @@
             <!-- Content -->
             <div class="px-6 py-6 space-y-4">
               <div
-                class="bg-amber-50 border-l-4 border-amber-600 p-4 rounded-sm"
+                class="bg-brand-orange-50 border-l-4 border-brand-orange-600 p-4 rounded-sm"
               >
-                <p class="text-sm text-amber-900">
+                <p class="text-sm text-brand-orange-900">
                   Your email client should have opened with the message
                   pre-filled. Send it, then confirm below so we can record this
                   interaction.
@@ -124,7 +141,7 @@
             >
               <button
                 @click="confirmAndClose"
-                class="w-full px-4 py-3 bg-linear-to-r from-green-600 to-green-700 text-white font-semibold rounded-xl hover:from-green-700 hover:to-green-800 transition"
+                class="w-full px-4 py-3 bg-linear-to-r from-brand-emerald-600 to-brand-emerald-700 text-white font-semibold rounded-xl hover:from-brand-emerald-700 hover:to-brand-emerald-800 transition"
               >
                 ✓ Yes, Email Sent
               </button>
@@ -135,7 +152,7 @@
                 Back
               </button>
               <button
-                @click="emit('close')"
+                @click="handleClose"
                 class="w-full px-4 py-3 text-slate-600 font-semibold rounded-xl hover:bg-slate-100 transition"
               >
                 Cancel
@@ -149,7 +166,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, watch, nextTick } from "vue";
+import { useFocusTrap } from "~/composables/useFocusTrap";
 
 interface Props {
   isOpen: boolean;
@@ -167,6 +185,26 @@ const props = defineProps<Props>();
 const emit = defineEmits<Emits>();
 
 const step = ref<"preview" | "confirmation">("preview");
+
+const dialogRef = ref<HTMLElement | null>(null);
+const { activate, deactivate } = useFocusTrap(dialogRef);
+
+const handleClose = () => {
+  deactivate();
+  emit("close");
+};
+
+watch(
+  () => props.isOpen,
+  async (isOpen) => {
+    if (isOpen) {
+      await nextTick();
+      activate();
+    } else {
+      deactivate();
+    }
+  },
+);
 
 const handleSendClick = () => {
   // Build mailto link with proper encoding
@@ -193,7 +231,7 @@ const confirmAndClose = () => {
   emit("confirmed");
   // Reset and close
   step.value = "preview";
-  emit("close");
+  handleClose();
 };
 
 // Expose methods for testing

@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { ref, watch, nextTick } from "vue";
+import { useCoaches } from "~/composables/useCoaches";
+import { useFocusTrap } from "~/composables/useFocusTrap";
 import type { Coach } from "~/types/models";
 
 interface Props {
@@ -14,6 +17,9 @@ const emit = defineEmits<{
 }>();
 
 const { createCoach } = useCoaches();
+
+const dialogRef = ref<HTMLElement | null>(null);
+const { activate, deactivate } = useFocusTrap(dialogRef);
 
 const firstName = ref("");
 const lastName = ref("");
@@ -60,8 +66,21 @@ const handleClose = () => {
   role.value = "assistant";
   error.value = null;
   loading.value = false;
+  deactivate();
   emit("close");
 };
+
+watch(
+  () => props.show,
+  async (show) => {
+    if (show) {
+      await nextTick();
+      activate();
+    } else {
+      deactivate();
+    }
+  },
+);
 </script>
 
 <template>
@@ -70,15 +89,20 @@ const handleClose = () => {
       v-if="show"
       class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
       @click.self="handleClose"
+      @keydown.escape="handleClose"
     >
       <div
+        ref="dialogRef"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="add-coach-title"
         class="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-xl"
         @click.stop
       >
         <div
           class="bg-linear-to-r from-indigo-600 to-indigo-700 px-6 py-4 text-white"
         >
-          <h2 class="text-xl font-bold">Add New Coach</h2>
+          <h2 id="add-coach-title" class="text-xl font-bold">Add New Coach</h2>
           <p class="mt-1 text-sm text-white/90">Add a coach for this school</p>
         </div>
 

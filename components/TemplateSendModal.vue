@@ -1,24 +1,29 @@
 <template>
   <div
     v-if="isOpen"
-    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+    class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+    @keydown.escape="handleClose"
   >
     <div
+      ref="dialogRef"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="template-send-title"
       class="rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col bg-white"
     >
       <!-- Header -->
       <div
         class="flex items-center justify-between p-6 border-b border-slate-300"
       >
-        <h2 class="text-2xl font-bold text-slate-900">
+        <h2 id="template-send-title" class="text-2xl font-bold text-slate-900">
           Send {{ messageType }}
         </h2>
         <button
-          @click="emit('close')"
+          @click="handleClose"
           class="transition text-slate-600 hover:text-slate-900"
-          aria-label="Close"
+          aria-label="Close send message dialog"
         >
-          <UIcon name="i-heroicons-x-mark-solid" class="w-6 h-6"  />
+          <UIcon name="i-heroicons-x-mark-solid" class="w-6 h-6" />
         </button>
       </div>
 
@@ -46,10 +51,13 @@
         <div v-if="step === 'customize'" class="space-y-4">
           <!-- Subject (Email only) -->
           <div v-if="messageType === 'Email'">
-            <label class="block text-sm font-medium mb-2 text-slate-600"
+            <label
+              for="template-send-subject"
+              class="block text-sm font-medium mb-2 text-slate-600"
               >Subject</label
             >
             <input
+              id="template-send-subject"
               v-model="composedMessage.subject"
               type="text"
               class="w-full px-4 py-2 rounded-lg border border-slate-300 text-slate-900 bg-white"
@@ -58,10 +66,13 @@
 
           <!-- Message Body -->
           <div>
-            <label class="block text-sm font-medium mb-2 text-slate-600"
+            <label
+              for="template-send-body"
+              class="block text-sm font-medium mb-2 text-slate-600"
               >Message</label
             >
             <textarea
+              id="template-send-body"
               v-model="composedMessage.body"
               rows="10"
               class="w-full px-4 py-2 rounded-lg font-mono text-sm border border-slate-300 text-slate-900 bg-white"
@@ -83,14 +94,14 @@
           Back
         </button>
         <button
-          @click="emit('close')"
+          @click="handleClose"
           class="flex-1 px-4 py-2 font-medium rounded-lg transition border border-slate-300 text-slate-900 hover:bg-slate-100"
         >
           Cancel
         </button>
         <button
           v-if="step === 'select'"
-          @click="emit('close')"
+          @click="handleClose"
           class="px-4 py-2 font-medium rounded-lg transition bg-slate-50 text-slate-900 hover:bg-slate-100"
         >
           Close
@@ -114,7 +125,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from "vue";
+import { ref, computed, watch, nextTick } from "vue";
+import { useFocusTrap } from "~/composables/useFocusTrap";
 import {
   useCommunicationTemplates,
   type CommunicationTemplate,
@@ -175,13 +187,25 @@ const interpolateText = (
   return result;
 };
 
+const dialogRef = ref<HTMLElement | null>(null);
+const { activate, deactivate } = useFocusTrap(dialogRef);
+
+const handleClose = () => {
+  deactivate();
+  emit("close");
+};
+
 watch(
   () => props.isOpen,
-  (newVal) => {
+  async (newVal) => {
     if (newVal) {
       step.value = "select";
       selectedTemplate.value = null;
       composedMessage.value = { subject: "", body: "" };
+      await nextTick();
+      activate();
+    } else {
+      deactivate();
     }
   },
 );
@@ -216,6 +240,6 @@ const selectTemplate = (template: CommunicationTemplate) => {
 
 const sendMessage = () => {
   emit("send", composedMessage.value);
-  emit("close");
+  handleClose();
 };
 </script>

@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { mount } from "@vue/test-utils";
+import { axe } from "vitest-axe";
 import FamilyInviteModal from "~/components/FamilyInviteModal.vue";
 
 vi.mock("~/composables/useFamilyInvite", () => ({
@@ -76,6 +77,29 @@ describe("FamilyInviteModal Component", () => {
     const wrapper = mount(FamilyInviteModal);
     expect(wrapper.find("form").exists()).toBe(true);
     expect(wrapper.find("input[type='email']").exists()).toBe(true);
+  });
+
+  it("should associate the email label with its input", () => {
+    const wrapper = mount(FamilyInviteModal);
+    const input = wrapper.find("input[type='email']");
+    const label = wrapper.find("label");
+
+    expect(input.attributes("id")).toBeTruthy();
+    expect(label.attributes("for")).toBe(input.attributes("id"));
+  });
+
+  it("should have no accessibility violations", async () => {
+    const wrapper = mount(FamilyInviteModal, { attachTo: document.body });
+    expect(
+      await axe(document.body, {
+        // region: this component is a page fragment; landmarks belong to its host page
+        rules: {
+          "color-contrast": { enabled: false },
+          region: { enabled: false },
+        },
+      }),
+    ).toHaveNoViolations();
+    wrapper.unmount();
   });
 
   it("should have at least two buttons for actions", () => {

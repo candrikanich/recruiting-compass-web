@@ -1,9 +1,12 @@
 <script setup lang="ts">
+import { ref, watch, nextTick } from "vue";
+import { useFocusTrap } from "~/composables/useFocusTrap";
+
 interface Props {
   show: boolean;
 }
 
-defineProps<Props>();
+const props = defineProps<Props>();
 
 const emit = defineEmits<{
   close: [];
@@ -11,6 +14,21 @@ const emit = defineEmits<{
 }>();
 
 const coachName = ref("");
+
+const dialogRef = ref<HTMLElement | null>(null);
+const { activate, deactivate } = useFocusTrap(dialogRef);
+
+watch(
+  () => props.show,
+  async (show) => {
+    if (show) {
+      await nextTick();
+      activate();
+    } else {
+      deactivate();
+    }
+  },
+);
 
 const handleContinue = () => {
   if (coachName.value.trim()) {
@@ -21,6 +39,7 @@ const handleContinue = () => {
 
 const handleClose = () => {
   coachName.value = "";
+  deactivate();
   emit("close");
 };
 </script>
@@ -31,15 +50,20 @@ const handleClose = () => {
       v-if="show"
       class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
       @click.self="handleClose"
+      @keydown.escape="handleClose"
     >
       <div
+        ref="dialogRef"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="other-coach-title"
         class="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-xl"
         @click.stop
       >
         <div
           class="bg-linear-to-r from-indigo-600 to-indigo-700 px-6 py-4 text-white"
         >
-          <h2 class="text-xl font-bold">Other Coach</h2>
+          <h2 id="other-coach-title" class="text-xl font-bold">Other Coach</h2>
           <p class="mt-1 text-sm text-white/90">
             Enter the name of the coach (not currently in system)
           </p>
