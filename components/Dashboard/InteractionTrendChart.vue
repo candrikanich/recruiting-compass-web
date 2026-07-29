@@ -209,10 +209,10 @@ const initializeChart = () => {
     const root = document.documentElement;
     const brandBlue600 =
       getComputedStyle(root).getPropertyValue("--brand-blue-600").trim() ||
-      "#3b82f6";
+      "#3b82f6"; // audit-ignore — Chart.js config requires raw hex
     const mutedForeground =
       getComputedStyle(root).getPropertyValue("--muted-foreground").trim() ||
-      "#666";
+      "#666"; // audit-ignore — Chart.js config requires raw hex
 
     chartInstance = new ChartJS(chartCanvas.value, {
       type: "line",

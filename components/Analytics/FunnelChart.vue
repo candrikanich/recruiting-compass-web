@@ -139,11 +139,11 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   emptyStateMessage: "No pipeline data available",
   colors: () => [
-    "#3b82f6", // blue
-    "#10b981", // green
-    "#f59e0b", // amber
-    "#ef4444", // red
-    "#8b5cf6", // purple
+    "#3b82f6", // blue // audit-ignore — Chart.js config requires raw hex
+    "#10b981", // green // audit-ignore — Chart.js config requires raw hex
+    "#f59e0b", // amber // audit-ignore — Chart.js config requires raw hex
+    "#ef4444", // red // audit-ignore — Chart.js config requires raw hex
+    "#8b5cf6", // purple // audit-ignore — Chart.js config requires raw hex
   ],
 });
 

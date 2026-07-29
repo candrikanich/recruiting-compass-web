@@ -195,27 +195,27 @@ const initializeChart = () => {
   const root = document.documentElement;
   const mutedForeground =
     getComputedStyle(root).getPropertyValue("--muted-foreground").trim() ||
-    "#666";
+    "#666"; // audit-ignore — Chart.js config requires raw hex
 
   const statusColorMap: Record<string, string> = {
     researching:
-      getComputedStyle(root).getPropertyValue("--muted").trim() || "#ececf0",
+      getComputedStyle(root).getPropertyValue("--muted").trim() || "#ececf0", // audit-ignore — Chart.js config requires raw hex
     contacted:
       getComputedStyle(root).getPropertyValue("--brand-blue-500").trim() ||
-      "#3b82f6",
+      "#3b82f6", // audit-ignore — Chart.js config requires raw hex
     interested:
       getComputedStyle(root).getPropertyValue("--brand-emerald-500").trim() ||
-      "#10b981",
+      "#10b981", // audit-ignore — Chart.js config requires raw hex
     offer_received:
       getComputedStyle(root).getPropertyValue("--brand-orange-500").trim() ||
-      "#f97316",
+      "#f97316", // audit-ignore — Chart.js config requires raw hex
     committed:
       getComputedStyle(root).getPropertyValue("--brand-emerald-600").trim() ||
-      "#059669",
+      "#059669", // audit-ignore — Chart.js config requires raw hex
   };
 
   const resolvedColors = chartData.value.colors.map(
-    (colorKey: string) => statusColorMap[colorKey] || "#999",
+    (colorKey: string) => statusColorMap[colorKey] || "#999", // audit-ignore — Chart.js config requires raw hex
   );
 
   chartInstance = new ChartJS(chartCanvas.value, {

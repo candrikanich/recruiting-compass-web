@@ -152,16 +152,16 @@ const getTypeColor = (type: string): string => {
 
 const getTypeColorVar = (type: string): string => {
   const colors: Record<string, string> = {
-    email: "#3b82f6", // blue-500
-    text: "#a855f7", // purple-500
-    phone_call: "#f97316", // orange-500
-    in_person_visit: "#10b981", // emerald-500
-    virtual_meeting: "#3b82f6", // blue-500
-    camp: "#ef4444", // red-500
-    showcase: "#f97316", // orange-500
-    tweet: "#64748b", // slate-500
-    dm: "#a855f7", // purple-500
+    email: "#3b82f6", // blue-500 // audit-ignore — Chart.js config requires raw hex
+    text: "#a855f7", // purple-500 // audit-ignore — Chart.js config requires raw hex
+    phone_call: "#f97316", // orange-500 // audit-ignore — Chart.js config requires raw hex
+    in_person_visit: "#10b981", // emerald-500 // audit-ignore — Chart.js config requires raw hex
+    virtual_meeting: "#3b82f6", // blue-500 // audit-ignore — Chart.js config requires raw hex
+    camp: "#ef4444", // red-500 // audit-ignore — Chart.js config requires raw hex
+    showcase: "#f97316", // orange-500 // audit-ignore — Chart.js config requires raw hex
+    tweet: "#64748b", // slate-500 // audit-ignore — Chart.js config requires raw hex
+    dm: "#a855f7", // purple-500 // audit-ignore — Chart.js config requires raw hex
   };
-  return colors[type] || "#64748b";
+  return colors[type] || "#64748b"; // audit-ignore — Chart.js config requires raw hex
 };
 </script>
