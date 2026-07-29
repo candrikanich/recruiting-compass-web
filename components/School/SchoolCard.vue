@@ -1,7 +1,12 @@
 <template>
   <div
-    class="school-card rounded-lg p-4 transition cursor-pointer bg-white shadow-md hover:shadow-lg"
+    role="button"
+    tabindex="0"
+    :aria-label="`Open profile for ${school.name}`"
+    class="school-card rounded-lg p-4 transition cursor-pointer bg-white shadow-md hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
     @click="navigate"
+    @keydown.enter="navigate"
+    @keydown.space.prevent="navigate"
   >
     <div class="flex items-start gap-4">
       <!-- School Logo -->
@@ -70,17 +75,23 @@
           v-if="isFavorite"
           class="text-xl hover:scale-110 transition"
           title="Remove from favorites"
+          aria-label="Remove from favorites"
           @click.stop="toggleFavorite"
+          @keydown.enter.stop
+          @keydown.space.stop
         >
-          ⭐
+          <span aria-hidden="true">⭐</span>
         </button>
         <button
           v-else
           class="text-xl opacity-50 hover:opacity-100 hover:scale-110 transition"
           title="Add to favorites"
+          aria-label="Add to favorites"
           @click.stop="toggleFavorite"
+          @keydown.enter.stop
+          @keydown.space.stop
         >
-          ☆
+          <span aria-hidden="true">☆</span>
         </button>
       </div>
     </div>

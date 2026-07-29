@@ -174,4 +174,40 @@ describe("SchoolCard", () => {
       expect(wrapper.find(".school-card").exists()).toBe(true);
     });
   });
+
+  describe("keyboard and role semantics", () => {
+    it("exposes button role, tabindex and an accessible name", () => {
+      const wrapper = mountCard();
+      const card = wrapper.find(".school-card");
+      expect(card.attributes("role")).toBe("button");
+      expect(card.attributes("tabindex")).toBe("0");
+      expect(card.attributes("aria-label")).toBe(
+        `Open profile for ${defaultSchool.name}`,
+      );
+    });
+
+    it("emits click on Enter key", async () => {
+      const wrapper = mountCard();
+      await wrapper.find(".school-card").trigger("keydown.enter");
+      expect(wrapper.emitted("click")).toBeTruthy();
+    });
+
+    it("emits click on Space key", async () => {
+      const wrapper = mountCard();
+      await wrapper.find(".school-card").trigger("keydown.space");
+      expect(wrapper.emitted("click")).toBeTruthy();
+    });
+
+    it("favorite toggle buttons have accessible names and don't bubble navigation on Enter", async () => {
+      const wrapper = mountCard({
+        school: createMockSchool({ is_favorite: true }),
+      });
+      const favoriteButton = wrapper.find(
+        'button[aria-label="Remove from favorites"]',
+      );
+      expect(favoriteButton.exists()).toBe(true);
+      await favoriteButton.trigger("keydown.enter");
+      expect(wrapper.emitted("click")).toBeFalsy();
+    });
+  });
 });
