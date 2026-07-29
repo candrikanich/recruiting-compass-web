@@ -232,6 +232,46 @@ describe.skipIf(!hasLiveSupabase)(
         expect(error).toBeNull();
         expect(data).toHaveLength(1);
       });
+
+      // Positive regression for Phase 10a's RLS consolidation: the
+      // negative test above ("user A cannot DELETE user B's event") would
+      // pass equally well if events had NO delete policy at all. This
+      // proves the ownership DELETE policy ("Users can delete own events",
+      // user_id = auth.uid()) survived consolidation and an owner can
+      // still delete their own row. Uses a dedicated fixture (seeded and
+      // torn down entirely within this test) so it doesn't disturb
+      // bsSchoollessEventId, which other tests in this file still depend on.
+      it("user B (the owner) can DELETE their own school-less event", async () => {
+        const { data: ownEvent, error: seedErr } = await admin
+          .from("events")
+          .insert({
+            user_id: userBId,
+            type: "game",
+            name: `[e2e-rls-${RUN_ID}] B's own-delete event`,
+            start_date: "2026-08-02",
+            school_id: null,
+          })
+          .select("id")
+          .single();
+        if (seedErr || !ownEvent) {
+          throw new Error(`seed own-delete event failed: ${seedErr?.message}`);
+        }
+
+        const { data, error } = await userBClient
+          .from("events")
+          .delete()
+          .eq("id", ownEvent.id as string)
+          .select("id");
+
+        expect(error).toBeNull();
+        expect(data).toHaveLength(1);
+
+        const { data: check } = await admin
+          .from("events")
+          .select("id")
+          .eq("id", ownEvent.id as string);
+        expect(check ?? []).toHaveLength(0);
+      });
     });
 
     describe("(b) get_athlete_status RPC access", () => {
