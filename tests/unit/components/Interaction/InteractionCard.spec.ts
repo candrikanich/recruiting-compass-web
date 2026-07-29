@@ -609,4 +609,86 @@ describe("InteractionCard", () => {
       expect(ariaHiddenMatches?.length).toBeGreaterThanOrEqual(3);
     });
   });
+
+  describe("Accessibility (clickable card)", () => {
+    it("should not expose button semantics when not clickable", () => {
+      const wrapper = mount(InteractionCard, {
+        props: defaultProps,
+        global: { components: { LoggedByBadge } },
+      });
+
+      expect(wrapper.attributes("role")).toBeUndefined();
+      expect(wrapper.attributes("tabindex")).toBeUndefined();
+    });
+
+    it("should expose button role, tabindex and accessible name when clickable", () => {
+      const wrapper = mount(InteractionCard, {
+        props: { ...defaultProps, clickable: true },
+        global: { components: { LoggedByBadge } },
+      });
+
+      expect(wrapper.attributes("role")).toBe("button");
+      expect(wrapper.attributes("tabindex")).toBe("0");
+      expect(wrapper.attributes("aria-label")).toBe(
+        "Open details for Test Subject",
+      );
+    });
+
+    it("should emit click when activated by pointer", async () => {
+      const wrapper = mount(InteractionCard, {
+        props: { ...defaultProps, clickable: true },
+        global: { components: { LoggedByBadge } },
+      });
+
+      await wrapper.trigger("click");
+
+      expect(wrapper.emitted("click")?.[0]).toEqual([mockInteraction]);
+    });
+
+    it("should emit click when activated by Enter", async () => {
+      const wrapper = mount(InteractionCard, {
+        props: { ...defaultProps, clickable: true },
+        global: { components: { LoggedByBadge } },
+      });
+
+      await wrapper.trigger("keydown.enter");
+
+      expect(wrapper.emitted("click")?.[0]).toEqual([mockInteraction]);
+    });
+
+    it("should emit click when activated by Space", async () => {
+      const wrapper = mount(InteractionCard, {
+        props: { ...defaultProps, clickable: true },
+        global: { components: { LoggedByBadge } },
+      });
+
+      await wrapper.trigger("keydown.space");
+
+      expect(wrapper.emitted("click")?.[0]).toEqual([mockInteraction]);
+    });
+
+    it("should not emit click on keyboard activation when not clickable", async () => {
+      const wrapper = mount(InteractionCard, {
+        props: defaultProps,
+        global: { components: { LoggedByBadge } },
+      });
+
+      await wrapper.trigger("keydown.enter");
+      await wrapper.trigger("click");
+
+      expect(wrapper.emitted("click")).toBeUndefined();
+    });
+
+    it("should not emit card click when the View button is pressed", async () => {
+      const wrapper = mount(InteractionCard, {
+        props: { ...defaultProps, clickable: true },
+        global: { components: { LoggedByBadge } },
+      });
+
+      await wrapper.find("button").trigger("click");
+
+      expect(wrapper.emitted("view")).toBeTruthy();
+      expect(wrapper.emitted("click")).toBeUndefined();
+    });
+  });
 });

@@ -18,10 +18,12 @@ interface Props {
   coachName?: string;
   currentUserId?: string;
   isParent?: boolean;
+  clickable?: boolean;
 }
 
 interface Emits {
   (event: "view", interaction: Interaction): void;
+  (event: "click", interaction: Interaction): void;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -29,6 +31,7 @@ const props = withDefaults(defineProps<Props>(), {
   coachName: undefined,
   currentUserId: "",
   isParent: false,
+  clickable: false,
 });
 
 const emit = defineEmits<Emits>();
@@ -36,11 +39,33 @@ const emit = defineEmits<Emits>();
 const handleView = () => {
   emit("view", props.interaction);
 };
+
+const handleActivate = () => {
+  if (!props.clickable) return;
+  emit("click", props.interaction);
+};
 </script>
 
 <template>
   <div
-    class="bg-white rounded-xl border border-slate-200 shadow-xs hover:shadow-md transition overflow-hidden"
+    :role="clickable ? 'button' : undefined"
+    :tabindex="clickable ? 0 : undefined"
+    :aria-label="
+      clickable
+        ? `Open details for ${
+            interaction.subject || formatType(interaction.type) + ' interaction'
+          }`
+        : undefined
+    "
+    :class="[
+      'bg-white rounded-xl border border-slate-200 shadow-xs hover:shadow-md transition overflow-hidden',
+      clickable
+        ? 'cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2'
+        : '',
+    ]"
+    @click="handleActivate"
+    @keydown.enter="handleActivate"
+    @keydown.space.prevent="handleActivate"
   >
     <div class="p-5">
       <div class="flex items-start justify-between gap-4">
@@ -141,7 +166,9 @@ const handleView = () => {
 
         <!-- Action -->
         <button
-          @click="handleView"
+          @click.stop="handleView"
+          @keydown.enter.stop
+          @keydown.space.stop
           :aria-label="
             interaction.subject
               ? 'View details for ' + interaction.subject
