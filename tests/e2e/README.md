@@ -62,8 +62,6 @@ tests/e2e/
 ├── seed/                            # Database seeding infrastructure
 │   ├── helpers/
 │   │   └── supabase-admin.ts        # Supabase admin client & account creation
-│   ├── sql/
-│   │   └── 001-reset-tables.sql     # Database reset script
 │   ├── seed.ts                      # Main seeding script
 │   └── reset.ts                     # Database cleanup script
 ├── fixtures/                        # Reusable test utilities

@@ -1,9 +1,4 @@
-import { readFileSync } from "fs";
-import { dirname, join } from "path";
-import { fileURLToPath } from "url";
 import { getSupabaseAdmin, createTestAccounts } from "./helpers/supabase-admin";
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const SEED_DATA = {
   schools: [
@@ -93,40 +88,8 @@ async function seedDatabase() {
   const supabase = getSupabaseAdmin();
 
   try {
-    // Step 1: Reset database
-    console.log("📦 Resetting tables...");
-    const resetSQL = readFileSync(
-      join(__dirname, "sql/001-reset-tables.sql"),
-      "utf-8",
-    );
-
-    // Execute reset via Supabase RPC or raw SQL (depends on permissions)
-    const statements = resetSQL
-      .split(";")
-      .map((s) => s.trim())
-      .filter((s) => s && !s.startsWith("--"));
-
-    for (const statement of statements) {
-      try {
-        await supabase.rpc("exec", { query: statement }).catch(() => {
-          // RPC might not exist, that's OK - continue
-        });
-      } catch (e) {
-        // Ignore RPC errors
-      }
-    }
-
-    // Try direct execution if RPC failed
-    try {
-      await supabase.from("schools").delete().neq("id", "00000000");
-      console.log("✅ Cleared existing test data");
-    } catch (e) {
-      console.log(
-        "⚠️  Could not clear data via API, proceeding with fresh seed",
-      );
-    }
-
-    // Step 2: Create test accounts
+    // Step 1: Create test accounts (also ensures the player's family_unit +
+    // family_members rows exist — see createTestAccounts).
     console.log("👤 Creating test accounts...");
     await createTestAccounts();
 
@@ -145,6 +108,30 @@ async function seedDatabase() {
     }
     const playerUserId = playerUser.id;
 
+    // Resolve the player's family_unit_id. The service-role client bypasses
+    // RLS, but the app's RLS on schools is family-model-only (Phase 10a) —
+    // rows seeded without family_unit_id are invisible to the signed-in test
+    // user, so seeding without it produces data the tests can't see.
+    const { data: membership, error: membershipError } = await supabase
+      .from("family_members")
+      .select("family_unit_id")
+      .eq("user_id", playerUserId)
+      .limit(1)
+      .maybeSingle();
+    if (membershipError || !membership) {
+      throw new Error(
+        "player@test.com has no family_members row — cannot seed schools without family_unit_id",
+      );
+    }
+    const familyUnitId = membership.family_unit_id as string;
+
+    // Step 2: Clear this test account's previous seed data only. This DB is
+    // shared with real users — never issue unscoped deletes here.
+    console.log("📦 Clearing previous test-account seed data...");
+    await supabase.from("coaches").delete().eq("user_id", playerUserId);
+    await supabase.from("schools").delete().eq("user_id", playerUserId);
+    console.log("✅ Cleared previous test-account seed data");
+
     // Step 3: Seed schools
     console.log("🏫 Seeding schools...");
     const { data: schoolData, error: schoolError } = await supabase
@@ -153,6 +140,7 @@ async function seedDatabase() {
         SEED_DATA.schools.map((s) => ({
           ...s,
           user_id: playerUserId,
+          family_unit_id: familyUnitId,
           created_at: new Date().toISOString(),
         })),
       )
@@ -171,6 +159,7 @@ async function seedDatabase() {
       ...coach,
       school_id: schoolMap[idx % schoolMap.length]?.id,
       user_id: playerUserId,
+      family_unit_id: familyUnitId,
       created_at: new Date().toISOString(),
     }));
 

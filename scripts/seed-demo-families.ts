@@ -4,10 +4,10 @@
  *
  * These accounts are DELIBERATELY NOT in tests/e2e/config/test-accounts.ts and
  * use a non-"test" email domain so they survive the E2E reset/seed machinery:
- *   - sql/001-reset-tables.sql deletes auth.users LIKE '%@test.com' / '%test%'
- *   - reset.ts only deletes emails listed in TEST_ACCOUNTS
- *   - seed.ts (db:seed:test) globally truncates the schools table — NEVER run
- *     that against this data; this standalone script is the only seeder for it.
+ *   - reset.ts and seed.ts scope all deletes to TEST_ACCOUNTS-owned rows
+ *     (2026-07-30: previously seed.ts/001-reset-tables.sql had unscoped
+ *     truncate/delete paths; those are gone, but keeping these accounts out
+ *     of TEST_ACCOUNTS remains the isolation boundary).
  *
  * Run: npx tsx scripts/seed-demo-families.ts
  * Requires Node 22+ (native WebSocket) and SUPABASE_SERVICE_ROLE_KEY +
