@@ -55,6 +55,16 @@ async function loginAs(page: Page, email: string, password: string) {
 }
 
 test.describe("Family Invite Flow", () => {
+  // fullyParallel lets Playwright shard this describe's 13 tests across
+  // multiple workers — each worker independently re-runs this file's
+  // module-level beforeAll (workers don't share JS state), so up to 4
+  // concurrent beforeAll runs each fire 7 Supabase inserts at once. Under
+  // that load one worker's insert set intermittently comes back partial,
+  // flipping seedReady=false for only the tests assigned to it (observed:
+  // 11/13 pass with 4 workers, 13/13 pass with 1). `mode: "serial"` pins
+  // this whole describe to a single worker, so beforeAll runs exactly once.
+  test.describe.configure({ mode: "serial" });
+
   test.beforeAll(async () => {
     try {
       const supabase = getSupabaseAdmin();
