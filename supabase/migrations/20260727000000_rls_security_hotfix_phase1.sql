@@ -68,7 +68,12 @@ AS $$
   SELECT "created_by_user_id" FROM "public"."family_units" WHERE "id" = "p_family_unit_id";
 $$;
 
+-- Supabase's ALTER DEFAULT PRIVILEGES grants EXECUTE to anon/authenticated
+-- directly at CREATE time, so revoking from PUBLIC alone leaves anon able to
+-- call this via /rest/v1/rpc — revoke the direct grant too (advisor
+-- anon_security_definer_function_executable, observed live 2026-07-30).
 REVOKE ALL ON FUNCTION "public"."family_unit_created_by"("uuid") FROM PUBLIC;
+REVOKE ALL ON FUNCTION "public"."family_unit_created_by"("uuid") FROM "anon";
 GRANT EXECUTE ON FUNCTION "public"."family_unit_created_by"("uuid") TO "authenticated";
 
 DROP POLICY IF EXISTS "family_units_update" ON "public"."family_units";
