@@ -7,31 +7,32 @@ test.describe("User Story 6.1: Parent Views Recruiting Stage Guidance", () => {
     await page.waitForLoadState("domcontentloaded");
   });
 
-  // QUARANTINED 2026-05-22: depends on seeded recruiting-stage data.
-  test.skip("Scenario 1: Parent views timeline with current phase info", async ({
+  test("Scenario 1: Parent views timeline with current phase info", async ({
     page,
   }) => {
-    // Verify current phase badge displays
-    const phaseLabel = page.locator("text=Current Phase");
+    // Verify current phase badge displays. "Current Phase" text appears
+    // twice (status card label + phase-picker button aria label) — scope to
+    // the first match, matching how a sighted user reads the page top-down.
+    const phaseLabel = page.locator("text=Current Phase").first();
     await expect(phaseLabel).toBeVisible();
 
-    // Verify phase name displays (Freshman, Sophomore, Junior, or Senior)
-    const phaseName = page.locator(
-      "text=/Freshman|Sophomore|Junior|Senior|Committed/",
-    );
+    // Verify phase name displays (Freshman, Sophomore, Junior, or Senior).
+    // Matches phase cards too (e.g. "Junior Year"), so scope to the first hit.
+    const phaseName = page
+      .locator("text=/Freshman|Sophomore|Junior|Senior|Committed/")
+      .first();
     await expect(phaseName).toBeVisible();
 
     // Verify status indicator displays
-    const statusLabel = page.locator("text=Status");
+    const statusLabel = page.locator("text=Status").first();
     await expect(statusLabel).toBeVisible();
 
     // Verify recruiting timeline header
-    const headerText = page.locator("text=Recruiting Timeline");
+    const headerText = page.getByRole("heading", { name: "Recruiting Timeline" });
     await expect(headerText).toBeVisible();
   });
 
-  // QUARANTINED 2026-05-22 (Phase 3 follow-up): seed-dependent /timeline content.
-  test.skip("Scenario 2: Parent views What Matters Now section", async ({
+  test("Scenario 2: Parent views What Matters Now section", async ({
     page,
   }) => {
     // Verify "What Matters Now" section is visible
@@ -51,8 +52,7 @@ test.describe("User Story 6.1: Parent Views Recruiting Stage Guidance", () => {
     await expect(icon).toBeVisible();
   });
 
-  // QUARANTINED 2026-05-22: depends on seeded data.
-  test.skip("Scenario 3: Parent views Common Worries section", async ({ page }) => {
+  test("Scenario 3: Parent views Common Worries section", async ({ page }) => {
     // Verify "Common Worries" section is visible
     const worriesHeader = page.locator("text=Common Worries");
     await expect(worriesHeader).toBeVisible();
@@ -60,6 +60,10 @@ test.describe("User Story 6.1: Parent Views Recruiting Stage Guidance", () => {
     // Verify question mark icon
     const questionIcon = page.locator("text=❓");
     await expect(questionIcon).toBeVisible();
+
+    // Section starts collapsed by default (pages/timeline/index.vue:
+    // worriesCollapsed = ref(true)) — expand it before asserting on its body.
+    await page.getByTestId("guidance-header").filter({ hasText: "Common Worries" }).click();
 
     // Verify expandable details elements exist
     const detailsElements = page.locator("details");
@@ -74,8 +78,7 @@ test.describe("User Story 6.1: Parent Views Recruiting Stage Guidance", () => {
     }
   });
 
-  // QUARANTINED 2026-05-22 (Phase 3 follow-up): seed-dependent /timeline content.
-  test.skip("Scenario 4: Parent views What NOT to Stress section", async ({
+  test("Scenario 4: Parent views What NOT to Stress section", async ({
     page,
   }) => {
     // Verify "What NOT to Stress" section is visible
@@ -94,8 +97,7 @@ test.describe("User Story 6.1: Parent Views Recruiting Stage Guidance", () => {
     expect(messageCount).toBeGreaterThan(0);
   });
 
-  // QUARANTINED 2026-05-22 (Phase 3 follow-up): seed-dependent /timeline content.
-  test.skip("Scenario 5: Parent views Upcoming Milestones section", async ({
+  test("Scenario 5: Parent views Upcoming Milestones section", async ({
     page,
   }) => {
     // Verify "Upcoming Milestones" section is visible
@@ -142,8 +144,7 @@ test.describe("User Story 6.1: Parent Views Recruiting Stage Guidance", () => {
     }
   });
 
-  // QUARANTINED 2026-05-22: depends on seeded data.
-  test.skip("Scenario 7: Mobile responsive layout - sections stack vertically", async ({
+  test("Scenario 7: Mobile responsive layout - sections stack vertically", async ({
     page,
   }) => {
     // Set mobile viewport
@@ -156,12 +157,15 @@ test.describe("User Story 6.1: Parent Views Recruiting Stage Guidance", () => {
     await expect(page.locator("text=What NOT to Stress About")).toBeVisible();
     await expect(page.locator("text=Upcoming Milestones")).toBeVisible();
 
-    // Verify sections stack vertically (not side-by-side)
-    const whatMattersBox = page
+    // Verify sections stack vertically (not side-by-side). boundingBox() is
+    // async — a missing await here previously made this an always-truthy
+    // Promise object, so the assertion below compared undefined and failed
+    // with a matcher-type error, not the intended layout check.
+    const whatMattersBox = await page
       .locator("text=What Matters Right Now")
       .first()
       .boundingBox();
-    const worriesBox = page
+    const worriesBox = await page
       .locator("text=Common Worries")
       .first()
       .boundingBox();
@@ -174,8 +178,7 @@ test.describe("User Story 6.1: Parent Views Recruiting Stage Guidance", () => {
     }
   });
 
-  // QUARANTINED 2026-05-22 (Phase 3 follow-up): seed-dependent /timeline content.
-  test.skip("Scenario 8: Desktop layout - sections in 2x2 grid", async ({
+  test("Scenario 8: Desktop layout - sections in 2x2 grid", async ({
     page,
   }) => {
     // Set desktop viewport
@@ -204,8 +207,7 @@ test.describe("User Story 6.1: Parent Views Recruiting Stage Guidance", () => {
     expect(loadTime).toBeLessThan(2000);
   });
 
-  // QUARANTINED 2026-05-22 (Phase 3 follow-up): seed-dependent /timeline content.
-  test.skip("Scenario 10: All guidance sections have proper styling", async ({
+  test("Scenario 10: All guidance sections have proper styling", async ({
     page,
   }) => {
     // Verify "What Matters Now" has blue gradient
@@ -241,18 +243,20 @@ test.describe("User Story 6.1: Parent Views Recruiting Stage Guidance", () => {
     expect(milestonesBgClass).toContain("bg-white");
   });
 
-  // QUARANTINED 2026-05-22: depends on seeded data.
-  test.skip("Scenario 11: Phase cards display below guidance sections", async ({
+  test("Scenario 11: Phase cards display below guidance sections", async ({
     page,
   }) => {
-    // Get position of "What Matters Now" section
-    const whatMattersBox = page
+    // Get position of "What Matters Now" section. boundingBox() is async —
+    // a missing await here previously made this an always-truthy Promise
+    // object, so the assertion below compared undefined instead of doing
+    // the intended layout check.
+    const whatMattersBox = await page
       .locator("text=What Matters Right Now")
       .first()
       .boundingBox();
 
     // Get position of first phase card (e.g., "Freshman Year")
-    const freshmanBox = page
+    const freshmanBox = await page
       .locator("text=Freshman Year")
       .first()
       .boundingBox();
