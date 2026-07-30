@@ -34,11 +34,13 @@ Phase 10a (`supabase/migrations/20260728000000_rls_account_links_consolidation_p
 
 Full enumeration and evidence: `tests/integration/rls/rls-phase10a-consolidation.integration.spec.ts` and `tests/integration/rls/rls-security-hotfix.integration.spec.ts` (live-Postgres regression suites, both gate every consolidation/deferral decision above).
 
-### Phase 10a prod pre-flight: FAILED as of 2026-07-30 — migration must NOT be applied to prod yet
+### Phase 10a prod pre-flight: repaired + PASSING as of 2026-07-30; migration stack still pending on prod
 
-The migration's two pre-flight checks were run read-only against prod (`xpxzhqghxecsjhvklsqg`, confirmed as the DB behind myrecruitingcompass.com via the `recruiting-compass-web-production` Vercel project env). Prod's migration head was `20260603000000` — it is missing all five `202607*` migrations. Results:
+The live DB (`xpxzhqghxecsjhvklsqg`, behind myrecruitingcompass.com — a single DB serves prod and non-prod) sat at migration head `20260603000000`, missing all five `202607*` migrations. First pre-flight run FAILED:
 
-- **Check A (schools with NULL `family_unit_id`): 482 of 645 rows.** All 482 belong to 2 owners, each in exactly one family unit, and 0 owners are in multiple units — a `family_unit_id` backfill derived from `family_members.user_id` is unambiguous. These are legacy rows predating family-unit writes; QA data was backfilled, prod never was.
-- **Check B (accepted `account_links` not co-resident in `family_members`): 1 row** (`account_links.id = 1ad82aac-b546-483b-ad20-1bd2b7ab7eee`, created 2025-12-10). Its `player_user_id` no longer exists in `auth.users` (deleted account); the parent still has a family. Stale link — candidate for status change to revoked/expired or deletion, pending decision.
+- **Check A: 482 of 645 schools** had NULL `family_unit_id` (2 owners, each in exactly one family unit — legacy rows predating family-unit writes).
+- **Check B: 1 accepted `account_links` row** (`1ad82aac-b546-483b-ad20-1bd2b7ab7eee`, 2025-12-10) with `player_user_id` **NULL** and `initiator_user_id = parent_user_id` — a parent-initiated link no player ever attached to; grants nothing via `get_linked_user_ids()` (NULL yields no access).
 
-Applying `20260728000000` to prod as-is will abort on Check A. Required before prod deploy: a backfill migration (schools `family_unit_id` from owner's `family_members` row) + a decision on the stale account_link, then re-run both checks.
+Repair: `supabase/migrations/20260727000004_phase10a_preflight_data_repair.sql` (unambiguous backfill + dead-self-link delete; idempotent). Its statements were executed directly on the live DB 2026-07-30 and **both checks now return 0** — the file exists so any clean-slate or catch-up apply repairs data before `20260728000000`'s abort gate. Note: because it ran via SQL (not the migration CLI), it is NOT recorded in `supabase_migrations.schema_migrations`; a future `db push` will harmlessly re-run it.
+
+**Still to do:** manually apply the six pending migration files (`20260727000000`→`20260728000000`) to the live DB — it is still missing `rls_security_hotfix_phase1` and the rest of the stack.
