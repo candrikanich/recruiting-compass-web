@@ -15,8 +15,8 @@ import {
  * self-isolated.
  *
  * Lifecycle: create → view (detail h1) → list visibility → edit name
- * via the modal → reload to confirm persistence → delete via native
- * confirm() → verify gone from list.
+ * via the modal → reload to confirm persistence → delete via the
+ * ConfirmDialog → verify gone from list.
  *
  * Auth: storageState (player.json). Parallel-safe (UUID-suffixed name).
  */
@@ -51,9 +51,6 @@ test.describe("Events CRUD — atomic lifecycle", () => {
     page,
   }) => {
     test.skip(!schoolId, "beforeAll school setup failed");
-
-    // confirm() is used by Delete on the detail page
-    page.on("dialog", (dialog) => dialog.accept());
 
     const eventName = `Atomic Showcase ${Date.now()}`;
     const updatedName = `${eventName} (updated)`;
@@ -120,9 +117,14 @@ test.describe("Events CRUD — atomic lifecycle", () => {
     await page.waitForLoadState("domcontentloaded");
     await expect(page.locator("h1").first()).toContainText(updatedName);
 
-    // 6. DELETE — native confirm(), then redirect to /events
+    // 6. DELETE — opens the in-app ConfirmDialog (native confirm() was
+    // replaced in 9991c79e); confirm inside it, then redirect to /events
     const beforeDelete = page.url();
     await page.getByRole("button", { name: "Delete", exact: true }).click();
+    await page
+      .getByRole("dialog", { name: "Delete Event" })
+      .getByRole("button", { name: "Delete", exact: true })
+      .click();
     await page.waitForFunction(
       (oldUrl) => window.location.href !== oldUrl,
       beforeDelete,

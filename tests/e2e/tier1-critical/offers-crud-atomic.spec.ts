@@ -12,8 +12,8 @@ import {
  *
  * Offers attach to a school. beforeAll/afterAll manage the parent
  * school; the test walks one offer through log → view → change status
- * to "accepted" → reload to confirm persistence → delete via native
- * confirm() dialog.
+ * to "accepted" → reload to confirm persistence → delete via the
+ * ConfirmDialog.
  *
  * Auth: storageState (player.json).
  * Parallel: UUID-suffixed school name keeps list assertions safe.
@@ -52,9 +52,6 @@ test.describe("Offers CRUD — atomic lifecycle", () => {
     page,
   }) => {
     test.skip(!schoolId, "beforeAll school setup failed");
-
-    // Auto-accept native confirm() used by Delete
-    page.on("dialog", (dialog) => dialog.accept());
 
     const today = new Date().toISOString().slice(0, 10);
 
@@ -111,9 +108,14 @@ test.describe("Offers CRUD — atomic lifecycle", () => {
     await page.waitForLoadState("domcontentloaded");
     await expect(page.locator("text=Accepted").first()).toBeVisible();
 
-    // 6. DELETE — native confirm(), then redirect to /offers
+    // 6. DELETE — opens the in-app ConfirmDialog (native confirm() was
+    // replaced in 9c72fc04); confirm inside it, then redirect to /offers
     const docDetailUrl = page.url();
     await page.getByRole("button", { name: "Delete", exact: true }).click();
+    await page
+      .getByRole("dialog", { name: "Delete Offer" })
+      .getByRole("button", { name: "Delete", exact: true })
+      .click();
     await page.waitForFunction(
       (oldUrl) => window.location.href !== oldUrl,
       docDetailUrl,
