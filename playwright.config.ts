@@ -24,6 +24,24 @@ export default defineConfig({
     // Always run Chromium
     {
       name: "chromium",
+      testIgnore: /cross-account-logout/,
+      use: { ...devices["Desktop Chrome"] },
+    },
+    // cross-account-logout.spec.ts drives a real UI login/logout as the
+    // shared player/admin TEST_ACCOUNTS — supabase.auth.signOut() defaults
+    // to global scope, which revokes that account's refresh token
+    // server-side for every session, not just this test's own browser
+    // context. Any other worker concurrently holding a player.json/admin.json
+    // storageState session gets bounced mid-test ("session expired" cascade).
+    // Isolated into its own project so `npm run test:e2e` (scripts/run-e2e.sh)
+    // can run it as a strictly sequential second phase, after the main
+    // project fully finishes — never concurrently. NOT wired via Playwright's
+    // `dependencies` option: that skips a dependent project entirely if the
+    // depended-on project has any failing test, which would silently stop
+    // this file from running on unrelated flakes.
+    {
+      name: "cross-account-logout",
+      testMatch: /cross-account-logout/,
       use: { ...devices["Desktop Chrome"] },
     },
 
@@ -32,10 +50,12 @@ export default defineConfig({
       ? [
           {
             name: "firefox",
+            testIgnore: /cross-account-logout/,
             use: { ...devices["Desktop Firefox"] },
           },
           {
             name: "webkit",
+            testIgnore: /cross-account-logout/,
             use: { ...devices["Desktop Safari"] },
           },
         ]
