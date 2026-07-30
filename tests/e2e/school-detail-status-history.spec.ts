@@ -2,12 +2,17 @@ import { test, expect } from "@playwright/test";
 import {
   schoolHelpers,
   createSchoolData,
+  deleteSchoolDirect,
   generateUniqueSchoolName,
   statusHistorySelectors,
 } from "./fixtures/schools.fixture";
 
 test.describe("School Detail - Status History", () => {
   let schoolId: string;
+
+  test.afterEach(async () => {
+    await deleteSchoolDirect(schoolId);
+  });
 
   test("should show loading spinner on initial load", async ({ page }) => {
     const schoolData = createSchoolData({
