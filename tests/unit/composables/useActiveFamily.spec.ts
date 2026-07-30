@@ -88,6 +88,47 @@ describe("useActiveFamily", () => {
   });
 
   describe("Athlete Selection Priority", () => {
+    // Regression: the shared family-context singleton can be created outside a
+    // component setup (e.g. viewLogging.global.ts middleware on a parent's
+    // first navigation, before app.vue provides it). vue-router's useRoute()
+    // returns undefined there, and reading route.query then threw inside
+    // initializeFamily's catch — wiping the freshly fetched families and
+    // leaving isViewingAsParent permanently false (no athlete switcher,
+    // enabled checkboxes on /tasks).
+    it("still resolves parent families when created outside a component (useRoute() undefined)", async () => {
+      const { useRoute } = await import("vue-router");
+      vi.mocked(useRoute).mockReturnValueOnce(undefined as never);
+
+      mockFetchFn.mockResolvedValue({
+        families: [
+          {
+            familyUnitId: "family-1",
+            athleteId: "athlete-1",
+            athleteName: "Player 2028",
+            graduationYear: 2028,
+            familyName: "Test Family",
+          },
+          {
+            familyUnitId: "family-1",
+            athleteId: "athlete-2",
+            athleteName: "Player 2030",
+            graduationYear: 2030,
+            familyName: "Test Family",
+          },
+        ],
+      });
+
+      const userStore = useUserStore();
+      userStore.user = { id: "parent-1", role: "parent" } as any;
+
+      const activeFamily = useActiveFamily();
+      await activeFamily.initializeFamily();
+
+      expect(activeFamily.parentAccessibleFamilies.value).toHaveLength(2);
+      expect(activeFamily.activeAthleteId.value).toBe("athlete-1");
+      expect(activeFamily.isViewingAsParent.value).toBe(true);
+    });
+
     it("selects athlete closest to graduation (earliest year)", async () => {
       const { useRoute: originalUseRoute } = await import("vue-router");
       const mockRoute = {

@@ -162,68 +162,78 @@ export const useActiveFamily = () => {
           playerFamilyId.value = data.family_unit_id;
         }
       } else if (isParent.value) {
-        // For parents, fetch all accessible families via API
-        try {
-          const response = await $fetchAuth<{
-            families?: Array<{
+        // For parents, fetch all accessible families via API. Only the fetch
+        // itself is inside the try — the athlete-selection below must not be
+        // able to wipe a successfully fetched list from the catch.
+        let families:
+          | Array<{
               familyUnitId: string;
               athleteId: string;
               athleteName: string;
               graduationYear: number | null;
               familyName: string;
-            }>;
+            }>
+          | undefined;
+        try {
+          const response = await $fetchAuth<{
+            families?: typeof families;
           }>("/api/family/accessible");
 
           logger.debug(
             `[useActiveFamily] API response: ${response.families?.length || 0} families`,
             response.families,
           );
-
-          if (response.families) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            parentAccessibleFamilies.value = response.families as any;
-
-            // Set current athlete: route param > localStorage > closest to graduation > first
-            const athleteIdFromRoute = route.query.athlete_id as
-              | string
-              | undefined;
-
-            if (
-              athleteIdFromRoute &&
-              parentAccessibleFamilies.value.some(
-                (f) => f.athleteId === athleteIdFromRoute,
-              )
-            ) {
-              // Query param takes precedence
-              currentAthleteId.value = athleteIdFromRoute;
-            } else if (typeof window !== "undefined") {
-              // Try localStorage (only on client side)
-              const savedAthleteId = localStorage.getItem(
-                "parent_last_viewed_athlete",
-              );
-
-              if (
-                savedAthleteId &&
-                parentAccessibleFamilies.value.some(
-                  (f) => f.athleteId === savedAthleteId,
-                )
-              ) {
-                currentAthleteId.value = savedAthleteId;
-              } else {
-                // Auto-select athlete closest to graduation
-                currentAthleteId.value = selectClosestToGraduation();
-              }
-            } else {
-              // Server-side fallback
-              currentAthleteId.value = selectClosestToGraduation();
-            }
-          }
+          families = response.families;
         } catch (err) {
           // If API call fails, log the error for debugging
           const errMsg =
             err instanceof Error ? err.message : JSON.stringify(err);
           logger.debug("[useActiveFamily] API call failed:", errMsg);
           parentAccessibleFamilies.value = [];
+        }
+
+        if (families) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          parentAccessibleFamilies.value = families as any;
+
+          // Set current athlete: route param > localStorage > closest to
+          // graduation > first. route is undefined when this instance was
+          // created outside a component setup (vue-router's useRoute() has
+          // nothing to inject there — e.g. the shared singleton born in a
+          // route middleware), so it must be optional.
+          const athleteIdFromRoute = route?.query?.athlete_id as
+            | string
+            | undefined;
+
+          if (
+            athleteIdFromRoute &&
+            parentAccessibleFamilies.value.some(
+              (f) => f.athleteId === athleteIdFromRoute,
+            )
+          ) {
+            // Query param takes precedence
+            currentAthleteId.value = athleteIdFromRoute;
+          } else if (typeof window !== "undefined") {
+            // Try localStorage (only on client side)
+            const savedAthleteId = localStorage.getItem(
+              "parent_last_viewed_athlete",
+            );
+
+            if (
+              savedAthleteId &&
+              parentAccessibleFamilies.value.some(
+                (f) => f.athleteId === savedAthleteId,
+              )
+            ) {
+              currentAthleteId.value = savedAthleteId;
+            } else {
+              // Auto-select athlete closest to graduation
+              currentAthleteId.value = selectClosestToGraduation();
+            }
+          } else {
+            // Server-side fallback
+            currentAthleteId.value = selectClosestToGraduation();
+          }
         }
       }
     } catch (err: unknown) {
