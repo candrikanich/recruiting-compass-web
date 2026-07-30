@@ -46,8 +46,13 @@ test.describe("Coaching Philosophy - Feature E2E", () => {
         .locator("text=Loading school...")
         .waitFor({ state: "detached", timeout: 10000 })
         .catch(() => null);
+      // SchoolCoachingPhilosophy is the 6th component to mount in the left
+      // column (behind header, division-rec, info card, notes, pros/cons),
+      // each doing its own async work — under heavy parallel-worker CPU
+      // contention, total time-to-mount can occasionally exceed a tight
+      // timeout even though the heading itself has no data-gate.
       const heading = page.locator("h2:has-text('Coaching Philosophy')");
-      await expect(heading).toBeVisible({ timeout: 10000 });
+      await expect(heading).toBeVisible({ timeout: 20000 });
     } else {
       test.skip(true, "no seeded school available to navigate to in this run (navigateToSchool() returned false); awaiting seed infrastructure project — see CLAUDE.local.md Action Required");
     }

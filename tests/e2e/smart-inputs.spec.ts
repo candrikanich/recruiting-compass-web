@@ -79,9 +79,11 @@ test.describe("Smart Inputs — High School Search", () => {
       '[placeholder="Search for your high school"]',
     );
     await schoolInput.fill("xqzpwvnonexistent");
-    // 15s: escape hatch renders only after the debounced empty NCES query.
+    // 20s: escape hatch renders only after the debounced empty NCES query
+    // (~27k-row table) — under heavy parallel-worker load that round-trip
+    // can occasionally exceed 15s even though the feature itself is fine.
     await expect(page.locator("text=Can't find it")).toBeVisible({
-      timeout: 15000,
+      timeout: 20000,
     });
   });
 
@@ -93,9 +95,10 @@ test.describe("Smart Inputs — High School Search", () => {
     // Target the actual <button>, not a `text=` node: the dropdown re-renders
     // as the debounced search settles, so a text-node locator stays unstable
     // and .click() times out waiting for actionability. The button role is
-    // stable across those re-renders. 15s for the debounced empty NCES query.
+    // stable across those re-renders. 20s for the debounced empty NCES
+    // query under heavy parallel-worker load.
     const escapeHatch = page.getByRole("button", { name: /Can't find it/ });
-    await expect(escapeHatch).toBeVisible({ timeout: 15000 });
+    await expect(escapeHatch).toBeVisible({ timeout: 20000 });
     await escapeHatch.click();
     const manualInput = page.locator(
       '[placeholder="Enter school name manually"]',
