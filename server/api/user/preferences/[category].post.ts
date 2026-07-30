@@ -89,11 +89,9 @@ export default defineEventHandler(async (event) => {
     if (err instanceof Error && "statusCode" in err) throw err;
 
     if (err instanceof z.ZodError) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const errors = (err as any).errors as Array<{ message: string }>;
       throw createError({
         statusCode: 422,
-        statusMessage: "Invalid preference data: " + errors[0]?.message,
+        statusMessage: "Invalid preference data: " + err.issues[0]?.message,
       });
     }
 

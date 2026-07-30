@@ -70,14 +70,10 @@ export default defineEventHandler(async (event) => {
     // Validate request body using existing schema
     const validationResult = playerDetailsSchema.safeParse(body);
     if (!validationResult.success) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const errors = (validationResult.error as any).errors as Array<{
-        message: string;
-      }>;
       throw createError({
         statusCode: 400,
         statusMessage: "Invalid player details",
-        data: errors,
+        data: validationResult.error.issues,
       });
     }
 

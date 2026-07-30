@@ -26,10 +26,13 @@ vi.mock("~/utils/validation/schemas", () => ({
   resetPasswordSchema: {
     safeParse: vi.fn(() => {
       if (mockValidationState.shouldFail) {
+        // Real Zod v4 ZodError exposes `.issues` (the v3 `.errors` alias was
+        // removed) — keep this mock's shape faithful so the handler's
+        // property access is exercised against what production Zod returns.
         return {
           success: false,
           error: {
-            errors: [{ message: mockValidationState.failMessage }],
+            issues: [{ message: mockValidationState.failMessage }],
           },
         };
       }

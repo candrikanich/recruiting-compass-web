@@ -150,4 +150,25 @@ describe("POST /api/recruiting-packet/email — rate limiting", () => {
 
     expect(result).toMatchObject({ success: true });
   });
+
+  // Regression for the Zod v4 rename (ZodError.errors -> .issues): the
+  // handler must surface a clean 400 with the first issue's message, not
+  // crash reading the removed `.errors` property.
+  it("rejects an invalid body with 400 and the first Zod issue message", async () => {
+    const { readBody } = await import("h3");
+    vi.mocked(readBody).mockResolvedValueOnce({
+      recipients: [],
+      subject: "Recruiting Packet",
+      body: "Please find my profile attached.",
+    });
+
+    await expect(
+      handler({} as Parameters<typeof handler>[0]),
+    ).rejects.toMatchObject({
+      statusCode: 400,
+      message: expect.stringContaining(
+        "Validation error: At least one recipient is required",
+      ),
+    });
+  });
 });

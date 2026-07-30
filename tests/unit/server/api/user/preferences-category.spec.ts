@@ -222,21 +222,18 @@ describe("POST /api/user/preferences/[category]", () => {
     ).rejects.toMatchObject({ statusCode: 422 });
   });
 
-  // BUG FOUND while writing this test (documented, not fixed — out of this
-  // test-only phase's scope): the handler's ZodError branch reads
-  // `(err as any).errors`, which was renamed to `.issues` in Zod v4 (this
-  // repo is on zod@4.4.3 — `errors` is now `undefined`). So instead of a
-  // clean 422 "Invalid preference data: ...", invalid POST bodies crash
-  // with an unhandled TypeError ("Cannot read properties of undefined
-  // (reading '0')") that never even reaches the generic 500 fallback,
-  // since it's thrown from inside the catch block itself. Asserted as-is;
-  // flagged in the Phase 11 report as a follow-up fix (change `.errors` to
-  // `.issues`).
-  it("BUG: a body that fails Zod validation crashes with an unhandled TypeError instead of a 422 (zod v4's ZodError.errors -> .issues rename)", async () => {
+  // Regression for the Zod v4 rename (ZodError.errors -> .issues): the
+  // handler must surface a clean 422 with the first issue's message, not
+  // crash with "Cannot read properties of undefined" from reading the
+  // removed `.errors` property inside its own catch block.
+  it("rejects a body that fails Zod validation with 422 and the first issue message (zod v4 .issues)", async () => {
     const handler = await loadHandler();
     await expect(
       handler(fakeEvent("dashboard", { data: "not-an-object" })),
-    ).rejects.toThrow(/Cannot read propert/);
+    ).rejects.toMatchObject({
+      statusCode: 422,
+      statusMessage: expect.stringContaining("Invalid preference data:"),
+    });
   });
 
   it("upserts the preference row and returns the saved data", async () => {

@@ -66,11 +66,9 @@ export default defineEventHandler(async (event) => {
     if (err instanceof Error && "statusCode" in err) throw err;
 
     if (err instanceof z.ZodError) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const errors = (err as any).errors as Array<{ message: string }>;
       throw createError({
         statusCode: 400,
-        statusMessage: "Invalid history data: " + errors[0]?.message,
+        statusMessage: "Invalid history data: " + err.issues[0]?.message,
       });
     }
 

@@ -104,11 +104,9 @@ export default defineEventHandler(async (event) => {
     body = emailPacketSchema.parse(rawBody);
   } catch (err) {
     if (err instanceof z.ZodError) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const errors = (err as any).errors as Array<{ message: string }>;
       throw createError({
         statusCode: 400,
-        statusMessage: `Validation error: ${errors[0]?.message}`,
+        statusMessage: `Validation error: ${err.issues[0]?.message}`,
       });
     }
     throw createError({
