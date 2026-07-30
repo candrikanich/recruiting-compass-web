@@ -294,6 +294,8 @@ export default defineEventHandler(async (event): Promise<SyncSummary> => {
       },
     };
   } catch (error) {
+    if (error instanceof Error && "statusCode" in error) throw error;
+
     const errorMessage =
       error instanceof Error ? error.message : "Social media sync failed";
 

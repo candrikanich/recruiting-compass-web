@@ -191,15 +191,10 @@ describe("Parent/Athlete Access Control — mutation route wiring (mocked authz)
   );
 
   // server/api/social/sync.post.ts calls assertNotParent() INSIDE its own
-  // try/catch, whose catch block unconditionally rewrites any thrown error
-  // to a generic 500 "Social media sync failed" (unlike the four routes
-  // above, which call assertNotParent() before their try block, or — like
-  // notifications/generate — explicitly re-throw when `statusCode` is
-  // already set). Net effect: a parent hitting this endpoint gets a
-  // misleading 500 instead of 403. This is a pre-existing bug this phase's
-  // scope is tests-only, so it's asserted as-is rather than fixed — see the
-  // Phase 11 report for a follow-up recommendation.
-  it("BUG: POST /api/social/sync rewrites the parent-rejection 403 to a generic 500 (assertNotParent runs inside its try/catch)", async () => {
+  // try/catch; the catch re-throws H3 errors that already carry a
+  // statusCode (same guard as notifications/generate) so the parent
+  // rejection surfaces as 403 instead of being rewritten to a generic 500.
+  it("POST /api/social/sync surfaces the parent-rejection 403 (statusCode errors re-thrown, not rewritten to 500)", async () => {
     vi.resetModules();
     const { requireAuth } = await import("~/server/utils/auth");
     const { createServerSupabaseClient } = await import(
@@ -216,8 +211,8 @@ describe("Parent/Athlete Access Control — mutation route wiring (mocked authz)
     const handler = (await import("~/server/api/social/sync.post")).default;
 
     await expect(handler(fakeEvent())).rejects.toMatchObject({
-      statusCode: 500,
-      statusMessage: "Social media sync failed",
+      statusCode: 403,
+      message: expect.stringContaining("read-only"),
     });
   });
 
