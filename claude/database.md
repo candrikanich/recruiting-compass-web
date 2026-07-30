@@ -33,3 +33,12 @@ Phase 10a (`supabase/migrations/20260728000000_rls_account_links_consolidation_p
 - **DELETE on `schools`, `coaches`, `documents`, `performance_metrics`.** No family-model DELETE policy exists on these tables at all — this is a structural gap, not a redundant pair. **Precondition to drop the account_links policy:** first add a family-model DELETE policy; dropping without one removes delete access entirely.
 
 Full enumeration and evidence: `tests/integration/rls/rls-phase10a-consolidation.integration.spec.ts` and `tests/integration/rls/rls-security-hotfix.integration.spec.ts` (live-Postgres regression suites, both gate every consolidation/deferral decision above).
+
+### Phase 10a prod pre-flight: FAILED as of 2026-07-30 — migration must NOT be applied to prod yet
+
+The migration's two pre-flight checks were run read-only against prod (`xpxzhqghxecsjhvklsqg`, confirmed as the DB behind myrecruitingcompass.com via the `recruiting-compass-web-production` Vercel project env). Prod's migration head was `20260603000000` — it is missing all five `202607*` migrations. Results:
+
+- **Check A (schools with NULL `family_unit_id`): 482 of 645 rows.** All 482 belong to 2 owners, each in exactly one family unit, and 0 owners are in multiple units — a `family_unit_id` backfill derived from `family_members.user_id` is unambiguous. These are legacy rows predating family-unit writes; QA data was backfilled, prod never was.
+- **Check B (accepted `account_links` not co-resident in `family_members`): 1 row** (`account_links.id = 1ad82aac-b546-483b-ad20-1bd2b7ab7eee`, created 2025-12-10). Its `player_user_id` no longer exists in `auth.users` (deleted account); the parent still has a family. Stale link — candidate for status change to revoked/expired or deletion, pending decision.
+
+Applying `20260728000000` to prod as-is will abort on Check A. Required before prod deploy: a backfill migration (schools `family_unit_id` from owner's `family_members` row) + a decision on the stale account_link, then re-run both checks.
