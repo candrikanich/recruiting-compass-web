@@ -25,6 +25,13 @@ let athlete2Id: string | null = null;
 let parentFamilyUnitId: string | null = null;
 
 test.describe("Parent Task Viewing Workflow", () => {
+  // fullyParallel can shard this describe's tests across workers, each of
+  // which independently re-runs beforeAll -- the existing fallback lookup
+  // below already mitigates the resulting race, but pinning to one worker
+  // removes it entirely (same pattern applied to family-invite-flow.spec.ts,
+  // notifications.spec.ts, coaching-philosophy.spec.ts this session).
+  test.describe.configure({ mode: "serial" });
+
   test.beforeAll(async () => {
     try {
       const supabase = getSupabaseAdmin();
