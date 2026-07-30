@@ -20,6 +20,12 @@ let seededDeletableIds: string[] = [];
 let adminGranted = false;
 
 test.describe("Admin Dashboard - Bulk Delete Users", () => {
+  // fullyParallel can shard this describe's tests across workers, each of
+  // which independently re-runs beforeAll (workers don't share JS state) --
+  // same race found in family-invite-flow.spec.ts and others this session,
+  // here creating real auth.users concurrently. Pin to one worker.
+  test.describe.configure({ mode: "serial" });
+
   test.use({
     storageState: resolve(process.cwd(), "tests/e2e/.auth/admin.json"),
   });
