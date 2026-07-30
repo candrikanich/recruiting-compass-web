@@ -1,4 +1,11 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Browser } from "@playwright/test";
+import { resolve } from "path";
+import {
+  schoolHelpers,
+  createSchoolData,
+  deleteSchoolDirect,
+  generateUniqueSchoolName,
+} from "./fixtures/schools.fixture";
 
 /**
  * E2E Tests for Coaching Philosophy Feature
@@ -9,25 +16,55 @@ import { test, expect } from "@playwright/test";
  */
 
 test.describe("Coaching Philosophy - Feature E2E", () => {
+  // fullyParallel can shard this describe's tests across workers, each of
+  // which would otherwise independently re-run beforeAll -- pin to one
+  // worker so the seeded school is created exactly once (same race found
+  // in family-invite-flow.spec.ts).
+  test.describe.configure({ mode: "serial" });
+
+  let schoolId: string | null = null;
+  let seedError: string | null = null;
+
+  test.beforeAll(async ({ browser }: { browser: Browser }) => {
+    try {
+      const ctx = await browser.newContext({
+        storageState: resolve(process.cwd(), "tests/e2e/.auth/player.json"),
+      });
+      try {
+        const page = await ctx.newPage();
+        schoolId = await schoolHelpers.createSchool(
+          page,
+          createSchoolData({
+            name: generateUniqueSchoolName("Coaching Philosophy"),
+          }),
+        );
+      } finally {
+        await ctx.close();
+      }
+    } catch (e) {
+      seedError = e instanceof Error ? e.message : String(e);
+      console.warn("⚠️  coaching-philosophy seed failed:", e);
+    }
+  });
+
+  test.afterAll(async () => {
+    if (schoolId) await deleteSchoolDirect(schoolId);
+  });
+
   /**
-   * Helper function to navigate to a school detail page
-   * Returns true if successful, false otherwise
+   * Helper function to navigate to the seeded school's detail page.
+   * Returns true if successful, false otherwise.
    */
   const navigateToSchool = async (page: any) => {
+    if (!schoolId) return false;
     try {
-      await page.goto("/schools", { waitUntil: "domcontentloaded" });
+      await page.goto(`/schools/${schoolId}`, { waitUntil: "domcontentloaded" });
       // Surface any pending "session expired" redirect before sampling — the
-      // first test in this file occasionally lands on /schools with stale
-      // session state and bounces to /login mid-test if we click too early.
+      // first test in this file occasionally lands here with stale session
+      // state and bounces to /login mid-test if we click too early.
       if (page.url().includes("/login")) {
         return false;
       }
-      const firstLink = page
-        .locator("a[href*='/schools/']:not([href$='/new'])")
-        .first();
-      await firstLink.waitFor({ state: "visible", timeout: 10000 });
-      await firstLink.click();
-      await page.waitForURL(/\/schools\/[^/]+$/, { timeout: 10000 });
       return true;
     } catch {
       return false;
@@ -54,7 +91,7 @@ test.describe("Coaching Philosophy - Feature E2E", () => {
       const heading = page.locator("h2:has-text('Coaching Philosophy')");
       await expect(heading).toBeVisible({ timeout: 20000 });
     } else {
-      test.skip(true, "no seeded school available to navigate to in this run (navigateToSchool() returned false); awaiting seed infrastructure project — see CLAUDE.local.md Action Required");
+      test.skip(true, `school seed unavailable or session bounced to /login: ${seedError ?? "unknown"}`);
     }
   });
 
@@ -78,7 +115,7 @@ test.describe("Coaching Philosophy - Feature E2E", () => {
         expect(isEditVisible).toBe(true);
       }
     } else {
-      test.skip(true, "no seeded school available to navigate to in this run (navigateToSchool() returned false); awaiting seed infrastructure project — see CLAUDE.local.md Action Required");
+      test.skip(true, `school seed unavailable or session bounced to /login: ${seedError ?? "unknown"}`);
     }
   });
 
@@ -110,7 +147,7 @@ test.describe("Coaching Philosophy - Feature E2E", () => {
         }
       }
     } else {
-      test.skip(true, "no seeded school available to navigate to in this run (navigateToSchool() returned false); awaiting seed infrastructure project — see CLAUDE.local.md Action Required");
+      test.skip(true, `school seed unavailable or session bounced to /login: ${seedError ?? "unknown"}`);
     }
   });
 
@@ -151,7 +188,7 @@ test.describe("Coaching Philosophy - Feature E2E", () => {
         }
       }
     } else {
-      test.skip(true, "no seeded school available to navigate to in this run (navigateToSchool() returned false); awaiting seed infrastructure project — see CLAUDE.local.md Action Required");
+      test.skip(true, `school seed unavailable or session bounced to /login: ${seedError ?? "unknown"}`);
     }
   });
 
@@ -197,7 +234,7 @@ test.describe("Coaching Philosophy - Feature E2E", () => {
         }
       }
     } else {
-      test.skip(true, "no seeded school available to navigate to in this run (navigateToSchool() returned false); awaiting seed infrastructure project — see CLAUDE.local.md Action Required");
+      test.skip(true, `school seed unavailable or session bounced to /login: ${seedError ?? "unknown"}`);
     }
   });
 
@@ -243,7 +280,7 @@ test.describe("Coaching Philosophy - Feature E2E", () => {
         }
       }
     } else {
-      test.skip(true, "no seeded school available to navigate to in this run (navigateToSchool() returned false); awaiting seed infrastructure project — see CLAUDE.local.md Action Required");
+      test.skip(true, `school seed unavailable or session bounced to /login: ${seedError ?? "unknown"}`);
     }
   });
 
@@ -291,7 +328,7 @@ test.describe("Coaching Philosophy - Feature E2E", () => {
         }
       }
     } else {
-      test.skip(true, "no seeded school available to navigate to in this run (navigateToSchool() returned false); awaiting seed infrastructure project — see CLAUDE.local.md Action Required");
+      test.skip(true, `school seed unavailable or session bounced to /login: ${seedError ?? "unknown"}`);
     }
   });
 
@@ -340,7 +377,7 @@ Line 3: Development`;
         }
       }
     } else {
-      test.skip(true, "no seeded school available to navigate to in this run (navigateToSchool() returned false); awaiting seed infrastructure project — see CLAUDE.local.md Action Required");
+      test.skip(true, `school seed unavailable or session bounced to /login: ${seedError ?? "unknown"}`);
     }
   });
 
@@ -383,7 +420,7 @@ Line 3: Development`;
         }
       }
     } else {
-      test.skip(true, "no seeded school available to navigate to in this run (navigateToSchool() returned false); awaiting seed infrastructure project — see CLAUDE.local.md Action Required");
+      test.skip(true, `school seed unavailable or session bounced to /login: ${seedError ?? "unknown"}`);
     }
   });
 
@@ -429,7 +466,7 @@ Line 3: Development`;
         }
       }
     } else {
-      test.skip(true, "no seeded school available to navigate to in this run (navigateToSchool() returned false); awaiting seed infrastructure project — see CLAUDE.local.md Action Required");
+      test.skip(true, `school seed unavailable or session bounced to /login: ${seedError ?? "unknown"}`);
     }
   });
 });

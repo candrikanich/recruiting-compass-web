@@ -10,6 +10,13 @@ const RUN_ID = Date.now();
 let seededIds: string[] = [];
 
 test.describe("Notifications Page", () => {
+  // fullyParallel can shard this describe's tests across workers, each of
+  // which independently re-runs the module-level beforeAll (workers don't
+  // share JS state) -- concurrent beforeAll runs racing on Supabase inserts
+  // caused intermittent partial-seed skips in family-invite-flow.spec.ts
+  // under the same architecture. Pin to one worker so beforeAll runs once.
+  test.describe.configure({ mode: "serial" });
+
   test.use({
     storageState: resolve(process.cwd(), "tests/e2e/.auth/player.json"),
   });
