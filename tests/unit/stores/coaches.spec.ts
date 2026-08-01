@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { setActivePinia, createPinia } from "pinia";
 import { useCoachStore } from "~/stores/coaches";
 import { useUserStore } from "~/stores/user";
+import { useFamilyContext } from "~/composables/useFamilyContext";
 import type { Coach } from "~/types/models";
 
 // Mock useSupabase
@@ -18,9 +19,9 @@ vi.mock("~/utils/validation/sanitize", () => ({
 }));
 
 vi.mock("~/composables/useFamilyContext", () => ({
-  useFamilyContext: () => ({
+  useFamilyContext: vi.fn(() => ({
     activeFamilyId: { value: "family-123" },
-  }),
+  })),
 }));
 
 describe("useCoachStore", () => {
@@ -293,6 +294,34 @@ describe("useCoachStore", () => {
 
       expect(result).toEqual(createdCoach);
       expect(coachStore.coaches).toHaveLength(2);
+    });
+
+    it("should stamp family_unit_id from active family context on create", async () => {
+      const createdCoach = createMockCoach();
+      mockQuery.single.mockResolvedValue({ data: createdCoach, error: null });
+
+      await coachStore.createCoach("school-123", {
+        role: "head",
+        first_name: "Jane",
+        last_name: "Doe",
+      } as any);
+
+      const insertCall = mockQuery.insert.mock.calls[0][0][0];
+      expect(insertCall.family_unit_id).toBe("family-123");
+    });
+
+    it("should throw when no family context is loaded on create", async () => {
+      vi.mocked(useFamilyContext).mockReturnValueOnce({
+        activeFamilyId: { value: null },
+      } as any);
+
+      await expect(
+        coachStore.createCoach("school-123", {
+          role: "head",
+          first_name: "Jane",
+          last_name: "Doe",
+        } as any),
+      ).rejects.toThrow("No family context");
     });
 
     it("should sanitize notes field on create", async () => {

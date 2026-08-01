@@ -192,6 +192,8 @@ export default defineEventHandler(async (event): Promise<SyncSummary> => {
           };
         });
 
+        // Service-role write: DB trigger derives family_unit_id from the
+        // NOT NULL school_id (Phase 1 migration) when not stamped here.
         const { error: upsertError } = await supabaseAny
           .from("social_media_posts")
           .upsert(postsToUpsert, {
@@ -245,6 +247,8 @@ export default defineEventHandler(async (event): Promise<SyncSummary> => {
           };
         });
 
+        // Service-role write: DB trigger derives family_unit_id from the
+        // NOT NULL school_id (Phase 1 migration) when not stamped here.
         const { error: upsertError } = await supabaseAny
           .from("social_media_posts")
           .upsert(postsToUpsert, {

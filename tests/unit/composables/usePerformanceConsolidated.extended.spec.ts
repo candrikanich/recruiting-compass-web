@@ -37,6 +37,15 @@ vi.mock("~/stores/user", () => ({
   }),
 }));
 
+let mockActiveFamilyId: string | null = "family-123";
+vi.mock("~/composables/useFamilyContext", () => ({
+  useFamilyContext: vi.fn(() => ({
+    get activeFamilyId() {
+      return { value: mockActiveFamilyId };
+    },
+  })),
+}));
+
 interface MockQuery {
   select: ReturnType<typeof vi.fn>;
   eq: ReturnType<typeof vi.fn>;
@@ -116,6 +125,7 @@ describe("usePerformanceConsolidated (extended)", () => {
     setActivePinia(createPinia());
     vi.clearAllMocks();
     mockUser = { id: "user-123", email: "test@example.com" };
+    mockActiveFamilyId = "family-123";
     mockQuery = buildMockQuery();
     mockSupabase.from.mockReturnValue(mockQuery);
   });
@@ -232,6 +242,38 @@ describe("usePerformanceConsolidated (extended)", () => {
         } as Omit<PerformanceMetric, "id" | "created_at" | "updated_at">),
       ).rejects.toBeDefined();
       expect(error.value).toBe("Failed to create metric");
+    });
+
+    it("stamps family_unit_id from active family context on insert", async () => {
+      mockQuery.__setTestData(createMockMetric());
+      const { createMetric } = usePerformanceConsolidated();
+      await createMetric({
+        event_id: null,
+        metric_type: "exit_velo",
+        value: 90,
+        unit: "mph",
+        recorded_date: "2024-01-01T00:00:00Z",
+        verified: false,
+      } as Omit<PerformanceMetric, "id" | "created_at" | "updated_at">);
+
+      const insertCall = mockQuery.insert.mock.calls[0][0][0];
+      expect(insertCall.family_unit_id).toBe("family-123");
+    });
+
+    it("throws when no family context is loaded", async () => {
+      mockActiveFamilyId = null;
+      const { createMetric } = usePerformanceConsolidated();
+      await expect(
+        createMetric({
+          event_id: null,
+          metric_type: "exit_velo",
+          value: 90,
+          unit: "mph",
+          recorded_date: "2024-01-01T00:00:00Z",
+          verified: false,
+        } as Omit<PerformanceMetric, "id" | "created_at" | "updated_at">),
+      ).rejects.toThrow("Family context not loaded");
+      expect(mockQuery.insert).not.toHaveBeenCalled();
     });
   });
 

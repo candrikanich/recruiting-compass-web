@@ -13,19 +13,19 @@ import type { Database } from "~/types/database";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 /**
- * Check if user has access to school (either owner or parent link).
- * Uses a single query to fetch school id + user_id, then conditionally
- * checks the parent link — reducing sequential queries from 3 to max 2.
+ * Check if user has access to school: direct owner, legacy account_links
+ * parent, or family-model member of the school's family unit (union of
+ * both sharing models during transition — see planning/audit-2026-07-27-findings.md:33).
  */
 async function hasAccessToSchool(
   userId: string,
   schoolId: string,
   supabase: SupabaseClient<Database>,
 ): Promise<boolean> {
-  // Single query: fetch school with ownership info
+  // Single query: fetch school with ownership + family info
   const { data: school } = await supabase
     .from("schools")
-    .select("id, user_id")
+    .select("id, user_id, family_unit_id")
     .eq("id", schoolId)
     .single();
 
@@ -34,7 +34,7 @@ async function hasAccessToSchool(
   // User is the direct owner — fast path
   if (school.user_id === userId) return true;
 
-  // Check if user is a parent linked to the school's athlete
+  // Legacy path: user is a parent linked to the school's athlete
   const { data: link } = await supabase
     .from("account_links")
     .select("id")
@@ -43,7 +43,21 @@ async function hasAccessToSchool(
     .eq("status", "accepted")
     .single();
 
-  return !!link;
+  if (link) return true;
+
+  // Family-model path: user is a member of the school's family unit
+  if (school.family_unit_id) {
+    const { data: membership } = await supabase
+      .from("family_members")
+      .select("id")
+      .eq("user_id", userId)
+      .eq("family_unit_id", school.family_unit_id)
+      .single();
+
+    if (membership) return true;
+  }
+
+  return false;
 }
 
 export default defineEventHandler(async (event) => {

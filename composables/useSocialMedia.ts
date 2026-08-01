@@ -1,6 +1,8 @@
-import { ref, computed } from "vue";
+import { ref, computed, inject } from "vue";
 import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
+import { useFamilyContext } from "~/composables/useFamilyContext";
+import type { useActiveFamily } from "~/composables/useActiveFamily";
 
 import { socialMediaPostSchema } from "~/utils/validation/schemas";
 import { sanitizeHtml, sanitizeUrl } from "~/utils/validation/sanitize";
@@ -29,6 +31,9 @@ export interface SocialPost {
 export const useSocialMedia = () => {
   const supabase = useSupabase();
   const _userStore = useUserStore();
+  const injectedFamily =
+    inject<ReturnType<typeof useActiveFamily>>("activeFamily");
+  const activeFamily = injectedFamily ?? useFamilyContext();
 
   const posts = ref<SocialPost[]>([]);
   const loading = ref(false);
@@ -88,6 +93,10 @@ export const useSocialMedia = () => {
   const createPost = async (
     postData: Omit<SocialPost, "id" | "created_at" | "updated_at">,
   ) => {
+    if (!activeFamily.activeFamilyId.value) {
+      throw new Error("Family context not loaded");
+    }
+
     loading.value = true;
     error.value = null;
 
@@ -119,7 +128,13 @@ export const useSocialMedia = () => {
       const { data, error: insertError } =
         (await // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (supabase.from("social_media_posts") as any)
-          .insert([validated])
+          .insert([
+            {
+              ...validated,
+              // family_unit_id pending Supabase type regen (Phase 1 migration)
+              family_unit_id: activeFamily.activeFamilyId.value,
+            },
+          ])
           .select()
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           .single()) as { data: SocialPost; error: any };

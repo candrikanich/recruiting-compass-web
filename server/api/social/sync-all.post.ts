@@ -162,6 +162,8 @@ export default defineEventHandler(async (event): Promise<SyncStats> => {
 
               const sentimentResult = analyzeSentiment(post.post_content);
 
+              // Service-role write: DB trigger derives family_unit_id from the
+              // NOT NULL school_id (Phase 1 migration) when not stamped here.
               const { error: insertError } = await supabase
                 .from("social_media_posts")
                 .insert({
