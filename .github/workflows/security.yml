@@ -215,7 +215,7 @@ jobs:
 
     steps:
       - name: Send Slack notification
-        uses: slackapi/slack-github-action@v3
+        uses: slackapi/slack-github-action@v4
 
         with:
           webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
