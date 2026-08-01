@@ -348,6 +348,32 @@ describe("/api/athlete/phase/advance.post", () => {
   });
 
   describe("error handling", () => {
+    it("throws 404 (not 500) when the users row is missing — deleted account must not fake-succeed or alert", async () => {
+      const { createServerSupabaseClient } =
+        await import("~/server/utils/supabase");
+      const { requireAuth, assertNotParent } =
+        await import("~/server/utils/auth");
+      const handler = (
+        await import("~/server/api/athlete/phase/advance.post")
+      ).default;
+
+      vi.mocked(requireAuth).mockResolvedValue({
+        id: ATHLETE_ID,
+        email: "athlete@example.com",
+      });
+      vi.mocked(assertNotParent).mockResolvedValue(undefined);
+
+      const mockSupabase = createMockSupabase({ userMissing: true });
+      vi.mocked(createServerSupabaseClient).mockReturnValue(
+        mockSupabase as any,
+      );
+
+      await expect(handler(mockEvent())).rejects.toMatchObject({
+        statusCode: 404,
+      });
+      expect(mockSupabase.usersUpdate).not.toHaveBeenCalled();
+    });
+
     it("throws 500 when the users.current_phase query returns an error", async () => {
       const { createServerSupabaseClient } =
         await import("~/server/utils/supabase");

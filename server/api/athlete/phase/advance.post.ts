@@ -41,13 +41,23 @@ export default defineEventHandler(async (event) => {
       .from("users")
       .select("current_phase")
       .eq("id", user.id)
-      .single();
+      .maybeSingle();
 
     if (userError) {
       logger.error("Error fetching user phase", userError);
       throw createError({
         statusCode: 500,
         statusMessage: "Failed to fetch user phase",
+      });
+    }
+
+    // Row gone (account deleted mid-session): advancing would no-op the later
+    // UPDATE and report success — fail honestly instead, without a 500 alert
+    if (!userData) {
+      logger.warn("User row missing for phase advance", { userId: user.id });
+      throw createError({
+        statusCode: 404,
+        statusMessage: "User not found",
       });
     }
 

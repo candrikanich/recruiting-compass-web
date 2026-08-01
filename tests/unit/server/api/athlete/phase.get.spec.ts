@@ -81,6 +81,34 @@ describe("/api/athlete/phase.get", () => {
       expect(response.phase).toBe("sophomore");
     });
 
+    it("falls back to grade-derived phase when the users row is missing (deleted account / signup race)", async () => {
+      vi.setSystemTime(new Date("2026-02-14T12:00:00Z"));
+
+      const { createServerSupabaseClient } =
+        await import("~/server/utils/supabase");
+      const { requireAuth } = await import("~/server/utils/auth");
+      const handler = (await import("~/server/api/athlete/phase.get")).default;
+
+      vi.mocked(requireAuth).mockResolvedValue({
+        id: "test-user-id",
+        email: "test@example.com",
+      });
+
+      vi.mocked(createServerSupabaseClient).mockReturnValue(
+        createMockSupabase({
+          userMissing: true,
+          userPreferences: {
+            data: { data: { graduation_year: 2028 } },
+            error: null,
+          },
+        }) as any,
+      );
+
+      const response = await handler(mockEvent());
+
+      expect(response.phase).toBe("sophomore");
+    });
+
     it("should return freshman phase for Class of 2029 in February 2026", async () => {
       vi.setSystemTime(new Date("2026-02-14T12:00:00Z"));
 

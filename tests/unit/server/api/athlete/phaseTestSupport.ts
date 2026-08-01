@@ -33,6 +33,13 @@ function makeQueryBuilder(terminal: () => Promise<DbResult<unknown>>) {
 
 export interface MockSupabaseConfig {
   user?: DbResult<{ current_phase: string | null }>;
+  /**
+   * Simulates a missing `users` row with real PostgREST semantics:
+   * `.single()` yields a PGRST116 error, `.maybeSingle()` yields
+   * `{ data: null, error: null }`. Covers deleted accounts and the
+   * signup race before handle_new_user creates the row.
+   */
+  userMissing?: boolean;
   userPreferences?: DbResult<{ data: Record<string, unknown> } | null>;
   athleteTasks?: DbResult<{ task_id: string }[]>;
   tasks?: DbResult<{ id: string; slug: string }[]>;
@@ -60,8 +67,22 @@ export function createMockSupabase(config: MockSupabaseConfig) {
     builder.update = usersUpdate;
     const terminal = async () =>
       isUpdate ? (config.usersUpdate ?? { data: null, error: null }) : (config.user ?? okEmpty());
-    builder.single = vi.fn(() => terminal());
-    builder.maybeSingle = vi.fn(() => terminal());
+    builder.single = vi.fn(() =>
+      config.userMissing && !isUpdate
+        ? Promise.resolve({
+            data: null,
+            error: {
+              code: "PGRST116",
+              message: "JSON object requested, multiple (or no) rows returned",
+            },
+          })
+        : terminal(),
+    );
+    builder.maybeSingle = vi.fn(() =>
+      config.userMissing && !isUpdate
+        ? Promise.resolve({ data: null, error: null })
+        : terminal(),
+    );
     builder.then = (
       resolve: (value: DbResult<unknown>) => void,
       reject: (reason: unknown) => void,

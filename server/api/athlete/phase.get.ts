@@ -55,12 +55,14 @@ export default defineEventHandler(async (event) => {
 
     // users.current_phase is the source of truth once an athlete has explicitly
     // advanced (via POST /api/athlete/phase/advance). NULL means "never advanced" —
-    // fall back to a grade-derived phase below.
+    // fall back to a grade-derived phase below. maybeSingle(): a missing row
+    // (account deleted mid-session, or signup before handle_new_user commits)
+    // must mean "no stored phase", not a 500.
     const { data: userData, error: userError } = await supabase
       .from("users")
       .select("current_phase")
       .eq("id", athleteId)
-      .single();
+      .maybeSingle();
 
     if (userError) {
       logger.error("Error fetching user phase", userError);
