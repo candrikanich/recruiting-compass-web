@@ -52,6 +52,15 @@ vi.mock("~/composables/useErrorHandler", () => ({
   }),
 }));
 
+let mockActiveFamilyId: string | null = "family-123";
+vi.mock("~/composables/useFamilyContext", () => ({
+  useFamilyContext: vi.fn(() => ({
+    get activeFamilyId() {
+      return { value: mockActiveFamilyId };
+    },
+  })),
+}));
+
 const posthogCapture = vi.fn();
 // Override the global useNuxtApp set in tests/setup.ts so the upload path
 // can record a posthog event without throwing.
@@ -109,6 +118,7 @@ describe("useDocumentsConsolidated (real implementation)", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockActiveFamilyId = "family-123";
     setActivePinia(createPinia());
     const userStore = useUserStore();
     userStore.user = {
@@ -467,6 +477,35 @@ describe("useDocumentsConsolidated (real implementation)", () => {
       expect(composable.isUploading.value).toBe(false);
     });
 
+    it("stamps family_unit_id from active family context on insert", async () => {
+      const newDoc = makeDoc({ id: "new-doc" });
+      queryInsertMock.mockResolvedValueOnce({ data: [newDoc], error: null });
+
+      await composable.uploadDocument(makeFile(), "resume", "Resume");
+
+      const insertPayload = queryInsertMock.mock.calls[0][1][0] as Record<
+        string,
+        unknown
+      >;
+      expect(insertPayload.family_unit_id).toBe("family-123");
+    });
+
+    it("returns error when no family context is loaded", async () => {
+      mockActiveFamilyId = null;
+
+      const res = await composable.uploadDocument(
+        makeFile(),
+        "resume",
+        "Resume",
+      );
+
+      expect(res).toEqual({
+        success: false,
+        error: "Family context not loaded",
+      });
+      expect(queryInsertMock).not.toHaveBeenCalled();
+    });
+
     it("handles non-array insert response (single record)", async () => {
       const newDoc = makeDoc({ id: "solo" });
       queryInsertMock.mockResolvedValueOnce({ data: newDoc, error: null });
@@ -546,6 +585,44 @@ describe("useDocumentsConsolidated (real implementation)", () => {
       expect(res.success).toBe(true);
       expect(res.data).toEqual(newVersion);
       expect(composable.documents.value[0]).toEqual(newVersion);
+    });
+
+    it("overrides family_unit_id inherited from the spread original document", async () => {
+      const original = makeDoc({
+        id: "doc-1",
+        version: 2,
+      }) as MinimalDoc & { family_unit_id: string | null };
+      original.family_unit_id = null; // legacy row
+      querySingleMock.mockResolvedValueOnce({ data: original, error: null });
+      queryUpdateMock.mockResolvedValueOnce({
+        data: [{ ...original, is_current: false }],
+        error: null,
+      });
+      queryInsertMock.mockResolvedValueOnce({
+        data: [makeDoc({ id: "doc-2", version: 3 })],
+        error: null,
+      });
+
+      await composable.uploadNewVersion("doc-1", makeFile());
+
+      const insertPayload = queryInsertMock.mock.calls[0][1][0] as Record<
+        string,
+        unknown
+      >;
+      expect(insertPayload.family_unit_id).toBe("family-123");
+    });
+
+    it("returns error when no family context is loaded", async () => {
+      mockActiveFamilyId = null;
+      querySingleMock.mockResolvedValueOnce({ data: makeDoc(), error: null });
+
+      const res = await composable.uploadNewVersion("doc-1", makeFile());
+
+      expect(res).toEqual({
+        success: false,
+        error: "Family context not loaded",
+      });
+      expect(queryInsertMock).not.toHaveBeenCalled();
     });
 
     it("returns error when storage upload fails for new version", async () => {

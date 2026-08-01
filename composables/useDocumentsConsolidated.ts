@@ -1,4 +1,4 @@
-import { ref, computed } from "vue";
+import { ref, computed, inject } from "vue";
 import { createClientLogger } from "~/utils/logger";
 import {
   querySelect,
@@ -11,6 +11,8 @@ import { useFormValidation } from "~/composables/useFormValidation";
 import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
 import { useErrorHandler } from "./useErrorHandler";
+import { useFamilyContext } from "~/composables/useFamilyContext";
+import type { useActiveFamily } from "~/composables/useActiveFamily";
 import type { Document } from "~/types/models";
 
 /**
@@ -48,6 +50,9 @@ export const useDocumentsConsolidated = () => {
   const userStore = useUserStore();
   const { getErrorMessage, logError } = useErrorHandler();
   const { validateFile, fileErrors } = useFormValidation();
+  const injectedFamily =
+    inject<ReturnType<typeof useActiveFamily>>("activeFamily");
+  const activeFamily = injectedFamily ?? useFamilyContext();
 
   // ═══════════════════════════════════════════════════════════════════════════
   // STATE MANAGEMENT
@@ -322,6 +327,9 @@ export const useDocumentsConsolidated = () => {
     if (!userStore.user) {
       return { success: false, error: "User not authenticated" };
     }
+    if (!activeFamily.activeFamilyId.value) {
+      return { success: false, error: "Family context not loaded" };
+    }
 
     // Validate file
     try {
@@ -387,6 +395,7 @@ export const useDocumentsConsolidated = () => {
             is_current: true,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
+            family_unit_id: activeFamily.activeFamilyId.value,
           },
         ],
         { context: "uploadDocument" },
@@ -428,6 +437,9 @@ export const useDocumentsConsolidated = () => {
   ): Promise<{ success: boolean; data?: Document; error?: string }> => {
     if (!userStore.user) {
       return { success: false, error: "User not authenticated" };
+    }
+    if (!activeFamily.activeFamilyId.value) {
+      return { success: false, error: "Family context not loaded" };
     }
 
     try {
@@ -476,6 +488,8 @@ export const useDocumentsConsolidated = () => {
             is_current: true,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
+            // Explicit override: legacy rows may spread a NULL family_unit_id
+            family_unit_id: activeFamily.activeFamilyId.value,
           },
         ],
         { context: "uploadNewVersion" },

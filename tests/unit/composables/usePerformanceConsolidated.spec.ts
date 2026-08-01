@@ -25,6 +25,12 @@ vi.mock("~/stores/user", () => ({
   }),
 }));
 
+vi.mock("~/composables/useFamilyContext", () => ({
+  useFamilyContext: () => ({
+    activeFamilyId: { value: "family-123" },
+  }),
+}));
+
 describe("usePerformanceConsolidated", () => {
   let mockQuery: any;
 

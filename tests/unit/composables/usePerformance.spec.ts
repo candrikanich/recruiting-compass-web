@@ -46,6 +46,15 @@ vi.mock("~/utils/logger", () => ({
   }),
 }));
 
+let mockActiveFamilyId: string | null = "family-123";
+vi.mock("~/composables/useFamilyContext", () => ({
+  useFamilyContext: vi.fn(() => ({
+    get activeFamilyId() {
+      return { value: mockActiveFamilyId };
+    },
+  })),
+}));
+
 interface MockQuery {
   select: ReturnType<typeof vi.fn>;
   eq: ReturnType<typeof vi.fn>;
@@ -120,6 +129,7 @@ describe("usePerformance", () => {
     setActivePinia(createPinia());
     vi.clearAllMocks();
     mockUser = { id: "user-123", email: "test@example.com" };
+    mockActiveFamilyId = "family-123";
     mockQuery = buildMockQuery();
     mockSupabase.from.mockReturnValue(mockQuery);
   });
@@ -266,13 +276,22 @@ describe("usePerformance", () => {
 
       expect(mockSupabase.from).toHaveBeenCalledWith("performance_metrics");
       expect(mockQuery.insert).toHaveBeenCalledWith([
-        { ...newMetric, user_id: "user-123" },
+        { ...newMetric, user_id: "user-123", family_unit_id: "family-123" },
       ]);
       expect(mockQuery.select).toHaveBeenCalled();
       expect(mockQuery.single).toHaveBeenCalled();
       expect(result.id).toBe("fresh");
       expect(c.metrics.value[0].id).toBe("fresh");
       expect(c.loading.value).toBe(false);
+    });
+
+    it("throws when no family context is loaded", async () => {
+      mockActiveFamilyId = null;
+      const c = usePerformance();
+      await expect(c.createMetric(newMetric)).rejects.toThrow(
+        "Family context not loaded",
+      );
+      expect(mockQuery.insert).not.toHaveBeenCalled();
     });
 
     it("propagates insertError with message and sets error", async () => {

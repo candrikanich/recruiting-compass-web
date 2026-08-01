@@ -37,6 +37,15 @@ vi.mock("~/utils/logger", () => ({
   }),
 }));
 
+let mockActiveFamilyId: string | null = "family-123";
+vi.mock("~/composables/useFamilyContext", () => ({
+  useFamilyContext: vi.fn(() => ({
+    get activeFamilyId() {
+      return { value: mockActiveFamilyId };
+    },
+  })),
+}));
+
 function makeFile(
   name: string,
   type: string,
@@ -106,6 +115,7 @@ describe("useDocumentUpload.uploadDocument", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockUserState.user = { id: "user-123", email: "test@example.com" };
+    mockActiveFamilyId = "family-123";
   });
 
   const baseDocData = {
@@ -195,12 +205,47 @@ describe("useDocumentUpload.uploadDocument", () => {
     expect(mockStorageUpload).not.toHaveBeenCalled();
     expect(result).toEqual(insertedRow);
   });
+
+  it("stamps family_unit_id from active family context on insert", async () => {
+    const insertSpy = vi.fn().mockReturnValue({
+      select: vi.fn().mockReturnValue({
+        single: vi
+          .fn()
+          .mockResolvedValue({ data: { ...baseDocData, id: "doc-1" }, error: null }),
+      }),
+    });
+    mockSupabase.from.mockReturnValue({ insert: insertSpy });
+
+    const { uploadDocument } = useDocumentUpload();
+    await uploadDocument({
+      ...baseDocData,
+      file_url: "https://existing.example.com/x.pdf",
+    });
+
+    const [[insertedRows]] = insertSpy.mock.calls;
+    expect(insertedRows[0].family_unit_id).toBe("family-123");
+  });
+
+  it("throws when no family context is loaded", async () => {
+    mockActiveFamilyId = null;
+    const { uploadDocument } = useDocumentUpload();
+
+    await expect(
+      uploadDocument({
+        ...baseDocData,
+        file_url: "https://existing.example.com/x.pdf",
+      }),
+    ).rejects.toThrow("Family context not loaded");
+    expect(mockStorageUpload).not.toHaveBeenCalled();
+    expect(mockSupabase.from).not.toHaveBeenCalled();
+  });
 });
 
 describe("useDocumentUpload.uploadNewVersion", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockUserState.user = { id: "user-123", email: "test@example.com" };
+    mockActiveFamilyId = "family-123";
   });
 
   const currentDoc: Document = {
@@ -247,6 +292,40 @@ describe("useDocumentUpload.uploadNewVersion", () => {
     await expect(
       uploadNewVersion("doc-1", badFile, currentDoc),
     ).rejects.toThrow(/not allowed/);
+    expect(mockStorageUpload).not.toHaveBeenCalled();
+  });
+
+  it("overrides family_unit_id inherited from the spread current document", async () => {
+    mockStorageUpload.mockResolvedValue({
+      data: { path: "user-123/new-path.pdf" },
+      error: null,
+    });
+    const insertSpy = vi.fn().mockReturnValue({
+      select: vi.fn().mockReturnValue({
+        single: vi
+          .fn()
+          .mockResolvedValue({ data: { ...currentDoc, version: 3 }, error: null }),
+      }),
+    });
+    mockSupabase.from.mockReturnValue({ insert: insertSpy });
+
+    const { uploadNewVersion } = useDocumentUpload();
+    const file = makeFile("resume.pdf", "application/pdf", 1024);
+    const legacyDoc = { ...currentDoc, family_unit_id: null } as Document;
+    await uploadNewVersion("doc-1", file, legacyDoc);
+
+    const [[insertedRows]] = insertSpy.mock.calls;
+    expect(insertedRows[0].family_unit_id).toBe("family-123");
+  });
+
+  it("throws when no family context is loaded", async () => {
+    mockActiveFamilyId = null;
+    const { uploadNewVersion } = useDocumentUpload();
+    const file = makeFile("resume.pdf", "application/pdf", 1024);
+
+    await expect(
+      uploadNewVersion("doc-1", file, currentDoc),
+    ).rejects.toThrow("Family context not loaded");
     expect(mockStorageUpload).not.toHaveBeenCalled();
   });
 });

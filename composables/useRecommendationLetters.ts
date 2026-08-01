@@ -1,6 +1,8 @@
-import { ref } from "vue";
+import { ref, inject } from "vue";
 import { useSupabase } from "~/composables/useSupabase";
 import { useUserStore } from "~/stores/user";
+import { useFamilyContext } from "~/composables/useFamilyContext";
+import type { useActiveFamily } from "~/composables/useActiveFamily";
 import { createClientLogger } from "~/utils/logger";
 import type { Database } from "~/types/database";
 
@@ -25,6 +27,9 @@ const logger = createClientLogger("useRecommendationLetters");
 export function useRecommendationLetters() {
   const supabase = useSupabase();
   const userStore = useUserStore();
+  const injectedFamily =
+    inject<ReturnType<typeof useActiveFamily>>("activeFamily");
+  const activeFamily = injectedFamily ?? useFamilyContext();
 
   const letters = ref<RecommendationLetter[]>([]);
   const loading = ref(false);
@@ -74,10 +79,19 @@ export function useRecommendationLetters() {
           .eq("user_id", userStore.user.id);
         if (updateError) throw updateError;
       } else {
+        if (!activeFamily.activeFamilyId.value) {
+          throw new Error("Family context not loaded");
+        }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const table = supabase.from("recommendation_letters") as any;
         const { error: insertError } = await table
-          .insert([{ ...formData, user_id: userStore.user.id }])
+          .insert([
+            {
+              ...formData,
+              user_id: userStore.user.id,
+              family_unit_id: activeFamily.activeFamilyId.value,
+            },
+          ])
           .select();
         if (insertError) throw insertError;
       }

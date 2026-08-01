@@ -16,6 +16,15 @@ vi.mock("~/stores/user", () => ({
   }),
 }));
 
+let mockActiveFamilyId: string | null = "family-123";
+vi.mock("~/composables/useFamilyContext", () => ({
+  useFamilyContext: vi.fn(() => ({
+    get activeFamilyId() {
+      return { value: mockActiveFamilyId };
+    },
+  })),
+}));
+
 const makeMockQuery = () => {
   const q: any = {
     select: vi.fn().mockReturnThis(),
@@ -34,6 +43,7 @@ describe("useRecommendationLetters", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockActiveFamilyId = "family-123";
     setActivePinia(createPinia());
     mockQuery = makeMockQuery();
     mockSupabase.from.mockReturnValue(mockQuery);
@@ -101,6 +111,31 @@ describe("useRecommendationLetters", () => {
           }),
         ]),
       );
+    });
+
+    it("stamps family_unit_id from active family context on insert", async () => {
+      const insertSelectMock = vi
+        .fn()
+        .mockResolvedValue({ data: [{ id: "new-id" }], error: null });
+      const insertMock = { select: insertSelectMock };
+      mockQuery.insert.mockReturnValue(insertMock);
+      mockQuery.order.mockResolvedValue({ data: [], error: null });
+      const { saveLetter } = useRecommendationLetters();
+      await saveLetter(formData);
+      expect(mockQuery.insert).toHaveBeenCalledWith(
+        expect.arrayContaining([
+          expect.objectContaining({ family_unit_id: "family-123" }),
+        ]),
+      );
+    });
+
+    it("throws when no family context is loaded on insert", async () => {
+      mockActiveFamilyId = null;
+      const { saveLetter } = useRecommendationLetters();
+      await expect(saveLetter(formData)).rejects.toThrow(
+        "Family context not loaded",
+      );
+      expect(mockQuery.insert).not.toHaveBeenCalled();
     });
 
     it("updates an existing letter when id provided", async () => {

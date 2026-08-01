@@ -218,7 +218,9 @@ export const useCoachStore = defineStore("coaches", () => {
     schoolId: string,
     coachData: Omit<Coach, "id" | "created_at" | "updated_at">,
   ) {
+    const { useFamilyContext } = await import("~/composables/useFamilyContext");
     const userStore = useUserStore();
+    const activeFamily = useFamilyContext();
     const supabase = useSupabase();
 
     loading.value = true;
@@ -227,6 +229,10 @@ export const useCoachStore = defineStore("coaches", () => {
     try {
       if (!userStore.user) {
         throw new Error("User not authenticated");
+      }
+
+      if (!activeFamily.activeFamilyId.value) {
+        throw new Error("No family context");
       }
 
       const sanitized = sanitizeCoachFields(coachData);
@@ -238,6 +244,7 @@ export const useCoachStore = defineStore("coaches", () => {
           user_id: userStore.user.id,
           created_by: userStore.user.id,
           updated_by: userStore.user.id,
+          family_unit_id: activeFamily.activeFamilyId.value,
         },
       ];
 

@@ -1,6 +1,8 @@
-import { ref } from "vue";
+import { ref, inject } from "vue";
 import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
+import { useFamilyContext } from "~/composables/useFamilyContext";
+import type { useActiveFamily } from "~/composables/useActiveFamily";
 import type { Document } from "~/types/models";
 import type { Database } from "~/types/database";
 import { createClientLogger } from "~/utils/logger";
@@ -119,6 +121,9 @@ export const useDocumentUpload = () => {
     }
     return userStore;
   };
+  const injectedFamily =
+    inject<ReturnType<typeof useActiveFamily>>("activeFamily");
+  const activeFamily = injectedFamily ?? useFamilyContext();
 
   const isUploading = ref(false);
   const uploadProgress = ref(0);
@@ -130,6 +135,9 @@ export const useDocumentUpload = () => {
   ) => {
     const store = getUserStore();
     if (!store.user) throw new Error("User not authenticated");
+    if (!activeFamily.activeFamilyId.value) {
+      throw new Error("Family context not loaded");
+    }
     isUploading.value = true;
     uploadProgress.value = 0;
     error.value = null;
@@ -170,6 +178,7 @@ export const useDocumentUpload = () => {
             user_id: store.user.id,
             uploaded_by: store.user.id,
             file_type: file?.type,
+            family_unit_id: activeFamily.activeFamilyId.value,
           },
         ])
         .select()
@@ -200,6 +209,9 @@ export const useDocumentUpload = () => {
   ) => {
     const store = getUserStore();
     if (!store.user) throw new Error("User not authenticated");
+    if (!activeFamily.activeFamilyId.value) {
+      throw new Error("Family context not loaded");
+    }
 
     isUploading.value = true;
     error.value = null;
@@ -236,6 +248,8 @@ export const useDocumentUpload = () => {
             file_type: file.type,
             updated_at: new Date().toISOString(),
             ...metadata,
+            // Explicit override: legacy rows may spread a NULL family_unit_id
+            family_unit_id: activeFamily.activeFamilyId.value,
           },
         ])
         .select()

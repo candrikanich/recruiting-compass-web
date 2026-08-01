@@ -1,7 +1,9 @@
-import { ref, computed, type ComputedRef } from "vue";
+import { ref, computed, inject, type ComputedRef } from "vue";
 import { createClientLogger } from "~/utils/logger";
 import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
+import { useFamilyContext } from "~/composables/useFamilyContext";
+import type { useActiveFamily } from "~/composables/useActiveFamily";
 import type { PerformanceMetric, Performance } from "~/types/models";
 import type { Database } from "~/types/database";
 
@@ -113,6 +115,9 @@ export const usePerformanceConsolidated = (): {
 } => {
   const supabase = useSupabase();
   const userStore = useUserStore();
+  const injectedFamily =
+    inject<ReturnType<typeof useActiveFamily>>("activeFamily");
+  const activeFamily = injectedFamily ?? useFamilyContext();
 
   const metrics = ref<PerformanceMetric[]>([]);
   const loading = ref(false);
@@ -182,6 +187,9 @@ export const usePerformanceConsolidated = (): {
     metricData: Omit<PerformanceMetric, "id" | "created_at" | "updated_at">,
   ) => {
     if (!userStore.user) throw new Error("User not authenticated");
+    if (!activeFamily.activeFamilyId.value) {
+      throw new Error("Family context not loaded");
+    }
 
     loading.value = true;
     error.value = null;
@@ -194,6 +202,7 @@ export const usePerformanceConsolidated = (): {
             {
               ...metricData,
               user_id: userStore.user.id,
+              family_unit_id: activeFamily.activeFamilyId.value,
             },
           ])
           .select()
