@@ -184,8 +184,7 @@ test.describe("Password Reset Flow", () => {
       await expect(page.getByText(email)).toBeVisible();
     });
 
-    // QUARANTINED 2026-05-22: success-state UI not reachable without real Supabase response.
-    test.skip("should show resend button after success", async ({ page }) => {
+    test("should show resend button after success", async ({ page }) => {
       await page.goto("/forgot-password");
 
       const emailInput = page.getByLabel(/email/i);
@@ -199,14 +198,18 @@ test.describe("Password Reset Flow", () => {
       await expect(submitButton).toBeEnabled({ timeout: 5000 });
       await submitButton.click();
 
-      // Resend button should appear once emailSent = true
-      await expect(
-        page.getByRole("button", { name: /resend reset link/i }),
-      ).toBeVisible({ timeout: 15000 });
+      // pages/forgot-password.vue's handleSubmit calls cooldown.startCooldown()
+      // right after emailSent=true — the cooldown starts on the *initial*
+      // send, not only after a resend click. So the resend button appears
+      // already disabled with a countdown label, never the idle "Resend
+      // reset link" state the original version of this test asserted on
+      // (that was a wrong assumption, not a stale-quarantine seed issue).
+      const resendButton = page.getByRole("button", { name: /resend available in \d+ seconds/i });
+      await expect(resendButton).toBeVisible({ timeout: 15000 });
+      await expect(resendButton).toBeDisabled();
     });
 
-    // QUARANTINED 2026-05-22: same as above — cooldown UI not reachable.
-    test.skip("should have resend cooldown", async ({ page }) => {
+    test("should have resend cooldown", async ({ page }) => {
       await page.goto("/forgot-password");
 
       const emailInput = page.getByLabel(/email/i);
@@ -220,20 +223,26 @@ test.describe("Password Reset Flow", () => {
       await expect(submitButton).toBeEnabled({ timeout: 5000 });
       await submitButton.click();
 
-      const resendButton = page.getByRole("button", {
-        name: /resend reset link/i,
-      });
-
-      // Wait for emailSent state, then click resend
+      // Cooldown (useResendCooldown(60), a real 60s duration in production)
+      // starts immediately on send — verify the timer is genuinely ticking by
+      // sampling the displayed count twice, rather than waiting the full
+      // duration to expire (the original version waited only 10s for a 60s
+      // cooldown, which could never have passed).
+      const resendButton = page.getByRole("button", { name: /resend available in \d+ seconds/i });
       await expect(resendButton).toBeVisible({ timeout: 15000 });
-      await resendButton.click();
-
-      // Should show cooldown
-      await expect(resendButton).toContainText(/resend in \d+s/);
       await expect(resendButton).toBeDisabled();
 
-      // Wait for cooldown to expire (5 seconds for test)
-      await expect(resendButton).toBeEnabled({ timeout: 10000 });
+      const firstLabel = await resendButton.textContent();
+      const firstCount = Number(firstLabel?.match(/(\d+)s/)?.[1]);
+      expect(firstCount).toBeGreaterThan(0);
+
+      await page.waitForTimeout(2500);
+
+      const secondLabel = await resendButton.textContent();
+      const secondCount = Number(secondLabel?.match(/(\d+)s/)?.[1]);
+      expect(secondCount).toBeGreaterThan(0);
+
+      expect(secondCount).toBeLessThan(firstCount);
     });
 
     test("should navigate back to login", async ({ page }) => {
@@ -461,18 +470,41 @@ test.describe("Password Reset Flow", () => {
       }
     });
 
-    test.skip("should not allow password reuse of reset token", async ({
+    test("should not allow reuse of a recovery link after it's been verified", async ({
       page,
     }) => {
-      // This test verifies the backend enforces single-use tokens
-      // Actual testing would require attempting to use same token twice
-      await page.goto("/reset-password?token=single-use");
+      // Recovery links are single-use by Supabase Auth's own design — verifying
+      // one exchanges it for a session and invalidates the underlying token.
+      // Real test: generate one real link, verify it twice via independent
+      // browser contexts, and confirm only the first verification yields a
+      // usable access_token.
+      const email = `reset-singleuse-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@test-example.com`;
+      await createOneOffTestUser({ email, password: "TempPass123!", displayName: "Single Use" });
 
-      // First use should work (form should be available)
-      await expect(page.locator("#password")).toBeVisible();
+      try {
+        const rawLink = await generateRecoveryLink(email);
 
-      // Attempting to use same token again would fail
-      // (backend verification required)
+        const verifyOnce = async () => {
+          const ctx = await page.context().browser()!.newContext();
+          try {
+            const verifyPage = await ctx.newPage();
+            await verifyPage.goto(rawLink);
+            await verifyPage.waitForLoadState("domcontentloaded");
+            const hash = new URL(verifyPage.url()).hash;
+            return hash.includes("access_token=");
+          } finally {
+            await ctx.close();
+          }
+        };
+
+        const firstUseSucceeded = await verifyOnce();
+        expect(firstUseSucceeded).toBe(true);
+
+        const secondUseSucceeded = await verifyOnce();
+        expect(secondUseSucceeded).toBe(false);
+      } finally {
+        await deleteOneOffTestUser(email).catch(() => null);
+      }
     });
   });
 
@@ -546,15 +578,24 @@ test.describe("Password Reset Flow", () => {
   });
 
   test.describe("Navigation and UX", () => {
-    // QUARANTINED 2026-05-22: back-link selector drift.
-    test.skip("should show back links throughout flow", async ({ page }) => {
+    test("should show back links throughout flow", async ({ page }) => {
       // From forgot password
       await page.goto("/forgot-password");
       await expect(page.getByRole("link", { name: /back/i })).toBeVisible();
 
-      // From reset password
-      await page.goto("/reset-password?token=valid");
-      await expect(page.getByRole("link", { name: /back/i })).toBeVisible();
+      // From reset password -- ?token=valid is not a real Supabase recovery
+      // token, so the page never reaches its normal form/back-link state
+      // (that mismatch was the actual "selector drift"). Use a real recovery
+      // session via generateRecoveryLink instead, same as the "with valid
+      // recovery session" describe above.
+      const email = `reset-backlink-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@test-example.com`;
+      await createOneOffTestUser({ email, password: "TempPass123!", displayName: "Back Link" });
+      try {
+        await navigateWithRecoverySession(page, email);
+        await expect(page.getByRole("link", { name: /back/i })).toBeVisible();
+      } finally {
+        await deleteOneOffTestUser(email).catch(() => null);
+      }
     });
 
     test("should provide help text", async ({ page }) => {
