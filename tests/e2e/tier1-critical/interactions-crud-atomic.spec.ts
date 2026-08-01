@@ -19,6 +19,10 @@ import {
  * Parallel: UUID-suffixed content string scopes per-worker assertions.
  */
 test.describe("Interactions CRUD — atomic lifecycle (school-attached)", () => {
+  // fullyParallel can shard this describe's tests across workers, each of
+  // which independently re-runs beforeAll -- same race found in
+  // family-invite-flow.spec.ts and fixed the same way across this session.
+  test.describe.configure({ mode: "serial" });
   test.setTimeout(120_000);
 
   let schoolId: string;

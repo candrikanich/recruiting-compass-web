@@ -18,6 +18,10 @@ import { getSupabaseAdmin } from "../seed/helpers/supabase-admin";
 import { TEST_ACCOUNTS } from "../config/test-accounts";
 
 test.describe("Coach Search and Filtering", () => {
+  // fullyParallel can shard this describe's tests across workers, each of
+  // which independently re-runs beforeAll -- same race found in
+  // family-invite-flow.spec.ts and fixed the same way across this session.
+  test.describe.configure({ mode: "serial" });
   // Extended timeout for beforeAll (creates school + 3 coaches via UI)
   test.setTimeout(120000);
 

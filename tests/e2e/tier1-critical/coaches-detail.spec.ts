@@ -26,6 +26,10 @@ import {
  * the original 746-LOC version.
  */
 test.describe("Coach detail page", () => {
+  // fullyParallel can shard this describe's tests across workers, each of
+  // which independently re-runs beforeAll -- same race found in
+  // family-invite-flow.spec.ts and fixed the same way across this session.
+  test.describe.configure({ mode: "serial" });
   test.setTimeout(120_000);
 
   let schoolId: string;

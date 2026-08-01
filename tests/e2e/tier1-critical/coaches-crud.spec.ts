@@ -23,6 +23,10 @@ import {
  * cases, and XSS sanitization (security regression coverage).
  */
 test.describe("Coaches — non-lifecycle cases", () => {
+  // fullyParallel can shard this describe's tests across workers, each of
+  // which independently re-runs beforeAll -- same race found in
+  // family-invite-flow.spec.ts and fixed the same way across this session.
+  test.describe.configure({ mode: "serial" });
   test.setTimeout(120000);
 
   let schoolId: string;

@@ -14,6 +14,10 @@ let seeded: SeededSchools | null = null;
 let seedReady = false;
 
 test.describe("User Story 8.2: Contact Frequency Summary", () => {
+  // fullyParallel can shard this describe's tests across workers, each of
+  // which independently re-runs beforeAll -- same race found in
+  // family-invite-flow.spec.ts and fixed the same way across this session.
+  test.describe.configure({ mode: "serial" });
   let dashboardPage: DashboardPage;
 
   test.beforeAll(async () => {

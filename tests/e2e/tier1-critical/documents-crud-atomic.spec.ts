@@ -20,6 +20,10 @@ import {
  * Parallel: UUID-suffixed school name + document title keep workers safe.
  */
 test.describe("Documents CRUD — atomic lifecycle (school-attached)", () => {
+  // fullyParallel can shard this describe's tests across workers, each of
+  // which independently re-runs beforeAll -- same race found in
+  // family-invite-flow.spec.ts and fixed the same way across this session.
+  test.describe.configure({ mode: "serial" });
   test.setTimeout(180_000);
 
   let schoolId: string;
