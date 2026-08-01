@@ -30,6 +30,19 @@
 -- USING only — no WITH CHECK — matching "Users can update schools in their
 -- families" (00000000000000_baseline.sql:4228) and every other family
 -- UPDATE policy in baseline.
+--
+-- Known gap from this USING-only shape (inherited from baseline, not
+-- introduced here): Postgres only re-checks USING against the pre-update
+-- row, never WITH CHECK against the post-update row, when a policy omits
+-- WITH CHECK. That means a family member can UPDATE a row's own
+-- family_unit_id to move it into a DIFFERENT family they don't belong to —
+-- the update passes because USING only validates where the row started, not
+-- where it ends up. This applies to every family UPDATE policy in baseline
+-- as well as the ones added here; it is not new exposure, just inherited.
+-- Hardening (adding WITH CHECK repo-wide) is deferred by explicit product
+-- decision (2026-08-01) to the Phase 4 cutover migration, which recreates
+-- ALL family UPDATE policies anyway — see
+-- planning/rls-family-consolidation-plan.md Phase 4 item 0.
 
 -- =============================================================================
 -- 1. Family DELETE policies (Deferral C) — schools, coaches, documents,
