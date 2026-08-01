@@ -31,17 +31,24 @@
 -- families" (00000000000000_baseline.sql:4228) and every other family
 -- UPDATE policy in baseline.
 --
--- Known gap from this USING-only shape (inherited from baseline, not
--- introduced here): Postgres only re-checks USING against the pre-update
--- row, never WITH CHECK against the post-update row, when a policy omits
--- WITH CHECK. That means a family member can UPDATE a row's own
--- family_unit_id to move it into a DIFFERENT family they don't belong to —
--- the update passes because USING only validates where the row started, not
--- where it ends up. This applies to every family UPDATE policy in baseline
--- as well as the ones added here; it is not new exposure, just inherited.
--- Hardening (adding WITH CHECK repo-wide) is deferred by explicit product
--- decision (2026-08-01) to the Phase 4 cutover migration, which recreates
--- ALL family UPDATE policies anyway — see
+-- On the USING-only shape: per CREATE POLICY semantics, an UPDATE policy
+-- that specifies USING but no WITH CHECK has its USING expression applied
+-- AS the WITH CHECK too, evaluated against the post-update row. So these
+-- Phase 3 family UPDATE policies already block a member from moving a row's
+-- family_unit_id into a family they don't belong to — omitting WITH CHECK
+-- here does not, by itself, open a row-move hole.
+--
+-- The real (pre-existing) row-move exposure is orthogonal to this
+-- migration: legacy PERMISSIVE policies on these tables whose predicates
+-- don't reference family_unit_id at all (e.g. plain `user_id = auth.uid()`
+-- ownership checks) still apply, and PERMISSIVE policies OR together — so a
+-- legacy policy's check can independently pass an update that moves the row
+-- to another family, regardless of what this migration's WITH CHECK
+-- enforces. That exposure closes automatically once the legacy policies are
+-- dropped (Phases 4/5), not by adding WITH CHECK here. Phase 4 item 0 still
+-- adds explicit WITH CHECK to every family UPDATE policy repo-wide, but as
+-- documentation/consistency hardening ahead of the drops, not as the fix for
+-- a hole this migration leaves open — see
 -- planning/rls-family-consolidation-plan.md Phase 4 item 0.
 
 -- =============================================================================
