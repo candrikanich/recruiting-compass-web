@@ -34,6 +34,25 @@ test.describe("User Story 9.1 - Athlete Views Their Task List", () => {
 
     // Wait for page to load
     await page.waitForLoadState("domcontentloaded");
+
+    // Tasks load async after the page shell mounts. Several tests below read
+    // taskItems.count() as their first action and would race the fetch,
+    // reading 0 and skipping even though seeded tasks exist (Scenario 1
+    // avoided this only by accident -- its own toBeVisible() wait happens to
+    // eat enough wall-clock time first). Wait for either real content or the
+    // genuine empty state before any test samples the count.
+    await Promise.race([
+      page
+        .locator('[data-testid="task-item"]')
+        .first()
+        .waitFor({ state: "visible", timeout: 10000 })
+        .catch(() => null),
+      page
+        .locator("text=/No tasks available|Start/")
+        .first()
+        .waitFor({ state: "visible", timeout: 10000 })
+        .catch(() => null),
+    ]);
   });
 
   test("Scenario 1: Athlete views tasks for their grade", async ({ page }) => {
@@ -101,29 +120,52 @@ test.describe("User Story 9.1 - Athlete Views Their Task List", () => {
       test.skip(true, "no seeded athlete tasks (or no task in the required checked/unchecked state) present for this run; awaiting seed infrastructure project — see CLAUDE.local.md Action Required");
     }
 
-    // Find first unchecked task
-    const uncheckedCheckbox = page
+    // Find first unchecked task. Pin to its data-testid rather than reusing
+    // this live `:not(:checked)` filter for the actions below — Playwright
+    // re-queries the locator on every retry, and since checking this box
+    // changes which element the filter matches next, a filter-based locator
+    // used across a mutating check/uncheck cycle never converges (it keeps
+    // retargeting whichever box is currently first-unchecked).
+    const uncheckedCheckboxTestId = await page
       .locator('input[type="checkbox"]:not(:checked)')
-      .first();
-    const isUnchecked = !(await uncheckedCheckbox.isChecked());
+      .first()
+      .getAttribute("data-testid");
 
-    if (!isUnchecked) {
+    if (!uncheckedCheckboxTestId) {
       test.skip(true, "no seeded athlete tasks (or no task in the required checked/unchecked state) present for this run; awaiting seed infrastructure project — see CLAUDE.local.md Action Required");
     }
+    const uncheckedCheckbox = page.locator(
+      `[data-testid="${uncheckedCheckboxTestId}"]`,
+    );
 
     // Click the checkbox
     await uncheckedCheckbox.check();
 
-    // Wait for success message
-    const successMessage = page.locator("text=Great job!");
-    await expect(successMessage).toBeVisible({ timeout: 5000 });
+    try {
+      // Wait for success message
+      const successMessage = page.locator("text=Great job!");
+      await expect(successMessage).toBeVisible({ timeout: 5000 });
 
-    // Verify checkbox is now checked
-    await expect(uncheckedCheckbox).toBeChecked();
+      // Verify checkbox is now checked
+      await expect(uncheckedCheckbox).toBeChecked();
 
-    // Verify status badge updated
-    const statusBadge = page.locator("text=Completed");
-    await expect(statusBadge).toBeVisible();
+      // Verify status badge updated. Scope to this task's own row -- an
+      // unscoped page.locator("text=Completed") can match the status-filter
+      // <select>'s <option value="completed">Completed</option> first
+      // (DOM order), which Playwright never considers visible while the
+      // dropdown is closed, hanging the assertion regardless of the real
+      // badge's state.
+      const taskItem = uncheckedCheckbox.locator(
+        "xpath=ancestor::*[@data-testid='task-item'][1]",
+      );
+      const statusBadge = taskItem.locator("text=Completed");
+      await expect(statusBadge).toBeVisible();
+    } finally {
+      // This mutates a real task on the shared player@test.com account --
+      // restore it so other tests/workers reading completion % (Scenario 2,
+      // Scenario 6) don't see state this test changed.
+      await uncheckedCheckbox.uncheck().catch(() => null);
+    }
   });
 
   test("Scenario 4: Athlete marks task incomplete", async ({ page }) => {
@@ -135,15 +177,21 @@ test.describe("User Story 9.1 - Athlete Views Their Task List", () => {
       test.skip(true, "no seeded athlete tasks (or no task in the required checked/unchecked state) present for this run; awaiting seed infrastructure project — see CLAUDE.local.md Action Required");
     }
 
-    // Find first checked checkbox
-    const checkedCheckbox = page
+    // Find first checked checkbox. Pin to its data-testid rather than
+    // reusing this live `:checked` filter for the actions below -- see the
+    // comment in Scenario 3 for why a filter-based locator never converges
+    // across a mutating check/uncheck cycle.
+    const checkedCheckboxTestId = await page
       .locator('input[type="checkbox"]:checked')
-      .first();
-    const isChecked = await checkedCheckbox.isChecked();
+      .first()
+      .getAttribute("data-testid");
 
-    if (!isChecked) {
+    if (!checkedCheckboxTestId) {
       test.skip(true, "no seeded athlete tasks (or no task in the required checked/unchecked state) present for this run; awaiting seed infrastructure project — see CLAUDE.local.md Action Required");
     }
+    const checkedCheckbox = page.locator(
+      `[data-testid="${checkedCheckboxTestId}"]`,
+    );
 
     // Get initial progress text
     const progressText = page.locator("text=/You've completed \\d+/");
@@ -152,16 +200,21 @@ test.describe("User Story 9.1 - Athlete Views Their Task List", () => {
     // Uncheck the checkbox
     await checkedCheckbox.uncheck();
 
-    // Verify checkbox is now unchecked
-    await expect(checkedCheckbox).not.toBeChecked();
+    try {
+      // Verify checkbox is now unchecked
+      await expect(checkedCheckbox).not.toBeChecked();
 
-    // Wait a moment for state update
-
-    // Verify progress text may have changed
-    const updatedText = await progressText.textContent();
-    // Both old and new text should exist, they might be the same if only 1 task
-    expect(initialText).toBeTruthy();
-    expect(updatedText).toBeTruthy();
+      // Verify progress text may have changed
+      const updatedText = await progressText.textContent();
+      // Both old and new text should exist, they might be the same if only 1 task
+      expect(initialText).toBeTruthy();
+      expect(updatedText).toBeTruthy();
+    } finally {
+      // This mutates a real task on the shared player@test.com account --
+      // restore it so other tests/workers reading completion % (Scenario 2,
+      // Scenario 6) don't see state this test changed.
+      await checkedCheckbox.check().catch(() => null);
+    }
   });
 
   test("Scenario 5: Athlete views task details", async ({ page }) => {
@@ -297,17 +350,24 @@ test.describe("User Story 9.1 - Athlete Views Their Task List", () => {
     // Click checkbox
     await firstCheckbox.click();
 
-    // Verify state changed immediately
-    const newState = await firstCheckbox.isChecked();
-    expect(newState).not.toBe(initialState);
+    try {
+      // Verify state changed immediately
+      const newState = await firstCheckbox.isChecked();
+      expect(newState).not.toBe(initialState);
 
-    // Verify visual feedback (status badge should update)
-    const statusBadge = firstCheckbox
-      .locator(
-        'xpath=../..//following-sibling::div[contains(@class, "rounded-full")]',
-      )
-      .first();
-    await expect(statusBadge).toBeVisible();
+      // Verify visual feedback (status badge should update)
+      const statusBadge = firstCheckbox
+        .locator(
+          'xpath=../..//following-sibling::div[contains(@class, "rounded-full")]',
+        )
+        .first();
+      await expect(statusBadge).toBeVisible();
+    } finally {
+      // This mutates a real task on the shared player@test.com account --
+      // restore it so other tests/workers reading completion % (Scenario 2,
+      // Scenario 6) don't see state this test changed.
+      await firstCheckbox.setChecked(initialState).catch(() => null);
+    }
   });
 
   test("Task details can be expanded and collapsed", async ({ page }) => {
