@@ -60,3 +60,9 @@ Applied live as two MCP migrations (`20260730193858_security_advisor_warn_harden
 **Deferred** (separate, higher-risk or non-SQL): `pg_trgm` extension still in `public` schema (relocating risks breaking trigram search indexes without a closer look at usage first); leaked-password-protection is a Supabase Auth config toggle, not a SQL fix.
 
 Verified: full E2E suite post-migration, 454 passed / 1 flake (`auth.spec.ts` logout — signup-under-parallel-load timeout, reproduced 0/3 in isolation, confirmed unrelated to the grant changes).
+
+### pg_trgm relocated out of public (2026-08-01)
+
+`supabase/migrations/20260801000000_move_pg_trgm_to_extensions.sql` — `ALTER EXTENSION pg_trgm SET SCHEMA extensions;`, closing the `extension_in_public` advisor WARN. Safe because `extensions` is already in the database's default `search_path` (`"$user", public, extensions`) and `ALTER EXTENSION ... SET SCHEMA` preserves object identity (no drop/recreate). Only real dependent: `nces_schools_name_trgm` GIN index (`gin_trgm_ops`), backing the high-school search feature's plain `.ilike()` query in `server/api/schools/high-school-search.get.ts`. Verified post-move: index `indisvalid = true`, query still returns correct results, `smart-inputs.spec.ts` High School Search suite 4/4 pass.
+
+**Still open, not fixable via available tooling:** `auth_leaked_password_protection` WARN — this is a GoTrue/Auth config setting (HaveIBeenPwned check on signup/password-change), not SQL, and no MCP tool exposes Auth config changes. Needs manual toggle: Supabase Dashboard → Authentication → Sign In / Providers → Password Security → "Leaked password protection."

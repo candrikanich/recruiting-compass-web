@@ -1,0 +1,11 @@
+-- pg_trgm was installed in public, flagged by the security advisor
+-- (extension_in_public). Relocate to the extensions schema, which is
+-- already in the database's default search_path ("$user", public,
+-- extensions) -- Supabase provisions this schema specifically for this
+-- purpose. ALTER EXTENSION ... SET SCHEMA preserves object identity (does
+-- not drop/recreate the extension, its functions, or the
+-- nces_schools_name_trgm GIN index that depends on gin_trgm_ops), so the
+-- high-school search feature (server/api/schools/high-school-search.get.ts,
+-- a plain .ilike() query the planner accelerates via that index) is
+-- unaffected.
+ALTER EXTENSION pg_trgm SET SCHEMA extensions;
