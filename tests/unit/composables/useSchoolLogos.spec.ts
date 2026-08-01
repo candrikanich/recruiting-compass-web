@@ -23,12 +23,23 @@ vi.mock("~/stores/user", () => ({
   }),
 }));
 
+const mockFetchAuth = vi.fn();
+vi.mock("~/composables/useAuthFetch", () => ({
+  useAuthFetch: () => ({
+    $fetchAuth: mockFetchAuth,
+  }),
+}));
+
 // Mock $fetch
 global.$fetch = vi.fn();
 
 describe("useSchoolLogos", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockFetchAuth.mockResolvedValue({ faviconUrls: {} });
+    localStorage.clear();
+    const { clearAllLogos } = useSchoolLogos();
+    clearAllLogos();
   });
 
   describe("extractDomain", () => {
@@ -63,15 +74,16 @@ describe("useSchoolLogos", () => {
       expect(domain).toBe("mit.edu");
     });
 
-    it("should construct domain from school name when website missing", () => {
-      const school = createMockSchool({
-        name: "University of Florida",
+    it("should return null when website missing (no fabricated domains)", () => {
+      // Fixture defaults website via ||, so null must be forced post-creation
+      const school = {
+        ...createMockSchool({ name: "University of Florida" }),
         website: null,
-      });
+      };
       const { extractDomain } = useSchoolLogos();
 
       const domain = extractDomain(school);
-      expect(domain).toContain(".edu");
+      expect(domain).toBeNull();
     });
 
     it("should handle empty school name gracefully", () => {
@@ -159,6 +171,86 @@ describe("useSchoolLogos", () => {
   });
 
   describe("fetchMultipleLogos", () => {
+    it("should resolve missing favicons with a single batch API call", async () => {
+      const schools = createMockSchools(3, (i) => ({
+        favicon_url: null,
+        website: `https://school${i}.edu`,
+      }));
+      mockFetchAuth.mockResolvedValue({
+        faviconUrls: {
+          "school-1": "https://school0.edu/favicon.ico",
+          "school-2": null,
+          "school-3": "https://school2.edu/favicon.ico",
+        },
+      });
+
+      const { fetchMultipleLogos, logoMap } = useSchoolLogos();
+      await fetchMultipleLogos(schools);
+
+      expect(mockFetchAuth).toHaveBeenCalledTimes(1);
+      expect(mockFetchAuth).toHaveBeenCalledWith(
+        "/api/schools/favicons",
+        expect.objectContaining({
+          method: "POST",
+          body: {
+            schools: [
+              { schoolId: "school-1", schoolDomain: "school0.edu" },
+              { schoolId: "school-2", schoolDomain: "school1.edu" },
+              { schoolId: "school-3", schoolDomain: "school2.edu" },
+            ],
+          },
+        }),
+      );
+      expect(logoMap.value.get("school-1")).toBe(
+        "https://school0.edu/favicon.ico",
+      );
+      expect(logoMap.value.get("school-2")).toBeNull();
+    });
+
+    it("should persist found favicons to the database", async () => {
+      const schools = createMockSchools(1, () => ({
+        favicon_url: null,
+        website: "https://mit.edu",
+      }));
+      mockFetchAuth.mockResolvedValue({
+        faviconUrls: { "school-1": "https://mit.edu/favicon.ico" },
+      });
+
+      const { fetchMultipleLogos } = useSchoolLogos();
+      await fetchMultipleLogos(schools);
+
+      expect(mockSupabase.from).toHaveBeenCalledWith("schools");
+    });
+
+    it("should not call API for schools without a website", async () => {
+      // Fixture defaults website via ||, so null must be forced post-creation
+      const schools = createMockSchools(2, () => ({ favicon_url: null })).map(
+        (school) => ({ ...school, website: null }),
+      );
+
+      const { fetchMultipleLogos, logoMap } = useSchoolLogos();
+      await fetchMultipleLogos(schools);
+
+      expect(mockFetchAuth).not.toHaveBeenCalled();
+      expect(logoMap.value.get("school-1")).toBeNull();
+    });
+
+    it("should not refetch schools with a cached negative result", async () => {
+      const schools = createMockSchools(1, () => ({
+        favicon_url: null,
+        website: "https://nofavicon.edu",
+      }));
+      mockFetchAuth.mockResolvedValue({
+        faviconUrls: { "school-1": null },
+      });
+
+      const { fetchMultipleLogos } = useSchoolLogos();
+      await fetchMultipleLogos(schools);
+      await fetchMultipleLogos(schools);
+
+      expect(mockFetchAuth).toHaveBeenCalledTimes(1);
+    });
+
     it("should fetch logos for multiple schools", async () => {
       const schools = createMockSchools(3, (i) => ({
         favicon_url: `https://example${i}.com/favicon.ico`,
@@ -188,6 +280,26 @@ describe("useSchoolLogos", () => {
 
       expect(result).toBeDefined();
       expect(result.size).toBeGreaterThanOrEqual(0);
+    });
+  });
+
+  describe("localStorage persistence", () => {
+    it("should persist results (including negatives) across reloads", async () => {
+      const schools = createMockSchools(1, () => ({
+        favicon_url: null,
+        website: "https://nofavicon.edu",
+      }));
+      mockFetchAuth.mockResolvedValue({
+        faviconUrls: { "school-1": null },
+      });
+
+      const { fetchMultipleLogos } = useSchoolLogos();
+      await fetchMultipleLogos(schools);
+
+      const raw = localStorage.getItem("trc-school-logo-cache");
+      expect(raw).toBeTruthy();
+      const parsed = JSON.parse(raw!);
+      expect(parsed["school-1"]).toMatchObject({ faviconUrl: null });
     });
   });
 

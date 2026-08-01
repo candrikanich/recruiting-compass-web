@@ -151,11 +151,25 @@ export const useSchools = () => {
   };
 
   const updateSchool = async (id: string, updates: Partial<School>) => {
-    return schoolStore.updateSchool(
+    const result = await schoolStore.updateSchool(
       id,
       updates,
       activeFamily.activeFamilyId.value ?? "",
     );
+
+    // Website changed — drop any cached (possibly negative) logo result so the
+    // next lookup probes the new domain instead of serving a stale miss
+    if (updates.website !== undefined) {
+      try {
+        const { useSchoolLogos } = await import("./useSchoolLogos");
+        const { clearSchoolLogoCache } = useSchoolLogos();
+        clearSchoolLogoCache(id);
+      } catch (logoError) {
+        logger.warn("Failed to clear logo cache after update:", logoError);
+      }
+    }
+
+    return result;
   };
 
   const deleteSchool = async (id: string) => {

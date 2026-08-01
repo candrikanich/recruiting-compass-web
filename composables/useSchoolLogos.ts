@@ -2,6 +2,11 @@
  * useSchoolLogos composable
  * Handles fetching and caching school logos from favicons
  * Provides fallback generic icon when favicon unavailable
+ *
+ * Caching layers:
+ * 1. schools.favicon_url in database (permanent, positive results only)
+ * 2. localStorage (survives reloads; negative results too, shorter TTL)
+ * 3. In-memory module cache (session)
  */
 
 import { ref, computed } from "vue";
@@ -23,7 +28,45 @@ interface CachedLogo {
 
 const logoCache = new Map<string, CachedLogo>();
 const CACHE_TTL = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
+const NEGATIVE_CACHE_TTL = 24 * 60 * 60 * 1000; // Retry failed lookups daily
 const GENERIC_SCHOOL_ICON = "🏫"; // Fallback emoji
+const STORAGE_KEY = "trc-school-logo-cache";
+const BATCH_SIZE = 50; // Matches /api/schools/favicons request cap
+
+const isFresh = (entry: CachedLogo): boolean => {
+  const ttl = entry.faviconUrl ? CACHE_TTL : NEGATIVE_CACHE_TTL;
+  return Date.now() - entry.fetchedAt < ttl;
+};
+
+let storageLoaded = false;
+
+const loadPersistedCache = () => {
+  if (storageLoaded || typeof window === "undefined") return;
+  storageLoaded = true;
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const entries = JSON.parse(raw) as Record<string, CachedLogo>;
+    for (const [schoolId, entry] of Object.entries(entries)) {
+      if (isFresh(entry)) logoCache.set(schoolId, entry);
+    }
+  } catch {
+    // Corrupted cache — drop it and refetch lazily
+    window.localStorage.removeItem(STORAGE_KEY);
+  }
+};
+
+const persistCache = () => {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(Object.fromEntries(logoCache)),
+    );
+  } catch {
+    // Quota exceeded / private mode — in-memory cache still works
+  }
+};
 
 export const useSchoolLogos = () => {
   const supabase = useSupabase();
@@ -31,30 +74,68 @@ export const useSchoolLogos = () => {
   const fetchingLogos = ref(new Set<string>());
   const logoMap = ref(new Map<string, string | null>());
 
+  loadPersistedCache();
+
   /**
-   * Get school domain from URL or extract from school data
+   * Get school domain from URL or extract from school data.
+   * Returns null when the school has no website — fabricating a domain from
+   * the name guarantees dead external lookups on every page load.
    */
-  const extractDomain = (school: School | string): string => {
+  const extractDomain = (school: School | string): string | null => {
     if (typeof school === "string") {
       // Assume it's already a domain
       return school.replace(/^(https?:\/\/)?(www\.)?/, "").replace(/\/$/, "");
     }
 
-    // Try to get domain from school website
     if (school.website) {
       return school.website
         .replace(/^(https?:\/\/)?(www\.)?/, "")
         .replace(/\/$/, "");
     }
 
-    // Fallback: try to construct from school name
-    const name = school.name || "";
-    const slug = name
-      .toLowerCase()
-      .replace(/\s+/g, "")
-      .replace(/[^a-z0-9]/g, "");
+    return null;
+  };
 
-    return `${slug}.edu`;
+  const setCache = (
+    schoolId: string,
+    faviconUrl: string | null,
+    domain: string,
+    fromDatabase: boolean,
+  ) => {
+    logoCache.set(schoolId, {
+      schoolId,
+      faviconUrl,
+      fetchedAt: Date.now(),
+      domain,
+      fromDatabase,
+    });
+    logoMap.value.set(schoolId, faviconUrl);
+    persistCache();
+  };
+
+  /**
+   * Persist a found favicon to the database so future sessions skip the API
+   */
+  const persistFaviconToDb = async (schoolId: string, faviconUrl: string) => {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error: dbError } = (await (supabase.from("schools") as any)
+        .update({ favicon_url: faviconUrl })
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .eq("id", schoolId)) as { error?: any };
+      if (dbError) {
+        logger.warn(
+          `Failed to save favicon to database for ${schoolId}:`,
+          dbError,
+        );
+      }
+    } catch (dbError) {
+      logger.warn(
+        `Failed to save favicon to database for ${schoolId}:`,
+        dbError,
+      );
+      // Continue anyway, just log the error
+    }
   };
 
   /**
@@ -69,12 +150,9 @@ export const useSchoolLogos = () => {
 
     // Check in-memory cache first
     const cached = logoCache.get(schoolId);
-    if (cached && !options.forceRefresh) {
-      const age = Date.now() - cached.fetchedAt;
-      if (age < CACHE_TTL) {
-        logoMap.value.set(schoolId, cached.faviconUrl);
-        return cached.faviconUrl;
-      }
+    if (cached && !options.forceRefresh && isFresh(cached)) {
+      logoMap.value.set(schoolId, cached.faviconUrl);
+      return cached.faviconUrl;
     }
 
     // Check if already fetching
@@ -87,23 +165,18 @@ export const useSchoolLogos = () => {
     try {
       // 1. Check database first
       if (school.favicon_url && !options.forceRefresh) {
-        // Cache from database
-        logger.info(
-          `[useSchoolLogos] Found favicon_url in database for ${school.name}: ${school.favicon_url}`,
-        );
-        logoCache.set(schoolId, {
-          schoolId,
-          faviconUrl: school.favicon_url,
-          fetchedAt: Date.now(),
-          domain,
-          fromDatabase: true,
-        });
-        logoMap.value.set(schoolId, school.favicon_url);
+        setCache(schoolId, school.favicon_url, domain ?? "", true);
         return school.favicon_url;
       }
 
-      // 2. Fetch from API if not in database
-      logger.info(
+      // 2. No website — nothing to look up, cache the miss
+      if (!domain) {
+        setCache(schoolId, null, "", false);
+        return null;
+      }
+
+      // 3. Fetch from API
+      logger.debug(
         `[useSchoolLogos] Fetching favicon from API for ${school.name} with domain: ${domain}`,
       );
       const { $fetchAuth } = useAuthFetch();
@@ -118,42 +191,14 @@ export const useSchoolLogos = () => {
       );
 
       const faviconUrl = response.faviconUrl;
-      logger.info(`[useSchoolLogos] API returned: ${faviconUrl}`);
 
-      // 3. Save to database for persistence
+      // 4. Save to database for persistence
       if (faviconUrl) {
-        try {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const { error: dbError } = (await (supabase.from("schools") as any)
-            .update({ favicon_url: faviconUrl })
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .eq("id", schoolId)) as { error?: any };
-          if (dbError) {
-            logger.warn(
-              `Failed to save favicon to database for ${schoolId}:`,
-              dbError,
-            );
-          }
-        } catch (dbError) {
-          logger.warn(
-            `Failed to save favicon to database for ${schoolId}:`,
-            dbError,
-          );
-          // Continue anyway, just log the error
-        }
+        await persistFaviconToDb(schoolId, faviconUrl);
       }
 
-      // 4. Cache the result
-      logoCache.set(schoolId, {
-        schoolId,
-        faviconUrl,
-        fetchedAt: Date.now(),
-        domain,
-        fromDatabase: false,
-      });
-
-      // Store in map for reactive access
-      logoMap.value.set(schoolId, faviconUrl);
+      // 5. Cache the result (negatives too, so misses don't refetch each load)
+      setCache(schoolId, faviconUrl, domain, false);
 
       return faviconUrl;
     } catch (error) {
@@ -166,18 +211,77 @@ export const useSchoolLogos = () => {
   };
 
   /**
-   * Fetch logos for multiple schools in parallel
+   * Fetch logos for multiple schools via one batched API call
    */
   const fetchMultipleLogos = async (
     schools: School[],
     options: { forceRefresh?: boolean } = {},
   ): Promise<Map<string, string | null>> => {
-    // Fetch all logos in parallel (with reasonable concurrency)
-    const promises = schools.map((school) =>
-      fetchSchoolLogo(school, options).catch(() => null),
+    const toFetch: { school: School; domain: string }[] = [];
+
+    for (const school of schools) {
+      if (fetchingLogos.value.has(school.id)) continue;
+
+      const cached = logoCache.get(school.id);
+      if (cached && !options.forceRefresh && isFresh(cached)) {
+        logoMap.value.set(school.id, cached.faviconUrl);
+        continue;
+      }
+
+      if (school.favicon_url && !options.forceRefresh) {
+        setCache(school.id, school.favicon_url, extractDomain(school) ?? "", true);
+        continue;
+      }
+
+      const domain = extractDomain(school);
+      if (!domain) {
+        setCache(school.id, null, "", false);
+        continue;
+      }
+
+      toFetch.push({ school, domain });
+    }
+
+    if (toFetch.length === 0) return logoMap.value;
+
+    logger.info(
+      `[useSchoolLogos] Batch fetching favicons for ${toFetch.length} schools`,
     );
 
-    await Promise.allSettled(promises);
+    toFetch.forEach(({ school }) => fetchingLogos.value.add(school.id));
+
+    try {
+      const { $fetchAuth } = useAuthFetch();
+
+      for (let i = 0; i < toFetch.length; i += BATCH_SIZE) {
+        const chunk = toFetch.slice(i, i + BATCH_SIZE);
+        const response = await $fetchAuth<{
+          faviconUrls: Record<string, string | null>;
+        }>("/api/schools/favicons", {
+          method: "POST",
+          body: {
+            schools: chunk.map(({ school, domain }) => ({
+              schoolId: school.id,
+              schoolDomain: domain,
+            })),
+          },
+        });
+
+        for (const { school, domain } of chunk) {
+          const faviconUrl = response.faviconUrls[school.id] ?? null;
+          setCache(school.id, faviconUrl, domain, false);
+          if (faviconUrl) {
+            await persistFaviconToDb(school.id, faviconUrl);
+          }
+        }
+      }
+    } catch (error) {
+      logger.warn("[useSchoolLogos] Batch favicon fetch failed:", error);
+      toFetch.forEach(({ school }) => logoMap.value.set(school.id, null));
+    } finally {
+      toFetch.forEach(({ school }) => fetchingLogos.value.delete(school.id));
+    }
+
     return logoMap.value;
   };
 
@@ -207,6 +311,7 @@ export const useSchoolLogos = () => {
   const clearSchoolLogoCache = (schoolId: string) => {
     logoCache.delete(schoolId);
     logoMap.value.delete(schoolId);
+    persistCache();
   };
 
   /**
@@ -215,6 +320,7 @@ export const useSchoolLogos = () => {
   const clearAllLogos = () => {
     logoCache.clear();
     logoMap.value.clear();
+    persistCache();
   };
 
   /**
