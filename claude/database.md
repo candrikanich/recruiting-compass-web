@@ -34,6 +34,17 @@ Phase 10a (`supabase/migrations/20260728000000_rls_account_links_consolidation_p
 
 Full enumeration and evidence: `tests/integration/rls/rls-phase10a-consolidation.integration.spec.ts` and `tests/integration/rls/rls-security-hotfix.integration.spec.ts` (live-Postgres regression suites, both gate every consolidation/deferral decision above).
 
+### 2026-08-01: deferral preconditions SATISFIED (Phases 1-3 of `planning/rls-family-consolidation-plan.md` applied live)
+
+All three bullets above now have their prep work done — applied to the live DB 2026-08-01 via Supabase MCP, verified same day:
+
+- `20260805000000_family_unit_id_columns_trigger_backfill.sql` — `family_unit_id` columns on `social_media_posts`/`recommendation_letters`; generic `derive_family_unit_id()` BEFORE INSERT OR UPDATE trigger on all 7 deferred tables (silently derives school_id → coach_id → document_id → unambiguous-user, never raises); idempotent backfill. Post-apply: **0 NULL `family_unit_id` on all 7 tables** (one pass, no ambiguous-owner residue).
+- `20260808000000_family_policies_additive.sql` — additive family policies only: DELETE on schools/coaches/documents/performance_metrics; full family CRUD on social_media_posts + recommendation_letters. **No legacy policy dropped yet** — the deferral section above still describes which legacy policies remain load-bearing until the Phase 4/5 cutovers.
+- App code (develop `7054bf0b`) stamps `family_unit_id` on every client write path; fit-score endpoint accepts family membership.
+- Versions recorded twice in `schema_migrations`: MCP apply timestamps (`20260801210413`/`20260801210433`) and repo filenames (`20260805000000`/`20260808000000`) so `db push` won't re-apply.
+- Evidence: `tests/integration/rls/rls-family-deferrals.integration.spec.ts` (18 live assertions, RED→GREEN across the apply); full RLS suite 39/39; full E2E passed post-apply.
+- Remaining: soak, then Phase 4 (interactions cutover + schools DELETE + repo-wide UPDATE `WITH CHECK` hardening) and Phase 5 (Deferral A legacy drops) per the plan. Note: USING-only UPDATE policies DO apply USING as WITH CHECK on the post-update row; residual row-move exposure is via legacy permissive OR and closes with the drops.
+
 ### Phase 10a prod pre-flight: repaired + PASSING as of 2026-07-30; migration stack still pending on prod
 
 The live DB (`xpxzhqghxecsjhvklsqg`, behind myrecruitingcompass.com — a single DB serves prod and non-prod) sat at migration head `20260603000000`, missing all five `202607*` migrations. First pre-flight run FAILED:
