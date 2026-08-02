@@ -62,6 +62,22 @@ All three bullets above now have their prep work done — applied to the live DB
 - New regression coverage (`rls-family-deferrals.integration.spec.ts` Phase 5 block): a user linked only via accepted `account_links` (no `family_members` row) — the exact shape the dropped legacy policies used to honor — now denied SELECT/DELETE on all 5 tables. RED confirmed pre-apply (legacy access still worked), GREEN post-apply. Full spec 25/25 live.
 - **Deferral A now resolved. All three original deferrals (A, B, C) closed — `planning/rls-family-consolidation-plan.md` Phases 1-5 complete.** Phase 6 (audit + docs, no schema change) is the only remaining plan item.
 
+### 2026-08-02: Phase 6 — audit + docs (plan complete, no schema change)
+
+Re-ran the exit-criterion query against the full family-model table set (`coaches`, `documents`, `events`, `interactions`, `offers`, `performance_metrics`, `player_profiles`, `recommendation_letters`, `schools`, `social_media_posts`), not just this plan's 5 Deferral-A tables:
+
+- **This plan's scope (schools DELETE, interactions all verbs, coaches/documents/performance_metrics/recommendation_letters/social_media_posts all verbs) is fully consolidated** — exactly 1 permissive policy per verb, confirmed.
+- **Discovered, out of this plan's scope:** `schools` (INSERT ×2, SELECT ×2) and `events` (INSERT/SELECT/UPDATE ×2 each) still carry a redundant *non-account_links* permissive policy alongside the family-model one (e.g. `schools`: "Linked users can create schools" — plain `user_id = auth.uid()`, not account_links-based despite the name — coexists with "Users can create schools in their families"; `events`: "Users can view/update/insert their own events" coexists with the family-model equivalents). Not a security hole — the extra policy is same-or-narrower than the family one, both PERMISSIVE — but it means `plans/audit-remediation.md` Phase 10's "exactly one permissive policy set per verb per table" criterion is **not yet fully met repo-wide**. Left as-is: consolidating these was never part of Deferral A/B/C and touching them wasn't authorized in this session.
+- `offers` and `player_profiles` are already single-policy-per-verb (offers via family model; player_profiles via its own `player_profiles_select_own`/`_public` split, a different and intentional model, not family_unit_id-based).
+
+**Deferred tickets (not filed in an external tracker — no issue tracker wired to this repo; recorded here per existing convention):**
+1. **`athlete_task` family migration** — no `family_unit_id` column on `task`/`athlete_task`; still on `get_linked_user_ids()`-only access. Same shape of work as this plan, not started.
+2. **`family_members` UPDATE/DELETE policies** — missing entirely today (only SELECT/INSERT exist). Out of scope here.
+3. **`family_unit_id` NOT NULL** — deliberately still nullable everywhere (trigger's unambiguous-user fallback can legitimately leave it NULL for multi-family owners). Revisit once/if the ambiguous-owner residue (plan "Unresolved questions" 1-2) is triaged to zero.
+4. **`schools`/`events` redundant non-account_links permissive policies** (discovered above) — low priority, no access-control risk, just policy-count noise against the audit-remediation Phase 10 criterion.
+
+Plan file: `planning/rls-family-consolidation-plan.md` (already committed there, satisfying "copy plan to planning/" convention). Phases 1-6 of this plan are now complete.
+
 ### Phase 10a prod pre-flight: repaired + PASSING as of 2026-07-30; migration stack still pending on prod
 
 The live DB (`xpxzhqghxecsjhvklsqg`, behind myrecruitingcompass.com — a single DB serves prod and non-prod) sat at migration head `20260603000000`, missing all five `202607*` migrations. First pre-flight run FAILED:
