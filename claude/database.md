@@ -43,7 +43,14 @@ All three bullets above now have their prep work done — applied to the live DB
 - App code (develop `7054bf0b`) stamps `family_unit_id` on every client write path; fit-score endpoint accepts family membership.
 - Versions recorded twice in `schema_migrations`: MCP apply timestamps (`20260801210413`/`20260801210433`) and repo filenames (`20260805000000`/`20260808000000`) so `db push` won't re-apply.
 - Evidence: `tests/integration/rls/rls-family-deferrals.integration.spec.ts` (18 live assertions, RED→GREEN across the apply); full RLS suite 39/39; full E2E passed post-apply.
-- Remaining: soak, then Phase 4 (interactions cutover + schools DELETE + repo-wide UPDATE `WITH CHECK` hardening) and Phase 5 (Deferral A legacy drops) per the plan. Note: USING-only UPDATE policies DO apply USING as WITH CHECK on the post-update row; residual row-move exposure is via legacy permissive OR and closes with the drops.
+- Remaining: Phase 5 (Deferral A legacy drops) per the plan. Note: USING-only UPDATE policies DO apply USING as WITH CHECK on the post-update row; residual row-move exposure is via legacy permissive OR and closes with the drops.
+
+### 2026-08-02: Phase 4 applied live (interactions cutover + schools DELETE)
+
+- `20260812000000_cutover_interactions_schools_delete.sql` — recreated all 7 family UPDATE policies (schools, coaches, documents, events, performance_metrics, social_media_posts, recommendation_letters) with explicit `WITH CHECK`; re-ran interactions/schools backfills; dropped legacy `get_linked_user_ids()`-based interactions SELECT/INSERT policies and legacy schools DELETE policies (`account_links`-based + plain-ownership). Chris ruling: no soak period before this phase — pre-launch, no live users yet.
+- Post-apply: 0 NULL `family_unit_id` on interactions/schools; `interactions` SELECT/INSERT and `schools` DELETE now single family-model policy each.
+- `tests/integration/rls/rls-family-deferrals.integration.spec.ts` Phase 4 block: 23/23 GREEN live (18 Phase 1/3 + 5 new), including proof that INSERT...RETURNING on interactions with no explicit `family_unit_id` is satisfied by the Phase 1 trigger-derived value against the SELECT policy.
+- **Deferral B (interactions) now resolved.** Deferral A (coaches/documents/performance_metrics/social_media_posts/recommendation_letters legacy drops) still open — Phase 5.
 
 ### Phase 10a prod pre-flight: repaired + PASSING as of 2026-07-30; migration stack still pending on prod
 

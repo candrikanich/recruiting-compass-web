@@ -6,7 +6,22 @@ Active session notes only. See [COMPLETED_WORK.md](./COMPLETED_WORK.md) for full
 
 - **Output format by reader, not by default**: For artifacts Chris will read once on a phone or share with someone non-technical — session recaps, status overviews, weekly summaries, "where are we on X" snapshots — invoke the `visual-explainer` skill to produce self-contained HTML. For artifacts that future-Claude or Chris will edit (handoff docs, `planning/*.md`, `COMPLETED_WORK.md`, lesson files, plans) — stay markdown. When unsure: read = HTML, edit = markdown.
 
-## Current Session (2026-08-01 — Sentry triage: favicon N+1 + phase 500s)
+## Current Session (2026-08-02 — RLS deferrals: Phase 4 implemented)
+
+**Status:** Phase 4 migration applied live, verified, committed+pushed to develop. Chris ruling: skipped the "soak a few days" pacing from the plan — no live users yet, risk accepted. Phase 5-6 still open.
+**Tests:** unit 7785 PASS; type-check 0; lint 0; RLS integration 23/23 GREEN live (18 Phase 1/3 + 5 new Phase 4); full E2E passed (`.last-run.json`, 0 failed) — first pass had 7 failures matching the known session-revocation cascade flake, retries converged clean.
+**DB verify:** 0 NULL family_unit_id on interactions/schools post-cutover; legacy `get_linked_user_ids()` interactions SELECT/INSERT policies + legacy schools DELETE policies (account_links + plain-ownership) dropped; all 7 family UPDATE policies now carry explicit WITH CHECK. Migration recorded both as MCP timestamp (20260802142113) and repo filename (20260812000000) in schema_migrations — same dual-recording pattern as Phases 1-3.
+**Plan:** `planning/rls-family-consolidation-plan.md` (Phase 5-6 still to do)
+**Note:** `npx supabase db push` fails locally (`LegacyDbPushMissingLocalError`) due to the dual-recording drift above — use Supabase MCP `apply_migration` directly, matching how Phases 1-3 were applied.
+
+### Session facts (durable)
+- Phase 1: `20260805000000` — family_unit_id columns (social_media_posts, recommendation_letters) + generic BEFORE INSERT OR UPDATE `derive_family_unit_id()` trigger on 7 tables (silent derive, never RAISEs) + idempotent backfills.
+- Phase 2: app stamping on all deferral write paths (coaches store, documents ×2 composables, performance ×2, social, rec letters) + fit-score endpoint authz union (family parents no longer 404).
+- Phase 3: `20260808000000` — additive family policies (DELETE gaps schools/coaches/documents/performance_metrics; full family CRUD social/rec letters). Legacy account_links policies untouched, still load-bearing.
+- Phase 4: `20260812000000` — WITH CHECK hardening on all 7 family UPDATE policies + interactions cutover (Deferral B resolved) + schools DELETE cutover (part of Deferral C). Deferral A (coaches/documents/performance_metrics/social_media_posts/recommendation_letters legacy drops) still open — Phase 5.
+- Phase 5-6 (Deferral A legacy drops + audit) NOT started.
+
+## Previous Session (2026-08-01 — Sentry triage: favicon N+1 + phase 500s)
 
 **Status:** COMPLETE — both Sentry issues fixed, pushed to develop
 **Branch:** develop, pushed through `e0f31430`

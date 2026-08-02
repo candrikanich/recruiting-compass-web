@@ -840,3 +840,246 @@ describe.skipIf(!hasLiveSupabase)(
     });
   },
 );
+
+/**
+ * Phase 4 — small cutover (interactions Deferral B + schools DELETE)
+ * (supabase/migrations/20260812000000_cutover_interactions_schools_delete.sql).
+ *
+ * These assertions go GREEN only once the Phase 4 migration has dropped the
+ * legacy `get_linked_user_ids()`-based interactions SELECT/INSERT policies
+ * and the legacy schools DELETE policies, leaving only the family-model
+ * policies + Phase 1 derivation trigger in place. Run once immediately after
+ * writing this file, against a DB still at migration head 20260808000000:
+ * expected RED via permission-denied errors on the alpha INSERT...RETURNING
+ * and alpha DELETE assertions (the legacy policies not yet dropped means
+ * this test can't distinguish family-model access from legacy access) —
+ * document the actual pre-migration shape in the PR.
+ */
+describe.skipIf(!hasLiveSupabase)(
+  "RLS family-model consolidation Phase 4 — interactions cutover + schools DELETE, live Postgres",
+  () => {
+    const admin = hasLiveSupabase ? adminClient() : (null as never);
+
+    let alphaPlayerId: string;
+    let betaPlayerId: string;
+    let alphaFamilyId: string;
+    let betaFamilyId: string;
+    let alphaSchoolId: string;
+    let alphaClient: SupabaseClient;
+    let betaClient: SupabaseClient;
+
+    let alphaInteractionId: string;
+    let deletableSchoolId: string;
+    let insertedInteractionId: string | null = null;
+
+    beforeAll(async () => {
+      if (!hasLiveSupabase) return;
+
+      const alphaEmail = `e2e-rls-phase4-${RUN_ID}-alpha@example.com`;
+      const betaEmail = `e2e-rls-phase4-${RUN_ID}-beta@example.com`;
+
+      const { data: alphaUser, error: alphaUserErr } = await admin.auth.admin.createUser({
+        email: alphaEmail,
+        password: PASSWORD,
+        email_confirm: true,
+        user_metadata: { role: "player" },
+      });
+      if (alphaUserErr || !alphaUser.user) {
+        throw new Error(`createUser(alpha) failed: ${alphaUserErr?.message}`);
+      }
+      alphaPlayerId = alphaUser.user.id;
+
+      const { data: betaUser, error: betaUserErr } = await admin.auth.admin.createUser({
+        email: betaEmail,
+        password: PASSWORD,
+        email_confirm: true,
+        user_metadata: { role: "player" },
+      });
+      if (betaUserErr || !betaUser.user) {
+        throw new Error(`createUser(beta) failed: ${betaUserErr?.message}`);
+      }
+      betaPlayerId = betaUser.user.id;
+
+      const { error: alphaProfileErr } = await admin
+        .from("users")
+        .insert({ id: alphaPlayerId, email: alphaEmail, role: "player" });
+      if (alphaProfileErr) {
+        throw new Error(`seed public.users(alpha) failed: ${alphaProfileErr.message}`);
+      }
+      const { error: betaProfileErr } = await admin
+        .from("users")
+        .insert({ id: betaPlayerId, email: betaEmail, role: "player" });
+      if (betaProfileErr) {
+        throw new Error(`seed public.users(beta) failed: ${betaProfileErr.message}`);
+      }
+
+      // Family-model-only members — deliberately NO account_links row, so any
+      // access observed can only come from the family-model policies.
+      const { data: alphaFamily, error: alphaFamilyErr } = await admin
+        .from("family_units")
+        .insert({ created_by_user_id: alphaPlayerId, family_name: "Phase 4 Family Alpha" })
+        .select("id")
+        .single();
+      if (alphaFamilyErr || !alphaFamily) {
+        throw new Error(`seed family_unit(alpha) failed: ${alphaFamilyErr?.message}`);
+      }
+      alphaFamilyId = alphaFamily.id as string;
+
+      const { data: betaFamily, error: betaFamilyErr } = await admin
+        .from("family_units")
+        .insert({ created_by_user_id: betaPlayerId, family_name: "Phase 4 Family Beta" })
+        .select("id")
+        .single();
+      if (betaFamilyErr || !betaFamily) {
+        throw new Error(`seed family_unit(beta) failed: ${betaFamilyErr?.message}`);
+      }
+      betaFamilyId = betaFamily.id as string;
+
+      const { error: alphaMemberErr } = await admin
+        .from("family_members")
+        .insert({ family_unit_id: alphaFamilyId, user_id: alphaPlayerId, role: "player" });
+      if (alphaMemberErr) {
+        throw new Error(`seed family_members(alpha) failed: ${alphaMemberErr.message}`);
+      }
+      const { error: betaMemberErr } = await admin
+        .from("family_members")
+        .insert({ family_unit_id: betaFamilyId, user_id: betaPlayerId, role: "player" });
+      if (betaMemberErr) {
+        throw new Error(`seed family_members(beta) failed: ${betaMemberErr.message}`);
+      }
+
+      const { data: alphaSchool, error: alphaSchoolErr } = await admin
+        .from("schools")
+        .insert({
+          user_id: alphaPlayerId,
+          family_unit_id: alphaFamilyId,
+          name: `[e2e-rls-phase4-${RUN_ID}] Alpha School`,
+        })
+        .select("id")
+        .single();
+      if (alphaSchoolErr || !alphaSchool) {
+        throw new Error(`seed school(alpha) failed: ${alphaSchoolErr?.message}`);
+      }
+      alphaSchoolId = alphaSchool.id as string;
+
+      // Read fixture for the SELECT/negative-control assertions.
+      const { data: interaction, error: interactionErr } = await admin
+        .from("interactions")
+        .insert({
+          school_id: alphaSchoolId,
+          family_unit_id: alphaFamilyId,
+          logged_by: alphaPlayerId,
+          type: "email",
+          direction: "outbound",
+          occurred_at: "2026-08-12T00:00:00Z",
+        })
+        .select("id")
+        .single();
+      if (interactionErr || !interaction) {
+        throw new Error(`seed interactions(read fixture) failed: ${interactionErr?.message}`);
+      }
+      alphaInteractionId = interaction.id as string;
+
+      // Dedicated DELETE-target school, separate from alphaSchoolId which
+      // interactions/coaches fixtures reference via FK.
+      const { data: delSchool, error: delSchoolErr } = await admin
+        .from("schools")
+        .insert({
+          user_id: alphaPlayerId,
+          family_unit_id: alphaFamilyId,
+          name: `[e2e-rls-phase4-${RUN_ID}] Deletable School`,
+        })
+        .select("id")
+        .single();
+      if (delSchoolErr || !delSchool) {
+        throw new Error(`seed schools(delete fixture) failed: ${delSchoolErr?.message}`);
+      }
+      deletableSchoolId = delSchool.id as string;
+
+      alphaClient = await signIn(alphaEmail, PASSWORD);
+      betaClient = await signIn(betaEmail, PASSWORD);
+    }, 60000);
+
+    afterAll(async () => {
+      if (!hasLiveSupabase) return;
+      if (insertedInteractionId)
+        await admin.from("interactions").delete().eq("id", insertedInteractionId);
+      await admin.from("schools").delete().eq("id", deletableSchoolId);
+      await admin.from("interactions").delete().eq("id", alphaInteractionId);
+      await admin.from("schools").delete().eq("id", alphaSchoolId);
+      await admin.from("family_members").delete().eq("family_unit_id", alphaFamilyId);
+      await admin.from("family_members").delete().eq("family_unit_id", betaFamilyId);
+      await admin.from("family_units").delete().eq("id", alphaFamilyId);
+      await admin.from("family_units").delete().eq("id", betaFamilyId);
+      await admin.auth.admin.deleteUser(alphaPlayerId).catch(() => null);
+      await admin.auth.admin.deleteUser(betaPlayerId).catch(() => null);
+    });
+
+    describe("Family Beta member — negative control, no access to Alpha's rows", () => {
+      it("cannot SELECT Alpha's interactions row", async () => {
+        const { data, error } = await betaClient
+          .from("interactions")
+          .select("id")
+          .eq("id", alphaInteractionId);
+        expect(error).toBeNull();
+        expect(data).toHaveLength(0);
+      });
+
+      it("cannot DELETE Alpha's school (no-op)", async () => {
+        const { data, error } = await betaClient
+          .from("schools")
+          .delete()
+          .eq("id", deletableSchoolId)
+          .select("id");
+        expect(error).toBeNull();
+        expect(data).toHaveLength(0);
+
+        const { data: stillThere } = await admin
+          .from("schools")
+          .select("id")
+          .eq("id", deletableSchoolId);
+        expect(stillThere).toHaveLength(1);
+      });
+    });
+
+    describe("Family Alpha member — positive access via family-model-only policies", () => {
+      it("can SELECT an interactions row in their own family", async () => {
+        const { data, error } = await alphaClient
+          .from("interactions")
+          .select("id")
+          .eq("id", alphaInteractionId);
+        expect(error).toBeNull();
+        expect(data).toHaveLength(1);
+      });
+
+      it("can INSERT...RETURNING an interactions row with no family_unit_id set — trigger-derived value satisfies the SELECT policy on the returned row", async () => {
+        const { data, error } = await alphaClient
+          .from("interactions")
+          .insert({
+            school_id: alphaSchoolId,
+            logged_by: alphaPlayerId,
+            type: "phone_call",
+            direction: "outbound",
+            occurred_at: "2026-08-12T00:00:00Z",
+          })
+          .select("id, family_unit_id")
+          .single();
+
+        expect(error).toBeNull();
+        expect(data).not.toBeNull();
+        expect(data?.family_unit_id).toBe(alphaFamilyId);
+        insertedInteractionId = data!.id as string;
+      });
+
+      it("can DELETE a school in their own family (legacy schools DELETE policies dropped)", async () => {
+        const { data, error } = await alphaClient
+          .from("schools")
+          .delete()
+          .eq("id", deletableSchoolId)
+          .select("id");
+        expect(error).toBeNull();
+        expect(data).toHaveLength(1);
+      });
+    });
+  },
+);
