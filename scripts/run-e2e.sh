@@ -15,15 +15,55 @@
 # stop cross-account-logout from running whenever an unrelated flake hits.
 set -u
 
-MAIN_PROJECTS=(--project=chromium)
-if [ "${FULL_TESTS:-}" = "1" ]; then
-  MAIN_PROJECTS+=(--project=firefox --project=webkit)
+# Playwright's --project flag is repeatable/unioned, not overridden — passing
+# "$@" straight through to phase 1 on top of the FULL_TESTS-derived default
+# list used to union chromium+firefox+webkit with a caller's own
+# `--project webkit`, running firefox tests in jobs that never install
+# firefox. Passing "$@" to phase 2 as well ran cross-account-logout (a real
+# global signOut on the shared player/admin accounts) concurrently with a
+# second full run of the caller's projects — reinstating the exact
+# session-revocation cascade this two-phase split exists to prevent.
+#
+# Fix: if the caller passed an explicit --project, honor ONLY that in phase
+# 1 (skip the FULL_TESTS-derived default list). Strip all --project flags
+# out of the args before phase 2 — it always runs cross-account-logout
+# alone — while still forwarding any other passthrough flags (--grep,
+# --reporter, etc.) to both phases.
+CALLER_HAS_PROJECT=0
+NON_PROJECT_ARGS=()
+skip_next=0
+for arg in "$@"; do
+  if [ "$skip_next" = "1" ]; then
+    skip_next=0
+    continue
+  fi
+  case "$arg" in
+    --project=*)
+      CALLER_HAS_PROJECT=1
+      ;;
+    --project)
+      CALLER_HAS_PROJECT=1
+      skip_next=1
+      ;;
+    *)
+      NON_PROJECT_ARGS+=("$arg")
+      ;;
+  esac
+done
+
+if [ "$CALLER_HAS_PROJECT" = "1" ]; then
+  MAIN_PROJECTS=()
+else
+  MAIN_PROJECTS=(--project=chromium)
+  if [ "${FULL_TESTS:-}" = "1" ]; then
+    MAIN_PROJECTS+=(--project=firefox --project=webkit)
+  fi
 fi
 
-playwright test "${MAIN_PROJECTS[@]}" "$@"
+playwright test "${MAIN_PROJECTS[@]+"${MAIN_PROJECTS[@]}"}" "$@"
 main_status=$?
 
-playwright test --project=cross-account-logout "$@"
+playwright test --project=cross-account-logout "${NON_PROJECT_ARGS[@]+"${NON_PROJECT_ARGS[@]}"}"
 logout_status=$?
 
 exit_code=$main_status
