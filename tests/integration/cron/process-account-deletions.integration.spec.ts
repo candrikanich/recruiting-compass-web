@@ -23,10 +23,16 @@ import { describe, it, expect, beforeAll, afterAll, vi } from "vitest";
 // RLS integration spec).
 vi.unmock("@supabase/supabase-js");
 
-import { createClient, type RealtimeClientOptions } from "@supabase/supabase-js";
+import {
+  createClient,
+  type RealtimeClientOptions,
+} from "@supabase/supabase-js";
 import ws from "ws";
 import { execFileSync } from "child_process";
-import { deleteUserAccount, DATA_TABLES } from "~/server/api/cron/process-account-deletions.get";
+import {
+  deleteUserAccount,
+  DATA_TABLES,
+} from "~/server/api/cron/process-account-deletions.get";
 
 const SUPABASE_URL =
   process.env.TEST_SUPABASE_URL || process.env.NUXT_PUBLIC_SUPABASE_URL;
@@ -93,7 +99,10 @@ describe.skipIf(!hasLiveSupabase)(
   () => {
     const admin = hasLiveSupabase ? adminClient() : (null as never);
 
-    const makeUser = async (tag: string, role: "player" | "parent" = "player") => {
+    const makeUser = async (
+      tag: string,
+      role: "player" | "parent" = "player",
+    ) => {
       const email = `e2e-gdpr-cron-${RUN_ID}-${tag}@example.com`;
       const { data, error } = await admin.auth.admin.createUser({
         email,
@@ -111,7 +120,9 @@ describe.skipIf(!hasLiveSupabase)(
         role,
       });
       if (profileErr) {
-        throw new Error(`seed public.users(${tag}) failed: ${profileErr.message}`);
+        throw new Error(
+          `seed public.users(${tag}) failed: ${profileErr.message}`,
+        );
       }
       return { id: data.user.id as string, email };
     };
@@ -181,14 +192,12 @@ describe.skipIf(!hasLiveSupabase)(
           user_id: userId,
           token: `tok-${RUN_ID}-solo`,
         });
-        await admin
-          .from("user_deadlines")
-          .insert({
-            user_id: userId,
-            label: "test deadline",
-            deadline_date: "2027-01-01",
-            category: "application",
-          });
+        await admin.from("user_deadlines").insert({
+          user_id: userId,
+          label: "test deadline",
+          deadline_date: "2027-01-01",
+          category: "application",
+        });
 
         await admin
           .from("users")
@@ -244,7 +253,10 @@ describe.skipIf(!hasLiveSupabase)(
 
       afterAll(async () => {
         if (!hasLiveSupabase) return;
-        await admin.from("family_members").delete().eq("family_unit_id", familyUnitId);
+        await admin
+          .from("family_members")
+          .delete()
+          .eq("family_unit_id", familyUnitId);
         await admin.from("family_units").delete().eq("id", familyUnitId);
         await admin.auth.admin.deleteUser(memberId).catch(() => null);
         await admin.from("users").delete().eq("id", memberId);
@@ -308,7 +320,10 @@ describe.skipIf(!hasLiveSupabase)(
 
       afterAll(async () => {
         if (!hasLiveSupabase) return;
-        await admin.from("family_members").delete().eq("family_unit_id", familyUnitId);
+        await admin
+          .from("family_members")
+          .delete()
+          .eq("family_unit_id", familyUnitId);
         await admin.from("family_units").delete().eq("id", familyUnitId);
         await admin.auth.admin.deleteUser(creatorId).catch(() => null);
         await admin.from("users").delete().eq("id", creatorId);

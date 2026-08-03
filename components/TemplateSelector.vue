@@ -16,7 +16,7 @@
           class="transition text-slate-600 hover:text-slate-900"
           aria-label="Close"
         >
-          <UIcon name="i-heroicons-x-mark" class="w-6 h-6"  />
+          <UIcon name="i-heroicons-x-mark" class="w-6 h-6" />
         </button>
       </div>
 
@@ -107,7 +107,10 @@
                       :key="idx"
                       class="text-xs text-slate-500 flex items-center gap-1"
                     >
-                      <UIcon name="i-heroicons-x-mark" class="w-3 h-3 text-red-500"  />
+                      <UIcon
+                        name="i-heroicons-x-mark"
+                        class="w-3 h-3 text-red-500"
+                      />
                       {{ condition.description }}
                     </li>
                   </ul>
@@ -132,10 +135,11 @@
                 </div>
               </div>
 
-              <UIcon name="i-heroicons-check-circle"
+              <UIcon
+                name="i-heroicons-check-circle"
                 v-if="item.unlocked"
                 class="w-5 h-5 text-green-500 shrink-0 mt-1"
-               />
+              />
             </div>
           </button>
         </div>

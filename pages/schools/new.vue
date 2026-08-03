@@ -41,7 +41,7 @@
             v-else-if="collegeScorecardFetched"
             class="mt-2 text-xs text-green-700 flex items-center gap-1"
           >
-            <UIcon name="i-heroicons-check-solid" class="w-3 h-3"  />
+            <UIcon name="i-heroicons-check-solid" class="w-3 h-3" />
             <span>College data and map coordinates loaded</span>
           </div>
         </div>

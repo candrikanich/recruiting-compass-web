@@ -139,9 +139,7 @@ export const exportSchoolComparisonToCSV = (
     s.offer ? formatOfferType(s.offer.offer_type) : "",
     s.offer?.scholarship_percentage ? `${s.offer.scholarship_percentage}%` : "",
     s.offer ? formatOfferStatus(s.offer.status) : "",
-    s.offer?.deadline_date
-      ? formatDateOnly(s.offer.deadline_date)
-      : "",
+    s.offer?.deadline_date ? formatDateOnly(s.offer.deadline_date) : "",
     (s.pros || []).join("; "),
     (s.cons || []).join("; "),
   ]);
@@ -783,9 +781,7 @@ export const exportCoachesToCSV = (
     c.phone || "",
     c.twitter_handle || "",
     c.instagram_handle || "",
-    c.last_contact_date
-      ? formatDateOnly(c.last_contact_date)
-      : "",
+    c.last_contact_date ? formatDateOnly(c.last_contact_date) : "",
     c.notes || "",
   ]);
 

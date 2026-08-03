@@ -14,7 +14,10 @@
       <div
         class="flex items-center justify-between p-6 border-b border-slate-300"
       >
-        <h2 id="offer-comparison-title" class="text-2xl font-bold text-slate-900">
+        <h2
+          id="offer-comparison-title"
+          class="text-2xl font-bold text-slate-900"
+        >
           Compare Offers
         </h2>
         <button

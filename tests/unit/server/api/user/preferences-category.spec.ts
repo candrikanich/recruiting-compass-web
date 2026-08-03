@@ -40,7 +40,10 @@ vi.mock("h3", async (importOriginal) => {
 
 (
   globalThis as unknown as {
-    createError: (config: { statusCode: number; statusMessage?: string }) => Error & {
+    createError: (config: {
+      statusCode: number;
+      statusMessage?: string;
+    }) => Error & {
       statusCode: number;
     };
   }

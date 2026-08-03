@@ -74,7 +74,8 @@ function queueResponse(table: string, response: TableResponse) {
 const mockSupabase = {
   from: vi.fn((table: string) => {
     const queue = tableQueues[table];
-    const response = queue && queue.length ? queue.shift()! : { data: null, error: null };
+    const response =
+      queue && queue.length ? queue.shift()! : { data: null, error: null };
     const builder = makeQueryBuilder(response);
     if (table === "users") {
       const originalUpdate = builder.update as (...args: unknown[]) => unknown;
@@ -129,9 +130,8 @@ describe("POST /api/athlete/status/recalculate — error propagation", () => {
 
   it("regression: persists the computed score on the happy path", async () => {
     seedHappyPath();
-    const { default: handler } = await import(
-      "~/server/api/athlete/status/recalculate.post"
-    );
+    const { default: handler } =
+      await import("~/server/api/athlete/status/recalculate.post");
     const result = (await handler(mockEvent)) as { score: number };
 
     expect(typeof result.score).toBe("number");
@@ -139,45 +139,54 @@ describe("POST /api/athlete/status/recalculate — error propagation", () => {
   });
 
   it("fails the request (not 0-scored) when the schools query errors, and does not persist", async () => {
-    queueResponse("users", { data: { current_phase: "freshman" }, error: null });
+    queueResponse("users", {
+      data: { current_phase: "freshman" },
+      error: null,
+    });
     queueResponse("task", { data: [], error: null });
     queueResponse("athlete_task", { data: [], error: null });
     queueResponse("schools", { data: null, error: { message: "db down" } });
 
-    const { default: handler } = await import(
-      "~/server/api/athlete/status/recalculate.post"
-    );
+    const { default: handler } =
+      await import("~/server/api/athlete/status/recalculate.post");
 
     await expect(handler(mockEvent)).rejects.toMatchObject({ statusCode: 500 });
     expect(updateSpy).not.toHaveBeenCalled();
   });
 
   it("fails the request (not 0-scored) when the interactions query errors, and does not persist", async () => {
-    queueResponse("users", { data: { current_phase: "freshman" }, error: null });
+    queueResponse("users", {
+      data: { current_phase: "freshman" },
+      error: null,
+    });
     queueResponse("task", { data: [], error: null });
     queueResponse("athlete_task", { data: [], error: null });
     queueResponse("schools", { data: [], error: null });
-    queueResponse("interactions", { data: null, error: { message: "db down" } });
+    queueResponse("interactions", {
+      data: null,
+      error: { message: "db down" },
+    });
 
-    const { default: handler } = await import(
-      "~/server/api/athlete/status/recalculate.post"
-    );
+    const { default: handler } =
+      await import("~/server/api/athlete/status/recalculate.post");
 
     await expect(handler(mockEvent)).rejects.toMatchObject({ statusCode: 500 });
     expect(updateSpy).not.toHaveBeenCalled();
   });
 
   it("fails the request (not 0-scored) when the academic-data query errors, and does not persist", async () => {
-    queueResponse("users", { data: { current_phase: "freshman" }, error: null });
+    queueResponse("users", {
+      data: { current_phase: "freshman" },
+      error: null,
+    });
     queueResponse("task", { data: [], error: null });
     queueResponse("athlete_task", { data: [], error: null });
     queueResponse("schools", { data: [], error: null });
     queueResponse("interactions", { data: [], error: null });
     queueResponse("users", { data: null, error: { message: "db down" } });
 
-    const { default: handler } = await import(
-      "~/server/api/athlete/status/recalculate.post"
-    );
+    const { default: handler } =
+      await import("~/server/api/athlete/status/recalculate.post");
 
     await expect(handler(mockEvent)).rejects.toMatchObject({ statusCode: 500 });
     expect(updateSpy).not.toHaveBeenCalled();

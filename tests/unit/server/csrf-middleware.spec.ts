@@ -35,9 +35,9 @@ describe("Bearer-only exemption (iOS vs web browser)", () => {
   });
 
   it("does NOT exempt web browser: Bearer token present AND sb-access-token cookie present", () => {
-    expect(
-      isBearerOnlyRequest("Bearer abc123", "supabase-session-token"),
-    ).toBe(false);
+    expect(isBearerOnlyRequest("Bearer abc123", "supabase-session-token")).toBe(
+      false,
+    );
   });
 
   it("does NOT exempt requests with no auth header and no cookie", () => {
@@ -67,9 +67,9 @@ describe("CSRF middleware path exemptions", () => {
       expect(isCsrfExemptPath("/api/auth/login")).toBe(true);
     });
     it("exempts the fit-scores recalculate-all exact path", () => {
-      expect(
-        isCsrfExemptPath("/api/athlete/fit-scores/recalculate-all"),
-      ).toBe(true);
+      expect(isCsrfExemptPath("/api/athlete/fit-scores/recalculate-all")).toBe(
+        true,
+      );
     });
     it("exempts the RFC 8058 one-click email unsubscribe exact path", () => {
       expect(isCsrfExemptPath("/api/email/unsubscribe")).toBe(true);

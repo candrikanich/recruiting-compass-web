@@ -125,9 +125,8 @@ describe.skipIf(!hasLiveSupabase)(
 
     async function callCreate(body: Record<string, unknown>) {
       const { requireAuth } = await import("~/server/utils/auth");
-      const { createServerSupabaseClient } = await import(
-        "~/server/utils/supabase"
-      );
+      const { createServerSupabaseClient } =
+        await import("~/server/utils/supabase");
       const { readBody } = await import("h3");
       vi.mocked(requireAuth).mockResolvedValue({
         id: userId,

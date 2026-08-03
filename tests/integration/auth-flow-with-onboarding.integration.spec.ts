@@ -143,7 +143,9 @@ describe.skipIf(!hasLiveSupabase)(
         user_metadata: { role },
       });
       if (error || !authUser.user) {
-        throw new Error(`Failed to create auth user (${label}): ${error?.message}`);
+        throw new Error(
+          `Failed to create auth user (${label}): ${error?.message}`,
+        );
       }
       const { error: insertError } = await admin
         .from("users")
@@ -180,13 +182,18 @@ describe.skipIf(!hasLiveSupabase)(
         role: "player",
       });
       if (memberError) {
-        throw new Error(`Failed to seed player family membership: ${memberError.message}`);
+        throw new Error(
+          `Failed to seed player family membership: ${memberError.message}`,
+        );
       }
     });
 
     afterAll(async () => {
       if (!hasLiveSupabase) return;
-      await admin.from("family_members").delete().eq("family_unit_id", familyUnitId);
+      await admin
+        .from("family_members")
+        .delete()
+        .eq("family_unit_id", familyUnitId);
       await admin.from("family_units").delete().eq("id", familyUnitId);
       for (const userId of [playerId, parentId]) {
         await admin.from("users").delete().eq("id", userId);
@@ -241,9 +248,8 @@ describe.skipIf(!hasLiveSupabase)(
       // real GET /api/athlete/phase handler — proving the full chain
       // (signup role -> family join -> onboarding write -> parent read)
       // holds together against real rows, not isolated mocks.
-      const { createServerSupabaseClient } = await import(
-        "~/server/utils/supabase"
-      );
+      const { createServerSupabaseClient } =
+        await import("~/server/utils/supabase");
       vi.mocked(createServerSupabaseClient).mockReturnValue(admin);
       vi.mocked(requireAuth).mockResolvedValue({
         id: parentId,

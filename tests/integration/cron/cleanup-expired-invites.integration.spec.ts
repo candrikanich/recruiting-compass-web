@@ -17,7 +17,15 @@
  * Skips (with reason) when unset.
  */
 
-import { describe, it, expect, beforeAll, afterAll, afterEach, vi } from "vitest";
+import {
+  describe,
+  it,
+  expect,
+  beforeAll,
+  afterAll,
+  afterEach,
+  vi,
+} from "vitest";
 import type { H3Event } from "h3";
 
 vi.unmock("@supabase/supabase-js");
@@ -116,7 +124,9 @@ describe.skipIf(!hasLiveSupabase)(
         .select("id")
         .single();
       if (familyError || !family) {
-        throw new Error(`Failed to create family unit: ${familyError?.message}`);
+        throw new Error(
+          `Failed to create family unit: ${familyError?.message}`,
+        );
       }
       familyUnitId = (family as { id: string }).id;
     });
@@ -198,11 +208,15 @@ describe.skipIf(!hasLiveSupabase)(
     it("hard-deletes a declined invite older than the 7-day grace period, but keeps a recently-declined one", async () => {
       const oldDeclined = await insertInvite({
         status: "declined",
-        declined_at: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString(),
+        declined_at: new Date(
+          Date.now() - 8 * 24 * 60 * 60 * 1000,
+        ).toISOString(),
       });
       const recentDeclined = await insertInvite({
         status: "declined",
-        declined_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+        declined_at: new Date(
+          Date.now() - 1 * 24 * 60 * 60 * 1000,
+        ).toISOString(),
       });
 
       const result = (await callHandler()) as { deletedDeclined: number };
@@ -228,11 +242,15 @@ describe.skipIf(!hasLiveSupabase)(
     it("hard-deletes an expired invite older than the 7-day grace period, but keeps a recently-expired one", async () => {
       const oldExpired = await insertInvite({
         status: "expired",
-        expires_at: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString(),
+        expires_at: new Date(
+          Date.now() - 8 * 24 * 60 * 60 * 1000,
+        ).toISOString(),
       });
       const recentExpired = await insertInvite({
         status: "expired",
-        expires_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+        expires_at: new Date(
+          Date.now() - 1 * 24 * 60 * 60 * 1000,
+        ).toISOString(),
       });
 
       const result = (await callHandler()) as { deletedExpired: number };

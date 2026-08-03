@@ -24,7 +24,10 @@
         <div
           class="flex items-center justify-between p-6 border-b border-slate-200"
         >
-          <h2 id="suggestion-help-title" class="text-xl font-bold text-slate-900">
+          <h2
+            id="suggestion-help-title"
+            class="text-xl font-bold text-slate-900"
+          >
             {{ helpContent.title }}
           </h2>
           <button

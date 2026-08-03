@@ -27,7 +27,9 @@ vi.mock("~/utils/logger", () => ({
   }),
 }));
 
-function createMockNotification(overrides: Partial<Notification> = {}): Notification {
+function createMockNotification(
+  overrides: Partial<Notification> = {},
+): Notification {
   return {
     id: "notif-1",
     user_id: "user-123",
@@ -131,9 +133,9 @@ describe("useNotifications reactivity", () => {
   it("fetchNotifications: applies isRead/type/limit filters to the query chain", async () => {
     const notSpy = vi.fn();
     const eqSpy = vi.fn();
-    const limitSpy = vi.fn().mockReturnValue(
-      Promise.resolve({ data: [], error: null }),
-    );
+    const limitSpy = vi
+      .fn()
+      .mockReturnValue(Promise.resolve({ data: [], error: null }));
     const chain = {
       select: vi.fn().mockReturnThis(),
       eq: eqSpy.mockReturnThis(),
@@ -144,7 +146,11 @@ describe("useNotifications reactivity", () => {
     mockSupabase.from.mockReturnValue(chain);
 
     const { fetchNotifications } = useNotifications();
-    await fetchNotifications({ isRead: true, type: "offer_received", limit: 5 });
+    await fetchNotifications({
+      isRead: true,
+      type: "offer_received",
+      limit: 5,
+    });
 
     expect(notSpy).toHaveBeenCalledWith("read_at", "is", null);
     expect(eqSpy).toHaveBeenCalledWith("type", "offer_received");
@@ -152,7 +158,9 @@ describe("useNotifications reactivity", () => {
   });
 
   it("fetchNotifications: filters for UNREAD (isRead: false) using .is(), not .not()", async () => {
-    const isSpy = vi.fn().mockReturnValue(Promise.resolve({ data: [], error: null }));
+    const isSpy = vi
+      .fn()
+      .mockReturnValue(Promise.resolve({ data: [], error: null }));
     mockSupabase.from.mockReturnValue({
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
@@ -235,7 +243,9 @@ describe("useNotifications reactivity", () => {
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
       order: vi.fn().mockResolvedValue({
-        data: [createMockNotification({ id: "n1", read_at: "2026-01-01T00:00:00Z" })],
+        data: [
+          createMockNotification({ id: "n1", read_at: "2026-01-01T00:00:00Z" }),
+        ],
         error: null,
       }),
     });
@@ -290,9 +300,7 @@ describe("useNotifications reactivity", () => {
     mockSupabase.from.mockReturnValueOnce({
       delete: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnValue({
-        eq: vi
-          .fn()
-          .mockResolvedValue({ error: new Error("row locked") }),
+        eq: vi.fn().mockResolvedValue({ error: new Error("row locked") }),
       }),
     });
 

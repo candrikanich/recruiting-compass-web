@@ -61,9 +61,7 @@ export default defineNuxtRouteMiddleware(async (to, _from) => {
     await logParentView(itemType, playerMember.user_id, itemId);
   } catch (error) {
     // Silently fail - don't break navigation if view logging fails
-    logger.debug(
-      error instanceof Error ? error.message : "Unknown error",
-    );
+    logger.debug(error instanceof Error ? error.message : "Unknown error");
   }
 });
 

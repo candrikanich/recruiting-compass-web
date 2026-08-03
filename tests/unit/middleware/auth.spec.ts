@@ -25,8 +25,7 @@ describe("middleware/auth.ts", () => {
     localStorage.clear();
     mockUserStore.isAuthenticated = false;
     // Nuxt sets process.client / process.server at build time; simulate client.
-    originalProcessClient = (process as unknown as { client?: boolean })
-      .client;
+    originalProcessClient = (process as unknown as { client?: boolean }).client;
     (process as unknown as { client: boolean }).client = true;
     (process as unknown as { server: boolean }).server = false;
   });

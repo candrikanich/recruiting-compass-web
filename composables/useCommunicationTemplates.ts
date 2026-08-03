@@ -472,8 +472,7 @@ export const useCommunicationTemplates = (): {
 
     try {
       const conditionGroup = template.unlock_conditions as unknown as
-        | UnlockConditionGroup
-        | undefined;
+        UnlockConditionGroup | undefined;
       const conditions = conditionGroup?.conditions || [];
 
       if (conditions.length === 0) {

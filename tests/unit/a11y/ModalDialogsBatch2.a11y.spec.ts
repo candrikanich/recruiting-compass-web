@@ -217,7 +217,9 @@ describe("OfferComparison best-value indicator", () => {
     expect(badges).toHaveLength(1);
     expect(badges[0].text()).toContain("Best Value");
 
-    const percentBadge = wrapper.find('[data-testid="highest-percentage-badge"]');
+    const percentBadge = wrapper.find(
+      '[data-testid="highest-percentage-badge"]',
+    );
     expect(percentBadge.text()).toContain("Highest %");
 
     const urgentBadge = wrapper.find('[data-testid="most-urgent-badge"]');

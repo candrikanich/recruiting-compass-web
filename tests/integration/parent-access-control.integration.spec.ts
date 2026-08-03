@@ -170,9 +170,8 @@ describe("Parent/Athlete Access Control — mutation route wiring (mocked authz)
     async ({ path }) => {
       vi.resetModules();
       const { requireAuth } = await import("~/server/utils/auth");
-      const { createServerSupabaseClient } = await import(
-        "~/server/utils/supabase"
-      );
+      const { createServerSupabaseClient } =
+        await import("~/server/utils/supabase");
       vi.mocked(requireAuth).mockResolvedValue({
         id: "parent-1",
         email: "parent@example.com",
@@ -197,9 +196,8 @@ describe("Parent/Athlete Access Control — mutation route wiring (mocked authz)
   it("POST /api/social/sync surfaces the parent-rejection 403 (statusCode errors re-thrown, not rewritten to 500)", async () => {
     vi.resetModules();
     const { requireAuth } = await import("~/server/utils/auth");
-    const { createServerSupabaseClient } = await import(
-      "~/server/utils/supabase"
-    );
+    const { createServerSupabaseClient } =
+      await import("~/server/utils/supabase");
     vi.mocked(requireAuth).mockResolvedValue({
       id: "parent-1",
       email: "parent@example.com",
@@ -246,7 +244,9 @@ async function createUser(
       email_confirm: true,
     });
   if (authError || !authUser.user) {
-    throw new Error(`Failed to create auth user (${label}): ${authError?.message}`);
+    throw new Error(
+      `Failed to create auth user (${label}): ${authError?.message}`,
+    );
   }
   const { error: userInsertError } = await admin
     .from("users")
@@ -343,7 +343,10 @@ describe.skipIf(!hasLiveSupabase)(
     afterAll(async () => {
       if (!hasLiveSupabase) return;
       for (const familyId of createdFamilyIds) {
-        await admin.from("family_members").delete().eq("family_unit_id", familyId);
+        await admin
+          .from("family_members")
+          .delete()
+          .eq("family_unit_id", familyId);
         await admin.from("family_units").delete().eq("id", familyId);
       }
       for (const userId of createdUserIds) {
@@ -355,9 +358,8 @@ describe.skipIf(!hasLiveSupabase)(
     async function loadPhaseHandler() {
       vi.resetModules();
       const { requireAuth } = await import("~/server/utils/auth");
-      const { createServerSupabaseClient } = await import(
-        "~/server/utils/supabase"
-      );
+      const { createServerSupabaseClient } =
+        await import("~/server/utils/supabase");
       vi.mocked(requireAuth).mockImplementation(async () => ({
         id: "unused",
       }));

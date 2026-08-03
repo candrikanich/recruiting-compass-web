@@ -34,7 +34,10 @@ vi.mock("h3", async (importOriginal) => {
 
 (
   globalThis as unknown as {
-    createError: (config: { statusCode: number; statusMessage?: string }) => Error & {
+    createError: (config: {
+      statusCode: number;
+      statusMessage?: string;
+    }) => Error & {
       statusCode: number;
     };
   }
@@ -54,7 +57,8 @@ function buildSupabaseAdmin(opts: {
   deleteError?: { code?: string; message: string } | null;
   authDeleteError?: { message: string } | null;
 }) {
-  const deleteCalls: Array<{ table: string; column: string; value: string }> = [];
+  const deleteCalls: Array<{ table: string; column: string; value: string }> =
+    [];
   return {
     _deleteCalls: deleteCalls,
     from: vi.fn((table: string) => ({
@@ -186,9 +190,9 @@ describe("POST /api/admin/delete-user", () => {
     const tables = mockAdmin._deleteCalls.map((c) => c.table);
     expect(tables).toContain("users");
     expect(tables[tables.length - 1]).toBe("users");
-    expect(
-      mockAdmin._deleteCalls.every((c) => c.value === "target-1"),
-    ).toBe(true);
+    expect(mockAdmin._deleteCalls.every((c) => c.value === "target-1")).toBe(
+      true,
+    );
   });
 
   it("falls back to the auth system when the user was already removed from public.users", async () => {

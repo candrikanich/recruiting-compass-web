@@ -180,9 +180,7 @@ test.describe("User Story 8.3 - Recent Activity Feed", () => {
     const activityItems = page.locator('[data-testid="activity-event-item"]');
     await activityItems.first().waitFor({ state: "visible", timeout: 15000 });
     const text = await activityItems.first().textContent();
-    expect(text).toMatch(
-      /(just now|[0-9]+[mhd] ago|[A-Z][a-z]{2} [0-9]{1,2})/,
-    );
+    expect(text).toMatch(/(just now|[0-9]+[mhd] ago|[A-Z][a-z]{2} [0-9]{1,2})/);
   });
 
   test('displays "View All Activity" link', async ({ page }) => {

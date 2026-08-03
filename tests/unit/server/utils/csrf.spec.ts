@@ -7,7 +7,10 @@ import {
   requireCsrfToken,
 } from "~/server/utils/csrf";
 
-function makeEvent(headers: Record<string, string | undefined> = {}, cookies: Record<string, string | undefined> = {}) {
+function makeEvent(
+  headers: Record<string, string | undefined> = {},
+  cookies: Record<string, string | undefined> = {},
+) {
   return {
     node: { req: {}, res: {} },
     __headers: headers,

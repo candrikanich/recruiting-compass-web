@@ -80,7 +80,10 @@ describe("useDocumentSharing.shareDocument", () => {
           select: vi.fn().mockReturnValue({
             single: vi
               .fn()
-              .mockResolvedValue({ data: null, error: new Error("RLS denied") }),
+              .mockResolvedValue({
+                data: null,
+                error: new Error("RLS denied"),
+              }),
           }),
         }),
       }),
@@ -119,7 +122,10 @@ describe("useDocumentSharing.revokeSharing", () => {
       eq: vi.fn().mockReturnValue({
         select: vi.fn().mockReturnValue({
           single: vi.fn().mockResolvedValue({
-            data: { id: "doc-1", shared_with_schools: ["school-1", "school-3"] },
+            data: {
+              id: "doc-1",
+              shared_with_schools: ["school-1", "school-3"],
+            },
             error: null,
           }),
         }),
@@ -177,7 +183,10 @@ describe("useDocumentSharing.revokeSharing", () => {
         eq: vi.fn().mockReturnValue({
           single: vi
             .fn()
-            .mockResolvedValue({ data: { shared_with_schools: null }, error: null }),
+            .mockResolvedValue({
+              data: { shared_with_schools: null },
+              error: null,
+            }),
         }),
       }),
       update: vi.fn().mockReturnValue({
@@ -193,9 +202,10 @@ describe("useDocumentSharing.revokeSharing", () => {
     });
 
     const { revokeSharing } = useDocumentSharing();
-    await expect(
-      revokeSharing("doc-1", "school-1"),
-    ).resolves.toEqual({ id: "doc-1", shared_with_schools: [] });
+    await expect(revokeSharing("doc-1", "school-1")).resolves.toEqual({
+      id: "doc-1",
+      shared_with_schools: [],
+    });
   });
 
   it("throws a clean 'Document not found' error (not a crash) when the document doesn't exist", async () => {

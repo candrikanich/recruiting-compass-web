@@ -108,11 +108,7 @@ export const useOffersStore = defineStore("offers", () => {
 
   async function fetchOffers(options: { force?: boolean } = {}) {
     const familyId = activeFamily.activeFamilyId.value;
-    if (
-      isFetched.value &&
-      !options.force &&
-      fetchedFamilyId.value === familyId
-    )
+    if (isFetched.value && !options.force && fetchedFamilyId.value === familyId)
       return;
     await fetchPage(0);
   }

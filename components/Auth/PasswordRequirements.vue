@@ -15,11 +15,12 @@
         class="flex items-center gap-2 text-sm"
         role="listitem"
       >
-        <UIcon name="i-heroicons-check-circle"
+        <UIcon
+          name="i-heroicons-check-circle"
           v-if="rule.isValid"
           class="w-5 h-5 text-emerald-600 shrink-0"
           aria-hidden="true"
-         />
+        />
         <svg
           v-else
           class="w-5 h-5 text-slate-300 shrink-0"

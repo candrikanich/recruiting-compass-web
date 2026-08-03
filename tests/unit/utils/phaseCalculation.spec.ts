@@ -162,9 +162,7 @@ describe("phaseCalculation", () => {
         ...PHASE_MILESTONES.freshmanToSophomore,
         ...PHASE_MILESTONES.sophomoreToJunior,
       ]);
-      expect(calculatePhase(completedIds, false, taskIdsBySlug)).toBe(
-        "junior",
-      );
+      expect(calculatePhase(completedIds, false, taskIdsBySlug)).toBe("junior");
     });
 
     it("returns junior even without freshman tasks if sophomore milestones are done (highest-phase check)", () => {
@@ -172,9 +170,7 @@ describe("phaseCalculation", () => {
         taskIdsBySlug,
         PHASE_MILESTONES.sophomoreToJunior,
       );
-      expect(calculatePhase(completedIds, false, taskIdsBySlug)).toBe(
-        "junior",
-      );
+      expect(calculatePhase(completedIds, false, taskIdsBySlug)).toBe("junior");
     });
 
     it("returns senior when all juniorToSenior tasks are completed", () => {
@@ -183,9 +179,7 @@ describe("phaseCalculation", () => {
         ...PHASE_MILESTONES.sophomoreToJunior,
         ...PHASE_MILESTONES.juniorToSenior,
       ]);
-      expect(calculatePhase(completedIds, false, taskIdsBySlug)).toBe(
-        "senior",
-      );
+      expect(calculatePhase(completedIds, false, taskIdsBySlug)).toBe("senior");
     });
 
     it("returns senior even without earlier tasks if juniorToSenior milestones are done", () => {
@@ -193,15 +187,13 @@ describe("phaseCalculation", () => {
         taskIdsBySlug,
         PHASE_MILESTONES.juniorToSenior,
       );
-      expect(calculatePhase(completedIds, false, taskIdsBySlug)).toBe(
-        "senior",
-      );
+      expect(calculatePhase(completedIds, false, taskIdsBySlug)).toBe("senior");
     });
 
     it("returns freshman when no milestones match", () => {
-      expect(
-        calculatePhase(["unrelated-task-id"], false, taskIdsBySlug),
-      ).toBe("freshman");
+      expect(calculatePhase(["unrelated-task-id"], false, taskIdsBySlug)).toBe(
+        "freshman",
+      );
     });
 
     it("does not resolve raw slug strings as completed task ids (regression guard)", () => {
@@ -360,9 +352,7 @@ describe("phaseCalculation", () => {
         taskIdsBySlug,
         PHASE_MILESTONES.juniorToSenior,
       );
-      expect(canAdvancePhase("junior", completedIds, taskIdsBySlug)).toBe(
-        true,
-      );
+      expect(canAdvancePhase("junior", completedIds, taskIdsBySlug)).toBe(true);
     });
 
     it("junior: returns false with no completed tasks", () => {
@@ -371,9 +361,7 @@ describe("phaseCalculation", () => {
 
     it("senior: returns true when sign-nli task is complete", () => {
       const completedIds = idsFor(taskIdsBySlug, ["sign-nli"]);
-      expect(canAdvancePhase("senior", completedIds, taskIdsBySlug)).toBe(
-        true,
-      );
+      expect(canAdvancePhase("senior", completedIds, taskIdsBySlug)).toBe(true);
     });
 
     it("senior: returns false without sign-nli", () => {
@@ -387,9 +375,7 @@ describe("phaseCalculation", () => {
         ...PHASE_MILESTONES.juniorToSenior,
         ...PHASE_MILESTONES.seniorToCommitted,
       ]);
-      expect(canAdvancePhase("committed", allTasks, taskIdsBySlug)).toBe(
-        false,
-      );
+      expect(canAdvancePhase("committed", allTasks, taskIdsBySlug)).toBe(false);
     });
 
     it("returns false (fails closed) when a required slug has no seeded task id", () => {
@@ -398,9 +384,7 @@ describe("phaseCalculation", () => {
         taskIdsBySlug,
         PHASE_MILESTONES.freshmanToSophomore,
       );
-      expect(canAdvancePhase("freshman", completedIds, brokenMap)).toBe(
-        false,
-      );
+      expect(canAdvancePhase("freshman", completedIds, brokenMap)).toBe(false);
     });
   });
 

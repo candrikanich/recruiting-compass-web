@@ -172,7 +172,10 @@ test.describe("Cross-account logout — no stale data leak", () => {
     // not player's — proving the family context genuinely re-resolved for
     // the new account rather than RLS silently zero-rowing a stale query.
     const supabase = getSupabaseAdmin();
-    const adminId = await findUserIdByEmail(supabase, TEST_ACCOUNTS.admin.email);
+    const adminId = await findUserIdByEmail(
+      supabase,
+      TEST_ACCOUNTS.admin.email,
+    );
     const { data: adminMembership } = await supabase
       .from("family_members")
       .select("family_unit_id")

@@ -331,7 +331,10 @@ describe("POST /api/family/invite/[token]/accept", () => {
       status: "pending",
       expires_at: futureDate,
     };
-    state.family = { family_name: "Smith Family", pending_player_details: null };
+    state.family = {
+      family_name: "Smith Family",
+      pending_player_details: null,
+    };
     state.familyMemberInsertSpy = vi.fn(() => Promise.resolve({ error: null }));
   });
 
@@ -370,9 +373,9 @@ describe("POST /api/family/invite/[token]/accept", () => {
     state.userEmail = "someone-else@example.com";
     const { default: handler } =
       await import("~/server/api/family/invite/[token]/accept.post");
-    await expect(
-      handler({} as Parameters<typeof handler>[0]),
-    ).rejects.toThrow(/sign in|different email/i);
+    await expect(handler({} as Parameters<typeof handler>[0])).rejects.toThrow(
+      /sign in|different email/i,
+    );
   });
 
   it("is case-insensitive when comparing invited and authenticated email", async () => {

@@ -181,7 +181,10 @@ describe.skipIf(!hasLiveSupabase)(
 
     afterAll(async () => {
       if (!hasLiveSupabase) return;
-      await admin.from("family_members").delete().eq("family_unit_id", familyUnitId);
+      await admin
+        .from("family_members")
+        .delete()
+        .eq("family_unit_id", familyUnitId);
       await admin.from("family_units").delete().eq("id", familyUnitId);
       await admin.from("schools").delete().eq("id", aSchoolId);
       await admin.from("events").delete().eq("id", bsSchoollessEventId);
@@ -364,7 +367,10 @@ describe.skipIf(!hasLiveSupabase)(
         expect(data ?? []).toHaveLength(1);
 
         if (data?.[0]?.id) {
-          await admin.from("interactions").delete().eq("id", data[0].id as string);
+          await admin
+            .from("interactions")
+            .delete()
+            .eq("id", data[0].id as string);
         }
       });
     });

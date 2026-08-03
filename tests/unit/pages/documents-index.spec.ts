@@ -68,10 +68,10 @@ describe("pages/documents/index.vue - delete confirmation flow", () => {
         stubs: {
           NuxtLink: { template: "<a><slot /></a>", props: ["to"] },
           PageHeader: {
-            template: "<div><slot name=\"actions\" /></div>",
+            template: '<div><slot name="actions" /></div>',
           },
           FilterPanel: {
-            template: "<div><slot name=\"chips\" /><slot name=\"filter\" /></div>",
+            template: '<div><slot name="chips" /><slot name="filter" /></div>',
           },
           DesignSystemFilterChips: true,
         },

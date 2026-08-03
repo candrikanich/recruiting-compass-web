@@ -223,9 +223,7 @@ const activeFamily = injectedFamily || useFamilyContext();
 const isCompleted = computed(
   () => props.task.athlete_task?.status === "completed",
 );
-const isViewingAsParent = computed(
-  () => activeFamily.isViewingAsParent.value,
-);
+const isViewingAsParent = computed(() => activeFamily.isViewingAsParent.value);
 const showFailureRisk = computed(
   () => !isCompleted.value && props.phaseProgress >= 75,
 );

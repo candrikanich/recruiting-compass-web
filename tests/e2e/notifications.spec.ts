@@ -29,7 +29,9 @@ test.describe("Notifications Page", () => {
         TEST_ACCOUNTS.player.email,
       );
       if (!playerUserId) {
-        console.warn("⚠️  notifications seed: player user not found — skipping");
+        console.warn(
+          "⚠️  notifications seed: player user not found — skipping",
+        );
         return;
       }
 
@@ -206,7 +208,10 @@ test.describe("Notifications Page", () => {
   test("search filters notification list", async ({ page }) => {
     const hasNotifications = (await page.locator('[data-testid="notification-card"]').count()) > 0;
     if (!hasNotifications) {
-      test.skip(true, "no seeded notifications present for this run; awaiting seed infrastructure project — see CLAUDE.local.md Action Required");
+      test.skip(
+        true,
+        "no seeded notifications present for this run; awaiting seed infrastructure project — see CLAUDE.local.md Action Required",
+      );
       return;
     }
 
@@ -237,17 +242,17 @@ test.describe("Notifications Page", () => {
     await expect(followUpsBtn).toHaveClass(/bg-blue-600/);
 
     // "All" filter button only — exclude "Mark all as read" which also contains "All"
-    const allBtn = page
-      .locator("button")
-      .filter({ hasText: /^All$/ })
-      .first();
+    const allBtn = page.locator("button").filter({ hasText: /^All$/ }).first();
     await expect(allBtn).not.toHaveClass(/bg-blue-600/);
   });
 
   test("switching back to All filter restores full list", async ({ page }) => {
     const hasNotifications = (await page.locator('[data-testid="notification-card"]').count()) > 0;
     if (!hasNotifications) {
-      test.skip(true, "no seeded notifications present for this run; awaiting seed infrastructure project — see CLAUDE.local.md Action Required");
+      test.skip(
+        true,
+        "no seeded notifications present for this run; awaiting seed infrastructure project — see CLAUDE.local.md Action Required",
+      );
       return;
     }
 
@@ -257,11 +262,7 @@ test.describe("Notifications Page", () => {
     await page.locator('button:has-text("Offers")').first().click();
 
     // Switch back to All — exact match to avoid "Mark all as read" collision
-    await page
-      .locator("button")
-      .filter({ hasText: /^All$/ })
-      .first()
-      .click();
+    await page.locator("button").filter({ hasText: /^All$/ }).first().click();
 
     const restoredCount = await page.locator('[data-testid="notification-card"]').count();
     expect(restoredCount).toBe(initialCount);
@@ -275,7 +276,10 @@ test.describe("Notifications Page", () => {
     const cards = page.locator('[data-testid="notification-card"]');
     const count = await cards.count();
     if (count === 0) {
-      test.skip(true, "no seeded notifications present for this run; awaiting seed infrastructure project — see CLAUDE.local.md Action Required");
+      test.skip(
+        true,
+        "no seeded notifications present for this run; awaiting seed infrastructure project — see CLAUDE.local.md Action Required",
+      );
       return;
     }
 
@@ -293,7 +297,10 @@ test.describe("Notifications Page", () => {
     const unread = page.locator('[data-testid="notification-card"][data-read="false"]');
     const count = await unread.count();
     if (count === 0) {
-      test.skip(true, "no seeded notifications present for this run; awaiting seed infrastructure project — see CLAUDE.local.md Action Required");
+      test.skip(
+        true,
+        "no seeded notifications present for this run; awaiting seed infrastructure project — see CLAUDE.local.md Action Required",
+      );
       return;
     }
     await expect(unread.first()).toBeVisible();
@@ -304,7 +311,10 @@ test.describe("Notifications Page", () => {
     const read = page.locator('[data-testid="notification-card"][data-read="true"]');
     const count = await read.count();
     if (count === 0) {
-      test.skip(true, "no seeded notifications present for this run; awaiting seed infrastructure project — see CLAUDE.local.md Action Required");
+      test.skip(
+        true,
+        "no seeded notifications present for this run; awaiting seed infrastructure project — see CLAUDE.local.md Action Required",
+      );
       return;
     }
     await expect(read.first()).toBeVisible();
@@ -316,7 +326,10 @@ test.describe("Notifications Page", () => {
     const unread = page.locator('[data-testid="notification-card"][data-read="false"]');
     const hasUnread = (await unread.count()) > 0;
     if (!hasUnread) {
-      test.skip(true, "no seeded notifications present for this run; awaiting seed infrastructure project — see CLAUDE.local.md Action Required");
+      test.skip(
+        true,
+        "no seeded notifications present for this run; awaiting seed infrastructure project — see CLAUDE.local.md Action Required",
+      );
       return;
     }
 
@@ -347,7 +360,10 @@ test.describe("Notifications Page", () => {
     const markAllBtn = page.locator('button:has-text("Mark all as read")');
     const isVisible = await markAllBtn.isVisible().catch(() => false);
     if (!isVisible) {
-      test.skip(true, "no seeded notifications present for this run; awaiting seed infrastructure project — see CLAUDE.local.md Action Required");
+      test.skip(
+        true,
+        "no seeded notifications present for this run; awaiting seed infrastructure project — see CLAUDE.local.md Action Required",
+      );
       return;
     }
 
@@ -369,7 +385,10 @@ test.describe("Notifications Page", () => {
     const cards = page.locator('[data-testid="notification-card"]');
     const initialCount = await cards.count();
     if (initialCount === 0) {
-      test.skip(true, "no seeded notifications present for this run; awaiting seed infrastructure project — see CLAUDE.local.md Action Required");
+      test.skip(
+        true,
+        "no seeded notifications present for this run; awaiting seed infrastructure project — see CLAUDE.local.md Action Required",
+      );
       return;
     }
 
@@ -409,7 +428,10 @@ test.describe("Notifications Page", () => {
     const cards = page.locator('[data-testid="notification-card"]');
     const count = await cards.count();
     if (count === 0) {
-      test.skip(true, "no seeded notifications present for this run; awaiting seed infrastructure project — see CLAUDE.local.md Action Required");
+      test.skip(
+        true,
+        "no seeded notifications present for this run; awaiting seed infrastructure project — see CLAUDE.local.md Action Required",
+      );
       return;
     }
 

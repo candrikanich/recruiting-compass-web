@@ -56,7 +56,9 @@ describe("prioritySchoolReminderRule", () => {
   });
 
   it("returns a suggestion when the most recent contact is 14+ days stale", async () => {
-    const veryOld = new Date(Date.now() - 40 * 24 * 60 * 60 * 1000).toISOString();
+    const veryOld = new Date(
+      Date.now() - 40 * 24 * 60 * 60 * 1000,
+    ).toISOString();
     const old = new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString();
     mockContext.schools = [{ id: "s1", name: "State U", priority: "A" }];
     mockContext.interactions = [

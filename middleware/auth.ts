@@ -21,9 +21,8 @@ export default defineNuxtRouteMiddleware(async (to, _from) => {
 
         if (isExpired) {
           localStorage.removeItem("session_preferences");
-          const { useAuthLifecycle } = await import(
-            "~/composables/useAuthLifecycle"
-          );
+          const { useAuthLifecycle } =
+            await import("~/composables/useAuthLifecycle");
           await useAuthLifecycle().logoutEverywhere();
 
           if (to.path !== "/login") {

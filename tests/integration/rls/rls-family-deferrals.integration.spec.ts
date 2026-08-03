@@ -82,12 +82,13 @@ describe.skipIf(!hasLiveSupabase)(
       if (!hasLiveSupabase) return;
 
       const email = `e2e-rls-family-deferrals-${RUN_ID}-player@example.com`;
-      const { data: userData, error: userErr } = await admin.auth.admin.createUser({
-        email,
-        password: PASSWORD,
-        email_confirm: true,
-        user_metadata: { role: "player" },
-      });
+      const { data: userData, error: userErr } =
+        await admin.auth.admin.createUser({
+          email,
+          password: PASSWORD,
+          email_confirm: true,
+          user_metadata: { role: "player" },
+        });
       if (userErr || !userData.user) {
         throw new Error(`createUser(player) failed: ${userErr?.message}`);
       }
@@ -104,7 +105,10 @@ describe.skipIf(!hasLiveSupabase)(
 
       const { data: family, error: familyErr } = await admin
         .from("family_units")
-        .insert({ created_by_user_id: playerId, family_name: "Family Deferrals Fam" })
+        .insert({
+          created_by_user_id: playerId,
+          family_name: "Family Deferrals Fam",
+        })
         .select("id")
         .single();
       if (familyErr || !family) {
@@ -114,7 +118,11 @@ describe.skipIf(!hasLiveSupabase)(
 
       const { error: memberErr } = await admin
         .from("family_members")
-        .insert({ family_unit_id: familyId, user_id: playerId, role: "player" });
+        .insert({
+          family_unit_id: familyId,
+          user_id: playerId,
+          role: "player",
+        });
       if (memberErr) {
         throw new Error(`seed family_members failed: ${memberErr.message}`);
       }
@@ -138,17 +146,34 @@ describe.skipIf(!hasLiveSupabase)(
       if (!hasLiveSupabase) return;
       if (coachId) await admin.from("coaches").delete().eq("id", coachId);
       if (explicitFamilyUnitCoachId)
-        await admin.from("coaches").delete().eq("id", explicitFamilyUnitCoachId);
+        await admin
+          .from("coaches")
+          .delete()
+          .eq("id", explicitFamilyUnitCoachId);
       if (recommendationLetterId)
-        await admin.from("recommendation_letters").delete().eq("id", recommendationLetterId);
-      if (documentId) await admin.from("documents").delete().eq("id", documentId);
+        await admin
+          .from("recommendation_letters")
+          .delete()
+          .eq("id", recommendationLetterId);
+      if (documentId)
+        await admin.from("documents").delete().eq("id", documentId);
       if (performanceMetricId)
-        await admin.from("performance_metrics").delete().eq("id", performanceMetricId);
-      if (interactionId) await admin.from("interactions").delete().eq("id", interactionId);
+        await admin
+          .from("performance_metrics")
+          .delete()
+          .eq("id", performanceMetricId);
+      if (interactionId)
+        await admin.from("interactions").delete().eq("id", interactionId);
       if (socialMediaPostId)
-        await admin.from("social_media_posts").delete().eq("id", socialMediaPostId);
+        await admin
+          .from("social_media_posts")
+          .delete()
+          .eq("id", socialMediaPostId);
       await admin.from("schools").delete().eq("id", schoolId);
-      await admin.from("family_members").delete().eq("family_unit_id", familyId);
+      await admin
+        .from("family_members")
+        .delete()
+        .eq("family_unit_id", familyId);
       await admin.from("family_units").delete().eq("id", familyId);
       await admin.auth.admin.deleteUser(playerId).catch(() => null);
     });
@@ -265,11 +290,16 @@ describe.skipIf(!hasLiveSupabase)(
       it("does NOT overwrite an explicitly-provided family_unit_id", async () => {
         const { data: otherFamily, error: otherFamilyErr } = await admin
           .from("family_units")
-          .insert({ created_by_user_id: playerId, family_name: "Explicit Override Fam" })
+          .insert({
+            created_by_user_id: playerId,
+            family_name: "Explicit Override Fam",
+          })
           .select("id")
           .single();
         if (otherFamilyErr || !otherFamily) {
-          throw new Error(`seed override family_unit failed: ${otherFamilyErr?.message}`);
+          throw new Error(
+            `seed override family_unit failed: ${otherFamilyErr?.message}`,
+          );
         }
         const otherFamilyId = otherFamily.id as string;
 
@@ -361,23 +391,25 @@ describe.skipIf(!hasLiveSupabase)(
       const alphaEmail = `e2e-rls-phase3-${RUN_ID}-alpha@example.com`;
       const betaEmail = `e2e-rls-phase3-${RUN_ID}-beta@example.com`;
 
-      const { data: alphaUser, error: alphaUserErr } = await admin.auth.admin.createUser({
-        email: alphaEmail,
-        password: PASSWORD,
-        email_confirm: true,
-        user_metadata: { role: "player" },
-      });
+      const { data: alphaUser, error: alphaUserErr } =
+        await admin.auth.admin.createUser({
+          email: alphaEmail,
+          password: PASSWORD,
+          email_confirm: true,
+          user_metadata: { role: "player" },
+        });
       if (alphaUserErr || !alphaUser.user) {
         throw new Error(`createUser(alpha) failed: ${alphaUserErr?.message}`);
       }
       alphaPlayerId = alphaUser.user.id;
 
-      const { data: betaUser, error: betaUserErr } = await admin.auth.admin.createUser({
-        email: betaEmail,
-        password: PASSWORD,
-        email_confirm: true,
-        user_metadata: { role: "player" },
-      });
+      const { data: betaUser, error: betaUserErr } =
+        await admin.auth.admin.createUser({
+          email: betaEmail,
+          password: PASSWORD,
+          email_confirm: true,
+          user_metadata: { role: "player" },
+        });
       if (betaUserErr || !betaUser.user) {
         throw new Error(`createUser(beta) failed: ${betaUserErr?.message}`);
       }
@@ -387,13 +419,17 @@ describe.skipIf(!hasLiveSupabase)(
         .from("users")
         .insert({ id: alphaPlayerId, email: alphaEmail, role: "player" });
       if (alphaProfileErr) {
-        throw new Error(`seed public.users(alpha) failed: ${alphaProfileErr.message}`);
+        throw new Error(
+          `seed public.users(alpha) failed: ${alphaProfileErr.message}`,
+        );
       }
       const { error: betaProfileErr } = await admin
         .from("users")
         .insert({ id: betaPlayerId, email: betaEmail, role: "player" });
       if (betaProfileErr) {
-        throw new Error(`seed public.users(beta) failed: ${betaProfileErr.message}`);
+        throw new Error(
+          `seed public.users(beta) failed: ${betaProfileErr.message}`,
+        );
       }
 
       // Family-model-only members — deliberately NO account_links row for
@@ -401,35 +437,57 @@ describe.skipIf(!hasLiveSupabase)(
       // the family-model policies under test, not the legacy path.
       const { data: alphaFamily, error: alphaFamilyErr } = await admin
         .from("family_units")
-        .insert({ created_by_user_id: alphaPlayerId, family_name: "Phase 3 Family Alpha" })
+        .insert({
+          created_by_user_id: alphaPlayerId,
+          family_name: "Phase 3 Family Alpha",
+        })
         .select("id")
         .single();
       if (alphaFamilyErr || !alphaFamily) {
-        throw new Error(`seed family_unit(alpha) failed: ${alphaFamilyErr?.message}`);
+        throw new Error(
+          `seed family_unit(alpha) failed: ${alphaFamilyErr?.message}`,
+        );
       }
       alphaFamilyId = alphaFamily.id as string;
 
       const { data: betaFamily, error: betaFamilyErr } = await admin
         .from("family_units")
-        .insert({ created_by_user_id: betaPlayerId, family_name: "Phase 3 Family Beta" })
+        .insert({
+          created_by_user_id: betaPlayerId,
+          family_name: "Phase 3 Family Beta",
+        })
         .select("id")
         .single();
       if (betaFamilyErr || !betaFamily) {
-        throw new Error(`seed family_unit(beta) failed: ${betaFamilyErr?.message}`);
+        throw new Error(
+          `seed family_unit(beta) failed: ${betaFamilyErr?.message}`,
+        );
       }
       betaFamilyId = betaFamily.id as string;
 
       const { error: alphaMemberErr } = await admin
         .from("family_members")
-        .insert({ family_unit_id: alphaFamilyId, user_id: alphaPlayerId, role: "player" });
+        .insert({
+          family_unit_id: alphaFamilyId,
+          user_id: alphaPlayerId,
+          role: "player",
+        });
       if (alphaMemberErr) {
-        throw new Error(`seed family_members(alpha) failed: ${alphaMemberErr.message}`);
+        throw new Error(
+          `seed family_members(alpha) failed: ${alphaMemberErr.message}`,
+        );
       }
       const { error: betaMemberErr } = await admin
         .from("family_members")
-        .insert({ family_unit_id: betaFamilyId, user_id: betaPlayerId, role: "player" });
+        .insert({
+          family_unit_id: betaFamilyId,
+          user_id: betaPlayerId,
+          role: "player",
+        });
       if (betaMemberErr) {
-        throw new Error(`seed family_members(beta) failed: ${betaMemberErr.message}`);
+        throw new Error(
+          `seed family_members(beta) failed: ${betaMemberErr.message}`,
+        );
       }
 
       const { data: alphaSchool, error: alphaSchoolErr } = await admin
@@ -442,7 +500,9 @@ describe.skipIf(!hasLiveSupabase)(
         .select("id")
         .single();
       if (alphaSchoolErr || !alphaSchool) {
-        throw new Error(`seed school(alpha) failed: ${alphaSchoolErr?.message}`);
+        throw new Error(
+          `seed school(alpha) failed: ${alphaSchoolErr?.message}`,
+        );
       }
       alphaSchoolId = alphaSchool.id as string;
 
@@ -459,7 +519,9 @@ describe.skipIf(!hasLiveSupabase)(
         .select("id")
         .single();
       if (postErr || !post) {
-        throw new Error(`seed social_media_posts(read fixture) failed: ${postErr?.message}`);
+        throw new Error(
+          `seed social_media_posts(read fixture) failed: ${postErr?.message}`,
+        );
       }
       alphaPostId = post.id as string;
 
@@ -473,7 +535,9 @@ describe.skipIf(!hasLiveSupabase)(
         .select("id")
         .single();
       if (letterErr || !letter) {
-        throw new Error(`seed recommendation_letters(read fixture) failed: ${letterErr?.message}`);
+        throw new Error(
+          `seed recommendation_letters(read fixture) failed: ${letterErr?.message}`,
+        );
       }
       alphaLetterId = letter.id as string;
 
@@ -490,7 +554,9 @@ describe.skipIf(!hasLiveSupabase)(
         .select("id")
         .single();
       if (delSchoolErr || !delSchool) {
-        throw new Error(`seed schools(delete fixture) failed: ${delSchoolErr?.message}`);
+        throw new Error(
+          `seed schools(delete fixture) failed: ${delSchoolErr?.message}`,
+        );
       }
       deletableSchoolId = delSchool.id as string;
 
@@ -507,7 +573,9 @@ describe.skipIf(!hasLiveSupabase)(
         .select("id")
         .single();
       if (delCoachErr || !delCoach) {
-        throw new Error(`seed coaches(delete fixture) failed: ${delCoachErr?.message}`);
+        throw new Error(
+          `seed coaches(delete fixture) failed: ${delCoachErr?.message}`,
+        );
       }
       deletableCoachId = delCoach.id as string;
 
@@ -524,7 +592,9 @@ describe.skipIf(!hasLiveSupabase)(
         .select("id")
         .single();
       if (delDocumentErr || !delDocument) {
-        throw new Error(`seed documents(delete fixture) failed: ${delDocumentErr?.message}`);
+        throw new Error(
+          `seed documents(delete fixture) failed: ${delDocumentErr?.message}`,
+        );
       }
       deletableDocumentId = delDocument.id as string;
 
@@ -540,7 +610,9 @@ describe.skipIf(!hasLiveSupabase)(
         .select("id")
         .single();
       if (delMetricErr || !delMetric) {
-        throw new Error(`seed performance_metrics(delete fixture) failed: ${delMetricErr?.message}`);
+        throw new Error(
+          `seed performance_metrics(delete fixture) failed: ${delMetricErr?.message}`,
+        );
       }
       deletablePerformanceMetricId = delMetric.id as string;
 
@@ -555,7 +627,9 @@ describe.skipIf(!hasLiveSupabase)(
         .select("id")
         .single();
       if (delPostErr || !delPost) {
-        throw new Error(`seed social_media_posts(delete fixture) failed: ${delPostErr?.message}`);
+        throw new Error(
+          `seed social_media_posts(delete fixture) failed: ${delPostErr?.message}`,
+        );
       }
       deletablePostId = delPost.id as string;
 
@@ -569,7 +643,9 @@ describe.skipIf(!hasLiveSupabase)(
         .select("id")
         .single();
       if (delLetterErr || !delLetter) {
-        throw new Error(`seed recommendation_letters(delete fixture) failed: ${delLetterErr?.message}`);
+        throw new Error(
+          `seed recommendation_letters(delete fixture) failed: ${delLetterErr?.message}`,
+        );
       }
       deletableLetterId = delLetter.id as string;
 
@@ -579,22 +655,44 @@ describe.skipIf(!hasLiveSupabase)(
 
     afterAll(async () => {
       if (!hasLiveSupabase) return;
-      if (insertedPostId) await admin.from("social_media_posts").delete().eq("id", insertedPostId);
+      if (insertedPostId)
+        await admin
+          .from("social_media_posts")
+          .delete()
+          .eq("id", insertedPostId);
       if (insertedLetterId)
-        await admin.from("recommendation_letters").delete().eq("id", insertedLetterId);
+        await admin
+          .from("recommendation_letters")
+          .delete()
+          .eq("id", insertedLetterId);
       // DELETE-fixture rows: no-op if the positive assertion already removed
       // them (empty match, no error).
       await admin.from("social_media_posts").delete().eq("id", deletablePostId);
-      await admin.from("recommendation_letters").delete().eq("id", deletableLetterId);
-      await admin.from("performance_metrics").delete().eq("id", deletablePerformanceMetricId);
+      await admin
+        .from("recommendation_letters")
+        .delete()
+        .eq("id", deletableLetterId);
+      await admin
+        .from("performance_metrics")
+        .delete()
+        .eq("id", deletablePerformanceMetricId);
       await admin.from("documents").delete().eq("id", deletableDocumentId);
       await admin.from("coaches").delete().eq("id", deletableCoachId);
       await admin.from("schools").delete().eq("id", deletableSchoolId);
       await admin.from("social_media_posts").delete().eq("id", alphaPostId);
-      await admin.from("recommendation_letters").delete().eq("id", alphaLetterId);
+      await admin
+        .from("recommendation_letters")
+        .delete()
+        .eq("id", alphaLetterId);
       await admin.from("schools").delete().eq("id", alphaSchoolId);
-      await admin.from("family_members").delete().eq("family_unit_id", alphaFamilyId);
-      await admin.from("family_members").delete().eq("family_unit_id", betaFamilyId);
+      await admin
+        .from("family_members")
+        .delete()
+        .eq("family_unit_id", alphaFamilyId);
+      await admin
+        .from("family_members")
+        .delete()
+        .eq("family_unit_id", betaFamilyId);
       await admin.from("family_units").delete().eq("id", alphaFamilyId);
       await admin.from("family_units").delete().eq("id", betaFamilyId);
       await admin.auth.admin.deleteUser(alphaPlayerId).catch(() => null);

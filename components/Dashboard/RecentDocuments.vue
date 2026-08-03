@@ -68,8 +68,7 @@ import type { Document } from "~/types/models";
 
 // Defer composable initialization to onMounted
 let documentsComposable:
-  | ReturnType<typeof useDocumentsConsolidated>
-  | undefined;
+  ReturnType<typeof useDocumentsConsolidated> | undefined;
 
 const recentDocuments = computed(() => {
   return (documentsComposable?.documents.value || [])

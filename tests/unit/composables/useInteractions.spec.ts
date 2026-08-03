@@ -121,7 +121,9 @@ describe("useInteractions", () => {
 
   describe("fetchInteractions — sequence-token stale-response guard", () => {
     it("discards an older, slower fetch's result when a newer fetch already resolved (latest-wins)", async () => {
-      const resolvers: Array<(value: { data: unknown[]; error: null }) => void> = [];
+      const resolvers: Array<
+        (value: { data: unknown[]; error: null }) => void
+      > = [];
       mockQuery.order.mockImplementation(
         () =>
           new Promise((resolve) => {

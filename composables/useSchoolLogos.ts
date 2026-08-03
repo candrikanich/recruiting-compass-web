@@ -229,7 +229,12 @@ export const useSchoolLogos = () => {
       }
 
       if (school.favicon_url && !options.forceRefresh) {
-        setCache(school.id, school.favicon_url, extractDomain(school) ?? "", true);
+        setCache(
+          school.id,
+          school.favicon_url,
+          extractDomain(school) ?? "",
+          true,
+        );
         continue;
       }
 
