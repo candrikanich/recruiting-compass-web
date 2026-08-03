@@ -184,9 +184,8 @@ describe("useCoachStore", () => {
     });
 
     it("discards an older, slower fetchAllCoaches() result when a newer fetch already resolved (latest-wins)", async () => {
-      const resolvers: Array<
-        (v: { data: unknown[]; error: null }) => void
-      > = [];
+      const resolvers: Array<(v: { data: unknown[]; error: null }) => void> =
+        [];
       mockQuery.order.mockImplementation(
         () => new Promise((resolve) => resolvers.push(resolve)),
       );

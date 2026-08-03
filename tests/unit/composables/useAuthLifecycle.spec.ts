@@ -39,7 +39,10 @@ import { useSchoolStore } from "~/stores/schools";
 import { useCoachStore } from "~/stores/coaches";
 import { useOffersStore } from "~/stores/offers";
 import { usePlayerProfileStore } from "~/stores/playerProfile";
-import { useAuthLifecycle, resetAppState } from "~/composables/useAuthLifecycle";
+import {
+  useAuthLifecycle,
+  resetAppState,
+} from "~/composables/useAuthLifecycle";
 
 describe("useAuthLifecycle", () => {
   beforeEach(() => {

@@ -15,7 +15,11 @@
       <div class="relative p-6 text-white">
         <div class="flex items-start justify-between mb-4">
           <div class="p-3 bg-white/20 rounded-lg backdrop-blur-xs">
-            <UIcon name="i-heroicons-building-library" class="w-6 h-6" aria-hidden="true"  />
+            <UIcon
+              name="i-heroicons-building-library"
+              class="w-6 h-6"
+              aria-hidden="true"
+            />
           </div>
           <div
             v-if="schoolCount > 0"
@@ -49,7 +53,11 @@
       <div class="relative p-6 text-white">
         <div class="flex items-start justify-between mb-4">
           <div class="p-3 bg-white/20 rounded-lg backdrop-blur-xs">
-            <UIcon name="i-heroicons-user-group" class="w-6 h-6" aria-hidden="true"  />
+            <UIcon
+              name="i-heroicons-user-group"
+              class="w-6 h-6"
+              aria-hidden="true"
+            />
           </div>
           <div
             v-if="coachCount > 0"
@@ -83,7 +91,11 @@
       <div class="relative p-6 text-white">
         <div class="flex items-start justify-between mb-4">
           <div class="p-3 bg-white/20 rounded-lg backdrop-blur-xs">
-            <UIcon name="i-heroicons-chat-bubble-left-right" class="w-6 h-6" aria-hidden="true"  />
+            <UIcon
+              name="i-heroicons-chat-bubble-left-right"
+              class="w-6 h-6"
+              aria-hidden="true"
+            />
           </div>
           <div
             v-if="interactionCount > 0"
@@ -118,7 +130,11 @@
       <div class="relative p-6 text-white">
         <div class="flex items-start justify-between mb-4">
           <div class="p-3 bg-white/20 rounded-lg backdrop-blur-xs">
-            <UIcon name="i-heroicons-trophy" class="w-6 h-6" aria-hidden="true"  />
+            <UIcon
+              name="i-heroicons-trophy"
+              class="w-6 h-6"
+              aria-hidden="true"
+            />
           </div>
         </div>
         <div class="text-3xl font-bold mb-1" aria-live="polite">
@@ -145,7 +161,7 @@
       <div class="relative p-6 text-white">
         <div class="flex items-start justify-between mb-4">
           <div class="p-3 bg-white/20 rounded-lg backdrop-blur-xs">
-            <UIcon name="i-heroicons-gift" class="w-6 h-6" aria-hidden="true"  />
+            <UIcon name="i-heroicons-gift" class="w-6 h-6" aria-hidden="true" />
           </div>
           <div
             v-if="totalOffers > 0"
@@ -180,7 +196,11 @@
       <div class="relative p-6 text-white">
         <div class="flex items-start justify-between mb-4">
           <div class="p-3 bg-white/20 rounded-lg backdrop-blur-xs">
-            <UIcon name="i-heroicons-calendar" class="w-6 h-6" aria-hidden="true"  />
+            <UIcon
+              name="i-heroicons-calendar"
+              class="w-6 h-6"
+              aria-hidden="true"
+            />
           </div>
         </div>
         <div class="text-3xl font-bold mb-1" aria-live="polite">

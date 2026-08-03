@@ -95,7 +95,9 @@ describe.skipIf(!hasLiveSupabase)(
         role,
       });
       if (profileErr) {
-        throw new Error(`seed public.users(${tag}) failed: ${profileErr.message}`);
+        throw new Error(
+          `seed public.users(${tag}) failed: ${profileErr.message}`,
+        );
       }
       return { id: data.user.id, email };
     };
@@ -118,20 +120,37 @@ describe.skipIf(!hasLiveSupabase)(
       // is ever created for this fixture, proving family-model-only coverage.
       const { data: alphaFamily, error: alphaFamilyErr } = await admin
         .from("family_units")
-        .insert({ created_by_user_id: alphaPlayerId, family_name: "10a Alpha Fam" })
+        .insert({
+          created_by_user_id: alphaPlayerId,
+          family_name: "10a Alpha Fam",
+        })
         .select("id")
         .single();
       if (alphaFamilyErr || !alphaFamily) {
-        throw new Error(`seed alpha family_unit failed: ${alphaFamilyErr?.message}`);
+        throw new Error(
+          `seed alpha family_unit failed: ${alphaFamilyErr?.message}`,
+        );
       }
       alphaFamilyId = alphaFamily.id as string;
 
-      const { error: alphaMembersErr } = await admin.from("family_members").insert([
-        { family_unit_id: alphaFamilyId, user_id: alphaPlayerId, role: "player" },
-        { family_unit_id: alphaFamilyId, user_id: alphaParentId, role: "parent" },
-      ]);
+      const { error: alphaMembersErr } = await admin
+        .from("family_members")
+        .insert([
+          {
+            family_unit_id: alphaFamilyId,
+            user_id: alphaPlayerId,
+            role: "player",
+          },
+          {
+            family_unit_id: alphaFamilyId,
+            user_id: alphaParentId,
+            role: "parent",
+          },
+        ]);
       if (alphaMembersErr) {
-        throw new Error(`seed alpha family_members failed: ${alphaMembersErr.message}`);
+        throw new Error(
+          `seed alpha family_members failed: ${alphaMembersErr.message}`,
+        );
       }
 
       // Family Beta: unrelated single-member family (the stranger).
@@ -141,15 +160,23 @@ describe.skipIf(!hasLiveSupabase)(
         .select("id")
         .single();
       if (betaFamilyErr || !betaFamily) {
-        throw new Error(`seed beta family_unit failed: ${betaFamilyErr?.message}`);
+        throw new Error(
+          `seed beta family_unit failed: ${betaFamilyErr?.message}`,
+        );
       }
       betaFamilyId = betaFamily.id as string;
 
       const { error: betaMembersErr } = await admin
         .from("family_members")
-        .insert({ family_unit_id: betaFamilyId, user_id: betaUserId, role: "player" });
+        .insert({
+          family_unit_id: betaFamilyId,
+          user_id: betaUserId,
+          role: "player",
+        });
       if (betaMembersErr) {
-        throw new Error(`seed beta family_members failed: ${betaMembersErr.message}`);
+        throw new Error(
+          `seed beta family_members failed: ${betaMembersErr.message}`,
+        );
       }
 
       // School owned by the Alpha player, family_unit_id set (as real app code
@@ -192,8 +219,14 @@ describe.skipIf(!hasLiveSupabase)(
       if (!hasLiveSupabase) return;
       await admin.from("interactions").delete().eq("id", alphaInteractionId);
       await admin.from("schools").delete().eq("id", alphaSchoolId);
-      await admin.from("family_members").delete().eq("family_unit_id", alphaFamilyId);
-      await admin.from("family_members").delete().eq("family_unit_id", betaFamilyId);
+      await admin
+        .from("family_members")
+        .delete()
+        .eq("family_unit_id", alphaFamilyId);
+      await admin
+        .from("family_members")
+        .delete()
+        .eq("family_unit_id", betaFamilyId);
       await admin.from("family_units").delete().eq("id", alphaFamilyId);
       await admin.from("family_units").delete().eq("id", betaFamilyId);
       await admin.auth.admin.deleteUser(alphaPlayerId).catch(() => null);

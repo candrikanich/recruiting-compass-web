@@ -44,7 +44,9 @@ export default defineNuxtConfig({
       // back to a runtime fetch the prod CSP blocks. Widen the scan to include
       // .ts/.js so those names get picked up and bundled too.
       scan: {
-        globInclude: ["**/*.{vue,jsx,tsx,ts,mts,cts,js,mjs,cjs,md,mdc,mdx,yml,yaml}"],
+        globInclude: [
+          "**/*.{vue,jsx,tsx,ts,mts,cts,js,mjs,cjs,md,mdc,mdx,yml,yaml}",
+        ],
       },
       sizeLimitKb: 256,
     },

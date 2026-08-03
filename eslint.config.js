@@ -70,7 +70,7 @@ const noDateOnlyStringConstructor = {
             context.report({
               node,
               message:
-                "new Date(\"YYYY-MM-DD\") parses as UTC midnight, which renders/compares a day early in US timezones. Use parseLocalDateOnly() from ~/utils/localDate instead.",
+                'new Date("YYYY-MM-DD") parses as UTC midnight, which renders/compares a day early in US timezones. Use parseLocalDateOnly() from ~/utils/localDate instead.',
             });
           }
         }
@@ -95,7 +95,7 @@ const noDateOnlyStringConstructor = {
           context.report({
             node,
             message:
-              "toISOString().split(\"T\")[0] derives a UTC-anchored date string, which drifts a day after ~5-8pm US local time. Use formatLocalDateOnly()/getLocalToday() from ~/utils/localDate instead.",
+              'toISOString().split("T")[0] derives a UTC-anchored date string, which drifts a day after ~5-8pm US local time. Use formatLocalDateOnly()/getLocalToday() from ~/utils/localDate instead.',
           });
         }
       },

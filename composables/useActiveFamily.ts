@@ -202,8 +202,7 @@ export const useActiveFamily = () => {
           // nothing to inject there — e.g. the shared singleton born in a
           // route middleware), so it must be optional.
           const athleteIdFromRoute = route?.query?.athlete_id as
-            | string
-            | undefined;
+            string | undefined;
 
           if (
             athleteIdFromRoute &&

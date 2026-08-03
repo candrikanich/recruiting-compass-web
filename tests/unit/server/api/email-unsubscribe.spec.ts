@@ -48,9 +48,8 @@ describe("GET /api/email/unsubscribe", () => {
     const h3 = await import("h3");
     vi.mocked(h3.getQuery).mockReturnValue({ email: EMAIL, token: validToken });
 
-    const { default: handler } = await import(
-      "~/server/api/email/unsubscribe.get"
-    );
+    const { default: handler } =
+      await import("~/server/api/email/unsubscribe.get");
     const result = await handler(mockEvent);
 
     expect(upsertMock).toHaveBeenCalledWith(
@@ -65,9 +64,8 @@ describe("GET /api/email/unsubscribe", () => {
     const h3 = await import("h3");
     vi.mocked(h3.getQuery).mockReturnValue({ email: EMAIL, token: "bad" });
 
-    const { default: handler } = await import(
-      "~/server/api/email/unsubscribe.get"
-    );
+    const { default: handler } =
+      await import("~/server/api/email/unsubscribe.get");
     await handler(mockEvent);
 
     expect(upsertMock).not.toHaveBeenCalled();
@@ -80,9 +78,8 @@ describe("POST /api/email/unsubscribe (one-click)", () => {
     const h3 = await import("h3");
     vi.mocked(h3.getQuery).mockReturnValue({ email: EMAIL, token: validToken });
 
-    const { default: handler } = await import(
-      "~/server/api/email/unsubscribe.post"
-    );
+    const { default: handler } =
+      await import("~/server/api/email/unsubscribe.post");
     const result = await handler(mockEvent);
 
     expect(upsertMock).toHaveBeenCalledWith(
@@ -97,9 +94,8 @@ describe("POST /api/email/unsubscribe (one-click)", () => {
     const h3 = await import("h3");
     vi.mocked(h3.getQuery).mockReturnValue({ email: EMAIL, token: "bad" });
 
-    const { default: handler } = await import(
-      "~/server/api/email/unsubscribe.post"
-    );
+    const { default: handler } =
+      await import("~/server/api/email/unsubscribe.post");
     const result = await handler(mockEvent);
 
     expect(upsertMock).not.toHaveBeenCalled();

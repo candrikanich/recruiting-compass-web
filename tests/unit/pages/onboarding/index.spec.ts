@@ -83,7 +83,9 @@ describe("pages/onboarding/index.vue", () => {
     const wrapper = mountPage();
     await flushPromises();
 
-    const backButton = wrapper.findAll("button").find((b) => b.text() === "Back");
+    const backButton = wrapper
+      .findAll("button")
+      .find((b) => b.text() === "Back");
     expect(backButton?.attributes("disabled")).toBeDefined();
   });
 
@@ -126,15 +128,24 @@ describe("pages/onboarding/index.vue", () => {
     const wrapper = mountPage();
     await flushPromises();
     // step 1 -> 2
-    await wrapper.findAll("button").find((b) => b.text() === "Next")?.trigger("click");
+    await wrapper
+      .findAll("button")
+      .find((b) => b.text() === "Next")
+      ?.trigger("click");
     await flushPromises();
     // step 2 -> 3
-    await wrapper.findAll("button").find((b) => b.text() === "Next")?.trigger("click");
+    await wrapper
+      .findAll("button")
+      .find((b) => b.text() === "Next")
+      ?.trigger("click");
     await flushPromises();
     mockOnboarding.saveOnboardingStep.mockClear();
 
     // step 3 has no zip code entered — nextScreen() should refuse to advance
-    await wrapper.findAll("button").find((b) => b.text() === "Next")?.trigger("click");
+    await wrapper
+      .findAll("button")
+      .find((b) => b.text() === "Next")
+      ?.trigger("click");
     await flushPromises();
 
     expect(mockOnboarding.saveOnboardingStep).not.toHaveBeenCalled();
@@ -196,7 +207,10 @@ describe("pages/onboarding/index.vue", () => {
     await flushPromises();
 
     // Advance to step 2 where graduation_year/sport/position are editable.
-    await wrapper.findAll("button").find((b) => b.text() === "Next")?.trigger("click");
+    await wrapper
+      .findAll("button")
+      .find((b) => b.text() === "Next")
+      ?.trigger("click");
     await flushPromises();
 
     const graduationSelect = wrapper.find("#onboarding-graduation-year");

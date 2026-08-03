@@ -22,7 +22,9 @@
       >
         <!-- Header -->
         <div class="flex justify-between items-center mb-6">
-          <h2 class="text-2xl font-bold text-brand-slate-900">Profile Edit History</h2>
+          <h2 class="text-2xl font-bold text-brand-slate-900">
+            Profile Edit History
+          </h2>
           <button
             @click="closeModal"
             aria-label="Close profile edit history"
@@ -102,7 +104,9 @@
                     <p class="font-medium text-brand-slate-700 mb-1">
                       {{ change.fieldLabel }}
                     </p>
-                    <div class="bg-white rounded-sm p-2 border border-brand-slate-200">
+                    <div
+                      class="bg-white rounded-sm p-2 border border-brand-slate-200"
+                    >
                       <span class="text-brand-slate-500">Before:</span>
                       <span class="ml-2 text-brand-slate-900">
                         {{ formatValue(change.old_value) }}

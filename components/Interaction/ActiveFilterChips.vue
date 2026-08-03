@@ -13,7 +13,7 @@
       class="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-medium focus:outline-2 focus:outline-blue-600 focus:outline-offset-1"
     >
       Search: {{ filterValues.get("search") }}
-      <UIcon name="i-heroicons-x-mark" class="w-3 h-3" aria-hidden="true"  />
+      <UIcon name="i-heroicons-x-mark" class="w-3 h-3" aria-hidden="true" />
     </button>
     <button
       v-if="filterValues.get('type')"
@@ -22,7 +22,7 @@
       class="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-medium focus:outline-2 focus:outline-blue-600 focus:outline-offset-1"
     >
       Type: {{ formatType(filterValues.get("type") as string) }}
-      <UIcon name="i-heroicons-x-mark" class="w-3 h-3" aria-hidden="true"  />
+      <UIcon name="i-heroicons-x-mark" class="w-3 h-3" aria-hidden="true" />
     </button>
     <button
       v-if="filterValues.get('loggedBy')"
@@ -32,7 +32,7 @@
     >
       Logged By:
       {{ formatLoggedBy(filterValues.get("loggedBy") as string) }}
-      <UIcon name="i-heroicons-x-mark" class="w-3 h-3" aria-hidden="true"  />
+      <UIcon name="i-heroicons-x-mark" class="w-3 h-3" aria-hidden="true" />
     </button>
     <button
       v-if="filterValues.get('direction')"
@@ -41,7 +41,7 @@
       class="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-medium focus:outline-2 focus:outline-blue-600 focus:outline-offset-1"
     >
       {{ formatDirection(filterValues.get("direction") as string) }}
-      <UIcon name="i-heroicons-x-mark" class="w-3 h-3" aria-hidden="true"  />
+      <UIcon name="i-heroicons-x-mark" class="w-3 h-3" aria-hidden="true" />
     </button>
     <button
       v-if="filterValues.get('sentiment')"
@@ -50,7 +50,7 @@
       class="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-medium focus:outline-2 focus:outline-blue-600 focus:outline-offset-1"
     >
       {{ formatSentiment(filterValues.get("sentiment") as string) }}
-      <UIcon name="i-heroicons-x-mark" class="w-3 h-3" aria-hidden="true"  />
+      <UIcon name="i-heroicons-x-mark" class="w-3 h-3" aria-hidden="true" />
     </button>
     <button
       v-if="filterValues.get('timePeriod')"
@@ -59,7 +59,7 @@
       class="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-medium focus:outline-2 focus:outline-blue-600 focus:outline-offset-1"
     >
       Last {{ filterValues.get("timePeriod") }} days
-      <UIcon name="i-heroicons-x-mark" class="w-3 h-3" aria-hidden="true"  />
+      <UIcon name="i-heroicons-x-mark" class="w-3 h-3" aria-hidden="true" />
     </button>
     <button
       @click="handleClearAll"

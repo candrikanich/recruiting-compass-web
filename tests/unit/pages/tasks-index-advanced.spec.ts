@@ -557,10 +557,14 @@ describe("Tasks Page - Advanced Coverage", () => {
       await wrapper.vm.$nextTick();
 
       expect(
-        wrapper.find("[data-testid='task-checkbox-task-1']").attributes("aria-label"),
+        wrapper
+          .find("[data-testid='task-checkbox-task-1']")
+          .attributes("aria-label"),
       ).toBe("Mark Complete NCAA registration as complete");
       expect(
-        wrapper.find("[data-testid='task-checkbox-task-2']").attributes("aria-label"),
+        wrapper
+          .find("[data-testid='task-checkbox-task-2']")
+          .attributes("aria-label"),
       ).toBe("Mark Send highlight video as incomplete");
     });
 

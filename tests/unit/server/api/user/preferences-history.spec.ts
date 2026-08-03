@@ -49,8 +49,7 @@ describe("POST /api/user/preferences/history", () => {
   });
 
   async function loadHandler() {
-    return (await import("~/server/api/user/preferences/history.post"))
-      .default;
+    return (await import("~/server/api/user/preferences/history.post")).default;
   }
 
   it("rejects a body that fails Zod validation with 400 and the first issue message (zod v4 .issues)", async () => {
@@ -58,9 +57,7 @@ describe("POST /api/user/preferences/history", () => {
     vi.mocked(useSupabaseAdmin).mockReturnValue({ from: vi.fn() } as never);
     const handler = await loadHandler();
 
-    await expect(
-      handler(fakeEvent({ category: 123 })),
-    ).rejects.toMatchObject({
+    await expect(handler(fakeEvent({ category: 123 }))).rejects.toMatchObject({
       statusCode: 400,
       statusMessage: expect.stringContaining("Invalid history data:"),
     });

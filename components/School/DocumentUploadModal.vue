@@ -14,7 +14,10 @@
       <div
         class="flex items-center justify-between p-6 border-b border-slate-200"
       >
-        <h2 id="document-upload-title" class="text-2xl font-bold text-slate-900">
+        <h2
+          id="document-upload-title"
+          class="text-2xl font-bold text-slate-900"
+        >
           Upload Document
         </h2>
         <button

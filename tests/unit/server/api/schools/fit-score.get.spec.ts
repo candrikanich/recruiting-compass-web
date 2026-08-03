@@ -82,9 +82,8 @@ describe("GET /api/schools/[id]/fit-score authz", () => {
   });
 
   const getHandler = async () => {
-    const { default: handler } = await import(
-      "~/server/api/schools/[id]/fit-score.get"
-    );
+    const { default: handler } =
+      await import("~/server/api/schools/[id]/fit-score.get");
     return handler;
   };
 

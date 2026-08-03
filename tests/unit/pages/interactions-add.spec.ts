@@ -66,7 +66,9 @@ describe("pages/interactions/add.vue", () => {
 
   it("shows a visible, generic error and preserves the form when creation fails", async () => {
     createInteractionMock.mockRejectedValue(
-      new Error('duplicate key value violates unique constraint "pk_interactions"'),
+      new Error(
+        'duplicate key value violates unique constraint "pk_interactions"',
+      ),
     );
     const wrapper = mountPage();
     const form = wrapper.findComponent(InteractionFormStub);

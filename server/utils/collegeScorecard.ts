@@ -35,11 +35,9 @@ export interface ScorecardSchool {
   "latest.student.size": number | null;
   "latest.admissions.admission_rate.overall": number | null;
   "latest.admissions.sat_scores.25th_percentile.critical_reading":
-    | number
-    | null;
+    number | null;
   "latest.admissions.sat_scores.75th_percentile.critical_reading":
-    | number
-    | null;
+    number | null;
   "latest.admissions.sat_scores.25th_percentile.math": number | null;
   "latest.admissions.sat_scores.75th_percentile.math": number | null;
   "latest.admissions.act_scores.25th_percentile.cumulative": number | null;

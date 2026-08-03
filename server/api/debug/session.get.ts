@@ -27,8 +27,7 @@ export default defineEventHandler(async (event) => {
     // Get user metadata
     const userId = user.id;
     const familyUnitId = user.user_metadata?.family_unit_id as
-      | string
-      | undefined;
+      string | undefined;
 
     // Use admin client to check raw database state
     const supabase = createServerSupabaseClient();

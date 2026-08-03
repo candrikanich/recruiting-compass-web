@@ -115,7 +115,10 @@ describe("faviconLookup", () => {
       mockLookup.mockResolvedValue([{ address: "10.0.0.5", family: 4 }]);
       global.fetch = vi.fn().mockResolvedValue({ ok: false });
 
-      const result = await findFaviconUrl("internal.evil.com", "internal.evil.com");
+      const result = await findFaviconUrl(
+        "internal.evil.com",
+        "internal.evil.com",
+      );
 
       expect(result).toBeNull();
       const fetchedUrls = vi

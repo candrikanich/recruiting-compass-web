@@ -38,8 +38,7 @@ const previewData = computed<PublicProfileData>(() => ({
       ? {
           primary_sport: props.details.primary_sport as string | undefined,
           primary_position: props.details.primary_position as
-            | string
-            | undefined,
+            string | undefined,
           positions: props.details.positions as string[] | undefined,
           height_inches: props.details.height_inches as number | undefined,
           weight_lbs: props.details.weight_lbs as number | undefined,

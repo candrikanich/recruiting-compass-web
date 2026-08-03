@@ -42,9 +42,7 @@ export class RuleEngine {
             (s: unknown) => {
               const school = s as Record<string, unknown>;
               const division = ((school.division as string | null) || "D1") as
-                | "D1"
-                | "D2"
-                | "D3";
+                "D1" | "D2" | "D3";
               return isDeadPeriod(now, division);
             },
           );

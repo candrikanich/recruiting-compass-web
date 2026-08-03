@@ -60,9 +60,8 @@ describe("/api/athlete/phase/advance.post", () => {
         await import("~/server/utils/supabase");
       const { requireAuth, assertNotParent } =
         await import("~/server/utils/auth");
-      const handler = (
-        await import("~/server/api/athlete/phase/advance.post")
-      ).default;
+      const handler = (await import("~/server/api/athlete/phase/advance.post"))
+        .default;
 
       vi.mocked(requireAuth).mockResolvedValue({
         id: "parent-user-id",
@@ -85,9 +84,8 @@ describe("/api/athlete/phase/advance.post", () => {
         await import("~/server/utils/supabase");
       const { requireAuth, assertNotParent } =
         await import("~/server/utils/auth");
-      const handler = (
-        await import("~/server/api/athlete/phase/advance.post")
-      ).default;
+      const handler = (await import("~/server/api/athlete/phase/advance.post"))
+        .default;
 
       vi.mocked(requireAuth).mockResolvedValue({
         id: ATHLETE_ID,
@@ -127,9 +125,8 @@ describe("/api/athlete/phase/advance.post", () => {
         await import("~/server/utils/supabase");
       const { requireAuth, assertNotParent } =
         await import("~/server/utils/auth");
-      const handler = (
-        await import("~/server/api/athlete/phase/advance.post")
-      ).default;
+      const handler = (await import("~/server/api/athlete/phase/advance.post"))
+        .default;
 
       vi.mocked(requireAuth).mockResolvedValue({
         id: ATHLETE_ID,
@@ -164,9 +161,8 @@ describe("/api/athlete/phase/advance.post", () => {
         await import("~/server/utils/supabase");
       const { requireAuth, assertNotParent } =
         await import("~/server/utils/auth");
-      const handler = (
-        await import("~/server/api/athlete/phase/advance.post")
-      ).default;
+      const handler = (await import("~/server/api/athlete/phase/advance.post"))
+        .default;
 
       vi.mocked(requireAuth).mockResolvedValue({
         id: ATHLETE_ID,
@@ -201,9 +197,8 @@ describe("/api/athlete/phase/advance.post", () => {
         await import("~/server/utils/supabase");
       const { requireAuth, assertNotParent } =
         await import("~/server/utils/auth");
-      const handler = (
-        await import("~/server/api/athlete/phase/advance.post")
-      ).default;
+      const handler = (await import("~/server/api/athlete/phase/advance.post"))
+        .default;
 
       vi.mocked(requireAuth).mockResolvedValue({
         id: ATHLETE_ID,
@@ -239,9 +234,8 @@ describe("/api/athlete/phase/advance.post", () => {
         await import("~/server/utils/supabase");
       const { requireAuth, assertNotParent } =
         await import("~/server/utils/auth");
-      const handler = (
-        await import("~/server/api/athlete/phase/advance.post")
-      ).default;
+      const handler = (await import("~/server/api/athlete/phase/advance.post"))
+        .default;
 
       vi.mocked(requireAuth).mockResolvedValue({
         id: ATHLETE_ID,
@@ -277,9 +271,8 @@ describe("/api/athlete/phase/advance.post", () => {
         await import("~/server/utils/supabase");
       const { requireAuth, assertNotParent } =
         await import("~/server/utils/auth");
-      const handler = (
-        await import("~/server/api/athlete/phase/advance.post")
-      ).default;
+      const handler = (await import("~/server/api/athlete/phase/advance.post"))
+        .default;
 
       vi.mocked(requireAuth).mockResolvedValue({
         id: ATHLETE_ID,
@@ -310,9 +303,8 @@ describe("/api/athlete/phase/advance.post", () => {
         await import("~/server/utils/supabase");
       const { requireAuth, assertNotParent } =
         await import("~/server/utils/auth");
-      const handler = (
-        await import("~/server/api/athlete/phase/advance.post")
-      ).default;
+      const handler = (await import("~/server/api/athlete/phase/advance.post"))
+        .default;
 
       vi.mocked(requireAuth).mockResolvedValue({
         id: ATHLETE_ID,
@@ -353,9 +345,8 @@ describe("/api/athlete/phase/advance.post", () => {
         await import("~/server/utils/supabase");
       const { requireAuth, assertNotParent } =
         await import("~/server/utils/auth");
-      const handler = (
-        await import("~/server/api/athlete/phase/advance.post")
-      ).default;
+      const handler = (await import("~/server/api/athlete/phase/advance.post"))
+        .default;
 
       vi.mocked(requireAuth).mockResolvedValue({
         id: ATHLETE_ID,
@@ -379,9 +370,8 @@ describe("/api/athlete/phase/advance.post", () => {
         await import("~/server/utils/supabase");
       const { requireAuth, assertNotParent } =
         await import("~/server/utils/auth");
-      const handler = (
-        await import("~/server/api/athlete/phase/advance.post")
-      ).default;
+      const handler = (await import("~/server/api/athlete/phase/advance.post"))
+        .default;
 
       vi.mocked(requireAuth).mockResolvedValue({
         id: ATHLETE_ID,
@@ -410,9 +400,8 @@ describe("/api/athlete/phase/advance.post", () => {
         await import("~/server/utils/supabase");
       const { requireAuth, assertNotParent } =
         await import("~/server/utils/auth");
-      const handler = (
-        await import("~/server/api/athlete/phase/advance.post")
-      ).default;
+      const handler = (await import("~/server/api/athlete/phase/advance.post"))
+        .default;
 
       vi.mocked(requireAuth).mockResolvedValue({
         id: ATHLETE_ID,

@@ -25,9 +25,7 @@ async function resetDatabase() {
     if (testUserIds.length === 0) {
       console.log("ℹ️  No test accounts found — nothing to clear");
     } else {
-      console.log(
-        `Clearing data for ${testUserIds.length} test account(s)...`,
-      );
+      console.log(`Clearing data for ${testUserIds.length} test account(s)...`);
 
       // Delete in dependency order, scoped to test-account ownership
       await supabase.from("notifications").delete().in("user_id", testUserIds);

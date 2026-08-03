@@ -12,9 +12,7 @@ vi.mock("~/composables/useSupabase", () => ({
     from: vi.fn(() => ({
       select: vi.fn(() => ({
         eq: vi.fn(() => ({
-          maybeSingle: vi
-            .fn()
-            .mockResolvedValue({ data: null, error: null }),
+          maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
         })),
       })),
     })),
@@ -34,9 +32,7 @@ describe("useFamilyContext (shared singleton)", () => {
   });
 
   it("returns the exact same object reference on repeated calls", async () => {
-    const { useFamilyContext } = await import(
-      "~/composables/useFamilyContext"
-    );
+    const { useFamilyContext } = await import("~/composables/useFamilyContext");
     const a = useFamilyContext();
     const b = useFamilyContext();
     expect(a).toBe(b);
@@ -58,9 +54,8 @@ describe("useFamilyContext (shared singleton)", () => {
     const userStore = useUserStore();
     userStore.user = { id: "parent-1", role: "parent" } as any;
 
-    const { useFamilyContext, resetFamilyContext } = await import(
-      "~/composables/useFamilyContext"
-    );
+    const { useFamilyContext, resetFamilyContext } =
+      await import("~/composables/useFamilyContext");
     const instance = useFamilyContext();
     await instance.initializeFamily();
     await instance.switchAthlete("athlete-1");
@@ -76,9 +71,8 @@ describe("useFamilyContext (shared singleton)", () => {
   });
 
   it("resetFamilyContext is a no-op (does not throw) if the singleton was never created", async () => {
-    const { resetFamilyContext } = await import(
-      "~/composables/useFamilyContext"
-    );
+    const { resetFamilyContext } =
+      await import("~/composables/useFamilyContext");
     expect(() => resetFamilyContext()).not.toThrow();
   });
 });

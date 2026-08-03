@@ -59,7 +59,9 @@ test.describe("Interaction Detail Page - Accessibility (WCAG 2.1 AA)", () => {
         addForm.locator('button[type="submit"]').click(),
       ]);
       const body = await response.json();
-      interactionId = Array.isArray(body) ? body[0]?.id ?? "" : body?.id ?? "";
+      interactionId = Array.isArray(body)
+        ? (body[0]?.id ?? "")
+        : (body?.id ?? "");
     } finally {
       await ctx.close();
     }
@@ -407,7 +409,9 @@ test.describe("Interaction Detail Page - Accessibility (WCAG 2.1 AA)", () => {
       // Tailwind v4's computed background-color can resolve to rgb() or the
       // CSS Color 4 oklch() function depending on browser/color-space --
       // either is a real, defined color, just not always "rgb" as a substring.
-      expect(buttonContrast.backgroundColor).toMatch(/^(rgb|rgba|oklch|oklab|color)\(/);
+      expect(buttonContrast.backgroundColor).toMatch(
+        /^(rgb|rgba|oklch|oklab|color)\(/,
+      );
     });
 
     test("badges have sufficient contrast", async ({ page }) => {

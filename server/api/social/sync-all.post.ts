@@ -54,8 +54,7 @@ export default defineEventHandler(async (event): Promise<SyncStats> => {
     // Initialize services
     const twitterBearerToken = config.twitterBearerToken as string | undefined;
     const instagramAccessToken = config.instagramAccessToken as
-      | string
-      | undefined;
+      string | undefined;
     const twitterService = new TwitterService(twitterBearerToken ?? "");
     const instagramService = new InstagramService(instagramAccessToken ?? "");
 

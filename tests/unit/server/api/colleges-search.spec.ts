@@ -254,7 +254,11 @@ describe("GET /api/colleges/search", () => {
     it("computes distinct Redis keys for the same q with different fields/per_page", async () => {
       const { CACHE_KEYS } = await import("~/server/utils/redis");
 
-      const narrowShape = CACHE_KEYS.COLLEGE_SEARCH("florida", "id,school.name", "5");
+      const narrowShape = CACHE_KEYS.COLLEGE_SEARCH(
+        "florida",
+        "id,school.name",
+        "5",
+      );
       const wideShape = CACHE_KEYS.COLLEGE_SEARCH(
         "florida",
         "id,school.name,school.city,school.state",

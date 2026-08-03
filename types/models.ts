@@ -661,10 +661,7 @@ export interface InteractionAutomation {
   trigger: "date_based" | "event_based" | "manual";
   trigger_config?: Record<string, unknown>;
   action:
-    | "create_reminder"
-    | "send_email"
-    | "log_interaction"
-    | "update_status";
+    "create_reminder" | "send_email" | "log_interaction" | "update_status";
   action_config: Record<string, unknown>;
   is_active: boolean;
   created_at?: string;

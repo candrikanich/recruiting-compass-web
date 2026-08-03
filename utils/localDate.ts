@@ -46,7 +46,10 @@ export function getLocalToday(): Date {
 }
 
 /** True if `date` falls on the same LOCAL calendar day as `reference` (defaults to now). */
-export function isSameLocalDay(date: Date, reference: Date = new Date()): boolean {
+export function isSameLocalDay(
+  date: Date,
+  reference: Date = new Date(),
+): boolean {
   return (
     date.getFullYear() === reference.getFullYear() &&
     date.getMonth() === reference.getMonth() &&

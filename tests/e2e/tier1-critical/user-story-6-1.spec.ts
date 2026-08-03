@@ -28,7 +28,9 @@ test.describe("User Story 6.1: Parent Views Recruiting Stage Guidance", () => {
     await expect(statusLabel).toBeVisible();
 
     // Verify recruiting timeline header
-    const headerText = page.getByRole("heading", { name: "Recruiting Timeline" });
+    const headerText = page.getByRole("heading", {
+      name: "Recruiting Timeline",
+    });
     await expect(headerText).toBeVisible();
   });
 
@@ -63,7 +65,10 @@ test.describe("User Story 6.1: Parent Views Recruiting Stage Guidance", () => {
 
     // Section starts collapsed by default (pages/timeline/index.vue:
     // worriesCollapsed = ref(true)) — expand it before asserting on its body.
-    await page.getByTestId("guidance-header").filter({ hasText: "Common Worries" }).click();
+    await page
+      .getByTestId("guidance-header")
+      .filter({ hasText: "Common Worries" })
+      .click();
 
     // Verify expandable details elements exist
     const detailsElements = page.locator("details");
@@ -278,7 +283,10 @@ test.describe("User Story 6.1: Parent Views Recruiting Stage Guidance", () => {
 
     const count = await milestoneLinks.count();
     if (count === 0) {
-      test.skip(true, "no seeded milestone links present on this page for this run; awaiting seed infrastructure project — see CLAUDE.local.md Action Required");
+      test.skip(
+        true,
+        "no seeded milestone links present on this page for this run; awaiting seed infrastructure project — see CLAUDE.local.md Action Required",
+      );
       return;
     }
 

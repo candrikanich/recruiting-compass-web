@@ -119,9 +119,7 @@ export default defineEventHandler(async (event) => {
         familyUnit as { pending_player_details?: Record<string, unknown> }
       )?.pending_player_details;
       if (pendingDetails?.playerName) {
-        const parts = (pendingDetails.playerName as string)
-          .trim()
-          .split(/\s+/);
+        const parts = (pendingDetails.playerName as string).trim().split(/\s+/);
         prefill = {
           firstName: parts[0] ?? "",
           lastName: parts.slice(1).join(" "),

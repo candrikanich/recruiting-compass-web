@@ -19,7 +19,11 @@
         variant="outline"
         color="neutral"
         size="sm"
-        @click="() => { showForm = true }"
+        @click="
+          () => {
+            showForm = true;
+          }
+        "
       >
         Change Email
       </UButton>

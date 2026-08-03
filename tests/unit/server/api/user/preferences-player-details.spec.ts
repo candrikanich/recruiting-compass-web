@@ -54,17 +54,15 @@ describe("PATCH /api/user/preferences/player-details", () => {
   beforeEach(async () => {
     vi.clearAllMocks();
     vi.resetModules();
-    const { requireAuth, assertNotParent } = await import(
-      "~/server/utils/auth"
-    );
+    const { requireAuth, assertNotParent } =
+      await import("~/server/utils/auth");
     vi.mocked(requireAuth).mockResolvedValue({
       id: "user-1",
       email: "user@example.com",
     });
     vi.mocked(assertNotParent).mockResolvedValue(undefined);
-    const { createServerSupabaseClient } = await import(
-      "~/server/utils/supabase"
-    );
+    const { createServerSupabaseClient } =
+      await import("~/server/utils/supabase");
     vi.mocked(createServerSupabaseClient).mockReturnValue({
       from: vi.fn(),
     } as never);

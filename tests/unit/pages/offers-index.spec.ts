@@ -54,7 +54,7 @@ describe("pages/offers/index.vue", () => {
       global: {
         components: { DesignSystemConfirmDialog },
         stubs: {
-          PageHeader: { template: "<div><slot name=\"actions\" /></div>" },
+          PageHeader: { template: '<div><slot name="actions" /></div>' },
           OfferComparison: true,
         },
       },
@@ -77,7 +77,9 @@ describe("pages/offers/index.vue", () => {
     });
 
     it("shows a visible, generic error when delete fails and keeps state usable", async () => {
-      deleteOfferMock.mockRejectedValue(new Error("permission denied for table offers"));
+      deleteOfferMock.mockRejectedValue(
+        new Error("permission denied for table offers"),
+      );
       const wrapper = mountPage();
       const vm = wrapper.vm as any;
 
@@ -99,7 +101,9 @@ describe("pages/offers/index.vue", () => {
   describe("add offer", () => {
     it("shows a visible, generic error and preserves the form when creation fails", async () => {
       createOfferMock.mockRejectedValue(
-        new Error('duplicate key value violates unique constraint "offers_pkey"'),
+        new Error(
+          'duplicate key value violates unique constraint "offers_pkey"',
+        ),
       );
       const wrapper = mountPage();
       const vm = wrapper.vm as any;

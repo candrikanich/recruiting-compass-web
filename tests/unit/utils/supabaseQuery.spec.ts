@@ -161,7 +161,9 @@ describe("supabaseQuery utilities", () => {
     it("should not call .or() when the search term is empty/whitespace", async () => {
       mockSupabase.select.mockResolvedValueOnce({ data: [], error: null });
 
-      await querySelect("schools", { search: { columns: ["name"], term: "  " } });
+      await querySelect("schools", {
+        search: { columns: ["name"], term: "  " },
+      });
 
       expect(mockSupabase.or).not.toHaveBeenCalled();
     });

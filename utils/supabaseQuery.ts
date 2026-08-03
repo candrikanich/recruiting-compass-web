@@ -67,10 +67,7 @@ export type SupabaseQueryBuilder = ReturnType<
  * user input can't inject unintended wildcard matches.
  */
 function escapeIlikeWildcards(term: string): string {
-  return term
-    .replace(/\\/g, "\\\\")
-    .replace(/%/g, "\\%")
-    .replace(/_/g, "\\_");
+  return term.replace(/\\/g, "\\\\").replace(/%/g, "\\%").replace(/_/g, "\\_");
 }
 
 /**
@@ -111,7 +108,11 @@ export async function querySelect<T>(
      * filtering client-side afterward (which silently misses matches
      * outside the first `limit` rows returned in arbitrary DB order).
      */
-    search?: { columns: string[]; term: string; pattern?: "contains" | "startsWith" };
+    search?: {
+      columns: string[];
+      term: string;
+      pattern?: "contains" | "startsWith";
+    };
     order?: { column: string; ascending?: boolean };
     limit?: number;
   },
