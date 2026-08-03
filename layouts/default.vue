@@ -7,10 +7,12 @@
         <slot />
       </ErrorBoundary>
     </main>
-    <SpeedInsights />
+    <SpeedInsights v-if="isVercel" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { SpeedInsights } from "@vercel/speed-insights/nuxt";
+const { public: publicConfig } = useRuntimeConfig();
+const isVercel = publicConfig.isVercel;
 </script>
