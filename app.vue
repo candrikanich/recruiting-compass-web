@@ -16,7 +16,7 @@
         @stay-logged-in="dismissWarning"
         @logout-now="handleTimeout"
       />
-      <SpeedInsights />
+      <SpeedInsights v-if="isVercel" />
     </template>
   </div>
 </template>
@@ -30,6 +30,8 @@ import SessionTimeoutWarning from "~/components/Auth/SessionTimeoutWarning.vue";
 import { SpeedInsights } from "@vercel/speed-insights/vue";
 import { createClientLogger } from "~/utils/logger";
 const logger = createClientLogger("app");
+const { public: publicConfig } = useRuntimeConfig();
+const isVercel = publicConfig.isVercel;
 
 // Service status for error page
 const { isServiceUnavailable } = useServiceStatus();

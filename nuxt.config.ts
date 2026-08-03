@@ -184,6 +184,7 @@ export default defineNuxtConfig({
       posthogPublicKey: process.env.NUXT_PUBLIC_POSTHOG_PUBLIC_KEY || "",
       posthogHost: "https://us.i.posthog.com",
       posthogDefaults: "2026-01-30",
+      isVercel: process.env.VERCEL === "1",
     },
   },
 
