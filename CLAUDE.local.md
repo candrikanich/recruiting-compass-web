@@ -6,7 +6,24 @@ Active session notes only. See [COMPLETED_WORK.md](./COMPLETED_WORK.md) for full
 
 - **Output format by reader, not by default**: For artifacts Chris will read once on a phone or share with someone non-technical — session recaps, status overviews, weekly summaries, "where are we on X" snapshots — invoke the `visual-explainer` skill to produce self-contained HTML. For artifacts that future-Claude or Chris will edit (handoff docs, `planning/*.md`, `COMPLETED_WORK.md`, lesson files, plans) — stay markdown. When unsure: read = HTML, edit = markdown.
 
-## Current Session (2026-08-01 — Sentry triage: favicon N+1 + phase 500s)
+## Current Session (2026-08-02 — RLS deferrals: Phases 4-6 implemented, plan COMPLETE)
+
+**Status:** Phases 4, 5, 6 all done. Phase 4 (`93ba96b6`) + Phase 5 (`3e4e38f9`) applied live + pushed; Phase 6 is docs-only (no schema change), pending commit. Chris ruling: skipped the "soak a few days" pacing from the plan for both live-apply phases — no live users yet, risk accepted. `planning/rls-family-consolidation-plan.md` Phases 1-6 all complete.
+**Tests:** unit 7785 PASS; type-check 0; lint 0; RLS integration 25/25 GREEN live (18 Phase 1/3 + 5 Phase 4 + 2 Phase 5); Phase 4 and Phase 5 both RED→GREEN confirmed pre/post apply. Full E2E passed both times (0 failed, one retry-converged run each).
+**DB verify (Phase 5):** 0 NULL family_unit_id on coaches/documents/performance_metrics/social_media_posts/recommendation_letters; 43 legacy policies dropped; audit exit criterion met for this plan's scope — exactly 1 permissive policy per verb per table (20/20 checked).
+**Phase 6 finding:** full-schema audit query (beyond this plan's scope) found `schools` INSERT/SELECT and `events` INSERT/SELECT/UPDATE still carry a redundant non-account_links permissive policy alongside the family one — not a security hole, just unconsolidated. Documented as a deferred item in `claude/database.md`, NOT fixed (out of this plan's scope). `plans/audit-remediation.md` Phase 10's "exactly one permissive policy" checkbox left unchecked with a note — partial, not fully repo-wide.
+**Note:** `npx supabase db push` fails locally (`LegacyDbPushMissingLocalError`) due to schema_migrations dual-recording drift (MCP timestamp vs repo filename) — use Supabase MCP `apply_migration` directly for all remaining/future migrations on this DB.
+
+### Session facts (durable)
+- Phase 1: `20260805000000` — family_unit_id columns (social_media_posts, recommendation_letters) + generic BEFORE INSERT OR UPDATE `derive_family_unit_id()` trigger on 7 tables (silent derive, never RAISEs) + idempotent backfills.
+- Phase 2: app stamping on all deferral write paths (coaches store, documents ×2 composables, performance ×2, social, rec letters) + fit-score endpoint authz union (family parents no longer 404).
+- Phase 3: `20260808000000` — additive family policies (DELETE gaps schools/coaches/documents/performance_metrics; full family CRUD social/rec letters). Legacy account_links policies untouched, still load-bearing.
+- Phase 4: `20260812000000` — WITH CHECK hardening on all 7 family UPDATE policies + interactions cutover (Deferral B resolved) + schools DELETE cutover.
+- Phase 5: `20260815000000` — dropped all 43 remaining legacy policies (coaches 17, documents 6, performance_metrics 6, recommendation_letters 5, social_media_posts 9 incl. coach-join SELECT). Deferral A resolved. **All deferrals A/B/C now closed.**
+- Phase 4: `20260812000000` — WITH CHECK hardening on all 7 family UPDATE policies + interactions cutover (Deferral B resolved) + schools DELETE cutover (part of Deferral C). Deferral A (coaches/documents/performance_metrics/social_media_posts/recommendation_letters legacy drops) still open — Phase 5.
+- Phase 5-6 (Deferral A legacy drops + audit) NOT started.
+
+## Previous Session (2026-08-01 — Sentry triage: favicon N+1 + phase 500s)
 
 **Status:** COMPLETE — both Sentry issues fixed, pushed to develop
 **Branch:** develop, pushed through `e0f31430`

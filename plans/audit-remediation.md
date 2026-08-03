@@ -188,7 +188,7 @@ Regenerate Supabase types after adding genuinely-missing tables/columns to the s
 ### Acceptance criteria
 
 - [ ] Non-test `any` count reduced by an order of magnitude; no `(supabase as any)` remains
-- [ ] Exactly one permissive policy set (family model) per verb per table; access behavior unchanged for legitimate users (RLS test suite from phase 1 still green)
+- [ ] Exactly one permissive policy set (family model) per verb per table; access behavior unchanged for legitimate users (RLS test suite from phase 1 still green) — **partial, 2026-08-02**: DONE for the tables covered by `planning/rls-family-consolidation-plan.md` (coaches, documents, performance_metrics, recommendation_letters, social_media_posts, interactions, schools DELETE). NOT yet done for `schools` INSERT/SELECT and `events` INSERT/SELECT/UPDATE, which still carry a redundant non-account_links permissive policy alongside the family one (no access-control risk, just policy-count noise) — see `claude/database.md` "2026-08-02: Phase 6" entry.
 - [ ] `no-console` lint active and passing; dead route/composables gone; no server-utils imports from client code
 - [ ] All three god-pages under the 800-line max with behavior intact
 - [ ] Full gate passes; e2e smoke on schools/tasks/dashboard/family flows green

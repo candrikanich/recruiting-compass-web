@@ -172,10 +172,13 @@ test.describe("Schools Filtering - User Story 3.3", () => {
     const filteredCount = await schoolCards.count();
     expect(filteredCount).toBeLessThanOrEqual(initialCount);
 
-    // Chip should have a remove button with aria-label matching the state value
+    // Chip should have a remove button with aria-label matching the state value.
+    // Filter-chip re-render can lag the select's change event under load —
+    // give it a generous timeout rather than the 5s default (debounced-search
+    // pattern: race conditions here are timing, not logic, failures).
     await expect(
       page.locator(`button[aria-label="Remove ${stateValue} filter"]`),
-    ).toBeVisible();
+    ).toBeVisible({ timeout: 15000 });
   });
 
   test("should show states with schools in the State dropdown", async ({

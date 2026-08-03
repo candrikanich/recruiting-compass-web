@@ -180,10 +180,16 @@ test.describe("/settings/profile — Profile Settings", () => {
     // first <input> is the hidden avatar file picker (display:none), so
     // .first() resolves to it and toBeVisible never satisfies. Filter to
     // :visible so the wait latches onto a real, paint-visible form control.
+    //
+    // domcontentloaded (beforeEach) fires before Vue hydration completes;
+    // under parallel/cross-browser load, hydration can lag past that point
+    // long enough to flake the visibility check below. Wait for the network
+    // to go quiet first so the assertion isn't racing hydration itself.
+    await page.waitForLoadState("networkidle").catch(() => null);
     const inputs = page.locator(
       "input:visible, textarea:visible, select:visible",
     );
-    await expect(inputs.first()).toBeVisible({ timeout: 10000 });
+    await expect(inputs.first()).toBeVisible({ timeout: 15000 });
     expect(await inputs.count()).toBeGreaterThan(0);
   });
 });
