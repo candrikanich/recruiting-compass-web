@@ -77,7 +77,11 @@ export const useSupabase = () => {
         // Clear invalid session tokens to prevent refresh errors
         if (event === "TOKEN_REFRESHED" && !session) {
           logger.warn("Token refresh failed, clearing session");
-          void supabaseClient?.auth.signOut();
+          // scope: "local" only clears this browser's session. Default
+          // (global) scope revokes the refresh token server-side for every
+          // session on the account — one tab/device's failed refresh would
+          // otherwise sign the user out everywhere else too.
+          void supabaseClient?.auth.signOut({ scope: "local" });
         }
       });
     }

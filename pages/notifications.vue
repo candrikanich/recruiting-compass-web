@@ -80,6 +80,8 @@
         <div
           v-for="notification in filteredNotifications"
           :key="notification.id"
+          data-testid="notification-card"
+          :data-read="!!notification.read_at"
           :class="[
             'bg-white rounded-lg shadow-sm p-4 hover:shadow-lg transition cursor-pointer border-l-4 flex items-start justify-between',
             notification.read_at

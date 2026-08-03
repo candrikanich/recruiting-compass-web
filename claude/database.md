@@ -24,7 +24,9 @@
 
 **Entities:** schools, coaches, interactions
 
-## RLS: account_links-era policies still load-bearing (product decision 2026-07-28)
+## RLS: account_links-era policies — RESOLVED 2026-08-02 (see `planning/rls-family-consolidation-plan.md` Phases 1-5)
+
+All three deferrals below are closed as of the 2026-08-02 Phase 5 entry further down this file: `family_units`/`family_members` is now the sole permissive policy per verb on every table listed, exactly one policy per verb per table (audit exit criterion met). Kept for historical context — do not treat as current state.
 
 Phase 10a (`supabase/migrations/20260728000000_rls_account_links_consolidation_phase10a.sql`) consolidated `family_units`/`family_members` as the sole RLS model only where proven safe: `schools` SELECT/INSERT/UPDATE, `users` SELECT, `interactions` UPDATE/DELETE, `events` SELECT/UPDATE/DELETE. Everywhere else, legacy `account_links`-era policies remain the only thing preventing an access hole and must **not** be dropped without first doing the listed prep work:
 
@@ -43,7 +45,38 @@ All three bullets above now have their prep work done — applied to the live DB
 - App code (develop `7054bf0b`) stamps `family_unit_id` on every client write path; fit-score endpoint accepts family membership.
 - Versions recorded twice in `schema_migrations`: MCP apply timestamps (`20260801210413`/`20260801210433`) and repo filenames (`20260805000000`/`20260808000000`) so `db push` won't re-apply.
 - Evidence: `tests/integration/rls/rls-family-deferrals.integration.spec.ts` (18 live assertions, RED→GREEN across the apply); full RLS suite 39/39; full E2E passed post-apply.
-- Remaining: soak, then Phase 4 (interactions cutover + schools DELETE + repo-wide UPDATE `WITH CHECK` hardening) and Phase 5 (Deferral A legacy drops) per the plan. Note: USING-only UPDATE policies DO apply USING as WITH CHECK on the post-update row; residual row-move exposure is via legacy permissive OR and closes with the drops.
+- Remaining (as of 2026-08-01 entry): Phase 5 (Deferral A legacy drops) — DONE, see 2026-08-02 entry below.
+
+### 2026-08-02: Phase 4 applied live (interactions cutover + schools DELETE)
+
+- `20260812000000_cutover_interactions_schools_delete.sql` — recreated all 7 family UPDATE policies (schools, coaches, documents, events, performance_metrics, social_media_posts, recommendation_letters) with explicit `WITH CHECK`; re-ran interactions/schools backfills; dropped legacy `get_linked_user_ids()`-based interactions SELECT/INSERT policies and legacy schools DELETE policies (`account_links`-based + plain-ownership). Chris ruling: no soak period before this phase — pre-launch, no live users yet.
+- Post-apply: 0 NULL `family_unit_id` on interactions/schools; `interactions` SELECT/INSERT and `schools` DELETE now single family-model policy each.
+- `tests/integration/rls/rls-family-deferrals.integration.spec.ts` Phase 4 block: 23/23 GREEN live (18 Phase 1/3 + 5 new), including proof that INSERT...RETURNING on interactions with no explicit `family_unit_id` is satisfied by the Phase 1 trigger-derived value against the SELECT policy.
+- **Deferral B (interactions) now resolved.**
+
+### 2026-08-02: Phase 5 applied live (Deferral A legacy drops — audit exit criterion met)
+
+- `20260815000000_cutover_deferral_a_drop_legacy.sql` — dropped all 43 remaining legacy (`get_linked_user_ids()`, plain-ownership, school/coach-join) policies across coaches (17), documents (6), performance_metrics (6), recommendation_letters (5), social_media_posts (9, including the coach-join `social_media_posts_select_family` SELECT). Family-model policies are now the sole permissive policy per verb per table.
+- Live reconciliation (mandatory per plan) matched baseline.sql exactly — no drift.
+- Post-apply: 0 NULL `family_unit_id` on all 5 tables; exit-criterion audit query confirms exactly 1 permissive policy per verb per table across all 5 (20/20 rows, n=1).
+- New regression coverage (`rls-family-deferrals.integration.spec.ts` Phase 5 block): a user linked only via accepted `account_links` (no `family_members` row) — the exact shape the dropped legacy policies used to honor — now denied SELECT/DELETE on all 5 tables. RED confirmed pre-apply (legacy access still worked), GREEN post-apply. Full spec 25/25 live.
+- **Deferral A now resolved. All three original deferrals (A, B, C) closed — `planning/rls-family-consolidation-plan.md` Phases 1-5 complete.** Phase 6 (audit + docs, no schema change) is the only remaining plan item.
+
+### 2026-08-02: Phase 6 — audit + docs (plan complete, no schema change)
+
+Re-ran the exit-criterion query against the full family-model table set (`coaches`, `documents`, `events`, `interactions`, `offers`, `performance_metrics`, `player_profiles`, `recommendation_letters`, `schools`, `social_media_posts`), not just this plan's 5 Deferral-A tables:
+
+- **This plan's scope (schools DELETE, interactions all verbs, coaches/documents/performance_metrics/recommendation_letters/social_media_posts all verbs) is fully consolidated** — exactly 1 permissive policy per verb, confirmed.
+- **Discovered, out of this plan's scope:** `schools` (INSERT ×2, SELECT ×2) and `events` (INSERT/SELECT/UPDATE ×2 each) still carry a redundant *non-account_links* permissive policy alongside the family-model one (e.g. `schools`: "Linked users can create schools" — plain `user_id = auth.uid()`, not account_links-based despite the name — coexists with "Users can create schools in their families"; `events`: "Users can view/update/insert their own events" coexists with the family-model equivalents). Not a security hole — the extra policy is same-or-narrower than the family one, both PERMISSIVE — but it means `plans/audit-remediation.md` Phase 10's "exactly one permissive policy set per verb per table" criterion is **not yet fully met repo-wide**. Left as-is: consolidating these was never part of Deferral A/B/C and touching them wasn't authorized in this session.
+- `offers` and `player_profiles` are already single-policy-per-verb (offers via family model; player_profiles via its own `player_profiles_select_own`/`_public` split, a different and intentional model, not family_unit_id-based).
+
+**Deferred tickets (not filed in an external tracker — no issue tracker wired to this repo; recorded here per existing convention):**
+1. **`athlete_task` family migration** — no `family_unit_id` column on `task`/`athlete_task`; still on `get_linked_user_ids()`-only access. Same shape of work as this plan, not started.
+2. **`family_members` UPDATE/DELETE policies** — missing entirely today (only SELECT/INSERT exist). Out of scope here.
+3. **`family_unit_id` NOT NULL** — deliberately still nullable everywhere (trigger's unambiguous-user fallback can legitimately leave it NULL for multi-family owners). Revisit once/if the ambiguous-owner residue (plan "Unresolved questions" 1-2) is triaged to zero.
+4. **`schools`/`events` redundant non-account_links permissive policies** (discovered above) — low priority, no access-control risk, just policy-count noise against the audit-remediation Phase 10 criterion.
+
+Plan file: `planning/rls-family-consolidation-plan.md` (already committed there, satisfying "copy plan to planning/" convention). Phases 1-6 of this plan are now complete.
 
 ### Phase 10a prod pre-flight: repaired + PASSING as of 2026-07-30; migration stack still pending on prod
 

@@ -114,10 +114,10 @@ test.describe("Notifications Page", () => {
     await page.goto("/notifications");
     await page.waitForLoadState("domcontentloaded");
     // Wait for the async fetch to render either cards or the empty state —
-    // tests that gate on `.border-l-4` count would otherwise see 0 and skip.
+    // tests that gate on notification-card count would otherwise see 0 and skip.
     await Promise.race([
       page
-        .locator(".border-l-4")
+        .locator('[data-testid="notification-card"]')
         .first()
         .waitFor({ state: "visible", timeout: 8000 })
         .catch(() => null),
@@ -170,7 +170,7 @@ test.describe("Notifications Page", () => {
     page,
   }) => {
     // Race: wait for first notification card or empty-state copy to appear.
-    const notifications = page.locator(".border-l-4").first();
+    const notifications = page.locator('[data-testid="notification-card"]').first();
     const emptyState = page.locator("text=You're all caught up!");
     await Promise.race([
       notifications
@@ -181,7 +181,7 @@ test.describe("Notifications Page", () => {
         .catch(() => null),
     ]);
 
-    const hasNotifications = (await page.locator(".border-l-4").count()) > 0;
+    const hasNotifications = (await page.locator('[data-testid="notification-card"]').count()) > 0;
     const hasEmptyState = await emptyState.isVisible().catch(() => false);
 
     expect(hasNotifications || hasEmptyState).toBe(true);
@@ -189,7 +189,7 @@ test.describe("Notifications Page", () => {
 
   test("empty state shows correct copy", async ({ page }) => {
     const isEmpty =
-      (await page.locator(".border-l-4").count()) === 0 &&
+      (await page.locator('[data-testid="notification-card"]').count()) === 0 &&
       (await page
         .locator("text=You're all caught up!")
         .isVisible()
@@ -204,7 +204,7 @@ test.describe("Notifications Page", () => {
   // ── Search ──────────────────────────────────────────────────────────────────
 
   test("search filters notification list", async ({ page }) => {
-    const hasNotifications = (await page.locator(".border-l-4").count()) > 0;
+    const hasNotifications = (await page.locator('[data-testid="notification-card"]').count()) > 0;
     if (!hasNotifications) {
       test.skip(true, "no seeded notifications present for this run; awaiting seed infrastructure project — see CLAUDE.local.md Action Required");
       return;
@@ -214,7 +214,7 @@ test.describe("Notifications Page", () => {
     // Type a search term that won't match anything
     await search.fill("zzz_no_match_xyz");
 
-    const remaining = await page.locator(".border-l-4").count();
+    const remaining = await page.locator('[data-testid="notification-card"]').count();
     const emptyState = await page
       .locator("text=No notifications")
       .isVisible()
@@ -226,7 +226,7 @@ test.describe("Notifications Page", () => {
     // Clear search — results should restore
     await search.fill("");
 
-    await expect(page.locator(".border-l-4").first()).toBeVisible();
+    await expect(page.locator('[data-testid="notification-card"]').first()).toBeVisible();
   });
 
   // ── Type filter ─────────────────────────────────────────────────────────────
@@ -245,13 +245,13 @@ test.describe("Notifications Page", () => {
   });
 
   test("switching back to All filter restores full list", async ({ page }) => {
-    const hasNotifications = (await page.locator(".border-l-4").count()) > 0;
+    const hasNotifications = (await page.locator('[data-testid="notification-card"]').count()) > 0;
     if (!hasNotifications) {
       test.skip(true, "no seeded notifications present for this run; awaiting seed infrastructure project — see CLAUDE.local.md Action Required");
       return;
     }
 
-    const initialCount = await page.locator(".border-l-4").count();
+    const initialCount = await page.locator('[data-testid="notification-card"]').count();
 
     // Apply a filter unlikely to match all notifications
     await page.locator('button:has-text("Offers")').first().click();
@@ -263,7 +263,7 @@ test.describe("Notifications Page", () => {
       .first()
       .click();
 
-    const restoredCount = await page.locator(".border-l-4").count();
+    const restoredCount = await page.locator('[data-testid="notification-card"]').count();
     expect(restoredCount).toBe(initialCount);
   });
 
@@ -272,7 +272,7 @@ test.describe("Notifications Page", () => {
   test("each notification card has title, message, date and delete button", async ({
     page,
   }) => {
-    const cards = page.locator(".border-l-4");
+    const cards = page.locator('[data-testid="notification-card"]');
     const count = await cards.count();
     if (count === 0) {
       test.skip(true, "no seeded notifications present for this run; awaiting seed infrastructure project — see CLAUDE.local.md Action Required");
@@ -290,7 +290,7 @@ test.describe("Notifications Page", () => {
   test("unread notifications have blue left border and blue-50 background", async ({
     page,
   }) => {
-    const unread = page.locator(".border-l-4.border-blue-500");
+    const unread = page.locator('[data-testid="notification-card"][data-read="false"]');
     const count = await unread.count();
     if (count === 0) {
       test.skip(true, "no seeded notifications present for this run; awaiting seed infrastructure project — see CLAUDE.local.md Action Required");
@@ -301,7 +301,7 @@ test.describe("Notifications Page", () => {
   });
 
   test("read notifications have gray left border", async ({ page }) => {
-    const read = page.locator(".border-l-4.border-gray-300");
+    const read = page.locator('[data-testid="notification-card"][data-read="true"]');
     const count = await read.count();
     if (count === 0) {
       test.skip(true, "no seeded notifications present for this run; awaiting seed infrastructure project — see CLAUDE.local.md Action Required");
@@ -313,7 +313,7 @@ test.describe("Notifications Page", () => {
   // ── Mark as read ────────────────────────────────────────────────────────────
 
   test("clicking a notification marks it as read", async ({ page }) => {
-    const unread = page.locator(".border-l-4.border-blue-500");
+    const unread = page.locator('[data-testid="notification-card"][data-read="false"]');
     const hasUnread = (await unread.count()) > 0;
     if (!hasUnread) {
       test.skip(true, "no seeded notifications present for this run; awaiting seed infrastructure project — see CLAUDE.local.md Action Required");
@@ -324,7 +324,7 @@ test.describe("Notifications Page", () => {
     await unread.first().click();
 
     const unreadCountAfter = await page
-      .locator(".border-l-4.border-blue-500")
+      .locator('[data-testid="notification-card"][data-read="false"]')
       .count();
     expect(unreadCountAfter).toBeLessThan(unreadCountBefore);
   });
@@ -333,7 +333,7 @@ test.describe("Notifications Page", () => {
     page,
   }) => {
     const hasUnread =
-      (await page.locator(".border-l-4.border-blue-500").count()) > 0;
+      (await page.locator('[data-testid="notification-card"][data-read="false"]').count()) > 0;
     const markAllBtn = page.locator('button:has-text("Mark all as read")');
 
     if (hasUnread) {
@@ -355,7 +355,7 @@ test.describe("Notifications Page", () => {
 
     // No more unread cards
     const unreadRemaining = await page
-      .locator(".border-l-4.border-blue-500")
+      .locator('[data-testid="notification-card"][data-read="false"]')
       .count();
     expect(unreadRemaining).toBe(0);
 
@@ -366,7 +366,7 @@ test.describe("Notifications Page", () => {
   // ── Delete ──────────────────────────────────────────────────────────────────
 
   test("deleting a notification removes it from the list", async ({ page }) => {
-    const cards = page.locator(".border-l-4");
+    const cards = page.locator('[data-testid="notification-card"]');
     const initialCount = await cards.count();
     if (initialCount === 0) {
       test.skip(true, "no seeded notifications present for this run; awaiting seed infrastructure project — see CLAUDE.local.md Action Required");
@@ -384,7 +384,7 @@ test.describe("Notifications Page", () => {
 
     // The card with that title should be gone within a beat.
     await expect(
-      page.locator(`.border-l-4:has(h3:text-is("${firstTitle}"))`),
+      page.locator(`[data-testid="notification-card"]:has(h3:text-is("${firstTitle}"))`),
     ).toHaveCount(0, { timeout: 5000 });
   });
 
@@ -392,7 +392,7 @@ test.describe("Notifications Page", () => {
     page,
   }) => {
     const hasRead =
-      (await page.locator(".border-l-4.border-gray-300").count()) > 0;
+      (await page.locator('[data-testid="notification-card"][data-read="true"]').count()) > 0;
     const clearReadBtn = page.locator('button:has-text("Clear read")');
 
     if (hasRead) {
@@ -406,7 +406,7 @@ test.describe("Notifications Page", () => {
 
   test("notification with action_url navigates on click", async ({ page }) => {
     // Find a notification that might have an action_url by checking if click navigates
-    const cards = page.locator(".border-l-4");
+    const cards = page.locator('[data-testid="notification-card"]');
     const count = await cards.count();
     if (count === 0) {
       test.skip(true, "no seeded notifications present for this run; awaiting seed infrastructure project — see CLAUDE.local.md Action Required");
