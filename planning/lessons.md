@@ -203,3 +203,13 @@ Source: https://jakearchibald.com/2026/goldilocks-select-height/
 - **`@supports not (...)` gates bleeding-edge CSS**: guard `calc-size()` behind `@supports not (min-block-size: calc-size(fit-content, min(size, 1px)))` and ship a degraded fallback (drop min-size, cap at `fit-content` for short lists) — critical here since our targets aren't all Chrome. Prefer feature queries over UA sniffing.
 - **`position-try-fallbacks` + margin flipping**: anchor-positioned poppers reposition with `position-try-fallbacks: flip-block, flip-inline, flip-block flip-inline`; Chrome/Safari flip the margin with the box, Firefox does not — verify margin behavior per-browser when a popover flips above vs below its trigger.
 - **`max-block-size: stretch` needs a `100%` fallback**: `stretch` prevents viewport overflow on Chrome/Safari but is unsupported in Firefox — supply `max-block-size: 100%` as the fallback declaration before the `stretch` one.
+
+---
+
+## Structure a Log (Sentry) — 2026-08-04
+Source: https://blog.sentry.io/structure-a-log/
+
+- **Low-cardinality result field missing on our logs**: Sentry recommends every log carry a `succeeded`/`failed`/`retried`/`canceled` field for easy grouping/alerting. Our `logger.info/error` calls pass free-text messages + ad-hoc data objects (`server/api/tasks/index.get.ts:121` etc.) with no consistent outcome field — can't group-by-result in a log aggregator today. Gap, not yet fixed.
+- **`domain.action` event names vs free text**: Sentry's convention is stable low-cardinality names like `payment.capture` with dynamic values pushed into attributes. Our messages are English sentences ("Feedback submitted", "Failed to cascade delete interaction") — fine for human reading, worse for aggregation/alerting by event type since the same logical event has slightly different phrasing per callsite.
+- **What we already do right**: `sanitizeLogData`/`sanitizeData` (`server/utils/logger.ts:167`, `utils/logger.ts:19`) already flatten+redact by `SENSITIVE_FIELDS`, matching the article's "no raw request/response bodies, PII, or nested payment data" rule. `eslint.config.js:182` bans raw `console.*` outside the logger files, matching their "lint to enforce" recommendation — we already have the enforcement layer they suggest.
+- **No snake_case/dot-notation key convention enforced**: article wants `payment.failure.reason_code` style scoped snake_case keys; our data objects use plain camelCase (`{ feedbackType, userId }`) with no scoping convention. Low priority — matters more once we're querying logs in an aggregator, not just grepping.
