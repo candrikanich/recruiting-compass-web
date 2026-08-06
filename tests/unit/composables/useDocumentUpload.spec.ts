@@ -46,11 +46,7 @@ vi.mock("~/composables/useFamilyContext", () => ({
   })),
 }));
 
-function makeFile(
-  name: string,
-  type: string,
-  sizeBytes: number,
-): File {
+function makeFile(name: string, type: string, sizeBytes: number): File {
   const file = new File([new Uint8Array(sizeBytes)], name, { type });
   return file;
 }
@@ -187,7 +183,10 @@ describe("useDocumentUpload.uploadDocument", () => {
   });
 
   it("allows uploading document metadata without a file (file_url already set)", async () => {
-    const insertedRow = { ...baseDocData, file_url: "https://existing.example.com/x.pdf" };
+    const insertedRow = {
+      ...baseDocData,
+      file_url: "https://existing.example.com/x.pdf",
+    };
     mockSupabase.from.mockReturnValue({
       insert: vi.fn().mockReturnValue({
         select: vi.fn().mockReturnValue({
@@ -211,7 +210,10 @@ describe("useDocumentUpload.uploadDocument", () => {
       select: vi.fn().mockReturnValue({
         single: vi
           .fn()
-          .mockResolvedValue({ data: { ...baseDocData, id: "doc-1" }, error: null }),
+          .mockResolvedValue({
+            data: { ...baseDocData, id: "doc-1" },
+            error: null,
+          }),
       }),
     });
     mockSupabase.from.mockReturnValue({ insert: insertSpy });
@@ -267,7 +269,10 @@ describe("useDocumentUpload.uploadNewVersion", () => {
       select: vi.fn().mockReturnValue({
         single: vi
           .fn()
-          .mockResolvedValue({ data: { ...currentDoc, version: 3 }, error: null }),
+          .mockResolvedValue({
+            data: { ...currentDoc, version: 3 },
+            error: null,
+          }),
       }),
     });
     mockSupabase.from.mockReturnValue({ insert: insertSpy });
@@ -304,7 +309,10 @@ describe("useDocumentUpload.uploadNewVersion", () => {
       select: vi.fn().mockReturnValue({
         single: vi
           .fn()
-          .mockResolvedValue({ data: { ...currentDoc, version: 3 }, error: null }),
+          .mockResolvedValue({
+            data: { ...currentDoc, version: 3 },
+            error: null,
+          }),
       }),
     });
     mockSupabase.from.mockReturnValue({ insert: insertSpy });
@@ -323,9 +331,9 @@ describe("useDocumentUpload.uploadNewVersion", () => {
     const { uploadNewVersion } = useDocumentUpload();
     const file = makeFile("resume.pdf", "application/pdf", 1024);
 
-    await expect(
-      uploadNewVersion("doc-1", file, currentDoc),
-    ).rejects.toThrow("Family context not loaded");
+    await expect(uploadNewVersion("doc-1", file, currentDoc)).rejects.toThrow(
+      "Family context not loaded",
+    );
     expect(mockStorageUpload).not.toHaveBeenCalled();
   });
 });

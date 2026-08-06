@@ -210,7 +210,6 @@ describe("onboarding middleware", () => {
       const isOnboarding = middleware.isOnboardingRoute("/dashboard");
       expect(isOnboarding).toBe(false);
     });
-
   });
 
   describe("Error Handling", () => {
@@ -288,5 +287,4 @@ describe("onboarding middleware", () => {
       expect(middleware.isOnboardingRoute("/ONBOARDING")).toBe(false);
     });
   });
-
 });

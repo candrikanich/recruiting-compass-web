@@ -362,9 +362,9 @@ test.describe("Family Invite Flow", () => {
       await expect(page.locator('[data-testid="accept-error"]')).toBeVisible({
         timeout: 10000,
       });
-      await expect(
-        page.locator('[data-testid="accept-error"]'),
-      ).toContainText(/different email|sign in/i);
+      await expect(page.locator('[data-testid="accept-error"]')).toContainText(
+        /different email|sign in/i,
+      );
       // No navigation away from /join — acceptance was rejected.
       await expect(page).toHaveURL(/\/join/);
 

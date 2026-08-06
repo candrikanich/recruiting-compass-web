@@ -136,7 +136,9 @@ async function createUser(
       email_confirm: true,
     });
   if (authError || !authUser.user) {
-    throw new Error(`Failed to create auth user (${label}): ${authError?.message}`);
+    throw new Error(
+      `Failed to create auth user (${label}): ${authError?.message}`,
+    );
   }
   const { error: userInsertError } = await admin.from("users").insert({
     id: authUser.user.id,
@@ -260,9 +262,15 @@ describe.skipIf(!hasLiveSupabase)(
 
     afterAll(async () => {
       if (!hasLiveSupabase) return;
-      await admin.from("athlete_task").delete().eq("athlete_id", familyAAthleteId);
+      await admin
+        .from("athlete_task")
+        .delete()
+        .eq("athlete_id", familyAAthleteId);
       for (const familyId of createdFamilyIds) {
-        await admin.from("family_members").delete().eq("family_unit_id", familyId);
+        await admin
+          .from("family_members")
+          .delete()
+          .eq("family_unit_id", familyId);
         await admin.from("family_units").delete().eq("id", familyId);
       }
       for (const userId of createdUserIds) {

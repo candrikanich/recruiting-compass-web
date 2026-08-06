@@ -111,8 +111,7 @@ export default defineEventHandler(async (event) => {
               act_score: details.act_score as number | undefined,
               graduation_year: details.graduation_year as number | undefined,
               high_school: (details.school_name ?? details.high_school) as
-                | string
-                | undefined,
+                string | undefined,
               core_courses: details.core_courses as string[] | undefined,
             }
           : null,

@@ -117,7 +117,10 @@ test.describe("User Story 9.1 - Athlete Views Their Task List", () => {
     const initialCount = await taskItems.count();
 
     if (initialCount === 0) {
-      test.skip(true, "no seeded athlete tasks (or no task in the required checked/unchecked state) present for this run; awaiting seed infrastructure project — see CLAUDE.local.md Action Required");
+      test.skip(
+        true,
+        "no seeded athlete tasks (or no task in the required checked/unchecked state) present for this run; awaiting seed infrastructure project — see CLAUDE.local.md Action Required",
+      );
     }
 
     // Find first unchecked task. Pin to its data-testid rather than reusing
@@ -132,7 +135,10 @@ test.describe("User Story 9.1 - Athlete Views Their Task List", () => {
       .getAttribute("data-testid");
 
     if (!uncheckedCheckboxTestId) {
-      test.skip(true, "no seeded athlete tasks (or no task in the required checked/unchecked state) present for this run; awaiting seed infrastructure project — see CLAUDE.local.md Action Required");
+      test.skip(
+        true,
+        "no seeded athlete tasks (or no task in the required checked/unchecked state) present for this run; awaiting seed infrastructure project — see CLAUDE.local.md Action Required",
+      );
     }
     const uncheckedCheckbox = page.locator(
       `[data-testid="${uncheckedCheckboxTestId}"]`,
@@ -174,7 +180,10 @@ test.describe("User Story 9.1 - Athlete Views Their Task List", () => {
     const initialCount = await taskItems.count();
 
     if (initialCount === 0) {
-      test.skip(true, "no seeded athlete tasks (or no task in the required checked/unchecked state) present for this run; awaiting seed infrastructure project — see CLAUDE.local.md Action Required");
+      test.skip(
+        true,
+        "no seeded athlete tasks (or no task in the required checked/unchecked state) present for this run; awaiting seed infrastructure project — see CLAUDE.local.md Action Required",
+      );
     }
 
     // Find first checked checkbox. Pin to its data-testid rather than
@@ -187,7 +196,10 @@ test.describe("User Story 9.1 - Athlete Views Their Task List", () => {
       .getAttribute("data-testid");
 
     if (!checkedCheckboxTestId) {
-      test.skip(true, "no seeded athlete tasks (or no task in the required checked/unchecked state) present for this run; awaiting seed infrastructure project — see CLAUDE.local.md Action Required");
+      test.skip(
+        true,
+        "no seeded athlete tasks (or no task in the required checked/unchecked state) present for this run; awaiting seed infrastructure project — see CLAUDE.local.md Action Required",
+      );
     }
     const checkedCheckbox = page.locator(
       `[data-testid="${checkedCheckboxTestId}"]`,
@@ -223,7 +235,10 @@ test.describe("User Story 9.1 - Athlete Views Their Task List", () => {
     const tasksExist = await firstTask.count();
 
     if (tasksExist === 0) {
-      test.skip(true, "no seeded athlete tasks (or no task in the required checked/unchecked state) present for this run; awaiting seed infrastructure project — see CLAUDE.local.md Action Required");
+      test.skip(
+        true,
+        "no seeded athlete tasks (or no task in the required checked/unchecked state) present for this run; awaiting seed infrastructure project — see CLAUDE.local.md Action Required",
+      );
     }
 
     // Click on task to expand details
@@ -321,9 +336,7 @@ test.describe("User Story 9.1 - Athlete Views Their Task List", () => {
         .catch(() => null),
     ]);
 
-    const hasAnyTasks = await page
-      .locator('[data-testid="task-item"]')
-      .count();
+    const hasAnyTasks = await page.locator('[data-testid="task-item"]').count();
     const hasEmptyState = await emptyStateMessage.count();
 
     if (hasAnyTasks === 0) {
@@ -339,7 +352,10 @@ test.describe("User Story 9.1 - Athlete Views Their Task List", () => {
     const hasAnyTasks = await taskItems.count();
 
     if (hasAnyTasks === 0) {
-      test.skip(true, "no seeded athlete tasks (or no task in the required checked/unchecked state) present for this run; awaiting seed infrastructure project — see CLAUDE.local.md Action Required");
+      test.skip(
+        true,
+        "no seeded athlete tasks (or no task in the required checked/unchecked state) present for this run; awaiting seed infrastructure project — see CLAUDE.local.md Action Required",
+      );
     }
 
     const firstCheckbox = page.locator('input[type="checkbox"]').first();
@@ -376,7 +392,10 @@ test.describe("User Story 9.1 - Athlete Views Their Task List", () => {
     const tasksExist = await firstTask.count();
 
     if (tasksExist === 0) {
-      test.skip(true, "no seeded athlete tasks (or no task in the required checked/unchecked state) present for this run; awaiting seed infrastructure project — see CLAUDE.local.md Action Required");
+      test.skip(
+        true,
+        "no seeded athlete tasks (or no task in the required checked/unchecked state) present for this run; awaiting seed infrastructure project — see CLAUDE.local.md Action Required",
+      );
     }
 
     // Find clickable element (task title or info area)
@@ -384,7 +403,10 @@ test.describe("User Story 9.1 - Athlete Views Their Task List", () => {
     const hasButton = await taskInfo.count();
 
     if (hasButton === 0) {
-      test.skip(true, "no seeded athlete tasks (or no task in the required checked/unchecked state) present for this run; awaiting seed infrastructure project — see CLAUDE.local.md Action Required");
+      test.skip(
+        true,
+        "no seeded athlete tasks (or no task in the required checked/unchecked state) present for this run; awaiting seed infrastructure project — see CLAUDE.local.md Action Required",
+      );
     }
 
     // Get initial height

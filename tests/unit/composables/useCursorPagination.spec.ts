@@ -13,7 +13,9 @@ vi.mock("~/utils/logger", () => ({
 // A minimal chainable Supabase query-builder mock: every chain method
 // returns `this`, and the builder itself is thenable so `await query`
 // resolves the queued response.
-function makeQueryBuilder(responses: Array<{ data: unknown[] | null; error: unknown }>) {
+function makeQueryBuilder(
+  responses: Array<{ data: unknown[] | null; error: unknown }>,
+) {
   let callIndex = -1;
   const builder: Record<string, unknown> = {
     select: vi.fn(() => builder),
@@ -22,9 +24,9 @@ function makeQueryBuilder(responses: Array<{ data: unknown[] | null; error: unkn
     order: vi.fn(() => builder),
     then: (resolve: (v: unknown) => unknown) => {
       callIndex += 1;
-      return Promise.resolve(responses[callIndex] ?? { data: [], error: null }).then(
-        resolve,
-      );
+      return Promise.resolve(
+        responses[callIndex] ?? { data: [], error: null },
+      ).then(resolve);
     },
   };
   return builder;

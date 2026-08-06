@@ -113,9 +113,9 @@ describe.each(TIMEZONES)("localDate utilities (TZ=%s)", (tz) => {
     });
 
     it("returns negative when the first date is earlier", () => {
-      expect(
-        compareDateOnlyStrings("2027-03-01", "2027-03-02"),
-      ).toBeLessThan(0);
+      expect(compareDateOnlyStrings("2027-03-01", "2027-03-02")).toBeLessThan(
+        0,
+      );
     });
 
     it("returns positive when the first date is later", () => {

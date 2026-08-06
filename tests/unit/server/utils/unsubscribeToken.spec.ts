@@ -37,9 +37,9 @@ describe("unsubscribeToken", () => {
 
     it("verifies regardless of email casing/whitespace (normalized)", () => {
       const token = generateUnsubscribeToken("user@example.com", SECRET);
-      expect(
-        verifyUnsubscribeToken("  USER@Example.COM ", token, SECRET),
-      ).toBe(true);
+      expect(verifyUnsubscribeToken("  USER@Example.COM ", token, SECRET)).toBe(
+        true,
+      );
     });
 
     it("returns false when secret is empty", () => {

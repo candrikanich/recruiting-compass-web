@@ -92,7 +92,11 @@ describe("GET /api/cron/daily-suggestions", () => {
   });
 
   it("processes every active athlete and reports the totals", async () => {
-    mockAthletes([{ id: "athlete-1" }, { id: "athlete-2" }, { id: "athlete-3" }]);
+    mockAthletes([
+      { id: "athlete-1" },
+      { id: "athlete-2" },
+      { id: "athlete-3" },
+    ]);
     const handler = await loadHandler();
 
     const result = (await handler(
@@ -111,7 +115,11 @@ describe("GET /api/cron/daily-suggestions", () => {
   });
 
   it("isolates a single athlete's failure — the batch continues and reports it as failed, not aborted", async () => {
-    mockAthletes([{ id: "athlete-1" }, { id: "athlete-2" }, { id: "athlete-3" }]);
+    mockAthletes([
+      { id: "athlete-1" },
+      { id: "athlete-2" },
+      { id: "athlete-3" },
+    ]);
     mockTriggerSuggestionUpdate.mockImplementation(
       async (_supabase: unknown, athleteId: string) => {
         if (athleteId === "athlete-2") {
@@ -133,7 +141,9 @@ describe("GET /api/cron/daily-suggestions", () => {
     expect(result.total).toBe(3);
     expect(result.updated).toBe(2);
     expect(result.failed).toBe(1);
-    expect(result.errors).toEqual([{ athleteId: "athlete-2", error: "Processing failed" }]);
+    expect(result.errors).toEqual([
+      { athleteId: "athlete-2", error: "Processing failed" },
+    ]);
     // All 3 athletes were attempted despite athlete-2's failure.
     expect(mockTriggerSuggestionUpdate).toHaveBeenCalledTimes(3);
   });

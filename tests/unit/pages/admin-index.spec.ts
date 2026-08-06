@@ -182,7 +182,9 @@ describe("Admin Dashboard (index.vue)", () => {
   describe("delete user error handling", () => {
     it("shows a generic toast (not raw fetch/Postgres error text) when delete fails", async () => {
       fetchAuthMock.mockRejectedValue(
-        new Error('duplicate key value violates unique constraint "users_pkey"'),
+        new Error(
+          'duplicate key value violates unique constraint "users_pkey"',
+        ),
       );
 
       const wrapper = mount(AdminIndex, {

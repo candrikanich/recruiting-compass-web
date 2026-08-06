@@ -73,30 +73,26 @@ describe("ncaaDatabase", () => {
   });
 
   it("getSchoolsByConference filters by exact conference name", async () => {
-    const { getSchoolsByConference } =
-      await import("~/utils/ncaaDatabase");
+    const { getSchoolsByConference } = await import("~/utils/ncaaDatabase");
     const pac12 = getSchoolsByConference("Pac-12");
     expect(pac12).toHaveLength(1);
     expect(pac12[0].name).toBe("Stanford");
   });
 
   it("getSchoolsByConference is case-insensitive", async () => {
-    const { getSchoolsByConference } =
-      await import("~/utils/ncaaDatabase");
+    const { getSchoolsByConference } = await import("~/utils/ncaaDatabase");
     const pac12 = getSchoolsByConference("pac-12");
     expect(pac12).toHaveLength(1);
     expect(pac12[0].name).toBe("Stanford");
   });
 
   it("getSchoolsByConference returns empty array for unknown conference", async () => {
-    const { getSchoolsByConference } =
-      await import("~/utils/ncaaDatabase");
+    const { getSchoolsByConference } = await import("~/utils/ncaaDatabase");
     expect(getSchoolsByConference("UnknownConf")).toEqual([]);
   });
 
   it("getSchoolsByConference excludes schools without a conference", async () => {
-    const { getSchoolsByConference } =
-      await import("~/utils/ncaaDatabase");
+    const { getSchoolsByConference } = await import("~/utils/ncaaDatabase");
     // Williams has no conference field
     const results = getSchoolsByConference("");
     expect(results).toEqual([]);

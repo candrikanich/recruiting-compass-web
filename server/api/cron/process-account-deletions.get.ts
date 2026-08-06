@@ -56,8 +56,7 @@ export interface PendingUser {
 }
 
 export type DeletionOutcome =
-  | { status: "deleted" }
-  | { status: "failed"; step: string; reason: string };
+  { status: "deleted" } | { status: "failed"; step: string; reason: string };
 
 /**
  * Delete all rows in `table` matching `column = userId`.

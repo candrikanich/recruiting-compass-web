@@ -94,7 +94,9 @@
           >
             <div>
               <p class="text-brand-slate-600 text-sm mb-1">Version</p>
-              <p class="font-semibold text-brand-slate-900">{{ document.version }}</p>
+              <p class="font-semibold text-brand-slate-900">
+                {{ document.version }}
+              </p>
             </div>
             <div>
               <p class="text-brand-slate-600 text-sm mb-1">School</p>
@@ -157,7 +159,9 @@
 
         <!-- Version History -->
         <div class="bg-white rounded-lg shadow-sm p-6">
-          <h2 class="text-xl font-bold text-brand-slate-900 mb-4">Version History</h2>
+          <h2 class="text-xl font-bold text-brand-slate-900 mb-4">
+            Version History
+          </h2>
 
           <div v-if="documentVersions.length > 0" class="space-y-2">
             <div
@@ -215,7 +219,9 @@
 
         <!-- Edit Form -->
         <div v-if="isEditing" class="bg-white rounded-lg shadow-sm p-6">
-          <h2 class="text-xl font-bold text-brand-slate-900 mb-6">Edit Document</h2>
+          <h2 class="text-xl font-bold text-brand-slate-900 mb-6">
+            Edit Document
+          </h2>
           <form @submit.prevent="saveDocument" class="space-y-6">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <!-- Title -->
@@ -306,7 +312,9 @@
         <div
           class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md mx-4 max-h-96 overflow-y-auto"
         >
-          <h3 class="text-lg font-bold text-brand-slate-900 mb-4">Share Document</h3>
+          <h3 class="text-lg font-bold text-brand-slate-900 mb-4">
+            Share Document
+          </h3>
 
           <!-- Currently Shared Schools -->
           <div
@@ -352,7 +360,9 @@
                   type="checkbox"
                   class="w-4 h-4 rounded-sm"
                 />
-                <span class="text-sm text-brand-slate-900">{{ school.name }}</span>
+                <span class="text-sm text-brand-slate-900">{{
+                  school.name
+                }}</span>
               </label>
             </div>
           </div>

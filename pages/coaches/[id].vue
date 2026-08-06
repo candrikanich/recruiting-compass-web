@@ -17,7 +17,7 @@
           to="/coaches"
           class="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
         >
-          <UIcon name="i-heroicons-arrow-left" class="w-4 h-4"  />
+          <UIcon name="i-heroicons-arrow-left" class="w-4 h-4" />
           Back to All Coaches
         </NuxtLink>
       </div>
@@ -112,7 +112,7 @@
                 aria-label="Close communication panel"
                 class="text-slate-400 hover:text-slate-600"
               >
-                <UIcon name="i-heroicons-x-mark" class="w-6 h-6"  />
+                <UIcon name="i-heroicons-x-mark" class="w-6 h-6" />
               </button>
             </div>
             <div class="p-6">

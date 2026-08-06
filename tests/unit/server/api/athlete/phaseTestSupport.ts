@@ -56,8 +56,8 @@ export function createMockSupabase(config: MockSupabaseConfig) {
   // Shared across every `.from("users")` call in a single test (production
   // code calls it once to read current_phase, and again to write on advance) —
   // spy state must survive across those separate builder instances.
-  const usersUpdate = vi.fn(
-    (_values: Record<string, unknown>) => usersBuilder(true),
+  const usersUpdate = vi.fn((_values: Record<string, unknown>) =>
+    usersBuilder(true),
   );
 
   function usersBuilder(isUpdate: boolean) {
@@ -66,7 +66,9 @@ export function createMockSupabase(config: MockSupabaseConfig) {
     builder.eq = vi.fn(() => builder);
     builder.update = usersUpdate;
     const terminal = async () =>
-      isUpdate ? (config.usersUpdate ?? { data: null, error: null }) : (config.user ?? okEmpty());
+      isUpdate
+        ? (config.usersUpdate ?? { data: null, error: null })
+        : (config.user ?? okEmpty());
     builder.single = vi.fn(() =>
       config.userMissing && !isUpdate
         ? Promise.resolve({

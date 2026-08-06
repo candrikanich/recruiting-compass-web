@@ -8,7 +8,7 @@
     >
       <div class="max-w-4xl mx-auto px-4 sm:px-6 py-6">
         <div class="flex items-center gap-3">
-          <UIcon name="i-heroicons-sparkles" class="w-8 h-8 text-slate-700"  />
+          <UIcon name="i-heroicons-sparkles" class="w-8 h-8 text-slate-700" />
           <h1 class="text-3xl font-bold text-slate-900">Activity History</h1>
         </div>
         <p class="text-slate-600 mt-2">
@@ -129,7 +129,10 @@
 
       <!-- Empty State -->
       <div v-else class="text-center py-12">
-        <UIcon name="i-heroicons-sparkles" class="w-12 h-12 text-slate-300 mx-auto mb-3"  />
+        <UIcon
+          name="i-heroicons-sparkles"
+          class="w-12 h-12 text-slate-300 mx-auto mb-3"
+        />
         <p class="text-slate-600 font-medium">No activities found</p>
         <p class="text-slate-400 text-sm mt-1">
           Try adjusting your filters or search query

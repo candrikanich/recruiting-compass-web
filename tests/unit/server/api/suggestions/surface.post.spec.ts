@@ -82,9 +82,7 @@ describe("POST /api/suggestions/surface", () => {
   });
 
   it("degrades to success:false (not a throw) when surfacing fails", async () => {
-    mockSurfacePendingSuggestions.mockRejectedValue(
-      new Error("db timeout"),
-    );
+    mockSurfacePendingSuggestions.mockRejectedValue(new Error("db timeout"));
     const handler = await loadHandler();
 
     const result = await handler(fakeEvent());

@@ -22,7 +22,9 @@ describe("types/models isNotificationRead", () => {
 
   it("returns true when read_at is set", () => {
     expect(
-      isNotificationRead(makeNotification({ read_at: new Date().toISOString() })),
+      isNotificationRead(
+        makeNotification({ read_at: new Date().toISOString() }),
+      ),
     ).toBe(true);
   });
 });

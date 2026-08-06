@@ -352,10 +352,7 @@ const confirmDeleteCoach = async () => {
   isDeleteDialogOpen.value = false;
   loading.value = true;
   try {
-    const { error } = await supabase
-      .from("coaches")
-      .delete()
-      .eq("id", coachId);
+    const { error } = await supabase.from("coaches").delete().eq("id", coachId);
     if (error) throw error;
     await navigateTo(`/schools/${schoolId}/coaches`);
   } catch (err) {

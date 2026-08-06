@@ -37,8 +37,7 @@ export default defineNitroPlugin((nitroApp) => {
 
       // Add user context if available
       const user = event.context.user as
-        | { id: string; email?: string }
-        | undefined;
+        { id: string; email?: string } | undefined;
       if (user) {
         scope.setUser({
           id: user.id,
@@ -70,8 +69,7 @@ export default defineNitroPlugin((nitroApp) => {
         });
 
         const user = event.context.user as
-          | { id: string; email?: string }
-          | undefined;
+          { id: string; email?: string } | undefined;
         if (user) {
           scope.setUser({
             id: user.id,

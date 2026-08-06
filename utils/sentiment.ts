@@ -4,11 +4,7 @@ import type { BadgeColor } from "~/components/DesignSystem/Badge.vue";
  * Sentiment types for interactions
  */
 export type Sentiment =
-  | "very_positive"
-  | "positive"
-  | "neutral"
-  | "negative"
-  | null;
+  "very_positive" | "positive" | "neutral" | "negative" | null;
 
 /**
  * Get badge color for a given sentiment value

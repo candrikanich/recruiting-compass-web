@@ -27,10 +27,7 @@ import { createClientLogger } from "~/utils/logger";
 import { useAuthFetch } from "~/composables/useAuthFetch";
 
 export type PreferenceCategory =
-  | "session"
-  | "filters"
-  | "display"
-  | (string & {});
+  "session" | "filters" | "display" | (string & {});
 
 interface UserPreferencesState {
   loading: boolean;

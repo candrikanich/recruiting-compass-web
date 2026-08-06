@@ -35,7 +35,7 @@ describe("pages/events/index.vue", () => {
       global: {
         components: { DesignSystemConfirmDialog },
         stubs: {
-          PageHeader: { template: "<div><slot name=\"actions\" /></div>" },
+          PageHeader: { template: '<div><slot name="actions" /></div>' },
           StatsTiles: true,
           NuxtLink: true,
           UIcon: true,

@@ -153,10 +153,7 @@ definePageMeta({
 });
 
 type NotificationType =
-  | "follow_up_reminder"
-  | "deadline_alert"
-  | "weekly_digest"
-  | "event";
+  "follow_up_reminder" | "deadline_alert" | "weekly_digest" | "event";
 
 const { $fetchAuth } = useAuthFetch();
 

@@ -151,11 +151,7 @@ describe("resolveTargetAthleteId", () => {
     mockMemberships([{ user_id: "parent-1", family_unit_id: "family-a" }]);
 
     await expect(
-      resolveTargetAthleteId(
-        fakeEvent(),
-        "parent-1",
-        "not-a-real-uuid-at-all",
-      ),
+      resolveTargetAthleteId(fakeEvent(), "parent-1", "not-a-real-uuid-at-all"),
     ).rejects.toMatchObject({ statusCode: 403 });
   });
 

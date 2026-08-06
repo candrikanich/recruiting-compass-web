@@ -60,8 +60,9 @@ vi.mock("h3", async (importOriginal) => {
   err.statusCode = config.statusCode;
   return err;
 };
-(globalThis as unknown as { useRuntimeConfig: () => unknown }).useRuntimeConfig =
-  () => ({ collegeScorecardApiKey: "test-api-key" });
+(
+  globalThis as unknown as { useRuntimeConfig: () => unknown }
+).useRuntimeConfig = () => ({ collegeScorecardApiKey: "test-api-key" });
 
 function fakeEvent(headers: Record<string, string> = {}): H3Event {
   return { node: { req: { headers }, res: {} } } as unknown as H3Event;

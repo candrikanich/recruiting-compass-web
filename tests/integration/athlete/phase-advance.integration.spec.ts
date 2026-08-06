@@ -233,9 +233,8 @@ describe.skipIf(!hasLiveSupabase)(
       });
       vi.mocked(createServerSupabaseClient).mockReturnValue(admin);
 
-      const phaseGetHandler = (
-        await import("~/server/api/athlete/phase.get")
-      ).default;
+      const phaseGetHandler = (await import("~/server/api/athlete/phase.get"))
+        .default;
 
       const before = await phaseGetHandler(fakeEvent());
       expect(before.phase).toBe("freshman");
@@ -258,9 +257,8 @@ describe.skipIf(!hasLiveSupabase)(
       const { requireAuth } = await import("~/server/utils/auth");
       const { createServerSupabaseClient } =
         await import("~/server/utils/supabase");
-      const phaseGetHandler = (
-        await import("~/server/api/athlete/phase.get")
-      ).default;
+      const phaseGetHandler = (await import("~/server/api/athlete/phase.get"))
+        .default;
 
       vi.mocked(requireAuth).mockResolvedValue({
         id: athleteId,
@@ -277,9 +275,7 @@ describe.skipIf(!hasLiveSupabase)(
       // Fresh session: a brand new client/connection, proving the write is
       // durable in Postgres and not an artifact of client-side caching.
       const freshSessionClient = adminClient();
-      vi.mocked(createServerSupabaseClient).mockReturnValue(
-        freshSessionClient,
-      );
+      vi.mocked(createServerSupabaseClient).mockReturnValue(freshSessionClient);
       const afterReload = await phaseGetHandler(fakeEvent());
       expect(afterReload.phase).toBe("sophomore");
     });

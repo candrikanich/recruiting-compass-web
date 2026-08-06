@@ -13,7 +13,10 @@ export function normalizeEmail(email: string): string {
   return email.trim().toLowerCase();
 }
 
-export function generateUnsubscribeToken(email: string, secret: string): string {
+export function generateUnsubscribeToken(
+  email: string,
+  secret: string,
+): string {
   return createHmac("sha256", secret)
     .update(`unsubscribe:${normalizeEmail(email)}`)
     .digest("hex");

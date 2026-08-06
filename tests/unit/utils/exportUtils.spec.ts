@@ -705,7 +705,9 @@ describe("exportUtils", () => {
         } as any,
       );
 
-      const canvas = { toDataURL: vi.fn().mockReturnValue("data:image/png;base64,x") };
+      const canvas = {
+        toDataURL: vi.fn().mockReturnValue("data:image/png;base64,x"),
+      };
       vi.mocked(await import("html2canvas")).default.mockResolvedValue(
         canvas as any,
       );

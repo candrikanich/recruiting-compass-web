@@ -186,7 +186,9 @@ test.describe("/settings/profile — Profile Settings", () => {
     // long enough to flake the visibility check below. Wait for the network
     // to go quiet first so the assertion isn't racing hydration itself.
     await page.waitForLoadState("networkidle").catch(() => null);
-    const inputs = page.locator("input:visible, textarea:visible, select:visible");
+    const inputs = page.locator(
+      "input:visible, textarea:visible, select:visible",
+    );
     await expect(inputs.first()).toBeVisible({ timeout: 15000 });
     expect(await inputs.count()).toBeGreaterThan(0);
   });

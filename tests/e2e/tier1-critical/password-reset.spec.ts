@@ -56,9 +56,7 @@ async function navigateWithRecoverySession(page: Page, email: string) {
   await page.waitForLoadState("domcontentloaded");
   // The form contains an aria-label="Create new password" on both the form
   // wrapper and the icon container, so wait for the actual <input> by id.
-  await page
-    .locator("#password")
-    .waitFor({ state: "visible", timeout: 10000 });
+  await page.locator("#password").waitFor({ state: "visible", timeout: 10000 });
 }
 
 test.describe("Password Reset Flow", () => {
@@ -204,7 +202,9 @@ test.describe("Password Reset Flow", () => {
       // already disabled with a countdown label, never the idle "Resend
       // reset link" state the original version of this test asserted on
       // (that was a wrong assumption, not a stale-quarantine seed issue).
-      const resendButton = page.getByRole("button", { name: /resend available in \d+ seconds/i });
+      const resendButton = page.getByRole("button", {
+        name: /resend available in \d+ seconds/i,
+      });
       await expect(resendButton).toBeVisible({ timeout: 15000 });
       await expect(resendButton).toBeDisabled();
     });
@@ -228,7 +228,9 @@ test.describe("Password Reset Flow", () => {
       // sampling the displayed count twice, rather than waiting the full
       // duration to expire (the original version waited only 10s for a 60s
       // cooldown, which could never have passed).
-      const resendButton = page.getByRole("button", { name: /resend available in \d+ seconds/i });
+      const resendButton = page.getByRole("button", {
+        name: /resend available in \d+ seconds/i,
+      });
       await expect(resendButton).toBeVisible({ timeout: 15000 });
       await expect(resendButton).toBeDisabled();
 
@@ -363,7 +365,9 @@ test.describe("Password Reset Flow", () => {
       }) => {
         const passwordInput = page.locator("#password");
         const confirmInput = page.locator("#confirmPassword");
-        const submitButton = page.locator('[data-testid="reset-password-button"]');
+        const submitButton = page.locator(
+          '[data-testid="reset-password-button"]',
+        );
 
         await passwordInput.fill("ValidPassword123");
         await confirmInput.fill("DifferentPassword123");
@@ -375,7 +379,9 @@ test.describe("Password Reset Flow", () => {
       }) => {
         const passwordInput = page.locator("#password");
         const confirmInput = page.locator("#confirmPassword");
-        const submitButton = page.locator('[data-testid="reset-password-button"]');
+        const submitButton = page.locator(
+          '[data-testid="reset-password-button"]',
+        );
 
         await passwordInput.fill("ValidPassword123");
         await confirmInput.fill("ValidPassword123");
@@ -479,7 +485,11 @@ test.describe("Password Reset Flow", () => {
       // browser contexts, and confirm only the first verification yields a
       // usable access_token.
       const email = `reset-singleuse-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@test-example.com`;
-      await createOneOffTestUser({ email, password: "TempPass123!", displayName: "Single Use" });
+      await createOneOffTestUser({
+        email,
+        password: "TempPass123!",
+        displayName: "Single Use",
+      });
 
       try {
         const rawLink = await generateRecoveryLink(email);
@@ -531,7 +541,9 @@ test.describe("Password Reset Flow", () => {
 
       // Use #password ID to avoid strict mode (getByLabel matches form + div + input)
       const passwordInput = page.locator("#password");
-      const submitButton = page.locator('[data-testid="reset-password-button"]');
+      const submitButton = page.locator(
+        '[data-testid="reset-password-button"]',
+      );
 
       const invalidPasswords = [
         "short", // Too short
@@ -589,7 +601,11 @@ test.describe("Password Reset Flow", () => {
       // session via generateRecoveryLink instead, same as the "with valid
       // recovery session" describe above.
       const email = `reset-backlink-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@test-example.com`;
-      await createOneOffTestUser({ email, password: "TempPass123!", displayName: "Back Link" });
+      await createOneOffTestUser({
+        email,
+        password: "TempPass123!",
+        displayName: "Back Link",
+      });
       try {
         await navigateWithRecoverySession(page, email);
         await expect(page.getByRole("link", { name: /back/i })).toBeVisible();

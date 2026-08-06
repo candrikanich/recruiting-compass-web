@@ -82,9 +82,7 @@ vi.mock("h3", async (importOriginal) => {
   };
 });
 
-const { default: handler } = await import(
-  "~/server/api/family/accessible.get"
-);
+const { default: handler } = await import("~/server/api/family/accessible.get");
 
 describe("GET /api/family/accessible", () => {
   beforeEach(() => {
@@ -107,7 +105,10 @@ describe("GET /api/family/accessible", () => {
 
   it("populates graduationYear from the athlete's users row instead of hardcoding null", async () => {
     const result = (await handler({} as never)) as {
-      families: Array<{ athleteId: string | null; graduationYear: number | null }>;
+      families: Array<{
+        athleteId: string | null;
+        graduationYear: number | null;
+      }>;
     };
 
     expect(result.families).toHaveLength(1);
@@ -158,7 +159,10 @@ describe("GET /api/family/accessible", () => {
     ];
 
     const result = (await handler({} as never)) as {
-      families: Array<{ athleteId: string | null; graduationYear: number | null }>;
+      families: Array<{
+        athleteId: string | null;
+        graduationYear: number | null;
+      }>;
     };
 
     const closest = [...result.families].sort(

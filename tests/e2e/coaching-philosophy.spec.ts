@@ -58,7 +58,9 @@ test.describe("Coaching Philosophy - Feature E2E", () => {
   const navigateToSchool = async (page: any) => {
     if (!schoolId) return false;
     try {
-      await page.goto(`/schools/${schoolId}`, { waitUntil: "domcontentloaded" });
+      await page.goto(`/schools/${schoolId}`, {
+        waitUntil: "domcontentloaded",
+      });
       // Surface any pending "session expired" redirect before sampling — the
       // first test in this file occasionally lands here with stale session
       // state and bounces to /login mid-test if we click too early.
@@ -91,7 +93,10 @@ test.describe("Coaching Philosophy - Feature E2E", () => {
       const heading = page.locator("h2:has-text('Coaching Philosophy')");
       await expect(heading).toBeVisible({ timeout: 20000 });
     } else {
-      test.skip(true, `school seed unavailable or session bounced to /login: ${seedError ?? "unknown"}`);
+      test.skip(
+        true,
+        `school seed unavailable or session bounced to /login: ${seedError ?? "unknown"}`,
+      );
     }
   });
 
@@ -115,7 +120,10 @@ test.describe("Coaching Philosophy - Feature E2E", () => {
         expect(isEditVisible).toBe(true);
       }
     } else {
-      test.skip(true, `school seed unavailable or session bounced to /login: ${seedError ?? "unknown"}`);
+      test.skip(
+        true,
+        `school seed unavailable or session bounced to /login: ${seedError ?? "unknown"}`,
+      );
     }
   });
 
@@ -147,7 +155,10 @@ test.describe("Coaching Philosophy - Feature E2E", () => {
         }
       }
     } else {
-      test.skip(true, `school seed unavailable or session bounced to /login: ${seedError ?? "unknown"}`);
+      test.skip(
+        true,
+        `school seed unavailable or session bounced to /login: ${seedError ?? "unknown"}`,
+      );
     }
   });
 
@@ -188,7 +199,10 @@ test.describe("Coaching Philosophy - Feature E2E", () => {
         }
       }
     } else {
-      test.skip(true, `school seed unavailable or session bounced to /login: ${seedError ?? "unknown"}`);
+      test.skip(
+        true,
+        `school seed unavailable or session bounced to /login: ${seedError ?? "unknown"}`,
+      );
     }
   });
 
@@ -234,7 +248,10 @@ test.describe("Coaching Philosophy - Feature E2E", () => {
         }
       }
     } else {
-      test.skip(true, `school seed unavailable or session bounced to /login: ${seedError ?? "unknown"}`);
+      test.skip(
+        true,
+        `school seed unavailable or session bounced to /login: ${seedError ?? "unknown"}`,
+      );
     }
   });
 
@@ -280,7 +297,10 @@ test.describe("Coaching Philosophy - Feature E2E", () => {
         }
       }
     } else {
-      test.skip(true, `school seed unavailable or session bounced to /login: ${seedError ?? "unknown"}`);
+      test.skip(
+        true,
+        `school seed unavailable or session bounced to /login: ${seedError ?? "unknown"}`,
+      );
     }
   });
 
@@ -328,7 +348,10 @@ test.describe("Coaching Philosophy - Feature E2E", () => {
         }
       }
     } else {
-      test.skip(true, `school seed unavailable or session bounced to /login: ${seedError ?? "unknown"}`);
+      test.skip(
+        true,
+        `school seed unavailable or session bounced to /login: ${seedError ?? "unknown"}`,
+      );
     }
   });
 
@@ -377,7 +400,10 @@ Line 3: Development`;
         }
       }
     } else {
-      test.skip(true, `school seed unavailable or session bounced to /login: ${seedError ?? "unknown"}`);
+      test.skip(
+        true,
+        `school seed unavailable or session bounced to /login: ${seedError ?? "unknown"}`,
+      );
     }
   });
 
@@ -420,7 +446,10 @@ Line 3: Development`;
         }
       }
     } else {
-      test.skip(true, `school seed unavailable or session bounced to /login: ${seedError ?? "unknown"}`);
+      test.skip(
+        true,
+        `school seed unavailable or session bounced to /login: ${seedError ?? "unknown"}`,
+      );
     }
   });
 
@@ -466,7 +495,10 @@ Line 3: Development`;
         }
       }
     } else {
-      test.skip(true, `school seed unavailable or session bounced to /login: ${seedError ?? "unknown"}`);
+      test.skip(
+        true,
+        `school seed unavailable or session bounced to /login: ${seedError ?? "unknown"}`,
+      );
     }
   });
 });

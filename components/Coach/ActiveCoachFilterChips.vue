@@ -17,7 +17,7 @@
         class="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-medium hover:bg-blue-100 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
       >
         Search: {{ filterValues.get("search") }}
-        <UIcon name="i-heroicons-x-mark" class="w-3 h-3" aria-hidden="true"  />
+        <UIcon name="i-heroicons-x-mark" class="w-3 h-3" aria-hidden="true" />
       </button>
 
       <!-- Role chip -->
@@ -28,7 +28,7 @@
         class="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-medium hover:bg-blue-100 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
       >
         Role: {{ getRoleLabel(filterValues.get("role") as string) }}
-        <UIcon name="i-heroicons-x-mark" class="w-3 h-3" aria-hidden="true"  />
+        <UIcon name="i-heroicons-x-mark" class="w-3 h-3" aria-hidden="true" />
       </button>
 
       <!-- Last Contact chip -->
@@ -39,7 +39,7 @@
         class="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-medium hover:bg-blue-100 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
       >
         Last {{ filterValues.get("lastContact") }} days
-        <UIcon name="i-heroicons-x-mark" class="w-3 h-3" aria-hidden="true"  />
+        <UIcon name="i-heroicons-x-mark" class="w-3 h-3" aria-hidden="true" />
       </button>
 
       <!-- Clear all button -->

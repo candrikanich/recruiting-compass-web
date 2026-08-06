@@ -203,7 +203,10 @@ export const useSearchConsolidated = () => {
           // Push the term into the DB query BEFORE limiting — filtering
           // client-side after limit(20) silently misses matches beyond
           // the first 20 rows in arbitrary DB order.
-          search: { columns: ["name", "address", "city", "state"], term: searchQuery },
+          search: {
+            columns: ["name", "address", "city", "state"],
+            term: searchQuery,
+          },
           limit: 20,
         },
         { context: "searchSchools" },
@@ -249,7 +252,10 @@ export const useSearchConsolidated = () => {
           select: "*",
           filters: filterObj,
           // Push the term into the DB query BEFORE limiting — see searchSchools.
-          search: { columns: ["name", "school", "email", "phone"], term: searchQuery },
+          search: {
+            columns: ["name", "school", "email", "phone"],
+            term: searchQuery,
+          },
           limit: 20,
         },
         { context: "searchCoaches" },
