@@ -16,6 +16,31 @@ Tracks mistake patterns (with recurrence counts) and process insights.
 
 ## Bug & Mistake Patterns
 
+### Nuxt Silently Disables Incompatible Modules (and Their Dependents)
+
+**Times seen:** 1 | **Last seen:** 2026-08-06
+**Context:** All dashboard tile/button icons blank in production. Prod bundle `entry-CP9JRFg7.js` contained zero heroicon data; `UIcon` wasn't registered at all.
+**Root Cause:** Dependabot bumped `@nuxt/ui` 3.3.7 → 4.8.0 (`96a2d29f`). v4 declares `compatibility.nuxt: ">=4.1.0"`; we run Nuxt 3.21.10. Nuxt disabled `@nuxt/ui` with only a `WARN [NUXT_B8013]` and **exit code 0**. `@nuxt/icon` is registered as a `moduleDependency` of `@nuxt/ui`, so it was disabled too — taking `clientBundle` icon bundling with it. Build "succeeded," prod shipped broken.
+**Prevention:**
+- `experimental.enforceModuleCompatibility: true` in `nuxt.config.ts` — turns the WARN into a fatal ERROR. Verified it fails the build under `@nuxt/ui` 4.8.0.
+- A module bump can break things the module doesn't own. Check `moduleDependencies` in the module's `dist/module.mjs` before accepting a major.
+- Grep the built bundle, not the source, when prod-only rendering breaks: `grep '"icon-name":{' .vercel/output/static/_nuxt/entry-*.js`. Source having the name proves nothing.
+- Reproduce prod by building the exact deployed SHA in a worktree — the delta vs. local main is the answer.
+
+---
+
+### Dependabot Security Updates Bypass Major-Version Ignores
+
+**Times seen:** 1 | **Last seen:** 2026-08-06
+**Context:** `.github/dependabot.yml` ignores `dependency-name: "*"` for `version-update:semver-major` and sets `target-branch: develop`. A major still landed directly on `main` and deployed to prod.
+**Root Cause:** Dependabot **security** updates are a separate mechanism from version updates. They ignore `target-branch` (always the default branch) and are not filtered by `update-types` ignores. So a security advisory can push a breaking major straight to prod, skipping `develop` and review entirely.
+**Prevention:**
+- Version-range ignores DO apply to security updates: `- dependency-name: "@nuxt/ui"` + `versions: [">=4.0.0"]`. Use these to fence packages that can't cross a major.
+- Per-package fencing is whack-a-mole — the real fix is not auto-merging security PRs onto `main`. Review branch protection on the default branch.
+- Before accepting a security bump, check whether the advisory even applies. Ours was `UAuthForm`/`UForm` SSR markup omitting `method`; we use neither component and run `ssr: false`. Zero exposure, real breakage.
+
+---
+
 ### Teleport Components Must Be Client-Only in Nuxt SSR
 
 **Times seen:** 1 | **Last seen:** 2026-02-16

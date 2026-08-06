@@ -26,6 +26,12 @@ export default defineNuxtConfig({
   // ships >=3.21.7 with the cherry-pick.
   experimental: {
     viteEnvironmentApi: true,
+
+    // A module declaring a Nuxt version range we don't satisfy is otherwise
+    // only a build WARN — Nuxt drops the module and exits 0. That is how
+    // @nuxt/ui 4.x (requires Nuxt >=4.1) silently took @nuxt/icon down with it
+    // and shipped a prod build with no bundled icons. Fail the build instead.
+    enforceModuleCompatibility: true,
   },
 
   css: ["~/assets/css/main.css"],
