@@ -34,6 +34,8 @@ export interface ResolveResult {
   body: string;
   /** Variables still unfilled after render — the send-blocking check. */
   unresolved: string[];
+  /** The resolved {{key}} -> value map used for this render (drives the variables panel). */
+  values: Record<string, string>;
 }
 
 /** Current HS grade (9–12) from graduation year, accounting for fall vs spring semester. */
@@ -192,7 +194,7 @@ export const useTemplateResolver = () => {
     const values = resolveVariables(registry, ctx);
     const subject = renderTemplate(template.subject ?? "", values);
     const body = renderTemplate(template.body ?? "", values);
-    return { subject, body, unresolved: findUnresolved(`${subject}\n${body}`) };
+    return { subject, body, unresolved: findUnresolved(`${subject}\n${body}`), values };
   };
 
   return { loadRegistry, buildAthleteContext, resolveTemplate };

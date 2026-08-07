@@ -127,6 +127,9 @@ describe("useTemplateResolver", () => {
       expect(result.body).toContain("Coach Delgado");
       expect(result.body).toContain("{{daysSinceContact}}"); // Phase-4 var, still unfilled
       expect(result.unresolved).toContain("daysSinceContact");
+      // values map drives the variables panel
+      expect(result.values.playerName).toBe("Jordan Ellis");
+      expect(result.values.daysSinceContact).toBeUndefined();
     });
   });
 });

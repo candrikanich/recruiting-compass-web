@@ -173,20 +173,57 @@
                 />
               </div>
 
-              <!-- Variables Helper -->
-              <div class="rounded-lg p-3 bg-blue-50 border border-blue-200">
-                <p class="text-xs font-semibold mb-2 text-blue-900">
-                  Available Variables:
-                </p>
-                <div
-                  class="grid grid-cols-2 gap-2 text-xs text-blue-800 font-mono"
+              <!-- Live Preview -->
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-2"
+                  >Preview — what the coach sees</label
                 >
-                  <div>{{ props.playerName }}</div>
-                  <div>{{ props.coach.first_name }}</div>
-                  <div>{{ props.schoolName }}</div>
-                  <div>{{ props.highSchool }}</div>
+                <div
+                  class="w-full px-3 py-2 rounded-lg border border-slate-200 bg-slate-50 text-slate-900 text-sm whitespace-pre-wrap"
+                >
+                  <template
+                    v-for="(seg, i) in emailPreviewSegments"
+                    :key="i"
+                    ><strong
+                      v-if="seg.unresolved"
+                      class="text-amber-600 font-semibold"
+                      >{{ seg.text }}</strong
+                    ><template v-else>{{ seg.text }}</template></template
+                  >
                 </div>
               </div>
+
+              <!-- Variables in this template -->
+              <div
+                v-if="selectedEmailTemplateObj"
+                class="rounded-lg p-3 bg-blue-50 border border-blue-200"
+              >
+                <p class="text-xs font-semibold mb-2 text-blue-900">
+                  Variables in this template
+                </p>
+                <div class="space-y-1">
+                  <div
+                    v-for="row in emailVariableRows"
+                    :key="row.key"
+                    class="grid grid-cols-2 gap-2 text-xs items-center"
+                  >
+                    <span class="font-mono text-blue-800">{{
+                      tokenOf(row.key)
+                    }}</span>
+                    <span v-if="row.value" class="text-slate-700 truncate">{{
+                      row.value
+                    }}</span>
+                    <span v-else class="text-amber-600 font-medium"
+                      >needs input</span
+                    >
+                  </div>
+                </div>
+              </div>
+
+              <!-- Unresolved send warning -->
+              <p v-if="emailSendWarning" class="text-xs text-amber-700">
+                {{ emailSendWarning }}
+              </p>
 
               <!-- Log Interaction Checkbox -->
               <div class="flex items-center gap-2 pt-2">
@@ -205,7 +242,8 @@
             <div class="p-6 border-t border-slate-200 flex gap-3">
               <button
                 @click="sendEmail"
-                class="flex-1 px-4 py-2 bg-linear-to-r from-blue-500 to-blue-600 text-white font-medium rounded-lg hover:from-blue-600 hover:to-blue-700 transition text-sm"
+                :disabled="emailUnresolved.length > 0"
+                class="flex-1 px-4 py-2 bg-linear-to-r from-blue-500 to-blue-600 text-white font-medium rounded-lg hover:from-blue-600 hover:to-blue-700 transition text-sm disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Send Email
               </button>
@@ -297,6 +335,58 @@
                 </p>
               </div>
 
+              <!-- Live Preview -->
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-2"
+                  >Preview — what the coach sees</label
+                >
+                <div
+                  class="w-full px-3 py-2 rounded-lg border border-slate-200 bg-slate-50 text-slate-900 text-sm whitespace-pre-wrap"
+                >
+                  <template
+                    v-for="(seg, i) in textPreviewSegments"
+                    :key="i"
+                    ><strong
+                      v-if="seg.unresolved"
+                      class="text-amber-600 font-semibold"
+                      >{{ seg.text }}</strong
+                    ><template v-else>{{ seg.text }}</template></template
+                  >
+                </div>
+              </div>
+
+              <!-- Variables in this template -->
+              <div
+                v-if="selectedTextTemplateObj"
+                class="rounded-lg p-3 bg-blue-50 border border-blue-200"
+              >
+                <p class="text-xs font-semibold mb-2 text-blue-900">
+                  Variables in this template
+                </p>
+                <div class="space-y-1">
+                  <div
+                    v-for="row in textVariableRows"
+                    :key="row.key"
+                    class="grid grid-cols-2 gap-2 text-xs items-center"
+                  >
+                    <span class="font-mono text-blue-800">{{
+                      tokenOf(row.key)
+                    }}</span>
+                    <span v-if="row.value" class="text-slate-700 truncate">{{
+                      row.value
+                    }}</span>
+                    <span v-else class="text-amber-600 font-medium"
+                      >needs input</span
+                    >
+                  </div>
+                </div>
+              </div>
+
+              <!-- Unresolved send warning -->
+              <p v-if="textSendWarning" class="text-xs text-amber-700">
+                {{ textSendWarning }}
+              </p>
+
               <!-- Log Interaction Checkbox -->
               <div class="flex items-center gap-2 pt-2">
                 <input
@@ -314,7 +404,8 @@
             <div class="p-6 border-t border-slate-200 flex gap-3">
               <button
                 @click="sendText"
-                class="flex-1 px-4 py-2 bg-linear-to-r from-green-500 to-green-600 text-white font-medium rounded-lg hover:from-green-600 hover:to-green-700 transition text-sm"
+                :disabled="textUnresolved.length > 0"
+                class="flex-1 px-4 py-2 bg-linear-to-r from-green-500 to-green-600 text-white font-medium rounded-lg hover:from-green-600 hover:to-green-700 transition text-sm disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Send Text
               </button>
@@ -389,15 +480,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, nextTick } from "vue";
+import { ref, computed, watch, nextTick, onMounted } from "vue";
 import { useCommunicationTemplates } from "~/composables/useCommunicationTemplates";
 import { useFocusTrap } from "~/composables/useFocusTrap";
+import { useFamilyCtx } from "~/composables/useFamilyCtx";
+import { useTemplateResolver } from "~/composables/useTemplateResolver";
 import { getRoleLabel } from "~/utils/coachLabels";
-import { renderTemplate as interpolateText } from "~/utils/templateResolver";
-import type { Coach } from "~/types/models";
+import { findUnresolved } from "~/utils/templateResolver";
+import type { ResolverContext, Row } from "~/utils/templateResolver";
+import type { Coach, School, CommunicationTemplate } from "~/types/models";
 
 interface Props {
   coach: Coach;
+  /** Full selected-school row (3 of 4 call sites already bind :school); unlocks
+   *  division/conference/city/state/twitter vars. Falls back to schoolName. */
+  school?: Partial<School>;
   schoolName?: string;
   playerName?: string;
   highSchool?: string;
@@ -412,7 +509,107 @@ const emit = defineEmits<{
   "interaction-logged": [{ type: string; direction: string; content: string }];
 }>();
 
-const { getTemplatesByType, interpolateTemplate } = useCommunicationTemplates();
+const { getTemplatesByType, loadTemplates } = useCommunicationTemplates();
+const { activeAthleteId } = useFamilyCtx();
+
+// Load predefined + user templates into this composable instance (it's per-mount,
+// not a singleton — without this the dropdown only shows "Custom message").
+onMounted(() => {
+  loadTemplates();
+});
+const { buildAthleteContext, resolveTemplate } = useTemplateResolver();
+
+// Lazy-loaded, cached per athlete id. activeAthleteId is role-aware:
+// athlete-role -> own users.id; parent-role -> the selected child's users.id.
+const athleteCtx = ref<ResolverContext | null>(null);
+const athleteCtxId = ref<string | null>(null);
+
+const ensureAthleteContext = async (): Promise<ResolverContext> => {
+  const id = activeAthleteId.value;
+  if (!id) return {};
+  if (athleteCtx.value && athleteCtxId.value === id) return athleteCtx.value;
+  athleteCtx.value = await buildAthleteContext(id);
+  athleteCtxId.value = id;
+  return athleteCtx.value;
+};
+
+const composeFromTemplate = async (
+  template: CommunicationTemplate,
+): Promise<{ subject: string; body: string; values: Record<string, string> }> => {
+  const ctx = await ensureAthleteContext();
+  const school =
+    props.school ?? (props.schoolName ? { name: props.schoolName } : undefined);
+  const { subject, body, values } = await resolveTemplate(
+    template,
+    { coach: props.coach as unknown as Row, school: school as Row | undefined },
+    ctx,
+  );
+  return { subject, body, values };
+};
+
+// --- variables panel + live preview state (Slice 5a/5b) ---------------------
+interface PreviewSegment {
+  text: string;
+  unresolved: boolean;
+}
+interface VariableRow {
+  key: string;
+  value: string | null;
+}
+
+const emailResolvedValues = ref<Record<string, string>>({});
+const textResolvedValues = ref<Record<string, string>>({});
+const selectedEmailTemplateObj = ref<CommunicationTemplate | null>(null);
+const selectedTextTemplateObj = ref<CommunicationTemplate | null>(null);
+const emailSendWarning = ref("");
+const textSendWarning = ref("");
+
+/** Render a bare key as its literal {{key}} token (avoids brace nesting in markup). */
+const tokenOf = (key: string): string => `{{${key}}}`;
+
+/** Variables that appear in a template's raw subject+body, first-seen order. */
+const templateVarKeys = (tpl: CommunicationTemplate | null): string[] =>
+  tpl ? [...new Set(findUnresolved(`${tpl.subject ?? ""}\n${tpl.body ?? ""}`))] : [];
+
+const toRows = (
+  tpl: CommunicationTemplate | null,
+  values: Record<string, string>,
+): VariableRow[] =>
+  templateVarKeys(tpl).map((key) => ({ key, value: values[key] ?? null }));
+
+/** Split rendered body into ordered text/{{unresolved}} segments (no v-html). */
+const toSegments = (body: string): PreviewSegment[] => {
+  const segments: PreviewSegment[] = [];
+  const re = /\{\{\w+\}\}/g;
+  let last = 0;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(body)) !== null) {
+    if (m.index > last)
+      segments.push({ text: body.slice(last, m.index), unresolved: false });
+    segments.push({ text: m[0], unresolved: true });
+    last = m.index + m[0].length;
+  }
+  if (last < body.length)
+    segments.push({ text: body.slice(last), unresolved: false });
+  return segments;
+};
+
+const emailVariableRows = computed(() =>
+  toRows(selectedEmailTemplateObj.value, emailResolvedValues.value),
+);
+const textVariableRows = computed(() =>
+  toRows(selectedTextTemplateObj.value, textResolvedValues.value),
+);
+const emailPreviewSegments = computed(() =>
+  toSegments(emailComposer.value.body),
+);
+const textPreviewSegments = computed(() => toSegments(textComposer.value.body));
+const emailUnresolved = computed(() => [
+  ...new Set(findUnresolved(emailComposer.value.body)),
+]);
+const textUnresolved = computed(() => [
+  ...new Set(findUnresolved(textComposer.value.body)),
+]);
 
 const showEmailComposer = ref(false);
 const showTextComposer = ref(false);
@@ -456,38 +653,37 @@ const textComposer = ref({ body: "" });
 const emailTemplates = computed(() => getTemplatesByType("email"));
 const messageTemplates = computed(() => getTemplatesByType("message"));
 
-// Template variables
-const templateVars = {
-  playerName: props.playerName,
-  coachFirstName: props.coach.first_name,
-  schoolName: props.schoolName || "Your School",
-  highSchool: props.highSchool,
-};
-
-// Watch for template selection
-watch(selectedEmailTemplate, (templateId) => {
-  if (templateId) {
-    const template = emailTemplates.value.find((t) => t.id === templateId);
-    if (template) {
-      emailComposer.value = {
-        subject: template.subject
-          ? interpolateText(template.subject, templateVars)
-          : "",
-        body: interpolateTemplate(template, templateVars),
-      };
-    }
+// Watch for template selection — resolve from live athlete/coach/school data.
+// Authored variables (programNote, updateHook, ...) stay as {{key}} placeholders
+// in the editable body for the athlete to fill at compose time.
+watch(selectedEmailTemplate, async (templateId) => {
+  if (!templateId) {
+    selectedEmailTemplateObj.value = null;
+    emailResolvedValues.value = {};
+    return;
   }
+  const template = emailTemplates.value.find((t) => t.id === templateId);
+  if (!template) return;
+  const { subject, body, values } = await composeFromTemplate(template);
+  emailComposer.value = { subject, body };
+  emailResolvedValues.value = values;
+  selectedEmailTemplateObj.value = template;
+  emailSendWarning.value = "";
 });
 
-watch(selectedTextTemplate, (templateId) => {
-  if (templateId) {
-    const template = messageTemplates.value.find((t) => t.id === templateId);
-    if (template) {
-      textComposer.value = {
-        body: interpolateTemplate(template, templateVars),
-      };
-    }
+watch(selectedTextTemplate, async (templateId) => {
+  if (!templateId) {
+    selectedTextTemplateObj.value = null;
+    textResolvedValues.value = {};
+    return;
   }
+  const template = messageTemplates.value.find((t) => t.id === templateId);
+  if (!template) return;
+  const { body, values } = await composeFromTemplate(template);
+  textComposer.value = { body };
+  textResolvedValues.value = values;
+  selectedTextTemplateObj.value = template;
+  textSendWarning.value = "";
 });
 
 const formatPhone = (phone: string): string => {
@@ -499,6 +695,11 @@ const formatPhone = (phone: string): string => {
 };
 
 const sendEmail = async () => {
+  if (emailUnresolved.value.length > 0) {
+    emailSendWarning.value = `Fill these variables before sending: ${emailUnresolved.value.join(", ")}`;
+    return;
+  }
+  emailSendWarning.value = "";
   const mailtoLink = `mailto:${props.coach.email}?subject=${encodeURIComponent(emailComposer.value.subject)}&body=${encodeURIComponent(emailComposer.value.body)}`;
   window.location.href = mailtoLink;
 
@@ -514,6 +715,11 @@ const sendEmail = async () => {
 };
 
 const sendText = async () => {
+  if (textUnresolved.value.length > 0) {
+    textSendWarning.value = `Fill these variables before sending: ${textUnresolved.value.join(", ")}`;
+    return;
+  }
+  textSendWarning.value = "";
   const smsLink = `sms:${props.coach.phone?.replace(/\D/g, "")}?body=${encodeURIComponent(textComposer.value.body)}`;
   window.location.href = smsLink;
 
