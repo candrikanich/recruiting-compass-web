@@ -1,6 +1,7 @@
 import { ref } from "vue";
 import { useInteractions } from "~/composables/useInteractions";
 import { useCoaches } from "~/composables/useCoaches";
+import { useAppToast } from "~/composables/useAppToast";
 import { useUserStore } from "~/stores/user";
 import type { Coach } from "~/types/models";
 
@@ -76,15 +77,20 @@ export const useCommunication = () => {
   ) => {
     if (!selectedCoach.value) return;
 
+    // Capture before we null selectedCoach — the undo closure needs these.
+    const coach = selectedCoach.value;
+    const coachName = `${coach.first_name} ${coach.last_name}`.trim();
+    const priorContactDate = coach.last_contact_date ?? null;
+
     try {
-      const { createInteraction } = getInteractions();
+      const { createInteraction, deleteInteraction } = getInteractions();
       const { updateCoach } = getCoaches();
       const store = getUserStore();
 
       // Create interaction record
-      await createInteraction({
-        coach_id: selectedCoach.value.id,
-        school_id: selectedCoach.value.school_id,
+      const created = await createInteraction({
+        coach_id: coach.id,
+        school_id: coach.school_id,
         type: interactionData.type,
         direction: "outbound",
         subject: interactionData.subject || "",
@@ -94,7 +100,7 @@ export const useCommunication = () => {
       });
 
       // Update last_contact_date on coach
-      await updateCoach(selectedCoach.value.id, {
+      await updateCoach(coach.id, {
         last_contact_date: new Date().toISOString(),
       });
 
@@ -106,6 +112,33 @@ export const useCommunication = () => {
       // Close panel and reset state
       showPanel.value = false;
       selectedCoach.value = null;
+
+      // Optimistic send-log: a mailto/SMS hand-off can't confirm the message
+      // was actually sent. Rather than block every send with a "did you send?"
+      // prompt, log optimistically and offer a one-tap undo for the
+      // composed-but-not-sent case. Undo removes the interaction and restores
+      // the coach's prior last_contact_date.
+      const { showToast } = useAppToast();
+      showToast(`Logged outreach to Coach ${coachName}.`, "success", 8000, {
+        label: "Undo",
+        handler: async () => {
+          try {
+            await deleteInteraction(created.id);
+            await updateCoach(coach.id, {
+              last_contact_date: priorContactDate,
+            });
+            if (onSuccess) {
+              await onSuccess();
+            }
+            showToast(`Removed outreach log for Coach ${coachName}.`, "info");
+          } catch {
+            showToast(
+              "Couldn't undo the log — you can remove it from the coach's history.",
+              "error",
+            );
+          }
+        },
+      });
     } catch (err) {
       throw err instanceof Error ? err : new Error("Failed to log interaction");
     }

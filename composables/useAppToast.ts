@@ -1,5 +1,5 @@
 import { ref, computed } from "vue";
-import type { Toast, ToastType } from "~/types/toast";
+import type { Toast, ToastType, ToastAction } from "~/types/toast";
 
 // Module-level singleton: all callers share the same toasts array
 const toasts = ref<Toast[]>([]);
@@ -9,9 +9,10 @@ export const useAppToast = () => {
     message: string,
     type: ToastType = "info",
     duration = 5000,
+    action?: ToastAction,
   ) => {
     const id = Date.now().toString() + Math.random();
-    toasts.value.push({ id, message, type });
+    toasts.value.push({ id, message, type, action });
 
     if (duration > 0) {
       setTimeout(() => {

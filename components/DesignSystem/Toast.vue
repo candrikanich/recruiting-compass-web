@@ -36,6 +36,14 @@
                 <p class="text-sm font-medium">{{ toast.message }}</p>
               </div>
               <button
+                v-if="toast.action"
+                @click="runAction(toast)"
+                :aria-label="`${toast.action.label}: ${toast.message}`"
+                class="text-sm font-semibold underline underline-offset-2 hover:opacity-80 transition focus:ring-2 focus:ring-white focus:ring-offset-2 whitespace-nowrap"
+              >
+                {{ toast.action.label }}
+              </button>
+              <button
                 @click="removeToast(toast.id)"
                 :aria-label="`Dismiss ${toast.type} notification: ${toast.message}`"
                 class="hover:opacity-70 transition focus:ring-2 focus:ring-white focus:ring-offset-2"
@@ -56,9 +64,14 @@
 
 <script setup lang="ts">
 import { useAppToast } from "~/composables/useAppToast";
-import type { ToastType } from "~/types/toast";
+import type { Toast, ToastType } from "~/types/toast";
 
 const { toasts, removeToast } = useAppToast();
+
+const runAction = async (toast: Toast) => {
+  removeToast(toast.id);
+  await toast.action?.handler();
+};
 
 const toastClass = (type: ToastType): string => {
   const colors: Record<ToastType, string> = {
