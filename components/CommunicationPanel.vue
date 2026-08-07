@@ -393,6 +393,7 @@ import { ref, computed, watch, nextTick } from "vue";
 import { useCommunicationTemplates } from "~/composables/useCommunicationTemplates";
 import { useFocusTrap } from "~/composables/useFocusTrap";
 import { getRoleLabel } from "~/utils/coachLabels";
+import { renderTemplate as interpolateText } from "~/utils/templateResolver";
 import type { Coach } from "~/types/models";
 
 interface Props {
@@ -443,18 +444,6 @@ const handleCloseTemplate = () => {
   showTemplateManager.value = false;
 };
 
-// Helper to interpolate text containing variables
-const interpolateText = (
-  text: string,
-  variables: Record<string, string>,
-): string => {
-  let result = text;
-  Object.entries(variables).forEach(([key, value]) => {
-    const pattern = new RegExp(`\\{\\{${key}\\}\\}`, "g");
-    result = result.replace(pattern, value);
-  });
-  return result;
-};
 const showTemplateManager = ref(false);
 const shouldLogInteraction = ref(true);
 

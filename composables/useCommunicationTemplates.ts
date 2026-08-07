@@ -2,6 +2,7 @@ import { ref, computed, type ComputedRef, type Ref } from "vue";
 import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
 import { createClientLogger } from "~/utils/logger";
+import { renderTemplate as renderText } from "~/utils/templateResolver";
 import type { CommunicationTemplate } from "~/types/models";
 import type { Database } from "~/types/database";
 
@@ -301,17 +302,7 @@ export const useCommunicationTemplates = (): {
   const renderTemplate = (
     template: CommunicationTemplate,
     variables: Record<string, string>,
-  ): string => {
-    let rendered = template.body;
-
-    // Replace variables with provided values
-    Object.entries(variables).forEach(([key, value]) => {
-      const pattern = new RegExp(`\\{\\{${key}\\}\\}`, "g");
-      rendered = rendered.replace(pattern, value);
-    });
-
-    return rendered;
-  };
+  ): string => renderText(template.body, variables);
 
   // Get template by ID
   const getTemplate = (id: string): CommunicationTemplate | undefined => {
