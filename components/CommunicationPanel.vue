@@ -235,14 +235,20 @@
                         >{{ saveErrors[`email:${row.key}`] }}</span
                       >
                     </div>
-                    <span
-                      v-else-if="row.value"
-                      class="text-slate-700 truncate"
-                      >{{ row.value }}</span
-                    >
-                    <span v-else class="text-amber-600 font-medium"
-                      >needs input</span
-                    >
+                    <div v-else class="flex items-center gap-2 min-w-0">
+                      <span v-if="row.value" class="text-slate-700 truncate">{{
+                        row.value
+                      }}</span>
+                      <span v-else class="text-amber-600 font-medium"
+                        >needs input</span
+                      >
+                      <NuxtLink
+                        v-if="row.linkToProfile"
+                        :to="PROFILE_EDIT_ROUTE"
+                        class="text-blue-600 hover:underline shrink-0"
+                        >Edit in profile →</NuxtLink
+                      >
+                    </div>
                   </div>
                 </div>
               </div>
@@ -424,14 +430,20 @@
                         >{{ saveErrors[`text:${row.key}`] }}</span
                       >
                     </div>
-                    <span
-                      v-else-if="row.value"
-                      class="text-slate-700 truncate"
-                      >{{ row.value }}</span
-                    >
-                    <span v-else class="text-amber-600 font-medium"
-                      >needs input</span
-                    >
+                    <div v-else class="flex items-center gap-2 min-w-0">
+                      <span v-if="row.value" class="text-slate-700 truncate">{{
+                        row.value
+                      }}</span>
+                      <span v-else class="text-amber-600 font-medium"
+                        >needs input</span
+                      >
+                      <NuxtLink
+                        v-if="row.linkToProfile"
+                        :to="PROFILE_EDIT_ROUTE"
+                        class="text-blue-600 hover:underline shrink-0"
+                        >Edit in profile →</NuxtLink
+                      >
+                    </div>
                   </div>
                 </div>
               </div>
@@ -572,8 +584,15 @@ const { buildAthleteContext, resolveTemplate, loadRegistry } = useTemplateResolv
 const { writeField } = useProfileFieldWrite();
 const userStore = useUserStore();
 
-// key -> source_path, from the DB registry; drives inline-edit eligibility.
+// key -> source_path / category, from the DB registry. source_path drives
+// inline-edit eligibility; category drives the "Edit in profile" link fallback.
 const varSourcePaths = ref<Map<string, string>>(new Map());
+const varCategories = ref<Map<string, string>>(new Map());
+
+// Athlete-owned categories whose non-inline-editable vars link to the profile
+// editor. program/event/system/authored come from elsewhere (no profile link).
+const PROFILE_CATEGORIES = new Set(["player", "academics", "metrics", "contacts"]);
+const PROFILE_EDIT_ROUTE = "/settings/player-details";
 
 // Only the athlete editing their OWN profile can write inline (parents are
 // read-only per product policy). activeAthleteId is role-aware.
@@ -589,9 +608,8 @@ const canEditProfile = computed(
 onMounted(async () => {
   loadTemplates();
   const registry = await loadRegistry();
-  varSourcePaths.value = new Map(
-    registry.map((v) => [v.key, v.source_path ?? ""]),
-  );
+  varSourcePaths.value = new Map(registry.map((v) => [v.key, v.source_path ?? ""]));
+  varCategories.value = new Map(registry.map((v) => [v.key, v.category ?? ""]));
 });
 
 // Lazy-loaded, cached per athlete id. activeAthleteId is role-aware:
@@ -632,6 +650,8 @@ interface VariableRow {
   value: string | null;
   editable: boolean;
   sourcePath: string | null;
+  /** Show an "Edit in profile" link (athlete-owned data that isn't inline-editable). */
+  linkToProfile: boolean;
 }
 
 // Per-row inline-edit state (keyed by variable key, per channel).
@@ -668,7 +688,9 @@ const toRows = (
   templateVarKeys(tpl).map((key) => {
     const sourcePath = varSourcePaths.value.get(key) ?? null;
     const editable = canEditProfile.value && !!editableColumnFor(sourcePath);
-    return { key, value: values[key] ?? null, editable, sourcePath };
+    const linkToProfile =
+      !editable && PROFILE_CATEGORIES.has(varCategories.value.get(key) ?? "");
+    return { key, value: values[key] ?? null, editable, sourcePath, linkToProfile };
   });
 
 /** Split rendered body into ordered text/{{unresolved}} segments (no v-html). */

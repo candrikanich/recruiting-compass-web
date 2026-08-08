@@ -66,7 +66,7 @@ export const useTemplateResolver = () => {
     try {
       const { data, error } = (await supabase
         .from("template_variables")
-        .select("key, source_type, source_path")) as { data: RegistryVar[] | null; error: FetchError | null };
+        .select("key, source_type, source_path, category")) as { data: RegistryVar[] | null; error: FetchError | null };
 
       if (error) {
         if (error.code === "PGRST205" || error.message?.includes("template_variables")) {

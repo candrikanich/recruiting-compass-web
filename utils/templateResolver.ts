@@ -47,6 +47,7 @@ export interface RegistryVar {
   key: string;
   source_type: "column" | "computed" | "authored" | "system";
   source_path?: string | null;
+  category?: string | null;
 }
 
 type TableName = "users" | "schools" | "coaches" | "events";
