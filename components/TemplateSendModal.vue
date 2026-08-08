@@ -131,6 +131,7 @@ import {
   useCommunicationTemplates,
   type CommunicationTemplate,
 } from "~/composables/useCommunicationTemplates";
+import { useVideoLinks } from "~/composables/useVideoLinks";
 
 interface Props {
   isOpen: boolean;
@@ -156,12 +157,31 @@ const emit = defineEmits<{
 
 const { allTemplates, loadUserTemplates, interpolateTemplate } =
   useCommunicationTemplates();
+const { links: videoLinks, load: loadVideoLinks } = useVideoLinks();
 
 const step = ref<"select" | "customize">("select");
 const selectedTemplate = ref<CommunicationTemplate | null>(null);
 const composedMessage = ref({ subject: "", body: "" });
 
 loadUserTemplates();
+loadVideoLinks();
+
+const highlightVideoUrl = computed(() => {
+  if (videoLinks.value.length === 0) return "";
+  const healthy = videoLinks.value.find(
+    (link) => link.health_status === "healthy",
+  );
+  return (healthy ?? videoLinks.value[0]).url;
+});
+
+const filmLinksText = computed(() => {
+  return videoLinks.value
+    .map(
+      (link) =>
+        `${link.title ?? link.url} (${link.platform.toUpperCase()}): ${link.url}`,
+    )
+    .join("\n");
+});
 
 const messageTypeMap: Record<string, "email" | "message" | "phone_script"> = {
   Email: "email",
@@ -224,6 +244,8 @@ const selectTemplate = (template: CommunicationTemplate) => {
       day: "numeric",
       year: "numeric",
     }),
+    highlightVideo: highlightVideoUrl.value,
+    filmLinks: filmLinksText.value,
   };
 
   const body = interpolateTemplate(template, variables);

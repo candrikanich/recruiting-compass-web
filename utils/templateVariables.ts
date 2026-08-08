@@ -77,6 +77,18 @@ export const AVAILABLE_VARIABLES: TemplateVariable[] = [
     description: "Current date formatted",
     example: "December 7, 2025",
   },
+  {
+    name: "Highlight Video",
+    key: "highlightVideo",
+    description: "URL of the player's primary healthy video link",
+    example: "https://www.hudl.com/video/12345",
+  },
+  {
+    name: "Film Links",
+    key: "filmLinks",
+    description: "All video links, one per line (Title (PLATFORM): url)",
+    example: "Senior Highlights (HUDL): https://www.hudl.com/video/12345",
+  },
 ];
 
 /**
