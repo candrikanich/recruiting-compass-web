@@ -5,9 +5,7 @@ import type { Suggestion } from "~/types/timeline";
 
 // Mock navigateTo
 const mockNavigateTo = vi.fn();
-vi.mock("#app", () => ({
-  navigateTo: mockNavigateTo,
-}));
+vi.stubGlobal("navigateTo", mockNavigateTo);
 
 describe("SuggestionCard", () => {
   let mockSuggestion: Suggestion;
@@ -246,6 +244,40 @@ describe("SuggestionCard", () => {
 
       // Now the modal should be rendered and emit close event
       // (In a real test, this would be triggered by the modal component)
+    });
+  });
+
+  describe("navigation", () => {
+    it("should navigate to player-details Athletics tab when add_video action is clicked", async () => {
+      mockSuggestion.action_type = "add_video";
+      const wrapper = mount(SuggestionCard, {
+        props: { suggestion: mockSuggestion },
+      });
+
+      const actionButton = wrapper
+        .findAll("button")
+        .find((b) => b.text().includes("Add Video"));
+      await actionButton?.trigger("click");
+
+      expect(mockNavigateTo).toHaveBeenCalledWith(
+        "/settings/player-details?tab=athletics"
+      );
+    });
+
+    it("should navigate to player-details Athletics tab when update_video action is clicked", async () => {
+      mockSuggestion.action_type = "update_video";
+      const wrapper = mount(SuggestionCard, {
+        props: { suggestion: mockSuggestion },
+      });
+
+      const actionButton = wrapper
+        .findAll("button")
+        .find((b) => b.text().includes("Update Video"));
+      await actionButton?.trigger("click");
+
+      expect(mockNavigateTo).toHaveBeenCalledWith(
+        "/settings/player-details?tab=athletics"
+      );
     });
   });
 });

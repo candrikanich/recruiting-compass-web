@@ -152,13 +152,13 @@ function handleAction() {
       );
       break;
     case "add_video":
-      navigateTo("/videos");
+      navigateTo("/settings/player-details?tab=athletics");
       break;
     case "add_school":
       navigateTo("/schools/new");
       break;
     case "update_video":
-      navigateTo("/videos");
+      navigateTo("/settings/player-details?tab=athletics");
       break;
   }
 }
