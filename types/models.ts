@@ -415,8 +415,8 @@ export interface PlayerDetails {
   travel_team_year?: number;
   travel_team_name?: string;
   travel_team_coach?: string;
-  // Video & Course Content
-  video_links?: VideoLink[];
+  // Course Content (video links are stored in the video_links table, see
+  // useVideoLinks/VideoLinkRow — not on PlayerDetails)
   core_courses?: string[];
 }
 
