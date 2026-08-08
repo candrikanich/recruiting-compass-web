@@ -359,6 +359,13 @@ export interface VideoLink {
   title?: string;
 }
 
+export interface VideoLinkRow {
+  id: string; user_id: string; family_unit_id: string | null;
+  platform: "hudl" | "youtube" | "vimeo"; url: string; title: string | null;
+  position: number; health_status: "healthy" | "broken" | "unknown";
+  last_health_check: string | null; created_at: string; updated_at: string;
+}
+
 export interface PlayerDetails {
   graduation_year?: number;
   primary_sport?: string;
@@ -407,8 +414,8 @@ export interface PlayerDetails {
   travel_team_year?: number;
   travel_team_name?: string;
   travel_team_coach?: string;
-  // Video & Course Content
-  video_links?: VideoLink[];
+  // Course Content (video links are stored in the video_links table, see
+  // useVideoLinks/VideoLinkRow — not on PlayerDetails)
   core_courses?: string[];
 }
 

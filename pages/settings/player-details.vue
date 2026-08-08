@@ -162,8 +162,6 @@
             :trigger-save="triggerSave"
             :toggle-position="togglePosition"
             :is-position-selected="isPositionSelected"
-            :add-video-link="addVideoLink"
-            :remove-video-link="removeVideoLink"
             :bats-options="BATS_OPTIONS"
             :throws-options="THROWS_OPTIONS"
             v-model:height-feet="heightFeet"
@@ -321,6 +319,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
+import { useRoute } from "#app";
 import { usePlayerProfile } from "~/composables/usePlayerProfile";
 import { useFormValidation } from "~/composables/useFormValidation";
 import { usePlayerDetailsForm } from "~/composables/usePlayerDetailsForm";
@@ -338,6 +337,7 @@ definePageMeta({
 
 const userStore = useUserStore();
 const schoolStore = useSchoolStore();
+const route = useRoute();
 const previewSchools = computed(() =>
   schoolStore.schools.map((s) => ({ id: s.id, name: s.name })),
 );
@@ -345,7 +345,8 @@ const { errors, clearErrors, hasErrors } = useFormValidation();
 
 const isParentRole = computed(() => userStore.user?.role === "parent");
 
-const currentTab = ref("basics");
+const validTabs = ["basics", "athletics", "academics", "history", "public-profile"];
+const currentTab = ref(validTabs.includes(route.query.tab as string) ? (route.query.tab as string) : "basics");
 const tabs = [
   { id: "basics", name: "Basics", icon: "i-heroicons-identification" },
   { id: "athletics", name: "Athletics", icon: "i-heroicons-bolt" },
@@ -375,8 +376,6 @@ const {
   commonSports,
   isPositionSelected,
   togglePosition,
-  addVideoLink,
-  removeVideoLink,
   newCourseInput,
   addCourse,
   removeCourse,

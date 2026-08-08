@@ -5,7 +5,14 @@ const mockState = {
   userRow: null as { full_name: string } | null,
   playerPrefsData: null as Record<string, unknown> | null,
   schoolsRows: [] as Array<{ id: string; name: string }>,
+  videoLinksRows: [] as Array<{
+    platform: string;
+    url: string;
+    title: string | null;
+  }>,
 };
+
+const videoLinksEqSpy = vi.fn();
 
 vi.mock("~/server/utils/supabase", () => ({
   createServerSupabaseClient: vi.fn(() => ({
@@ -51,6 +58,22 @@ vi.mock("~/server/utils/supabase", () => ({
           }),
         };
       }
+      if (table === "video_links") {
+        return {
+          select: () => ({
+            eq: (column: string, value: unknown) => {
+              videoLinksEqSpy(column, value);
+              return {
+                order: () =>
+                  Promise.resolve({
+                    data: mockState.videoLinksRows,
+                    error: null,
+                  }),
+              };
+            },
+          }),
+        };
+      }
       return {};
     },
   })),
@@ -90,6 +113,8 @@ describe("GET /api/public/profile/[slug]", () => {
     mockState.userRow = null;
     mockState.playerPrefsData = null;
     mockState.schoolsRows = [];
+    mockState.videoLinksRows = [];
+    videoLinksEqSpy.mockClear();
   });
 
   it("throws 404 when slug not found", async () => {
@@ -150,21 +175,59 @@ describe("GET /api/public/profile/[slug]", () => {
       bio: null,
     };
     mockState.userRow = { full_name: "Jane Doe" };
-    mockState.playerPrefsData = {
-      video_links: [
-        {
-          platform: "hudl",
-          url: "https://hudl.com/video/123",
-          title: "Highlights",
-        },
-      ],
-    };
+    mockState.videoLinksRows = [
+      {
+        platform: "hudl",
+        url: "https://hudl.com/video/123",
+        title: "Highlights",
+      },
+    ];
 
     const result = await handler({} as any);
 
     expect(result.film).toHaveLength(1);
     expect(result.film![0].platform).toBe("hudl");
     expect(result.academics).toBeNull();
+  });
+
+  it("scopes the video_links query to this profile's athlete (user_id), not the whole family", async () => {
+    mockState.profileRow = {
+      id: "p1",
+      is_published: true,
+      user_id: "u1",
+      family_unit_id: "f1",
+      show_academics: false,
+      show_athletic: false,
+      show_film: true,
+      show_schools: false,
+      bio: null,
+    };
+    mockState.userRow = { full_name: "Jane Doe" };
+    mockState.videoLinksRows = [];
+
+    await handler({} as any);
+
+    expect(videoLinksEqSpy).toHaveBeenCalledWith("user_id", "u1");
+  });
+
+  it("returns null film when show_film is false, without querying video_links", async () => {
+    mockState.profileRow = {
+      id: "p1",
+      is_published: true,
+      user_id: "u1",
+      family_unit_id: "f1",
+      show_academics: false,
+      show_athletic: false,
+      show_film: false,
+      show_schools: false,
+      bio: null,
+    };
+    mockState.userRow = { full_name: "Jane Doe" };
+
+    const result = await handler({} as any);
+
+    expect(result.film).toBeNull();
+    expect(videoLinksEqSpy).not.toHaveBeenCalled();
   });
 
   it("returns schools array when show_schools is true", async () => {

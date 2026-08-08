@@ -6,7 +6,7 @@ import { useAutoSave } from "~/composables/useAutoSave";
 import { normalizePositions } from "~/utils/positions";
 import { normalizeHandle, type SocialPlatform } from "~/utils/social";
 import { calculateProfileCompleteness } from "~/utils/profileCompletenessCalculation";
-import type { PlayerDetails, VideoLink } from "~/types/models";
+import type { PlayerDetails } from "~/types/models";
 
 /**
  * Form state, autosave wiring, and field-editing logic for the
@@ -84,7 +84,6 @@ export function usePlayerDetailsForm() {
     travel_team_year: undefined,
     travel_team_name: "",
     travel_team_coach: "",
-    video_links: [] as VideoLink[],
     core_courses: [] as string[],
   });
 
@@ -158,20 +157,6 @@ export function usePlayerDetailsForm() {
     const idx = form.value.positions.indexOf(pos);
     if (idx >= 0) form.value.positions.splice(idx, 1);
     else form.value.positions.push(pos);
-  };
-
-  const addVideoLink = () => {
-    form.value.video_links = [
-      ...(form.value.video_links ?? []),
-      { platform: "hudl", url: "", title: "" },
-    ];
-  };
-
-  const removeVideoLink = (idx: number) => {
-    form.value.video_links = (form.value.video_links ?? []).filter(
-      (_, i) => i !== idx,
-    );
-    triggerSave();
   };
 
   const newCourseInput = ref("");
@@ -285,7 +270,6 @@ export function usePlayerDetailsForm() {
         ...playerDetails,
         positions: normalizePositions(playerDetails.positions),
       };
-      form.value.video_links = playerDetails.video_links ?? [];
       form.value.core_courses = playerDetails.core_courses ?? [];
       initializeHeight(playerDetails.height_inches);
       if (form.value.primary_sport) {
@@ -311,8 +295,6 @@ export function usePlayerDetailsForm() {
     commonSports,
     isPositionSelected,
     togglePosition,
-    addVideoLink,
-    removeVideoLink,
     newCourseInput,
     addCourse,
     removeCourse,

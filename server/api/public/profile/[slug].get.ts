@@ -77,9 +77,10 @@ export default defineEventHandler(async (event) => {
       .eq("id", profile.user_id)
       .maybeSingle();
 
-    // Player details live in user_preferences (category = "player")
+    // Player details live in user_preferences (category = "player").
+    // Film no longer reads this — it's sourced from the video_links table below.
     let details: Record<string, unknown> | null = null;
-    if (profile.show_academics || profile.show_athletic || profile.show_film) {
+    if (profile.show_academics || profile.show_athletic) {
       const { data: prefs } = await supabase
         .from("user_preferences")
         .select("data")
@@ -96,6 +97,23 @@ export default defineEventHandler(async (event) => {
         .select("id, name")
         .eq("family_unit_id", profile.family_unit_id);
       schools = data ?? null;
+    }
+
+    // Service-role client bypasses RLS — explicit ownership filter is the
+    // only guard. Scoped to THIS profile's athlete (user_id), never the
+    // wider family, so a sibling's videos can never leak onto this page.
+    let videoLinks: VideoLink[] | null = null;
+    if (profile.show_film) {
+      const { data } = await supabase
+        .from("video_links")
+        .select("platform, url, title")
+        .eq("user_id", profile.user_id)
+        .order("position", { ascending: true });
+      videoLinks = (data ?? []).map((row) => ({
+        platform: row.platform,
+        url: row.url,
+        title: row.title ?? undefined,
+      })) as VideoLink[];
     }
 
     const result: PublicProfileData = {
@@ -130,10 +148,7 @@ export default defineEventHandler(async (event) => {
                 (details.prep_baseball_id as string | undefined) || undefined,
             }
           : null,
-      film:
-        profile.show_film && details?.video_links
-          ? (details.video_links as VideoLink[])
-          : null,
+      film: profile.show_film ? videoLinks : null,
       schools: profile.show_schools ? (schools ?? []) : null,
     };
 

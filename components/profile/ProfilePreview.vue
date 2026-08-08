@@ -1,11 +1,9 @@
 <!-- components/profile/ProfilePreview.vue -->
 <script setup lang="ts">
-import type {
-  PlayerProfile,
-  PublicProfileData,
-  VideoLink,
-} from "~/types/models";
+import { computed, onMounted } from "vue";
+import type { PlayerProfile, PublicProfileData, VideoLink } from "~/types/models";
 import { useUserStore } from "~/stores/user";
+import { useVideoLinks } from "~/composables/useVideoLinks";
 
 const props = defineProps<{
   settings: PlayerProfile;
@@ -15,6 +13,23 @@ const props = defineProps<{
 }>();
 
 const userStore = useUserStore();
+
+// Film preview is sourced from the video_links table — the same source the
+// public profile page and recruiting packet already use — not the (dropped)
+// JSONB `details.video_links` field.
+const { links: videoLinkRows, load: loadVideoLinks } = useVideoLinks();
+
+onMounted(() => {
+  loadVideoLinks();
+});
+
+const filmLinks = computed<VideoLink[]>(() =>
+  videoLinkRows.value.map((row) => ({
+    platform: row.platform,
+    url: row.url,
+    title: row.title ?? undefined,
+  })),
+);
 
 const previewData = computed<PublicProfileData>(() => ({
   playerName: props.playerName,
@@ -49,10 +64,7 @@ const previewData = computed<PublicProfileData>(() => ({
             (props.details.prep_baseball_id as string | undefined) || undefined,
         }
       : null,
-  film:
-    props.settings.show_film && props.details?.video_links
-      ? (props.details.video_links as VideoLink[])
-      : null,
+  film: props.settings.show_film ? filmLinks.value : null,
   schools: props.settings.show_schools ? props.schools : null,
 }));
 </script>

@@ -77,11 +77,10 @@ export default defineEventHandler(async (event) => {
           .from("athlete_task")
           .select(athleteTasksSelect)
           .eq("athlete_id", athleteId),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (supabase as any)
-          .from("videos")
+        supabase
+          .from("video_links")
           .select(videosSelect)
-          .eq("athlete_id", athleteId),
+          .eq("user_id", athleteId),
         supabase.from("events").select(eventsSelect).eq("user_id", athleteId),
       ]);
 
