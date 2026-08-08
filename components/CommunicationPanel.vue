@@ -235,6 +235,18 @@
                         >{{ saveErrors[`email:${row.key}`] }}</span
                       >
                     </div>
+                    <div v-else-if="row.authored" class="flex flex-col gap-0.5">
+                      <input
+                        v-model="emailAuthored[row.key]"
+                        type="text"
+                        placeholder="write for this message…"
+                        class="w-full min-w-0 px-1.5 py-0.5 rounded border border-slate-300 text-xs text-slate-900"
+                        @blur="reresolveSelected"
+                      />
+                      <span class="text-slate-400 text-[10px]"
+                        >for this message only</span
+                      >
+                    </div>
                     <div v-else class="flex items-center gap-2 min-w-0">
                       <span v-if="row.value" class="text-slate-700 truncate">{{
                         row.value
@@ -430,6 +442,18 @@
                         >{{ saveErrors[`text:${row.key}`] }}</span
                       >
                     </div>
+                    <div v-else-if="row.authored" class="flex flex-col gap-0.5">
+                      <input
+                        v-model="textAuthored[row.key]"
+                        type="text"
+                        placeholder="write for this message…"
+                        class="w-full min-w-0 px-1.5 py-0.5 rounded border border-slate-300 text-xs text-slate-900"
+                        @blur="reresolveSelected"
+                      />
+                      <span class="text-slate-400 text-[10px]"
+                        >for this message only</span
+                      >
+                    </div>
                     <div v-else class="flex items-center gap-2 min-w-0">
                       <span v-if="row.value" class="text-slate-700 truncate">{{
                         row.value
@@ -593,6 +617,8 @@ const userStore = useUserStore();
 // inline-edit eligibility; category drives the "Edit in profile" link fallback.
 const varSourcePaths = ref<Map<string, string>>(new Map());
 const varCategories = ref<Map<string, string>>(new Map());
+// key -> source_type; authored vars get a message-only input (filled per send).
+const varSourceTypes = ref<Map<string, string>>(new Map());
 
 // Athlete-owned categories whose non-inline-editable vars link to the profile
 // editor. program/event/system/authored come from elsewhere (no profile link).
@@ -615,6 +641,7 @@ onMounted(async () => {
   const registry = await loadRegistry();
   varSourcePaths.value = new Map(registry.map((v) => [v.key, v.source_path ?? ""]));
   varCategories.value = new Map(registry.map((v) => [v.key, v.category ?? ""]));
+  varSourceTypes.value = new Map(registry.map((v) => [v.key, v.source_type]));
 });
 
 // Lazy-loaded, cached per athlete id. activeAthleteId is role-aware:
@@ -633,6 +660,7 @@ const ensureAthleteContext = async (): Promise<ResolverContext> => {
 
 const composeFromTemplate = async (
   template: CommunicationTemplate,
+  authored: Record<string, string> = {},
 ): Promise<{ subject: string; body: string; values: Record<string, string> }> => {
   const ctx = await ensureAthleteContext();
   const school =
@@ -641,6 +669,7 @@ const composeFromTemplate = async (
     template,
     { coach: props.coach as unknown as Row, school: school as Row | undefined },
     ctx,
+    authored,
   );
   return { subject, body, values };
 };
@@ -655,13 +684,19 @@ interface VariableRow {
   value: string | null;
   editable: boolean;
   sourcePath: string | null;
+  /** Athlete writes this per message (source_type=authored) — message-only input. */
+  authored: boolean;
   /** Show an "Edit in profile" link (athlete-owned data that isn't inline-editable). */
   linkToProfile: boolean;
 }
 
-// Per-row inline-edit state (keyed by variable key, per channel).
+// Per-row inline PROFILE-edit state (keyed by variable key, per channel).
 const emailInputs = ref<Record<string, string>>({});
 const textInputs = ref<Record<string, string>>({});
+// Authored per-MESSAGE values (programNote, updateHook, ...). Not persisted —
+// they fill the template for this send only. Separate from profile inputs.
+const emailAuthored = ref<Record<string, string>>({});
+const textAuthored = ref<Record<string, string>>({});
 // Save error + in-flight row, keyed "<channel>:<key>".
 const saveErrors = ref<Record<string, string>>({});
 const savingKey = ref<string | null>(null);
@@ -693,9 +728,12 @@ const toRows = (
   templateVarKeys(tpl).map((key) => {
     const sourcePath = varSourcePaths.value.get(key) ?? null;
     const editable = canEditProfile.value && !!editableColumnFor(sourcePath);
+    const authored = !editable && varSourceTypes.value.get(key) === "authored";
     const linkToProfile =
-      !editable && PROFILE_CATEGORIES.has(varCategories.value.get(key) ?? "");
-    return { key, value: values[key] ?? null, editable, sourcePath, linkToProfile };
+      !editable &&
+      !authored &&
+      PROFILE_CATEGORIES.has(varCategories.value.get(key) ?? "");
+    return { key, value: values[key] ?? null, editable, sourcePath, authored, linkToProfile };
   });
 
 /** Split rendered body into ordered text/{{unresolved}} segments (no v-html). */
@@ -750,11 +788,13 @@ const { activate: activateTemplate, deactivate: deactivateTemplate } =
 const handleCloseEmail = () => {
   deactivateEmail();
   showEmailComposer.value = false;
+  emailAuthored.value = {};
 };
 
 const handleCloseText = () => {
   deactivateText();
   showTextComposer.value = false;
+  textAuthored.value = {};
 };
 
 const handleCloseTemplate = () => {
@@ -790,6 +830,7 @@ watch(selectedEmailTemplate, async (templateId) => {
   emailResolvedValues.value = values;
   selectedEmailTemplateObj.value = template;
   emailInputs.value = seedInputs(template, values);
+  emailAuthored.value = {};
   emailSendWarning.value = "";
   emailSendConfirmed.value = false;
 });
@@ -807,6 +848,7 @@ watch(selectedTextTemplate, async (templateId) => {
   textResolvedValues.value = values;
   selectedTextTemplateObj.value = template;
   textInputs.value = seedInputs(template, values);
+  textAuthored.value = {};
   textSendWarning.value = "";
   textSendConfirmed.value = false;
 });
@@ -814,12 +856,12 @@ watch(selectedTextTemplate, async (templateId) => {
 // Re-run compose for whichever templates are open (after an inline profile save).
 const reresolveSelected = async () => {
   if (selectedEmailTemplateObj.value) {
-    const r = await composeFromTemplate(selectedEmailTemplateObj.value);
+    const r = await composeFromTemplate(selectedEmailTemplateObj.value, emailAuthored.value);
     emailComposer.value = { subject: r.subject, body: r.body };
     emailResolvedValues.value = r.values;
   }
   if (selectedTextTemplateObj.value) {
-    const r = await composeFromTemplate(selectedTextTemplateObj.value);
+    const r = await composeFromTemplate(selectedTextTemplateObj.value, textAuthored.value);
     textComposer.value = { body: r.body };
     textResolvedValues.value = r.values;
   }
@@ -912,8 +954,13 @@ const passesSendGuardrails = async (channel: "email" | "text"): Promise<boolean>
   if (!athleteUserId) return true; // can't check without an athlete; don't block
   const warnRef = channel === "email" ? emailSendWarning : textSendWarning;
   const confirmedRef = channel === "email" ? emailSendConfirmed : textSendConfirmed;
+  const authored = channel === "email" ? emailAuthored : textAuthored;
   try {
-    const check = await checkSend({ athleteUserId, schoolId: props.school?.id ?? null });
+    const check = await checkSend({
+      athleteUserId,
+      schoolId: props.school?.id ?? null,
+      programNote: authored.value["programNote"] ?? null,
+    });
     if (check.programNoteReused) {
       warnRef.value =
         "Your reason for reaching out was already sent to another program. Coaches notice reused messages — make it specific to this program before sending.";
@@ -937,6 +984,7 @@ const logSentMessage = async (channel: "email" | "text"): Promise<void> => {
   const athleteUserId = activeAthleteId.value;
   if (!athleteUserId) return;
   const tpl = channel === "email" ? selectedEmailTemplateObj.value : selectedTextTemplateObj.value;
+  const authored = channel === "email" ? emailAuthored.value : textAuthored.value;
   try {
     await logSend({
       athleteUserId,
@@ -944,6 +992,8 @@ const logSentMessage = async (channel: "email" | "text"): Promise<void> => {
       coachId: props.coach.id ?? null,
       templateSlug: tpl?.slug ?? null,
       channel,
+      programNote: authored["programNote"] ?? null,
+      updateHook: authored["updateHook"] ?? null,
       subject: channel === "email" ? emailComposer.value.subject : null,
       body: channel === "email" ? emailComposer.value.body : textComposer.value.body,
     });
