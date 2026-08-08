@@ -4,10 +4,13 @@ import {
   resolveVariables,
   renderTemplate,
   findUnresolved,
+  renderEventSchedule,
+  nextEvent,
   type RegistryVar,
   type ResolverContext,
   type Row,
   type MetricRow,
+  type EventLite,
 } from "~/utils/templateResolver";
 import type { CommunicationTemplate } from "~/types/models";
 
@@ -163,6 +166,19 @@ export const useTemplateResolver = () => {
         .limit(1)
         .maybeSingle()) as { data: { file_url: string | null } | null };
       if (transcriptRow?.file_url) derived.transcriptLink = transcriptRow.file_url;
+
+      // Multi-row schedule + next-event vars from the athlete's own events.
+      const { data: eventRows } = (await supabase
+        .from("events")
+        .select("name, start_date, end_date, location, city, state, url")
+        .eq("user_id", athleteUserId)) as { data: EventLite[] | null };
+      if (eventRows?.length) {
+        const schedule = renderEventSchedule(eventRows);
+        if (schedule) derived.eventSchedule = schedule;
+        const next = nextEvent(eventRows);
+        if (next?.name) derived.nextEventName = next.name;
+        if (next?.dates) derived.nextEventDates = next.dates;
+      }
     } catch (err) {
       // Fail-open: return whatever partial context was assembled (matches loadTemplates ethos).
       logger.error("Build athlete context error:", err);

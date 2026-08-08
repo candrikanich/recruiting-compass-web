@@ -94,6 +94,69 @@ const monthYear = (isoDate?: string | null): string | null => {
   return `${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
 };
 
+const monthDay = (isoDate?: string | null): string | null => {
+  if (!isoDate) return null;
+  const d = new Date(isoDate);
+  if (Number.isNaN(d.getTime())) return null;
+  return `${MONTHS[d.getUTCMonth()]} ${d.getUTCDate()}`;
+};
+
+/** Minimal event shape the schedule renderer needs (a subset of the events row). */
+export interface EventLite {
+  name?: string | null;
+  start_date?: string | null;
+  end_date?: string | null;
+  location?: string | null;
+  city?: string | null;
+  state?: string | null;
+  url?: string | null;
+}
+
+const eventLocation = (e: EventLite): string | null => {
+  const cityState = [str(e.city), str(e.state)].filter(Boolean).join(", ");
+  return cityState || str(e.location);
+};
+
+/** Upcoming events (end/start still today or later), soonest first, capped. */
+export function selectUpcomingEvents(events: EventLite[], now: Date, cap = 5): EventLite[] {
+  const today = now.toISOString().slice(0, 10);
+  return [...events]
+    .filter((e) => {
+      const end = e.end_date || e.start_date;
+      return end != null && end.slice(0, 10) >= today;
+    })
+    .sort((a, b) => (a.start_date ?? "").localeCompare(b.start_date ?? ""))
+    .slice(0, cap);
+}
+
+/** Multi-row `{{eventSchedule}}` block. One "- Mon D — name, place" row per event. */
+export function renderEventSchedule(events: EventLite[], now = new Date(), cap = 5): string | null {
+  const rows = selectUpcomingEvents(events, now, cap)
+    .map((e) => {
+      const date = monthDay(e.start_date);
+      const name = str(e.name);
+      if (!date && !name) return null;
+      const loc = eventLocation(e);
+      const head = [date, name].filter(Boolean).join(" — ");
+      return `- ${head}${loc ? `, ${loc}` : ""}`;
+    })
+    .filter((row): row is string => row !== null);
+  return rows.length ? rows.join("\n") : null;
+}
+
+/** The soonest upcoming event — backs `{{nextEventName}}` / `{{nextEventDates}}`. */
+export function nextEvent(
+  events: EventLite[],
+  now = new Date(),
+): { name: string | null; dates: string | null } | null {
+  const next = selectUpcomingEvents(events, now, 1)[0];
+  if (!next) return null;
+  const start = monthDay(next.start_date);
+  const end = monthDay(next.end_date);
+  const dates = start && end && end !== start ? `${start}–${end}` : (start ?? null);
+  return { name: str(next.name), dates };
+}
+
 const rankMetrics = (metrics: MetricRow[]): MetricRow[] =>
   [...metrics].sort((a, b) => {
     if (!!b.is_primary !== !!a.is_primary) return b.is_primary ? 1 : -1;
