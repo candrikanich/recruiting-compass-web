@@ -16,6 +16,16 @@ Tracks mistake patterns (with recurrence counts) and process insights.
 
 ## Bug & Mistake Patterns
 
+### Nested Worktrees Fail the Pre-Push Lint Gate (looks like a network stall)
+
+**Times seen:** 1 | **Last seen:** 2026-08-08
+**Context:** `git push origin develop` kept timing out / appearing to "stall on HTTP/2." Real cause: the `.husky/pre-push` hook runs `npm run lint`, and ESLint reported 24,182 errors, rejecting the push. All errors came from `.worktrees/video-links/` — a nested git worktree (full repo copy) whose `vitest.config.ts` files aren't in `tsconfig.json`, so `parserOptions.project` parse-errors cascaded.
+**Root Cause:** ESLint flat config (`eslint.config.js`) does NOT honor `.gitignore`. `.worktrees` was gitignored but still linted. Also `git push … | tail` reports the pipe's exit (tail = 0), masking git's failure — the push looked like it succeeded/stalled rather than being rejected.
+**Prevention:**
+- `.worktrees` + `.worktrees/**/*` added to the ESLint global `ignores` block (commit `61445a6b`). Worktrees are separate checkouts, never the branch's source — always exclude them.
+- Verify a push landed by ref-diff (`git ls-remote origin <branch>` vs `git rev-parse <branch>`), NEVER by the piped exit code.
+- Flaky-DNS workaround for this repo's pushes: `git -c http.version=HTTP/1.1 push …`.
+
 ### Nuxt Silently Disables Incompatible Modules (and Their Dependents)
 
 **Times seen:** 1 | **Last seen:** 2026-08-06
