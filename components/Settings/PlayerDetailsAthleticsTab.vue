@@ -202,26 +202,19 @@
       </div>
       <div class="p-6 space-y-4">
         <div
-          v-for="(link, idx) in form.video_links"
-          :key="idx"
+          v-for="link in videoLinks.links.value"
+          :key="link.id"
           class="flex items-center gap-3"
         >
           <select
-            :value="(form.video_links ?? [])[idx].platform"
+            :value="link.platform"
             :disabled="isParentRole"
             @change="
-              (e) => {
-                form.video_links = (form.video_links ?? []).map((l, i) =>
-                  i === idx
-                    ? {
-                        ...l,
-                        platform: (e.target as HTMLSelectElement).value as
-                          'hudl' | 'youtube' | 'vimeo',
-                      }
-                    : l,
-                );
-                triggerSave();
-              }
+              (e) =>
+                handleUpdate(link.id, {
+                  platform: (e.target as HTMLSelectElement).value as
+                    'hudl' | 'youtube' | 'vimeo',
+                })
             "
             class="px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-700 focus:ring-2 focus:ring-blue-500 transition disabled:opacity-50"
           >
@@ -230,45 +223,34 @@
             <option value="vimeo">Vimeo</option>
           </select>
           <input
-            :value="(form.video_links ?? [])[idx].url"
+            :value="link.url"
             :disabled="isParentRole"
             type="url"
             placeholder="https://..."
             @blur="
-              (e) => {
-                form.video_links = (form.video_links ?? []).map((l, i) =>
-                  i === idx
-                    ? { ...l, url: (e.target as HTMLInputElement).value }
-                    : l,
-                );
-                triggerSave();
-              }
+              (e) =>
+                handleUpdate(link.id, {
+                  url: (e.target as HTMLInputElement).value,
+                })
             "
             class="flex-1 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 transition disabled:opacity-50"
           />
           <input
-            :value="(form.video_links ?? [])[idx].title"
+            :value="link.title"
             :disabled="isParentRole"
             type="text"
             placeholder="Title (optional)"
             @blur="
-              (e) => {
-                form.video_links = (form.video_links ?? []).map((l, i) =>
-                  i === idx
-                    ? {
-                        ...l,
-                        title: (e.target as HTMLInputElement).value,
-                      }
-                    : l,
-                );
-                triggerSave();
-              }
+              (e) =>
+                handleUpdate(link.id, {
+                  title: (e.target as HTMLInputElement).value,
+                })
             "
             class="w-32 px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 transition disabled:opacity-50"
           />
           <button
             v-if="!isParentRole"
-            @click="removeVideoLink(idx)"
+            @click="handleRemove(link.id)"
             type="button"
             class="p-2 text-slate-400 hover:text-red-500 transition rounded-lg hover:bg-red-50"
             title="Remove"
@@ -277,17 +259,44 @@
           </button>
         </div>
 
-        <button
-          v-if="!isParentRole && (form.video_links ?? []).length < 5"
-          @click="addVideoLink"
-          type="button"
-          class="inline-flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-700 py-2"
+        <!-- Add form: a link is only created once the URL is valid, so we
+             never POST a blank placeholder row. -->
+        <div
+          v-if="!isParentRole && videoLinks.links.value.length < 5"
+          class="flex items-center gap-3"
         >
-          <UIcon name="i-heroicons-plus" class="w-4 h-4" />
-          Add Video Link
-        </button>
+          <select
+            v-model="newLinkPlatform"
+            class="px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-700 focus:ring-2 focus:ring-blue-500 transition"
+          >
+            <option value="hudl">Hudl</option>
+            <option value="youtube">YouTube</option>
+            <option value="vimeo">Vimeo</option>
+          </select>
+          <input
+            v-model="newLinkUrl"
+            type="url"
+            placeholder="https://..."
+            class="flex-1 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 transition"
+          />
+          <input
+            v-model="newLinkTitle"
+            type="text"
+            placeholder="Title (optional)"
+            class="w-32 px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 transition"
+          />
+          <button
+            @click="handleAdd"
+            type="button"
+            :disabled="!isNewLinkUrlValid"
+            class="inline-flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-700 py-2 px-3 disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <UIcon name="i-heroicons-plus" class="w-4 h-4" />
+            Add
+          </button>
+        </div>
         <p
-          v-if="(form.video_links ?? []).length >= 5"
+          v-if="videoLinks.links.value.length >= 5"
           class="text-xs text-slate-500"
         >
           Maximum 5 video links.
@@ -298,7 +307,10 @@
 </template>
 
 <script setup lang="ts">
+import { computed, onMounted, ref } from "vue";
 import type { PlayerDetails } from "~/types/models";
+import { useVideoLinks } from "~/composables/useVideoLinks";
+import { useAppToast } from "~/composables/useAppToast";
 
 defineProps<{
   form: PlayerDetails;
@@ -308,12 +320,76 @@ defineProps<{
   triggerSave: () => void;
   togglePosition: (pos: string) => void;
   isPositionSelected: (pos: string) => boolean;
-  addVideoLink: () => void;
-  removeVideoLink: (idx: number) => void;
   batsOptions: readonly { value: "R" | "L" | "S"; label: string }[];
   throwsOptions: readonly { value: "R" | "L"; label: string }[];
 }>();
 
 const heightFeet = defineModel<number | undefined>("heightFeet");
 const heightInches = defineModel<number | undefined>("heightInches");
+
+const videoLinks = useVideoLinks();
+const { showToast } = useAppToast();
+
+onMounted(() => {
+  videoLinks.load();
+});
+
+const newLinkPlatform = ref<"hudl" | "youtube" | "vimeo">("hudl");
+const newLinkUrl = ref("");
+const newLinkTitle = ref("");
+
+const isNewLinkUrlValid = computed(() => {
+  try {
+    new URL(newLinkUrl.value);
+    return true;
+  } catch {
+    return false;
+  }
+});
+
+// Each field edit lands on that row alone — the cron-written
+// health_status/last_health_check on other rows is never touched.
+const handleAdd = async () => {
+  if (!isNewLinkUrlValid.value) return;
+  try {
+    await videoLinks.add({
+      platform: newLinkPlatform.value,
+      url: newLinkUrl.value,
+      title: newLinkTitle.value.trim() || undefined,
+    });
+    newLinkPlatform.value = "hudl";
+    newLinkUrl.value = "";
+    newLinkTitle.value = "";
+  } catch (err) {
+    showToast(
+      err instanceof Error ? err.message : "Failed to add video link",
+      "error",
+    );
+  }
+};
+
+const handleUpdate = async (
+  id: string,
+  patch: { platform?: "hudl" | "youtube" | "vimeo"; url?: string; title?: string },
+) => {
+  try {
+    await videoLinks.update(id, patch);
+  } catch (err) {
+    showToast(
+      err instanceof Error ? err.message : "Failed to update video link",
+      "error",
+    );
+  }
+};
+
+const handleRemove = async (id: string) => {
+  try {
+    await videoLinks.remove(id);
+  } catch (err) {
+    showToast(
+      err instanceof Error ? err.message : "Failed to remove video link",
+      "error",
+    );
+  }
+};
 </script>

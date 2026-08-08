@@ -162,8 +162,6 @@
             :trigger-save="triggerSave"
             :toggle-position="togglePosition"
             :is-position-selected="isPositionSelected"
-            :add-video-link="addVideoLink"
-            :remove-video-link="removeVideoLink"
             :bats-options="BATS_OPTIONS"
             :throws-options="THROWS_OPTIONS"
             v-model:height-feet="heightFeet"
@@ -378,8 +376,6 @@ const {
   commonSports,
   isPositionSelected,
   togglePosition,
-  addVideoLink,
-  removeVideoLink,
   newCourseInput,
   addCourse,
   removeCourse,
