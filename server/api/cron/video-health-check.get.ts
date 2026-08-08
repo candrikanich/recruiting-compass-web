@@ -8,9 +8,11 @@
  */
 
 import { defineEventHandler, createError, getHeader } from "h3";
+import { isIP } from "node:net";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
 import { useLogger } from "~/server/utils/logger";
 import { verifySharedSecret } from "~/server/utils/secrets";
+import { isPrivateIp, resolvesToPublicIp } from "~/server/utils/faviconLookup";
 import type { Database } from "~/types/database";
 
 type VideoLinkUpdate = Database["public"]["Tables"]["video_links"]["Update"];
@@ -23,10 +25,36 @@ interface CronResult {
   broken: number;
 }
 
-async function checkLinkHealth(url: string): Promise<"healthy" | "broken"> {
+/**
+ * video_links.url is user-supplied, so this HEAD probe is an SSRF sink even
+ * though the cron itself is secret-gated. Gate every target the same way the
+ * favicon lookup does: only http(s), reject IP-literals in private ranges, and
+ * DNS-pre-resolve hostnames so nothing pointing at loopback / RFC1918 /
+ * link-local (169.254 metadata) is ever fetched. redirect: "manual" stops a
+ * public host from 302-ing the probe into internal space. Residual DNS-rebinding
+ * TOCTOU is accepted, same as faviconLookup.
+ */
+async function checkLinkHealth(rawUrl: string): Promise<"healthy" | "broken"> {
+  let url: URL;
+  try {
+    url = new URL(rawUrl);
+  } catch {
+    return "broken";
+  }
+
+  if (url.protocol !== "http:" && url.protocol !== "https:") return "broken";
+
+  const host = url.hostname;
+  if (isIP(host)) {
+    if (isPrivateIp(host)) return "broken";
+  } else if (!(await resolvesToPublicIp(host))) {
+    return "broken";
+  }
+
   try {
     const response = await fetch(url, {
       method: "HEAD",
+      redirect: "manual",
       signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
     });
     return response.ok || (response.status >= 300 && response.status < 400)

@@ -64,7 +64,7 @@ export function isPrivateIp(address: string): boolean {
  * Resolve a hostname and confirm every address is publicly routable.
  * Unresolvable hosts return false — nothing legitimate to fetch there anyway.
  */
-async function resolvesToPublicIp(host: string): Promise<boolean> {
+export async function resolvesToPublicIp(host: string): Promise<boolean> {
   try {
     const addresses = await lookup(host, { all: true, verbatim: true });
     return (
