@@ -2903,6 +2903,63 @@ export type Database = {
           },
         ];
       };
+      video_links: {
+        Row: {
+          created_at: string;
+          family_unit_id: string | null;
+          health_status: string;
+          id: string;
+          last_health_check: string | null;
+          platform: string;
+          position: number;
+          title: string | null;
+          updated_at: string;
+          url: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          family_unit_id?: string | null;
+          health_status?: string;
+          id?: string;
+          last_health_check?: string | null;
+          platform: string;
+          position?: number;
+          title?: string | null;
+          updated_at?: string;
+          url: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          family_unit_id?: string | null;
+          health_status?: string;
+          id?: string;
+          last_health_check?: string | null;
+          platform?: string;
+          position?: number;
+          title?: string | null;
+          updated_at?: string;
+          url?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "video_links_family_unit_id_fkey";
+            columns: ["family_unit_id"];
+            isOneToOne: false;
+            referencedRelation: "family_units";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "video_links_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;
