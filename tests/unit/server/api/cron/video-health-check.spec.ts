@@ -17,6 +17,20 @@ vi.mock("~/server/utils/supabase", () => ({
   createServerSupabaseClient: () => mockSupabase,
 }));
 
+// SSRF gate control: real isPrivateIp (so IP-literal tests exercise the real
+// range logic), but DNS resolution is stubbed so unit tests never touch the
+// network. ssrfState survives vi.resetModules() because the factory closes
+// over this top-level object, letting each test toggle the DNS verdict.
+const ssrfState = { publicResolve: true };
+vi.mock("~/server/utils/faviconLookup", async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import("~/server/utils/faviconLookup")>();
+  return {
+    ...actual,
+    resolvesToPublicIp: vi.fn(async () => ssrfState.publicResolve),
+  };
+});
+
 vi.mock("~/server/utils/logger", () => ({
   useLogger: () => ({
     info: vi.fn(),
@@ -77,6 +91,7 @@ describe("GET /api/cron/video-health-check", () => {
     vi.clearAllMocks();
     vi.resetModules();
     vi.stubGlobal("fetch", vi.fn());
+    ssrfState.publicResolve = true;
   });
 
   it("rejects a request with no cron secret (401)", async () => {
@@ -106,7 +121,7 @@ describe("GET /api/cron/video-health-check", () => {
     await handler(fakeEvent({ authorization: "Bearer test-cron-secret" }));
 
     expect(fetch).toHaveBeenCalledWith(
-      "https://ok.example",
+      expect.objectContaining({ href: "https://ok.example/" }),
       expect.objectContaining({ method: "HEAD" }),
     );
     expect(updateMock).toHaveBeenCalledWith(
@@ -155,6 +170,80 @@ describe("GET /api/cron/video-health-check", () => {
       }),
     );
   });
+
+  it("sends the HEAD probe with redirect: manual (no follow into internal space)", async () => {
+    mockLinks([{ id: "link-r", url: "https://ok.example" }]);
+    (fetch as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ok: true,
+      status: 200,
+    });
+    const handler = await loadHandler();
+
+    await handler(fakeEvent({ authorization: "Bearer test-cron-secret" }));
+
+    expect(fetch).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ method: "HEAD", redirect: "manual" }),
+    );
+  });
+
+  // --- SSRF regression: user-supplied video_links.url must never reach a
+  // private/loopback/link-local target, and non-http(s) schemes are refused. ---
+
+  it.each([
+    ["loopback IPv4", "http://127.0.0.1/admin"],
+    ["cloud metadata", "http://169.254.169.254/latest/meta-data/"],
+    ["RFC1918", "https://10.0.0.5/internal"],
+    ["IPv6 loopback", "http://[::1]/"],
+  ])(
+    "marks a private IP-literal url (%s) as broken without fetching",
+    async (_label, url) => {
+      const updateMock = mockLinks([{ id: "link-ssrf", url }]);
+      const handler = await loadHandler();
+
+      await handler(fakeEvent({ authorization: "Bearer test-cron-secret" }));
+
+      expect(fetch).not.toHaveBeenCalled();
+      expect(updateMock).toHaveBeenCalledWith(
+        expect.objectContaining({ health_status: "broken" }),
+      );
+    },
+  );
+
+  it("marks a hostname resolving to a private IP as broken without fetching", async () => {
+    ssrfState.publicResolve = false;
+    const updateMock = mockLinks([
+      { id: "link-rebind", url: "https://rebind.attacker.example/probe" },
+    ]);
+    const handler = await loadHandler();
+
+    await handler(fakeEvent({ authorization: "Bearer test-cron-secret" }));
+
+    expect(fetch).not.toHaveBeenCalled();
+    expect(updateMock).toHaveBeenCalledWith(
+      expect.objectContaining({ health_status: "broken" }),
+    );
+  });
+
+  it.each([
+    ["file", "file:///etc/passwd"],
+    ["ftp", "ftp://internal.example/secret"],
+    ["gopher", "gopher://127.0.0.1:70/"],
+    ["not a url", "not-a-valid-url"],
+  ])(
+    "marks a non-http(s) / unparseable url (%s) as broken without fetching",
+    async (_label, url) => {
+      const updateMock = mockLinks([{ id: "link-scheme", url }]);
+      const handler = await loadHandler();
+
+      await handler(fakeEvent({ authorization: "Bearer test-cron-secret" }));
+
+      expect(fetch).not.toHaveBeenCalled();
+      expect(updateMock).toHaveBeenCalledWith(
+        expect.objectContaining({ health_status: "broken" }),
+      );
+    },
+  );
 
   it("checks every link even when one throws", async () => {
     const updateMock = mockLinks([

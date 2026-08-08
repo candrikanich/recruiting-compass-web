@@ -44,7 +44,9 @@ async function checkLinkHealth(rawUrl: string): Promise<"healthy" | "broken"> {
 
   if (url.protocol !== "http:" && url.protocol !== "https:") return "broken";
 
-  const host = url.hostname;
+  // URL.hostname keeps the brackets on IPv6 literals ("[::1]"), which isIP
+  // rejects — strip them so the private-range check actually sees the address.
+  const host = url.hostname.replace(/^\[|\]$/g, "");
   if (isIP(host)) {
     if (isPrivateIp(host)) return "broken";
   } else if (!(await resolvesToPublicIp(host))) {
