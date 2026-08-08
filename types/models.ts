@@ -639,7 +639,7 @@ export interface CommunicationTemplate {
   user_id: string | null; // null for predefined templates
   name: string;
   description?: string | null;
-  type: "email" | "message" | "phone_script";
+  type: "email" | "message" | "phone_script" | "social";
   subject?: string | null;
   body: string;
   tags?: string[];
@@ -650,6 +650,14 @@ export interface CommunicationTemplate {
   use_count: number;
   created_at?: string;
   updated_at?: string;
+  // Coach-outreach fields (migration 20260816000000)
+  slug?: string | null;
+  stage?: string | null;
+  contact_window?: "pre" | "post" | "any";
+  required_variables?: string[];
+  send_timing_note?: string | null;
+  length_target?: string | null;
+  sort_order?: number;
 }
 
 export interface InteractionAutomation {

@@ -115,6 +115,86 @@ export type Database = {
           },
         ]
       }
+      athlete_messages: {
+        Row: {
+          body: string | null
+          channel: string | null
+          coach_id: string | null
+          created_at: string
+          created_by: string | null
+          family_unit_id: string | null
+          id: string
+          program_note: string | null
+          school_id: string | null
+          sent_at: string
+          subject: string | null
+          template_slug: string | null
+          update_hook: string | null
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          channel?: string | null
+          coach_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          family_unit_id?: string | null
+          id?: string
+          program_note?: string | null
+          school_id?: string | null
+          sent_at?: string
+          subject?: string | null
+          template_slug?: string | null
+          update_hook?: string | null
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          channel?: string | null
+          coach_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          family_unit_id?: string | null
+          id?: string
+          program_note?: string | null
+          school_id?: string | null
+          sent_at?: string
+          subject?: string | null
+          template_slug?: string | null
+          update_hook?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "athlete_messages_coach_id_fkey"
+            columns: ["coach_id"]
+            isOneToOne: false
+            referencedRelation: "coaches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "athlete_messages_family_unit_id_fkey"
+            columns: ["family_unit_id"]
+            isOneToOne: false
+            referencedRelation: "family_units"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "athlete_messages_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "athlete_messages_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       athlete_task: {
         Row: {
           athlete_id: string

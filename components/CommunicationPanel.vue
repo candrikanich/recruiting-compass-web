@@ -552,6 +552,7 @@ import { useFocusTrap } from "~/composables/useFocusTrap";
 import { useFamilyCtx } from "~/composables/useFamilyCtx";
 import { useTemplateResolver } from "~/composables/useTemplateResolver";
 import { useProfileFieldWrite } from "~/composables/useProfileFieldWrite";
+import { useAthleteMessages } from "~/composables/useAthleteMessages";
 import { useUserStore } from "~/stores/user";
 import { getRoleLabel } from "~/utils/coachLabels";
 import { findUnresolved } from "~/utils/templateResolver";
@@ -582,6 +583,10 @@ const { getTemplatesByType, loadTemplates } = useCommunicationTemplates();
 const { activeAthleteId } = useFamilyCtx();
 const { buildAthleteContext, resolveTemplate, loadRegistry } = useTemplateResolver();
 const { writeField } = useProfileFieldWrite();
+const { checkSend, logSend } = useAthleteMessages();
+// Two-step confirm: a timing warning arms this; the next send click proceeds.
+const emailSendConfirmed = ref(false);
+const textSendConfirmed = ref(false);
 const userStore = useUserStore();
 
 // key -> source_path / category, from the DB registry. source_path drives
@@ -786,6 +791,7 @@ watch(selectedEmailTemplate, async (templateId) => {
   selectedEmailTemplateObj.value = template;
   emailInputs.value = seedInputs(template, values);
   emailSendWarning.value = "";
+  emailSendConfirmed.value = false;
 });
 
 watch(selectedTextTemplate, async (templateId) => {
@@ -802,6 +808,7 @@ watch(selectedTextTemplate, async (templateId) => {
   selectedTextTemplateObj.value = template;
   textInputs.value = seedInputs(template, values);
   textSendWarning.value = "";
+  textSendConfirmed.value = false;
 });
 
 // Re-run compose for whichever templates are open (after an inline profile save).
@@ -855,8 +862,11 @@ const sendEmail = async () => {
     return;
   }
   emailSendWarning.value = "";
-  const mailtoLink = `mailto:${props.coach.email}?subject=${encodeURIComponent(emailComposer.value.subject)}&body=${encodeURIComponent(emailComposer.value.body)}`;
-  window.location.href = mailtoLink;
+
+  if (!(await passesSendGuardrails("email"))) return;
+
+  await logSentMessage("email");
+  window.location.href = `mailto:${props.coach.email}?subject=${encodeURIComponent(emailComposer.value.subject)}&body=${encodeURIComponent(emailComposer.value.body)}`;
 
   if (shouldLogInteraction.value) {
     emit("interaction-logged", {
@@ -866,6 +876,7 @@ const sendEmail = async () => {
     });
   }
 
+  emailSendConfirmed.value = false;
   handleCloseEmail();
 };
 
@@ -875,8 +886,11 @@ const sendText = async () => {
     return;
   }
   textSendWarning.value = "";
-  const smsLink = `sms:${props.coach.phone?.replace(/\D/g, "")}?body=${encodeURIComponent(textComposer.value.body)}`;
-  window.location.href = smsLink;
+
+  if (!(await passesSendGuardrails("text"))) return;
+
+  await logSentMessage("text");
+  window.location.href = `sms:${props.coach.phone?.replace(/\D/g, "")}?body=${encodeURIComponent(textComposer.value.body)}`;
 
   if (shouldLogInteraction.value) {
     emit("interaction-logged", {
@@ -886,7 +900,56 @@ const sendText = async () => {
     });
   }
 
+  textSendConfirmed.value = false;
   handleCloseText();
+};
+
+// --- Phase 4 send guardrails: dedupe (block) + timing (confirm) + logging -----
+
+/** Returns false when the send should stop (blocked, or awaiting confirm). */
+const passesSendGuardrails = async (channel: "email" | "text"): Promise<boolean> => {
+  const athleteUserId = activeAthleteId.value;
+  if (!athleteUserId) return true; // can't check without an athlete; don't block
+  const warnRef = channel === "email" ? emailSendWarning : textSendWarning;
+  const confirmedRef = channel === "email" ? emailSendConfirmed : textSendConfirmed;
+  try {
+    const check = await checkSend({ athleteUserId, schoolId: props.school?.id ?? null });
+    if (check.programNoteReused) {
+      warnRef.value =
+        "Your reason for reaching out was already sent to another program. Coaches notice reused messages — make it specific to this program before sending.";
+      return false; // hard block
+    }
+    if (!confirmedRef.value && (check.recentContact || check.messageCountToSchool >= 2)) {
+      warnRef.value = check.recentContact
+        ? `You last messaged this program ${check.daysSinceLastContact ?? "a few"} day(s) ago. Click Send again to send anyway.`
+        : `You've already sent ${check.messageCountToSchool} messages here — consider adding more programs. Click Send again to send anyway.`;
+      confirmedRef.value = true; // arm; next click proceeds
+      return false;
+    }
+  } catch {
+    // A guardrail lookup failure must never block a legitimate send.
+  }
+  warnRef.value = "";
+  return true;
+};
+
+const logSentMessage = async (channel: "email" | "text"): Promise<void> => {
+  const athleteUserId = activeAthleteId.value;
+  if (!athleteUserId) return;
+  const tpl = channel === "email" ? selectedEmailTemplateObj.value : selectedTextTemplateObj.value;
+  try {
+    await logSend({
+      athleteUserId,
+      schoolId: props.school?.id ?? null,
+      coachId: props.coach.id ?? null,
+      templateSlug: tpl?.slug ?? null,
+      channel,
+      subject: channel === "email" ? emailComposer.value.subject : null,
+      body: channel === "email" ? emailComposer.value.body : textComposer.value.body,
+    });
+  } catch {
+    // Logging failure must not block the send.
+  }
 };
 
 const openInstagram = () => {
