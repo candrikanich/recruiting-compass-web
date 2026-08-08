@@ -56,7 +56,7 @@ export async function triggerSuggestionUpdate(
     // Fetch all athlete data required for rule evaluation.
     // grade_level is derived from graduation_year stored in user_preferences
     // (the profiles table was removed — see migration 041).
-    const [playerPrefs, schools, interactions, tasks, athleteTasks, events] =
+    const [playerPrefs, schools, interactions, tasks, athleteTasks, videos, events] =
       await Promise.all([
         supabase
           .from("user_preferences")
@@ -68,6 +68,10 @@ export async function triggerSuggestionUpdate(
         supabase.from("interactions").select("*").eq("logged_by", athleteId),
         supabase.from("task").select("*"),
         supabase.from("athlete_task").select("*").eq("athlete_id", athleteId),
+        supabase
+          .from("video_links")
+          .select("id, health_status, title")
+          .eq("user_id", athleteId),
         supabase.from("events").select("*").eq("user_id", athleteId),
       ]);
 
@@ -87,7 +91,7 @@ export async function triggerSuggestionUpdate(
       interactions: interactions.data || [],
       tasks: tasks.data || [],
       athleteTasks: athleteTasks.data || [],
-      videos: [],
+      videos: videos.data || [],
       events: events.data || [],
     };
 
