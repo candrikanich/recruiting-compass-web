@@ -608,6 +608,7 @@ const { activeAthleteId } = useFamilyCtx();
 const { buildAthleteContext, resolveTemplate, loadRegistry } = useTemplateResolver();
 const { writeField } = useProfileFieldWrite();
 const { checkSend, logSend } = useAthleteMessages();
+const { evaluate: evaluateContactWindow, filterTemplatesByWindow } = useContactWindow();
 // Two-step confirm: a timing warning arms this; the next send click proceeds.
 const emailSendConfirmed = ref(false);
 const textSendConfirmed = ref(false);
@@ -642,7 +643,17 @@ onMounted(async () => {
   varSourcePaths.value = new Map(registry.map((v) => [v.key, v.source_path ?? ""]));
   varCategories.value = new Map(registry.map((v) => [v.key, v.category ?? ""]));
   varSourceTypes.value = new Map(registry.map((v) => [v.key, v.source_type]));
+  await refreshContactWindow();
 });
+
+// Re-evaluate the window if the target school (division) or the active athlete
+// changes — either can flip pre <-> open.
+watch(
+  () => [props.school?.division, activeAthleteId.value],
+  () => {
+    refreshContactWindow();
+  },
+);
 
 // Lazy-loaded, cached per athlete id. activeAthleteId is role-aware:
 // athlete-role -> own users.id; parent-role -> the selected child's users.id.
@@ -656,6 +667,22 @@ const ensureAthleteContext = async (): Promise<ResolverContext> => {
   athleteCtx.value = await buildAthleteContext(id);
   athleteCtxId.value = id;
   return athleteCtx.value;
+};
+
+// Per-sport/division NCAA contact window. Defaults to "open" (show the standard
+// intro) and only flips to "pre" once we've confirmed the athlete is ahead of
+// the date their coaches may reply — the swap is silent to the athlete.
+const contactWindowState = ref<"pre" | "open">("open");
+
+const refreshContactWindow = async (): Promise<void> => {
+  const ctx = await ensureAthleteContext();
+  const gradYear = ctx.tables?.users?.graduation_year as number | null | undefined;
+  const { state } = await evaluateContactWindow({
+    sport: ctx.derived?.sport ?? null,
+    division: props.school?.division ?? null,
+    gradYear: gradYear ?? null,
+  });
+  contactWindowState.value = state;
 };
 
 const composeFromTemplate = async (
@@ -811,8 +838,12 @@ const selectedTextTemplate = ref("");
 const emailComposer = ref({ subject: "", body: "" });
 const textComposer = ref({ body: "" });
 
-const emailTemplates = computed(() => getTemplatesByType("email"));
-const messageTemplates = computed(() => getTemplatesByType("message"));
+const emailTemplates = computed(() =>
+  filterTemplatesByWindow(getTemplatesByType("email"), contactWindowState.value),
+);
+const messageTemplates = computed(() =>
+  filterTemplatesByWindow(getTemplatesByType("message"), contactWindowState.value),
+);
 
 // Watch for template selection — resolve from live athlete/coach/school data.
 // Authored variables (programNote, updateHook, ...) stay as {{key}} placeholders
