@@ -113,6 +113,8 @@ export default [
       ".output",
       ".vercel",
       ".vercel/**/*",
+      ".worktrees",
+      ".worktrees/**/*",
       "coverage",
       "*.cjs",
       ".vite",
