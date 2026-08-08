@@ -231,7 +231,7 @@ export const useUserStore = defineStore("user", () => {
   }
 
   function updateProfileFields(
-    fields: Partial<Pick<User, "full_name" | "phone" | "date_of_birth">>,
+    fields: Partial<Pick<User, "full_name" | "date_of_birth">>,
   ) {
     if (user.value) {
       user.value = { ...user.value, ...fields };

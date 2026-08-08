@@ -127,6 +127,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, nextTick } from "vue";
 import { useFocusTrap } from "~/composables/useFocusTrap";
+import { renderTemplate as interpolateText } from "~/utils/templateResolver";
 import {
   useCommunicationTemplates,
   type CommunicationTemplate,
@@ -173,19 +174,6 @@ const availableTemplates = computed(() => {
   const type = messageTypeMap[props.messageType];
   return allTemplates.value.filter((t) => t.type === type);
 });
-
-// Helper to interpolate text containing variables
-const interpolateText = (
-  text: string,
-  variables: Record<string, string>,
-): string => {
-  let result = text;
-  Object.entries(variables).forEach(([key, value]) => {
-    const pattern = new RegExp(`\\{\\{${key}\\}\\}`, "g");
-    result = result.replace(pattern, value);
-  });
-  return result;
-};
 
 const dialogRef = ref<HTMLElement | null>(null);
 const { activate, deactivate } = useFocusTrap(dialogRef);

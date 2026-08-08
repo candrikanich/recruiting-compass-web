@@ -173,20 +173,102 @@
                 />
               </div>
 
-              <!-- Variables Helper -->
-              <div class="rounded-lg p-3 bg-blue-50 border border-blue-200">
-                <p class="text-xs font-semibold mb-2 text-blue-900">
-                  Available Variables:
-                </p>
-                <div
-                  class="grid grid-cols-2 gap-2 text-xs text-blue-800 font-mono"
+              <!-- Live Preview -->
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-2"
+                  >Preview — what the coach sees</label
                 >
-                  <div>{{ props.playerName }}</div>
-                  <div>{{ props.coach.first_name }}</div>
-                  <div>{{ props.schoolName }}</div>
-                  <div>{{ props.highSchool }}</div>
+                <div
+                  class="w-full px-3 py-2 rounded-lg border border-slate-200 bg-slate-50 text-slate-900 text-sm whitespace-pre-wrap"
+                >
+                  <template
+                    v-for="(seg, i) in emailPreviewSegments"
+                    :key="i"
+                    ><strong
+                      v-if="seg.unresolved"
+                      class="text-amber-600 font-semibold"
+                      >{{ seg.text }}</strong
+                    ><template v-else>{{ seg.text }}</template></template
+                  >
                 </div>
               </div>
+
+              <!-- Variables in this template -->
+              <div
+                v-if="selectedEmailTemplateObj"
+                class="rounded-lg p-3 bg-blue-50 border border-blue-200"
+              >
+                <p class="text-xs font-semibold mb-2 text-blue-900">
+                  Variables in this template
+                </p>
+                <div class="space-y-1">
+                  <div
+                    v-for="row in emailVariableRows"
+                    :key="row.key"
+                    class="grid grid-cols-2 gap-2 text-xs items-center"
+                  >
+                    <span class="font-mono text-blue-800">{{
+                      tokenOf(row.key)
+                    }}</span>
+                    <div v-if="row.editable" class="flex flex-col gap-0.5">
+                      <div class="flex items-center gap-1">
+                        <input
+                          v-model="emailInputs[row.key]"
+                          type="text"
+                          :placeholder="row.value ? '' : 'add…'"
+                          :disabled="savingKey === `email:${row.key}`"
+                          class="flex-1 min-w-0 px-1.5 py-0.5 rounded border border-slate-300 text-xs text-slate-900"
+                          @keydown.enter.prevent="saveField(row, 'email')"
+                        />
+                        <button
+                          type="button"
+                          :disabled="savingKey === `email:${row.key}`"
+                          class="px-1.5 py-0.5 rounded bg-blue-600 text-white text-xs disabled:opacity-50"
+                          @click="saveField(row, 'email')"
+                        >
+                          Save
+                        </button>
+                      </div>
+                      <span
+                        v-if="saveErrors[`email:${row.key}`]"
+                        class="text-red-600 text-[10px]"
+                        >{{ saveErrors[`email:${row.key}`] }}</span
+                      >
+                    </div>
+                    <div v-else-if="row.authored" class="flex flex-col gap-0.5">
+                      <input
+                        v-model="emailAuthored[row.key]"
+                        type="text"
+                        placeholder="write for this message…"
+                        class="w-full min-w-0 px-1.5 py-0.5 rounded border border-slate-300 text-xs text-slate-900"
+                        @blur="reresolveSelected"
+                      />
+                      <span class="text-slate-400 text-[10px]"
+                        >for this message only</span
+                      >
+                    </div>
+                    <div v-else class="flex items-center gap-2 min-w-0">
+                      <span v-if="row.value" class="text-slate-700 truncate">{{
+                        row.value
+                      }}</span>
+                      <span v-else class="text-amber-600 font-medium"
+                        >needs input</span
+                      >
+                      <NuxtLink
+                        v-if="row.linkToProfile"
+                        :to="PROFILE_EDIT_ROUTE"
+                        class="text-blue-600 hover:underline shrink-0"
+                        >Edit in profile →</NuxtLink
+                      >
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Unresolved send warning -->
+              <p v-if="emailSendWarning" class="text-xs text-amber-700">
+                {{ emailSendWarning }}
+              </p>
 
               <!-- Log Interaction Checkbox -->
               <div class="flex items-center gap-2 pt-2">
@@ -205,7 +287,8 @@
             <div class="p-6 border-t border-slate-200 flex gap-3">
               <button
                 @click="sendEmail"
-                class="flex-1 px-4 py-2 bg-linear-to-r from-blue-500 to-blue-600 text-white font-medium rounded-lg hover:from-blue-600 hover:to-blue-700 transition text-sm"
+                :disabled="emailUnresolved.length > 0"
+                class="flex-1 px-4 py-2 bg-linear-to-r from-blue-500 to-blue-600 text-white font-medium rounded-lg hover:from-blue-600 hover:to-blue-700 transition text-sm disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Send Email
               </button>
@@ -297,6 +380,103 @@
                 </p>
               </div>
 
+              <!-- Live Preview -->
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-2"
+                  >Preview — what the coach sees</label
+                >
+                <div
+                  class="w-full px-3 py-2 rounded-lg border border-slate-200 bg-slate-50 text-slate-900 text-sm whitespace-pre-wrap"
+                >
+                  <template
+                    v-for="(seg, i) in textPreviewSegments"
+                    :key="i"
+                    ><strong
+                      v-if="seg.unresolved"
+                      class="text-amber-600 font-semibold"
+                      >{{ seg.text }}</strong
+                    ><template v-else>{{ seg.text }}</template></template
+                  >
+                </div>
+              </div>
+
+              <!-- Variables in this template -->
+              <div
+                v-if="selectedTextTemplateObj"
+                class="rounded-lg p-3 bg-blue-50 border border-blue-200"
+              >
+                <p class="text-xs font-semibold mb-2 text-blue-900">
+                  Variables in this template
+                </p>
+                <div class="space-y-1">
+                  <div
+                    v-for="row in textVariableRows"
+                    :key="row.key"
+                    class="grid grid-cols-2 gap-2 text-xs items-center"
+                  >
+                    <span class="font-mono text-blue-800">{{
+                      tokenOf(row.key)
+                    }}</span>
+                    <div v-if="row.editable" class="flex flex-col gap-0.5">
+                      <div class="flex items-center gap-1">
+                        <input
+                          v-model="textInputs[row.key]"
+                          type="text"
+                          :placeholder="row.value ? '' : 'add…'"
+                          :disabled="savingKey === `text:${row.key}`"
+                          class="flex-1 min-w-0 px-1.5 py-0.5 rounded border border-slate-300 text-xs text-slate-900"
+                          @keydown.enter.prevent="saveField(row, 'text')"
+                        />
+                        <button
+                          type="button"
+                          :disabled="savingKey === `text:${row.key}`"
+                          class="px-1.5 py-0.5 rounded bg-blue-600 text-white text-xs disabled:opacity-50"
+                          @click="saveField(row, 'text')"
+                        >
+                          Save
+                        </button>
+                      </div>
+                      <span
+                        v-if="saveErrors[`text:${row.key}`]"
+                        class="text-red-600 text-[10px]"
+                        >{{ saveErrors[`text:${row.key}`] }}</span
+                      >
+                    </div>
+                    <div v-else-if="row.authored" class="flex flex-col gap-0.5">
+                      <input
+                        v-model="textAuthored[row.key]"
+                        type="text"
+                        placeholder="write for this message…"
+                        class="w-full min-w-0 px-1.5 py-0.5 rounded border border-slate-300 text-xs text-slate-900"
+                        @blur="reresolveSelected"
+                      />
+                      <span class="text-slate-400 text-[10px]"
+                        >for this message only</span
+                      >
+                    </div>
+                    <div v-else class="flex items-center gap-2 min-w-0">
+                      <span v-if="row.value" class="text-slate-700 truncate">{{
+                        row.value
+                      }}</span>
+                      <span v-else class="text-amber-600 font-medium"
+                        >needs input</span
+                      >
+                      <NuxtLink
+                        v-if="row.linkToProfile"
+                        :to="PROFILE_EDIT_ROUTE"
+                        class="text-blue-600 hover:underline shrink-0"
+                        >Edit in profile →</NuxtLink
+                      >
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Unresolved send warning -->
+              <p v-if="textSendWarning" class="text-xs text-amber-700">
+                {{ textSendWarning }}
+              </p>
+
               <!-- Log Interaction Checkbox -->
               <div class="flex items-center gap-2 pt-2">
                 <input
@@ -314,7 +494,8 @@
             <div class="p-6 border-t border-slate-200 flex gap-3">
               <button
                 @click="sendText"
-                class="flex-1 px-4 py-2 bg-linear-to-r from-green-500 to-green-600 text-white font-medium rounded-lg hover:from-green-600 hover:to-green-700 transition text-sm"
+                :disabled="textUnresolved.length > 0"
+                class="flex-1 px-4 py-2 bg-linear-to-r from-green-500 to-green-600 text-white font-medium rounded-lg hover:from-green-600 hover:to-green-700 transition text-sm disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Send Text
               </button>
@@ -389,14 +570,25 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, nextTick } from "vue";
+import { ref, computed, watch, nextTick, onMounted } from "vue";
 import { useCommunicationTemplates } from "~/composables/useCommunicationTemplates";
 import { useFocusTrap } from "~/composables/useFocusTrap";
+import { useFamilyCtx } from "~/composables/useFamilyCtx";
+import { useTemplateResolver } from "~/composables/useTemplateResolver";
+import { useProfileFieldWrite } from "~/composables/useProfileFieldWrite";
+import { useAthleteMessages } from "~/composables/useAthleteMessages";
+import { useUserStore } from "~/stores/user";
 import { getRoleLabel } from "~/utils/coachLabels";
-import type { Coach } from "~/types/models";
+import { findUnresolved } from "~/utils/templateResolver";
+import { editableColumnFor } from "~/utils/editableProfileFields";
+import type { ResolverContext, Row } from "~/utils/templateResolver";
+import type { Coach, School, CommunicationTemplate } from "~/types/models";
 
 interface Props {
   coach: Coach;
+  /** Full selected-school row (3 of 4 call sites already bind :school); unlocks
+   *  division/conference/city/state/twitter vars. Falls back to schoolName. */
+  school?: Partial<School>;
   schoolName?: string;
   playerName?: string;
   highSchool?: string;
@@ -411,7 +603,199 @@ const emit = defineEmits<{
   "interaction-logged": [{ type: string; direction: string; content: string }];
 }>();
 
-const { getTemplatesByType, interpolateTemplate } = useCommunicationTemplates();
+const { getTemplatesByType, loadTemplates } = useCommunicationTemplates();
+const { activeAthleteId } = useFamilyCtx();
+const { buildAthleteContext, resolveTemplate, loadRegistry } = useTemplateResolver();
+const { writeField } = useProfileFieldWrite();
+const { checkSend, logSend } = useAthleteMessages();
+const { evaluate: evaluateContactWindow, filterTemplatesByWindow } = useContactWindow();
+// Two-step confirm: a timing warning arms this; the next send click proceeds.
+const emailSendConfirmed = ref(false);
+const textSendConfirmed = ref(false);
+const userStore = useUserStore();
+
+// key -> source_path / category, from the DB registry. source_path drives
+// inline-edit eligibility; category drives the "Edit in profile" link fallback.
+const varSourcePaths = ref<Map<string, string>>(new Map());
+const varCategories = ref<Map<string, string>>(new Map());
+// key -> source_type; authored vars get a message-only input (filled per send).
+const varSourceTypes = ref<Map<string, string>>(new Map());
+
+// Athlete-owned categories whose non-inline-editable vars link to the profile
+// editor. program/event/system/authored come from elsewhere (no profile link).
+const PROFILE_CATEGORIES = new Set(["player", "academics", "metrics", "contacts"]);
+const PROFILE_EDIT_ROUTE = "/settings/player-details";
+
+// Only the athlete editing their OWN profile can write inline (parents are
+// read-only per product policy). activeAthleteId is role-aware.
+const canEditProfile = computed(
+  () =>
+    userStore.isAthlete &&
+    !!activeAthleteId.value &&
+    activeAthleteId.value === userStore.user?.id,
+);
+
+// Load predefined + user templates + the variable registry into this per-mount
+// composable instance (without loadTemplates the dropdown only shows "Custom").
+onMounted(async () => {
+  loadTemplates();
+  const registry = await loadRegistry();
+  varSourcePaths.value = new Map(registry.map((v) => [v.key, v.source_path ?? ""]));
+  varCategories.value = new Map(registry.map((v) => [v.key, v.category ?? ""]));
+  varSourceTypes.value = new Map(registry.map((v) => [v.key, v.source_type]));
+  await refreshContactWindow();
+});
+
+// Re-evaluate the window if the target school (division) or the active athlete
+// changes — either can flip pre <-> open.
+watch(
+  () => [props.school?.division, activeAthleteId.value],
+  () => {
+    refreshContactWindow();
+  },
+);
+
+// Lazy-loaded, cached per athlete id. activeAthleteId is role-aware:
+// athlete-role -> own users.id; parent-role -> the selected child's users.id.
+const athleteCtx = ref<ResolverContext | null>(null);
+const athleteCtxId = ref<string | null>(null);
+
+const ensureAthleteContext = async (): Promise<ResolverContext> => {
+  const id = activeAthleteId.value;
+  if (!id) return {};
+  if (athleteCtx.value && athleteCtxId.value === id) return athleteCtx.value;
+  athleteCtx.value = await buildAthleteContext(id);
+  athleteCtxId.value = id;
+  return athleteCtx.value;
+};
+
+// Per-sport/division NCAA contact window. Defaults to "open" (show the standard
+// intro) and only flips to "pre" once we've confirmed the athlete is ahead of
+// the date their coaches may reply — the swap is silent to the athlete.
+const contactWindowState = ref<"pre" | "open">("open");
+
+const refreshContactWindow = async (): Promise<void> => {
+  const ctx = await ensureAthleteContext();
+  const gradYear = ctx.tables?.users?.graduation_year as number | null | undefined;
+  const { state } = await evaluateContactWindow({
+    sport: ctx.derived?.sport ?? null,
+    division: props.school?.division ?? null,
+    gradYear: gradYear ?? null,
+  });
+  contactWindowState.value = state;
+};
+
+const composeFromTemplate = async (
+  template: CommunicationTemplate,
+  authored: Record<string, string> = {},
+): Promise<{ subject: string; body: string; values: Record<string, string> }> => {
+  const ctx = await ensureAthleteContext();
+  const school =
+    props.school ?? (props.schoolName ? { name: props.schoolName } : undefined);
+  const { subject, body, values } = await resolveTemplate(
+    template,
+    { coach: props.coach as unknown as Row, school: school as Row | undefined },
+    ctx,
+    authored,
+  );
+  return { subject, body, values };
+};
+
+// --- variables panel + live preview state (Slice 5a/5b) ---------------------
+interface PreviewSegment {
+  text: string;
+  unresolved: boolean;
+}
+interface VariableRow {
+  key: string;
+  value: string | null;
+  editable: boolean;
+  sourcePath: string | null;
+  /** Athlete writes this per message (source_type=authored) — message-only input. */
+  authored: boolean;
+  /** Show an "Edit in profile" link (athlete-owned data that isn't inline-editable). */
+  linkToProfile: boolean;
+}
+
+// Per-row inline PROFILE-edit state (keyed by variable key, per channel).
+const emailInputs = ref<Record<string, string>>({});
+const textInputs = ref<Record<string, string>>({});
+// Authored per-MESSAGE values (programNote, updateHook, ...). Not persisted —
+// they fill the template for this send only. Separate from profile inputs.
+const emailAuthored = ref<Record<string, string>>({});
+const textAuthored = ref<Record<string, string>>({});
+// Save error + in-flight row, keyed "<channel>:<key>".
+const saveErrors = ref<Record<string, string>>({});
+const savingKey = ref<string | null>(null);
+
+const seedInputs = (
+  tpl: CommunicationTemplate | null,
+  values: Record<string, string>,
+): Record<string, string> =>
+  Object.fromEntries(templateVarKeys(tpl).map((k) => [k, values[k] ?? ""]));
+
+const emailResolvedValues = ref<Record<string, string>>({});
+const textResolvedValues = ref<Record<string, string>>({});
+const selectedEmailTemplateObj = ref<CommunicationTemplate | null>(null);
+const selectedTextTemplateObj = ref<CommunicationTemplate | null>(null);
+const emailSendWarning = ref("");
+const textSendWarning = ref("");
+
+/** Render a bare key as its literal {{key}} token (avoids brace nesting in markup). */
+const tokenOf = (key: string): string => `{{${key}}}`;
+
+/** Variables that appear in a template's raw subject+body, first-seen order. */
+const templateVarKeys = (tpl: CommunicationTemplate | null): string[] =>
+  tpl ? [...new Set(findUnresolved(`${tpl.subject ?? ""}\n${tpl.body ?? ""}`))] : [];
+
+const toRows = (
+  tpl: CommunicationTemplate | null,
+  values: Record<string, string>,
+): VariableRow[] =>
+  templateVarKeys(tpl).map((key) => {
+    const sourcePath = varSourcePaths.value.get(key) ?? null;
+    const editable = canEditProfile.value && !!editableColumnFor(sourcePath);
+    const authored = !editable && varSourceTypes.value.get(key) === "authored";
+    const linkToProfile =
+      !editable &&
+      !authored &&
+      PROFILE_CATEGORIES.has(varCategories.value.get(key) ?? "");
+    return { key, value: values[key] ?? null, editable, sourcePath, authored, linkToProfile };
+  });
+
+/** Split rendered body into ordered text/{{unresolved}} segments (no v-html). */
+const toSegments = (body: string): PreviewSegment[] => {
+  const segments: PreviewSegment[] = [];
+  const re = /\{\{\w+\}\}/g;
+  let last = 0;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(body)) !== null) {
+    if (m.index > last)
+      segments.push({ text: body.slice(last, m.index), unresolved: false });
+    segments.push({ text: m[0], unresolved: true });
+    last = m.index + m[0].length;
+  }
+  if (last < body.length)
+    segments.push({ text: body.slice(last), unresolved: false });
+  return segments;
+};
+
+const emailVariableRows = computed(() =>
+  toRows(selectedEmailTemplateObj.value, emailResolvedValues.value),
+);
+const textVariableRows = computed(() =>
+  toRows(selectedTextTemplateObj.value, textResolvedValues.value),
+);
+const emailPreviewSegments = computed(() =>
+  toSegments(emailComposer.value.body),
+);
+const textPreviewSegments = computed(() => toSegments(textComposer.value.body));
+const emailUnresolved = computed(() => [
+  ...new Set(findUnresolved(emailComposer.value.body)),
+]);
+const textUnresolved = computed(() => [
+  ...new Set(findUnresolved(textComposer.value.body)),
+]);
 
 const showEmailComposer = ref(false);
 const showTextComposer = ref(false);
@@ -431,11 +815,13 @@ const { activate: activateTemplate, deactivate: deactivateTemplate } =
 const handleCloseEmail = () => {
   deactivateEmail();
   showEmailComposer.value = false;
+  emailAuthored.value = {};
 };
 
 const handleCloseText = () => {
   deactivateText();
   showTextComposer.value = false;
+  textAuthored.value = {};
 };
 
 const handleCloseTemplate = () => {
@@ -443,18 +829,6 @@ const handleCloseTemplate = () => {
   showTemplateManager.value = false;
 };
 
-// Helper to interpolate text containing variables
-const interpolateText = (
-  text: string,
-  variables: Record<string, string>,
-): string => {
-  let result = text;
-  Object.entries(variables).forEach(([key, value]) => {
-    const pattern = new RegExp(`\\{\\{${key}\\}\\}`, "g");
-    result = result.replace(pattern, value);
-  });
-  return result;
-};
 const showTemplateManager = ref(false);
 const shouldLogInteraction = ref(true);
 
@@ -464,42 +838,88 @@ const selectedTextTemplate = ref("");
 const emailComposer = ref({ subject: "", body: "" });
 const textComposer = ref({ body: "" });
 
-const emailTemplates = computed(() => getTemplatesByType("email"));
-const messageTemplates = computed(() => getTemplatesByType("message"));
+const emailTemplates = computed(() =>
+  filterTemplatesByWindow(getTemplatesByType("email"), contactWindowState.value),
+);
+const messageTemplates = computed(() =>
+  filterTemplatesByWindow(getTemplatesByType("message"), contactWindowState.value),
+);
 
-// Template variables
-const templateVars = {
-  playerName: props.playerName,
-  coachFirstName: props.coach.first_name,
-  schoolName: props.schoolName || "Your School",
-  highSchool: props.highSchool,
+// Watch for template selection — resolve from live athlete/coach/school data.
+// Authored variables (programNote, updateHook, ...) stay as {{key}} placeholders
+// in the editable body for the athlete to fill at compose time.
+watch(selectedEmailTemplate, async (templateId) => {
+  if (!templateId) {
+    selectedEmailTemplateObj.value = null;
+    emailResolvedValues.value = {};
+    return;
+  }
+  const template = emailTemplates.value.find((t) => t.id === templateId);
+  if (!template) return;
+  const { subject, body, values } = await composeFromTemplate(template);
+  emailComposer.value = { subject, body };
+  emailResolvedValues.value = values;
+  selectedEmailTemplateObj.value = template;
+  emailInputs.value = seedInputs(template, values);
+  emailAuthored.value = {};
+  emailSendWarning.value = "";
+  emailSendConfirmed.value = false;
+});
+
+watch(selectedTextTemplate, async (templateId) => {
+  if (!templateId) {
+    selectedTextTemplateObj.value = null;
+    textResolvedValues.value = {};
+    return;
+  }
+  const template = messageTemplates.value.find((t) => t.id === templateId);
+  if (!template) return;
+  const { body, values } = await composeFromTemplate(template);
+  textComposer.value = { body };
+  textResolvedValues.value = values;
+  selectedTextTemplateObj.value = template;
+  textInputs.value = seedInputs(template, values);
+  textAuthored.value = {};
+  textSendWarning.value = "";
+  textSendConfirmed.value = false;
+});
+
+// Re-run compose for whichever templates are open (after an inline profile save).
+const reresolveSelected = async () => {
+  if (selectedEmailTemplateObj.value) {
+    const r = await composeFromTemplate(selectedEmailTemplateObj.value, emailAuthored.value);
+    emailComposer.value = { subject: r.subject, body: r.body };
+    emailResolvedValues.value = r.values;
+  }
+  if (selectedTextTemplateObj.value) {
+    const r = await composeFromTemplate(selectedTextTemplateObj.value, textAuthored.value);
+    textComposer.value = { body: r.body };
+    textResolvedValues.value = r.values;
+  }
 };
 
-// Watch for template selection
-watch(selectedEmailTemplate, (templateId) => {
-  if (templateId) {
-    const template = emailTemplates.value.find((t) => t.id === templateId);
-    if (template) {
-      emailComposer.value = {
-        subject: template.subject
-          ? interpolateText(template.subject, templateVars)
-          : "",
-        body: interpolateTemplate(template, templateVars),
-      };
-    }
+// Persist an inline profile-field edit, then invalidate the cached athlete
+// context and re-resolve so the preview + values reflect the new data.
+const saveField = async (
+  row: VariableRow,
+  channel: "email" | "text",
+): Promise<void> => {
+  if (!row.editable || !row.sourcePath || !activeAthleteId.value) return;
+  const inputs = channel === "email" ? emailInputs : textInputs;
+  const raw = (inputs.value[row.key] ?? "").trim();
+  const errKey = `${channel}:${row.key}`;
+  savingKey.value = errKey;
+  saveErrors.value = { ...saveErrors.value, [errKey]: "" };
+  try {
+    await writeField(activeAthleteId.value, row.sourcePath, raw === "" ? null : raw);
+    athleteCtxId.value = null; // invalidate cache so ensureAthleteContext refetches
+    await reresolveSelected();
+  } catch {
+    saveErrors.value = { ...saveErrors.value, [errKey]: "Couldn't save — try again" };
+  } finally {
+    savingKey.value = null;
   }
-});
-
-watch(selectedTextTemplate, (templateId) => {
-  if (templateId) {
-    const template = messageTemplates.value.find((t) => t.id === templateId);
-    if (template) {
-      textComposer.value = {
-        body: interpolateTemplate(template, templateVars),
-      };
-    }
-  }
-});
+};
 
 const formatPhone = (phone: string): string => {
   const cleaned = phone.replace(/\D/g, "");
@@ -510,8 +930,16 @@ const formatPhone = (phone: string): string => {
 };
 
 const sendEmail = async () => {
-  const mailtoLink = `mailto:${props.coach.email}?subject=${encodeURIComponent(emailComposer.value.subject)}&body=${encodeURIComponent(emailComposer.value.body)}`;
-  window.location.href = mailtoLink;
+  if (emailUnresolved.value.length > 0) {
+    emailSendWarning.value = `Fill these variables before sending: ${emailUnresolved.value.join(", ")}`;
+    return;
+  }
+  emailSendWarning.value = "";
+
+  if (!(await passesSendGuardrails("email"))) return;
+
+  await logSentMessage("email");
+  window.location.href = `mailto:${props.coach.email}?subject=${encodeURIComponent(emailComposer.value.subject)}&body=${encodeURIComponent(emailComposer.value.body)}`;
 
   if (shouldLogInteraction.value) {
     emit("interaction-logged", {
@@ -521,12 +949,21 @@ const sendEmail = async () => {
     });
   }
 
+  emailSendConfirmed.value = false;
   handleCloseEmail();
 };
 
 const sendText = async () => {
-  const smsLink = `sms:${props.coach.phone?.replace(/\D/g, "")}?body=${encodeURIComponent(textComposer.value.body)}`;
-  window.location.href = smsLink;
+  if (textUnresolved.value.length > 0) {
+    textSendWarning.value = `Fill these variables before sending: ${textUnresolved.value.join(", ")}`;
+    return;
+  }
+  textSendWarning.value = "";
+
+  if (!(await passesSendGuardrails("text"))) return;
+
+  await logSentMessage("text");
+  window.location.href = `sms:${props.coach.phone?.replace(/\D/g, "")}?body=${encodeURIComponent(textComposer.value.body)}`;
 
   if (shouldLogInteraction.value) {
     emit("interaction-logged", {
@@ -536,7 +973,64 @@ const sendText = async () => {
     });
   }
 
+  textSendConfirmed.value = false;
   handleCloseText();
+};
+
+// --- Phase 4 send guardrails: dedupe (block) + timing (confirm) + logging -----
+
+/** Returns false when the send should stop (blocked, or awaiting confirm). */
+const passesSendGuardrails = async (channel: "email" | "text"): Promise<boolean> => {
+  const athleteUserId = activeAthleteId.value;
+  if (!athleteUserId) return true; // can't check without an athlete; don't block
+  const warnRef = channel === "email" ? emailSendWarning : textSendWarning;
+  const confirmedRef = channel === "email" ? emailSendConfirmed : textSendConfirmed;
+  const authored = channel === "email" ? emailAuthored : textAuthored;
+  try {
+    const check = await checkSend({
+      athleteUserId,
+      schoolId: props.school?.id ?? null,
+      programNote: authored.value["programNote"] ?? null,
+    });
+    if (check.programNoteReused) {
+      warnRef.value =
+        "Your reason for reaching out was already sent to another program. Coaches notice reused messages — make it specific to this program before sending.";
+      return false; // hard block
+    }
+    if (!confirmedRef.value && (check.recentContact || check.messageCountToSchool >= 2)) {
+      warnRef.value = check.recentContact
+        ? `You last messaged this program ${check.daysSinceLastContact ?? "a few"} day(s) ago. Click Send again to send anyway.`
+        : `You've already sent ${check.messageCountToSchool} messages here — consider adding more programs. Click Send again to send anyway.`;
+      confirmedRef.value = true; // arm; next click proceeds
+      return false;
+    }
+  } catch {
+    // A guardrail lookup failure must never block a legitimate send.
+  }
+  warnRef.value = "";
+  return true;
+};
+
+const logSentMessage = async (channel: "email" | "text"): Promise<void> => {
+  const athleteUserId = activeAthleteId.value;
+  if (!athleteUserId) return;
+  const tpl = channel === "email" ? selectedEmailTemplateObj.value : selectedTextTemplateObj.value;
+  const authored = channel === "email" ? emailAuthored.value : textAuthored.value;
+  try {
+    await logSend({
+      athleteUserId,
+      schoolId: props.school?.id ?? null,
+      coachId: props.coach.id ?? null,
+      templateSlug: tpl?.slug ?? null,
+      channel,
+      programNote: authored["programNote"] ?? null,
+      updateHook: authored["updateHook"] ?? null,
+      subject: channel === "email" ? emailComposer.value.subject : null,
+      body: channel === "email" ? emailComposer.value.body : textComposer.value.body,
+    });
+  } catch {
+    // Logging failure must not block the send.
+  }
 };
 
 const openInstagram = () => {

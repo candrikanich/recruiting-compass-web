@@ -6,7 +6,29 @@ Active session notes only. See [COMPLETED_WORK.md](./COMPLETED_WORK.md) for full
 
 - **Output format by reader, not by default**: For artifacts Chris will read once on a phone or share with someone non-technical — session recaps, status overviews, weekly summaries, "where are we on X" snapshots — invoke the `visual-explainer` skill to produce self-contained HTML. For artifacts that future-Claude or Chris will edit (handoff docs, `planning/*.md`, `COMPLETED_WORK.md`, lesson files, plans) — stay markdown. When unsure: read = HTML, edit = markdown.
 
-## Current Session (2026-08-02 — RLS deferrals: Phases 4-6 implemented, plan COMPLETE)
+## Current Session (2026-08-08 — Coach Outreach: full build, Phases 0–6 DONE)
+
+**Status:** ALL phases (0–6) DONE + committed on `feat/coach-outreach-templates` (**9 commits, NOT pushed**). Remaining = browser verify + full test/E2E + PR.
+**Branch:** `feat/coach-outreach-templates` (9 ahead of develop, no upstream)
+**Build:** not run this session
+**Tests:** type-check PASS (0); coach-outreach unit 29 + contactWindow 15 + eventSchedule 10 = 54 PASS (resolver suite 44 all green); lint 0 err on changed files. Full `npm test` + E2E NOT run — do before PR.
+
+### Phase 6 (eventSchedule) — commit `e940f824`
+- Option A chosen (Chris): render existing `events` rows, NO new table.
+- `utils/templateResolver`: pure `selectUpcomingEvents`/`renderEventSchedule`/`nextEvent` (upcoming-only, soonest-first, cap 5). `buildAthleteContext` queries events → `derived.eventSchedule`/`nextEventName`/`nextEventDates` (fail-open). Registry keys already seeded (computed→ctx.derived). Unblocks 5 schedule templates.
+**Type-check:** PASS (exit 0)
+**Handoff:** `planning/handoff-2026-08-08-coach-outreach-templates.md`
+**DB (live, MCP apply_migration):** 20260816000000 (Phase0/1), 20260817000000 (Phase2 metrics), 20260818000000 (drop users.phone), 20260819000000 (athlete_messages), **20260820000000 (contact_window_rules — 8 rules seeded)**. Registry seeded; playerPhone/Email → pref:player.*.
+
+### Phase 5 (contact-window auto-swap) — commit `127d92c1`
+- `contact_window_rules` config table (RLS read-only) — silent intro-standard↔intro-pre-window swap. Baseball D1 Aug 1 pre-junior; softball/football Sept 1; default D1 Jun 15 post-soph; D2/D3/NAIA/JUCO unrestricted.
+- **⚠️ Seed dates UNVERIFIED vs ncaa.org** — flagged in migration + code comments. Verify before launch (dates move yearly).
+- `utils/contactWindow.ts` pure eval (grade-year math, fails OPEN on any missing input — never gates outreach) + `filterTemplatesByWindow`. `composables/useContactWindow.ts` module-cached loader. `CommunicationPanel` filters email/message lists by window; evaluated onMount + watch(school.division, activeAthleteId).
+- Window inputs: `athleteCtx.derived.sport` + `users.graduation_year` + `props.school.division`.
+
+**Next:** browser verify (player1@compassdemo.app, run `! npm run dev`) → full `npm test` + E2E → PR to develop. Phase 6 (event_slots for {{eventSchedule}}) optional. Verify NCAA dates before launch.
+
+## Previous Session (2026-08-02 — RLS deferrals: Phases 4-6 implemented, plan COMPLETE)
 
 **Status:** Phases 4, 5, 6 all done. Phase 4 (`93ba96b6`) + Phase 5 (`3e4e38f9`) applied live + pushed; Phase 6 is docs-only (no schema change), pending commit. Chris ruling: skipped the "soak a few days" pacing from the plan for both live-apply phases — no live users yet, risk accepted. `planning/rls-family-consolidation-plan.md` Phases 1-6 all complete.
 **Tests:** unit 7785 PASS; type-check 0; lint 0; RLS integration 25/25 GREEN live (18 Phase 1/3 + 5 Phase 4 + 2 Phase 5); Phase 4 and Phase 5 both RED→GREEN confirmed pre/post apply. Full E2E passed both times (0 failed, one retry-converged run each).

@@ -56,6 +56,30 @@ export async function triggerSuggestionUpdate(
     // Fetch all athlete data required for rule evaluation.
     // grade_level is derived from graduation_year stored in user_preferences
     // (the profiles table was removed — see migration 041).
+    // Schools and interactions are owned by family_unit_id under the family-symmetric
+    // model (see idx_schools_family_unit_id / idx_interactions_family_unit_id), NOT by
+    // the athlete's user_id. Scoping by user_id/logged_by here undercounted family-owned
+    // rows — e.g. a 53-school family list was read as 1, producing a bogus
+    // "You have 1 schools on your list" suggestion. Resolve the family unit first, then
+    // scope those two queries to it (falling back to the legacy per-user filter only when
+    // the athlete has no family membership).
+    const { data: memberRow } = await supabase
+      .from("family_members")
+      .select("family_unit_id")
+      .eq("user_id", athleteId)
+      .maybeSingle();
+    const familyUnitId = memberRow?.family_unit_id ?? null;
+
+    const schoolsQuery = familyUnitId
+      ? supabase.from("schools").select("*").eq("family_unit_id", familyUnitId)
+      : supabase.from("schools").select("*").eq("user_id", athleteId);
+    const interactionsQuery = familyUnitId
+      ? supabase
+          .from("interactions")
+          .select("*")
+          .eq("family_unit_id", familyUnitId)
+      : supabase.from("interactions").select("*").eq("logged_by", athleteId);
+
     const [playerPrefs, schools, interactions, tasks, athleteTasks, events] =
       await Promise.all([
         supabase
@@ -64,8 +88,8 @@ export async function triggerSuggestionUpdate(
           .eq("user_id", athleteId)
           .eq("category", "player")
           .single(),
-        supabase.from("schools").select("*").eq("user_id", athleteId),
-        supabase.from("interactions").select("*").eq("logged_by", athleteId),
+        schoolsQuery,
+        interactionsQuery,
         supabase.from("task").select("*"),
         supabase.from("athlete_task").select("*").eq("athlete_id", athleteId),
         supabase.from("events").select("*").eq("user_id", athleteId),

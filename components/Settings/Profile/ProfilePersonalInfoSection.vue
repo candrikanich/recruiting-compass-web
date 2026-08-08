@@ -23,22 +23,6 @@
         </p>
       </div>
 
-      <div>
-        <label
-          class="block text-sm font-medium text-slate-700 mb-1"
-          for="phone"
-        >
-          Phone <span class="text-slate-600 font-normal">(optional)</span>
-        </label>
-        <UInput
-          id="phone"
-          v-model="form.phone"
-          type="tel"
-          placeholder="555-555-5555"
-          :disabled="loading"
-        />
-      </div>
-
       <div v-if="isAthlete">
         <label class="block text-sm font-medium text-slate-700 mb-1" for="dob">
           Date of Birth
@@ -86,7 +70,6 @@ const {
 
 const form = ref({
   full_name: store.user?.full_name ?? "",
-  phone: store.user?.phone ?? "",
   date_of_birth: store.user?.date_of_birth ?? "",
 });
 
@@ -100,7 +83,6 @@ async function handleSave() {
   }
   await savePersonalInfo({
     full_name: form.value.full_name.trim(),
-    phone: form.value.phone || null,
     date_of_birth: form.value.date_of_birth || null,
   });
 }

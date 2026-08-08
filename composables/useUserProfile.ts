@@ -30,7 +30,6 @@ export function useUserProfile() {
 
   async function savePersonalInfo(fields: {
     full_name?: string;
-    phone?: string | null;
     date_of_birth?: string | null;
   }): Promise<boolean> {
     personalInfoLoading.value = true;
