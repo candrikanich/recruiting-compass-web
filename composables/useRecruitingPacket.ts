@@ -11,6 +11,7 @@ import { useSchools } from "./useSchools";
 import { useCoaches } from "./useCoaches";
 import { useInteractions } from "./useInteractions";
 import { usePreferenceManager } from "./usePreferenceManager";
+import { useVideoLinks } from "./useVideoLinks";
 import type {
   RecruitingPacketData,
   AthletePacketData,
@@ -22,7 +23,7 @@ import {
   generateRecruitingPacketHTML,
   generatePacketFilename,
 } from "~/utils/recruitingPacketExport";
-import type { School, PlayerDetails } from "~/types/models";
+import type { School, PlayerDetails, VideoLink } from "~/types/models";
 import { createClientLogger } from "~/utils/logger";
 
 interface PacketGenerationResult {
@@ -40,6 +41,7 @@ export const useRecruitingPacket = () => {
   const { coaches } = useCoaches();
   const { interactions } = useInteractions();
   const { playerPrefs, getPlayerDetails } = usePreferenceManager();
+  const { links: videoLinkRows, load: loadVideoLinks } = useVideoLinks();
 
   // State
   const loading = ref(false);
@@ -78,6 +80,17 @@ export const useRecruitingPacket = () => {
   };
 
   /**
+   * Map video_links table rows (ordered by position) to the packet's
+   * display shape.
+   */
+  const buildVideoLinks = (): VideoLink[] =>
+    videoLinkRows.value.map((row) => ({
+      platform: row.platform,
+      url: row.url,
+      title: row.title ?? undefined,
+    }));
+
+  /**
    * Fetch athlete profile data from usePreferenceManager
    */
   const fetchAthleteData = async (): Promise<AthletePacketData> => {
@@ -88,6 +101,10 @@ export const useRecruitingPacket = () => {
     // Load preferences explicitly — composable may be used before player-details page is visited
     await playerPrefs.loadPreferences();
     const details = getPlayerDetails();
+
+    // video_links now sourced from the video_links table, not the
+    // player-preferences JSONB — ordered server-side by position.
+    await loadVideoLinks();
 
     const position = details?.positions?.[0] ?? details?.primary_position;
 
@@ -105,7 +122,7 @@ export const useRecruitingPacket = () => {
       gpa: details?.gpa,
       sat_score: details?.sat_score,
       act_score: details?.act_score,
-      video_links: details?.video_links ?? [],
+      video_links: buildVideoLinks(),
       social_media: buildSocialMedia(details),
       core_courses: details?.core_courses ?? [],
     };

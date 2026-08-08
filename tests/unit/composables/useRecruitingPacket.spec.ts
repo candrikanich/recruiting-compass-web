@@ -5,8 +5,14 @@ import { useSchools } from "~/composables/useSchools";
 import { useCoaches } from "~/composables/useCoaches";
 import { useInteractions } from "~/composables/useInteractions";
 import { usePreferenceManager } from "~/composables/usePreferenceManager";
+import { useVideoLinks } from "~/composables/useVideoLinks";
 import { useNuxtApp } from "#app";
-import type { School, Interaction, PlayerDetails } from "~/types/models";
+import type {
+  School,
+  Interaction,
+  PlayerDetails,
+  VideoLinkRow,
+} from "~/types/models";
 
 const mockFetchAuth = vi.fn();
 
@@ -18,6 +24,36 @@ vi.mock("~/composables/useSchools");
 vi.mock("~/composables/useCoaches");
 vi.mock("~/composables/useInteractions");
 vi.mock("~/composables/usePreferenceManager");
+vi.mock("~/composables/useVideoLinks");
+
+const mockVideoLinkRows: VideoLinkRow[] = [
+  {
+    id: "vl-1",
+    user_id: "user-1",
+    family_unit_id: null,
+    platform: "hudl",
+    url: "https://hudl.com/video/1",
+    title: "Fall Highlights",
+    position: 0,
+    health_status: "healthy",
+    last_health_check: null,
+    created_at: "2026-01-01T00:00:00Z",
+    updated_at: "2026-01-01T00:00:00Z",
+  },
+  {
+    id: "vl-2",
+    user_id: "user-1",
+    family_unit_id: null,
+    platform: "youtube",
+    url: "https://youtube.com/watch?v=abc",
+    title: null,
+    position: 1,
+    health_status: "unknown",
+    last_health_check: null,
+    created_at: "2026-01-01T00:00:00Z",
+    updated_at: "2026-01-01T00:00:00Z",
+  },
+];
 
 const mockPlayerDetails: PlayerDetails = {
   height_inches: 74,
@@ -144,6 +180,16 @@ describe("useRecruitingPacket", () => {
     vi.mocked(useInteractions).mockReturnValue({
       interactions: { value: mockInteractionData },
     } as any);
+
+    vi.mocked(useVideoLinks).mockReturnValue({
+      links: { value: mockVideoLinkRows },
+      isLoading: { value: false },
+      error: { value: null },
+      load: vi.fn().mockResolvedValue(undefined),
+      add: vi.fn(),
+      update: vi.fn(),
+      remove: vi.fn(),
+    } as any);
   });
 
   describe("Initial state", () => {
@@ -207,10 +253,55 @@ describe("useRecruitingPacket", () => {
       expect(result.data.athlete.act_score).toBe(33);
     });
 
-    it("defaults video_links to empty array when not set", async () => {
+    it("defaults video_links to empty array when the table has no rows", async () => {
+      vi.mocked(useVideoLinks).mockReturnValue({
+        links: { value: [] },
+        isLoading: { value: false },
+        error: { value: null },
+        load: vi.fn().mockResolvedValue(undefined),
+        add: vi.fn(),
+        update: vi.fn(),
+        remove: vi.fn(),
+      } as any);
+
       const { generatePacket } = useRecruitingPacket();
       const result = await generatePacket();
       expect(result.data.athlete.video_links).toEqual([]);
+    });
+
+    it("sources video_links from the video_links table, mapped to display shape and ordered by position", async () => {
+      const { generatePacket } = useRecruitingPacket();
+      const result = await generatePacket();
+      expect(result.data.athlete.video_links).toEqual([
+        {
+          platform: "hudl",
+          url: "https://hudl.com/video/1",
+          title: "Fall Highlights",
+        },
+        {
+          platform: "youtube",
+          url: "https://youtube.com/watch?v=abc",
+          title: undefined,
+        },
+      ]);
+    });
+
+    it("calls useVideoLinks.load() when building athlete data", async () => {
+      const loadSpy = vi.fn().mockResolvedValue(undefined);
+      vi.mocked(useVideoLinks).mockReturnValue({
+        links: { value: mockVideoLinkRows },
+        isLoading: { value: false },
+        error: { value: null },
+        load: loadSpy,
+        add: vi.fn(),
+        update: vi.fn(),
+        remove: vi.fn(),
+      } as any);
+
+      const { generatePacket } = useRecruitingPacket();
+      await generatePacket();
+
+      expect(loadSpy).toHaveBeenCalled();
     });
 
     it("defaults core_courses to empty array when not set", async () => {
