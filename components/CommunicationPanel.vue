@@ -210,9 +210,36 @@
                     <span class="font-mono text-blue-800">{{
                       tokenOf(row.key)
                     }}</span>
-                    <span v-if="row.value" class="text-slate-700 truncate">{{
-                      row.value
-                    }}</span>
+                    <div v-if="row.editable" class="flex flex-col gap-0.5">
+                      <div class="flex items-center gap-1">
+                        <input
+                          v-model="emailInputs[row.key]"
+                          type="text"
+                          :placeholder="row.value ? '' : 'add…'"
+                          :disabled="savingKey === `email:${row.key}`"
+                          class="flex-1 min-w-0 px-1.5 py-0.5 rounded border border-slate-300 text-xs text-slate-900"
+                          @keydown.enter.prevent="saveField(row, 'email')"
+                        />
+                        <button
+                          type="button"
+                          :disabled="savingKey === `email:${row.key}`"
+                          class="px-1.5 py-0.5 rounded bg-blue-600 text-white text-xs disabled:opacity-50"
+                          @click="saveField(row, 'email')"
+                        >
+                          Save
+                        </button>
+                      </div>
+                      <span
+                        v-if="saveErrors[`email:${row.key}`]"
+                        class="text-red-600 text-[10px]"
+                        >{{ saveErrors[`email:${row.key}`] }}</span
+                      >
+                    </div>
+                    <span
+                      v-else-if="row.value"
+                      class="text-slate-700 truncate"
+                      >{{ row.value }}</span
+                    >
                     <span v-else class="text-amber-600 font-medium"
                       >needs input</span
                     >
@@ -372,9 +399,36 @@
                     <span class="font-mono text-blue-800">{{
                       tokenOf(row.key)
                     }}</span>
-                    <span v-if="row.value" class="text-slate-700 truncate">{{
-                      row.value
-                    }}</span>
+                    <div v-if="row.editable" class="flex flex-col gap-0.5">
+                      <div class="flex items-center gap-1">
+                        <input
+                          v-model="textInputs[row.key]"
+                          type="text"
+                          :placeholder="row.value ? '' : 'add…'"
+                          :disabled="savingKey === `text:${row.key}`"
+                          class="flex-1 min-w-0 px-1.5 py-0.5 rounded border border-slate-300 text-xs text-slate-900"
+                          @keydown.enter.prevent="saveField(row, 'text')"
+                        />
+                        <button
+                          type="button"
+                          :disabled="savingKey === `text:${row.key}`"
+                          class="px-1.5 py-0.5 rounded bg-blue-600 text-white text-xs disabled:opacity-50"
+                          @click="saveField(row, 'text')"
+                        >
+                          Save
+                        </button>
+                      </div>
+                      <span
+                        v-if="saveErrors[`text:${row.key}`]"
+                        class="text-red-600 text-[10px]"
+                        >{{ saveErrors[`text:${row.key}`] }}</span
+                      >
+                    </div>
+                    <span
+                      v-else-if="row.value"
+                      class="text-slate-700 truncate"
+                      >{{ row.value }}</span
+                    >
                     <span v-else class="text-amber-600 font-medium"
                       >needs input</span
                     >
@@ -485,8 +539,11 @@ import { useCommunicationTemplates } from "~/composables/useCommunicationTemplat
 import { useFocusTrap } from "~/composables/useFocusTrap";
 import { useFamilyCtx } from "~/composables/useFamilyCtx";
 import { useTemplateResolver } from "~/composables/useTemplateResolver";
+import { useProfileFieldWrite } from "~/composables/useProfileFieldWrite";
+import { useUserStore } from "~/stores/user";
 import { getRoleLabel } from "~/utils/coachLabels";
 import { findUnresolved } from "~/utils/templateResolver";
+import { editableColumnFor } from "~/utils/editableProfileFields";
 import type { ResolverContext, Row } from "~/utils/templateResolver";
 import type { Coach, School, CommunicationTemplate } from "~/types/models";
 
@@ -511,13 +568,31 @@ const emit = defineEmits<{
 
 const { getTemplatesByType, loadTemplates } = useCommunicationTemplates();
 const { activeAthleteId } = useFamilyCtx();
+const { buildAthleteContext, resolveTemplate, loadRegistry } = useTemplateResolver();
+const { writeField } = useProfileFieldWrite();
+const userStore = useUserStore();
 
-// Load predefined + user templates into this composable instance (it's per-mount,
-// not a singleton — without this the dropdown only shows "Custom message").
-onMounted(() => {
+// key -> source_path, from the DB registry; drives inline-edit eligibility.
+const varSourcePaths = ref<Map<string, string>>(new Map());
+
+// Only the athlete editing their OWN profile can write inline (parents are
+// read-only per product policy). activeAthleteId is role-aware.
+const canEditProfile = computed(
+  () =>
+    userStore.isAthlete &&
+    !!activeAthleteId.value &&
+    activeAthleteId.value === userStore.user?.id,
+);
+
+// Load predefined + user templates + the variable registry into this per-mount
+// composable instance (without loadTemplates the dropdown only shows "Custom").
+onMounted(async () => {
   loadTemplates();
+  const registry = await loadRegistry();
+  varSourcePaths.value = new Map(
+    registry.map((v) => [v.key, v.source_path ?? ""]),
+  );
 });
-const { buildAthleteContext, resolveTemplate } = useTemplateResolver();
 
 // Lazy-loaded, cached per athlete id. activeAthleteId is role-aware:
 // athlete-role -> own users.id; parent-role -> the selected child's users.id.
@@ -555,7 +630,22 @@ interface PreviewSegment {
 interface VariableRow {
   key: string;
   value: string | null;
+  editable: boolean;
+  sourcePath: string | null;
 }
+
+// Per-row inline-edit state (keyed by variable key, per channel).
+const emailInputs = ref<Record<string, string>>({});
+const textInputs = ref<Record<string, string>>({});
+// Save error + in-flight row, keyed "<channel>:<key>".
+const saveErrors = ref<Record<string, string>>({});
+const savingKey = ref<string | null>(null);
+
+const seedInputs = (
+  tpl: CommunicationTemplate | null,
+  values: Record<string, string>,
+): Record<string, string> =>
+  Object.fromEntries(templateVarKeys(tpl).map((k) => [k, values[k] ?? ""]));
 
 const emailResolvedValues = ref<Record<string, string>>({});
 const textResolvedValues = ref<Record<string, string>>({});
@@ -575,7 +665,11 @@ const toRows = (
   tpl: CommunicationTemplate | null,
   values: Record<string, string>,
 ): VariableRow[] =>
-  templateVarKeys(tpl).map((key) => ({ key, value: values[key] ?? null }));
+  templateVarKeys(tpl).map((key) => {
+    const sourcePath = varSourcePaths.value.get(key) ?? null;
+    const editable = canEditProfile.value && !!editableColumnFor(sourcePath);
+    return { key, value: values[key] ?? null, editable, sourcePath };
+  });
 
 /** Split rendered body into ordered text/{{unresolved}} segments (no v-html). */
 const toSegments = (body: string): PreviewSegment[] => {
@@ -668,6 +762,7 @@ watch(selectedEmailTemplate, async (templateId) => {
   emailComposer.value = { subject, body };
   emailResolvedValues.value = values;
   selectedEmailTemplateObj.value = template;
+  emailInputs.value = seedInputs(template, values);
   emailSendWarning.value = "";
 });
 
@@ -683,8 +778,46 @@ watch(selectedTextTemplate, async (templateId) => {
   textComposer.value = { body };
   textResolvedValues.value = values;
   selectedTextTemplateObj.value = template;
+  textInputs.value = seedInputs(template, values);
   textSendWarning.value = "";
 });
+
+// Re-run compose for whichever templates are open (after an inline profile save).
+const reresolveSelected = async () => {
+  if (selectedEmailTemplateObj.value) {
+    const r = await composeFromTemplate(selectedEmailTemplateObj.value);
+    emailComposer.value = { subject: r.subject, body: r.body };
+    emailResolvedValues.value = r.values;
+  }
+  if (selectedTextTemplateObj.value) {
+    const r = await composeFromTemplate(selectedTextTemplateObj.value);
+    textComposer.value = { body: r.body };
+    textResolvedValues.value = r.values;
+  }
+};
+
+// Persist an inline profile-field edit, then invalidate the cached athlete
+// context and re-resolve so the preview + values reflect the new data.
+const saveField = async (
+  row: VariableRow,
+  channel: "email" | "text",
+): Promise<void> => {
+  if (!row.editable || !row.sourcePath || !activeAthleteId.value) return;
+  const inputs = channel === "email" ? emailInputs : textInputs;
+  const raw = (inputs.value[row.key] ?? "").trim();
+  const errKey = `${channel}:${row.key}`;
+  savingKey.value = errKey;
+  saveErrors.value = { ...saveErrors.value, [errKey]: "" };
+  try {
+    await writeField(activeAthleteId.value, row.sourcePath, raw === "" ? null : raw);
+    athleteCtxId.value = null; // invalidate cache so ensureAthleteContext refetches
+    await reresolveSelected();
+  } catch {
+    saveErrors.value = { ...saveErrors.value, [errKey]: "Couldn't save — try again" };
+  } finally {
+    savingKey.value = null;
+  }
+};
 
 const formatPhone = (phone: string): string => {
   const cleaned = phone.replace(/\D/g, "");
