@@ -1655,41 +1655,50 @@ export type Database = {
       performance_metrics: {
         Row: {
           created_at: string | null
+          display_value: string | null
           event_id: string | null
           family_unit_id: string | null
           id: string
+          is_primary: boolean
           metric_type: string
           notes: string | null
           recorded_date: string
+          source: string | null
           unit: string | null
           user_id: string
-          value: number
+          value: number | null
           verified: boolean | null
         }
         Insert: {
           created_at?: string | null
+          display_value?: string | null
           event_id?: string | null
           family_unit_id?: string | null
           id?: string
+          is_primary?: boolean
           metric_type: string
           notes?: string | null
           recorded_date: string
+          source?: string | null
           unit?: string | null
           user_id: string
-          value: number
+          value?: number | null
           verified?: boolean | null
         }
         Update: {
           created_at?: string | null
+          display_value?: string | null
           event_id?: string | null
           family_unit_id?: string | null
           id?: string
+          is_primary?: boolean
           metric_type?: string
           notes?: string | null
           recorded_date?: string
+          source?: string | null
           unit?: string | null
           user_id?: string
-          value?: number
+          value?: number | null
           verified?: boolean | null
         }
         Relationships: [
@@ -2870,7 +2879,6 @@ export type Database = {
           jersey_number: string | null
           onboarding_completed: boolean
           phase_milestone_data: Json | null
-          phone: string | null
           primary_position_custom: string | null
           primary_position_id: string | null
           primary_sport_id: string | null
@@ -2913,7 +2921,6 @@ export type Database = {
           jersey_number?: string | null
           onboarding_completed?: boolean
           phase_milestone_data?: Json | null
-          phone?: string | null
           primary_position_custom?: string | null
           primary_position_id?: string | null
           primary_sport_id?: string | null
@@ -2956,7 +2963,6 @@ export type Database = {
           jersey_number?: string | null
           onboarding_completed?: boolean
           phase_milestone_data?: Json | null
-          phone?: string | null
           primary_position_custom?: string | null
           primary_position_id?: string | null
           primary_sport_id?: string | null

@@ -67,8 +67,8 @@ values
 ('teamAccomplishment','Team accomplishment','Team result [absent → authored]',              'metrics','authored',null,                             false,'District runner-up',  47),
 
 -- Contacts ---------------------------------------------------------------------
-('playerPhone',       'Athlete phone',      'Athlete''s own number',                        'contacts','column','column:users.phone',             false,'440-555-0134',        50),
-('playerEmail',       'Athlete email',      'Athlete''s own email',                         'contacts','column','column:users.email',             false,'jordan.ellis28@…',    51),
+('playerPhone',       'Recruiting phone',   'Recruiting contact number (player profile, not login) [PREF]','contacts','column','pref:player.phone', false,'440-555-0134',        50),
+('playerEmail',       'Recruiting email',   'Recruiting contact email (player profile, can differ from login) [PREF]','contacts','column','pref:player.email',false,'jordan.ellis28@…',51),
 ('hsCoachName',       'HS coach name',      'Grade-appropriate HS coach from pref (resolver picks by gradYear)','contacts','computed',null,        false,'Dave Reilly',         52),
 ('hsCoachPhone',      'HS coach phone',     'HS coach phone [absent → authored]',            'contacts','authored',null,                           false,'440-555-0177',        53),
 ('hsCoachEmail',      'HS coach email',     'HS coach email [absent → authored]',            'contacts','authored',null,                           false,'dreilly@…',           54),

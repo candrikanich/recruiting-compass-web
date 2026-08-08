@@ -119,6 +119,46 @@
         </div>
       </div>
 
+      <!-- Recruiting Contact (separate from login credentials) -->
+      <div
+        class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-8 border-t border-slate-100"
+      >
+        <div>
+          <label
+            class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1"
+            >Recruiting Email</label
+          >
+          <input
+            v-model="form.email"
+            :disabled="isParentRole"
+            type="email"
+            placeholder="you@example.com"
+            @blur="triggerSave"
+            class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 transition font-medium text-slate-700"
+          />
+          <p class="text-xs text-slate-400 mt-1.5 ml-1">
+            The email coaches reply to — can differ from your login.
+          </p>
+        </div>
+        <div>
+          <label
+            class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1"
+            >Recruiting Phone</label
+          >
+          <input
+            v-model="form.phone"
+            :disabled="isParentRole"
+            type="tel"
+            placeholder="440-555-0134"
+            @blur="triggerSave"
+            class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 transition font-medium text-slate-700"
+          />
+          <p class="text-xs text-slate-400 mt-1.5 ml-1">
+            The number coaches can text.
+          </p>
+        </div>
+      </div>
+
       <!-- College Preferences -->
       <div
         class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-8 border-t border-slate-100"

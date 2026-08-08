@@ -48,7 +48,6 @@ export interface User {
   role?: "admin" | "parent" | "player";
   full_name?: string;
   profile_photo_url?: string | null;
-  phone?: string | null;
   date_of_birth?: string | null;
   is_admin?: boolean;
   // Timeline fields (from Phase 1)

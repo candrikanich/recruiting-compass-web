@@ -16,7 +16,6 @@ const homeLocationSchema = z.object({
 
 const profileSchema = z.object({
   full_name: z.string().min(1).max(100).optional(),
-  phone: z.string().max(30).nullable().optional(),
   date_of_birth: z
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format")
