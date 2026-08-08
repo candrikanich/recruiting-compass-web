@@ -7,6 +7,7 @@ import {
   getPendingSuggestionCount,
 } from "~/server/utils/suggestionStaggering";
 import { triggerSuggestionUpdate } from "~/server/utils/triggerSuggestionUpdate";
+import { resolveAthleteId } from "~/server/utils/resolveAthleteId";
 
 export default defineEventHandler(async (event) => {
   const user = await requireAuth(event);
@@ -18,30 +19,11 @@ export default defineEventHandler(async (event) => {
     const location = (query.location as string) || "dashboard";
     const schoolId = query.schoolId as string | undefined;
 
-    // Resolve the athlete ID: parents view their linked player's data
-    let athleteId = user.id;
+    // Resolve the athlete ID: parents view their linked player's data.
+    // `role` is still needed below to gate the bootstrap to non-parents
+    // (getUserRole is cached, so this does not double-hit the DB).
     const role = await getUserRole(user.id, supabase);
-    if (role === "parent") {
-      const { data: familyMembership } = await supabase
-        .from("family_members")
-        .select("family_unit_id")
-        .eq("user_id", user.id)
-        .eq("role", "parent")
-        .maybeSingle();
-
-      if (familyMembership) {
-        const { data: playerMember } = await supabase
-          .from("family_members")
-          .select("user_id")
-          .eq("family_unit_id", familyMembership.family_unit_id)
-          .eq("role", "player")
-          .maybeSingle();
-
-        if (playerMember?.user_id) {
-          athleteId = playerMember.user_id;
-        }
-      }
-    }
+    const athleteId = await resolveAthleteId(user.id, supabase);
 
     let [suggestions, pendingCount] = await Promise.all([
       getSurfacedSuggestions(

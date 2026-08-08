@@ -1,6 +1,7 @@
 import { defineEventHandler, createError } from "h3";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
 import { requireAuth } from "~/server/utils/auth";
+import { resolveAthleteId } from "~/server/utils/resolveAthleteId";
 import { useLogger } from "~/server/utils/logger";
 import { logCRUD, logError } from "~/server/utils/auditLog";
 import { requireUuidParam } from "~/server/utils/validation";
@@ -17,6 +18,10 @@ export default defineEventHandler(async (event) => {
   const suggestionId = requireUuidParam(event, "id");
 
   try {
+    // Parents act on their linked player's suggestions; resolve so the update
+    // scopes to the athlete's rows rather than the (non-matching) parent id.
+    const athleteId = await resolveAthleteId(user.id, supabase);
+
     const updateData: CompleteUpdateData = {
       completed: true,
       completed_at: new Date().toISOString(),
@@ -26,7 +31,7 @@ export default defineEventHandler(async (event) => {
       .from("suggestion")
       .update(updateData)
       .eq("id", suggestionId)
-      .eq("athlete_id", user.id)
+      .eq("athlete_id", athleteId)
       .select("id");
 
     if (error) {
