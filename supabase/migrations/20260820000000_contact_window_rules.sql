@@ -41,7 +41,7 @@ values
   ('softball', 'D1', 'date_after_grade',  'sophomore', 'Sept 1', 'Sept 1 of junior year.'),
   ('football', 'D1', 'date_after_grade',  'sophomore', 'Sept 1', 'Sept 1 of junior year (recruiting materials Jun 15 after sophomore).'),
   ('*',        'D1', 'date_after_grade',  'sophomore', 'Jun 15', 'Default D1: Jun 15 after sophomore year (text/email/social).'),
-  ('*',        'D2', 'unrestricted',      null,        null,     'D2 electronic contact effectively unrestricted.'),
+  ('*',        'D2', 'date_after_grade',  'sophomore', 'Jun 15', 'D2 coach contact opens Jun 15 after sophomore year.'),
   ('*',        'D3', 'unrestricted',      null,        null,     'No NCAA D3 contact-date restriction.'),
   ('*',        'NAIA', 'unrestricted',    null,        null,     'No NAIA contact-date restriction.'),
   ('*',        'JUCO', 'unrestricted',    null,        null,     'No NJCAA/JUCO contact-date restriction.')
