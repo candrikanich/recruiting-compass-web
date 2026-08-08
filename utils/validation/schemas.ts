@@ -452,3 +452,23 @@ export const createDeadlineSchema = z.object({
 });
 
 export type CreateDeadlineInput = z.infer<typeof createDeadlineSchema>;
+
+// ============================================================================
+// VIDEO LINK SCHEMAS
+// ============================================================================
+
+export const videoPlatformEnum = z.enum(["hudl", "youtube", "vimeo"]);
+export const createVideoLinkSchema = z.object({
+  platform: videoPlatformEnum,
+  url: z.string().url().max(2048),
+  title: z.string().max(200).optional(),
+  position: z.number().int().min(0).max(4).optional(),
+});
+export const updateVideoLinkSchema = z.object({
+  platform: videoPlatformEnum.optional(),
+  url: z.string().url().max(2048).optional(),
+  title: z.string().max(200).nullable().optional(),
+  position: z.number().int().min(0).max(4).optional(),
+}).refine((o) => Object.keys(o).length > 0, { message: "At least one field required" });
+export type CreateVideoLinkInput = z.infer<typeof createVideoLinkSchema>;
+export type UpdateVideoLinkInput = z.infer<typeof updateVideoLinkSchema>;
