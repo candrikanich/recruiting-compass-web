@@ -3,39 +3,33 @@ import { resolve } from "path";
 
 /**
  * E2E tests for User Story 2.2: Parent and Athlete Profile Updates
- * Tests read-only restrictions for parents on /settings/player-details
+ * Family collaboration: parents AND players edit the same player profile on
+ * /settings/player-details (parent edits write to the linked athlete's row).
  *
  * Component facts:
- * - Warning banner (parent only): h3 "Read-only view" + p "You're viewing this profile as a parent..."
- * - Inputs use :disabled="isParentRole" — disabled for parents on Basics tab
+ * - No read-only banner: the whole family can edit.
+ * - Inputs are enabled for parents and players alike.
  * - Page uses auto-save (no explicit save button)
  * - Tabs: Basics, Athletics, Academics & Social, History, Public Profile
  * - GPA input is on the Academics & Social tab
  */
 
 test.describe("Profile Edit Restrictions (User Story 2.2)", () => {
-  test.describe("Parent User Restrictions", () => {
+  test.describe("Parent User - Can Edit (family collaboration)", () => {
     test.use({
       storageState: resolve(process.cwd(), "tests/e2e/.auth/parent.json"),
     });
 
-    test("parent sees read-only warning banner", async ({ page }) => {
+    test("parent does NOT see a read-only warning banner", async ({ page }) => {
       await page.goto("/settings/player-details");
       await page.waitForLoadState("domcontentloaded");
 
-      // Warning banner is an amber box with h3 "Read-only view"
+      // The read-only banner has been removed — parents are full editors now.
       const warningHeading = page.locator("h3", { hasText: "Read-only view" });
-      await expect(warningHeading).toBeVisible();
-
-      // Sub-text describes read-only reason
-      // Using partial text to avoid apostrophe encoding issues
-      const warningText = page.getByText("viewing this profile as a parent", {
-        exact: false,
-      });
-      await expect(warningText).toBeVisible();
+      await expect(warningHeading).not.toBeVisible();
     });
 
-    test("parent sees key form inputs disabled on Basics tab", async ({
+    test("parent sees key form inputs ENABLED on Basics tab", async ({
       page,
     }) => {
       await page.goto("/settings/player-details");
@@ -49,27 +43,20 @@ test.describe("Profile Edit Restrictions (User Story 2.2)", () => {
         .first()
         .waitFor({ state: "visible", timeout: 15000 });
 
-      // The Basics tab is shown by default. Graduation year and Primary Sport
-      // selects both have :disabled="isParentRole"
-      const selects = page.locator("select[disabled]");
-      const disabledCount = await selects.count();
-      expect(disabledCount).toBeGreaterThan(0);
-
-      // Verify at least one input is disabled
-      const inputs = page.locator("input[disabled]");
-      const disabledInputCount = await inputs.count();
-      expect(disabledInputCount).toBeGreaterThan(0);
+      // Graduation year / Primary Sport selects must be editable by the parent.
+      await expect(page.locator("select").first()).not.toBeDisabled();
+      // No disabled selects remain from the old read-only gating.
+      expect(await page.locator("select[disabled]").count()).toBe(0);
     });
 
-    test("parent sees position buttons disabled", async ({ page }) => {
+    test("parent sees position buttons ENABLED", async ({ page }) => {
       await page.goto("/settings/player-details");
       await page.waitForLoadState("domcontentloaded");
 
       // Wait for the form to render — selects appear only once isLoading
       // flips false. global-setup seeds primary_sport=Baseball into the player's
       // user_preferences.player_details so the Athletics tab renders position
-      // buttons (without it, the tab shows "Select a sport on the Basics tab
-      // to see positions." and there are no position buttons to assert).
+      // buttons.
       await page
         .locator("select")
         .first()
@@ -81,50 +68,21 @@ test.describe("Profile Edit Restrictions (User Story 2.2)", () => {
         .first();
       await athleticsTab.click();
 
-      // Tabs use v-show, so Basics buttons (e.g., "Small (<5K)") stay in the
-      // DOM but with display:none. Filter to :visible so .first() doesn't
-      // resolve to a hidden Basics button before Athletics paints in.
+      // Position buttons should be interactive for the parent — no disabled
+      // buttons from the old read-only gating.
       const disabledButtons = page.locator("button[disabled]:visible");
-      await expect(disabledButtons.first()).toBeVisible({ timeout: 10000 });
-      const count = await disabledButtons.count();
-      expect(count).toBeGreaterThan(0);
+      expect(await disabledButtons.count()).toBe(0);
     });
 
-    test("parent cannot bypass API with direct request (403)", async ({
+    test("parent sees auto-save status indicator (edits persist)", async ({
       page,
-      context,
     }) => {
-      await page.goto("/settings/player-details", {
-        waitUntil: "domcontentloaded",
-      });
-      await page.waitForLoadState("domcontentloaded");
-
-      const response = await context.request.patch(
-        "/api/user/preferences/player-details",
-        {
-          data: { gpa: 3.8 },
-        },
-      );
-
-      // Should get 403 Forbidden for parent role, or 400 for CSRF token missing
-      expect([400, 403]).toContain(response.status());
-
-      const body = await response.json();
-      const message = body.statusMessage || body.message || "";
-      expect(message.toLowerCase()).toMatch(
-        /(read-only|csrf|unauthorized|forbidden)/i,
-      );
-    });
-
-    test("parent does not see auto-save as available", async ({ page }) => {
       await page.goto("/settings/player-details");
       await page.waitForLoadState("domcontentloaded");
 
-      // The page has a sticky header showing "Saved" or "Saving" state
-      // For parents, inputs are disabled so no mutations occur
-      // Verify the page loaded with the read-only banner intact
-      const warningHeading = page.locator("h3", { hasText: "Read-only view" });
-      await expect(warningHeading).toBeVisible();
+      // Auto-save is available to parents now; the sticky header shows state.
+      const savedIndicator = page.locator("text=Saved");
+      await expect(savedIndicator).toBeVisible();
     });
   });
 

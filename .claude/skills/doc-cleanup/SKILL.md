@@ -71,9 +71,13 @@ Log each compression: `Compressed: <filename> → docs/history/<domain>.md`
 
 ## Pass 3 — Review
 
+> **Scale rule:** if `manifest.review[]` has **more than ~30 files**, do NOT read them inline — it blows the main context. Delegate: split the list into batches of ~30 and dispatch one classification subagent per batch **in a single message** (parallel). Each subagent reads + classifies its batch and returns ONLY a compact table `| path | classification | domain | summary |` (fill domain+summary for compress rows; brief reason for delete rows) — it does NOT edit or delete anything. The main thread then executes all writes/deletes itself from the returned tables. Prefer `general-purpose` subagents over `Explore` for this — read-only search agents have stalled on the 600s stream watchdog for large batches; if one stalls, retry it as `general-purpose`. Below ~30 files, just read and classify inline.
+>
+> When classifying, merge obvious design+implementation pairs into a single history entry (one feature, one entry). For undated docs, use an approximate era date in the `## YYYY-MM-DD` heading rather than the run date.
+
 For each file in `manifest.review[]`:
 
-1. Read the file
+1. Read the file (or receive its classification from a batch subagent per the scale rule above)
 2. Classify:
    - **keep** — future-looking, actively referenced, open checklists, security/audit docs, guides, launch plans, RLS policies. **When in doubt, keep.**
    - **compress** — clearly completed work with a concrete outcome → process identically to Pass 2
@@ -85,22 +89,44 @@ Log your classification and reasoning briefly for each file.
 
 ## Final Step
 
-**Append** the following to `COMPLETED_WORK.md` (do NOT rewrite existing content — append only):
+**Append** the following to `COMPLETED_WORK.md` (do NOT rewrite existing content — append only). Use a **per-domain** summary table, not per-doc — a per-doc table is unreadable once more than ~15 files are compressed:
 
 ```
 ## Doc Cleanup Run — YYYY-MM-DD
-- Deleted: N files (session debris)
-- Compressed: N files → domain history
-- Kept: N files (active/future-looking)
+- Deleted: N files (<brief breakdown>)
+- Compressed: N files → docs/history/<domain>.md (M domains)
+- Kept: N files (active/future-looking: <brief examples>)
 
-| Doc | Domain | Summary |
-|-----|--------|---------|
-| filename.md | domain | one-line summary |
+| Domain | Compressed | Summary |
+|--------|-----------|---------|
+| domain | N | one-line roll-up of what was compressed |
 ```
 
-Then commit everything:
+Then commit **only the docs this run touched**. NEVER use `git add -A` / `git add .` — a blanket stage sweeps in unrelated working changes: in-progress feature code, build-generated files, and secrets (e.g. anything containing API keys or `.env` values).
+
+**1. Stage only doc paths this run deleted or wrote** — the two output files plus the exact manifest paths processed in passes 1–3 (each scoped with an explicit `--` pathspec, never a bare `git add`):
 
 ```bash
-git add -A
+git add -- docs/history/ COMPLETED_WORK.md
+# Plus each file this run deleted/compressed, by exact path:
+git add -- "<path from manifest.autoDelete / compress / review that this run touched>"
+# ...repeat one -- pathspec per touched file (records deletions too)
+```
+
+**2. Safety gate — abort if anything out of scope is staged.** Doc cleanup only ever touches `.md`/`.mdx` files. If any other file is staged, unstage and STOP without committing:
+
+```bash
+offenders=$(git diff --cached --name-only | grep -vE '\.mdx?$')
+if [ -n "$offenders" ]; then
+  echo "ABORT: doc-cleanup must not commit non-doc files (code/config/secrets):"
+  echo "$offenders"
+  git reset -q
+  exit 1
+fi
+```
+
+**3. Commit** only after the gate passes:
+
+```bash
 git commit -m "chore: doc cleanup run YYYY-MM-DD"
 ```

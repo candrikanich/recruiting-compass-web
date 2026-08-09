@@ -73,6 +73,8 @@ describe("useProfilePhoto", () => {
       storage: mockStorage,
       auth: mockAuth,
       from: vi.fn().mockReturnValue(chainedMethods),
+      // Photo persistence now goes through the family-aware RPC.
+      rpc: vi.fn().mockResolvedValue({ data: null, error: null }),
     };
 
     mockUseSupabase.mockReturnValue(mockSupabase);
@@ -324,9 +326,11 @@ describe("useProfilePhoto", () => {
       const { deleteProfilePhoto } = useProfilePhoto();
       await deleteProfilePhoto();
 
-      // Verify update was called to clear photo URL
-      const updateChainedMethods = mockSupabase.from("users");
-      expect(updateChainedMethods.update).toHaveBeenCalled();
+      // Verify the RPC was called to clear the photo URL (null).
+      expect(mockSupabase.rpc).toHaveBeenCalledWith(
+        "set_athlete_profile_photo",
+        expect.objectContaining({ athlete_id: "user-123", photo_url: null }),
+      );
     });
 
     it("should handle deletion errors", async () => {

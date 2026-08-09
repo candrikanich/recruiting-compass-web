@@ -1,13 +1,16 @@
 # History: Infrastructure
 
-## 2026-02-16 — Supabase Postgres Quick Wins
-Implemented Supabase Postgres best practices: added missing indexes, optimized N+1 queries, configured connection pooling, and adopted RLS patterns consistently across the schema.
+## 2026-03-18 — Doc hygiene system
+Built the automated weekly doc-cleanup system (`scanner.mjs` manifest + `/doc-cleanup` skill + cron) for the web and iOS repos — the system this pass runs under.
 
-## 2026-01-31 — Migration 022 Validation
-Migration 022 (family units schema) fixed and validated. Applied successfully; family_units and family_members tables with correct RLS policies.
+## 2026-03-04 — Infrastructure improvements
+PostHog analytics, Tailwind v4 upgrade, Nuxt UI v3, Upstash rate limiting on sensitive endpoints, and bundle analysis.
 
-## 2026-01-28 — Tech Debt Remediation Complete
-Completed 90% of planned tech debt: removed legacy authentication patterns, standardized error handling across API routes, cleaned up unused composables and dead TypeScript types. Phases 1–5 done.
+## 2026-02-25 — Scalability quick fixes
+Bounded caches, paginated admin users, and parallelized fit-score checks (targeting ~1k users).
 
-## 2026-01-26 — Phase 1–2 Security Hardening Complete
-Phases 1 (RLS policies) and 2 (input validation with Zod) deployed to production. All Supabase tables now have correct RLS; all API endpoints validate with Zod schemas.
+## 2026-02-18 — Architecture improvements
+Five-phase cleanup (dead feature flags, quick wins, higher-value refactors); Round 5 added a client structured logger, extracted direct Supabase calls into composables, and added request dedup in useSchools/useCoaches.
+
+## 2026-02-18 — Logging adoption
+Structured logging across 39 API routes with correlation-ID propagation via `useAuthFetch`.

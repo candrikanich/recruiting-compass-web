@@ -1,276 +1,128 @@
 import { describe, it, expect } from "vitest";
-import { calculateProfileCompleteness } from "~/utils/profileCompletenessCalculation";
-import type { PlayerProfile } from "~/types/onboarding";
+import {
+  calculateProfileCompleteness,
+  isHomeLocationPresent,
+  type ScorableProfile,
+  type ProfileCompletenessSignals,
+} from "~/utils/profileCompletenessCalculation";
+
+// Canonical weighted formula — must stay in lockstep with iOS
+// (PlayerDetails.completenessScore). See the iOS repo's
+// planning/2026-08-09-profile-completeness-canonical-spec.md.
+
+const SIGNALS_ON: ProfileCompletenessSignals = {
+  hasHighlightVideo: true,
+  hasHomeLocation: true,
+};
+
+// A profile with every player-prefs field filled (75% before signals).
+const fullProfile: ScorableProfile = {
+  graduation_year: 2028,
+  primary_sport: "soccer",
+  primary_position: "forward",
+  gpa: 3.8,
+  sat_score: 1500,
+  height_inches: 70,
+  weight_lbs: 160,
+  phone: "555-123-4567",
+};
 
 describe("utils/profileCompletenessCalculation", () => {
   describe("calculateProfileCompleteness", () => {
-    describe("Weight Distribution (sum = 100%)", () => {
-      const weightBreakdown = {
-        graduationYear: 10,
-        primarySport: 10,
-        primaryPosition: 10,
-        zipCode: 10,
-        gpa: 15,
-        testScores: 10,
-        highlightVideo: 15,
-        athleticStats: 10,
-        contactInfo: 10,
+    it("scores 100% when every field and both signals are present", () => {
+      expect(calculateProfileCompleteness(fullProfile, SIGNALS_ON)).toBe(100);
+    });
+
+    it("scores 0% for an empty profile with no signals", () => {
+      expect(calculateProfileCompleteness({})).toBe(0);
+    });
+
+    describe("per-field weights", () => {
+      const cases: Array<[string, ScorableProfile, ProfileCompletenessSignals, number]> = [
+        ["graduation year", { graduation_year: 2028 }, { hasHighlightVideo: false, hasHomeLocation: false }, 10],
+        ["primary sport", { primary_sport: "soccer" }, { hasHighlightVideo: false, hasHomeLocation: false }, 10],
+        ["primary position", { primary_position: "forward" }, { hasHighlightVideo: false, hasHomeLocation: false }, 10],
+        ["gpa", { gpa: 3.5 }, { hasHighlightVideo: false, hasHomeLocation: false }, 15],
+        ["sat", { sat_score: 1200 }, { hasHighlightVideo: false, hasHomeLocation: false }, 10],
+        ["act", { act_score: 28 }, { hasHighlightVideo: false, hasHomeLocation: false }, 10],
+        ["height", { height_inches: 70 }, { hasHighlightVideo: false, hasHomeLocation: false }, 5],
+        ["weight", { weight_lbs: 160 }, { hasHighlightVideo: false, hasHomeLocation: false }, 5],
+        ["phone", { phone: "555-1234" }, { hasHighlightVideo: false, hasHomeLocation: false }, 10],
+        ["highlight video", {}, { hasHighlightVideo: true, hasHomeLocation: false }, 15],
+        ["home location", {}, { hasHighlightVideo: false, hasHomeLocation: true }, 10],
+      ];
+
+      it.each(cases)("gives %s its weight", (_label, profile, signals, expected) => {
+        expect(calculateProfileCompleteness(profile, signals)).toBe(expected);
+      });
+    });
+
+    it("counts SAT or ACT as a single field (no double count)", () => {
+      const sat = calculateProfileCompleteness({ sat_score: 1300 });
+      const act = calculateProfileCompleteness({ act_score: 30 });
+      const both = calculateProfileCompleteness({ sat_score: 1300, act_score: 30 });
+      expect(sat).toBe(10);
+      expect(act).toBe(10);
+      expect(both).toBe(10);
+    });
+
+    it("defaults both signals to absent when omitted", () => {
+      // fullProfile is 75% from player-prefs fields alone.
+      expect(calculateProfileCompleteness(fullProfile)).toBe(75);
+    });
+
+    it("docks the video weight when only the video is missing", () => {
+      expect(
+        calculateProfileCompleteness(fullProfile, {
+          hasHighlightVideo: false,
+          hasHomeLocation: true,
+        }),
+      ).toBe(85);
+    });
+
+    it("docks the home-location weight when only location is missing", () => {
+      expect(
+        calculateProfileCompleteness(fullProfile, {
+          hasHighlightVideo: true,
+          hasHomeLocation: false,
+        }),
+      ).toBe(90);
+    });
+
+    it("treats blank/zero values as missing", () => {
+      const blank: ScorableProfile = {
+        primary_sport: "   ",
+        primary_position: "",
+        gpa: 0,
+        height_inches: 0,
+        phone: "  ",
       };
-
-      it("should sum all weights to 100%", () => {
-        const total = Object.values(weightBreakdown).reduce((a, b) => a + b, 0);
-        expect(total).toBe(100);
-      });
+      expect(calculateProfileCompleteness(blank)).toBe(0);
     });
 
-    describe("Happy Path - Complete Profile", () => {
-      it("should calculate 100% for fully complete profile", () => {
-        const profile: PlayerProfile = {
-          graduation_year: 2028,
-          primary_sport: "soccer",
-          primary_position: "forward",
-          zip_code: "60601",
-          gpa: 3.8,
-          sat_score: 1500,
-          act_score: 34,
-          highlight_video_url: "https://example.com/video.mp4",
-          athletic_stats: "5 goals in league play",
-          phone: "555-123-4567",
-        };
+    it("returns an integer between 0 and 100", () => {
+      const result = calculateProfileCompleteness(fullProfile, SIGNALS_ON);
+      expect(Number.isInteger(result)).toBe(true);
+      expect(result).toBeGreaterThanOrEqual(0);
+      expect(result).toBeLessThanOrEqual(100);
+    });
+  });
 
-        const result = calculateProfileCompleteness(profile);
-        expect(result).toBe(100);
-      });
-
-      it("should give credit for SAT OR ACT (not requiring both)", () => {
-        const profileWithSAT: PlayerProfile = {
-          graduation_year: 2028,
-          primary_sport: "soccer",
-          primary_position: "forward",
-          zip_code: "60601",
-          gpa: 3.8,
-          sat_score: 1500,
-          highlight_video_url: "https://example.com/video.mp4",
-          athletic_stats: "5 goals",
-          phone: "555-123-4567",
-        };
-
-        const resultSAT = calculateProfileCompleteness(profileWithSAT);
-        expect(resultSAT).toBe(100);
-
-        const profileWithACT: PlayerProfile = {
-          ...profileWithSAT,
-          sat_score: undefined,
-          act_score: 34,
-        };
-
-        const resultACT = calculateProfileCompleteness(profileWithACT);
-        expect(resultACT).toBe(100);
-      });
+  describe("isHomeLocationPresent", () => {
+    it("is false for null/undefined/empty", () => {
+      expect(isHomeLocationPresent(null)).toBe(false);
+      expect(isHomeLocationPresent(undefined)).toBe(false);
+      expect(isHomeLocationPresent({})).toBe(false);
     });
 
-    describe("Happy Path - Partial Completion", () => {
-      it("should calculate 40% for profile with basic info only", () => {
-        const profile: PlayerProfile = {
-          graduation_year: 2028,
-          primary_sport: "soccer",
-          primary_position: "forward",
-          zip_code: "60601",
-        };
-
-        const result = calculateProfileCompleteness(profile);
-        expect(result).toBe(40); // 10+10+10+10 = 40%
-      });
-
-      it("should calculate correctly with graduation year + sport + position + zip", () => {
-        const profile: PlayerProfile = {
-          graduation_year: 2028,
-          primary_sport: "basketball",
-          primary_position: "point guard",
-          zip_code: "10001",
-        };
-
-        const result = calculateProfileCompleteness(profile);
-        expect(result).toBe(40); // 10+10+10+10 = 40%
-      });
-
-      it("should calculate correctly with academic info added", () => {
-        const profile: PlayerProfile = {
-          graduation_year: 2028,
-          primary_sport: "soccer",
-          primary_position: "midfielder",
-          zip_code: "60601",
-          gpa: 3.5,
-          sat_score: 1200,
-        };
-
-        const result = calculateProfileCompleteness(profile);
-        expect(result).toBe(65); // 10+10+10+10+15+10 = 65%
-      });
+    it("is true when a non-blank zip is present", () => {
+      expect(isHomeLocationPresent({ zip: "60601" })).toBe(true);
+      expect(isHomeLocationPresent({ zip: "  " })).toBe(false);
     });
 
-    describe("Edge Cases - Missing Fields", () => {
-      it("should calculate 0% for empty profile", () => {
-        const profile: Partial<PlayerProfile> = {};
-        const result = calculateProfileCompleteness(profile as PlayerProfile);
-        expect(result).toBe(0);
-      });
-
-      it("should calculate with only graduation year", () => {
-        const profile: PlayerProfile = {
-          graduation_year: 2028,
-        };
-
-        const result = calculateProfileCompleteness(profile);
-        expect(result).toBe(10); // Just the graduation year weight
-      });
-
-      it("should not penalize missing secondary sport/position", () => {
-        const profile: PlayerProfile = {
-          graduation_year: 2028,
-          primary_sport: "soccer",
-          primary_position: "forward",
-          zip_code: "60601",
-          gpa: 3.8,
-          sat_score: 1400,
-          highlight_video_url: "https://example.com/video.mp4",
-          athletic_stats: "10 goals",
-          phone: "555-123-4567",
-        };
-
-        const result = calculateProfileCompleteness(profile);
-        expect(result).toBe(100); // No penalty for missing secondary
-      });
-    });
-
-    describe("Test Score Handling", () => {
-      it("should count SAT score as fulfilling test score requirement", () => {
-        const profile: PlayerProfile = {
-          graduation_year: 2028,
-          primary_sport: "soccer",
-          primary_position: "forward",
-          zip_code: "60601",
-          gpa: 3.8,
-          sat_score: 1300,
-        };
-
-        const result = calculateProfileCompleteness(profile);
-        expect(result).toBeGreaterThanOrEqual(65); // Should include SAT's 10%
-      });
-
-      it("should count ACT score as fulfilling test score requirement", () => {
-        const profile: PlayerProfile = {
-          graduation_year: 2028,
-          primary_sport: "soccer",
-          primary_position: "forward",
-          zip_code: "60601",
-          gpa: 3.8,
-          act_score: 33,
-        };
-
-        const result = calculateProfileCompleteness(profile);
-        expect(result).toBeGreaterThanOrEqual(65); // Should include ACT's 10%
-      });
-
-      it("should not double-count when both SAT and ACT are present", () => {
-        const profile1: PlayerProfile = {
-          graduation_year: 2028,
-          primary_sport: "soccer",
-          primary_position: "forward",
-          zip_code: "60601",
-          gpa: 3.8,
-          sat_score: 1300,
-        };
-
-        const profile2: PlayerProfile = {
-          ...profile1,
-          act_score: 33,
-        };
-
-        const result1 = calculateProfileCompleteness(profile1);
-        const result2 = calculateProfileCompleteness(profile2);
-
-        // Both should be the same (10% for tests, not 20%)
-        expect(result1).toBe(result2);
-      });
-    });
-
-    describe("Optional Fields", () => {
-      it("should handle missing highlight video without penalty when others complete", () => {
-        const profile: PlayerProfile = {
-          graduation_year: 2028,
-          primary_sport: "soccer",
-          primary_position: "forward",
-          zip_code: "60601",
-          gpa: 3.8,
-          sat_score: 1300,
-          athletic_stats: "10 goals, 5 assists",
-          phone: "555-123-4567",
-        };
-
-        const result = calculateProfileCompleteness(profile);
-        expect(result).toBe(85); // 100 - 15 (missing video)
-      });
-
-      it("should handle missing athletic stats gracefully", () => {
-        const profile: PlayerProfile = {
-          graduation_year: 2028,
-          primary_sport: "soccer",
-          primary_position: "forward",
-          zip_code: "60601",
-          gpa: 3.8,
-          sat_score: 1300,
-          highlight_video_url: "https://example.com/video.mp4",
-          phone: "555-123-4567",
-        };
-
-        const result = calculateProfileCompleteness(profile);
-        expect(result).toBe(90); // 100 - 10 (missing stats)
-      });
-
-      it("should handle missing contact info", () => {
-        const profile: PlayerProfile = {
-          graduation_year: 2028,
-          primary_sport: "soccer",
-          primary_position: "forward",
-          zip_code: "60601",
-          gpa: 3.8,
-          sat_score: 1300,
-          highlight_video_url: "https://example.com/video.mp4",
-          athletic_stats: "10 goals",
-        };
-
-        const result = calculateProfileCompleteness(profile);
-        expect(result).toBe(90); // 100 - 10 (missing contact info)
-      });
-    });
-
-    describe("Return Type", () => {
-      it("should return a number between 0 and 100", () => {
-        const profile: PlayerProfile = {
-          graduation_year: 2028,
-          primary_sport: "soccer",
-          primary_position: "forward",
-          zip_code: "60601",
-          gpa: 3.5,
-        };
-
-        const result = calculateProfileCompleteness(profile);
-        expect(typeof result).toBe("number");
-        expect(result).toBeGreaterThanOrEqual(0);
-        expect(result).toBeLessThanOrEqual(100);
-      });
-
-      it("should not return decimal places", () => {
-        const profile: PlayerProfile = {
-          graduation_year: 2028,
-          primary_sport: "soccer",
-          primary_position: "forward",
-        };
-
-        const result = calculateProfileCompleteness(profile);
-        expect(Number.isInteger(result)).toBe(true);
-      });
+    it("is true when a coordinate pair is present", () => {
+      expect(isHomeLocationPresent({ latitude: 41.8, longitude: -87.6 })).toBe(true);
+      expect(isHomeLocationPresent({ latitude: 41.8 })).toBe(false);
     });
   });
 });

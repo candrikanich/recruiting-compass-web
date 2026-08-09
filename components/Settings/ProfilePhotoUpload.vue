@@ -144,6 +144,12 @@ import { createClientLogger } from "~/utils/logger";
 
 const logger = createClientLogger("ProfilePhotoUpload");
 
+const props = defineProps<{
+  // When set, the photo targets this user (a family athlete) instead of the
+  // logged-in user, so a parent can view/edit the athlete's photo.
+  targetUserId?: string;
+}>();
+
 const fileInput = ref<HTMLInputElement>();
 const showDeleteConfirm = ref(false);
 
@@ -156,7 +162,7 @@ const {
   hasProfilePhoto,
   uploadProfilePhoto,
   deleteProfilePhoto,
-} = useProfilePhoto();
+} = useProfilePhoto(() => props.targetUserId ?? null);
 
 const userName = computed(() => userStore.user?.full_name || "User");
 

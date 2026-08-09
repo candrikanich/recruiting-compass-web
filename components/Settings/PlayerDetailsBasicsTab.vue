@@ -12,7 +12,9 @@
     <div class="p-6 space-y-8">
       <!-- Profile Photo -->
       <div class="flex flex-col sm:flex-row gap-8 items-center sm:items-start">
-        <SettingsProfilePhotoUpload />
+        <SettingsProfilePhotoUpload
+          :target-user-id="activeAthleteId ?? undefined"
+        />
         <div class="flex-1 space-y-5 w-full">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div>
@@ -231,6 +233,10 @@
 <script setup lang="ts">
 import type { PlayerDetails } from "~/types/models";
 import type { HighSchoolSelection } from "~/composables/useHighSchoolSearch";
+import { useFamilyCtx } from "~/composables/useFamilyCtx";
+
+// Photo targets the athlete being viewed (self for a player, the linked athlete for a parent).
+const { activeAthleteId } = useFamilyCtx();
 
 defineProps<{
   form: PlayerDetails;
