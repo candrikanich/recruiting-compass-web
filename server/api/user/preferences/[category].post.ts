@@ -11,6 +11,7 @@ import { z } from "zod";
 import { requireAuth } from "~/server/utils/auth";
 import { useLogger } from "~/server/utils/logger";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
+import { resolvePreferenceTargetUserId } from "~/server/utils/playerOwnedPreferences";
 import type { Database } from "~/types/database";
 
 const ALLOWED_CATEGORIES = [
@@ -57,11 +58,25 @@ export default defineEventHandler(async (event) => {
 
     const supabase = useSupabaseAdmin();
 
+    // For player-owned categories, a parent writes to the linked athlete's row so the
+    // whole family edits one canonical profile (mirrors the GET redirect).
+    const targetUserId = await resolvePreferenceTargetUserId(
+      user.id,
+      category,
+      supabase,
+    );
+    if (targetUserId !== user.id) {
+      logger.info("Parent editing athlete preferences", {
+        category,
+        athleteId: targetUserId,
+      });
+    }
+
     const result = (await supabase
       .from("user_preferences")
       .upsert(
         {
-          user_id: user.id,
+          user_id: targetUserId,
           category,
           data: data as Database["public"]["Tables"]["user_preferences"]["Insert"]["data"],
           updated_at: new Date().toISOString(),

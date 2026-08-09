@@ -270,6 +270,63 @@ describe("POST /api/user/preferences/[category]", () => {
       expect.objectContaining({ user_id: "user-1", category: "dashboard" }),
     ]);
   });
+
+  it("redirects a parent's write of a PLAYER_OWNED category to the linked athlete's row", async () => {
+    const { requireAuth, getUserRole } = await import("~/server/utils/auth");
+    vi.mocked(requireAuth).mockResolvedValue({
+      id: "parent-1",
+      email: "parent@example.com",
+    });
+    vi.mocked(getUserRole).mockResolvedValue("parent");
+
+    const { useSupabaseAdmin } = await import("~/server/utils/supabase");
+    const upsertCalls: Array<{ user_id: string; category: string }> = [];
+    vi.mocked(useSupabaseAdmin).mockReturnValue({
+      from: (table: string) => {
+        if (table === "family_members") {
+          return {
+            select: () => ({
+              eq: () => ({
+                eq: (_roleCol: string, roleVal: string) => ({
+                  maybeSingle: () =>
+                    roleVal === "parent"
+                      ? Promise.resolve({
+                          data: { family_unit_id: "family-a" },
+                          error: null,
+                        })
+                      : Promise.resolve({
+                          data: { user_id: "athlete-1" },
+                          error: null,
+                        }),
+                }),
+              }),
+            }),
+          };
+        }
+        return {
+          upsert: (row: { user_id: string; category: string }) => {
+            upsertCalls.push(row);
+            return {
+              select: () => ({
+                single: () =>
+                  Promise.resolve({
+                    data: { data: { gpa: 3.9 }, updated_at: "2026-01-01" },
+                    error: null,
+                  }),
+              }),
+            };
+          },
+        };
+      },
+    } as never);
+    const handler = await loadHandler();
+
+    await handler(fakeEvent("player", { data: { gpa: 3.9 } }));
+
+    expect(upsertCalls).toEqual([
+      expect.objectContaining({ user_id: "athlete-1", category: "player" }),
+    ]);
+  });
 });
 
 describe("DELETE /api/user/preferences/[category]", () => {

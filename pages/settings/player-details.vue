@@ -114,24 +114,6 @@
         @dismiss="clearErrors"
       />
 
-      <!-- Read-only Warning Banner -->
-      <div
-        v-if="isParentRole && !isLoading"
-        class="mb-8 rounded-xl bg-amber-50 border border-amber-200 p-4 flex gap-3 shadow-sm"
-      >
-        <UIcon
-          name="i-heroicons-exclamation-circle"
-          class="h-5 w-5 text-amber-500 shrink-0"
-        />
-        <div>
-          <h3 class="text-sm font-bold text-amber-900">Read-only view</h3>
-          <p class="text-xs text-amber-700 mt-0.5 font-medium leading-relaxed">
-            You\'re viewing this profile as a parent. Your athlete is the
-            primary owner of this data.
-          </p>
-        </div>
-      </div>
-
       <div v-if="!isLoading" class="space-y-6">
         <!-- TAB: BASICS -->
         <div
@@ -140,7 +122,7 @@
         >
           <PlayerDetailsBasicsTab
             :form="form"
-            :is-parent-role="isParentRole"
+            :is-parent-role="isReadOnly"
             :graduation-years="graduationYears"
             :common-sports="commonSports"
             :campus-size-options="CAMPUS_SIZE_OPTIONS"
@@ -156,7 +138,7 @@
         >
           <PlayerDetailsAthleticsTab
             :form="form"
-            :is-parent-role="isParentRole"
+            :is-parent-role="isReadOnly"
             :is-baseball-or-softball="isBaseballOrSoftball"
             :available-positions="availablePositions"
             :trigger-save="triggerSave"
@@ -176,7 +158,7 @@
         >
           <PlayerDetailsAcademicsTab
             :form="form"
-            :is-parent-role="isParentRole"
+            :is-parent-role="isReadOnly"
             :trigger-save="triggerSave"
             :social-inputs="socialInputs"
             :handle-social-blur="handleSocialBlur"
@@ -343,7 +325,8 @@ const previewSchools = computed(() =>
 );
 const { errors, clearErrors, hasErrors } = useFormValidation();
 
-const isParentRole = computed(() => userStore.user?.role === "parent");
+// Parents and players collaborate on one player profile; everyone edits.
+const isReadOnly = computed(() => false);
 
 const validTabs = ["basics", "athletics", "academics", "history", "public-profile"];
 const currentTab = ref(validTabs.includes(route.query.tab as string) ? (route.query.tab as string) : "basics");
