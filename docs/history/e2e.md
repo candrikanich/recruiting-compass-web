@@ -1,10 +1,16 @@
 # History: E2E
 
-## 2026-02-09 — School Detail E2E Coverage
-Implemented E2E test coverage for school detail page, increasing from ~40% to ~75%. Priority 1 features (basic info, coaches list, interactions timeline) fully covered with Playwright.
+## 2026-05-27 — Skip triage
+Fixed 3 heroicons→UIcon unit regressions (green at 7627); proved the 80 E2E failures were seed/auth-infra flake not a regression; retired skip buckets D+A (B+C remain gated on seed infra).
 
-## 2026-01-30 — E2E Infrastructure Enhancement
-Fixed 43+ skipped E2E tests by resolving build failures, establishing reproducible test infrastructure, and enabling CI/CD integration. All previously-skipped tests now run in CI.
+## 2026-05-22 — Playwright rewrite / skipped-tests triage
+Tier audit + triage of ~330 skipped E2E tests into buckets to restore suite trustworthiness (kill vacuous assertions/fake skips); superseded by later June/July e2e-reliability work.
 
-## 2026-01-30 — E2E Solutions Delivered
-Resolved all outstanding E2E setup blockers: valid Supabase test credentials, seeded test data, stable test isolation between runs. E2E suite fully operational.
+## 2026-03-16 — E2E test overhaul
+Reworked a 914-test suite into ~600 honest tests using Playwright `storageState` auth; removed shared-email cascades, per-test signups, and vacuous assertions.
+
+## 2026-03-16 — Documents E2E
+Added 3 spec files (documents CRUD, sharing, search) — 36 scenarios / 1,435 lines.
+
+## 2026-03-02 — E2E coverage fixes
+Fixed stale selectors, broken login/signup/family flows, placeholder tests, and hardcoded BASE_URL.

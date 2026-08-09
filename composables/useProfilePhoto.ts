@@ -1,4 +1,12 @@
-import { ref, computed, type ComputedRef, type Ref } from "vue";
+import {
+  ref,
+  computed,
+  watch,
+  toValue,
+  type ComputedRef,
+  type MaybeRefOrGetter,
+  type Ref,
+} from "vue";
 import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
 import { compressImage, validateImageFile } from "~/utils/image/compressImage";
@@ -7,7 +15,17 @@ import { createClientLogger } from "~/utils/logger";
 
 const logger = createClientLogger("useProfilePhoto");
 
-export const useProfilePhoto = (): {
+/**
+ * Profile-photo composable.
+ *
+ * @param targetUserId Whose photo to view/edit. Omit (or null) for the logged-in user's
+ *   own photo. Pass a family athlete's id so a parent can view AND edit the athlete's photo
+ *   — writes go through the `set_athlete_profile_photo` RPC (authorizes self or family athlete)
+ *   and storage under the athlete's folder (family-write RLS).
+ */
+export const useProfilePhoto = (
+  targetUserId?: MaybeRefOrGetter<string | null>,
+): {
   uploading: Ref<boolean>;
   uploadProgress: Ref<number>;
   error: Ref<string | null>;
@@ -23,13 +41,71 @@ export const useProfilePhoto = (): {
   const uploadProgress = ref(0);
   const error = ref<string | null>(null);
 
+  // Effective subject of this composable: an explicit target, else the logged-in user.
+  const effectiveId = computed<string | null>(
+    () => toValue(targetUserId) ?? userStore.user?.id ?? null,
+  );
+  const isSelf = computed<boolean>(
+    () => !!effectiveId.value && effectiveId.value === userStore.user?.id,
+  );
+
+  // Another family member's photo (athlete) is fetched on demand; self reads the store.
+  const remotePhotoUrl = ref<string | null>(null);
+
+  const loadRemotePhoto = async (id: string) => {
+    const { data, error: fetchError } = await supabase
+      .from("users")
+      .select("profile_photo_url")
+      .eq("id", id)
+      .maybeSingle();
+    if (fetchError) {
+      logger.error("Failed to load athlete profile photo:", fetchError);
+      return;
+    }
+    remotePhotoUrl.value =
+      (data as { profile_photo_url: string | null } | null)?.profile_photo_url ??
+      null;
+  };
+
+  watch(
+    [effectiveId, isSelf],
+    ([id, self]) => {
+      if (id && !self) {
+        void loadRemotePhoto(id);
+      } else {
+        remotePhotoUrl.value = null;
+      }
+    },
+    { immediate: true },
+  );
+
   const profilePhotoUrl = computed<string | null>(() => {
-    return userStore.user?.profile_photo_url || null;
+    return isSelf.value
+      ? userStore.user?.profile_photo_url || null
+      : remotePhotoUrl.value;
   });
 
   const hasProfilePhoto = computed<boolean>(() => {
     return !!profilePhotoUrl.value;
   });
+
+  /** Persists the photo URL for the effective user via the family-aware RPC. */
+  const persistPhotoUrl = async (userId: string, url: string | null) => {
+    // Cast: the generated Database types don't yet include this RPC.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error: rpcError } = await (supabase.rpc as any)(
+      "set_athlete_profile_photo",
+      { athlete_id: userId, photo_url: url },
+    );
+    if (rpcError) {
+      throw rpcError;
+    }
+    if (isSelf.value) {
+      userStore.setProfilePhotoUrl(url);
+    } else {
+      remotePhotoUrl.value = url;
+    }
+  };
 
   const uploadProfilePhoto = async (file: File): Promise<UploadResult> => {
     uploading.value = true;
@@ -49,7 +125,7 @@ export const useProfilePhoto = (): {
 
       // Upload to storage
       uploadProgress.value = 50;
-      const userId = userStore.user?.id;
+      const userId = effectiveId.value;
       if (!userId) {
         throw new Error("User ID not available");
       }
@@ -81,25 +157,11 @@ export const useProfilePhoto = (): {
         throw new Error("Failed to get public URL");
       }
 
-      // Update database
+      // Persist (self or family athlete) via RPC
       uploadProgress.value = 90;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const updateResponse = (await (supabase.from("users") as any)
-        .update({ profile_photo_url: publicUrl })
-        .eq("id", userId)
-        .select()
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .single()) as { error: any };
-      const { error: updateError } = updateResponse;
+      await persistPhotoUrl(userId, publicUrl);
 
-      if (updateError) {
-        throw updateError;
-      }
-
-      // Update user store
       uploadProgress.value = 100;
-      userStore.setProfilePhotoUrl(publicUrl);
-
       return {
         success: true,
         photoUrl: publicUrl,
@@ -128,7 +190,7 @@ export const useProfilePhoto = (): {
     error.value = null;
 
     try {
-      const userId = userStore.user?.id;
+      const userId = effectiveId.value;
       if (!userId) {
         throw new Error("User ID not available");
       }
@@ -151,22 +213,8 @@ export const useProfilePhoto = (): {
         throw deleteError;
       }
 
-      // Clear from database
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const deleteUpdateResponse = (await (supabase.from("users") as any)
-        .update({ profile_photo_url: null })
-        .eq("id", userId)
-        .select()
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .single()) as { error: any };
-      const { error: updateError } = deleteUpdateResponse;
-
-      if (updateError) {
-        throw updateError;
-      }
-
-      // Update user store
-      userStore.setProfilePhotoUrl(null);
+      // Clear (self or family athlete) via RPC
+      await persistPhotoUrl(userId, null);
 
       return true;
     } catch (err) {
