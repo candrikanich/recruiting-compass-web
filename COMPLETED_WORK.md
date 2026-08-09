@@ -344,3 +344,21 @@ Marked `@deprecated`, scheduled for removal:
 | FAMILY_CONTEXT_FIXES_SUMMARY.md | family | Family context stale data bug fixed ($reset on athlete switch) |
 | IMPLEMENTATION_SUMMARY.md | family | Family unit system phases 1–4 foundations built |
 | STORY_3_4_COMPLETE.md | schools | School priority levels and recruiting status deployed |
+
+## Doc Cleanup Run — 2026-08-09
+- Deleted: 6 files (1 session-debris handoff + 2 stale E2E fix plans + 2 macOS " 2.md" dupes + 1 stale test note)
+- Compressed: 82 files → docs/history/<domain>.md (10 domains)
+- Kept: 103 files (active/future-looking: audits with open findings, guides, user manuals, marketing, design tokens, security docs, open checklists)
+
+| Domain | Compressed | Summary |
+|--------|-----------|---------|
+| ui | 28 | Vue standards/token consolidation, profile/dashboard/about pages, header/form/filter/tile/modal standardization, high-school section merge |
+| accessibility | 9 | WCAG 2.1 AA review across 63 pages, login/school-detail/interactions/dashboard remediations, pa11y 2.2 upgrade |
+| family | 7 | Symmetric family-unit redesign (schema+RLS), invite management, connection UX, invite email check |
+| infrastructure | 7 | PostHog/Tailwind v4/Nuxt UI v3/Upstash, logging adoption (39 routes), scalability fixes, doc-hygiene system |
+| schools | 7 | Fit-signals redesign, recruiting packet, smart-input enrichment, school test suite (Phase 1), info fields |
+| general | 7 | Offers Pinia redesign, Vue/bug-finder review fixes, suggestions bootstrap, architectural review, shared utilities |
+| e2e | 6 | Test overhaul (914→600 honest), coverage fixes, documents specs, skip triage, playwright rewrite |
+| performance | 5 | Lighthouse CI, bundle/image/SSR optimization (~39% reduction), perf regression tests |
+| testing | 3 | Coverage 63%→75% (CI-enforced), completion report, suite index |
+| onboarding | 3 | Parent onboarding banner + empty state, data prepopulation with autosave |
