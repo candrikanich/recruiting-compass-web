@@ -18,6 +18,18 @@ function isContactRule(ruleId: string): boolean {
   return CONTACT_RULES.includes(ruleId);
 }
 
+/**
+ * Stable identity for an active suggestion: its rule type plus the school it
+ * targets (dashboard-level rules have no school). Used to decide whether a
+ * stored active row is still backed by a currently-firing rule.
+ */
+function suggestionKey(
+  ruleType: string,
+  relatedSchoolId: string | null | undefined,
+): string {
+  return `${ruleType}::${relatedSchoolId ?? ""}`;
+}
+
 export class RuleEngine {
   private rules: Rule[] = [];
 
@@ -30,7 +42,20 @@ export class RuleEngine {
   }
 
   async evaluateAll(context: RuleContext): Promise<SuggestionData[]> {
+    return (await this.evaluateAllTracked(context)).suggestions;
+  }
+
+  /**
+   * Runs every rule and reports both the produced suggestions and which rule
+   * types were actually evaluated to a conclusion this run. A rule that is
+   * skipped (dead period) or throws is NOT reported as succeeded, so stale
+   * invalidation never retires rows for a rule whose current state is unknown.
+   */
+  private async evaluateAllTracked(
+    context: RuleContext,
+  ): Promise<{ suggestions: SuggestionData[]; succeededRuleTypes: string[] }> {
     const suggestions: SuggestionData[] = [];
+    const succeededRuleTypes: string[] = [];
     const now = new Date();
 
     for (const rule of this.rules) {
@@ -60,6 +85,7 @@ export class RuleEngine {
         }
 
         const result = await rule.evaluate(context);
+        succeededRuleTypes.push(rule.id);
         if (result) {
           if (Array.isArray(result)) {
             suggestions.push(...result);
@@ -72,7 +98,58 @@ export class RuleEngine {
       }
     }
 
-    return suggestions;
+    return { suggestions, succeededRuleTypes };
+  }
+
+  /**
+   * Retires active suggestions that are no longer backed by a currently-firing
+   * rule. Without this, a suggestion outlives the condition that created it —
+   * e.g. a "You have 1 school" row persisting after the list grew to 53. Only
+   * rules that were evaluated this run (succeededRuleTypes) are considered, so
+   * a skipped or failed rule never causes false retirement.
+   */
+  private async invalidateStaleSuggestions(
+    supabase: SupabaseClient,
+    athleteId: string,
+    validKeys: Set<string>,
+    succeededRuleTypes: string[],
+  ): Promise<number> {
+    if (succeededRuleTypes.length === 0) return 0;
+
+    const { data: activeRows, error } = await supabase
+      .from("suggestion")
+      .select("id, rule_type, related_school_id")
+      .eq("athlete_id", athleteId)
+      .eq("completed", false)
+      .eq("dismissed", false)
+      .in("rule_type", succeededRuleTypes);
+
+    if (error || !activeRows) {
+      if (error) logger.error("Failed to fetch active suggestions:", error);
+      return 0;
+    }
+
+    const staleIds = (activeRows as unknown[])
+      .map((r) => r as { id: string; rule_type: string; related_school_id: string | null })
+      .filter(
+        (row) =>
+          !validKeys.has(suggestionKey(row.rule_type, row.related_school_id)),
+      )
+      .map((row) => row.id);
+
+    if (staleIds.length === 0) return 0;
+
+    const { error: retireError } = await supabase
+      .from("suggestion")
+      .update({ completed: true, completed_at: new Date().toISOString() })
+      .in("id", staleIds);
+
+    if (retireError) {
+      logger.error("Failed to retire stale suggestions:", retireError);
+      return 0;
+    }
+
+    return staleIds.length;
   }
 
   private async reEvaluateDismissedSuggestions(
@@ -184,7 +261,8 @@ export class RuleEngine {
     context: RuleContext,
   ): Promise<{ count: number; ids: string[] }> {
     // Get new suggestions from normal rule evaluation
-    const suggestions = await this.evaluateAll(context);
+    const { suggestions, succeededRuleTypes } =
+      await this.evaluateAllTracked(context);
 
     // Check for dismissed suggestions that should re-evaluate
     const reappearingSuggestions = await this.reEvaluateDismissedSuggestions(
@@ -196,6 +274,14 @@ export class RuleEngine {
     // Combine both regular and re-evaluated suggestions
     const allSuggestions = [...suggestions, ...reappearingSuggestions];
     const insertedIds: string[] = [];
+
+    // The keys still backed by a currently-firing rule. Anything active under a
+    // rule that ran this pass but is NOT in this set is stale and gets retired.
+    const validKeys = new Set(
+      allSuggestions.map((s) =>
+        suggestionKey(s.rule_type, s.related_school_id),
+      ),
+    );
 
     for (const suggestion of allSuggestions) {
       const existing = await findExistingSuggestion(
@@ -235,6 +321,14 @@ export class RuleEngine {
         }
       }
     }
+
+    // Retire active rows whose backing rule ran but no longer produces them.
+    await this.invalidateStaleSuggestions(
+      supabase,
+      athleteId,
+      validKeys,
+      succeededRuleTypes,
+    );
 
     return { count: insertedIds.length, ids: insertedIds };
   }

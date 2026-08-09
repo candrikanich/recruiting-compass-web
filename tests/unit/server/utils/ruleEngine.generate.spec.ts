@@ -64,28 +64,41 @@ function makeContext(): RuleContext {
   };
 }
 
+interface ActiveRow {
+  id: string;
+  rule_type: string;
+  related_school_id: string | null;
+}
+
 interface FromSpy {
   insert: ReturnType<typeof vi.fn>;
   update: ReturnType<typeof vi.fn>;
   selectAfterInsert: ReturnType<typeof vi.fn>;
   singleAfterInsert: ReturnType<typeof vi.fn>;
   eqAfterUpdate: ReturnType<typeof vi.fn>;
+  inAfterUpdate: ReturnType<typeof vi.fn>;
   dismissedQuery: ReturnType<typeof vi.fn>;
 }
 
 function makeSupabase({
   dismissedRows = [] as Suggestion[],
   dismissedError = null as unknown,
+  activeRows = [] as ActiveRow[],
+  activeError = null as unknown,
   insertReturn = { data: { id: "new-id" }, error: null } as {
     data: { id: string } | null;
     error: unknown;
   },
   updateError = null as unknown,
+  retireError = null as unknown,
 }: {
   dismissedRows?: Suggestion[];
   dismissedError?: unknown;
+  activeRows?: ActiveRow[];
+  activeError?: unknown;
   insertReturn?: { data: { id: string } | null; error: unknown };
   updateError?: unknown;
+  retireError?: unknown;
 } = {}): { supabase: SupabaseClient; spy: FromSpy } {
   const spy: FromSpy = {
     insert: vi.fn(),
@@ -93,6 +106,7 @@ function makeSupabase({
     selectAfterInsert: vi.fn(),
     singleAfterInsert: vi.fn(),
     eqAfterUpdate: vi.fn(),
+    inAfterUpdate: vi.fn(),
     dismissedQuery: vi.fn(),
   };
 
@@ -100,14 +114,24 @@ function makeSupabase({
   spy.selectAfterInsert.mockReturnValue({ single: spy.singleAfterInsert });
   spy.insert.mockReturnValue({ select: spy.selectAfterInsert });
   spy.eqAfterUpdate.mockResolvedValue({ error: updateError });
-  spy.update.mockReturnValue({ eq: spy.eqAfterUpdate });
+  spy.inAfterUpdate.mockResolvedValue({ error: retireError });
+  // update(...) can terminate in .eq('id', id) (message update) or
+  // .in('id', ids) (batch retire of stale rows).
+  spy.update.mockReturnValue({ eq: spy.eqAfterUpdate, in: spy.inAfterUpdate });
 
-  // dismissed-suggestion fetch chain: .from('suggestion').select('*').eq().eq().eq().lte()
+  // Two read chains share the same .eq().eq().eq() prefix and differ only in
+  // their terminal:
+  //   dismissed fetch:   ...eq().eq().eq().lte('dismissed_at', cutoff)
+  //   active-row fetch:  ...eq().eq().eq().in('rule_type', types)  (invalidation)
   const lte = vi.fn().mockResolvedValue({
     data: dismissedRows,
     error: dismissedError,
   });
-  const eq3 = vi.fn().mockReturnValue({ lte });
+  const inActive = vi.fn().mockResolvedValue({
+    data: activeRows,
+    error: activeError,
+  });
+  const eq3 = vi.fn().mockReturnValue({ lte, in: inActive });
   const eq2 = vi.fn().mockReturnValue({ eq: eq3 });
   const eq1 = vi.fn().mockReturnValue({ eq: eq2 });
   const select = vi.fn().mockReturnValue({ eq: eq1 });
@@ -236,6 +260,126 @@ describe("RuleEngine.generateSuggestions", () => {
     );
     expect(result.count).toBe(0);
     expect(result.ids).toEqual([]);
+  });
+});
+
+describe("RuleEngine.generateSuggestions stale invalidation", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockedFindExisting.mockResolvedValue(null);
+  });
+
+  it("retires an active suggestion whose rule no longer produces a match", async () => {
+    const rule: Rule = {
+      id: "rule-a",
+      name: "a",
+      description: "",
+      evaluate: vi.fn().mockResolvedValue(null),
+    };
+    const engine = new RuleEngine([rule]);
+    const { supabase, spy } = makeSupabase({
+      activeRows: [
+        { id: "stale-1", rule_type: "rule-a", related_school_id: null },
+      ],
+    });
+
+    await engine.generateSuggestions(supabase, "athlete-1", makeContext());
+
+    expect(spy.update).toHaveBeenCalledWith(
+      expect.objectContaining({ completed: true }),
+    );
+    expect(spy.inAfterUpdate).toHaveBeenCalledWith("id", ["stale-1"]);
+  });
+
+  it("keeps an active suggestion that still matches a produced suggestion", async () => {
+    const rule: Rule = {
+      id: "rule-a",
+      name: "a",
+      description: "",
+      evaluate: vi.fn().mockResolvedValue(buildSuggestion({ rule_type: "rule-a" })),
+    };
+    const engine = new RuleEngine([rule]);
+    const { supabase, spy } = makeSupabase({
+      activeRows: [
+        { id: "keep-1", rule_type: "rule-a", related_school_id: null },
+      ],
+    });
+
+    await engine.generateSuggestions(supabase, "athlete-1", makeContext());
+
+    expect(spy.inAfterUpdate).not.toHaveBeenCalled();
+  });
+
+  it("does not retire rows for a rule that threw during evaluation", async () => {
+    const rule: Rule = {
+      id: "rule-a",
+      name: "a",
+      description: "",
+      evaluate: vi.fn().mockRejectedValue(new Error("boom")),
+    };
+    const engine = new RuleEngine([rule]);
+    const { supabase, spy } = makeSupabase({
+      activeRows: [
+        { id: "orphan-1", rule_type: "rule-a", related_school_id: null },
+      ],
+    });
+
+    await engine.generateSuggestions(supabase, "athlete-1", makeContext());
+
+    expect(spy.inAfterUpdate).not.toHaveBeenCalled();
+  });
+
+  it("retires only the stale per-school key, keeping the still-valid one", async () => {
+    const rule: Rule = {
+      id: "interaction-gap",
+      name: "",
+      description: "",
+      evaluate: vi.fn().mockResolvedValue([
+        buildSuggestion({
+          rule_type: "interaction-gap",
+          related_school_id: "school-1",
+        }),
+      ]),
+    };
+    const engine = new RuleEngine([rule]);
+    const { supabase, spy } = makeSupabase({
+      activeRows: [
+        {
+          id: "keep",
+          rule_type: "interaction-gap",
+          related_school_id: "school-1",
+        },
+        {
+          id: "gone",
+          rule_type: "interaction-gap",
+          related_school_id: "school-2",
+        },
+      ],
+    });
+
+    await engine.generateSuggestions(supabase, "athlete-1", makeContext());
+
+    expect(spy.inAfterUpdate).toHaveBeenCalledWith("id", ["gone"]);
+  });
+
+  it("is non-fatal when the retire update errors", async () => {
+    const rule: Rule = {
+      id: "rule-a",
+      name: "a",
+      description: "",
+      evaluate: vi.fn().mockResolvedValue(null),
+    };
+    const engine = new RuleEngine([rule]);
+    const { supabase } = makeSupabase({
+      activeRows: [
+        { id: "stale-1", rule_type: "rule-a", related_school_id: null },
+      ],
+      retireError: { message: "db down" },
+    });
+
+    await expect(
+      engine.generateSuggestions(supabase, "athlete-1", makeContext()),
+    ).resolves.toBeDefined();
   });
 });
 

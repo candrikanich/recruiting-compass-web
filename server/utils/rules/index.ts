@@ -57,19 +57,25 @@ export async function findExistingSuggestion(
   supabase: SupabaseClient<Database>,
   athleteId: string,
   suggestion: SuggestionData,
-  daysWindow: number = 7,
+  daysWindow: number | null = null,
 ): Promise<{ id: string; message: string | null } | null> {
-  const cutoffDate = new Date();
-  cutoffDate.setDate(cutoffDate.getDate() - daysWindow);
-
   let query = supabase
     .from("suggestion")
     .select("id, message")
     .eq("athlete_id", athleteId)
     .eq("rule_type", suggestion.rule_type)
     .eq("dismissed", false)
-    .eq("completed", false)
-    .gte("created_at", cutoffDate.toISOString());
+    .eq("completed", false);
+
+  // An active (non-dismissed, non-completed) row is a duplicate no matter how
+  // old it is. Only apply a created_at cutoff when a caller explicitly asks for
+  // one. Defaulting to a 7-day window meant weekly cron runs (>7 days apart)
+  // never saw the prior active row and inserted a fresh duplicate every week.
+  if (daysWindow != null) {
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - daysWindow);
+    query = query.gte("created_at", cutoffDate.toISOString());
+  }
 
   // For school-related rules, check per-school to allow multiple reminders simultaneously
   if (suggestion.related_school_id) {
