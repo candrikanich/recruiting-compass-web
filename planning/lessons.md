@@ -16,6 +16,16 @@ Tracks mistake patterns (with recurrence counts) and process insights.
 
 ## Bug & Mistake Patterns
 
+### Pre-Push Gate Runs Lint + Type-Check but NOT Tests — Run npm test Yourself
+
+**Times seen:** 1 | **Last seen:** 2026-08-08
+**Context:** Shipped an SSRF fix to `checkLinkHealth` (added a `resolvesToPublicIp` DNS gate before the fetch) straight to prod. It silently broke 2 existing `video-health-check.spec.ts` tests — their fake hostnames (`ok.example`) don't DNS-resolve, so the new gate returned `broken` before `fetch` was ever called. Prod *code* was correct (real URLs resolve), but `main`'s test suite was red for ~3 commits until caught.
+**Root Cause:** `.husky/pre-push` runs `npm run lint` then `npm run type-check` — it does NOT run `npm test`. A test-breaking behavioral change passes the gate and pushes clean. Adding a network/DNS pre-condition to a function is exactly the kind of change unit tests with fake hosts will trip on.
+**Prevention:**
+- CLAUDE.md already says "run `npm test` after code changes" — actually do it before pushing behavioral changes, don't lean on the pre-push gate.
+- When adding a guard/pre-condition to a fetched-URL function, grep for its spec first — fake hostnames/IPs in existing tests will now hit the new gate.
+- Minimum before a prod push: run the specs for every file you touched (`npx vitest run <spec>`), not just lint/type-check.
+
 ### Nested Worktrees Fail the Pre-Push Lint Gate (looks like a network stall)
 
 **Times seen:** 1 | **Last seen:** 2026-08-08
