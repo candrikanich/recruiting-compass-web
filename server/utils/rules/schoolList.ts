@@ -18,7 +18,7 @@ export const schoolListRule: Rule = {
       return {
         rule_type: "school-list-building",
         urgency: gradeLevel === 11 ? "high" : "medium",
-        message: `You have ${schoolCount} schools on your list. Aim for 20-30 target schools to maximize your opportunities.`,
+        message: `You have ${schoolCount} ${schoolCount === 1 ? "school" : "schools"} on your list. Aim for 20-30 target schools to maximize your opportunities.`,
         action_type: "add_school",
       };
     }

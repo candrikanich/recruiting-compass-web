@@ -71,6 +71,34 @@ describe("schoolListRule", () => {
       expect(result).not.toBeNull();
     });
 
+    it("should use singular 'school' for exactly 1 school", async () => {
+      mockContext.athlete = { grade_level: 10 };
+      mockContext.schools = [{ id: "school-1" }];
+
+      const result = await schoolListRule.evaluate(mockContext);
+      const suggestion = result as Record<string, unknown>;
+      expect(suggestion.message).toContain("You have 1 school on your list");
+      expect(suggestion.message).not.toContain("1 schools");
+    });
+
+    it("should use plural 'schools' for 0 schools", async () => {
+      mockContext.athlete = { grade_level: 10 };
+      mockContext.schools = [];
+
+      const result = await schoolListRule.evaluate(mockContext);
+      const suggestion = result as Record<string, unknown>;
+      expect(suggestion.message).toContain("You have 0 schools on your list");
+    });
+
+    it("should use plural 'schools' for multiple schools", async () => {
+      mockContext.athlete = { grade_level: 10 };
+      mockContext.schools = Array(5).fill({ id: "school" });
+
+      const result = await schoolListRule.evaluate(mockContext);
+      const suggestion = result as Record<string, unknown>;
+      expect(suggestion.message).toContain("You have 5 schools on your list");
+    });
+
     it("should NOT return suggestion when >= 20 schools", async () => {
       mockContext.athlete = { grade_level: 10 };
       mockContext.schools = Array(20).fill({ id: "school" });
