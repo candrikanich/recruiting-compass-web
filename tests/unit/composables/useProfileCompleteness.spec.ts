@@ -16,6 +16,15 @@ vi.mock("~/composables/usePreferenceManager", () => ({
   usePreferenceManager: vi.fn(() => ({
     loadAllPreferences: vi.fn().mockResolvedValue(undefined),
     getPlayerDetails: vi.fn().mockReturnValue(null),
+    getHomeLocation: { value: null },
+  })),
+}));
+
+// Mock VideoLinks (used by updateCompleteness for the highlight-video signal)
+vi.mock("~/composables/useVideoLinks", () => ({
+  useVideoLinks: vi.fn(() => ({
+    links: { value: [] },
+    load: vi.fn().mockResolvedValue(undefined),
   })),
 }));
 
@@ -98,6 +107,7 @@ describe("useProfileCompleteness", () => {
           .fn()
           .mockRejectedValue(new Error("Failed to load preferences")),
         getPlayerDetails: vi.fn().mockReturnValue(null),
+        getHomeLocation: { value: null },
       } as any);
 
       const completeness = useProfileCompleteness();
@@ -113,6 +123,7 @@ describe("useProfileCompleteness", () => {
       vi.mocked(usePreferenceManager).mockReturnValue({
         loadAllPreferences: vi.fn().mockResolvedValue(undefined),
         getPlayerDetails: vi.fn().mockReturnValue(null),
+        getHomeLocation: { value: null },
       } as any);
 
       const completeness = useProfileCompleteness();

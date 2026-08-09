@@ -5,7 +5,11 @@ import { useSportsPositionLookup } from "~/composables/useSportsPositionLookup";
 import { useAutoSave } from "~/composables/useAutoSave";
 import { normalizePositions } from "~/utils/positions";
 import { normalizeHandle, type SocialPlatform } from "~/utils/social";
-import { calculateProfileCompleteness } from "~/utils/profileCompletenessCalculation";
+import {
+  calculateProfileCompleteness,
+  isHomeLocationPresent,
+} from "~/utils/profileCompletenessCalculation";
+import { useVideoLinks } from "~/composables/useVideoLinks";
 import type { PlayerDetails } from "~/types/models";
 
 /**
@@ -13,8 +17,14 @@ import type { PlayerDetails } from "~/types/models";
  * player-details settings page (all tabs).
  */
 export function usePlayerDetailsForm() {
-  const { isLoading, getPlayerDetails, setPlayerDetails, loadAllPreferences } =
-    usePreferenceManager();
+  const {
+    isLoading,
+    getPlayerDetails,
+    setPlayerDetails,
+    loadAllPreferences,
+    getHomeLocation,
+  } = usePreferenceManager();
+  const { links: videoLinks, load: loadVideoLinks } = useVideoLinks();
   const { showToast } = useAppToast();
   const { commonSports, getPositionsBySport } = useSportsPositionLookup();
 
@@ -96,8 +106,17 @@ export function usePlayerDetailsForm() {
     );
   });
 
+  // Completeness signals that live outside the player-prefs form (video_links
+  // table, location store). Fetched once in load(); they don't change while the
+  // athlete edits player details, but the score stays reactive to form edits.
+  const hasHighlightVideo = computed(() => videoLinks.value.length > 0);
+  const hasHomeLocation = ref(false);
+
   const profileCompleteness = computed(() =>
-    calculateProfileCompleteness(form.value),
+    calculateProfileCompleteness(form.value, {
+      hasHighlightVideo: hasHighlightVideo.value,
+      hasHomeLocation: hasHomeLocation.value,
+    }),
   );
 
   const { isSaving, triggerSave } = useAutoSave({
@@ -259,7 +278,8 @@ export function usePlayerDetailsForm() {
   ] as const;
 
   const load = async () => {
-    await loadAllPreferences();
+    await Promise.all([loadAllPreferences(), loadVideoLinks()]);
+    hasHomeLocation.value = isHomeLocationPresent(getHomeLocation.value);
     const playerDetails = getPlayerDetails();
     if (playerDetails) {
       if (playerDetails.high_school && !playerDetails.school_name) {
