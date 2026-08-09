@@ -102,9 +102,31 @@ Log your classification and reasoning briefly for each file.
 | domain | N | one-line roll-up of what was compressed |
 ```
 
-Then commit everything:
+Then commit **only the docs this run touched**. NEVER use `git add -A` / `git add .` — a blanket stage sweeps in unrelated working changes: in-progress feature code, build-generated files, and secrets (e.g. anything containing API keys or `.env` values).
+
+**1. Stage only doc paths this run deleted or wrote** — the two output files plus the exact manifest paths processed in passes 1–3 (each scoped with an explicit `--` pathspec, never a bare `git add`):
 
 ```bash
-git add -A
+git add -- docs/history/ COMPLETED_WORK.md
+# Plus each file this run deleted/compressed, by exact path:
+git add -- "<path from manifest.autoDelete / compress / review that this run touched>"
+# ...repeat one -- pathspec per touched file (records deletions too)
+```
+
+**2. Safety gate — abort if anything out of scope is staged.** Doc cleanup only ever touches `.md`/`.mdx` files. If any other file is staged, unstage and STOP without committing:
+
+```bash
+offenders=$(git diff --cached --name-only | grep -vE '\.mdx?$')
+if [ -n "$offenders" ]; then
+  echo "ABORT: doc-cleanup must not commit non-doc files (code/config/secrets):"
+  echo "$offenders"
+  git reset -q
+  exit 1
+fi
+```
+
+**3. Commit** only after the gate passes:
+
+```bash
 git commit -m "chore: doc cleanup run YYYY-MM-DD"
 ```
