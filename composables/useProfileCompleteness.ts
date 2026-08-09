@@ -1,8 +1,12 @@
 import { ref } from "vue";
 import { useSupabase } from "./useSupabase";
 import { createClientLogger } from "~/utils/logger";
-import { calculateProfileCompleteness } from "~/utils/profileCompletenessCalculation";
+import {
+  calculateProfileCompleteness,
+  isHomeLocationPresent,
+} from "~/utils/profileCompletenessCalculation";
 import { usePreferenceManager } from "./usePreferenceManager";
+import { useVideoLinks } from "./useVideoLinks";
 
 export interface ContextualPrompt {
   id: string;
@@ -66,10 +70,16 @@ export const useProfileCompleteness = () => {
     error.value = null;
 
     try {
-      const { loadAllPreferences, getPlayerDetails } = usePreferenceManager();
-      await loadAllPreferences();
+      const { loadAllPreferences, getPlayerDetails, getHomeLocation } =
+        usePreferenceManager();
+      const { links, load: loadVideoLinks } = useVideoLinks();
+      await Promise.all([loadAllPreferences(), loadVideoLinks()]);
       const details = getPlayerDetails();
-      completeness.value = details ? calculateProfileCompleteness(details) : 0;
+      const signals = {
+        hasHighlightVideo: links.value.length > 0,
+        hasHomeLocation: isHomeLocationPresent(getHomeLocation.value),
+      };
+      completeness.value = calculateProfileCompleteness(details ?? {}, signals);
     } catch (err) {
       const message =
         err instanceof Error
