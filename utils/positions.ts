@@ -163,3 +163,51 @@ export function getPositionFullName(position: string): string {
   const found = BASEBALL_POSITIONS.find((p) => p.value === position);
   return found ? found.fullName : position;
 }
+
+/**
+ * Whether a stored `primary_position` should be cleared because the athlete
+ * switched sports. Sport-agnostic.
+ *
+ * Guards against the load-time data-wipe bug: the position picker's sport
+ * watcher must only reset the position on a genuine USER sport change, never
+ * when the form is first populated from saved data. A stored value that isn't
+ * one of the newly-selected sport's canonical options (e.g. an iOS/onboarding
+ * label like "Infielder" or "Point Guard") would otherwise be silently deleted
+ * on every page load, dropping 10% off profile completeness.
+ *
+ * @param previousSport - The sport value before the change (`undefined` on the
+ *   initial population — the watcher's first fire — which must NOT clear)
+ * @param newSport - The sport value after the change
+ * @param currentPosition - The currently-stored primary position
+ * @param newSportPositions - Canonical options for `newSport`
+ * @returns True only on a real sport change to an incompatible position
+ */
+export function shouldClearPositionOnSportChange(
+  previousSport: string | undefined,
+  newSport: string | undefined,
+  currentPosition: string | undefined | null,
+  newSportPositions: string[],
+): boolean {
+  if (previousSport === undefined) return false; // initial load / first set
+  if (!newSport || !currentPosition) return false;
+  return !newSportPositions.includes(currentPosition);
+}
+
+/**
+ * Reconcile a sport's canonical position options with the athlete's stored
+ * value so a legacy/foreign label (e.g. "Infielder" from iOS) stays selectable
+ * in the dropdown instead of rendering as an empty selection. Sport-agnostic.
+ *
+ * @param sportPositions - Canonical options for the current sport
+ * @param currentPosition - The stored primary position
+ * @returns Options including `currentPosition` when it isn't already canonical
+ */
+export function reconcilePositionOptions(
+  sportPositions: string[],
+  currentPosition: string | undefined | null,
+): string[] {
+  if (currentPosition && !sportPositions.includes(currentPosition)) {
+    return [...sportPositions, currentPosition];
+  }
+  return sportPositions;
+}

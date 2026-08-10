@@ -5,6 +5,8 @@ import {
   normalizePositions,
   isValidPosition,
   getPositionFullName,
+  shouldClearPositionOnSportChange,
+  reconcilePositionOptions,
 } from "~/utils/positions";
 
 describe("utils/positions", () => {
@@ -336,6 +338,94 @@ describe("utils/positions", () => {
       expect(getPositionFullName("unknown")).toBe("unknown");
       expect(getPositionFullName("Pitcher")).toBe("Pitcher");
       expect(getPositionFullName("")).toBe("");
+    });
+  });
+
+  // Regression for the profile-completeness parity bug: the player-details sport
+  // watcher silently wiped a stored `primary_position` on every page load when
+  // the saved value ("Infielder", "Point Guard", …) wasn't one of the web
+  // dropdown's canonical abbreviations, dropping 10% off completeness (web 75 vs
+  // iOS 85). These pure helpers encode the fix.
+  describe("shouldClearPositionOnSportChange", () => {
+    const baseball = ["P", "C", "1B", "2B", "3B", "SS"];
+    const basketball = ["PG", "SG", "SF", "PF", "C"];
+
+    it("never clears on initial load (previousSport undefined), even with a non-canonical stored position", () => {
+      expect(
+        shouldClearPositionOnSportChange(
+          undefined,
+          "Baseball",
+          "Infielder",
+          baseball,
+        ),
+      ).toBe(false);
+    });
+
+    it("clears on a real user sport change when the position is invalid for the new sport", () => {
+      expect(
+        shouldClearPositionOnSportChange(
+          "Baseball",
+          "Basketball",
+          "Infielder",
+          basketball,
+        ),
+      ).toBe(true);
+    });
+
+    it("keeps the position on a sport change when it is still valid for the new sport", () => {
+      expect(
+        shouldClearPositionOnSportChange("Baseball", "Softball", "C", [
+          "C",
+          "P",
+        ]),
+      ).toBe(false);
+    });
+
+    it("does not clear when there is no stored position", () => {
+      expect(
+        shouldClearPositionOnSportChange(
+          "Baseball",
+          "Basketball",
+          "",
+          basketball,
+        ),
+      ).toBe(false);
+      expect(
+        shouldClearPositionOnSportChange(
+          "Baseball",
+          "Basketball",
+          null,
+          basketball,
+        ),
+      ).toBe(false);
+    });
+
+    it("does not clear when the sport is cleared (no new sport)", () => {
+      expect(
+        shouldClearPositionOnSportChange("Baseball", undefined, "SS", []),
+      ).toBe(false);
+    });
+  });
+
+  describe("reconcilePositionOptions", () => {
+    it("appends a stored non-canonical position so it stays selectable", () => {
+      expect(reconcilePositionOptions(["P", "SS"], "Infielder")).toEqual([
+        "P",
+        "SS",
+        "Infielder",
+      ]);
+    });
+
+    it("leaves options unchanged when the stored position is already canonical", () => {
+      expect(reconcilePositionOptions(["P", "SS"], "SS")).toEqual(["P", "SS"]);
+    });
+
+    it("leaves options unchanged when there is no stored position", () => {
+      expect(reconcilePositionOptions(["P", "SS"], null)).toEqual(["P", "SS"]);
+      expect(reconcilePositionOptions(["P", "SS"], undefined)).toEqual([
+        "P",
+        "SS",
+      ]);
     });
   });
 });
