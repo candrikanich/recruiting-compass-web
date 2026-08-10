@@ -104,3 +104,23 @@ platforms jump to **100%**.
 - iOS — no change. iOS is arithmetically correct.
 - `video_links` table creation — separate cross-platform work
   (`video-links-cross-platform`). Both platforms already score video 0 until it lands.
+
+---
+
+## RESOLUTION (2026-08-09, later) — home-location was a MISDIAGNOSIS
+
+This handoff's premise (web undercounts because it reads home-location from a
+dead source) was **wrong**. Live bisection on prod (player1) proved
+home-location always counted. The real 10% gap was **`primary_position` being
+silently wiped on every page load**:
+
+`usePlayerDetailsForm.ts` watches `primary_sport` and cleared `primary_position`
+when it wasn't in the sport's canonical option list — and it fired on the
+INITIAL load too. Stored labels like `Infielder` (baseball) / `Point Guard`
+(basketball) aren't in the web dropdown's abbreviations (`SS`,`PG`,…) → wiped →
+completeness scored position 0 → web 75 vs iOS 85.
+
+Fixed in **#352** (`shouldClearPositionOnSportChange` + `reconcilePositionOptions`
+in `utils/positions.ts`); promoted to prod via **#353**. Verified live: player1
+40→50 after the fix. Home-location parity (#349) was real and already correct —
+just not the cause of the 75.
