@@ -29,7 +29,9 @@ export const useAthleteMessages = (): {
     schoolId?: string | null;
     programNote?: string | null;
   }) => Promise<SendCheckResult>;
-  logSend: (input: LogMessageInput) => Promise<{ success: boolean; id: string }>;
+  logSend: (
+    input: LogMessageInput,
+  ) => Promise<{ success: boolean; id: string }>;
 } => {
   const { $fetchAuth } = useAuthFetch();
 
@@ -43,7 +45,9 @@ export const useAthleteMessages = (): {
       body: input,
     });
 
-  const logSend = (input: LogMessageInput): Promise<{ success: boolean; id: string }> =>
+  const logSend = (
+    input: LogMessageInput,
+  ): Promise<{ success: boolean; id: string }> =>
     $fetchAuth<{ success: boolean; id: string }>("/api/athlete/messages", {
       method: "POST",
       body: input,

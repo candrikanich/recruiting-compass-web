@@ -48,7 +48,9 @@ describe("canonical positions", () => {
     it("passes through values that are already canonical (case-insensitive)", () => {
       expect(normalizePosition("Baseball", "Shortstop")).toBe("Shortstop");
       expect(normalizePosition("Baseball", "second base")).toBe("Second Base");
-      expect(normalizePosition("Basketball", "Point Guard")).toBe("Point Guard");
+      expect(normalizePosition("Basketball", "Point Guard")).toBe(
+        "Point Guard",
+      );
     });
 
     it("resolves the C collision by sport: Catcher (baseball) vs Center (basketball)", () => {
@@ -79,7 +81,13 @@ describe("canonical positions", () => {
     it("canonicalizes a mixed-vocabulary array, de-duplicating", () => {
       // Real prod data had both abbreviations and full names in one array.
       expect(
-        normalizePositions("Baseball", ["P", "Pitcher", "SS", "Shortstop", "1B"]),
+        normalizePositions("Baseball", [
+          "P",
+          "Pitcher",
+          "SS",
+          "Shortstop",
+          "1B",
+        ]),
       ).toEqual(["Pitcher", "Shortstop", "First Base"]);
     });
 

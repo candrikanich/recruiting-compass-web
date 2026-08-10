@@ -16,7 +16,8 @@ import { resolveTargetAthleteId } from "~/server/utils/athleteAccess";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import type { Database } from "~/types/database";
 
-type AthleteMessageInsert = Database["public"]["Tables"]["athlete_messages"]["Insert"];
+type AthleteMessageInsert =
+  Database["public"]["Tables"]["athlete_messages"]["Insert"];
 
 const bodySchema = z.object({
   athleteUserId: z.string().uuid(),
@@ -36,11 +37,18 @@ export default defineEventHandler(async (event) => {
 
   const parsed = bodySchema.safeParse(await readBody(event));
   if (!parsed.success) {
-    throw createError({ statusCode: 400, statusMessage: "Invalid request body" });
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Invalid request body",
+    });
   }
   const b = parsed.data;
 
-  const targetId = await resolveTargetAthleteId(event, user.id, b.athleteUserId);
+  const targetId = await resolveTargetAthleteId(
+    event,
+    user.id,
+    b.athleteUserId,
+  );
   const supabase = useSupabaseAdmin();
 
   const row: AthleteMessageInsert = {
@@ -63,10 +71,19 @@ export default defineEventHandler(async (event) => {
     .single();
 
   if (error) {
-    logger.error("Failed to log athlete message", { error, athleteUserId: targetId });
-    throw createError({ statusCode: 500, statusMessage: "Failed to log message" });
+    logger.error("Failed to log athlete message", {
+      error,
+      athleteUserId: targetId,
+    });
+    throw createError({
+      statusCode: 500,
+      statusMessage: "Failed to log message",
+    });
   }
 
-  logger.info("Athlete message logged", { athleteUserId: targetId, id: data.id });
+  logger.info("Athlete message logged", {
+    athleteUserId: targetId,
+    id: data.id,
+  });
   return { success: true, id: data.id };
 });

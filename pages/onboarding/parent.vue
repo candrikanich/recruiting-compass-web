@@ -335,9 +335,7 @@ const commonSports = [
   "Water Polo",
 ];
 
-const availablePositions = computed(() =>
-  getCanonicalPositions(sport.value),
-);
+const availablePositions = computed(() => getCanonicalPositions(sport.value));
 
 const graduationYears = computed(() => {
   const currentYear = new Date().getFullYear();

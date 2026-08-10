@@ -33,7 +33,10 @@ export default defineEventHandler(async (event) => {
 
   const parsed = bodySchema.safeParse(await readBody(event));
   if (!parsed.success) {
-    throw createError({ statusCode: 400, statusMessage: "Invalid request body" });
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Invalid request body",
+    });
   }
   const { athleteUserId, schoolId, programNote } = parsed.data;
 
@@ -71,7 +74,9 @@ export default defineEventHandler(async (event) => {
       .limit(1)
       .maybeSingle();
     if (last?.sent_at) {
-      daysSinceLastContact = Math.floor((Date.now() - new Date(last.sent_at).getTime()) / DAY_MS);
+      daysSinceLastContact = Math.floor(
+        (Date.now() - new Date(last.sent_at).getTime()) / DAY_MS,
+      );
     }
     const { count } = await supabase
       .from("athlete_messages")

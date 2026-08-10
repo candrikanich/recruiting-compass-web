@@ -80,24 +80,31 @@ export async function triggerSuggestionUpdate(
           .eq("family_unit_id", familyUnitId)
       : supabase.from("interactions").select("*").eq("logged_by", athleteId);
 
-    const [playerPrefs, schools, interactions, tasks, athleteTasks, videos, events] =
-      await Promise.all([
-        supabase
-          .from("user_preferences")
-          .select("data")
-          .eq("user_id", athleteId)
-          .eq("category", "player")
-          .single(),
-        schoolsQuery,
-        interactionsQuery,
-        supabase.from("task").select("*"),
-        supabase.from("athlete_task").select("*").eq("athlete_id", athleteId),
-        supabase
-          .from("video_links")
-          .select("id, health_status, title")
-          .eq("user_id", athleteId),
-        supabase.from("events").select("*").eq("user_id", athleteId),
-      ]);
+    const [
+      playerPrefs,
+      schools,
+      interactions,
+      tasks,
+      athleteTasks,
+      videos,
+      events,
+    ] = await Promise.all([
+      supabase
+        .from("user_preferences")
+        .select("data")
+        .eq("user_id", athleteId)
+        .eq("category", "player")
+        .single(),
+      schoolsQuery,
+      interactionsQuery,
+      supabase.from("task").select("*"),
+      supabase.from("athlete_task").select("*").eq("athlete_id", athleteId),
+      supabase
+        .from("video_links")
+        .select("id, health_status, title")
+        .eq("user_id", athleteId),
+      supabase.from("events").select("*").eq("user_id", athleteId),
+    ]);
 
     const playerData = playerPrefs.data?.data as Record<string, unknown> | null;
     const graduationYear =

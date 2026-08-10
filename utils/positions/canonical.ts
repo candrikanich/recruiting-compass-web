@@ -156,7 +156,9 @@ const SPORT_ALIASES: Record<string, Record<string, string>> = {
 SPORT_ALIASES.Softball = SPORT_ALIASES.Baseball;
 
 /** Canonical position list for a sport (empty array for unknown sports). */
-export function getCanonicalPositions(sport: string | null | undefined): string[] {
+export function getCanonicalPositions(
+  sport: string | null | undefined,
+): string[] {
   if (!sport) return [];
   return [...(SPORT_POSITIONS[sport] ?? [])];
 }

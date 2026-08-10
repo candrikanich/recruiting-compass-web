@@ -30,7 +30,12 @@ export const __resetTemplateRegistryCache = (): void => {
   registryCache = null;
 };
 
-const GRADE_WORDS: Record<number, string> = { 12: "twelfth", 11: "eleventh", 10: "tenth", 9: "ninth" };
+const GRADE_WORDS: Record<number, string> = {
+  12: "twelfth",
+  11: "eleventh",
+  10: "tenth",
+  9: "ninth",
+};
 
 export interface ResolveResult {
   subject: string;
@@ -42,18 +47,28 @@ export interface ResolveResult {
 }
 
 /** Current HS grade (9–12) from graduation year, accounting for fall vs spring semester. */
-const currentGrade = (gradYear: number | null | undefined, now = new Date()): number | null => {
+const currentGrade = (
+  gradYear: number | null | undefined,
+  now = new Date(),
+): number | null => {
   if (!gradYear) return null;
-  const schoolYearEnd = now.getMonth() >= 7 ? now.getFullYear() + 1 : now.getFullYear();
+  const schoolYearEnd =
+    now.getMonth() >= 7 ? now.getFullYear() + 1 : now.getFullYear();
   return 12 - (gradYear - schoolYearEnd);
 };
 
 /** Grade-appropriate HS coach from the player jsonb, else most-recent (12th→9th). */
-const pickHsCoach = (prefs: Record<string, unknown>, gradYear: number | null | undefined): string | null => {
+const pickHsCoach = (
+  prefs: Record<string, unknown>,
+  gradYear: number | null | undefined,
+): string | null => {
   const grade = currentGrade(gradYear);
   const clamped = grade != null ? Math.min(12, Math.max(9, grade)) : null;
   const fallback = [12, 11, 10, 9];
-  const order = clamped != null ? [clamped, ...fallback.filter((g) => g !== clamped)] : fallback;
+  const order =
+    clamped != null
+      ? [clamped, ...fallback.filter((g) => g !== clamped)]
+      : fallback;
   for (const g of order) {
     const v = prefs[`${GRADE_WORDS[g]}_grade_coach`];
     if (typeof v === "string" && v.trim()) return v.trim();
@@ -69,10 +84,16 @@ export const useTemplateResolver = () => {
     try {
       const { data, error } = (await supabase
         .from("template_variables")
-        .select("key, source_type, source_path, category")) as { data: RegistryVar[] | null; error: FetchError | null };
+        .select("key, source_type, source_path, category")) as {
+        data: RegistryVar[] | null;
+        error: FetchError | null;
+      };
 
       if (error) {
-        if (error.code === "PGRST205" || error.message?.includes("template_variables")) {
+        if (
+          error.code === "PGRST205" ||
+          error.message?.includes("template_variables")
+        ) {
           return registryCache ?? [];
         }
         throw error;
@@ -85,8 +106,15 @@ export const useTemplateResolver = () => {
     }
   };
 
-  const buildAthleteContext = async (athleteUserId: string): Promise<ResolverContext> => {
-    const ctx: ResolverContext = { tables: {}, prefs: {}, metrics: [], derived: {} };
+  const buildAthleteContext = async (
+    athleteUserId: string,
+  ): Promise<ResolverContext> => {
+    const ctx: ResolverContext = {
+      tables: {},
+      prefs: {},
+      metrics: [],
+      derived: {},
+    };
     const derived: Record<string, string> = {};
 
     try {
@@ -102,7 +130,9 @@ export const useTemplateResolver = () => {
         .select("data")
         .eq("user_id", athleteUserId)
         .eq("category", "player")
-        .maybeSingle()) as { data: { data: Record<string, unknown> | null } | null };
+        .maybeSingle()) as {
+        data: { data: Record<string, unknown> | null } | null;
+      };
       ctx.prefs = prefRow?.data ?? {};
 
       const { data: metricRows } = (await supabase
@@ -122,7 +152,8 @@ export const useTemplateResolver = () => {
         if (sportRow?.name) derived.sport = sportRow.name;
       }
 
-      const primaryPositionCustom = userRow?.primary_position_custom as string | null | undefined;
+      const primaryPositionCustom = userRow?.primary_position_custom as
+        string | null | undefined;
       if (primaryPositionCustom) {
         derived.position = primaryPositionCustom;
       } else if (userRow?.primary_position_id) {
@@ -134,7 +165,8 @@ export const useTemplateResolver = () => {
         if (posRow?.name) derived.position = posRow.name;
       }
 
-      const secondaryPositionCustom = userRow?.secondary_position_custom as string | null | undefined;
+      const secondaryPositionCustom = userRow?.secondary_position_custom as
+        string | null | undefined;
       if (secondaryPositionCustom) {
         derived.positionSecondary = secondaryPositionCustom;
       } else if (userRow?.secondary_position_id) {
@@ -146,14 +178,19 @@ export const useTemplateResolver = () => {
         if (secRow?.name) derived.positionSecondary = secRow.name;
       }
 
-      const hsCoach = pickHsCoach(ctx.prefs, userRow?.graduation_year as number | null | undefined);
+      const hsCoach = pickHsCoach(
+        ctx.prefs,
+        userRow?.graduation_year as number | null | undefined,
+      );
       if (hsCoach) derived.hsCoachName = hsCoach;
 
       const { data: profileRow } = (await supabase
         .from("player_profiles")
         .select("vanity_slug, hash_slug")
         .eq("user_id", athleteUserId)
-        .maybeSingle()) as { data: { vanity_slug: string | null; hash_slug: string | null } | null };
+        .maybeSingle()) as {
+        data: { vanity_slug: string | null; hash_slug: string | null } | null;
+      };
       const slug = profileRow?.vanity_slug || profileRow?.hash_slug;
       if (slug) derived.profileLink = `/${slug}`;
 
@@ -165,7 +202,8 @@ export const useTemplateResolver = () => {
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle()) as { data: { file_url: string | null } | null };
-      if (transcriptRow?.file_url) derived.transcriptLink = transcriptRow.file_url;
+      if (transcriptRow?.file_url)
+        derived.transcriptLink = transcriptRow.file_url;
 
       // Multi-row schedule + next-event vars from the athlete's own events.
       const { data: eventRows } = (await supabase
@@ -210,7 +248,12 @@ export const useTemplateResolver = () => {
     const values = resolveVariables(registry, ctx);
     const subject = renderTemplate(template.subject ?? "", values);
     const body = renderTemplate(template.body ?? "", values);
-    return { subject, body, unresolved: findUnresolved(`${subject}\n${body}`), values };
+    return {
+      subject,
+      body,
+      unresolved: findUnresolved(`${subject}\n${body}`),
+      values,
+    };
   };
 
   return { loadRegistry, buildAthleteContext, resolveTemplate };

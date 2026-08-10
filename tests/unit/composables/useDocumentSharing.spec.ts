@@ -78,12 +78,10 @@ describe("useDocumentSharing.shareDocument", () => {
       update: vi.fn().mockReturnValue({
         eq: vi.fn().mockReturnValue({
           select: vi.fn().mockReturnValue({
-            single: vi
-              .fn()
-              .mockResolvedValue({
-                data: null,
-                error: new Error("RLS denied"),
-              }),
+            single: vi.fn().mockResolvedValue({
+              data: null,
+              error: new Error("RLS denied"),
+            }),
           }),
         }),
       }),
@@ -181,12 +179,10 @@ describe("useDocumentSharing.revokeSharing", () => {
     mockSupabase.from.mockReturnValue({
       select: vi.fn().mockReturnValue({
         eq: vi.fn().mockReturnValue({
-          single: vi
-            .fn()
-            .mockResolvedValue({
-              data: { shared_with_schools: null },
-              error: null,
-            }),
+          single: vi.fn().mockResolvedValue({
+            data: { shared_with_schools: null },
+            error: null,
+          }),
         }),
       }),
       update: vi.fn().mockReturnValue({

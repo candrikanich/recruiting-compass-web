@@ -129,7 +129,10 @@ export default defineEventHandler(async (event) => {
         .eq("id", link.id);
 
       if (updateError) {
-        logger.error(`Failed to update health status for link ${link.id}`, updateError);
+        logger.error(
+          `Failed to update health status for link ${link.id}`,
+          updateError,
+        );
       }
     }
 

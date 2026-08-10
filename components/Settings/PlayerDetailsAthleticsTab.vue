@@ -370,7 +370,11 @@ const handleAdd = async () => {
 
 const handleUpdate = async (
   id: string,
-  patch: { platform?: "hudl" | "youtube" | "vimeo"; url?: string; title?: string },
+  patch: {
+    platform?: "hudl" | "youtube" | "vimeo";
+    url?: string;
+    title?: string;
+  },
 ) => {
   try {
     await videoLinks.update(id, patch);
