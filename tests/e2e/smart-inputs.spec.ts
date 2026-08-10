@@ -168,10 +168,10 @@ test.describe("Smart Inputs — Social Handle Normalization", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/settings/player-details");
     await page.waitForLoadState("load");
-    // Social inputs live under the "Academics & Social" tab (v-show gates
-    // each tab's section). Click the tab button to make them visible.
+    // Social inputs live under the "Basics" tab (v-show gates each tab's
+    // section). Click the tab button to make them visible.
     await page
-      .locator("button", { hasText: "Academics & Social" })
+      .locator("button", { hasText: "Basics" })
       .first()
       .click();
     await page.waitForTimeout(200);
