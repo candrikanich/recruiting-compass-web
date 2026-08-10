@@ -457,7 +457,7 @@ export type CreateDeadlineInput = z.infer<typeof createDeadlineSchema>;
 // VIDEO LINK SCHEMAS
 // ============================================================================
 
-export const videoPlatformEnum = z.enum(["hudl", "youtube", "vimeo"]);
+export const videoPlatformEnum = z.enum(["hudl", "youtube", "vimeo", "other"]);
 export const createVideoLinkSchema = z.object({
   platform: videoPlatformEnum,
   url: z.string().url().max(2048),

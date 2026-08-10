@@ -354,14 +354,14 @@ export interface HomeLocation {
 }
 
 export interface VideoLink {
-  platform: "hudl" | "youtube" | "vimeo";
+  platform: "hudl" | "youtube" | "vimeo" | "other";
   url: string;
   title?: string;
 }
 
 export interface VideoLinkRow {
   id: string; user_id: string; family_unit_id: string | null;
-  platform: "hudl" | "youtube" | "vimeo"; url: string; title: string | null;
+  platform: "hudl" | "youtube" | "vimeo" | "other"; url: string; title: string | null;
   position: number; health_status: "healthy" | "broken" | "unknown";
   last_health_check: string | null; created_at: string; updated_at: string;
 }

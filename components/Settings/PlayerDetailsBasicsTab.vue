@@ -19,7 +19,7 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div>
               <label
-                class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1"
+                class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1 whitespace-nowrap"
               >
                 Graduation Year <span class="text-red-500">*</span>
               </label>
@@ -41,7 +41,7 @@
             </div>
             <div>
               <label
-                class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1"
+                class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1 whitespace-nowrap"
                 >Primary Sport</label
               >
               <select
