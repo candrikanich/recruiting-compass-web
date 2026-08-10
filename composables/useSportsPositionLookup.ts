@@ -1,53 +1,19 @@
 // composables/useSportsPositionLookup.ts
+//
+// Thin wrapper over the canonical position source (utils/positions/canonical).
+// Kept as a composable so existing call sites (usePlayerDetailsForm) don't
+// change, but the vocabulary is now the single canonical full-name set shared
+// with onboarding — no more abbreviations, no coarse "Infielder"/"Outfielder".
+import {
+  SPORT_POSITIONS,
+  getCanonicalPositions,
+} from "~/utils/positions/canonical";
+
 export const useSportsPositionLookup = () => {
-  // Map of sport -> positions
-  const sportPositions: Record<string, string[]> = {
-    Baseball: [
-      "P",
-      "C",
-      "1B",
-      "2B",
-      "3B",
-      "SS",
-      "LF",
-      "CF",
-      "RF",
-      "DH",
-      "UTIL",
-    ],
-    Softball: [
-      "P",
-      "C",
-      "1B",
-      "2B",
-      "3B",
-      "SS",
-      "LF",
-      "CF",
-      "RF",
-      "DH",
-      "UTIL",
-    ],
-    Basketball: ["PG", "SG", "SF", "PF", "C"],
-    Football: ["QB", "RB", "WR", "TE", "OL", "DL", "LB", "DB", "K"],
-    Soccer: ["GK", "DEF", "MID", "FWD"],
-    Lacrosse: ["G", "D", "M", "A"],
-    "Ice Hockey": ["G", "D", "LW", "C", "RW"],
-    Volleyball: ["S", "MB", "OH", "OP", "L"],
-    "Track & Field": ["Distance", "Sprints", "Jumps", "Throws", "Hurdles"],
-    "Cross Country": ["Runner"],
-    Swimming: ["Distance", "Sprint", "IM", "Dive"],
-    Tennis: ["Singles", "Doubles"],
-    Golf: ["Player"],
-  };
+  const commonSports = Object.keys(SPORT_POSITIONS);
 
-  // Common sports list (what's available in onboarding)
-  const commonSports = Object.keys(sportPositions);
-
-  // Get positions for a given sport
-  const getPositionsBySport = (sport: string): string[] => {
-    return sportPositions[sport] || [];
-  };
+  const getPositionsBySport = (sport: string): string[] =>
+    getCanonicalPositions(sport);
 
   return {
     commonSports,

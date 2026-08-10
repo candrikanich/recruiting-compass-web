@@ -234,15 +234,20 @@ describe("validatePlayerDetails", () => {
     expect(result!.allow_share_email).toBe(false);
   });
 
-  it("maps positions as a string array, normalizing to canonical values", () => {
-    // normalizePositions only accepts canonical baseball position values
-    const result = validatePlayerDetails({ positions: ["P", "SS"] });
-    expect(result!.positions).toEqual(["P", "SS"]);
+  it("canonicalizes positions against the sport (abbreviations → full names)", () => {
+    const result = validatePlayerDetails({
+      primary_sport: "Baseball",
+      positions: ["P", "SS", "1B"],
+    });
+    expect(result!.positions).toEqual(["Pitcher", "Shortstop", "First Base"]);
   });
 
-  it("returns empty positions array for unrecognized position codes", () => {
-    const result = validatePlayerDetails({ positions: ["SP", "RP"] });
-    expect(result!.positions).toEqual([]);
+  it("preserves unrecognized position values instead of dropping them (no data loss)", () => {
+    const result = validatePlayerDetails({
+      primary_sport: "Baseball",
+      positions: ["SP", "RP"],
+    });
+    expect(result!.positions).toEqual(["SP", "RP"]);
   });
 
   it("maps high-school grade team fields", () => {

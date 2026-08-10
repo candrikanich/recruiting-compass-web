@@ -4,10 +4,13 @@ import { useAppToast } from "~/composables/useAppToast";
 import { useSportsPositionLookup } from "~/composables/useSportsPositionLookup";
 import { useAutoSave } from "~/composables/useAutoSave";
 import {
-  normalizePositions,
   shouldClearPositionOnSportChange,
   reconcilePositionOptions,
 } from "~/utils/positions";
+import {
+  normalizePosition as normalizePositionForSport,
+  normalizePositions as normalizePositionsForSport,
+} from "~/utils/positions/canonical";
 import { normalizeHandle, type SocialPlatform } from "~/utils/social";
 import {
   calculateProfileCompleteness,
@@ -132,7 +135,10 @@ export function usePlayerDetailsForm() {
     onSave: async () => {
       const detailsToSave = {
         ...form.value,
-        positions: normalizePositions(form.value.positions),
+        positions: normalizePositionsForSport(
+          form.value.primary_sport,
+          form.value.positions,
+        ),
       };
       await setPlayerDetails(detailsToSave);
     },
@@ -298,10 +304,23 @@ export function usePlayerDetailsForm() {
       if (playerDetails.high_school && !playerDetails.school_name) {
         playerDetails.school_name = playerDetails.high_school;
       }
+      // Canonicalize stored positions (legacy abbreviations / coarse buckets
+      // like "Infielder" → real full-name positions) so the dropdown, the
+      // multi-select, and completeness all agree. Preserve an unresolved value
+      // so nothing is silently dropped.
+      const canonicalPrimary = normalizePositionForSport(
+        playerDetails.primary_sport,
+        playerDetails.primary_position,
+      );
       form.value = {
         ...form.value,
         ...playerDetails,
-        positions: normalizePositions(playerDetails.positions),
+        primary_position:
+          canonicalPrimary ?? playerDetails.primary_position ?? undefined,
+        positions: normalizePositionsForSport(
+          playerDetails.primary_sport,
+          playerDetails.positions,
+        ),
       };
       form.value.core_courses = playerDetails.core_courses ?? [];
       initializeHeight(playerDetails.height_inches);
