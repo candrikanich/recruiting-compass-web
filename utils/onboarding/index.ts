@@ -8,11 +8,6 @@ export { validatePlayerAge } from "../ageVerification";
 export { validateZipCode } from "../zipCodeValidation";
 export { calculateProfileCompleteness } from "../profileCompletenessCalculation";
 export {
-  getSportsList,
-  getPositionsBySport,
-  sportHasPositionList,
-} from "../sportsPositionLookup";
-export {
   validateFamilyCodeInput,
   formatFamilyCodeInput,
 } from "../familyCodeValidation";

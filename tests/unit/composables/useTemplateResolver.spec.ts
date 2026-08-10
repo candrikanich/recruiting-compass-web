@@ -29,7 +29,17 @@ const h = vi.hoisted(() => {
       },
       error: null,
     },
-    user_preferences: { data: { data: { ncaa_id: "21", twelfth_grade_coach: "Dave Reilly" } }, error: null },
+    user_preferences: {
+      data: {
+        data: {
+          ncaa_id: "21",
+          twelfth_grade_coach: "Dave Reilly",
+          primary_position: "Shortstop",
+          positions: ["Shortstop", "Second Base"],
+        },
+      },
+      error: null,
+    },
     performance_metrics: {
       data: [
         {
@@ -106,6 +116,7 @@ describe("useTemplateResolver", () => {
       expect(ctx.metrics).toHaveLength(1);
       expect(ctx.derived?.sport).toBe("Baseball");
       expect(ctx.derived?.position).toBe("Shortstop");
+      expect(ctx.derived?.positionSecondary).toBe("Second Base");
       expect(ctx.derived?.profileLink).toBe("/jordan");
       expect(ctx.derived?.hsCoachName).toBe("Dave Reilly");
       expect(ctx.derived?.transcriptLink).toBe("https://files.example/transcript.pdf");

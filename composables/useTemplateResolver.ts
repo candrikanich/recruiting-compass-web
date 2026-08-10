@@ -122,29 +122,23 @@ export const useTemplateResolver = () => {
         if (sportRow?.name) derived.sport = sportRow.name;
       }
 
-      const primaryPositionCustom = userRow?.primary_position_custom as string | null | undefined;
-      if (primaryPositionCustom) {
-        derived.position = primaryPositionCustom;
-      } else if (userRow?.primary_position_id) {
-        const { data: posRow } = (await supabase
-          .from("positions")
-          .select("name")
-          .eq("id", userRow.primary_position_id as string)
-          .maybeSingle()) as { data: { name: string } | null };
-        if (posRow?.name) derived.position = posRow.name;
+      // Position comes from the canonical player-prefs string (the store
+      // onboarding/edit write and completeness reads), NOT the separate
+      // users.primary_position_id / positions table — real users only populate
+      // the prefs string, so the FK store was almost always empty for {{position}}.
+      const primaryPosition = ctx.prefs.primary_position;
+      if (typeof primaryPosition === "string" && primaryPosition.trim()) {
+        derived.position = primaryPosition.trim();
       }
 
-      const secondaryPositionCustom = userRow?.secondary_position_custom as string | null | undefined;
-      if (secondaryPositionCustom) {
-        derived.positionSecondary = secondaryPositionCustom;
-      } else if (userRow?.secondary_position_id) {
-        const { data: secRow } = (await supabase
-          .from("positions")
-          .select("name")
-          .eq("id", userRow.secondary_position_id as string)
-          .maybeSingle()) as { data: { name: string } | null };
-        if (secRow?.name) derived.positionSecondary = secRow.name;
-      }
+      // Secondary: first listed position that isn't the primary.
+      const positionList = Array.isArray(ctx.prefs.positions)
+        ? (ctx.prefs.positions as unknown[]).filter(
+            (p): p is string => typeof p === "string" && p.trim().length > 0,
+          )
+        : [];
+      const secondary = positionList.find((p) => p !== derived.position);
+      if (secondary) derived.positionSecondary = secondary;
 
       const hsCoach = pickHsCoach(ctx.prefs, userRow?.graduation_year as number | null | undefined);
       if (hsCoach) derived.hsCoachName = hsCoach;
