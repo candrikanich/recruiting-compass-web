@@ -128,6 +128,8 @@
             :campus-size-options="CAMPUS_SIZE_OPTIONS"
             :cost-sensitivity-options="COST_SENSITIVITY_OPTIONS"
             :trigger-save="triggerSave"
+            :social-inputs="socialInputs"
+            :handle-social-blur="handleSocialBlur"
           />
         </div>
 
@@ -151,7 +153,7 @@
           />
         </div>
 
-        <!-- TAB: ACADEMICS & SOCIAL -->
+        <!-- TAB: ACADEMICS -->
         <div
           v-show="currentTab === 'academics'"
           class="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300"
@@ -160,8 +162,6 @@
             :form="form"
             :is-parent-role="isReadOnly"
             :trigger-save="triggerSave"
-            :social-inputs="socialInputs"
-            :handle-social-blur="handleSocialBlur"
             :add-course="addCourse"
             :remove-course="removeCourse"
             v-model:new-course-input="newCourseInput"
@@ -370,7 +370,7 @@ const tabs = [
   { id: "athletics", name: "Athletics", icon: "i-heroicons-bolt" },
   {
     id: "academics",
-    name: "Academics & Social",
+    name: "Academics",
     icon: "i-heroicons-academic-cap",
   },
   { id: "history", name: "History", icon: "i-heroicons-clock" },

@@ -10,8 +10,8 @@ import { resolve } from "path";
  * - No read-only banner: the whole family can edit.
  * - Inputs are enabled for parents and players alike.
  * - Page uses auto-save (no explicit save button)
- * - Tabs: Basics, Athletics, Academics & Social, History, Public Profile
- * - GPA input is on the Academics & Social tab
+ * - Tabs: Basics, Athletics, Academics, History, Public Profile
+ * - GPA input is on the Academics tab
  */
 
 test.describe("Profile Edit Restrictions (User Story 2.2)", () => {
@@ -117,10 +117,10 @@ test.describe("Profile Edit Restrictions (User Story 2.2)", () => {
       await page.goto("/settings/player-details");
       await page.waitForLoadState("domcontentloaded");
 
-      // Switch to Academics & Social tab
+      // Switch to Academics tab
       const academicsTab = page
         .locator("button", {
-          hasText: "Academics & Social",
+          hasText: "Academics",
         })
         .first();
       await academicsTab.click();
@@ -152,7 +152,7 @@ test.describe("Profile Edit Restrictions (User Story 2.2)", () => {
         page.locator("button", { hasText: "Athletics" }).first(),
       ).toBeVisible();
       await expect(
-        page.locator("button", { hasText: "Academics & Social" }).first(),
+        page.locator("button", { hasText: "Academics" }).first(),
       ).toBeVisible();
       await expect(
         page.locator("button", { hasText: "History" }).first(),
@@ -180,7 +180,7 @@ test.describe("Profile Edit Restrictions (User Story 2.2)", () => {
 
       const academicsTab = page
         .locator("button", {
-          hasText: "Academics & Social",
+          hasText: "Academics",
         })
         .first();
       await academicsTab.click();
