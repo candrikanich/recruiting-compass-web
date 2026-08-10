@@ -13,6 +13,7 @@ import type {
   DashboardLayout,
   WidgetEntry,
   WidgetId,
+  TravelTeam,
 } from "~/types/models";
 import { WIDGET_SIZES } from "~/types/models";
 import {
@@ -148,7 +149,28 @@ export function validatePlayerDetails(data: unknown): PlayerDetails | null {
     travel_team_year: toNumber(obj.travel_team_year),
     travel_team_name: toString(obj.travel_team_name),
     travel_team_coach: toString(obj.travel_team_coach),
+    travel_teams: toTravelTeams(obj.travel_teams),
+    core_courses: toStringArray(obj.core_courses),
   };
+}
+
+/**
+ * Coerces the persisted travel_teams array, dropping fully-empty rows so a
+ * blank "add" row a user never filled in doesn't round-trip as data.
+ */
+function toTravelTeams(value: unknown): TravelTeam[] | undefined {
+  if (!Array.isArray(value)) return undefined;
+  const teams = value
+    .map((v) => {
+      const o = (v ?? {}) as Record<string, unknown>;
+      return {
+        year: toNumber(o.year),
+        name: toString(o.name),
+        coach: toString(o.coach),
+      };
+    })
+    .filter((t) => t.year !== undefined || !!t.name || !!t.coach);
+  return teams.length > 0 ? teams : undefined;
 }
 
 /**

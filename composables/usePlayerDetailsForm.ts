@@ -17,7 +17,7 @@ import {
   isHomeLocationPresent,
 } from "~/utils/profileCompletenessCalculation";
 import { useVideoLinks } from "~/composables/useVideoLinks";
-import type { PlayerDetails } from "~/types/models";
+import type { PlayerDetails, TravelTeam } from "~/types/models";
 
 /**
  * Form state, autosave wiring, and field-editing logic for the
@@ -101,6 +101,7 @@ export function usePlayerDetailsForm() {
     travel_team_year: undefined,
     travel_team_name: "",
     travel_team_coach: "",
+    travel_teams: [] as TravelTeam[],
     core_courses: [] as string[],
   });
 
@@ -133,8 +134,21 @@ export function usePlayerDetailsForm() {
     // silently hide the failure from the user (form data itself is untouched
     // either way, since form.value is never reset on failure).
     onSave: async () => {
+      // Drop blank travel-team rows, then mirror the most-recent one (highest
+      // season year) back onto the legacy scalar fields so downstream readers
+      // (edit-history labels, template resolver) keep working unchanged.
+      const travelTeams = (form.value.travel_teams ?? []).filter(
+        (t) => t.year !== undefined || !!t.name || !!t.coach,
+      );
+      const latest = [...travelTeams].sort(
+        (a, b) => (b.year ?? 0) - (a.year ?? 0),
+      )[0];
       const detailsToSave = {
         ...form.value,
+        travel_teams: travelTeams,
+        travel_team_year: latest?.year,
+        travel_team_name: latest?.name ?? "",
+        travel_team_coach: latest?.coach ?? "",
         positions: normalizePositionsForSport(
           form.value.primary_sport,
           form.value.positions,
@@ -209,6 +223,37 @@ export function usePlayerDetailsForm() {
 
   const removeCourse = (idx: number) => {
     form.value.core_courses = (form.value.core_courses ?? []).filter(
+      (_, i) => i !== idx,
+    );
+    triggerSave();
+  };
+
+  const buildLegacyTravelTeam = (details: PlayerDetails): TravelTeam[] => {
+    if (
+      details.travel_team_year === undefined &&
+      !details.travel_team_name &&
+      !details.travel_team_coach
+    ) {
+      return [];
+    }
+    return [
+      {
+        year: details.travel_team_year,
+        name: details.travel_team_name ?? "",
+        coach: details.travel_team_coach ?? "",
+      },
+    ];
+  };
+
+  const addTravelTeam = () => {
+    form.value.travel_teams = [
+      ...(form.value.travel_teams ?? []),
+      { year: undefined, name: "", coach: "" },
+    ];
+  };
+
+  const removeTravelTeam = (idx: number) => {
+    form.value.travel_teams = (form.value.travel_teams ?? []).filter(
       (_, i) => i !== idx,
     );
     triggerSave();
@@ -323,6 +368,12 @@ export function usePlayerDetailsForm() {
         ),
       };
       form.value.core_courses = playerDetails.core_courses ?? [];
+      // Seed the multi-row list from the legacy single-team scalar fields the
+      // first time an athlete opens the new UI (no travel_teams stored yet).
+      form.value.travel_teams =
+        playerDetails.travel_teams && playerDetails.travel_teams.length > 0
+          ? playerDetails.travel_teams
+          : buildLegacyTravelTeam(playerDetails);
       initializeHeight(playerDetails.height_inches);
       if (form.value.primary_sport) {
         availablePositions.value = reconcilePositionOptions(
@@ -351,6 +402,8 @@ export function usePlayerDetailsForm() {
     newCourseInput,
     addCourse,
     removeCourse,
+    addTravelTeam,
+    removeTravelTeam,
     handleSocialBlur,
     socialInputs,
     gradeLevels,

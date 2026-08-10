@@ -273,6 +273,34 @@ describe("validatePlayerDetails", () => {
     expect(result!.travel_team_name).toBe("Thunder");
     expect(result!.travel_team_coach).toBe("Coach C");
   });
+
+  it("round-trips the travel_teams array and drops blank rows", () => {
+    const result = validatePlayerDetails({
+      travel_teams: [
+        { year: 2025, name: "Thunder", coach: "Coach C" },
+        { year: 2024, name: "Storm", coach: "" },
+        { year: undefined, name: "", coach: "" },
+      ],
+    });
+    expect(result!.travel_teams).toEqual([
+      { year: 2025, name: "Thunder", coach: "Coach C" },
+      { year: 2024, name: "Storm", coach: "" },
+    ]);
+  });
+
+  it("returns travel_teams undefined when the array has only blank rows", () => {
+    const result = validatePlayerDetails({
+      travel_teams: [{ year: undefined, name: "", coach: "" }],
+    });
+    expect(result!.travel_teams).toBeUndefined();
+  });
+
+  it("round-trips core_courses so they survive a reload", () => {
+    const result = validatePlayerDetails({
+      core_courses: ["AP Calculus", "Honors Physics"],
+    });
+    expect(result!.core_courses).toEqual(["AP Calculus", "Honors Physics"]);
+  });
 });
 
 // ---------------------------------------------------------------------------

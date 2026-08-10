@@ -366,6 +366,12 @@ export interface VideoLinkRow {
   last_health_check: string | null; created_at: string; updated_at: string;
 }
 
+export interface TravelTeam {
+  year?: number;
+  name?: string;
+  coach?: string;
+}
+
 export interface PlayerDetails {
   graduation_year?: number;
   primary_sport?: string;
@@ -410,10 +416,12 @@ export interface PlayerDetails {
   eleventh_grade_coach?: string;
   twelfth_grade_team?: string;
   twelfth_grade_coach?: string;
-  // Travel Team
+  // Travel Team — the scalar fields mirror the most-recent travel_teams entry
+  // so existing readers (edit-history labels, template resolver) keep working.
   travel_team_year?: number;
   travel_team_name?: string;
   travel_team_coach?: string;
+  travel_teams?: TravelTeam[];
   // Course Content (video links are stored in the video_links table, see
   // useVideoLinks/VideoLinkRow — not on PlayerDetails)
   core_courses?: string[];

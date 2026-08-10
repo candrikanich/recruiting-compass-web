@@ -250,47 +250,82 @@
           <div
             class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6"
           >
-            <h2 class="text-base font-bold text-slate-900 mb-6">
-              Latest Travel Team
-            </h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div>
-                <label
-                  class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1"
-                  >Season Year</label
+            <div class="flex items-center justify-between mb-6">
+              <h2 class="text-base font-bold text-slate-900">Travel Teams</h2>
+              <p class="text-xs text-slate-500 font-medium">
+                Add each org you've played for — most recent shows on your
+                profile.
+              </p>
+            </div>
+
+            <div class="space-y-4">
+              <div
+                v-for="(team, idx) in form.travel_teams"
+                :key="idx"
+                class="grid grid-cols-1 md:grid-cols-[7rem_1fr_1fr_auto] gap-4 items-end"
+              >
+                <div>
+                  <label
+                    class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1"
+                    >Season Year</label
+                  >
+                  <input
+                    v-model.number="team.year"
+                    type="number"
+                    @blur="triggerSave"
+                    placeholder="2024"
+                    class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium"
+                  />
+                </div>
+                <div>
+                  <label
+                    class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1"
+                    >Organization</label
+                  >
+                  <input
+                    v-model="team.name"
+                    @blur="triggerSave"
+                    placeholder="Team Name"
+                    class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium"
+                  />
+                </div>
+                <div>
+                  <label
+                    class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1"
+                    >Head Coach</label
+                  >
+                  <input
+                    v-model="team.coach"
+                    @blur="triggerSave"
+                    placeholder="Coach Name"
+                    class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium"
+                  />
+                </div>
+                <button
+                  type="button"
+                  @click="removeTravelTeam(idx)"
+                  class="p-3 text-slate-400 hover:text-red-500 transition rounded-xl hover:bg-red-50 shrink-0"
+                  title="Remove travel team"
                 >
-                <input
-                  v-model.number="form.travel_team_year"
-                  type="number"
-                  @blur="triggerSave"
-                  placeholder="2024"
-                  class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium"
-                />
+                  <UIcon name="i-heroicons-trash" class="w-5 h-5" />
+                </button>
               </div>
-              <div>
-                <label
-                  class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1"
-                  >Organization</label
-                >
-                <input
-                  v-model="form.travel_team_name"
-                  @blur="triggerSave"
-                  placeholder="Team Name"
-                  class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium"
-                />
-              </div>
-              <div>
-                <label
-                  class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1"
-                  >Head Coach</label
-                >
-                <input
-                  v-model="form.travel_team_coach"
-                  @blur="triggerSave"
-                  placeholder="Coach Name"
-                  class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium"
-                />
-              </div>
+
+              <p
+                v-if="!form.travel_teams || form.travel_teams.length === 0"
+                class="text-sm text-slate-400 italic"
+              >
+                No travel teams added yet.
+              </p>
+
+              <button
+                type="button"
+                @click="addTravelTeam"
+                class="inline-flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-700 py-2"
+              >
+                <UIcon name="i-heroicons-plus" class="w-4 h-4" />
+                Add Travel Team
+              </button>
             </div>
           </div>
         </div>
@@ -362,6 +397,8 @@ const {
   newCourseInput,
   addCourse,
   removeCourse,
+  addTravelTeam,
+  removeTravelTeam,
   handleSocialBlur,
   socialInputs,
   gradeLevels,
