@@ -72,5 +72,26 @@ describe("gradeHelpers", () => {
       const result = calculateCurrentGrade(2027); // Graduating June 2027
       expect(result).toBe(12); // Senior in 2026-2027 school year
     });
+
+    // Summer roll: July 1 pivot. During summer break an athlete is treated as the
+    // grade they are rising INTO (their upcoming recruiting cycle), not the grade
+    // they just finished. Owen, grad 2028, is a rising junior in Aug 2026.
+    it("rolls to rising grade in August (summer before junior)", () => {
+      vi.setSystemTime(new Date("2026-08-10T12:00:00Z")); // Summer before 2026-2027 school year
+      const result = calculateCurrentGrade(2028); // Graduating June 2028
+      expect(result).toBe(11); // Rising junior
+    });
+
+    it("rolls to rising grade on July 1 (pivot day)", () => {
+      vi.setSystemTime(new Date("2026-07-01T12:00:00Z"));
+      const result = calculateCurrentGrade(2028);
+      expect(result).toBe(11); // Rising junior
+    });
+
+    it("keeps just-finished grade through June (before pivot)", () => {
+      vi.setSystemTime(new Date("2026-06-15T12:00:00Z")); // Still winding down sophomore year
+      const result = calculateCurrentGrade(2028);
+      expect(result).toBe(10); // Just-finished sophomore
+    });
   });
 });
