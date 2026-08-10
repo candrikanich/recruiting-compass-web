@@ -91,10 +91,13 @@ onboarding + edit form, permanent completeness fix, backfill stored strings.
 4. DB backfill (idempotent): normalize `user_preferences.data.primary_position` + `positions[]` to canonical (single-digit rows today).
 5. Tests (sport-scoped normalize incl. C collision; onboarding offers no Infielder) + live verify (owen/player1 = 85; onboarding dropdown shows real positions).
 
-### Phase 2 — deeper unification (separate session)
-- Fold object lookup #4 (`utils/sportsPositionLookup.ts` + Screen2BasicInfo) into the canonical module; retire the object shape or derive it from canonical.
-- Reconcile the DB `positions` table (#6) vs the `primary_position` string — decide one storage location; migrate templates/seed.
-- iOS: align `OnboardingConstants`/`FamilyConstants` to the canonical labels (web is source of truth) — handoff spec.
+### Phase 2 — DONE (2026-08-10)
+- **Dead code removed**: the entire `components/Onboarding/Screen1–5` + `LateJoinerAssessment` wizard was orphaned (0 refs; live onboarding is inline in `onboarding/index.vue`). Deleted all 6 components + 7 specs + the object lookup `utils/sportsPositionLookup.ts`; trimmed its re-exports from `utils/onboarding/index.ts`. Kills the 4th/6th position vocabularies.
+- **Position store reconciled**: `useTemplateResolver` now derives `{{position}}`/`{{positionSecondary}}` from the canonical player-prefs string (`ctx.prefs.primary_position` + `positions[]`) instead of the separate `users.primary_position_id` → `positions` table (which real users never populated, so coach templates rendered a blank position). The FK columns + `positions` table are now vestigial for this path (drop in a later cleanup if nothing else uses them).
+- **iOS handoff** written: `recruiting-compass-ios/planning/2026-08-10-ios-canonical-positions-parity.md` (align `OnboardingConstants`/`FamilyConstants` to canonical; add sport-scoped normalize; completeness already matches).
+
+### Phase 2 leftovers (optional, later)
+- Drop the now-vestigial `positions` table + `users.primary_position_id`/`custom` columns if no other consumer remains (seed still references them — update or leave).
 
 ## Open questions
 - Which onboarding flow is live (Phase 1 step 0)?
