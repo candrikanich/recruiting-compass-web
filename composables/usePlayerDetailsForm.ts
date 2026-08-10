@@ -3,7 +3,11 @@ import { usePreferenceManager } from "~/composables/usePreferenceManager";
 import { useAppToast } from "~/composables/useAppToast";
 import { useSportsPositionLookup } from "~/composables/useSportsPositionLookup";
 import { useAutoSave } from "~/composables/useAutoSave";
-import { normalizePositions } from "~/utils/positions";
+import {
+  normalizePositions,
+  shouldClearPositionOnSportChange,
+  reconcilePositionOptions,
+} from "~/utils/positions";
 import { normalizeHandle, type SocialPlatform } from "~/utils/social";
 import {
   calculateProfileCompleteness,
@@ -136,17 +140,26 @@ export function usePlayerDetailsForm() {
 
   watch(
     () => form.value.primary_sport,
-    (sport) => {
-      if (sport) {
-        availablePositions.value = getPositionsBySport(sport);
-        if (
-          !availablePositions.value.includes(form.value.primary_position || "")
-        ) {
-          form.value.primary_position = undefined;
-        }
-      } else {
-        availablePositions.value = [];
+    (sport, previousSport) => {
+      const canonical = sport ? getPositionsBySport(sport) : [];
+      // Only reset the position on a genuine USER sport change — never on the
+      // initial load (previousSport === undefined), which would silently wipe a
+      // stored value that isn't a canonical option (e.g. "Infielder" from iOS)
+      // and cost 10% of profile completeness.
+      if (
+        shouldClearPositionOnSportChange(
+          previousSport,
+          sport,
+          form.value.primary_position,
+          canonical,
+        )
+      ) {
+        form.value.primary_position = undefined;
       }
+      availablePositions.value = reconcilePositionOptions(
+        canonical,
+        form.value.primary_position,
+      );
     },
   );
 
@@ -293,8 +306,9 @@ export function usePlayerDetailsForm() {
       form.value.core_courses = playerDetails.core_courses ?? [];
       initializeHeight(playerDetails.height_inches);
       if (form.value.primary_sport) {
-        availablePositions.value = getPositionsBySport(
-          form.value.primary_sport,
+        availablePositions.value = reconcilePositionOptions(
+          getPositionsBySport(form.value.primary_sport),
+          form.value.primary_position,
         );
       }
     }
