@@ -475,8 +475,13 @@ definePageMeta({
   middleware: "auth",
 });
 
-const { isLoading, error, getSchoolPreferences, setSchoolPreferences } =
-  usePreferenceManager();
+const {
+  isLoading,
+  error,
+  getSchoolPreferences,
+  setSchoolPreferences,
+  loadAllPreferences,
+} = usePreferenceManager();
 const { showToast } = useAppToast();
 
 const CATEGORIES = [
@@ -768,6 +773,11 @@ const handleSave = async () => {
 };
 
 onMounted(async () => {
+  // Load from the server first: usePreferenceManager creates fresh, empty
+  // per-component preference refs, so reading before load yields no saved
+  // preferences and the page renders blank despite stored data.
+  await loadAllPreferences();
+
   const schoolPrefs = getSchoolPreferences();
   if (schoolPrefs?.preferences) {
     preferences.value = [...schoolPrefs.preferences];

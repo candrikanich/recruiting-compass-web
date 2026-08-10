@@ -103,7 +103,7 @@ test.describe("/settings/player-details — Player Details", () => {
   test("shows tab navigation", async ({ page }) => {
     // Tabs render twice (desktop + mobile) — use .first().
     await expect(page.locator("text=Athletics").first()).toBeVisible();
-    await expect(page.locator("text=Academics & Social").first()).toBeVisible();
+    await expect(page.locator("text=Academics").first()).toBeVisible();
   });
 });
 

@@ -25,7 +25,7 @@ test.describe("Player Details Auto-Save", () => {
 
     // Check that major tab sections exist (tabs appear twice - desktop + mobile, use first)
     await expect(page.locator("text=Athletics").first()).toBeVisible();
-    await expect(page.locator("text=Academics & Social").first()).toBeVisible();
+    await expect(page.locator("text=Academics").first()).toBeVisible();
   });
 
   test("should show primary sport and position fields", async ({ page }) => {

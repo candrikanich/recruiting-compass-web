@@ -55,9 +55,24 @@
             />
           </div>
         </div>
+      </div>
+    </div>
 
-        <!-- Bats/Throws (Sport Specific) -->
-        <div v-if="isBaseballOrSoftball" class="grid grid-cols-2 gap-4">
+    <!-- Sport-Specific Details -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+      <h2
+        class="text-base font-bold text-slate-900 mb-6 flex items-center gap-2"
+      >
+        <UIcon name="i-heroicons-trophy" class="w-5 h-5 text-blue-600" />
+        {{ sportLabel }}
+      </h2>
+
+      <!-- Bats/Throws (Sport Specific) -->
+      <div
+        v-if="isBaseballOrSoftball"
+        class="grid grid-cols-1 md:grid-cols-2 gap-8"
+      >
+        <div class="grid grid-cols-2 gap-4">
           <div>
             <label
               class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1"
@@ -112,7 +127,7 @@
       </div>
 
       <!-- Positions -->
-      <div class="mt-8 pt-8 border-t border-slate-100">
+      <div :class="isBaseballOrSoftball ? 'mt-8 pt-8 border-t border-slate-100' : ''">
         <label
           class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 ml-1"
           >Positions You Play</label
@@ -160,6 +175,15 @@
             placeholder="ID Number"
             class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium"
           />
+          <a
+            href="https://web3.ncaa.org/ecwr3/"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-1 mt-1.5 ml-1 text-xs font-medium text-blue-600 hover:text-blue-700"
+          >
+            Register at NCAA Eligibility Center
+            <UIcon name="i-heroicons-arrow-top-right-on-square" class="w-3 h-3" />
+          </a>
         </div>
         <template v-if="isBaseballOrSoftball">
           <div>
@@ -173,6 +197,18 @@
               placeholder="ID Number"
               class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium"
             />
+            <a
+              href="https://www.perfectgame.org/"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center gap-1 mt-1.5 ml-1 text-xs font-medium text-blue-600 hover:text-blue-700"
+            >
+              Get your Perfect Game profile
+              <UIcon
+                name="i-heroicons-arrow-top-right-on-square"
+                class="w-3 h-3"
+              />
+            </a>
           </div>
           <div>
             <label
@@ -185,6 +221,18 @@
               placeholder="ID Number"
               class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium"
             />
+            <a
+              href="https://www.prepbaseballreport.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center gap-1 mt-1.5 ml-1 text-xs font-medium text-blue-600 hover:text-blue-700"
+            >
+              Get your Prep Baseball Report profile
+              <UIcon
+                name="i-heroicons-arrow-top-right-on-square"
+                class="w-3 h-3"
+              />
+            </a>
           </div>
         </template>
       </div>
@@ -213,7 +261,7 @@
               (e) =>
                 handleUpdate(link.id, {
                   platform: (e.target as HTMLSelectElement).value as
-                    'hudl' | 'youtube' | 'vimeo',
+                    'hudl' | 'youtube' | 'vimeo' | 'other',
                 })
             "
             class="px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-700 focus:ring-2 focus:ring-blue-500 transition disabled:opacity-50"
@@ -221,6 +269,7 @@
             <option value="hudl">Hudl</option>
             <option value="youtube">YouTube</option>
             <option value="vimeo">Vimeo</option>
+            <option value="other">Other</option>
           </select>
           <input
             :value="link.url"
@@ -272,6 +321,7 @@
             <option value="hudl">Hudl</option>
             <option value="youtube">YouTube</option>
             <option value="vimeo">Vimeo</option>
+            <option value="other">Other</option>
           </select>
           <input
             v-model="newLinkUrl"
@@ -312,7 +362,7 @@ import type { PlayerDetails } from "~/types/models";
 import { useVideoLinks } from "~/composables/useVideoLinks";
 import { useAppToast } from "~/composables/useAppToast";
 
-defineProps<{
+const props = defineProps<{
   form: PlayerDetails;
   isParentRole: boolean;
   isBaseballOrSoftball: boolean;
@@ -327,6 +377,12 @@ defineProps<{
 const heightFeet = defineModel<number | undefined>("heightFeet");
 const heightInches = defineModel<number | undefined>("heightInches");
 
+const sportLabel = computed(() =>
+  props.form.primary_sport
+    ? `${props.form.primary_sport} Details`
+    : "Sport Details",
+);
+
 const videoLinks = useVideoLinks();
 const { showToast } = useAppToast();
 
@@ -334,7 +390,7 @@ onMounted(() => {
   videoLinks.load();
 });
 
-const newLinkPlatform = ref<"hudl" | "youtube" | "vimeo">("hudl");
+const newLinkPlatform = ref<"hudl" | "youtube" | "vimeo" | "other">("hudl");
 const newLinkUrl = ref("");
 const newLinkTitle = ref("");
 
@@ -370,7 +426,11 @@ const handleAdd = async () => {
 
 const handleUpdate = async (
   id: string,
-  patch: { platform?: "hudl" | "youtube" | "vimeo"; url?: string; title?: string },
+  patch: {
+    platform?: "hudl" | "youtube" | "vimeo" | "other";
+    url?: string;
+    title?: string;
+  },
 ) => {
   try {
     await videoLinks.update(id, patch);

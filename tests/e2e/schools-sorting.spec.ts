@@ -33,8 +33,8 @@ test.describe("Schools Sorting", () => {
   });
 
   test("should sort schools A-Z by default", async ({ page }) => {
-    // Scope to school-card h3s — page-level h3 banners (e.g. "You have 181
-    // schools on your list") would otherwise pollute the sort assertion.
+    // Scope to school-card h3s so any page-level h3 (headings, banners) can't
+    // pollute the sort assertion.
     const schoolHeadings = page.locator(
       '[data-testid="school-card"] h3, h3.text-lg',
     );

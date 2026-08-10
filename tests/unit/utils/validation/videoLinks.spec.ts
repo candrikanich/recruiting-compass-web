@@ -6,6 +6,9 @@ describe("video-link schemas", () => {
     const r = createVideoLinkSchema.safeParse({ platform: "hudl", url: "https://hudl.com/x", title: "Fall reel", position: 0 });
     expect(r.success).toBe(true);
   });
+  it("accepts the 'other' platform for sites we don't enumerate", () => {
+    expect(createVideoLinkSchema.safeParse({ platform: "other", url: "https://somevideosite.com/x", position: 0 }).success).toBe(true);
+  });
   it("rejects an unknown platform", () => {
     expect(createVideoLinkSchema.safeParse({ platform: "tiktok", url: "https://x", position: 0 }).success).toBe(false);
   });
