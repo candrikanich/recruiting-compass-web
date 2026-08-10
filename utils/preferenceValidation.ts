@@ -15,7 +15,10 @@ import type {
   WidgetId,
 } from "~/types/models";
 import { WIDGET_SIZES } from "~/types/models";
-import { normalizePositions } from "./positions";
+import {
+  normalizePosition as normalizePositionForSport,
+  normalizePositions as normalizePositionsForSport,
+} from "./positions/canonical";
 
 /**
  * Validates and extracts notification settings
@@ -88,13 +91,22 @@ export function validatePlayerDetails(data: unknown): PlayerDetails | null {
   // Check if player has any meaningful data
   if (Object.keys(obj).length === 0) return null;
 
+  // Canonicalize positions against the sport so legacy abbreviations and coarse
+  // buckets (e.g. "Infielder" → "Utility", "SS" → "Shortstop") read as the one
+  // canonical vocabulary. Preserve an unresolved primary_position rather than
+  // dropping it.
+  const sport = toString(obj.primary_sport);
+  const rawPrimaryPosition = toString(obj.primary_position);
+
   return {
     graduation_year: toNumber(obj.graduation_year),
-    primary_sport: toString(obj.primary_sport),
-    primary_position: toString(obj.primary_position),
+    primary_sport: sport,
+    primary_position:
+      normalizePositionForSport(sport, rawPrimaryPosition) ??
+      rawPrimaryPosition,
     high_school: toString(obj.high_school),
     club_team: toString(obj.club_team),
-    positions: normalizePositions(toStringArray(obj.positions)),
+    positions: normalizePositionsForSport(sport, toStringArray(obj.positions)),
     bats: toOption<"L" | "R" | "S">(obj.bats, ["L", "R", "S"]),
     throws: toOption<"L" | "R">(obj.throws, ["L", "R"]),
     height_inches: toNumber(obj.height_inches),
