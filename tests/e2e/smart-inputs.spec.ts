@@ -25,6 +25,12 @@ test.describe("Smart Inputs — High School Search", () => {
 
   test.beforeEach(async ({ page }) => {
     await page.goto("/settings/player-details");
+    // High School search lives under the "Academics" tab (v-show gates each
+    // tab's section). Click the tab button to make it visible.
+    await page
+      .locator("button", { hasText: "Academics" })
+      .first()
+      .click();
     await page.waitForLoadState("networkidle");
     // Wait for the search input to be present AND enabled before any test fills
     // it — a blind timeout let .fill() fire before Vue hydrated the debounced
