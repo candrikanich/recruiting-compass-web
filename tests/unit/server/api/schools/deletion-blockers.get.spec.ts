@@ -2,6 +2,8 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // Mutable state — read at call time by mock factories
 const mockState = {
+  parentExists: true,
+  parentError: null as object | null,
   coachCount: 0,
   coachError: null as object | null,
   interactionCount: 0,
@@ -19,14 +21,16 @@ const mockState = {
   suggestionCount: 0,
   suggestionError: null as object | null,
   authToken: "Bearer valid-token",
-  schoolId: "test-school-id",
 };
 
+const SCHOOL_ID = "11111111-1111-1111-1111-111111111111";
+
 vi.mock("~/server/utils/auth", () => ({
-  requireAuth: vi.fn(async () => ({
-    id: "user-id",
-    email: "user@example.com",
-  })),
+  requireAuth: vi.fn(async () => ({ id: "user-id", email: "user@example.com" })),
+}));
+
+vi.mock("~/server/utils/validation", () => ({
+  requireUuidParam: vi.fn(() => SCHOOL_ID),
 }));
 
 vi.mock("~/server/utils/logger", () => ({
@@ -38,6 +42,21 @@ vi.mock("~/server/utils/logger", () => ({
   }),
 }));
 
+// Existence probe: from(parent).select("id").eq("id", id).maybeSingle()
+function buildExistenceChain() {
+  return {
+    select: vi.fn().mockReturnValue({
+      eq: vi.fn().mockReturnValue({
+        maybeSingle: vi.fn().mockResolvedValue({
+          data: mockState.parentExists ? { id: SCHOOL_ID } : null,
+          error: mockState.parentError,
+        }),
+      }),
+    }),
+  };
+}
+
+// Count query: from(child).select("*", {count,head}).eq(col, id)  (awaited)
 function buildSelectChain(
   getCount: () => number | null,
   getError: () => object | null,
@@ -56,54 +75,47 @@ function buildSelectChain(
 vi.mock("~/server/utils/supabase", () => ({
   createServerSupabaseUserClient: vi.fn(() => ({
     from: (table: string) => {
-      if (table === "coaches") {
+      if (table === "schools") return buildExistenceChain();
+      if (table === "coaches")
         return buildSelectChain(
           () => mockState.coachCount,
           () => mockState.coachError,
         );
-      }
-      if (table === "interactions") {
+      if (table === "interactions")
         return buildSelectChain(
           () => mockState.interactionCount,
           () => mockState.interactionError,
         );
-      }
-      if (table === "offers") {
+      if (table === "offers")
         return buildSelectChain(
           () => mockState.offerCount,
           () => mockState.offerError,
         );
-      }
-      if (table === "school_status_history") {
+      if (table === "school_status_history")
         return buildSelectChain(
           () => mockState.historyCount,
           () => mockState.historyError,
         );
-      }
-      if (table === "social_media_posts") {
+      if (table === "social_media_posts")
         return buildSelectChain(
           () => mockState.postCount,
           () => mockState.postError,
         );
-      }
-      if (table === "documents") {
+      if (table === "documents")
         return buildSelectChain(
           () => mockState.docCount,
           () => mockState.docError,
         );
-      }
-      if (table === "events") {
+      if (table === "events")
         return buildSelectChain(
           () => mockState.eventCount,
           () => mockState.eventError,
         );
-      }
-      if (table === "suggestion") {
+      if (table === "suggestion")
         return buildSelectChain(
           () => mockState.suggestionCount,
           () => mockState.suggestionError,
         );
-      }
       return buildSelectChain(
         () => 0,
         () => null,
@@ -117,7 +129,6 @@ vi.mock("h3", async (importOriginal) => {
   return {
     ...actual,
     defineEventHandler: (fn: Function) => fn,
-    getRouterParam: vi.fn(() => mockState.schoolId),
     getHeader: vi.fn(() => mockState.authToken),
     getCookie: vi.fn(() => undefined),
     createError: (config: { statusCode: number; statusMessage: string }) => {
@@ -131,12 +142,22 @@ vi.mock("h3", async (importOriginal) => {
 });
 
 import { requireAuth } from "~/server/utils/auth";
+import { requireUuidParam } from "~/server/utils/validation";
 import { createServerSupabaseUserClient } from "~/server/utils/supabase";
 
-const mockEvent = { context: { params: { id: "test-school-id" } } } as any;
+const mockEvent = { context: { params: { id: SCHOOL_ID } } } as any;
+
+const getHandler = async () => {
+  const { default: handler } = await import(
+    "~/server/api/schools/[id]/deletion-blockers.get"
+  );
+  return handler;
+};
 
 describe("GET /api/schools/[id]/deletion-blockers", () => {
   beforeEach(async () => {
+    mockState.parentExists = true;
+    mockState.parentError = null;
     mockState.coachCount = 0;
     mockState.coachError = null;
     mockState.interactionCount = 0;
@@ -154,35 +175,54 @@ describe("GET /api/schools/[id]/deletion-blockers", () => {
     mockState.suggestionCount = 0;
     mockState.suggestionError = null;
     mockState.authToken = "Bearer valid-token";
-    mockState.schoolId = "test-school-id";
 
     vi.mocked(requireAuth).mockResolvedValue({
       id: "user-id",
       email: "user@example.com",
     });
+    vi.mocked(requireUuidParam).mockReturnValue(SCHOOL_ID);
 
     const h3 = await import("h3");
-    vi.mocked(h3.getRouterParam).mockReturnValue("test-school-id");
     vi.mocked(h3.getHeader).mockReturnValue("Bearer valid-token");
     vi.mocked(h3.getCookie).mockReturnValue(undefined);
   });
 
-  const getHandler = async () => {
-    const { default: handler } =
-      await import("~/server/api/schools/[id]/deletion-blockers.get");
-    return handler;
-  };
+  // ── Parent existence / ownership (regression: was 200 for any id) ──────────
 
-  describe("missing school ID", () => {
-    it("throws 400 when school ID is missing", async () => {
-      mockState.schoolId = "";
-      const { getRouterParam } = await import("h3");
-      vi.mocked(getRouterParam).mockReturnValue(undefined);
-
+  describe("nonexistent or non-owned school", () => {
+    it("throws 404 when the school row is not visible to the caller", async () => {
+      mockState.parentExists = false;
       const handler = await getHandler();
+
+      await expect(handler(mockEvent)).rejects.toMatchObject({
+        statusCode: 404,
+        message: "School not found",
+      });
+    });
+
+    it("throws 500 when the existence probe errors", async () => {
+      mockState.parentError = { message: "db down" };
+      const handler = await getHandler();
+
+      await expect(handler(mockEvent)).rejects.toMatchObject({
+        statusCode: 500,
+      });
+    });
+  });
+
+  describe("invalid id", () => {
+    it("propagates the 400 thrown by requireUuidParam", async () => {
+      vi.mocked(requireUuidParam).mockImplementation(() => {
+        const err = new Error("Invalid id: must be a valid UUID") as Error & {
+          statusCode: number;
+        };
+        err.statusCode = 400;
+        throw err;
+      });
+      const handler = await getHandler();
+
       await expect(handler(mockEvent)).rejects.toMatchObject({
         statusCode: 400,
-        message: "School ID is required",
       });
     });
   });
@@ -194,7 +234,7 @@ describe("GET /api/schools/[id]/deletion-blockers", () => {
 
       expect(result.canDelete).toBe(true);
       expect(result.blockers).toEqual([]);
-      expect(result.schoolId).toBe("test-school-id");
+      expect(result.schoolId).toBe(SCHOOL_ID);
       expect(result.message).toBe("School can be deleted successfully.");
     });
   });
@@ -389,7 +429,7 @@ describe("GET /api/schools/[id]/deletion-blockers", () => {
   });
 
   describe("DB errors are logged but do not throw", () => {
-    it("does not add a blocker when a query returns an error (warns and skips)", async () => {
+    it("does not add a blocker when a count query returns an error (warns and skips)", async () => {
       mockState.coachError = { message: "timeout" };
       mockState.interactionError = { message: "timeout" };
       const handler = await getHandler();

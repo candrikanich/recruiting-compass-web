@@ -258,3 +258,17 @@ Source: https://blog.sentry.io/structure-a-log/
 - **`domain.action` event names vs free text**: Sentry's convention is stable low-cardinality names like `payment.capture` with dynamic values pushed into attributes. Our messages are English sentences ("Feedback submitted", "Failed to cascade delete interaction") — fine for human reading, worse for aggregation/alerting by event type since the same logical event has slightly different phrasing per callsite.
 - **What we already do right**: `sanitizeLogData`/`sanitizeData` (`server/utils/logger.ts:167`, `utils/logger.ts:19`) already flatten+redact by `SENSITIVE_FIELDS`, matching the article's "no raw request/response bodies, PII, or nested payment data" rule. `eslint.config.js:182` bans raw `console.*` outside the logger files, matching their "lint to enforce" recommendation — we already have the enforcement layer they suggest.
 - **No snake_case/dot-notation key convention enforced**: article wants `payment.failure.reason_code` style scoped snake_case keys; our data objects use plain camelCase (`{ feedbackType, userId }`) with no scoping convention. Low priority — matters more once we're querying logs in an aggregator, not just grepping.
+
+---
+
+## How to Design URLs: Routing, Query Parameters, and Fragments — 2026-08-10
+Source: https://www.jstools.space/blog/url-design-routing-query-parameters-fragments/
+
+- **Path = identity, query = optional state**: Never encode transient UI state (sort, view mode, open panel) in the Nuxt path. Example: prefer `/schools?sort=fit&view=grid` over `/schools/sort/fit/view/grid` — path stays a stable, linkable resource.
+- **Hybrid slug+ID route params**: For renameable resources use `/[id]-[slug]` and extract the canonical ID with a regex, redirecting stale slugs. Example: `const m = /^(\d+)(?:-|$)/.exec(route.params.segment)` — title can change without breaking the link.
+- **SPA fallback must not 200 real 404s**: Nuxt/Nitro catch-all shell fallback should exclude asset files, `/api/**`, and genuinely-missing resources — otherwise broken URLs return `200 OK` instead of a useful 404 (hurts crawlers + monitoring).
+- **Parse query values, never trust them**: Every query value is a string and is user input even when our own UI generated it — validate/convert at the boundary (Zod or a `readPositiveInteger` helper with `Number.isSafeInteger(v) && v > 0`), and clamp caps like `Math.min(limit, 100)`.
+- **Presence vs empty: use `!== null`, not truthiness**: `URLSearchParams.get()` returns `""` for `?sort=` and `null` for a missing key; both `?preview` and `?preview=` yield `""`. Gate on `params.get('sort') !== null` so an explicitly-empty value isn't silently dropped.
+- **Repeated keys for array params**: Prefer `?tag=a&tag=b` (native `params.getAll('tag')`) over comma-joined values — avoids ambiguity when a value itself contains a comma; document the chosen format so client and Nitro parse it identically.
+- **Use the `URL`/`URLSearchParams` API, never string-split**: Splitting on `/`, `?`, `&` breaks on encoded values, credentials, IPv6 hosts, and nested URLs — construct with `new URL(...)` and read `.pathname`/`.searchParams`.
+- **Fragments never reach the server, and aren't secret**: `#...` is stripped from the HTTP request, so it's useless for SSR-required state; and despite not being sent, it still leaks via history, copied links, extensions, and screenshots — never put tokens there.

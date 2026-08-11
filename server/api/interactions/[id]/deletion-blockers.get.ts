@@ -1,5 +1,7 @@
-import { defineEventHandler, getRouterParam, createError } from "h3";
+import { defineEventHandler, getHeader, getCookie, createError } from "h3";
+import { createServerSupabaseUserClient } from "~/server/utils/supabase";
 import { requireAuth } from "~/server/utils/auth";
+import { requireUuidParam } from "~/server/utils/validation";
 import { useLogger } from "~/server/utils/logger";
 
 interface BlockerInfo {
@@ -19,18 +21,45 @@ interface BlockerInfo {
  */
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "interactions/deletion-blockers");
-  const interactionId = getRouterParam(event, "id");
   logger.info("Checking deletion blockers");
-
-  if (!interactionId) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: "Interaction ID is required",
-    });
-  }
 
   // Require auth before revealing schema info
   await requireAuth(event);
+  const interactionId = requireUuidParam(event, "id");
+
+  const authHeader = getHeader(event, "authorization");
+  const token: string | null = authHeader?.startsWith("Bearer ")
+    ? authHeader.slice(7)
+    : getCookie(event, "sb-access-token") || null;
+  if (!token) {
+    throw createError({
+      statusCode: 401,
+      statusMessage: "Unauthorized - no authentication token",
+    });
+  }
+  const client = createServerSupabaseUserClient(token);
+
+  // Verify the interaction exists and is visible to this user (RLS-scoped).
+  // A null row means it is missing or not owned — return 404 rather than a
+  // misleading canDelete:true for a resource the caller cannot see.
+  const { data: interaction, error: existenceError } = await client
+    .from("interactions")
+    .select("id")
+    .eq("id", interactionId)
+    .maybeSingle();
+  if (existenceError) {
+    logger.error("Failed to verify interaction existence", existenceError);
+    throw createError({
+      statusCode: 500,
+      statusMessage: "Failed to check deletion blockers",
+    });
+  }
+  if (!interaction) {
+    throw createError({
+      statusCode: 404,
+      statusMessage: "Interaction not found",
+    });
+  }
 
   const blockers: BlockerInfo[] = [];
 

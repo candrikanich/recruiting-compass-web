@@ -1,7 +1,19 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
+const mockState = {
+  parentExists: true,
+  parentError: null as object | null,
+  authToken: "Bearer valid-token",
+};
+
+const INTERACTION_ID = "33333333-3333-3333-3333-333333333333";
+
 vi.mock("~/server/utils/auth", () => ({
-  requireAuth: vi.fn(),
+  requireAuth: vi.fn(async () => ({ id: "user-id", email: "user@example.com" })),
+}));
+
+vi.mock("~/server/utils/validation", () => ({
+  requireUuidParam: vi.fn(() => INTERACTION_ID),
 }));
 
 vi.mock("~/server/utils/logger", () => ({
@@ -13,12 +25,22 @@ vi.mock("~/server/utils/logger", () => ({
   }),
 }));
 
+const mockMaybeSingle = vi.fn();
+const mockEq = vi.fn(() => ({ maybeSingle: mockMaybeSingle }));
+const mockSelect = vi.fn(() => ({ eq: mockEq }));
+const mockFrom = vi.fn(() => ({ select: mockSelect }));
+
+vi.mock("~/server/utils/supabase", () => ({
+  createServerSupabaseUserClient: vi.fn(() => ({ from: mockFrom })),
+}));
+
 vi.mock("h3", async (importOriginal) => {
   const actual = await importOriginal<typeof import("h3")>();
   return {
     ...actual,
     defineEventHandler: (fn: Function) => fn,
-    getRouterParam: vi.fn().mockReturnValue("test-interaction-id"),
+    getHeader: vi.fn(() => mockState.authToken),
+    getCookie: vi.fn(() => undefined),
     createError: (config: { statusCode: number; statusMessage: string }) => {
       const err = new Error(config.statusMessage) as Error & {
         statusCode: number;
@@ -30,83 +52,106 @@ vi.mock("h3", async (importOriginal) => {
 });
 
 import { requireAuth } from "~/server/utils/auth";
+import { requireUuidParam } from "~/server/utils/validation";
+import { createServerSupabaseUserClient } from "~/server/utils/supabase";
 
-const mockEvent = { context: { params: { id: "test-interaction-id" } } } as any;
+const mockEvent = { context: { params: { id: INTERACTION_ID } } } as any;
+
+const getHandler = async () => {
+  const { default: handler } = await import(
+    "~/server/api/interactions/[id]/deletion-blockers.get"
+  );
+  return handler;
+};
 
 describe("GET /api/interactions/[id]/deletion-blockers", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
+    mockState.parentExists = true;
+    mockState.parentError = null;
+    mockState.authToken = "Bearer valid-token";
     vi.clearAllMocks();
-    vi.resetModules();
+
+    vi.mocked(requireAuth).mockResolvedValue({
+      id: "user-id",
+      email: "user@example.com",
+    });
+    vi.mocked(requireUuidParam).mockReturnValue(INTERACTION_ID);
+    mockMaybeSingle.mockImplementation(async () => ({
+      data: mockState.parentExists ? { id: INTERACTION_ID } : null,
+      error: mockState.parentError,
+    }));
+
+    const h3 = await import("h3");
+    vi.mocked(h3.getHeader).mockReturnValue("Bearer valid-token");
+    vi.mocked(h3.getCookie).mockReturnValue(undefined);
+  });
+
+  // ── Parent existence / ownership (regression: was 200 for any id) ──────────
+
+  describe("nonexistent or non-owned interaction", () => {
+    it("throws 404 when the interaction row is not visible to the caller", async () => {
+      mockState.parentExists = false;
+      const handler = await getHandler();
+
+      await expect(handler(mockEvent)).rejects.toMatchObject({
+        statusCode: 404,
+        message: "Interaction not found",
+      });
+    });
+
+    it("throws 500 when the existence probe errors", async () => {
+      mockState.parentError = { message: "db down" };
+      const handler = await getHandler();
+
+      await expect(handler(mockEvent)).rejects.toMatchObject({
+        statusCode: 500,
+      });
+    });
+
+    it("verifies existence against the interactions table by id", async () => {
+      const handler = await getHandler();
+      await handler(mockEvent);
+
+      expect(mockFrom).toHaveBeenCalledWith("interactions");
+      expect(mockSelect).toHaveBeenCalledWith("id");
+      expect(mockEq).toHaveBeenCalledWith("id", INTERACTION_ID);
+    });
   });
 
   describe("happy path — no blockers", () => {
-    it("returns canDelete:true and empty blockers array when no FK references exist", async () => {
-      vi.mocked(requireAuth).mockResolvedValue({
-        id: "user-id",
-        email: "user@example.com",
-      });
-
-      const { getRouterParam } = await import("h3");
-      vi.mocked(getRouterParam).mockReturnValue("test-interaction-id");
-
-      const { default: handler } =
-        await import("~/server/api/interactions/[id]/deletion-blockers.get");
-
+    it("returns canDelete:true and empty blockers when the interaction exists", async () => {
+      const handler = await getHandler();
       const result = await handler(mockEvent);
 
       expect(result.canDelete).toBe(true);
       expect(result.blockers).toEqual([]);
-      expect(result.interactionId).toBe("test-interaction-id");
+      expect(result.interactionId).toBe(INTERACTION_ID);
       expect(result.message).toBe("Interaction can be deleted successfully.");
-    });
-  });
-
-  describe("missing ID", () => {
-    it("throws 400 when interaction ID is missing from router params", async () => {
-      const { getRouterParam } = await import("h3");
-      vi.mocked(getRouterParam).mockReturnValue(undefined);
-
-      const { default: handler } =
-        await import("~/server/api/interactions/[id]/deletion-blockers.get");
-
-      await expect(handler(mockEvent)).rejects.toMatchObject({
-        statusCode: 400,
-        message: "Interaction ID is required",
-      });
     });
   });
 
   describe("auth failure", () => {
     it("re-throws H3Error from requireAuth without wrapping", async () => {
-      const { getRouterParam } = await import("h3");
-      vi.mocked(getRouterParam).mockReturnValue("test-interaction-id");
-
       const h3Error = Object.assign(new Error("Unauthorized"), {
         statusCode: 401,
       });
       vi.mocked(requireAuth).mockRejectedValue(h3Error);
 
-      const { default: handler } =
-        await import("~/server/api/interactions/[id]/deletion-blockers.get");
-
+      const handler = await getHandler();
       await expect(handler(mockEvent)).rejects.toMatchObject({
         statusCode: 401,
         message: "Unauthorized",
       });
+      expect(createServerSupabaseUserClient).not.toHaveBeenCalled();
     });
 
     it("re-throws 403 Forbidden from requireAuth", async () => {
-      const { getRouterParam } = await import("h3");
-      vi.mocked(getRouterParam).mockReturnValue("test-interaction-id");
-
       const h3Error = Object.assign(new Error("Forbidden"), {
         statusCode: 403,
       });
       vi.mocked(requireAuth).mockRejectedValue(h3Error);
 
-      const { default: handler } =
-        await import("~/server/api/interactions/[id]/deletion-blockers.get");
-
+      const handler = await getHandler();
       await expect(handler(mockEvent)).rejects.toMatchObject({
         statusCode: 403,
         message: "Forbidden",
@@ -114,21 +159,23 @@ describe("GET /api/interactions/[id]/deletion-blockers", () => {
     });
   });
 
+  describe("missing token", () => {
+    it("throws 401 when no authorization token is present", async () => {
+      mockState.authToken = "";
+      const { getHeader } = await import("h3");
+      vi.mocked(getHeader).mockReturnValue("");
+
+      const handler = await getHandler();
+      await expect(handler(mockEvent)).rejects.toMatchObject({
+        statusCode: 401,
+      });
+    });
+  });
+
   describe("response shape", () => {
     it("always returns interactionId, canDelete, blockers, and message fields", async () => {
-      vi.mocked(requireAuth).mockResolvedValue({
-        id: "user-id",
-        email: "user@example.com",
-      });
-
-      const { getRouterParam } = await import("h3");
-      vi.mocked(getRouterParam).mockReturnValue("abc-123");
-
-      const { default: handler } =
-        await import("~/server/api/interactions/[id]/deletion-blockers.get");
-
-      const mockEventWithId = { context: { params: { id: "abc-123" } } } as any;
-      const result = await handler(mockEventWithId);
+      const handler = await getHandler();
+      const result = await handler(mockEvent);
 
       expect(result).toHaveProperty("interactionId");
       expect(result).toHaveProperty("canDelete");
