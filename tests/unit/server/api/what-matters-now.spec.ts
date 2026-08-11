@@ -115,7 +115,7 @@ describe("GET /api/athlete/what-matters-now", () => {
           data: [
             {
               id: "task-sat",
-              category: "academic-standing",
+              category: "academic",
               grade_level: 11,
               title: "Take official SAT or ACT",
               required: true,
@@ -124,7 +124,7 @@ describe("GET /api/athlete/what-matters-now", () => {
             },
             {
               id: "task-coach",
-              category: "communication",
+              category: "athletic",
               grade_level: 11,
               title: "Increase Coach Communications Cadence",
               required: true,
@@ -151,7 +151,7 @@ describe("GET /api/athlete/what-matters-now", () => {
     } as never);
 
     expect(Array.isArray(result)).toBe(true);
-    // academic-standing (priority 10) beats communication (priority 8)
+    // academic (priority 10) beats athletic (priority 8)
     expect(result[0].taskId).toBe("task-sat");
     expect(result[0].title).toBe("Take official SAT or ACT");
   });

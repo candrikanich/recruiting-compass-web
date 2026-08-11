@@ -9,14 +9,18 @@ export interface WhatMattersItem {
   isRequired: boolean;
 }
 
+// Keys MUST match the `task.category` values actually stored in the DB
+// (academic / recruiting / athletic / exposure / mindset). An earlier map used
+// a fictional taxonomy (academic-standing, visibility-building, …) that matched
+// no rows, so every task fell to the `|| 5` default — a total tie that made the
+// #1 "what matters now" task arbitrary (and different between web and iOS,
+// which issue independently-ordered queries).
 const CATEGORY_PRIORITY: Record<string, number> = {
-  "academic-standing": 10,
-  "visibility-building": 8,
-  communication: 8,
-  evaluation: 7,
-  "decision-making": 9,
-  documentation: 6,
-  training: 5,
+  academic: 10,
+  recruiting: 9,
+  athletic: 8,
+  exposure: 7,
+  mindset: 5,
 };
 
 export function getWhatMattersNow(params: {
@@ -62,8 +66,12 @@ export function getWhatMattersNow(params: {
     };
   });
 
-  // Sort by priority (highest first) and return top 5
-  return itemsWithPriority.sort((a, b) => b.priority - a.priority).slice(0, 5);
+  // Sort by priority (highest first), then taskId as a deterministic tiebreaker
+  // so web and iOS — which fetch the task list via separate, independently
+  // ordered queries — always surface the SAME top task on a priority tie.
+  return itemsWithPriority
+    .sort((a, b) => b.priority - a.priority || a.taskId.localeCompare(b.taskId))
+    .slice(0, 5);
 }
 
 export function getPriorityLabel(priority: number): string {
