@@ -16,6 +16,17 @@ Tracks mistake patterns (with recurrence counts) and process insights.
 
 ## Bug & Mistake Patterns
 
+### Searching for Existing Tests Must Cover Both .spec.ts AND .test.ts
+
+**Times seen:** 1 | **Last seen:** 2026-08-11
+**Context:** Hardening the three `deletion-blockers` endpoints, I wrote three "new" spec files with `Write` — silently overwriting existing suites (`schools` 16 tests, `coaches` 8, `interactions` 5). My discovery grep used `find ... -name '*.test.ts'`, which does not match `.spec.ts`; a subagent also reported "no existing tests." First commit was net **−651 lines** (destroyed coverage). Caught it only in the `git show --stat` diff, recovered old versions from `HEAD~1`, merged old + new, amended.
+**Root Cause:** This repo uses `.spec.ts` for unit tests, not `.test.ts`. A single-extension search returns zero hits and reads as "no tests exist." `Write` on an existing file replaces it wholesale with no merge.
+**Prevention:**
+- Search for existing tests with BOTH extensions: `find ... \( -name '*.spec.ts' -o -name '*.test.ts' \)` or `grep -rl <symbol> tests/`.
+- A "fix" commit whose `git show --stat` shows large **deletions** in files you meant to *add* to is a red flag — inspect before trusting the commit.
+- Before `Write` on a path that may exist, `ls`/Read it first; prefer `Edit` (append) over `Write` (replace) when augmenting a file.
+- Don't trust a subagent's "no existing X" when its search method is unverified — confirm the glob it used.
+
 ### Pre-Push Gate Runs Lint + Type-Check but NOT Tests — Run npm test Yourself
 
 **Times seen:** 1 | **Last seen:** 2026-08-08
