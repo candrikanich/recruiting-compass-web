@@ -1,6 +1,9 @@
 import type { H3Event } from "h3";
 import { createError } from "h3";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "~/types/database";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
+import { getUserRole } from "~/server/utils/auth";
 import { useLogger } from "~/server/utils/logger";
 
 /**
@@ -60,4 +63,43 @@ export async function resolveTargetAthleteId(
   }
 
   return requestedAthleteId;
+}
+
+/**
+ * Resolve which athlete a viewer's dashboard should render.
+ *
+ * A player views their own data. A parent (no explicit athleteId param) is
+ * auto-resolved to the linked player in their family unit, so parent and player
+ * see the SAME derived timeline. Falls back to the caller when the viewer is not
+ * a parent or has no linked player. This is the auto-resolution counterpart to
+ * `resolveTargetAthleteId`, which authorizes an explicitly requested athleteId.
+ */
+export async function resolveViewerAthleteId(
+  supabase: SupabaseClient<Database>,
+  userId: string,
+): Promise<string> {
+  const role = await getUserRole(userId, supabase);
+  if (role !== "parent") {
+    return userId;
+  }
+
+  const { data: familyMembership } = await supabase
+    .from("family_members")
+    .select("family_unit_id")
+    .eq("user_id", userId)
+    .eq("role", "parent")
+    .maybeSingle();
+
+  if (!familyMembership) {
+    return userId;
+  }
+
+  const { data: playerMember } = await supabase
+    .from("family_members")
+    .select("user_id")
+    .eq("family_unit_id", familyMembership.family_unit_id)
+    .eq("role", "player")
+    .maybeSingle();
+
+  return playerMember?.user_id ?? userId;
 }

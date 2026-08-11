@@ -16,6 +16,16 @@ Tracks mistake patterns (with recurrence counts) and process insights.
 
 ## Bug & Mistake Patterns
 
+### Forked web-to-ios-handoff Latches Onto Stale planning/iOS_SPEC_* Instead of the Current Task
+
+**Times seen:** 1 | **Last seen:** 2026-08-11
+**Context:** Fixing the web/iOS dashboard-timeline desync, I dispatched the `web-to-ios-handoff` skill (forked, general-purpose) to write an iOS spec for consuming the new shared endpoints. It instead found an unrelated existing spec (`iOS_SPEC_player-details-tab-reorg`) and produced a parity *grade* of that, never writing the timeline spec I needed. Wasted a 92s fork; I wrote the correct spec myself.
+**Root Cause:** The skill's discovery step + `CLAUDE.md`'s "ls planning/iOS_SPEC_* before generating" nudge biases it toward the newest existing spec. With no explicit feature name pinned, it treated the most recent `iOS_SPEC_*` as the subject.
+**Prevention:**
+- When dispatching the handoff skill, name the feature and the target spec filename explicitly in the prompt ("write NEW spec at planning/iOS_SPEC_<slug>-<date>.md for <feature>; do not grade existing specs").
+- For a spec I can write from context already in-session, writing it directly is faster than forking.
+- Verify a forked skill's output is about the task I gave it before trusting it — a "READY TO BUILD" verdict on the wrong feature is worse than an error.
+
 ### Searching for Existing Tests Must Cover Both .spec.ts AND .test.ts
 
 **Times seen:** 1 | **Last seen:** 2026-08-11
