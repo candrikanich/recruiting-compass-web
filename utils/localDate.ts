@@ -67,9 +67,9 @@ export function compareDateOnlyStrings(a: string, b: string): number {
   return dateA.getTime() - dateB.getTime();
 }
 
-/** Whole local days between two date-only strings (`b` minus `a`). */
+/** Whole local days between two date-only strings (`b` minus `a` — positive when `b` is later). */
 export function daysBetweenDateOnlyStrings(a: string, b: string): number {
-  return Math.round(compareDateOnlyStrings(a, b) / MS_PER_DAY);
+  return Math.round(compareDateOnlyStrings(b, a) / MS_PER_DAY);
 }
 
 /**

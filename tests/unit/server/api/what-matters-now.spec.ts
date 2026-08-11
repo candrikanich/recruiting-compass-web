@@ -81,6 +81,81 @@ describe("resolveViewerAthleteId", () => {
 describe("GET /api/athlete/what-matters-now", () => {
   beforeEach(() => vi.clearAllMocks());
 
+  /**
+   * A per-table Supabase stub. Each `.from(table)` returns a builder that is
+   * both awaitable (for `await from().select().eq(...)`) and terminable via
+   * `.maybeSingle()`, resolving to the result queued for that table.
+   */
+  function makeSupabase(byTable: Record<string, { data: unknown; error: unknown }>) {
+    return {
+      from(table: string) {
+        const result = byTable[table] ?? { data: null, error: null };
+        const builder: Record<string, unknown> = {
+          select: () => builder,
+          eq: () => builder,
+          maybeSingle: () => Promise.resolve(result),
+          then: (resolve: (v: unknown) => unknown, reject: (e: unknown) => unknown) =>
+            Promise.resolve(result).then(resolve, reject),
+        };
+        return builder;
+      },
+    };
+  }
+
+  it("returns the highest-priority current-grade task for the athlete", async () => {
+    const { requireAuth, getUserRole } = await import("~/server/utils/auth");
+    const { createServerSupabaseClient } = await import("~/server/utils/supabase");
+    vi.mocked(requireAuth).mockResolvedValue({ id: "player-1" } as never);
+    vi.mocked(getUserRole).mockResolvedValue("player" as never);
+
+    vi.mocked(createServerSupabaseClient).mockReturnValue(
+      makeSupabase({
+        users: { data: { current_phase: "junior" }, error: null },
+        task: {
+          data: [
+            {
+              id: "task-sat",
+              category: "academic",
+              grade_level: 11,
+              title: "Take official SAT or ACT",
+              required: true,
+              dependency_task_ids: [],
+              why_it_matters: "Scores drive eligibility.",
+            },
+            {
+              id: "task-coach",
+              category: "athletic",
+              grade_level: 11,
+              title: "Increase Coach Communications Cadence",
+              required: true,
+              dependency_task_ids: [],
+              why_it_matters: "Stay on coaches' radar.",
+            },
+          ],
+          error: null,
+        },
+        // one unrelated task completed — exercises the completion-status merge
+        athlete_task: {
+          data: [{ task_id: "task-other", status: "completed" }],
+          error: null,
+        },
+      }) as never,
+    );
+
+    const { default: handler } = await import(
+      "~/server/api/athlete/what-matters-now.get"
+    );
+    const result = await handler({
+      context: {},
+      node: { req: { headers: {} }, res: {} },
+    } as never);
+
+    expect(Array.isArray(result)).toBe(true);
+    // academic (priority 10) beats athletic (priority 8)
+    expect(result[0].taskId).toBe("task-sat");
+    expect(result[0].title).toBe("Take official SAT or ACT");
+  });
+
   it("rejects unauthenticated requests with 401", async () => {
     const { requireAuth } = await import("~/server/utils/auth");
     const { createServerSupabaseClient } = await import("~/server/utils/supabase");
