@@ -149,17 +149,14 @@ describe.each(TIMEZONES)("localDate utilities (TZ=%s)", (tz) => {
     });
   });
 
-  // NOTE: the implementation returns `a - b` days (comparator-consistent with
-  // compareDateOnlyStrings, which returns <0 when `a` is earlier). The JSDoc on
-  // daysBetweenDateOnlyStrings says "b minus a" — that comment is inaccurate;
-  // these assertions pin the actual behavior.
+  // `b - a`: positive when the second date is later (matches the JSDoc).
   describe("daysBetweenDateOnlyStrings", () => {
-    it("returns a negative count when the first date is earlier", () => {
-      expect(daysBetweenDateOnlyStrings("2027-06-10", "2027-06-13")).toBe(-3);
+    it("is positive when the second date is later", () => {
+      expect(daysBetweenDateOnlyStrings("2027-06-10", "2027-06-13")).toBe(3);
     });
 
-    it("returns a positive count when the first date is later", () => {
-      expect(daysBetweenDateOnlyStrings("2027-06-13", "2027-06-10")).toBe(3);
+    it("is negative when the second date is earlier", () => {
+      expect(daysBetweenDateOnlyStrings("2027-06-13", "2027-06-10")).toBe(-3);
     });
 
     it("is zero for the same day", () => {
@@ -167,7 +164,7 @@ describe.each(TIMEZONES)("localDate utilities (TZ=%s)", (tz) => {
     });
 
     it("counts across a month boundary", () => {
-      expect(daysBetweenDateOnlyStrings("2027-07-01", "2027-06-28")).toBe(3);
+      expect(daysBetweenDateOnlyStrings("2027-06-28", "2027-07-01")).toBe(3);
     });
   });
 });
