@@ -10,14 +10,15 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { H3Event } from "h3";
 
-vi.mock("~/server/utils/logger", () => ({
-  useLogger: () => ({
+vi.mock("~/server/utils/logger", () => {
+  const stub = () => ({
     info: vi.fn(),
     error: vi.fn(),
     warn: vi.fn(),
     debug: vi.fn(),
-  }),
-}));
+  });
+  return { useLogger: stub, createLogger: stub };
+});
 
 const mockSupabaseAdmin = {
   from: vi.fn(),

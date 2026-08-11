@@ -16,6 +16,27 @@ Tracks mistake patterns (with recurrence counts) and process insights.
 
 ## Bug & Mistake Patterns
 
+### Forked web-to-ios-handoff Latches Onto Stale planning/iOS_SPEC_* Instead of the Current Task
+
+**Times seen:** 1 | **Last seen:** 2026-08-11
+**Context:** Fixing the web/iOS dashboard-timeline desync, I dispatched the `web-to-ios-handoff` skill (forked, general-purpose) to write an iOS spec for consuming the new shared endpoints. It instead found an unrelated existing spec (`iOS_SPEC_player-details-tab-reorg`) and produced a parity *grade* of that, never writing the timeline spec I needed. Wasted a 92s fork; I wrote the correct spec myself.
+**Root Cause:** The skill's discovery step + `CLAUDE.md`'s "ls planning/iOS_SPEC_* before generating" nudge biases it toward the newest existing spec. With no explicit feature name pinned, it treated the most recent `iOS_SPEC_*` as the subject.
+**Prevention:**
+- When dispatching the handoff skill, name the feature and the target spec filename explicitly in the prompt ("write NEW spec at planning/iOS_SPEC_<slug>-<date>.md for <feature>; do not grade existing specs").
+- For a spec I can write from context already in-session, writing it directly is faster than forking.
+- Verify a forked skill's output is about the task I gave it before trusting it — a "READY TO BUILD" verdict on the wrong feature is worse than an error.
+
+### Searching for Existing Tests Must Cover Both .spec.ts AND .test.ts
+
+**Times seen:** 1 | **Last seen:** 2026-08-11
+**Context:** Hardening the three `deletion-blockers` endpoints, I wrote three "new" spec files with `Write` — silently overwriting existing suites (`schools` 16 tests, `coaches` 8, `interactions` 5). My discovery grep used `find ... -name '*.test.ts'`, which does not match `.spec.ts`; a subagent also reported "no existing tests." First commit was net **−651 lines** (destroyed coverage). Caught it only in the `git show --stat` diff, recovered old versions from `HEAD~1`, merged old + new, amended.
+**Root Cause:** This repo uses `.spec.ts` for unit tests, not `.test.ts`. A single-extension search returns zero hits and reads as "no tests exist." `Write` on an existing file replaces it wholesale with no merge.
+**Prevention:**
+- Search for existing tests with BOTH extensions: `find ... \( -name '*.spec.ts' -o -name '*.test.ts' \)` or `grep -rl <symbol> tests/`.
+- A "fix" commit whose `git show --stat` shows large **deletions** in files you meant to *add* to is a red flag — inspect before trusting the commit.
+- Before `Write` on a path that may exist, `ls`/Read it first; prefer `Edit` (append) over `Write` (replace) when augmenting a file.
+- Don't trust a subagent's "no existing X" when its search method is unverified — confirm the glob it used.
+
 ### Pre-Push Gate Runs Lint + Type-Check but NOT Tests — Run npm test Yourself
 
 **Times seen:** 1 | **Last seen:** 2026-08-08
@@ -258,3 +279,17 @@ Source: https://blog.sentry.io/structure-a-log/
 - **`domain.action` event names vs free text**: Sentry's convention is stable low-cardinality names like `payment.capture` with dynamic values pushed into attributes. Our messages are English sentences ("Feedback submitted", "Failed to cascade delete interaction") — fine for human reading, worse for aggregation/alerting by event type since the same logical event has slightly different phrasing per callsite.
 - **What we already do right**: `sanitizeLogData`/`sanitizeData` (`server/utils/logger.ts:167`, `utils/logger.ts:19`) already flatten+redact by `SENSITIVE_FIELDS`, matching the article's "no raw request/response bodies, PII, or nested payment data" rule. `eslint.config.js:182` bans raw `console.*` outside the logger files, matching their "lint to enforce" recommendation — we already have the enforcement layer they suggest.
 - **No snake_case/dot-notation key convention enforced**: article wants `payment.failure.reason_code` style scoped snake_case keys; our data objects use plain camelCase (`{ feedbackType, userId }`) with no scoping convention. Low priority — matters more once we're querying logs in an aggregator, not just grepping.
+
+---
+
+## How to Design URLs: Routing, Query Parameters, and Fragments — 2026-08-10
+Source: https://www.jstools.space/blog/url-design-routing-query-parameters-fragments/
+
+- **Path = identity, query = optional state**: Never encode transient UI state (sort, view mode, open panel) in the Nuxt path. Example: prefer `/schools?sort=fit&view=grid` over `/schools/sort/fit/view/grid` — path stays a stable, linkable resource.
+- **Hybrid slug+ID route params**: For renameable resources use `/[id]-[slug]` and extract the canonical ID with a regex, redirecting stale slugs. Example: `const m = /^(\d+)(?:-|$)/.exec(route.params.segment)` — title can change without breaking the link.
+- **SPA fallback must not 200 real 404s**: Nuxt/Nitro catch-all shell fallback should exclude asset files, `/api/**`, and genuinely-missing resources — otherwise broken URLs return `200 OK` instead of a useful 404 (hurts crawlers + monitoring).
+- **Parse query values, never trust them**: Every query value is a string and is user input even when our own UI generated it — validate/convert at the boundary (Zod or a `readPositiveInteger` helper with `Number.isSafeInteger(v) && v > 0`), and clamp caps like `Math.min(limit, 100)`.
+- **Presence vs empty: use `!== null`, not truthiness**: `URLSearchParams.get()` returns `""` for `?sort=` and `null` for a missing key; both `?preview` and `?preview=` yield `""`. Gate on `params.get('sort') !== null` so an explicitly-empty value isn't silently dropped.
+- **Repeated keys for array params**: Prefer `?tag=a&tag=b` (native `params.getAll('tag')`) over comma-joined values — avoids ambiguity when a value itself contains a comma; document the chosen format so client and Nitro parse it identically.
+- **Use the `URL`/`URLSearchParams` API, never string-split**: Splitting on `/`, `?`, `&` breaks on encoded values, credentials, IPv6 hosts, and nested URLs — construct with `new URL(...)` and read `.pathname`/`.searchParams`.
+- **Fragments never reach the server, and aren't secret**: `#...` is stripped from the HTTP request, so it's useless for SSR-required state; and despite not being sent, it still leaks via history, copied links, extensions, and screenshots — never put tokens there.

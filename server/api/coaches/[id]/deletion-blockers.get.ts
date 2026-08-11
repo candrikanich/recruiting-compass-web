@@ -37,6 +37,28 @@ export default defineEventHandler(async (event) => {
   const client = createServerSupabaseUserClient(token);
   const logger = useLogger(event, "coaches/deletion-blockers");
 
+  // Verify the coach exists and is visible to this user (RLS-scoped) before
+  // counting child rows. A null row means missing or not owned — return 404
+  // rather than leaking a canDelete verdict for a resource the caller can't see.
+  const { data: coach, error: existenceError } = await client
+    .from("coaches")
+    .select("id")
+    .eq("id", coachId)
+    .maybeSingle();
+  if (existenceError) {
+    logger.error("Failed to verify coach existence", existenceError);
+    throw createError({
+      statusCode: 500,
+      statusMessage: "Failed to check deletion blockers",
+    });
+  }
+  if (!coach) {
+    throw createError({
+      statusCode: 404,
+      statusMessage: "Coach not found",
+    });
+  }
+
   const blockers: BlockerInfo[] = [];
 
   // Check interactions

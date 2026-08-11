@@ -1,12 +1,7 @@
-import {
-  defineEventHandler,
-  getRouterParam,
-  createError,
-  getHeader,
-  getCookie,
-} from "h3";
+import { defineEventHandler, createError, getHeader, getCookie } from "h3";
 import { createServerSupabaseUserClient } from "~/server/utils/supabase";
 import { requireAuth } from "~/server/utils/auth";
+import { requireUuidParam } from "~/server/utils/validation";
 import { useLogger } from "~/server/utils/logger";
 
 interface BlockerInfo {
@@ -25,17 +20,10 @@ interface BlockerInfo {
  * - message: User-friendly message explaining what's blocking deletion
  */
 export default defineEventHandler(async (event) => {
-  const schoolId = getRouterParam(event, "id");
-
-  if (!schoolId) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: "School ID is required",
-    });
-  }
-
   const logger = useLogger(event, "schools/deletion-blockers");
   await requireAuth(event);
+  const schoolId = requireUuidParam(event, "id");
+
   const authHeader = getHeader(event, "authorization");
   const token: string | null = authHeader?.startsWith("Bearer ")
     ? authHeader.slice(7)
@@ -47,6 +35,28 @@ export default defineEventHandler(async (event) => {
     });
   }
   const client = createServerSupabaseUserClient(token);
+
+  // Verify the school exists and is visible to this user (RLS-scoped) before
+  // counting child rows. A null row means missing or not owned — return 404
+  // rather than leaking a canDelete verdict for a resource the caller can't see.
+  const { data: school, error: existenceError } = await client
+    .from("schools")
+    .select("id")
+    .eq("id", schoolId)
+    .maybeSingle();
+  if (existenceError) {
+    logger.error("Failed to verify school existence", existenceError);
+    throw createError({
+      statusCode: 500,
+      statusMessage: "Failed to check deletion blockers",
+    });
+  }
+  if (!school) {
+    throw createError({
+      statusCode: 404,
+      statusMessage: "School not found",
+    });
+  }
 
   const blockers: BlockerInfo[] = [];
 
