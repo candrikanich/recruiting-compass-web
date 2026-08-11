@@ -5,6 +5,7 @@ import {
   getLocalToday,
   isSameLocalDay,
   compareDateOnlyStrings,
+  daysBetweenDateOnlyStrings,
   exclusiveEndOfDay,
 } from "~/utils/localDate";
 
@@ -145,6 +146,28 @@ describe.each(TIMEZONES)("localDate utilities (TZ=%s)", (tz) => {
       expect(bound.getFullYear()).toBe(2028);
       expect(bound.getMonth()).toBe(0);
       expect(bound.getDate()).toBe(1);
+    });
+  });
+
+  // NOTE: the implementation returns `a - b` days (comparator-consistent with
+  // compareDateOnlyStrings, which returns <0 when `a` is earlier). The JSDoc on
+  // daysBetweenDateOnlyStrings says "b minus a" — that comment is inaccurate;
+  // these assertions pin the actual behavior.
+  describe("daysBetweenDateOnlyStrings", () => {
+    it("returns a negative count when the first date is earlier", () => {
+      expect(daysBetweenDateOnlyStrings("2027-06-10", "2027-06-13")).toBe(-3);
+    });
+
+    it("returns a positive count when the first date is later", () => {
+      expect(daysBetweenDateOnlyStrings("2027-06-13", "2027-06-10")).toBe(3);
+    });
+
+    it("is zero for the same day", () => {
+      expect(daysBetweenDateOnlyStrings("2027-06-10", "2027-06-10")).toBe(0);
+    });
+
+    it("counts across a month boundary", () => {
+      expect(daysBetweenDateOnlyStrings("2027-07-01", "2027-06-28")).toBe(3);
     });
   });
 });

@@ -9,7 +9,7 @@ const createMockTask = (
   id: "task-1",
   title: "Test Task",
   description: "Test description",
-  category: "visibility-building",
+  category: "exposure",
   grade_level: 9,
   required: true,
   why_it_matters: "This is important because...",
@@ -122,14 +122,14 @@ describe("whatMattersNow", () => {
       const tasks: TaskWithStatus[] = [
         createMockTask({
           id: "task-1",
-          category: "academic-standing",
+          category: "academic",
           grade_level: 9,
           required: true,
           why_it_matters: "Academic matters",
         }),
         createMockTask({
           id: "task-2",
-          category: "training",
+          category: "mindset",
           grade_level: 9,
           required: true,
           why_it_matters: "Training matters",
@@ -142,15 +142,15 @@ describe("whatMattersNow", () => {
       });
 
       // Academic-standing should come first (higher priority)
-      expect(result[0].category).toBe("academic-standing");
-      expect(result[1].category).toBe("training");
+      expect(result[0].category).toBe("academic");
+      expect(result[1].category).toBe("mindset");
     });
 
     it("should include task dependencies in priority calculation", () => {
       const tasks: TaskWithStatus[] = [
         createMockTask({
           id: "task-1",
-          category: "training",
+          category: "mindset",
           grade_level: 9,
           required: true,
           why_it_matters: "Training matters",
@@ -158,7 +158,7 @@ describe("whatMattersNow", () => {
         }),
         createMockTask({
           id: "task-2",
-          category: "training",
+          category: "mindset",
           grade_level: 9,
           required: true,
           why_it_matters: "Training matters",
@@ -190,6 +190,72 @@ describe("whatMattersNow", () => {
       });
 
       expect(result[0].isRequired).toBe(true);
+    });
+
+    // Guards the drift that broke this in prod: the priority map keyed on a
+    // fictional taxonomy, so every real task tied at the default 5 and the #1
+    // task was arbitrary (web and iOS disagreed). These lock the ranking to the
+    // categories actually stored on `task.category`.
+    it("ranks the real DB categories academic > recruiting > athletic > exposure > mindset", () => {
+      const categories = [
+        "mindset",
+        "exposure",
+        "athletic",
+        "recruiting",
+        "academic",
+      ];
+      const tasks: TaskWithStatus[] = categories.map((category, i) =>
+        createMockTask({
+          id: `task-${i}`,
+          category,
+          grade_level: 9,
+          required: true,
+          why_it_matters: "matters",
+          dependency_task_ids: [],
+        }),
+      );
+
+      const result = getWhatMattersNow({
+        phase: "freshman",
+        tasksWithStatus: tasks,
+      });
+
+      expect(result.map((r) => r.category)).toEqual([
+        "academic",
+        "recruiting",
+        "athletic",
+        "exposure",
+        "mindset",
+      ]);
+    });
+
+    it("breaks priority ties deterministically by taskId so web and iOS agree", () => {
+      const build = (ids: string[]) =>
+        getWhatMattersNow({
+          phase: "freshman",
+          tasksWithStatus: ids.map((id) =>
+            createMockTask({
+              id,
+              category: "academic",
+              grade_level: 9,
+              required: true,
+              why_it_matters: "matters",
+              dependency_task_ids: [],
+            }),
+          ),
+        }).map((r) => r.taskId);
+
+      // Same set, opposite input order -> identical output order.
+      expect(build(["task-c", "task-a", "task-b"])).toEqual([
+        "task-a",
+        "task-b",
+        "task-c",
+      ]);
+      expect(build(["task-b", "task-c", "task-a"])).toEqual([
+        "task-a",
+        "task-b",
+        "task-c",
+      ]);
     });
   });
 
