@@ -104,11 +104,29 @@ const emit = defineEmits<{
   "toggle-favorite": [];
 }>();
 
-const displayLocation = computed(() => {
+const trimmed = (value?: string | null): string | null => {
+  const cleaned = value?.trim();
+  return cleaned ? cleaned : null;
+};
+
+// Complete campus address ("401 College Avenue, Ashland, OH") assembled from
+// college data, falling back to the school's own city/state where the lookup is sparse.
+const fullCampusAddress = computed<string | null>(() => {
+  const info = props.school.academic_info;
+  const street = trimmed(info?.address);
+  const city = trimmed(info?.city ?? props.school.city);
+  const state = trimmed(info?.state ?? props.school.state);
+  const cityState = [city, state].filter(Boolean).join(", ");
+  const parts = [street, cityState || null].filter(Boolean);
+  return parts.length > 0 ? parts.join(", ") : null;
+});
+
+const displayLocation = computed<string | null>(() => {
+  if (fullCampusAddress.value) return fullCampusAddress.value;
   if (props.school.location) return props.school.location;
   const cityState = [props.school.city, props.school.state].filter(Boolean);
   if (cityState.length > 0) return cityState.join(", ");
-  return props.school.academic_info?.address || props.school.state || null;
+  return trimmed(props.school.state);
 });
 
 const handleStatusChange = (event: Event) => {
