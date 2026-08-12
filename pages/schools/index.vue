@@ -232,7 +232,7 @@ import { useSchoolDistance } from "~/composables/useSchoolDistance";
 import { useLiveRegion } from "~/composables/useLiveRegion";
 import type { School } from "~/types";
 import type { FilterValue } from "~/types/filters";
-import type { Interaction, Coach } from "~/types/models";
+import type { Interaction, Coach, Event } from "~/types/models";
 import { createSchoolFilterConfigs } from "~/utils/schoolFilterConfigs";
 import { extractStateFromLocation } from "~/utils/locationParser";
 
@@ -261,17 +261,23 @@ const offersStore = useOffersStore();
 const { offers } = storeToRefs(offersStore);
 const { fetchOffers } = offersStore;
 const { interactions: interactionsData, fetchInteractions } = useInteractions();
+const { events: eventsData, fetchEvents } = useEvents();
 const { coaches: coachesData, fetchAllCoaches } = useCoaches();
 
 const userStore = useUserStore();
 
-// Summary statistics
-const { stats: schoolStats } = useSchoolStats(computed(() => schools.value));
-
 const allInteractions = computed<Interaction[]>(
   () => interactionsData.value ?? [],
 );
+const allEvents = computed<Event[]>(() => eventsData.value ?? []);
 const allCoaches = computed<Coach[]>(() => coachesData.value ?? []);
+
+// Summary statistics
+const { stats: schoolStats } = useSchoolStats(
+  computed(() => schools.value),
+  allInteractions,
+  allEvents,
+);
 const sortBy = ref<string>("a-z");
 
 // Pagination
@@ -488,6 +494,7 @@ onMounted(async () => {
     fetchOffers(),
     fetchAllCoaches(),
     fetchInteractions({}),
+    fetchEvents({}),
     loadAllPreferences(),
   ]);
   if (schools.value.length > 0) {

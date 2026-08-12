@@ -6,13 +6,16 @@
         <h1 class="text-2xl font-bold text-slate-900 mb-1">
           {{ school.name }}
         </h1>
-        <div class="flex items-center gap-2 text-slate-600 mb-3">
+        <div
+          v-if="displayLocation"
+          class="flex items-center gap-2 text-slate-600 mb-3"
+        >
           <UIcon
             name="i-heroicons-map-pin"
             class="w-4 h-4"
             aria-hidden="true"
           />
-          {{ school.location }}
+          {{ displayLocation }}
         </div>
         <div class="flex flex-wrap gap-2">
           <span
@@ -100,6 +103,13 @@ const emit = defineEmits<{
   "update:status": [status: School["status"]];
   "toggle-favorite": [];
 }>();
+
+const displayLocation = computed(() => {
+  if (props.school.location) return props.school.location;
+  const cityState = [props.school.city, props.school.state].filter(Boolean);
+  if (cityState.length > 0) return cityState.join(", ");
+  return props.school.academic_info?.address || props.school.state || null;
+});
 
 const handleStatusChange = (event: Event) => {
   const target = event.target as HTMLSelectElement;

@@ -68,10 +68,19 @@ test.describe("Profile Edit Restrictions (User Story 2.2)", () => {
         .first();
       await athleticsTab.click();
 
-      // Position buttons should be interactive for the parent — no disabled
-      // buttons from the old read-only gating.
-      const disabledButtons = page.locator("button[disabled]:visible");
-      expect(await disabledButtons.count()).toBe(0);
+      // Position buttons should be interactive for the parent — none disabled
+      // from the old read-only gating. Scope to the canonical position buttons:
+      // other controls (e.g. the video "Add" button) are disabled by input
+      // validation, not by role, and are not part of this assertion.
+      const positionButtons = page.locator("button:visible").filter({
+        hasText:
+          /^(Pitcher|Catcher|First Base|Second Base|Third Base|Shortstop|Left Field|Center Field|Right Field|Designated Hitter|Utility)$/,
+      });
+      expect(await positionButtons.count()).toBeGreaterThan(0);
+      const disabledPositions = positionButtons.and(
+        page.locator("[disabled]"),
+      );
+      expect(await disabledPositions.count()).toBe(0);
     });
 
     test("parent sees auto-save status indicator (edits persist)", async ({

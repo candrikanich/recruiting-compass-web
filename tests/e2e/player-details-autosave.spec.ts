@@ -73,9 +73,11 @@ test.describe("Player Details Auto-Save", () => {
 
       // Wait for DOM to update
 
-      // Check that position buttons appeared
+      // Check that position buttons appeared. Positions use the canonical
+      // full-name vocabulary (SPORT_POSITIONS), not short codes.
       const positionButtons = page.locator("button").filter({
-        hasText: /^P$|^C$|^1B$|^SS$/,
+        hasText:
+          /^(Pitcher|Catcher|First Base|Second Base|Third Base|Shortstop|Left Field|Center Field|Right Field|Designated Hitter|Utility)$/,
       });
       const count = await positionButtons.count();
       expect(count).toBeGreaterThan(0);
@@ -104,9 +106,11 @@ test.describe("Player Details Auto-Save", () => {
       // Select a sport
       await allSelects.nth(sportSelectIndex).selectOption("Baseball");
 
-      // After selecting Baseball, position buttons should appear (UI uses buttons not select)
+      // After selecting Baseball, position buttons should appear (UI uses
+      // buttons not select). Labels are canonical full names, not short codes.
       const positionButtons = page.locator("button").filter({
-        hasText: /^(P|C|1B|2B|3B|SS|LF|CF|RF|DH|SP|RP|CP)$/,
+        hasText:
+          /^(Pitcher|Catcher|First Base|Second Base|Third Base|Shortstop|Left Field|Center Field|Right Field|Designated Hitter|Utility)$/,
       });
       const count = await positionButtons.count();
       expect(count).toBeGreaterThan(0);
