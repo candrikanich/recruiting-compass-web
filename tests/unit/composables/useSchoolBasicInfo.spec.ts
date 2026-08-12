@@ -21,6 +21,7 @@ describe("useSchoolBasicInfo", () => {
     website: "https://example.com",
     twitter_handle: "@testschool",
     instagram_handle: "@testschool_ig",
+    phone: "(555) 111-2222",
     academic_info: {
       address: "123 Main St",
       baseball_facility_address: "456 Stadium Dr",
@@ -42,13 +43,10 @@ describe("useSchoolBasicInfo", () => {
       expect(editingBasicInfo.value).toBe(false);
       expect(editedBasicInfo.value).toEqual({
         address: "",
-        baseball_facility_address: "",
-        mascot: "",
-        undergrad_size: "",
-        distance_from_home: null,
         website: "",
         twitter_handle: "",
         instagram_handle: "",
+        phone: "",
       });
     });
   });
@@ -60,13 +58,10 @@ describe("useSchoolBasicInfo", () => {
 
       expect(editedBasicInfo.value).toEqual({
         address: "123 Main St",
-        baseball_facility_address: "456 Stadium Dr",
-        mascot: "Eagles",
-        undergrad_size: "5,000-10,000",
-        distance_from_home: 50,
         website: "https://example.com",
         twitter_handle: "@testschool",
         instagram_handle: "@testschool_ig",
+        phone: "(555) 111-2222",
       });
     });
 
@@ -79,10 +74,6 @@ describe("useSchoolBasicInfo", () => {
       initializeForm(schoolWithoutAcademicInfo);
 
       expect(editedBasicInfo.value.address).toBe("");
-      expect(editedBasicInfo.value.baseball_facility_address).toBe("");
-      expect(editedBasicInfo.value.mascot).toBe("");
-      expect(editedBasicInfo.value.undergrad_size).toBe("");
-      expect(editedBasicInfo.value.distance_from_home).toBeNull();
     });
 
     it("handles null academic_info fields", () => {
@@ -90,17 +81,12 @@ describe("useSchoolBasicInfo", () => {
         ...mockSchool,
         academic_info: {
           address: null,
-          baseball_facility_address: null,
-          mascot: null,
-          undergrad_size: null,
-          distance_from_home: null,
         },
       } as School;
       const { editedBasicInfo, initializeForm } = useSchoolBasicInfo(schoolId);
       initializeForm(schoolWithNullFields);
 
       expect(editedBasicInfo.value.address).toBe("");
-      expect(editedBasicInfo.value.distance_from_home).toBeNull();
     });
 
     it("converts non-string academic info to strings", () => {
@@ -108,14 +94,12 @@ describe("useSchoolBasicInfo", () => {
         ...mockSchool,
         academic_info: {
           address: 123 as unknown as string,
-          mascot: 456 as unknown as string,
         },
       } as School;
       const { editedBasicInfo, initializeForm } = useSchoolBasicInfo(schoolId);
       initializeForm(schoolWithNumbers);
 
       expect(editedBasicInfo.value.address).toBe("123");
-      expect(editedBasicInfo.value.mascot).toBe("456");
     });
 
     it("handles missing contact fields", () => {
@@ -195,13 +179,10 @@ describe("useSchoolBasicInfo", () => {
         website: "https://newsite.com",
         twitter_handle: "@testschool",
         instagram_handle: "@testschool_ig",
+        phone: "(555) 111-2222",
         academic_info: {
           ...mockSchool.academic_info,
           address: "456 New St",
-          baseball_facility_address: "456 Stadium Dr",
-          mascot: "Eagles",
-          undergrad_size: "5,000-10,000",
-          distance_from_home: 50,
         },
       });
       expect(result).toEqual(updatedSchool);
@@ -298,8 +279,8 @@ describe("useSchoolBasicInfo", () => {
       editedBasicInfo.value.address = "New Address";
       expect(editedBasicInfo.value.address).toBe("New Address");
 
-      editedBasicInfo.value.mascot = "Tigers";
-      expect(editedBasicInfo.value.mascot).toBe("Tigers");
+      editedBasicInfo.value.phone = "(555) 999-0000";
+      expect(editedBasicInfo.value.phone).toBe("(555) 999-0000");
     });
 
     it("maintains separate form state from original school", () => {

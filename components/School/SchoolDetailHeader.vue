@@ -88,6 +88,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from "vue";
 import type { School } from "~/types/models";
 import { getStatusBadgeColor } from "~/utils/schoolBadges";
 import { getSizeColorClass } from "~/utils/schoolSize";

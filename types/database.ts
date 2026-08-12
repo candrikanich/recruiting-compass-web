@@ -2216,6 +2216,7 @@ export type Database = {
           name: string
           notes: string | null
           offer_details: Json | null
+          phone: string | null
           pros: string[] | null
           recruiting_approach: string | null
           state: string | null
@@ -2250,6 +2251,7 @@ export type Database = {
           name: string
           notes?: string | null
           offer_details?: Json | null
+          phone?: string | null
           pros?: string[] | null
           recruiting_approach?: string | null
           state?: string | null
@@ -2284,6 +2286,7 @@ export type Database = {
           name?: string
           notes?: string | null
           offer_details?: Json | null
+          phone?: string | null
           pros?: string[] | null
           recruiting_approach?: string | null
           state?: string | null
