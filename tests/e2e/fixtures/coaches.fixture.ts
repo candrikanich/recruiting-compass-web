@@ -27,7 +27,6 @@ export const coachFixtures = {
     twitter_handle: "@coachdoe",
     instagram_handle: "coachjane",
     notes: "Highly responsive recruiting coordinator with strong network",
-    availability: "weekdays_only",
   },
 
   /**
@@ -222,7 +221,6 @@ export const coachSelectors = {
     '#instagram_handle, input[name="instagram_handle"], input[placeholder*="Instagram"]',
   notesTextarea:
     '#notes, textarea[name="notes"], textarea[placeholder*="Notes"]',
-  availabilitySelect: '#availability, select[name="availability"]',
 
   // Coach list/cards
   coachCard: '[data-testid="coach-card"], .coach-card',
@@ -306,14 +304,6 @@ export const coachHelpers = {
     }
     if (coachData.notes) {
       await page.getByLabel("Notes", { exact: false }).fill(coachData.notes);
-    }
-    if (coachData.availability) {
-      const availabilitySelect = page.locator(
-        coachSelectors.availabilitySelect,
-      );
-      if ((await availabilitySelect.count()) > 0) {
-        await availabilitySelect.selectOption(coachData.availability);
-      }
     }
   },
 

@@ -167,14 +167,6 @@ describe("pages/coaches/[id].vue - Coach Detail Page", () => {
       expect(mockRouter.push).toBeDefined();
     });
 
-    it("should navigate to availability page", async () => {
-      // Mock navigation
-      const mockRouter = { push: vi.fn() };
-      mockRouter.push("/availability");
-
-      expect(mockRouter.push).toBeDefined();
-    });
-
     it("should navigate back to coaches list", async () => {
       // Mock navigation
       const mockRouter = { back: vi.fn() };

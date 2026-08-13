@@ -302,7 +302,6 @@ export type Database = {
       }
       coaches: {
         Row: {
-          availability: Json | null
           created_at: string | null
           created_by: string | null
           email: string | null
@@ -322,7 +321,6 @@ export type Database = {
           user_id: string
         }
         Insert: {
-          availability?: Json | null
           created_at?: string | null
           created_by?: string | null
           email?: string | null
@@ -342,7 +340,6 @@ export type Database = {
           user_id: string
         }
         Update: {
-          availability?: Json | null
           created_at?: string | null
           created_by?: string | null
           email?: string | null
