@@ -10,13 +10,6 @@
       />
     </div>
 
-    <span
-      class="inline-block px-2.5 py-1 text-xs font-medium rounded-full mb-3"
-      :class="getSchoolStatusBadgeClass(status)"
-    >
-      {{ getSchoolStatusLabel(status) }}
-    </span>
-
     <label for="recruiting-status-select" class="sr-only">
       Change recruiting status
     </label>
@@ -50,8 +43,6 @@
 <script setup lang="ts">
 import {
   SCHOOL_STATUS_OPTIONS,
-  getSchoolStatusLabel,
-  getSchoolStatusBadgeClass,
   type SchoolStatusValue,
 } from "~/utils/schoolStatusOptions";
 

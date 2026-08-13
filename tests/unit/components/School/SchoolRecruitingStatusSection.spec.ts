@@ -36,9 +36,10 @@ describe("SchoolRecruitingStatusSection", () => {
     expect((select.element as HTMLSelectElement).disabled).toBe(true);
   });
 
-  it("shows the current status as a badge label", () => {
-    expect(mountSection({ status: "camp_invite" }).text()).toContain(
-      "Camp Invite",
-    );
+  it("does not render a separate status badge (header pill owns that)", () => {
+    const wrapper = mountSection({ status: "committed" });
+    // only occurrence of the label is the selected <option>, no badge pill
+    const badge = wrapper.find("span.rounded-full");
+    expect(badge.exists()).toBe(false);
   });
 });
