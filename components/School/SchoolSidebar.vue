@@ -1,5 +1,12 @@
 <template>
   <div class="space-y-6">
+    <!-- Recruiting Status -->
+    <SchoolRecruitingStatusSection
+      :status="school.status"
+      :status-updating="statusUpdating"
+      @update:status="emit('update:status', $event)"
+    />
+
     <!-- Quick Actions -->
     <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
       <h3 class="font-semibold text-slate-900 mb-4">Quick Actions</h3>
@@ -166,11 +173,14 @@ import type {
 } from "~/types/schoolFit";
 import SchoolStatusHistory from "~/components/School/SchoolStatusHistory.vue";
 import SchoolFitSignals from "~/components/School/SchoolFitSignals.vue";
+import SchoolRecruitingStatusSection from "~/components/School/SchoolRecruitingStatusSection.vue";
+import type { SchoolStatusValue } from "~/utils/schoolStatusOptions";
 
 defineProps<{
   schoolId: string;
   coaches: Coach[];
   school: School;
+  statusUpdating: boolean;
   personalFit?: PersonalFitAnalysis | null;
   academicFit?: AcademicFitAnalysis | null;
   divisionRecommendation?: DivisionRecommendation | null;
@@ -178,6 +188,7 @@ defineProps<{
 
 const emit = defineEmits<{
   "open-email-modal": [];
+  "update:status": [status: SchoolStatusValue];
   delete: [];
   enrich: [];
 }>();

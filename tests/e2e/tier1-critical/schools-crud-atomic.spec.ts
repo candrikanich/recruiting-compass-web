@@ -44,11 +44,14 @@ test.describe("Schools CRUD — atomic lifecycle", () => {
       "D1",
     );
 
-    // 3. UPDATE — change status (auto-saves)
-    const statusSelect = page.getByLabel("School status");
+    // 3. UPDATE — change status via sidebar "Recruiting Status" section (auto-saves)
+    const statusSelect = page.getByLabel("Change recruiting status");
     await statusSelect.waitFor({ state: "visible" });
     await page.waitForFunction(
-      () => !document.getElementById("school-status")?.hasAttribute("disabled"),
+      () =>
+        !document
+          .getElementById("recruiting-status-select")
+          ?.hasAttribute("disabled"),
     );
     await statusSelect.selectOption("interested");
 
@@ -58,7 +61,9 @@ test.describe("Schools CRUD — atomic lifecycle", () => {
     // Reload to confirm persistence
     await page.reload();
     await page.waitForLoadState("domcontentloaded");
-    await expect(page.getByLabel("School status")).toHaveValue("interested");
+    await expect(page.getByLabel("Change recruiting status")).toHaveValue(
+      "interested",
+    );
 
     // 4. DELETE — sidebar button → confirm dialog → back at /schools
     await page.locator('button:has-text("Delete School")').click();

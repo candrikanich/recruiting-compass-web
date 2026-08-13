@@ -86,6 +86,10 @@ import type { SchoolStatusHistory } from "~/types/models";
 import { useSchoolStore } from "~/stores/schools";
 import { useUserStore } from "~/stores/user";
 import { createClientLogger } from "~/utils/logger";
+import {
+  getSchoolStatusLabel,
+  getSchoolStatusBadgeClass,
+} from "~/utils/schoolStatusOptions";
 
 const logger = createClientLogger("SchoolStatusHistory");
 interface Props {
@@ -101,35 +105,11 @@ const history = ref<SchoolStatusHistory[]>([]);
 const loading = ref(false);
 const error = ref<string | null>(null);
 
-const getStatusColor = (status: string): string => {
-  const colors: Record<string, string> = {
-    interested: "bg-blue-100 text-blue-700",
-    contacted: "bg-slate-100 text-slate-700",
-    camp_invite: "bg-purple-100 text-purple-700",
-    recruited: "bg-green-100 text-green-700",
-    official_visit_invited: "bg-amber-100 text-amber-700",
-    official_visit_scheduled: "bg-orange-100 text-orange-700",
-    offer_received: "bg-red-100 text-red-700",
-    committed: "bg-green-800 text-white",
-    not_pursuing: "bg-gray-300 text-gray-700",
-  };
-  return colors[status] || "bg-slate-100 text-slate-700";
-};
+const getStatusColor = (status: string): string =>
+  getSchoolStatusBadgeClass(status);
 
-const formatStatus = (status: string): string => {
-  const labels: Record<string, string> = {
-    interested: "Interested",
-    contacted: "Contacted",
-    camp_invite: "Camp Invite",
-    recruited: "Recruited",
-    official_visit_invited: "OV Invited",
-    official_visit_scheduled: "OV Scheduled",
-    offer_received: "Offer Received",
-    committed: "Committed",
-    not_pursuing: "Not Pursuing",
-  };
-  return labels[status] || status;
-};
+const formatStatus = (status: string): string =>
+  getSchoolStatusLabel(status);
 
 const formatDate = (dateString: string): string => {
   try {

@@ -5,8 +5,9 @@ import type { School } from "~/types/models";
 
 // Mock icons
 // Mock utils
-vi.mock("~/utils/schoolBadges", () => ({
-  getStatusBadgeColor: (status: string) => `color-${status}`,
+vi.mock("~/utils/schoolStatusOptions", () => ({
+  getSchoolStatusLabel: (status: string) => `label-${status}`,
+  getSchoolStatusBadgeClass: (status: string) => `color-${status}`,
 }));
 
 vi.mock("~/utils/schoolSize", () => ({
@@ -36,7 +37,6 @@ describe("SchoolDetailHeader", () => {
   const defaultProps = {
     school: mockSchool,
     calculatedSize: "Large",
-    statusUpdating: false,
   };
 
   describe("rendering", () => {
@@ -100,62 +100,25 @@ describe("SchoolDetailHeader", () => {
     });
   });
 
-  describe("status selector", () => {
-    it("renders status select element", () => {
+  describe("status pill (read-only)", () => {
+    it("renders the status as a static label, not a select", () => {
       const wrapper = mount(SchoolDetailHeader, { props: defaultProps });
-      const select = wrapper.find("#school-status");
-      expect(select.exists()).toBe(true);
+      expect(wrapper.find("#school-status").exists()).toBe(false);
+      expect(wrapper.find("select").exists()).toBe(false);
+      expect(wrapper.text()).toContain("label-researching");
     });
 
-    it("has correct status options", () => {
+    it("applies the status badge color class", () => {
       const wrapper = mount(SchoolDetailHeader, { props: defaultProps });
-      const select = wrapper.find("#school-status");
-      const options = select.findAll("option");
-
-      expect(options).toHaveLength(5);
-      expect(options[0].text()).toBe("Researching");
-      expect(options[1].text()).toBe("Contacted");
-      expect(options[2].text()).toBe("Interested");
-      expect(options[3].text()).toBe("Offer Received");
-      expect(options[4].text()).toBe("Committed");
+      const pill = wrapper
+        .findAll("span")
+        .find((el) => el.classes().includes("color-researching"));
+      expect(pill).toBeTruthy();
     });
 
-    it("shows current status", () => {
+    it("does not emit update:status (editing moved to sidebar)", () => {
       const wrapper = mount(SchoolDetailHeader, { props: defaultProps });
-      const select = wrapper.find("#school-status") as any;
-      expect(select.element.value).toBe("researching");
-    });
-
-    it("emits update:status when changed", async () => {
-      const wrapper = mount(SchoolDetailHeader, { props: defaultProps });
-      const select = wrapper.find("#school-status");
-
-      await select.setValue("interested");
-
-      expect(wrapper.emitted("update:status")).toBeTruthy();
-      expect(wrapper.emitted("update:status")?.[0]).toEqual(["interested"]);
-    });
-
-    it("disables select when statusUpdating is true", () => {
-      const wrapper = mount(SchoolDetailHeader, {
-        props: { ...defaultProps, statusUpdating: true },
-      });
-      const select = wrapper.find("#school-status");
-      expect((select.element as HTMLSelectElement).disabled).toBe(true);
-    });
-
-    it("applies opacity when statusUpdating is true", () => {
-      const wrapper = mount(SchoolDetailHeader, {
-        props: { ...defaultProps, statusUpdating: true },
-      });
-      const select = wrapper.find("#school-status");
-      expect(select.classes()).toContain("opacity-50");
-    });
-
-    it("applies status badge color", () => {
-      const wrapper = mount(SchoolDetailHeader, { props: defaultProps });
-      const select = wrapper.find("#school-status");
-      expect(select.classes()).toContain("color-researching");
+      expect(wrapper.emitted("update:status")).toBeFalsy();
     });
   });
 
@@ -230,13 +193,6 @@ describe("SchoolDetailHeader", () => {
   });
 
   describe("accessibility", () => {
-    it("has label for status select", () => {
-      const wrapper = mount(SchoolDetailHeader, { props: defaultProps });
-      const label = wrapper.find("label[for='school-status']");
-      expect(label.exists()).toBe(true);
-      expect(label.classes()).toContain("sr-only");
-    });
-
     it("star icon has aria-hidden", () => {
       const wrapper = mount(SchoolDetailHeader, { props: defaultProps });
       const html = wrapper.html();
