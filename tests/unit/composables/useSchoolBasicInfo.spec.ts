@@ -44,6 +44,7 @@ describe("useSchoolBasicInfo", () => {
       expect(editedBasicInfo.value).toEqual({
         address: "",
         website: "",
+        athletics_url: "",
         twitter_handle: "",
         instagram_handle: "",
         phone: "",
@@ -59,6 +60,7 @@ describe("useSchoolBasicInfo", () => {
       expect(editedBasicInfo.value).toEqual({
         address: "123 Main St",
         website: "https://example.com",
+        athletics_url: "",
         twitter_handle: "@testschool",
         instagram_handle: "@testschool_ig",
         phone: "(555) 111-2222",
@@ -177,6 +179,7 @@ describe("useSchoolBasicInfo", () => {
 
       expect(mockUpdateSchool).toHaveBeenCalledWith(schoolId, {
         website: "https://newsite.com",
+        athletics_url: null,
         twitter_handle: "@testschool",
         instagram_handle: "@testschool_ig",
         phone: "(555) 111-2222",
