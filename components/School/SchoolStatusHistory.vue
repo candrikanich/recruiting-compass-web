@@ -29,10 +29,10 @@
       <div
         v-for="entry in history"
         :key="entry.id"
-        class="flex items-start gap-4 pb-3 border-b border-slate-100 last:border-b-0"
+        class="space-y-1.5 pb-3 border-b border-slate-100 last:border-b-0"
       >
         <!-- Status Transition -->
-        <div class="flex items-center gap-2 min-w-fit">
+        <div class="flex flex-wrap items-center gap-2">
           <span
             v-if="entry.previous_status"
             class="px-2 py-1 text-xs font-medium rounded-full"
@@ -54,16 +54,14 @@
         </div>
 
         <!-- Details -->
-        <div class="flex-1 min-w-0">
-          <div class="flex items-center justify-between gap-2">
-            <p class="text-sm text-slate-600">
-              {{ formatUserName(entry.changed_by) }}
-            </p>
-            <p class="text-xs text-slate-400 shrink-0">
-              {{ formatDate(entry.changed_at) }}
-            </p>
-          </div>
-          <p v-if="entry.notes" class="text-sm text-slate-500 mt-1">
+        <div class="flex flex-wrap items-baseline justify-between gap-x-2">
+          <p class="text-sm text-slate-600">
+            {{ formatUserName(entry.changed_by) }}
+          </p>
+          <p class="text-xs text-slate-400 shrink-0">
+            {{ formatDate(entry.changed_at) }}
+          </p>
+          <p v-if="entry.notes" class="w-full text-sm text-slate-500 mt-1">
             {{ entry.notes }}
           </p>
         </div>
