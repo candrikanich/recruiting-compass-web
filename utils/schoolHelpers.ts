@@ -35,6 +35,7 @@ export const hasContactInfo = (school: School | null): boolean => {
   return !!(
     school.academic_info?.address ||
     school.website ||
+    school.athletics_url ||
     school.twitter_handle ||
     school.instagram_handle ||
     school.phone

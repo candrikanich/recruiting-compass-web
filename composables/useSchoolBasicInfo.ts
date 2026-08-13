@@ -8,6 +8,7 @@ import { useSchools } from "~/composables/useSchools";
 export interface BasicInfoFormData {
   address: string;
   website: string;
+  athletics_url: string;
   twitter_handle: string;
   instagram_handle: string;
   phone: string;
@@ -20,6 +21,7 @@ export const useSchoolBasicInfo = (schoolId: string) => {
   const editedBasicInfo = ref<BasicInfoFormData>({
     address: "",
     website: "",
+    athletics_url: "",
     twitter_handle: "",
     instagram_handle: "",
     phone: "",
@@ -29,6 +31,7 @@ export const useSchoolBasicInfo = (schoolId: string) => {
     editedBasicInfo.value = {
       address: String(school.academic_info?.address || ""),
       website: String(school.website || ""),
+      athletics_url: String(school.athletics_url || ""),
       twitter_handle: String(school.twitter_handle || ""),
       instagram_handle: String(school.instagram_handle || ""),
       phone: String(school.phone || ""),
@@ -40,6 +43,7 @@ export const useSchoolBasicInfo = (schoolId: string) => {
   ): Promise<School | null> => {
     const updates = {
       website: editedBasicInfo.value.website || null,
+      athletics_url: editedBasicInfo.value.athletics_url || null,
       twitter_handle: editedBasicInfo.value.twitter_handle || null,
       instagram_handle: editedBasicInfo.value.instagram_handle || null,
       phone: editedBasicInfo.value.phone || null,

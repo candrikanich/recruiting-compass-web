@@ -70,6 +70,7 @@ export interface School {
   conference: string | null;
   is_favorite: boolean;
   website: string | null;
+  athletics_url?: string | null;
   favicon_url: string | null;
   twitter_handle: string | null;
   instagram_handle: string | null;

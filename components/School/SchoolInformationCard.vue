@@ -69,6 +69,17 @@
           </div>
           <div>
             <label class="block text-sm font-medium text-slate-700 mb-1"
+              >Athletics Website</label
+            >
+            <input
+              v-model="editedBasicInfo.athletics_url"
+              type="url"
+              placeholder="goashlandeagles.com"
+              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1"
               >Twitter Handle</label
             >
             <input
@@ -131,6 +142,21 @@
             class="text-blue-600 hover:text-blue-700 text-sm flex items-center gap-1 break-all"
           >
             {{ school.website }}
+            <UIcon
+              name="i-heroicons-arrow-top-right-on-square"
+              class="w-3 h-3 shrink-0"
+            />
+          </a>
+        </div>
+        <div v-if="school.athletics_url" class="flex items-start gap-2">
+          <span class="text-slate-500 text-sm w-24 shrink-0">Athletics:</span>
+          <a
+            :href="school.athletics_url"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-blue-600 hover:text-blue-700 text-sm flex items-center gap-1 break-all"
+          >
+            {{ school.athletics_url }}
             <UIcon
               name="i-heroicons-arrow-top-right-on-square"
               class="w-3 h-3 shrink-0"

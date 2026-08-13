@@ -2228,6 +2228,7 @@ export type Database = {
           updated_by: string | null
           user_id: string
           website: string | null
+          athletics_url: string | null
         }
         Insert: {
           academic_info?: Json | null
@@ -2263,6 +2264,7 @@ export type Database = {
           updated_by?: string | null
           user_id: string
           website?: string | null
+          athletics_url?: string | null
         }
         Update: {
           academic_info?: Json | null
@@ -2298,6 +2300,7 @@ export type Database = {
           updated_by?: string | null
           user_id?: string
           website?: string | null
+          athletics_url?: string | null
         }
         Relationships: [
           {
