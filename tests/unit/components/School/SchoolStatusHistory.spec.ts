@@ -106,8 +106,7 @@ describe("SchoolStatusHistory", () => {
         ".border-b.border-slate-100, .last\\:border-b-0",
       );
       expect(wrapper.text()).toContain("Contacted");
-      // "researching" is not in formatStatus labels, falls back to raw string
-      expect(wrapper.text()).toContain("researching");
+      expect(wrapper.text()).toContain("Researching");
     });
 
     it("shows 'Initial' when no previous status", async () => {
@@ -133,7 +132,7 @@ describe("SchoolStatusHistory", () => {
       const wrapper = mountComponent();
       await flushPromises();
 
-      const badge = wrapper.find(".bg-slate-100.text-slate-700");
+      const badge = wrapper.find(".bg-blue-100.text-blue-700");
       expect(badge.exists()).toBe(true);
     });
 
@@ -153,7 +152,8 @@ describe("SchoolStatusHistory", () => {
 
       const badges = wrapper.findAll("span");
       const committedBadge = badges.find(
-        (b) => b.text() === "Committed" && b.classes().includes("bg-green-800"),
+        (b) =>
+          b.text() === "Committed" && b.classes().includes("bg-emerald-100"),
       );
       expect(committedBadge).toBeDefined();
     });

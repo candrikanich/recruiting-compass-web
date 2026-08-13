@@ -24,30 +24,12 @@
           >
             {{ school.division }}
           </span>
-          <div class="relative">
-            <label for="school-status" class="sr-only">School status</label>
-            <select
-              id="school-status"
-              :value="school.status"
-              @change="handleStatusChange"
-              :disabled="statusUpdating"
-              :aria-busy="statusUpdating"
-              class="px-2 py-1 text-xs font-medium rounded-full border-2 border-transparent cursor-pointer focus:ring-2 focus:ring-offset-2 focus:ring-blue-600"
-              :class="[
-                getStatusBadgeColor(school.status),
-                statusUpdating ? 'opacity-50 cursor-not-allowed' : '',
-              ]"
-            >
-              <option value="researching">Researching</option>
-              <option value="contacted">Contacted</option>
-              <option value="interested">Interested</option>
-              <option value="offer_received">Offer Received</option>
-              <option value="committed">Committed</option>
-            </select>
-            <span v-if="statusUpdating" class="sr-only">
-              Status is updating, please wait
-            </span>
-          </div>
+          <span
+            class="px-2 py-1 text-xs font-medium rounded-full"
+            :class="getSchoolStatusBadgeClass(school.status)"
+          >
+            {{ getSchoolStatusLabel(school.status) }}
+          </span>
           <span
             v-if="calculatedSize"
             class="px-2 py-1 text-xs font-medium rounded-full"
@@ -90,18 +72,19 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import type { School } from "~/types/models";
-import { getStatusBadgeColor } from "~/utils/schoolBadges";
+import {
+  getSchoolStatusLabel,
+  getSchoolStatusBadgeClass,
+} from "~/utils/schoolStatusOptions";
 import { getSizeColorClass } from "~/utils/schoolSize";
 import SchoolLogo from "~/components/School/SchoolLogo.vue";
 
 const props = defineProps<{
   school: School;
   calculatedSize: string | null;
-  statusUpdating: boolean;
 }>();
 
-const emit = defineEmits<{
-  "update:status": [status: School["status"]];
+defineEmits<{
   "toggle-favorite": [];
 }>();
 
@@ -129,9 +112,4 @@ const displayLocation = computed<string | null>(() => {
   if (cityState.length > 0) return cityState.join(", ");
   return trimmed(props.school.state);
 });
-
-const handleStatusChange = (event: Event) => {
-  const target = event.target as HTMLSelectElement;
-  emit("update:status", target.value as School["status"]);
-};
 </script>

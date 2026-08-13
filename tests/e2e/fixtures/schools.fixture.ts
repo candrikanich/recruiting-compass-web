@@ -204,7 +204,7 @@ export const schoolSelectors = {
   nameInput: 'input[placeholder="e.g., University of Florida"]',
   locationInput: 'input[placeholder="e.g., Gainesville, Florida"]',
   divisionSelect: "select",
-  statusSelect: "#school-status",
+  statusSelect: "#recruiting-status-select",
   conferenceInput:
     'input[placeholder*="SEC"], input[placeholder*="Conference"], input[placeholder*="conference"]',
   websiteInput: 'input[placeholder*="http"], input[placeholder*="website"]',
@@ -477,11 +477,14 @@ export const schoolHelpers = {
     await page.goto(`/schools/${schoolId}`);
     await page.waitForLoadState("domcontentloaded");
 
-    // Use getByLabel to find the status select (has sr-only label "School status")
-    const statusSelect = page.getByLabel("School status");
+    // Sidebar "Recruiting Status" section select (sr-only label "Change recruiting status")
+    const statusSelect = page.getByLabel("Change recruiting status");
     await statusSelect.waitFor({ state: "visible" });
     await page.waitForFunction(
-      () => !document.getElementById("school-status")?.hasAttribute("disabled"),
+      () =>
+        !document
+          .getElementById("recruiting-status-select")
+          ?.hasAttribute("disabled"),
     );
     await statusSelect.selectOption(newStatus);
     await page.waitForLoadState("domcontentloaded");

@@ -67,6 +67,7 @@ const defaultProps = {
   schoolId: "school-123",
   coaches: [createMockCoach()],
   school: createMockSchool(),
+  statusUpdating: false,
 };
 
 describe("SchoolSidebar", () => {

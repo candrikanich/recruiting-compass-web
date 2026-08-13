@@ -56,6 +56,14 @@
           {{ formatSchoolStatus(school.status) }}
         </span>
         <span
+          v-if="overall"
+          :class="fitPillClass"
+          class="px-2 py-0.5 text-xs font-medium rounded-full"
+          :aria-label="`Personal fit: ${fitPillLabel}`"
+        >
+          {{ fitPillLabel }}
+        </span>
+        <span
           v-if="carnegieSize"
           :class="getSizeBadgeClass(carnegieSize)"
           class="px-2 py-0.5 text-xs font-medium rounded-full"
@@ -104,10 +112,25 @@ import {
   getSizeBadgeClass,
   formatSchoolStatus,
 } from "~/utils/schoolBadges";
+import type { OverallPersonalFit } from "~/utils/fitScoreCalculation";
 
 const props = defineProps<{
   school: School;
+  overall?: OverallPersonalFit | null;
 }>();
+
+const FIT_PILL: Record<OverallPersonalFit, { label: string; class: string }> = {
+  strong: { label: "Strong fit", class: "bg-emerald-100 text-emerald-700" },
+  good: { label: "Good fit", class: "bg-orange-100 text-orange-700" },
+  stretch: { label: "Stretch", class: "bg-red-100 text-red-700" },
+};
+
+const fitPillLabel = computed(() =>
+  props.overall ? FIT_PILL[props.overall].label : "",
+);
+const fitPillClass = computed(() =>
+  props.overall ? FIT_PILL[props.overall].class : "",
+);
 
 defineEmits<{
   "toggle-favorite": [id: string, isFavorite: boolean];

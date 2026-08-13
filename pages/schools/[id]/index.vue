@@ -42,8 +42,6 @@
           <SchoolDetailHeader
             :school="school"
             :calculated-size="calculatedSize"
-            :status-updating="statusUpdating"
-            @update:status="handleStatusUpdate"
             @toggle-favorite="handleToggleFavorite"
           />
 
@@ -150,10 +148,12 @@
           :school-id="id"
           :coaches="schoolCoaches"
           :school="school"
+          :status-updating="statusUpdating"
           :personal-fit="fitSignals?.personalFit ?? null"
           :academic-fit="fitSignals?.academicFit ?? null"
           :division-recommendation="divisionRecommendation"
           @open-email-modal="showEmailModal = true"
+          @update:status="handleStatusUpdate"
           @delete="openDeleteConfirm"
           @enrich="handleEnrich"
         />

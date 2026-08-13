@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   calculatePersonalFitSignals,
+  computeOverallPersonalFit,
   calculateAcademicFitSignals,
   calculateFitScore,
   getFitTier,
@@ -303,6 +304,73 @@ describe("fitScoreCalculation", () => {
           expect(result2.signals.cost.strength).toBe("strong");
         });
       });
+    });
+  });
+
+  // ─── computeOverallPersonalFit ───────────────────────────────────────────────
+
+  describe("computeOverallPersonalFit", () => {
+    const sig = (strength: "strong" | "good" | "stretch" | "unknown") => ({
+      label: "",
+      value: null,
+      strength,
+      explanation: "",
+    });
+    const analysis = (
+      location: "strong" | "good" | "stretch" | "unknown",
+      campusSize: "strong" | "good" | "stretch" | "unknown",
+      cost: "strong" | "good" | "stretch" | "unknown",
+    ) => ({
+      signals: {
+        location: sig(location),
+        campusSize: sig(campusSize),
+        cost: sig(cost),
+      },
+      availableSignals: [location, campusSize, cost].filter(
+        (s) => s !== "unknown",
+      ).length,
+    });
+
+    it("returns null when every signal is unknown", () => {
+      expect(
+        computeOverallPersonalFit(analysis("unknown", "unknown", "unknown")),
+      ).toBeNull();
+    });
+
+    it("returns strong when all known signals are strong", () => {
+      expect(
+        computeOverallPersonalFit(analysis("strong", "strong", "unknown")),
+      ).toBe("strong");
+    });
+
+    it("returns stretch when all known signals are stretch", () => {
+      expect(
+        computeOverallPersonalFit(analysis("stretch", "unknown", "unknown")),
+      ).toBe("stretch");
+    });
+
+    it("rounds a strong+stretch mix (mean 1.0) up to good", () => {
+      expect(
+        computeOverallPersonalFit(analysis("strong", "stretch", "unknown")),
+      ).toBe("good");
+    });
+
+    it("treats mean >= 1.5 as strong (boundary)", () => {
+      expect(
+        computeOverallPersonalFit(analysis("strong", "good", "unknown")),
+      ).toBe("strong");
+    });
+
+    it("treats mean below 0.75 as stretch", () => {
+      expect(
+        computeOverallPersonalFit(analysis("good", "stretch", "stretch")),
+      ).toBe("stretch");
+    });
+
+    it("ignores unknown signals in the average", () => {
+      expect(
+        computeOverallPersonalFit(analysis("good", "unknown", "unknown")),
+      ).toBe("good");
     });
   });
 

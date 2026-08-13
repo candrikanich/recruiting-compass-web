@@ -76,6 +76,7 @@ export interface School {
   phone?: string | null;
   ncaa_id?: string | null;
   status:
+    | "researching"
     | "interested"
     | "contacted"
     | "camp_invite"

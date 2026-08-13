@@ -51,6 +51,36 @@ export function calculatePersonalFitSignals(
   return { signals: { location, campusSize, cost }, availableSignals };
 }
 
+export type OverallPersonalFit = "strong" | "good" | "stretch";
+
+/**
+ * Roll the three personal-fit signals into one overall verdict.
+ * Averages available signal ranks (strong=2, good=1, stretch=0), ignoring
+ * unknowns. Returns null when no signal is known. Mirrors the iOS pill.
+ */
+export function computeOverallPersonalFit(
+  analysis: PersonalFitAnalysis,
+): OverallPersonalFit | null {
+  const rankOf: Record<FitSignalStrength, number | null> = {
+    strong: 2,
+    good: 1,
+    stretch: 0,
+    unknown: null,
+  };
+  const ranks = [
+    analysis.signals.location,
+    analysis.signals.campusSize,
+    analysis.signals.cost,
+  ]
+    .map((s) => rankOf[s.strength])
+    .filter((r): r is number => r !== null);
+
+  if (ranks.length === 0) return null;
+
+  const mean = ranks.reduce((sum, r) => sum + r, 0) / ranks.length;
+  return mean >= 1.5 ? "strong" : mean >= 0.75 ? "good" : "stretch";
+}
+
 function calcLocationSignal(
   athleteState: string | null,
   schoolState: string | null,
