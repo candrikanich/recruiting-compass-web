@@ -32,7 +32,13 @@ export const hasSchoolInfo = (school: School | null): boolean => {
  */
 export const hasContactInfo = (school: School | null): boolean => {
   if (!school) return false;
-  return !!(school.website || school.twitter_handle);
+  return !!(
+    school.academic_info?.address ||
+    school.website ||
+    school.twitter_handle ||
+    school.instagram_handle ||
+    school.phone
+  );
 };
 
 /**

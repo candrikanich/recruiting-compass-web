@@ -3,7 +3,6 @@ import { mount } from "@vue/test-utils";
 import SchoolInformationCard from "~/components/School/SchoolInformationCard.vue";
 import type { School } from "~/types/models";
 
-// Mock icons
 // Mock child components
 vi.mock("~/components/School/SchoolMap.vue", () => ({
   default: {
@@ -16,8 +15,16 @@ vi.mock("~/components/School/SchoolMap.vue", () => ({
 // Mock utils
 vi.mock("~/utils/schoolHelpers", () => ({
   getAcademicInfo: vi.fn((school, key) => school?.academic_info?.[key]),
-  hasSchoolInfo: vi.fn((school) => !!school?.academic_info?.address),
-  hasContactInfo: vi.fn((school) => !!school?.website),
+  hasContactInfo: vi.fn(
+    (school) =>
+      !!(
+        school?.academic_info?.address ||
+        school?.website ||
+        school?.twitter_handle ||
+        school?.instagram_handle ||
+        school?.phone
+      ),
+  ),
   hasCollegeScorecardData: vi.fn(
     (school) => !!school?.academic_info?.student_size,
   ),
@@ -29,11 +36,10 @@ describe("SchoolInformationCard", () => {
     name: "Test University",
     website: "https://test.edu",
     twitter_handle: "@testuniversity",
+    instagram_handle: "@testuniversity_ig",
+    phone: "(555) 111-2222",
     academic_info: {
       address: "123 Main St",
-      baseball_facility_address: "456 Stadium Dr",
-      mascot: "Eagles",
-      undergrad_size: "5,000-10,000",
       latitude: 30.2672,
       longitude: -97.7431,
       student_size: 10000,
@@ -45,13 +51,10 @@ describe("SchoolInformationCard", () => {
 
   const mockFormData = {
     address: "123 Main St",
-    baseball_facility_address: "456 Stadium Dr",
-    mascot: "Eagles",
-    undergrad_size: "5,000-10,000",
-    distance_from_home: null,
     website: "https://test.edu",
     twitter_handle: "@testuniversity",
-    instagram_handle: "",
+    instagram_handle: "@testuniversity_ig",
+    phone: "(555) 111-2222",
   };
 
   const defaultProps = {
@@ -65,9 +68,10 @@ describe("SchoolInformationCard", () => {
   };
 
   describe("rendering", () => {
-    it("renders heading", () => {
+    it("renders both section headings", () => {
       const wrapper = mount(SchoolInformationCard, { props: defaultProps });
-      expect(wrapper.text()).toContain("Information");
+      expect(wrapper.text()).toContain("Contact & Social");
+      expect(wrapper.text()).toContain("College Data");
     });
 
     it("renders school map", () => {
@@ -97,13 +101,6 @@ describe("SchoolInformationCard", () => {
         props: { ...defaultProps, calculatedDistance: null },
       });
       expect(wrapper.text()).not.toContain("Distance from Home:");
-    });
-
-    it("applies correct styling to distance banner", () => {
-      const wrapper = mount(SchoolInformationCard, { props: defaultProps });
-      const banner = wrapper.find(".bg-blue-50.text-blue-700");
-      expect(banner.exists()).toBe(true);
-      expect(banner.text()).toContain("50 miles");
     });
   });
 
@@ -190,14 +187,6 @@ describe("SchoolInformationCard", () => {
       const errorBanner = wrapper.find(".bg-red-50");
       expect(errorBanner.exists()).toBe(false);
     });
-
-    it("applies error styling", () => {
-      const wrapper = mount(SchoolInformationCard, {
-        props: { ...defaultProps, collegeDataError: "Error occurred" },
-      });
-      const errorBanner = wrapper.find(".bg-red-50.text-red-700");
-      expect(errorBanner.exists()).toBe(true);
-    });
   });
 
   describe("edit form", () => {
@@ -215,16 +204,24 @@ describe("SchoolInformationCard", () => {
       expect(inputs.length).toBe(0);
     });
 
-    it("renders all form fields", () => {
+    it("renders all Contact & Social form fields", () => {
       const wrapper = mount(SchoolInformationCard, {
         props: { ...defaultProps, editingBasicInfo: true },
       });
       expect(wrapper.text()).toContain("Campus Address");
-      expect(wrapper.text()).toContain("Baseball Facility");
-      expect(wrapper.text()).toContain("Mascot");
-      expect(wrapper.text()).toContain("Undergraduate Size");
+      expect(wrapper.text()).toContain("Phone");
       expect(wrapper.text()).toContain("Website");
       expect(wrapper.text()).toContain("Twitter Handle");
+      expect(wrapper.text()).toContain("Instagram Handle");
+    });
+
+    it("does not render removed school-detail fields", () => {
+      const wrapper = mount(SchoolInformationCard, {
+        props: { ...defaultProps, editingBasicInfo: true },
+      });
+      expect(wrapper.text()).not.toContain("Baseball Facility");
+      expect(wrapper.text()).not.toContain("Mascot");
+      expect(wrapper.text()).not.toContain("Undergraduate Size");
     });
 
     it("renders save button in edit mode", () => {
@@ -232,11 +229,8 @@ describe("SchoolInformationCard", () => {
         props: { ...defaultProps, editingBasicInfo: true },
       });
       const buttons = wrapper.findAll("button");
-      const saveBtn = buttons.find((btn) =>
-        btn.text().includes("Save Information"),
-      );
+      const saveBtn = buttons.find((btn) => btn.text() === "Save");
       expect(saveBtn).toBeDefined();
-      expect(saveBtn?.text()).toContain("Save Information");
     });
 
     it("emits save when save button clicked", async () => {
@@ -244,9 +238,7 @@ describe("SchoolInformationCard", () => {
         props: { ...defaultProps, editingBasicInfo: true },
       });
       const buttons = wrapper.findAll("button");
-      const saveBtn = buttons.find((btn) =>
-        btn.text().includes("Save Information"),
-      );
+      const saveBtn = buttons.find((btn) => btn.text() === "Save");
       await saveBtn?.trigger("click");
 
       expect(wrapper.emitted("save")).toBeTruthy();
@@ -270,41 +262,17 @@ describe("SchoolInformationCard", () => {
     });
   });
 
-  describe("display mode - school information", () => {
-    it("shows school information section when data exists", () => {
-      const wrapper = mount(SchoolInformationCard, { props: defaultProps });
-      expect(wrapper.text()).toContain("School Information");
-    });
-
+  describe("display mode - contact and social", () => {
     it("displays campus address", () => {
       const wrapper = mount(SchoolInformationCard, { props: defaultProps });
-      expect(wrapper.text()).toContain("Campus Address");
+      expect(wrapper.text()).toContain("Address:");
       expect(wrapper.text()).toContain("123 Main St");
     });
 
-    it("displays baseball facility", () => {
+    it("displays phone", () => {
       const wrapper = mount(SchoolInformationCard, { props: defaultProps });
-      expect(wrapper.text()).toContain("Baseball Facility");
-      expect(wrapper.text()).toContain("456 Stadium Dr");
-    });
-
-    it("displays mascot", () => {
-      const wrapper = mount(SchoolInformationCard, { props: defaultProps });
-      expect(wrapper.text()).toContain("Mascot");
-      expect(wrapper.text()).toContain("Eagles");
-    });
-
-    it("displays undergraduate size", () => {
-      const wrapper = mount(SchoolInformationCard, { props: defaultProps });
-      expect(wrapper.text()).toContain("Undergraduate Size");
-      expect(wrapper.text()).toContain("5,000-10,000");
-    });
-  });
-
-  describe("display mode - contact and social", () => {
-    it("shows contact section when data exists", () => {
-      const wrapper = mount(SchoolInformationCard, { props: defaultProps });
-      expect(wrapper.text()).toContain("Contact & Social");
+      expect(wrapper.text()).toContain("Phone:");
+      expect(wrapper.text()).toContain("(555) 111-2222");
     });
 
     it("displays website link", () => {
@@ -319,19 +287,17 @@ describe("SchoolInformationCard", () => {
       expect(wrapper.text()).toContain("@testuniversity");
     });
 
-    it("makes links open in new tab", () => {
+    it("displays instagram handle link", () => {
       const wrapper = mount(SchoolInformationCard, { props: defaultProps });
-      const links = wrapper.findAll("a");
-      links.forEach((link) => {
-        expect(link.attributes("target")).toBe("_blank");
-      });
+      expect(wrapper.text()).toContain("Instagram:");
+      expect(wrapper.text()).toContain("@testuniversity_ig");
     });
   });
 
-  describe("display mode - college scorecard", () => {
-    it("shows scorecard section when data exists", () => {
+  describe("display mode - college data", () => {
+    it("shows college data section heading", () => {
       const wrapper = mount(SchoolInformationCard, { props: defaultProps });
-      expect(wrapper.text()).toContain("College Scorecard Data");
+      expect(wrapper.text()).toContain("College Data");
     });
 
     it("displays student size", () => {
@@ -360,27 +326,31 @@ describe("SchoolInformationCard", () => {
   });
 
   describe("conditional rendering", () => {
-    it("hides school info section when no data", () => {
-      const schoolWithoutInfo = {
-        ...mockSchool,
-        academic_info: undefined,
-      } as School;
-      const wrapper = mount(SchoolInformationCard, {
-        props: { ...defaultProps, school: schoolWithoutInfo },
-      });
-      expect(wrapper.text()).not.toContain("Campus Address");
-    });
-
-    it("hides contact section when no data", () => {
+    it("shows contact empty state when no contact data", () => {
       const schoolWithoutContact = {
         ...mockSchool,
         website: null,
         twitter_handle: null,
+        instagram_handle: null,
+        phone: null,
+        academic_info: { student_size: 10000 },
       } as School;
       const wrapper = mount(SchoolInformationCard, {
         props: { ...defaultProps, school: schoolWithoutContact },
       });
       expect(wrapper.text()).not.toContain("Website:");
+      expect(wrapper.text()).toContain("No contact info yet");
+    });
+
+    it("shows college-data empty state when no scorecard data", () => {
+      const schoolWithoutScorecard = {
+        ...mockSchool,
+        academic_info: { address: "123 Main St" },
+      } as School;
+      const wrapper = mount(SchoolInformationCard, {
+        props: { ...defaultProps, school: schoolWithoutScorecard },
+      });
+      expect(wrapper.text()).toContain("No college data yet");
     });
   });
 
@@ -389,14 +359,6 @@ describe("SchoolInformationCard", () => {
       const wrapper = mount(SchoolInformationCard, { props: defaultProps });
       const card = wrapper.find(".bg-white.rounded-xl");
       expect(card.exists()).toBe(true);
-    });
-
-    it("applies grid layout to form fields", () => {
-      const wrapper = mount(SchoolInformationCard, {
-        props: { ...defaultProps, editingBasicInfo: true },
-      });
-      const grid = wrapper.find(".grid.grid-cols-1.md\\:grid-cols-2");
-      expect(grid.exists()).toBe(true);
     });
   });
 });

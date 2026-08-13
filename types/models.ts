@@ -73,6 +73,7 @@ export interface School {
   favicon_url: string | null;
   twitter_handle: string | null;
   instagram_handle: string | null;
+  phone?: string | null;
   ncaa_id?: string | null;
   status:
     | "interested"

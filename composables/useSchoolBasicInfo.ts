@@ -2,15 +2,15 @@ import { ref } from "vue";
 import type { School, AcademicInfo } from "~/types/models";
 import { useSchools } from "~/composables/useSchools";
 
+// Contact & Social edit form. Address lives in academic_info (preserved
+// alongside lookup-populated fields via spread); website/socials/phone are
+// top-level school columns.
 export interface BasicInfoFormData {
   address: string;
-  baseball_facility_address: string;
-  mascot: string;
-  undergrad_size: string;
-  distance_from_home: number | null;
   website: string;
   twitter_handle: string;
   instagram_handle: string;
+  phone: string;
 }
 
 export const useSchoolBasicInfo = (schoolId: string) => {
@@ -19,30 +19,19 @@ export const useSchoolBasicInfo = (schoolId: string) => {
   const editingBasicInfo = ref(false);
   const editedBasicInfo = ref<BasicInfoFormData>({
     address: "",
-    baseball_facility_address: "",
-    mascot: "",
-    undergrad_size: "",
-    distance_from_home: null,
     website: "",
     twitter_handle: "",
     instagram_handle: "",
+    phone: "",
   });
 
   const initializeForm = (school: School) => {
     editedBasicInfo.value = {
       address: String(school.academic_info?.address || ""),
-      baseball_facility_address: String(
-        school.academic_info?.baseball_facility_address || "",
-      ),
-      mascot: String(school.academic_info?.mascot || ""),
-      undergrad_size: String(school.academic_info?.undergrad_size || ""),
-      distance_from_home:
-        typeof school.academic_info?.distance_from_home === "number"
-          ? school.academic_info.distance_from_home
-          : null,
       website: String(school.website || ""),
       twitter_handle: String(school.twitter_handle || ""),
       instagram_handle: String(school.instagram_handle || ""),
+      phone: String(school.phone || ""),
     };
   };
 
@@ -53,14 +42,10 @@ export const useSchoolBasicInfo = (schoolId: string) => {
       website: editedBasicInfo.value.website || null,
       twitter_handle: editedBasicInfo.value.twitter_handle || null,
       instagram_handle: editedBasicInfo.value.instagram_handle || null,
+      phone: editedBasicInfo.value.phone || null,
       academic_info: {
         ...(currentSchool.academic_info || {}),
         address: editedBasicInfo.value.address,
-        baseball_facility_address:
-          editedBasicInfo.value.baseball_facility_address,
-        mascot: editedBasicInfo.value.mascot,
-        undergrad_size: editedBasicInfo.value.undergrad_size,
-        distance_from_home: editedBasicInfo.value.distance_from_home,
       } as unknown as AcademicInfo,
     };
 
