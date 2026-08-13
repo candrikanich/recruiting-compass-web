@@ -64,6 +64,10 @@ export default defineNuxtConfig({
         lang: "en",
       },
       link: [
+        // SVG favicon for modern browsers; .ico fallback for legacy/Safari.
+        { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
+        { rel: "icon", type: "image/x-icon", href: "/favicon.ico" },
+        { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
         { rel: "preconnect", href: "https://us.i.posthog.com" },
         { rel: "dns-prefetch", href: "https://us.i.posthog.com" },
       ],
