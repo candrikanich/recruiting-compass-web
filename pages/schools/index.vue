@@ -160,8 +160,9 @@
         <SchoolListCard
           v-for="school in paginatedSchools"
           :key="school.id"
-          v-memo="[school.updated_at]"
+          v-memo="[school.updated_at, athleteProfile.school_state]"
           :school="school"
+          :overall="overallFitFor(school)"
           @toggle-favorite="toggleFavorite"
           @delete="handleDeleteSchool"
         />
@@ -235,6 +236,15 @@ import type { FilterValue } from "~/types/filters";
 import type { Interaction, Coach, Event } from "~/types/models";
 import { createSchoolFilterConfigs } from "~/utils/schoolFilterConfigs";
 import { extractStateFromLocation } from "~/utils/locationParser";
+import {
+  calculatePersonalFitSignals,
+  computeOverallPersonalFit,
+  type OverallPersonalFit,
+} from "~/utils/fitScoreCalculation";
+import type {
+  AthleteProfileForFit,
+  SchoolAcademicInfo,
+} from "~/types/schoolFit";
 
 interface SchoolFilterValues {
   name?: string;
@@ -255,7 +265,7 @@ const { schools, loading, error, fetchSchools, toggleFavorite, smartDelete } =
   useSchools();
 const { fetchMultipleLogos } = useSchoolLogos();
 const { calculateMatchScore } = useSchoolMatching();
-const { getSchoolPreferences, getHomeLocation, loadAllPreferences } =
+const { getSchoolPreferences, getHomeLocation, loadAllPreferences, getPlayerDetails } =
   usePreferenceManager();
 const offersStore = useOffersStore();
 const { offers } = storeToRefs(offersStore);
@@ -304,6 +314,31 @@ const goToPage = (page: number) => {
 };
 
 const isParent = computed(() => userStore.user?.role === "parent");
+
+// Personal-fit pill on each school tile (parity with iOS)
+const athleteProfile = computed<AthleteProfileForFit>(() => {
+  const player = getPlayerDetails();
+  return {
+    school_state: player?.school_state ?? null,
+    gpa: player?.gpa ?? null,
+    sat_score: player?.sat_score ?? null,
+    act_score: player?.act_score ?? null,
+    campus_size_preference: null,
+    cost_sensitivity: null,
+  };
+});
+
+const overallFitFor = (school: School): OverallPersonalFit | null => {
+  const info = school.academic_info;
+  const academicInfo = (
+    typeof info === "object" && info !== null ? info : {}
+  ) as SchoolAcademicInfo;
+  const signals = calculatePersonalFitSignals(
+    athleteProfile.value,
+    academicInfo,
+  );
+  return computeOverallPersonalFit(signals);
+};
 
 const { announcement, announce, liveRegionAttrs } = useLiveRegion();
 const isDeleteDialogOpen = ref(false);
