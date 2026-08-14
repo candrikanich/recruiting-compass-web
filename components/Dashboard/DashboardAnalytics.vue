@@ -389,38 +389,6 @@
         View All Notifications
       </NuxtLink>
     </div>
-
-    <!-- Social Media -->
-    <div
-      v-if="showSocial"
-      class="bg-white rounded-2xl border border-slate-200 shadow-xs hover:shadow-md transition-shadow p-6 mt-6"
-    >
-      <div class="flex items-center gap-3 mb-5">
-        <div class="p-2 bg-slate-100 rounded-lg">
-          <UIcon
-            name="i-heroicons-share"
-            class="w-5 h-5 text-slate-700"
-            aria-hidden="true"
-          />
-        </div>
-        <h3 class="text-slate-900 font-semibold">Social Media</h3>
-      </div>
-      <div class="space-y-3">
-        <div class="flex items-center gap-3 p-3 rounded-lg bg-slate-50">
-          <span class="text-2xl">🐦</span>
-          <div class="flex-1">
-            <div class="text-slate-700 font-medium">X (Twitter)</div>
-            <div class="text-slate-500 text-sm">Monitor coach posts</div>
-          </div>
-        </div>
-      </div>
-      <NuxtLink
-        to="/social"
-        class="mt-4 block w-full py-2 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors text-slate-700 text-center"
-      >
-        Monitor Activity
-      </NuxtLink>
-    </div>
   </div>
 </template>
 
@@ -462,7 +430,6 @@ interface Props {
   showEvents?: boolean;
   showNotifications?: boolean;
   showTasks?: boolean;
-  showSocial?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -479,7 +446,6 @@ const props = withDefaults(defineProps<Props>(), {
   showEvents: true,
   showNotifications: true,
   showTasks: true,
-  showSocial: true,
 });
 
 const emit = defineEmits<{

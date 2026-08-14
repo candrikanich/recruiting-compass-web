@@ -18,10 +18,8 @@ test.describe("Protected route guards", () => {
   const protectedRoutes = [
     // Note: /timeline and /reports use auth middleware but may handle unauthenticated SSR differently
     "/recommendations",
-    "/social",
     "/settings/notifications",
     "/settings/profile",
-    "/settings/social-sync",
   ];
 
   for (const route of protectedRoutes) {
@@ -117,29 +115,6 @@ test.describe("/recommendations — Recommendation Letters", () => {
   });
 });
 
-// ── /social ───────────────────────────────────────────────────────────────────
-
-test.describe("/social — Social Media Monitoring", () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto("/social");
-    await page.waitForLoadState("domcontentloaded");
-  });
-
-  test("loads and shows heading", async ({ page }) => {
-    await expect(page.locator("h1")).toContainText("Social Media Monitoring");
-  });
-
-  test("shows platform labels", async ({ page }) => {
-    await expect(page.locator("text=Twitter/X Posts")).toBeVisible();
-    await expect(page.locator("text=Instagram Posts")).toBeVisible();
-  });
-
-  test("shows meaningful content — no crash", async ({ page }) => {
-    const bodyText = await page.locator("body").textContent();
-    expect(bodyText?.trim().length).toBeGreaterThan(50);
-  });
-});
-
 // ── /settings/notifications ───────────────────────────────────────────────────
 
 test.describe("/settings/notifications — Notification Preferences", () => {
@@ -191,23 +166,5 @@ test.describe("/settings/profile — Profile Settings", () => {
     );
     await expect(inputs.first()).toBeVisible({ timeout: 15000 });
     expect(await inputs.count()).toBeGreaterThan(0);
-  });
-});
-
-// ── /settings/social-sync ─────────────────────────────────────────────────────
-
-test.describe("/settings/social-sync — Social Media Sync", () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto("/settings/social-sync");
-    await page.waitForLoadState("domcontentloaded");
-  });
-
-  test("loads and shows heading", async ({ page }) => {
-    await expect(page.locator("h1")).toContainText("Social Media Sync");
-  });
-
-  test("shows meaningful content", async ({ page }) => {
-    const bodyText = await page.locator("body").textContent();
-    expect(bodyText?.trim().length).toBeGreaterThan(50);
   });
 });

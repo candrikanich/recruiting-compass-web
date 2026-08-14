@@ -82,7 +82,6 @@ export default defineEventHandler(async (event) => {
       { count: coachCount, error: coachError },
       { count: interactionCount, error: interactionError },
       { count: offerCount, error: offerError },
-      { count: postCount, error: postError },
       { count: docCount, error: docError },
       { count: eventCount, error: eventError },
       { count: suggestionCount, error: suggestionError },
@@ -92,7 +91,6 @@ export default defineEventHandler(async (event) => {
       client.from("coaches").delete().eq("school_id", schoolId),
       client.from("interactions").delete().eq("school_id", schoolId),
       client.from("offers").delete().eq("school_id", schoolId),
-      client.from("social_media_posts").delete().eq("school_id", schoolId),
       client.from("documents").delete().eq("school_id", schoolId),
       client.from("events").delete().eq("school_id", schoolId),
       client.from("suggestion").delete().eq("related_school_id", schoolId),
@@ -104,7 +102,6 @@ export default defineEventHandler(async (event) => {
       coachError,
       interactionError,
       offerError,
-      postError,
       docError,
       eventError,
       suggestionError,
@@ -125,7 +122,6 @@ export default defineEventHandler(async (event) => {
     if (coachCount) deleted.coaches = coachCount;
     if (interactionCount) deleted.interactions = interactionCount;
     if (offerCount) deleted.offers = offerCount;
-    if (postCount) deleted.social_media_posts = postCount;
     if (docCount) deleted.documents = docCount;
     if (eventCount) deleted.events = eventCount;
     if (suggestionCount) deleted.suggestion = suggestionCount;

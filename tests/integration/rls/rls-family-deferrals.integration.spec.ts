@@ -74,7 +74,6 @@ describe.skipIf(!hasLiveSupabase)(
     let documentId: string | null = null;
     let performanceMetricId: string | null = null;
     let interactionId: string | null = null;
-    let socialMediaPostId: string | null = null;
     let recommendationLetterId: string | null = null;
     let explicitFamilyUnitCoachId: string | null = null;
 
@@ -164,11 +163,6 @@ describe.skipIf(!hasLiveSupabase)(
           .eq("id", performanceMetricId);
       if (interactionId)
         await admin.from("interactions").delete().eq("id", interactionId);
-      if (socialMediaPostId)
-        await admin
-          .from("social_media_posts")
-          .delete()
-          .eq("id", socialMediaPostId);
       await admin.from("schools").delete().eq("id", schoolId);
       await admin
         .from("family_members")
@@ -254,23 +248,6 @@ describe.skipIf(!hasLiveSupabase)(
         expect(data!.family_unit_id).toBe(familyId);
       });
 
-      it("stamps family_unit_id on a social_media_posts row inserted with only school_id set", async () => {
-        const { data, error } = await admin
-          .from("social_media_posts")
-          .insert({
-            school_id: schoolId,
-            platform: "twitter",
-            post_url: `https://twitter.com/example/status/${RUN_ID}`,
-          })
-          .select("id, family_unit_id")
-          .single();
-
-        expect(error).toBeNull();
-        expect(data).not.toBeNull();
-        socialMediaPostId = data!.id as string;
-        expect(data!.family_unit_id).toBe(familyId);
-      });
-
       it("stamps family_unit_id on a recommendation_letters row inserted with only user_id set", async () => {
         const { data, error } = await admin
           .from("recommendation_letters")
@@ -340,7 +317,7 @@ describe.skipIf(!hasLiveSupabase)(
  *
  * These assertions go GREEN only once BOTH the Phase 1 migration
  * (20260805000000_family_unit_id_columns_trigger_backfill.sql — adds
- * family_unit_id + derivation trigger to social_media_posts and
+ * family_unit_id + derivation trigger to
  * recommendation_letters) AND the Phase 3 migration in this PR
  * (20260808000000_family_policies_additive.sql — the new family
  * SELECT/INSERT/UPDATE/DELETE policies themselves) have been applied to the
@@ -348,7 +325,7 @@ describe.skipIf(!hasLiveSupabase)(
  * single prod/non-prod DB — see task brief). Run once immediately after
  * writing this file, against a DB still at migration head 20260801000000:
  * expected RED, and specifically column-does-not-exist errors on
- * family_unit_id for social_media_posts/recommendation_letters inserts
+ * family_unit_id for recommendation_letters inserts
  * (Phase 1 not yet applied), not policy-violation errors — those would mean
  * a stale/misleading pass. Document the actual failure shape in the PR.
  */
@@ -367,7 +344,6 @@ describe.skipIf(!hasLiveSupabase)(
 
     // Read-fixture rows, seeded once in beforeAll, read-only in the positive
     // and negative-control assertions below.
-    let alphaPostId: string;
     let alphaLetterId: string;
 
     // Dedicated per-verb DELETE-target rows, one set per table, so DELETE
@@ -376,13 +352,11 @@ describe.skipIf(!hasLiveSupabase)(
     let deletableCoachId: string;
     let deletableDocumentId: string;
     let deletablePerformanceMetricId: string;
-    let deletablePostId: string;
     let deletableLetterId: string;
 
     // Rows created by the INSERT/UPDATE assertions themselves, cleaned up in
     // afterAll as a safety net (the DELETE assertion within the same `it`
     // already removes them on the happy path).
-    let insertedPostId: string | null = null;
     let insertedLetterId: string | null = null;
 
     beforeAll(async () => {
@@ -508,23 +482,6 @@ describe.skipIf(!hasLiveSupabase)(
 
       // Read fixtures — visible-to-alpha, hidden-from-beta rows exercised by
       // the SELECT assertions.
-      const { data: post, error: postErr } = await admin
-        .from("social_media_posts")
-        .insert({
-          school_id: alphaSchoolId,
-          family_unit_id: alphaFamilyId,
-          platform: "twitter",
-          post_url: `https://twitter.com/example/status/phase3-read-${RUN_ID}`,
-        })
-        .select("id")
-        .single();
-      if (postErr || !post) {
-        throw new Error(
-          `seed social_media_posts(read fixture) failed: ${postErr?.message}`,
-        );
-      }
-      alphaPostId = post.id as string;
-
       const { data: letter, error: letterErr } = await admin
         .from("recommendation_letters")
         .insert({
@@ -616,23 +573,6 @@ describe.skipIf(!hasLiveSupabase)(
       }
       deletablePerformanceMetricId = delMetric.id as string;
 
-      const { data: delPost, error: delPostErr } = await admin
-        .from("social_media_posts")
-        .insert({
-          school_id: alphaSchoolId,
-          family_unit_id: alphaFamilyId,
-          platform: "twitter",
-          post_url: `https://twitter.com/example/status/phase3-delete-${RUN_ID}`,
-        })
-        .select("id")
-        .single();
-      if (delPostErr || !delPost) {
-        throw new Error(
-          `seed social_media_posts(delete fixture) failed: ${delPostErr?.message}`,
-        );
-      }
-      deletablePostId = delPost.id as string;
-
       const { data: delLetter, error: delLetterErr } = await admin
         .from("recommendation_letters")
         .insert({
@@ -655,11 +595,6 @@ describe.skipIf(!hasLiveSupabase)(
 
     afterAll(async () => {
       if (!hasLiveSupabase) return;
-      if (insertedPostId)
-        await admin
-          .from("social_media_posts")
-          .delete()
-          .eq("id", insertedPostId);
       if (insertedLetterId)
         await admin
           .from("recommendation_letters")
@@ -667,7 +602,6 @@ describe.skipIf(!hasLiveSupabase)(
           .eq("id", insertedLetterId);
       // DELETE-fixture rows: no-op if the positive assertion already removed
       // them (empty match, no error).
-      await admin.from("social_media_posts").delete().eq("id", deletablePostId);
       await admin
         .from("recommendation_letters")
         .delete()
@@ -679,7 +613,6 @@ describe.skipIf(!hasLiveSupabase)(
       await admin.from("documents").delete().eq("id", deletableDocumentId);
       await admin.from("coaches").delete().eq("id", deletableCoachId);
       await admin.from("schools").delete().eq("id", deletableSchoolId);
-      await admin.from("social_media_posts").delete().eq("id", alphaPostId);
       await admin
         .from("recommendation_letters")
         .delete()
@@ -704,14 +637,7 @@ describe.skipIf(!hasLiveSupabase)(
     // a 0-row delete result from Beta would prove nothing (the row would
     // already be gone from Alpha's own delete, not RLS).
     describe("Family Beta member — negative control, no access to Alpha's rows", () => {
-      it("cannot SELECT Alpha's social_media_posts or recommendation_letters rows", async () => {
-        const { data: posts, error: postsErr } = await betaClient
-          .from("social_media_posts")
-          .select("id")
-          .eq("id", alphaPostId);
-        expect(postsErr).toBeNull();
-        expect(posts).toHaveLength(0);
-
+      it("cannot SELECT Alpha's recommendation_letters rows", async () => {
         const { data: letters, error: lettersErr } = await betaClient
           .from("recommendation_letters")
           .select("id")
@@ -720,15 +646,7 @@ describe.skipIf(!hasLiveSupabase)(
         expect(letters).toHaveLength(0);
       });
 
-      it("cannot DELETE Alpha's social_media_posts or recommendation_letters rows (no-op)", async () => {
-        const { data: postDelete, error: postDeleteErr } = await betaClient
-          .from("social_media_posts")
-          .delete()
-          .eq("id", deletablePostId)
-          .select("id");
-        expect(postDeleteErr).toBeNull();
-        expect(postDelete).toHaveLength(0);
-
+      it("cannot DELETE Alpha's recommendation_letters rows (no-op)", async () => {
         const { data: letterDelete, error: letterDeleteErr } = await betaClient
           .from("recommendation_letters")
           .delete()
@@ -739,11 +657,6 @@ describe.skipIf(!hasLiveSupabase)(
 
         // Prove the rows genuinely survived the no-op delete, not that the
         // fixture happened to already be gone.
-        const { data: postStillThere } = await admin
-          .from("social_media_posts")
-          .select("id")
-          .eq("id", deletablePostId);
-        expect(postStillThere).toHaveLength(1);
         const { data: letterStillThere } = await admin
           .from("recommendation_letters")
           .select("id")
@@ -809,50 +722,6 @@ describe.skipIf(!hasLiveSupabase)(
     });
 
     describe("Family Alpha member — positive access via new family policies", () => {
-      it("can SELECT a social_media_posts row in their own family", async () => {
-        const { data, error } = await alphaClient
-          .from("social_media_posts")
-          .select("id")
-          .eq("id", alphaPostId);
-
-        expect(error).toBeNull();
-        expect(data).toHaveLength(1);
-      });
-
-      it("can INSERT, UPDATE, and DELETE a social_media_posts row in their own family", async () => {
-        const { data: inserted, error: insertErr } = await alphaClient
-          .from("social_media_posts")
-          .insert({
-            school_id: alphaSchoolId,
-            family_unit_id: alphaFamilyId,
-            platform: "twitter",
-            post_url: `https://twitter.com/example/status/phase3-crud-${RUN_ID}`,
-          })
-          .select("id")
-          .single();
-        expect(insertErr).toBeNull();
-        expect(inserted).not.toBeNull();
-        insertedPostId = inserted!.id as string;
-
-        const { data: updated, error: updateErr } = await alphaClient
-          .from("social_media_posts")
-          .update({ notes: "updated by alpha" })
-          .eq("id", insertedPostId)
-          .select("id, notes")
-          .single();
-        expect(updateErr).toBeNull();
-        expect(updated?.notes).toBe("updated by alpha");
-
-        const { data: deleted, error: deleteErr } = await alphaClient
-          .from("social_media_posts")
-          .delete()
-          .eq("id", insertedPostId)
-          .select("id");
-        expect(deleteErr).toBeNull();
-        expect(deleted).toHaveLength(1);
-        insertedPostId = null;
-      });
-
       it("can SELECT a recommendation_letters row in their own family", async () => {
         const { data, error } = await alphaClient
           .from("recommendation_letters")
@@ -1193,7 +1062,7 @@ describe.skipIf(!hasLiveSupabase)(
  * changes is that account_links-only access — no family_members row —
  * stops working. This block's single regression target: a user linked to
  * Alpha via an *accepted account_links* row, but NOT a family_members row,
- * could read/write Alpha's coach/document/performance_metric/social-post/
+ * could read/write Alpha's coach/document/performance_metric/
  * recommendation-letter rows before this migration (via the legacy
  * get_linked_user_ids()-based policies) and cannot after.
  */
@@ -1209,7 +1078,6 @@ describe.skipIf(!hasLiveSupabase)(
     let alphaCoachId: string;
     let alphaDocumentId: string;
     let alphaMetricId: string;
-    let alphaPostId: string;
     let alphaLetterId: string;
     let legacyClient: SupabaseClient;
 
@@ -1352,21 +1220,6 @@ describe.skipIf(!hasLiveSupabase)(
       }
       alphaMetricId = metric.id as string;
 
-      const { data: post, error: postErr } = await admin
-        .from("social_media_posts")
-        .insert({
-          school_id: alphaSchoolId,
-          family_unit_id: alphaFamilyId,
-          platform: "twitter",
-          post_url: `https://twitter.com/example/status/phase5-${RUN_ID}`,
-        })
-        .select("id")
-        .single();
-      if (postErr || !post) {
-        throw new Error(`seed social_media_posts(alpha) failed: ${postErr?.message}`);
-      }
-      alphaPostId = post.id as string;
-
       const { data: letter, error: letterErr } = await admin
         .from("recommendation_letters")
         .insert({
@@ -1387,7 +1240,6 @@ describe.skipIf(!hasLiveSupabase)(
     afterAll(async () => {
       if (!hasLiveSupabase) return;
       await admin.from("recommendation_letters").delete().eq("id", alphaLetterId);
-      await admin.from("social_media_posts").delete().eq("id", alphaPostId);
       await admin.from("performance_metrics").delete().eq("id", alphaMetricId);
       await admin.from("documents").delete().eq("id", alphaDocumentId);
       await admin.from("coaches").delete().eq("id", alphaCoachId);
@@ -1403,7 +1255,7 @@ describe.skipIf(!hasLiveSupabase)(
       await admin.auth.admin.deleteUser(legacyLinkedPlayerId).catch(() => null);
     });
 
-    it("account_links-only user (no family_members row) cannot SELECT Alpha's coaches/documents/performance_metrics/social_media_posts/recommendation_letters rows", async () => {
+    it("account_links-only user (no family_members row) cannot SELECT Alpha's coaches/documents/performance_metrics/recommendation_letters rows", async () => {
       const { data: coaches, error: coachesErr } = await legacyClient
         .from("coaches")
         .select("id")
@@ -1424,13 +1276,6 @@ describe.skipIf(!hasLiveSupabase)(
         .eq("id", alphaMetricId);
       expect(metricsErr).toBeNull();
       expect(metrics).toHaveLength(0);
-
-      const { data: posts, error: postsErr } = await legacyClient
-        .from("social_media_posts")
-        .select("id")
-        .eq("id", alphaPostId);
-      expect(postsErr).toBeNull();
-      expect(posts).toHaveLength(0);
 
       const { data: letters, error: lettersErr } = await legacyClient
         .from("recommendation_letters")

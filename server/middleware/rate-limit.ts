@@ -105,8 +105,6 @@ interface RateLimitConfig {
 const RATE_LIMIT_CONFIGS: Record<string, RateLimitConfig> = {
   // Auth endpoints are strict (prevent brute force)
   auth: { limit: 5, windowMs: 60 * 1000 }, // 5 requests per minute
-  // Social media sync endpoints are resource-intensive
-  social: { limit: 10, windowMs: 60 * 1000 }, // 10 requests per minute
   // Standard API endpoints
   api: { limit: 60, windowMs: 60 * 1000 }, // 60 requests per minute
   // Default fallback
@@ -118,7 +116,6 @@ const RATE_LIMIT_CONFIGS: Record<string, RateLimitConfig> = {
  */
 function getEndpointConfig(path: string): RateLimitConfig {
   if (path?.includes("/api/auth")) return RATE_LIMIT_CONFIGS.auth;
-  if (path?.includes("/api/social")) return RATE_LIMIT_CONFIGS.social;
   if (path?.includes("/api/")) return RATE_LIMIT_CONFIGS.api;
   return RATE_LIMIT_CONFIGS.default;
 }

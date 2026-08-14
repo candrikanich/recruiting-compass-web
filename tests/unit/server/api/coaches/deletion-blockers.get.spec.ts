@@ -8,8 +8,6 @@ const mockState = {
   interactionError: null as object | null,
   offerCount: 0,
   offerError: null as object | null,
-  postCount: 0,
-  postError: null as object | null,
   authToken: "Bearer valid-token",
 };
 
@@ -76,11 +74,6 @@ vi.mock("~/server/utils/supabase", () => ({
           () => mockState.offerCount,
           () => mockState.offerError,
         );
-      if (table === "social_media_posts")
-        return buildSelectChain(
-          () => mockState.postCount,
-          () => mockState.postError,
-        );
       return buildSelectChain(
         () => 0,
         () => null,
@@ -127,8 +120,6 @@ describe("GET /api/coaches/[id]/deletion-blockers", () => {
     mockState.interactionError = null;
     mockState.offerCount = 0;
     mockState.offerError = null;
-    mockState.postCount = 0;
-    mockState.postError = null;
     mockState.authToken = "Bearer valid-token";
 
     vi.mocked(requireAuth).mockResolvedValue({
@@ -207,40 +198,22 @@ describe("GET /api/coaches/[id]/deletion-blockers", () => {
       });
       expect(result.message).toContain("1 offers");
     });
-
-    it("returns canDelete:false with social_media_posts blocker when post count > 0", async () => {
-      mockState.postCount = 5;
-      const handler = await getHandler();
-      const result = await handler(mockEvent);
-
-      expect(result.canDelete).toBe(false);
-      expect(result.blockers).toHaveLength(1);
-      expect(result.blockers[0]).toMatchObject({
-        table: "social_media_posts",
-        count: 5,
-        column: "coach_id",
-      });
-    });
   });
 
   describe("multiple blockers", () => {
     it("returns all blocking entities when multiple tables have records", async () => {
       mockState.interactionCount = 2;
       mockState.offerCount = 1;
-      mockState.postCount = 4;
       const handler = await getHandler();
       const result = await handler(mockEvent);
 
       expect(result.canDelete).toBe(false);
-      expect(result.blockers).toHaveLength(3);
+      expect(result.blockers).toHaveLength(2);
       expect(result.blockers).toContainEqual(
         expect.objectContaining({ table: "interactions", count: 2 }),
       );
       expect(result.blockers).toContainEqual(
         expect.objectContaining({ table: "offers", count: 1 }),
-      );
-      expect(result.blockers).toContainEqual(
-        expect.objectContaining({ table: "social_media_posts", count: 4 }),
       );
       expect(result.message).toContain("Cannot delete this coach");
     });

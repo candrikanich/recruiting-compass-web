@@ -62,7 +62,7 @@ const mockEvent = {
   node: { req: { headers: {} }, res: {} },
 } as any;
 
-// 9 child deletes + 1 school delete = 10 total calls
+// 8 child deletes + 1 school delete = 9 total calls
 const makeSuccessResponses = (count: number) =>
   Array.from({ length: count }, () => ({ count: 0, error: null }));
 
@@ -84,7 +84,6 @@ describe("POST /api/schools/[id]/cascade-delete", () => {
       .mockResolvedValueOnce({ count: 4, error: null }) // coaches
       .mockResolvedValueOnce({ count: 7, error: null }) // interactions
       .mockResolvedValueOnce({ count: 1, error: null }) // offers
-      .mockResolvedValueOnce({ count: 3, error: null }) // social_media_posts
       .mockResolvedValueOnce({ count: 5, error: null }) // documents
       .mockResolvedValueOnce({ count: 2, error: null }) // events
       .mockResolvedValueOnce({ count: 1, error: null }) // suggestion
@@ -102,7 +101,6 @@ describe("POST /api/schools/[id]/cascade-delete", () => {
       coaches: 4,
       interactions: 7,
       offers: 1,
-      social_media_posts: 3,
       documents: 5,
       events: 2,
       suggestion: 1,
@@ -115,7 +113,7 @@ describe("POST /api/schools/[id]/cascade-delete", () => {
 
   it("returns success:true with empty deleted when no related records exist", async () => {
     // All counts are 0/falsy → nothing recorded in deleted
-    makeSuccessResponses(10).forEach(() =>
+    makeSuccessResponses(9).forEach(() =>
       mockDeleteEq.mockResolvedValueOnce({ count: 0, error: null }),
     );
 
@@ -131,13 +129,12 @@ describe("POST /api/schools/[id]/cascade-delete", () => {
     const fromCalls = mockClientFrom.mock.calls.map(([table]) => table);
     // School itself must be last
     expect(fromCalls[fromCalls.length - 1]).toBe("schools");
-    // All 9 child tables must appear before the school
+    // All 8 child tables must appear before the school
     const childTables = fromCalls.slice(0, -1);
     expect(childTables).toContain("school_status_history");
     expect(childTables).toContain("coaches");
     expect(childTables).toContain("interactions");
     expect(childTables).toContain("offers");
-    expect(childTables).toContain("social_media_posts");
     expect(childTables).toContain("documents");
     expect(childTables).toContain("events");
     expect(childTables).toContain("suggestion");
@@ -149,11 +146,11 @@ describe("POST /api/schools/[id]/cascade-delete", () => {
 
     // suggestion uses related_school_id; all others use school_id
     const eqCalls = mockDeleteEq.mock.calls;
-    const childEqCalls = eqCalls.slice(0, 9); // first 9 are child tables, last is the school
+    const childEqCalls = eqCalls.slice(0, 8); // first 8 are child tables, last is the school
 
     // At least most children filter by school_id
     const schoolIdCols = childEqCalls.filter(([col]) => col === "school_id");
-    expect(schoolIdCols.length).toBeGreaterThanOrEqual(8);
+    expect(schoolIdCols.length).toBeGreaterThanOrEqual(7);
   });
 
   it("uses id column when deleting the school row itself", async () => {
@@ -266,8 +263,8 @@ describe("POST /api/schools/[id]/cascade-delete", () => {
   });
 
   it("throws 500 when school delete itself fails", async () => {
-    // All 9 child deletes succeed, but the school delete fails
-    for (let i = 0; i < 9; i++) {
+    // All 8 child deletes succeed, but the school delete fails
+    for (let i = 0; i < 8; i++) {
       mockDeleteEq.mockResolvedValueOnce({ count: 0, error: null });
     }
     mockDeleteEq.mockResolvedValueOnce({

@@ -12,7 +12,6 @@ import {
   offerSchema,
   playerDetailsSchema,
   documentSchema,
-  socialMediaPostSchema,
   collegeScorecardResponseSchema,
   feedbackSchema,
   schoolPreferenceSchema,
@@ -1083,84 +1082,6 @@ describe("documentSchema - Extended", () => {
   it("should accept high version numbers", () => {
     const data = { ...validDocument, version: 100 };
     expect(() => documentSchema.parse(data)).not.toThrow();
-  });
-});
-
-// ============================================================================
-// SOCIAL MEDIA POST SCHEMAS - Extended Tests
-// ============================================================================
-
-describe("socialMediaPostSchema - Extended", () => {
-  const validPost = {
-    platform: "twitter",
-    post_url: "https://twitter.com/user/status/123",
-    post_content: "Great game today!",
-    post_date: new Date().toISOString(),
-    author_handle: "@user",
-    author_name: "User Name",
-    is_recruiting_related: true,
-    flagged_for_review: false,
-    notes: "Important post",
-  };
-
-  it("should accept twitter platform", () => {
-    const data = { ...validPost, platform: "twitter" };
-    expect(() => socialMediaPostSchema.parse(data)).not.toThrow();
-  });
-
-  it("should accept instagram platform", () => {
-    const data = { ...validPost, platform: "instagram" };
-    expect(() => socialMediaPostSchema.parse(data)).not.toThrow();
-  });
-
-  it("should reject invalid platform", () => {
-    const data = { ...validPost, platform: "invalid" };
-    expect(() => socialMediaPostSchema.parse(data)).toThrow();
-  });
-
-  it("should accept valid URLs", () => {
-    const data = {
-      ...validPost,
-      post_url: "https://example.com/post",
-    };
-    expect(() => socialMediaPostSchema.parse(data)).not.toThrow();
-  });
-
-  it("should reject invalid URLs", () => {
-    const data = {
-      ...validPost,
-      post_url: "not a url",
-    };
-    expect(() => socialMediaPostSchema.parse(data)).toThrow();
-  });
-
-  it("should default is_recruiting_related to false", () => {
-    const data = { ...validPost };
-    delete (data as any).is_recruiting_related;
-    const result = socialMediaPostSchema.parse(data);
-    expect(result.is_recruiting_related).toBe(false);
-  });
-
-  it("should default flagged_for_review to false", () => {
-    const data = { ...validPost };
-    delete (data as any).flagged_for_review;
-    const result = socialMediaPostSchema.parse(data);
-    expect(result.flagged_for_review).toBe(false);
-  });
-
-  it("should accept optional notes", () => {
-    const data = { ...validPost };
-    delete (data as any).notes;
-    expect(() => socialMediaPostSchema.parse(data)).not.toThrow();
-  });
-
-  it("should sanitize post_content HTML", () => {
-    const data = {
-      ...validPost,
-      post_content: "<script>alert('xss')</script>Safe content",
-    };
-    const result = socialMediaPostSchema.parse(data);
-    expect(result.post_content).not.toContain("script");
   });
 });
 

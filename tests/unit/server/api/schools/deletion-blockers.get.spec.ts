@@ -12,8 +12,6 @@ const mockState = {
   offerError: null as object | null,
   historyCount: 0,
   historyError: null as object | null,
-  postCount: 0,
-  postError: null as object | null,
   docCount: 0,
   docError: null as object | null,
   eventCount: 0,
@@ -96,11 +94,6 @@ vi.mock("~/server/utils/supabase", () => ({
           () => mockState.historyCount,
           () => mockState.historyError,
         );
-      if (table === "social_media_posts")
-        return buildSelectChain(
-          () => mockState.postCount,
-          () => mockState.postError,
-        );
       if (table === "documents")
         return buildSelectChain(
           () => mockState.docCount,
@@ -166,8 +159,6 @@ describe("GET /api/schools/[id]/deletion-blockers", () => {
     mockState.offerError = null;
     mockState.historyCount = 0;
     mockState.historyError = null;
-    mockState.postCount = 0;
-    mockState.postError = null;
     mockState.docCount = 0;
     mockState.docError = null;
     mockState.eventCount = 0;
@@ -294,19 +285,6 @@ describe("GET /api/schools/[id]/deletion-blockers", () => {
       });
     });
 
-    it("returns social_media_posts blocker when post count > 0", async () => {
-      mockState.postCount = 7;
-      const handler = await getHandler();
-      const result = await handler(mockEvent);
-
-      expect(result.canDelete).toBe(false);
-      expect(result.blockers[0]).toMatchObject({
-        table: "social_media_posts",
-        count: 7,
-        column: "school_id",
-      });
-    });
-
     it("returns documents blocker when document count > 0", async () => {
       mockState.docCount = 4;
       const handler = await getHandler();
@@ -369,12 +347,11 @@ describe("GET /api/schools/[id]/deletion-blockers", () => {
       expect(result.message).toContain("Cannot delete this school");
     });
 
-    it("lists all 8 tables as blockers when all have records", async () => {
+    it("lists all 7 tables as blockers when all have records", async () => {
       mockState.coachCount = 1;
       mockState.interactionCount = 1;
       mockState.offerCount = 1;
       mockState.historyCount = 1;
-      mockState.postCount = 1;
       mockState.docCount = 1;
       mockState.eventCount = 1;
       mockState.suggestionCount = 1;
@@ -382,7 +359,7 @@ describe("GET /api/schools/[id]/deletion-blockers", () => {
       const result = await handler(mockEvent);
 
       expect(result.canDelete).toBe(false);
-      expect(result.blockers).toHaveLength(8);
+      expect(result.blockers).toHaveLength(7);
     });
   });
 

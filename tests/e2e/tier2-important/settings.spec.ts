@@ -42,7 +42,6 @@ test.describe("/settings — Settings hub", () => {
       "/settings/dashboard",
       "/settings/notifications",
       "/settings/communication-templates",
-      "/settings/social-sync",
       "/settings/family-management",
       "/settings/profile",
     ];
@@ -201,24 +200,6 @@ test.describe("/settings/communication-templates — Templates", () => {
 
   test("loads and shows heading", async ({ page }) => {
     await expect(page.locator("h1")).toContainText("Communication Templates");
-  });
-
-  test("renders meaningful content", async ({ page }) => {
-    const bodyText = await page.locator("body").textContent();
-    expect(bodyText?.trim().length).toBeGreaterThan(50);
-  });
-});
-
-// ── /settings/social-sync ──────────────────────────────────────────────────
-
-test.describe("/settings/social-sync — Social Media Sync", () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto("/settings/social-sync");
-    await page.waitForLoadState("domcontentloaded");
-  });
-
-  test("loads and shows heading", async ({ page }) => {
-    await expect(page.locator("h1")).toContainText("Social Media Sync");
   });
 
   test("renders meaningful content", async ({ page }) => {
