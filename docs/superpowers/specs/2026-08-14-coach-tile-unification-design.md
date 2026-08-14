@@ -86,7 +86,10 @@ One component, driven by a `variant` prop plus a `showSchoolMeta` flag.
   (cross-school view needs logo + school name).
 - **manage** (`/schools/[id]/coaches`) = `full` + `showSchoolMeta: false`
   (same-school context — logo + name redundant).
-- **compact** (school sidebar) = quick-glance: name, role, icons only.
+- **compact** (school sidebar) = quick-glance: name, role, and the full
+  action-icon row (all applicable icons, same as `full` — Chris confirmed max
+  parity over density). Omits logo, school name, contact text rows, and the
+  last-contact line.
 
 This collapses today's three web renderings into **one component + two
 props**.
@@ -101,24 +104,21 @@ Fixed order, each icon renders **only when its data field is present**:
 | 2 | Chat bubble | `coach.phone` | `sms:` | `brand-emerald-600` |
 | 3 | Phone | `coach.phone` | `tel:` | `brand-purple-600` |
 | 4 | X / Twitter | `coach.twitter_handle` | open `x.com/<handle>` new tab | `brand-slate-700` |
-| 5 | Instagram | `coach.instagram_handle` | open `instagram.com/<handle>` new tab | `brand-purple-600` |
+| 5 | Instagram | `coach.instagram_handle` | open `instagram.com/<handle>` new tab | `brand-pink-500` (new token) |
 
-**Reconciliation note (needs Chris's confirm at review):** the locked
-answer was "Email · Text · Call · **Social**," but `Coach` carries *two*
-social fields (`twitter_handle`, `instagram_handle`) and iOS already shows
-both (its `@` = X, `camera` = Instagram). This spec renders social as **up
-to two data-driven icons** (X, Instagram) rather than a single generic
-"Social" — matching iOS and the existing data. If Chris prefers a single
-collapsed social affordance instead, that's a one-line scope change here.
+**Social = two data-driven icons (X + Instagram)** — confirmed by Chris, for
+iOS parity (iOS `@` = X, `camera` = Instagram). Each renders only when its
+handle is present.
 
 **Rules:**
 - Row order is fixed regardless of which icons render (no reflow surprise).
 - Icons use `@click.stop` / keyboard `.stop` — they fire their action and
   **never** trigger the tile's navigate-to-detail.
 - Colors via **brand design tokens only** — no raw hex / `rgba` in `<style>`
-  or inline (`audit:tokens` gate). Instagram uses `brand-purple-600` since
-  the brand palette has no pink (documented deviation; revisit if a pink
-  token is added).
+  or inline (`audit:tokens` gate). **Add a `brand-pink-*` palette** to the
+  `@theme` block in `assets/css/main.css` (steps 50–900, matching the other
+  brand palettes) so Instagram reads true-to-brand; document it in
+  `docs/design/tokens.md`.
 - Icons are `@nuxt/icon` `i-heroicons-*` (already used); the X and Instagram
   glyphs stay as the existing inline `<svg fill="currentColor">` brand marks
   (heroicons has no brand logos) — `currentColor` inherits the token color,
@@ -175,6 +175,8 @@ const emit = defineEmits<{
 
 ## Migration / Wiring
 
+0. Add `brand-pink-*` palette (50–900) to `assets/css/main.css` `@theme`;
+   document in `docs/design/tokens.md`.
 1. Build `components/Coach/CoachCard.vue` (canonical) + extract
    `components/Coach/CoachDetail.vue` if detail markup is duplicated.
 2. Repoint the three web surfaces:
@@ -208,11 +210,8 @@ same icon set, order, colors, tap-to-`CoachDetailView`, no inline delete.
 Removes the current two-way iOS drift (list card vs school-detail block) and
 the camera glyph.
 
-## Open Questions
+## Resolved Questions
 
-1. **Social icons** — confirm the two-icon (X + Instagram) expansion vs a
-   single collapsed "Social" affordance (see reconciliation note).
-2. **Instagram color** — `brand-purple-600` stand-in acceptable, or add a
-   pink brand token?
-3. **Compact action set** — sidebar shows all applicable icons; acceptable,
-   or cap compact to Email/Text/Call and drop socials for density?
+1. **Social icons** — two data-driven icons (X + Instagram), iOS parity. ✓
+2. **Instagram color** — add a `brand-pink-*` brand token. ✓
+3. **Compact action set** — sidebar shows all applicable icons (max parity). ✓
