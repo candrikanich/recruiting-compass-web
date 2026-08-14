@@ -64,7 +64,7 @@
         <div
           v-for="coach in coaches"
           :key="coach.id"
-          class="p-3 border border-slate-200 rounded-lg flex items-start justify-between gap-2"
+          class="p-3 border border-slate-200 rounded-lg flex items-center justify-between gap-3"
         >
           <div class="min-w-0">
             <p class="font-medium text-slate-900 text-sm">
@@ -74,16 +74,16 @@
               {{ getRoleLabel(coach.role) }}
             </p>
           </div>
-          <div class="flex flex-wrap justify-end gap-1 shrink-0">
+          <div class="flex justify-end gap-1.5 shrink-0">
             <a
               v-if="coach.email"
               :href="`mailto:${coach.email}`"
               :aria-label="`Send email to ${coach.first_name} ${coach.last_name}`"
-              class="p-1.5 bg-blue-600 text-white rounded-sm hover:bg-blue-700 transition focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              class="p-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             >
               <UIcon
                 name="i-heroicons-envelope"
-                class="w-3.5 h-3.5"
+                class="w-4 h-4"
                 aria-hidden="true"
               />
             </a>
@@ -91,11 +91,11 @@
               v-if="coach.phone"
               :href="`sms:${coach.phone}`"
               :aria-label="`Send text message to ${coach.first_name} ${coach.last_name}`"
-              class="p-1.5 bg-green-600 text-white rounded-sm hover:bg-green-700 transition focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+              class="p-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
             >
               <UIcon
                 name="i-heroicons-chat-bubble-left"
-                class="w-3.5 h-3.5"
+                class="w-4 h-4"
                 aria-hidden="true"
               />
             </a>
@@ -103,11 +103,11 @@
               v-if="coach.phone"
               :href="`tel:${coach.phone}`"
               :aria-label="`Call ${coach.first_name} ${coach.last_name}`"
-              class="p-1.5 bg-purple-600 text-white rounded-sm hover:bg-purple-700 transition focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+              class="p-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
             >
               <UIcon
                 name="i-heroicons-phone"
-                class="w-3.5 h-3.5"
+                class="w-4 h-4"
                 aria-hidden="true"
               />
             </a>
