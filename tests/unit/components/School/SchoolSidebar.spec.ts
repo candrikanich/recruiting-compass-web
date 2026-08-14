@@ -27,6 +27,9 @@ const stubs = {
     template: "<div>Fit Signals</div>",
     props: ["personalFit", "academicFit"],
   },
+  // Opt out of the global trivial CoachCard stub (tests/setup.ts) — this
+  // suite asserts on the real CoachCard's rendered name/role/contact links.
+  CoachCard: false,
 };
 
 const createMockSchool = (overrides = {}): School => ({
