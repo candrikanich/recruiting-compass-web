@@ -127,28 +127,26 @@ handle is present.
 ### Tap Behavior
 
 - The **tile body** is the navigation target → coach detail.
-  - Web: wrap in `NuxtLink :to` resolving to the correct detail route for the
-    surface (directory → `/coaches/[id]`; manage/sidebar → school-scoped
-    `/schools/[schoolId]/coaches/[coachId]`). Both routes render the shared
-    `CoachDetail` component.
-  - Keyboard: `role="button"` semantics already present on `CoachCard.vue`;
-    preserve `Enter`/`Space` activation.
+  - Web: wrap in `NuxtLink :to="/coaches/${coach.id}"` — **all variants, all
+    surfaces** route to the canonical rich page (Plan 1). A `detailTo` prop
+    allows an override but defaults to `/coaches/${coach.id}`.
+  - Keyboard: `NuxtLink` renders an `<a>` — native `Enter` activation; no
+    manual `role="button"` keyboard handling needed.
 - **Action icons** and **contact-row links** stop propagation — a tap on
   `mailto:`/`tel:`/social opens that channel, not the detail page.
 
 ## Detail Routing
 
-Two web routes stay (URLs carry context / back-nav):
+**Scope split (Chris):** the two web detail routes are *not* duplicated
+markup — they are two different implementations (`/coaches/[id]` is
+rich/component-based; `/schools/[schoolId]/coaches/[coachId]` is a bespoke,
+weaker page). Reconciling them into one shared `CoachDetail` component is a
+separate subsystem, deferred to **Plan 2 (follow-up)**.
 
-- `pages/coaches/[id]/index.vue` (global)
-- `pages/schools/[schoolId]/coaches/[coachId].vue` (school-scoped)
-
-Both must render **one shared `CoachDetail` component** so content is
-identical regardless of entry point. If they currently duplicate markup,
-extract the shared body into `components/Coach/CoachDetail.vue` as part of
-this work (targeted improvement, in-scope because tap-to-detail is a goal).
-iOS already has a single `CoachDetailView` — no change needed there beyond
-confirming every tile variant pushes to it.
+**This plan (Plan 1):** every unified tile — every variant, every surface —
+navigates to the canonical rich page **`/coaches/[id]`**. The school-scoped
+route stays live (untouched) for now; Plan 2 will consolidate it. iOS
+already has a single `CoachDetailView` — no change needed there.
 
 ## Component Contract (web)
 
@@ -177,8 +175,8 @@ const emit = defineEmits<{
 
 0. Add `brand-pink-*` palette (50–900) to `assets/css/main.css` `@theme`;
    document in `docs/design/tokens.md`.
-1. Build `components/Coach/CoachCard.vue` (canonical) + extract
-   `components/Coach/CoachDetail.vue` if detail markup is duplicated.
+1. Build `components/Coach/CoachCard.vue` (canonical). (Detail-page
+   consolidation is Plan 2 — not here.)
 2. Repoint the three web surfaces:
    - `pages/coaches/index.vue` → `<CoachCard variant="full" :show-school-meta="true" :school="…" />`
    - `pages/schools/[id]/coaches.vue` → `<CoachCard variant="full" />` (drop the
