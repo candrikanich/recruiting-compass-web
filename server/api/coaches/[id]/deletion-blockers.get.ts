@@ -89,22 +89,6 @@ export default defineEventHandler(async (event) => {
     blockers.push({ table: "offers", count: offerCount, column: "coach_id" });
   }
 
-  // Check social_media_posts
-  const { count: postCount, error: postError } = await client
-    .from("social_media_posts")
-    .select("*", { count: "exact", head: true })
-    .eq("coach_id", coachId);
-  if (postError) {
-    logger.warn("Failed to count coach social media posts", postError);
-  }
-  if (postCount && postCount > 0) {
-    blockers.push({
-      table: "social_media_posts",
-      count: postCount,
-      column: "coach_id",
-    });
-  }
-
   const canDelete = blockers.length === 0;
 
   let message = "Coach can be deleted successfully.";

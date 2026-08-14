@@ -97,13 +97,6 @@
             description="Email and message templates for coach outreach"
             variant="gray"
           />
-          <SettingsCard
-            to="/settings/social-sync"
-            icon="📱"
-            title="Social Media Sync"
-            description="Configure automatic social media monitoring"
-            variant="blue"
-          />
         </div>
       </div>
 

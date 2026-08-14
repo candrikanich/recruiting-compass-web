@@ -582,7 +582,6 @@ describe("getDefaultDashboardLayout", () => {
       "schoolStatusOverview",
       "eventsSummary",
       "recentNotifications",
-      "linkedAccounts",
     ]);
     const layout = getDefaultDashboardLayout();
     [...layout.leftColumn, ...layout.rightColumn].forEach((entry) => {

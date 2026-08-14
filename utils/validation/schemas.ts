@@ -336,22 +336,6 @@ export const documentSchema = z.object({
 });
 
 // ============================================================================
-// SOCIAL MEDIA SCHEMAS
-// ============================================================================
-
-export const socialMediaPostSchema = z.object({
-  platform: z.enum(["twitter", "instagram"]),
-  post_url: urlSchema,
-  post_content: richTextSchema(5000), // CRITICAL: sanitize external content
-  post_date: dateTimeSchema,
-  author_handle: sanitizedTextSchema(100),
-  author_name: sanitizedTextSchema(255),
-  is_recruiting_related: z.boolean().default(false),
-  flagged_for_review: z.boolean().default(false),
-  notes: richTextSchema(2000).optional(),
-});
-
-// ============================================================================
 // EXTERNAL API RESPONSE SCHEMAS
 // ============================================================================
 
@@ -422,7 +406,6 @@ export type OfferInput = z.infer<typeof offerSchema>;
 export type PlayerDetailsInput = z.infer<typeof playerDetailsSchema>;
 export type FeedbackInput = z.infer<typeof feedbackSchema>;
 export type DocumentInput = z.infer<typeof documentSchema>;
-export type SocialMediaPostInput = z.infer<typeof socialMediaPostSchema>;
 
 // ============================================================================
 // HELP FEEDBACK SCHEMA

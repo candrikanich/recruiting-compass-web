@@ -116,22 +116,6 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  // Check social_media_posts
-  const { count: postCount, error: postError } = await client
-    .from("social_media_posts")
-    .select("*", { count: "exact", head: true })
-    .eq("school_id", schoolId);
-  if (postError) {
-    logger.warn("Failed to count school social media posts", postError);
-  }
-  if (postCount && postCount > 0) {
-    blockers.push({
-      table: "social_media_posts",
-      count: postCount,
-      column: "school_id",
-    });
-  }
-
   // Check documents
   const { count: docCount, error: docError } = await client
     .from("documents")

@@ -347,15 +347,6 @@ describe("CoachHeader", () => {
       expect(wrapper.text()).toContain("Messages");
     });
 
-    it("shows Social Posts link", () => {
-      const wrapper = mount(CoachHeader, {
-        props: { coach: mockCoach },
-        global: { stubs: { NuxtLink: { template: "<a><slot /></a>" } } },
-      });
-
-      expect(wrapper.text()).toContain("Social Posts");
-    });
-
     it("shows Edit button", () => {
       const wrapper = mount(CoachHeader, {
         props: { coach: mockCoach },

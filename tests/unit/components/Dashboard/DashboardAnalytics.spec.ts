@@ -235,26 +235,6 @@ describe("DashboardAnalytics", () => {
     expect(emitted).toBeTruthy();
   });
 
-  it("renders social media section when showSocial is true", () => {
-    const wrapper = mount(DashboardAnalytics, {
-      props: {
-        showSocial: true,
-      },
-    });
-
-    expect(wrapper.text()).toContain("Social Media");
-  });
-
-  it("hides social media section when showSocial is false", () => {
-    const wrapper = mount(DashboardAnalytics, {
-      props: {
-        showSocial: false,
-      },
-    });
-
-    expect(wrapper.text()).not.toContain("Social Media");
-  });
-
   it("displays up to 3 events in preview", () => {
     const events = Array.from({ length: 5 }, (_, i) =>
       createMockEvent({ id: `event-${i}` }),

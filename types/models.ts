@@ -503,11 +503,9 @@ export interface DashboardWidgetVisibility {
     events: boolean;
     performance: boolean;
     notifications: boolean;
-    socialMedia: boolean;
   };
   widgets: {
     recentNotifications: boolean;
-    linkedAccounts: boolean;
     recruitingCalendar: boolean;
     quickTasks: boolean;
     atAGlanceSummary: boolean;
@@ -540,8 +538,7 @@ export type WidgetId =
   | "atAGlanceSummary"
   | "schoolStatusOverview"
   | "eventsSummary"
-  | "recentNotifications"
-  | "linkedAccounts";
+  | "recentNotifications";
 
 export type WidgetSize = "4/6" | "2/6";
 
@@ -556,7 +553,6 @@ export const WIDGET_SIZES = {
   schoolStatusOverview: "2/6",
   eventsSummary: "2/6",
   recentNotifications: "2/6",
-  linkedAccounts: "2/6",
 } as const satisfies Record<WidgetId, WidgetSize>;
 
 export const WIDGET_LABELS = {
@@ -570,7 +566,6 @@ export const WIDGET_LABELS = {
   schoolStatusOverview: "Schools by Size",
   eventsSummary: "Upcoming Events",
   recentNotifications: "Recent Activity",
-  linkedAccounts: "Linked Accounts",
 } as const satisfies Record<WidgetId, string>;
 
 export interface WidgetEntry {
