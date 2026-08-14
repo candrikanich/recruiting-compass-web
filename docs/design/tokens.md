@@ -64,6 +64,7 @@ Available palettes (each has steps 50–900):
 | Emerald | `brand-emerald-*` | Success, positive, inbound |
 | Purple | `brand-purple-*` | Secondary, outbound, premium |
 | Orange | `brand-orange-*` | Warning, pending, reach |
+| Pink | `brand-pink-*` | Instagram / social accent |
 | Slate | `brand-slate-*` | Neutral, disabled, default |
 | Red | `brand-red-*` | Error, danger, destructive |
 | Indigo | `brand-indigo-*` | Accent (Button component only) |
