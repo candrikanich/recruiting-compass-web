@@ -151,32 +151,14 @@
           v-if="filteredCoaches.length > 0"
           class="grid grid-cols-1 md:grid-cols-2 gap-6"
         >
-          <div
+          <CoachCard
             v-for="coach in filteredCoaches"
             :key="coach.id"
-            class="relative"
-          >
-            <!-- Delete Button Overlay -->
-            <button
-              @click="deleteCoach(coach.id)"
-              :aria-label="`Delete coach ${coach.first_name} ${coach.last_name}`"
-              class="absolute -top-2 -right-2 z-10 w-8 h-8 bg-red-600 text-white rounded-full hover:bg-red-700 text-xs font-bold transition flex items-center justify-center"
-            >
-              <UIcon
-                name="i-heroicons-x-mark-solid"
-                class="w-4 h-4"
-                aria-hidden="true"
-              />
-            </button>
-            <CoachCard
-              :coach="coach"
-              @email="sendEmail(coach)"
-              @text="sendText(coach)"
-              @tweet="handleOpenTwitter(coach)"
-              @instagram="handleOpenInstagram(coach)"
-              @view="viewCoach(coach)"
-            />
-          </div>
+            :coach="coach"
+            variant="full"
+            contact-mode="modal"
+            @open-communication="(coachId) => openCommunicationForId(coachId)"
+          />
         </div>
       </PageState>
     </div>
@@ -218,13 +200,8 @@ import { useCommunication } from "~/composables/useCommunication";
 import { useUserStore } from "~/stores/user";
 import type { School } from "~/types";
 import { useLiveRegion } from "~/composables/useLiveRegion";
-import {
-  openTwitter,
-  openInstagram,
-  openEmail,
-  openSMS,
-} from "~/utils/socialMediaHandlers";
 import { createClientLogger } from "~/utils/logger";
+import CoachCard from "~/components/Coach/CoachCard.vue";
 
 const logger = createClientLogger("SchoolCoaches");
 import { useCoachFilters } from "~/composables/useCoachFilters";
@@ -374,12 +351,9 @@ const cancelDeleteCoach = () => {
   coachToDeleteId.value = null;
 };
 
-const sendEmail = (coach: (typeof coaches.value)[0]) => {
-  openEmail(coach.email);
-};
-
-const sendText = (coach: (typeof coaches.value)[0]) => {
-  openSMS(coach.phone);
+const openCommunicationForId = (coachId: string) => {
+  const coach = coaches.value.find((c) => c.id === coachId);
+  if (coach) openCommunication(coach, "email");
 };
 
 const handleSchoolCoachInteractionLogged = async (interactionData: any) => {
@@ -393,18 +367,6 @@ const handleSchoolCoachInteractionLogged = async (interactionData: any) => {
     localError.value =
       err instanceof Error ? err.message : "Failed to log interaction";
   }
-};
-
-const handleOpenTwitter = (coach: (typeof coaches.value)[0]) => {
-  openTwitter(coach.twitter_handle);
-};
-
-const handleOpenInstagram = (coach: (typeof coaches.value)[0]) => {
-  openInstagram(coach.instagram_handle);
-};
-
-const viewCoach = (coach: (typeof coaches.value)[0]) => {
-  navigateTo(`/coaches/${coach.id}`);
 };
 
 // Expose reactive variables for testing
