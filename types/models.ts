@@ -131,30 +131,10 @@ export interface Coach {
   instagram_handle: string | null;
   notes: string | null;
   last_contact_date: string | null;
-  availability?: CoachAvailability | null;
   created_by?: string;
   updated_by?: string;
   created_at?: string;
   updated_at?: string;
-}
-
-export interface CoachAvailability {
-  timezone: string;
-  monday: DayAvailability;
-  tuesday: DayAvailability;
-  wednesday: DayAvailability;
-  thursday: DayAvailability;
-  friday: DayAvailability;
-  saturday: DayAvailability;
-  sunday: DayAvailability;
-  blackout_dates: string[];
-  [key: string]: DayAvailability | string | string[];
-}
-
-export interface DayAvailability {
-  available: boolean;
-  start_time: string;
-  end_time: string;
 }
 
 export interface Interaction {

@@ -174,13 +174,6 @@
     <!-- Secondary Actions -->
     <div class="flex flex-wrap gap-2 border-t border-slate-200 pt-4">
       <NuxtLink
-        :to="`/coaches/${coach.id}/availability`"
-        class="inline-flex items-center gap-2 px-4 py-2 border border-slate-300 text-slate-700 text-sm font-semibold rounded-lg hover:bg-slate-50 transition"
-      >
-        <UIcon name="i-heroicons-calendar" class="w-4 h-4" />
-        Availability
-      </NuxtLink>
-      <NuxtLink
         :to="`/social/coach/${coach.id}`"
         class="inline-flex items-center gap-2 px-4 py-2 border border-slate-300 text-slate-700 text-sm font-semibold rounded-lg hover:bg-slate-50 transition"
       >

@@ -1,0 +1,22 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The Recruiting Compass">
+  <!-- Brand-green rounded tile: reads on both light and dark browser tabs -->
+  <rect x="2" y="2" width="96" height="96" rx="22" fill="#2D5A27" />
+
+  <!-- Gold compass ring -->
+  <circle cx="50" cy="50" r="35" fill="none" stroke="#C4A46B" stroke-width="5" />
+
+  <!-- Four-point compass star: long gold north needle, short cream south/E/W -->
+  <g>
+    <!-- North (long, gold) -->
+    <polygon points="50,12 43,50 50,44 57,50" fill="#C4A46B" />
+    <!-- South (cream) -->
+    <polygon points="50,88 44,52 50,56 56,52" fill="#F5F5F0" />
+    <!-- East (cream) -->
+    <polygon points="88,50 52,44 56,50 52,56" fill="#F5F5F0" />
+    <!-- West (cream) -->
+    <polygon points="12,50 48,56 44,50 48,44" fill="#F5F5F0" />
+  </g>
+
+  <!-- Center pivot -->
+  <circle cx="50" cy="50" r="6" fill="#8B6914" stroke="#F5F5F0" stroke-width="2.5" />
+</svg>

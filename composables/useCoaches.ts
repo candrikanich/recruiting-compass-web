@@ -35,7 +35,7 @@ const logger = createClientLogger("useCoaches");
  * - Monitor communication responsiveness
  * - Store social media handles for outreach
  * - Track last contact date
- * - Maintain coach availability and preferences
+ * - Maintain coach preferences
  * - Group coaches by school
  * - Calculate responsiveness score (responses/outreach ratio)
  *
