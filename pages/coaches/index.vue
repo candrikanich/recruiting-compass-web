@@ -238,15 +238,20 @@
         v-if="paginatedCoaches.length > 0"
         class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
       >
-        <CoachListCard
+        <li
           v-for="coach in paginatedCoaches"
           :key="coach.id"
           v-memo="[coach.updated_at]"
-          :coach="coach"
-          :school="getSchoolById(coach.school_id, schools)"
-          @open-communication="(id) => openCommunicationById(id)"
-          @delete-coach="openDeleteModal"
-        />
+        >
+          <CoachCard
+            :coach="coach"
+            variant="full"
+            :show-school-meta="true"
+            :school="getSchoolById(coach.school_id, schools)"
+            contact-mode="modal"
+            @open-communication="(id) => openCommunicationById(id)"
+          />
+        </li>
       </ul>
 
       <!-- Pagination Controls -->
@@ -326,26 +331,11 @@
         </div>
       </Transition>
     </Teleport>
-
-    <!-- Delete Confirmation Modal -->
-    <DeleteConfirmationModal
-      :is-open="deleteModalOpen"
-      :item-name="
-        selectedDeleteCoach
-          ? `${selectedDeleteCoach.first_name} ${selectedDeleteCoach.last_name}`
-          : ''
-      "
-      item-type="coach"
-      :is-loading="isDeleting"
-      @cancel="closeDeleteModal"
-      @confirm="deleteCoach"
-    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, defineAsyncComponent } from "vue";
-import { createClientLogger } from "~/utils/logger";
+import { ref, computed, watch, onMounted } from "vue";
 import { useCommunication } from "~/composables/useCommunication";
 import { useFamilyCtx } from "~/composables/useFamilyCtx";
 import { useCoaches } from "~/composables/useCoaches";
@@ -354,20 +344,15 @@ import { useCoachPageFilters } from "~/composables/useCoachPageFilters";
 import { useCoachExport } from "~/composables/useCoachExport";
 import { useCoachListStats } from "~/composables/useCoachListStats";
 import StatsTiles from "~/components/shared/StatsTiles.vue";
-const DeleteConfirmationModal = defineAsyncComponent(
-  () => import("~/components/DeleteConfirmationModal.vue"),
-);
 import CoachFilters from "~/components/Coach/CoachFilters.vue";
 import ActiveCoachFilterChips from "~/components/Coach/ActiveCoachFilterChips.vue";
-import CoachListCard from "~/components/Coach/CoachListCard.vue";
+import CoachCard from "~/components/Coach/CoachCard.vue";
 import { getSchoolById } from "~/utils/coachHelpers";
-import type { Coach } from "~/types/models";
 
 definePageMeta({
   middleware: "auth",
 });
 
-const logger = createClientLogger("coaches/index");
 const activeFamily = useFamilyCtx();
 const { activeFamilyId } = activeFamily;
 const {
@@ -377,12 +362,7 @@ const {
   openCommunication,
   handleInteractionLogged,
 } = useCommunication();
-const {
-  coaches: allCoaches,
-  loading,
-  fetchCoachesBySchools,
-  smartDelete,
-} = useCoaches();
+const { coaches: allCoaches, loading, fetchCoachesBySchools } = useCoaches();
 const { schools, fetchSchools } = useSchools();
 const error = ref<string | null>(null);
 
@@ -429,11 +409,6 @@ const { handleExportCSV, handleExportPDF } = useCoachExport({
   schools,
 });
 
-// Delete modal state
-const deleteModalOpen = ref(false);
-const selectedDeleteCoach = ref<Coach | null>(null);
-const isDeleting = ref(false);
-
 // Export state
 const exportLoading = ref(false);
 const exportMessage = ref("");
@@ -455,33 +430,6 @@ const handleCoachInteractionLogged = async (interactionData: any) => {
   } catch (err) {
     error.value =
       err instanceof Error ? err.message : "Failed to log interaction";
-  }
-};
-
-const openDeleteModal = (coach: Coach) => {
-  selectedDeleteCoach.value = coach;
-  deleteModalOpen.value = true;
-};
-
-const closeDeleteModal = () => {
-  deleteModalOpen.value = false;
-  selectedDeleteCoach.value = null;
-};
-
-const deleteCoach = async () => {
-  if (!selectedDeleteCoach.value?.id) return;
-
-  isDeleting.value = true;
-  try {
-    await smartDelete(selectedDeleteCoach.value.id);
-    closeDeleteModal();
-  } catch (err: unknown) {
-    const message =
-      err instanceof Error ? err.message : "Failed to delete coach";
-    error.value = message;
-    logger.error("Failed to delete coach", err);
-  } finally {
-    isDeleting.value = false;
   }
 };
 
