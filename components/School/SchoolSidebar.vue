@@ -64,15 +64,17 @@
         <div
           v-for="coach in coaches"
           :key="coach.id"
-          class="p-3 border border-slate-200 rounded-lg"
+          class="p-3 border border-slate-200 rounded-lg flex items-start justify-between gap-2"
         >
-          <p class="font-medium text-slate-900 text-sm">
-            {{ coach.first_name }} {{ coach.last_name }}
-          </p>
-          <p class="text-xs text-slate-500 capitalize mb-2">
-            {{ getRoleLabel(coach.role) }}
-          </p>
-          <div class="flex flex-wrap gap-1">
+          <div class="min-w-0">
+            <p class="font-medium text-slate-900 text-sm">
+              {{ coach.first_name }} {{ coach.last_name }}
+            </p>
+            <p class="text-xs text-slate-500 capitalize">
+              {{ getRoleLabel(coach.role) }}
+            </p>
+          </div>
+          <div class="flex flex-wrap justify-end gap-1 shrink-0">
             <a
               v-if="coach.email"
               :href="`mailto:${coach.email}`"
