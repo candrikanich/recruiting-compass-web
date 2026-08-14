@@ -2444,88 +2444,6 @@ export type Database = {
         }
         Relationships: []
       }
-      social_media_posts: {
-        Row: {
-          author_handle: string | null
-          author_name: string | null
-          coach_id: string | null
-          created_at: string | null
-          engagement_count: number | null
-          family_unit_id: string | null
-          flagged_for_review: boolean | null
-          id: string
-          is_recruiting_related: boolean | null
-          notes: string | null
-          platform: Database["public"]["Enums"]["social_platform"]
-          post_content: string | null
-          post_date: string | null
-          post_url: string
-          school_id: string
-          sentiment: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          author_handle?: string | null
-          author_name?: string | null
-          coach_id?: string | null
-          created_at?: string | null
-          engagement_count?: number | null
-          family_unit_id?: string | null
-          flagged_for_review?: boolean | null
-          id?: string
-          is_recruiting_related?: boolean | null
-          notes?: string | null
-          platform: Database["public"]["Enums"]["social_platform"]
-          post_content?: string | null
-          post_date?: string | null
-          post_url: string
-          school_id: string
-          sentiment?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          author_handle?: string | null
-          author_name?: string | null
-          coach_id?: string | null
-          created_at?: string | null
-          engagement_count?: number | null
-          family_unit_id?: string | null
-          flagged_for_review?: boolean | null
-          id?: string
-          is_recruiting_related?: boolean | null
-          notes?: string | null
-          platform?: Database["public"]["Enums"]["social_platform"]
-          post_content?: string | null
-          post_date?: string | null
-          post_url?: string
-          school_id?: string
-          sentiment?: string | null
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "social_media_posts_coach_id_fkey"
-            columns: ["coach_id"]
-            isOneToOne: false
-            referencedRelation: "coaches"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "social_media_posts_family_unit_id_fkey"
-            columns: ["family_unit_id"]
-            isOneToOne: false
-            referencedRelation: "family_units"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "social_media_posts_school_id_fkey"
-            columns: ["school_id"]
-            isOneToOne: false
-            referencedRelation: "schools"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       sports: {
         Row: {
           created_at: string | null
@@ -3303,7 +3221,6 @@ export type Database = {
         | "official_visit_invited"
         | "official_visit_scheduled"
         | "not_pursuing"
-      social_platform: "twitter" | "instagram"
       user_role: "admin" | "parent" | "player"
     }
     CompositeTypes: {
@@ -3501,7 +3418,6 @@ export const Constants = {
         "official_visit_scheduled",
         "not_pursuing",
       ],
-      social_platform: ["twitter", "instagram"],
       user_role: ["admin", "parent", "player"],
     },
   },

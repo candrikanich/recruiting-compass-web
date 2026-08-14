@@ -39,7 +39,6 @@ const PROTECTED_ROUTE_PREFIXES = [
   "/recommendations",
   "/reports",
   "/settings",
-  "/social",
   "/notifications",
   "/tasks",
   "/timeline",

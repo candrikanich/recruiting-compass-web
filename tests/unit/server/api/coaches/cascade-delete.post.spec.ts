@@ -62,9 +62,8 @@ const mockEvent = {
   node: { req: { headers: {} }, res: {} },
 } as any;
 
-// 5 delete steps: follow_up_reminders, interactions, offers, social_media_posts, coaches
+// 4 delete steps: follow_up_reminders, interactions, offers, coaches
 const ALL_SUCCEED = [
-  { count: 0, error: null },
   { count: 0, error: null },
   { count: 0, error: null },
   { count: 0, error: null },
@@ -88,7 +87,6 @@ describe("POST /api/coaches/[id]/cascade-delete", () => {
       .mockResolvedValueOnce({ count: 3, error: null }) // follow_up_reminders
       .mockResolvedValueOnce({ count: 5, error: null }) // interactions
       .mockResolvedValueOnce({ count: 2, error: null }) // offers
-      .mockResolvedValueOnce({ count: 1, error: null }) // social_media_posts
       .mockResolvedValueOnce({ count: 1, error: null }); // coaches
 
     const result = await handler(mockEvent);
@@ -101,7 +99,6 @@ describe("POST /api/coaches/[id]/cascade-delete", () => {
       follow_up_reminders: 3,
       interactions: 5,
       offers: 2,
-      social_media_posts: 1,
       coaches: 1,
     });
     expect(result.message).toContain("Successfully deleted");
@@ -127,7 +124,6 @@ describe("POST /api/coaches/[id]/cascade-delete", () => {
       "follow_up_reminders",
       "interactions",
       "offers",
-      "social_media_posts",
       "coaches",
     ]);
   });
@@ -147,14 +143,9 @@ describe("POST /api/coaches/[id]/cascade-delete", () => {
     expect(mockDeleteEq).toHaveBeenNthCalledWith(3, "coach_id", TEST_UUID);
   });
 
-  it("passes coachId to eq for social_media_posts via coach_id", async () => {
-    await handler(mockEvent);
-    expect(mockDeleteEq).toHaveBeenNthCalledWith(4, "coach_id", TEST_UUID);
-  });
-
   it("passes coachId to eq for coaches via id", async () => {
     await handler(mockEvent);
-    expect(mockDeleteEq).toHaveBeenNthCalledWith(5, "id", TEST_UUID);
+    expect(mockDeleteEq).toHaveBeenNthCalledWith(4, "id", TEST_UUID);
   });
 
   // ── confirmDelete validation ───────────────────────────────────────────────
@@ -232,19 +223,8 @@ describe("POST /api/coaches/[id]/cascade-delete", () => {
     await expect(handler(mockEvent)).rejects.toMatchObject({ statusCode: 500 });
   });
 
-  it("throws 500 when social_media_posts delete fails", async () => {
-    mockDeleteEq
-      .mockResolvedValueOnce({ count: 0, error: null })
-      .mockResolvedValueOnce({ count: 0, error: null })
-      .mockResolvedValueOnce({ count: 0, error: null })
-      .mockResolvedValueOnce({ count: null, error: { message: "db error" } });
-
-    await expect(handler(mockEvent)).rejects.toMatchObject({ statusCode: 500 });
-  });
-
   it("throws 500 when coaches delete fails", async () => {
     mockDeleteEq
-      .mockResolvedValueOnce({ count: 0, error: null })
       .mockResolvedValueOnce({ count: 0, error: null })
       .mockResolvedValueOnce({ count: 0, error: null })
       .mockResolvedValueOnce({ count: 0, error: null })

@@ -189,31 +189,6 @@ describe("Parent/Athlete Access Control — mutation route wiring (mocked authz)
     },
   );
 
-  // server/api/social/sync.post.ts calls assertNotParent() INSIDE its own
-  // try/catch; the catch re-throws H3 errors that already carry a
-  // statusCode (same guard as notifications/generate) so the parent
-  // rejection surfaces as 403 instead of being rewritten to a generic 500.
-  it("POST /api/social/sync surfaces the parent-rejection 403 (statusCode errors re-thrown, not rewritten to 500)", async () => {
-    vi.resetModules();
-    const { requireAuth } = await import("~/server/utils/auth");
-    const { createServerSupabaseClient } =
-      await import("~/server/utils/supabase");
-    vi.mocked(requireAuth).mockResolvedValue({
-      id: "parent-1",
-      email: "parent@example.com",
-    });
-    vi.mocked(createServerSupabaseClient).mockReturnValue(
-      mockSupabaseWithRole("parent") as unknown as SupabaseClient,
-    );
-
-    const handler = (await import("~/server/api/social/sync.post")).default;
-
-    await expect(handler(fakeEvent())).rejects.toMatchObject({
-      statusCode: 403,
-      message: expect.stringContaining("read-only"),
-    });
-  });
-
   it("admin-only POST /api/admin/batch-fetch-logos rejects a non-admin athlete with 403 (requireAdmin, not assertNotParent)", async () => {
     vi.resetModules();
     const { requireAdmin } = await import("~/server/utils/auth");

@@ -362,7 +362,6 @@ export function getDefaultDashboardLayout(): DashboardLayout {
       { id: "schoolStatusOverview", visible: true },
       { id: "eventsSummary", visible: true },
       { id: "recentNotifications", visible: true },
-      { id: "linkedAccounts", visible: true },
     ],
   };
 }

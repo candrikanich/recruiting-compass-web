@@ -301,9 +301,6 @@ const WIDGET_COMPONENTS: Partial<Record<WidgetId, Component>> = {
   recentNotifications: defineAsyncComponent(
     () => import("~/components/Dashboard/RecentActivityFeed.vue"),
   ),
-  linkedAccounts: defineAsyncComponent(
-    () => import("~/components/Dashboard/SocialMediaWidget.vue"),
-  ),
 };
 
 // Memoized widget props computed by reactive dependencies
@@ -338,7 +335,6 @@ const widgetPropsMap = computed(
     },
     eventsSummary: { events: upcomingEvents.value, showEvents: true },
     recentNotifications: {},
-    linkedAccounts: { showSocial: true },
   }),
 );
 

@@ -12,11 +12,6 @@ export type AthleteTaskInsert =
 export type AthleteTaskUpdate =
   Database["public"]["Tables"]["athlete_task"]["Update"];
 
-export type SocialMediaPost =
-  Database["public"]["Tables"]["social_media_posts"]["Row"];
-export type SocialMediaPostInsert =
-  Database["public"]["Tables"]["social_media_posts"]["Insert"];
-
 // Temporarily define audit_log types since they're missing from generated types
 export interface AuditLog {
   id: string;

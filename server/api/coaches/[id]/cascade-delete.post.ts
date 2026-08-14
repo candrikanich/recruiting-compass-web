@@ -18,7 +18,7 @@ const cascadeDeleteSchema = z.object({ confirmDelete: z.boolean().optional() });
  * POST /api/coaches/[id]/cascade-delete
  *
  * This endpoint safely deletes a coach by:
- * 1. Deleting all related records (interactions, offers, social_media_posts)
+ * 1. Deleting all related records (interactions, offers)
  * 2. Finally deleting the coach itself
  *
  * Body (optional):
@@ -101,15 +101,7 @@ export default defineEventHandler(async (event) => {
     if (offerError) throw offerError;
     if (offerCount) deleted.offers = offerCount;
 
-    // 4. Delete social media posts
-    const { count: postCount, error: postError } = await client
-      .from("social_media_posts")
-      .delete()
-      .eq("coach_id", coachId);
-    if (postError) throw postError;
-    if (postCount) deleted.social_media_posts = postCount;
-
-    // 5. Finally delete the coach
+    // 4. Finally delete the coach
     const { count: coachCount, error: deleteError } = await client
       .from("coaches")
       .delete()

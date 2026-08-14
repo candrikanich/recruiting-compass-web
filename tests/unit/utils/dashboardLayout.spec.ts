@@ -112,9 +112,9 @@ describe("getDefaultDashboardLayout", () => {
     expect(layout.leftColumn.every((w) => w.visible)).toBe(true);
   });
 
-  it("rightColumn has 4 widgets all visible", () => {
+  it("rightColumn has 3 widgets all visible", () => {
     const layout = getDefaultDashboardLayout();
-    expect(layout.rightColumn).toHaveLength(4);
+    expect(layout.rightColumn).toHaveLength(3);
     expect(layout.rightColumn.every((w) => w.visible)).toBe(true);
   });
 
