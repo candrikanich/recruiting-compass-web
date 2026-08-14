@@ -31,7 +31,6 @@ export default defineConfig({
       "tests/unit/**/*.spec.ts",
       "tests/integration/**/*.spec.ts",
       "tests/unit/**/*.test.mjs",
-      "components/**/*.spec.ts",
     ],
     exclude: ["node_modules/", "dist/", ".nuxt/", "tests/e2e/**"],
 

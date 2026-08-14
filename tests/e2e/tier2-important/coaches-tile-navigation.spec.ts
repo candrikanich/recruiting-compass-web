@@ -9,8 +9,9 @@ import { TEST_ACCOUNTS } from "../config/test-accounts";
  * Coach tile unification — directory page tap-to-detail smoke.
  *
  * The unified CoachCard (components/Coach/CoachCard.vue) wraps the whole
- * tile in a NuxtLink to `/coaches/:id`; action icons stop propagation via
- * `@click.stop` so they don't trigger the tile navigation. This spec covers
+ * tile in a NuxtLink to `/coaches/:id`; action icons use `@click.stop.prevent`
+ * so they neither trigger the tile's SPA navigation nor its native anchor
+ * fallback. This spec covers
  * the /coaches directory surface (see task-7-brief.md Step 4) — the other
  * two surfaces (school detail sidebar, school-scoped coaches page) reuse the
  * same component and are covered by SchoolSidebar.spec.ts and
@@ -129,21 +130,18 @@ test.describe("Coach directory — tile navigation", () => {
     await expect(page.getByText(coachLastName)).toBeVisible();
   });
 
-  // BUG (found by this spec, not a test flake — reproduced 3x, incl. after a
-  // 1s post-networkidle settle, with a verified-correct locator: the click
-  // target's outerHTML confirms it's the right `data-action="email"` button
-  // with `@click.stop`, nested in the right `<a>`): clicking the action icon
-  // still navigates to `/coaches/:id`. Root cause: `@click.stop` on the
-  // nested button stops propagation to the surrounding NuxtLink's own click
-  // listener — but that listener is what normally calls preventDefault() to
-  // suppress the native anchor navigation and substitute client-side
-  // routing. With propagation stopped before it fires, nothing calls
-  // preventDefault(), so the browser's native href navigation goes through
-  // uncontested. Needs `@click.stop.prevent` (or an equivalent explicit
-  // preventDefault) in components/Coach/CoachCardActions.vue for the
-  // contact-mode="modal" email/text buttons. Filed as a Task 7 finding —
-  // out of scope to fix here (CoachCardActions.vue belongs to Task 3).
-  test.fixme(
+  // Regression coverage for a bug found by this spec: `@click.stop` alone on
+  // the nested action button stopped propagation to the surrounding
+  // NuxtLink's own click listener — but that listener is what normally
+  // calls preventDefault() to suppress the native anchor navigation. With
+  // propagation stopped before it fired, nothing called preventDefault(),
+  // so the browser's native href navigation went through uncontested.
+  // Fixed in components/Coach/CoachCardActions.vue by using
+  // `@click.stop.prevent` on all five action buttons (and converting the
+  // native mailto/sms/tel actions from nested `<a>` to `<button>` with a
+  // `window.location.href` handler, since `<a>`-inside-`<a>` is invalid
+  // HTML).
+  test(
     "tapping the email action icon opens its channel without navigating",
     async ({ page }) => {
       await page.goto("/coaches");

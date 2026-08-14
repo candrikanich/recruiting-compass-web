@@ -2,38 +2,26 @@
   <div class="mt-3 flex items-center gap-1">
     <!-- Email -->
     <button
-      v-if="coach.email && contactMode === 'modal'"
+      v-if="coach.email"
       data-action="email"
       type="button"
       :aria-label="`Email ${name}`"
       class="rounded-lg p-2 text-brand-blue-600 transition hover:bg-brand-blue-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue-500"
-      @click.stop="emit('open-communication')"
+      @click.stop.prevent="onEmail"
       @keydown.enter.stop
       @keydown.space.stop
     >
       <UIcon name="i-heroicons-envelope" class="h-5 w-5" aria-hidden="true" />
     </button>
-    <a
-      v-else-if="coach.email"
-      data-action="email"
-      :href="`mailto:${coach.email}`"
-      :aria-label="`Email ${name}`"
-      class="rounded-lg p-2 text-brand-blue-600 transition hover:bg-brand-blue-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue-500"
-      @click.stop
-      @keydown.enter.stop
-      @keydown.space.stop
-    >
-      <UIcon name="i-heroicons-envelope" class="h-5 w-5" aria-hidden="true" />
-    </a>
 
     <!-- Text (SMS) -->
     <button
-      v-if="coach.phone && contactMode === 'modal'"
+      v-if="coach.phone"
       data-action="text"
       type="button"
       :aria-label="`Text ${name}`"
       class="rounded-lg p-2 text-brand-emerald-600 transition hover:bg-brand-emerald-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-emerald-500"
-      @click.stop="emit('open-communication')"
+      @click.stop.prevent="onText"
       @keydown.enter.stop
       @keydown.space.stop
     >
@@ -43,36 +31,20 @@
         aria-hidden="true"
       />
     </button>
-    <a
-      v-else-if="coach.phone"
-      data-action="text"
-      :href="`sms:${coach.phone}`"
-      :aria-label="`Text ${name}`"
-      class="rounded-lg p-2 text-brand-emerald-600 transition hover:bg-brand-emerald-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-emerald-500"
-      @click.stop
-      @keydown.enter.stop
-      @keydown.space.stop
-    >
-      <UIcon
-        name="i-heroicons-chat-bubble-left"
-        class="h-5 w-5"
-        aria-hidden="true"
-      />
-    </a>
 
     <!-- Call -->
-    <a
+    <button
       v-if="coach.phone"
       data-action="call"
-      :href="`tel:${coach.phone}`"
+      type="button"
       :aria-label="`Call ${name}`"
       class="rounded-lg p-2 text-brand-purple-600 transition hover:bg-brand-purple-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-purple-500"
-      @click.stop
+      @click.stop.prevent="onCall"
       @keydown.enter.stop
       @keydown.space.stop
     >
       <UIcon name="i-heroicons-phone" class="h-5 w-5" aria-hidden="true" />
-    </a>
+    </button>
 
     <!-- X / Twitter -->
     <button
@@ -81,7 +53,7 @@
       type="button"
       :aria-label="`View ${name} on X`"
       class="rounded-lg p-2 text-brand-slate-700 transition hover:bg-brand-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-slate-500"
-      @click.stop="openTwitter(coach.twitter_handle)"
+      @click.stop.prevent="openTwitter(coach.twitter_handle)"
       @keydown.enter.stop
       @keydown.space.stop
     >
@@ -99,7 +71,7 @@
       type="button"
       :aria-label="`View ${name} on Instagram`"
       class="rounded-lg p-2 text-brand-pink-500 transition hover:bg-brand-pink-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-pink-500"
-      @click.stop="openInstagram(coach.instagram_handle)"
+      @click.stop.prevent="openInstagram(coach.instagram_handle)"
       @keydown.enter.stop
       @keydown.space.stop
     >
@@ -127,4 +99,30 @@ const emit = defineEmits<{ "open-communication": [] }>();
 const name = computed(
   () => `${props.coach.first_name} ${props.coach.last_name}`,
 );
+
+function onEmail(): void {
+  if (props.contactMode === "modal") {
+    emit("open-communication");
+    return;
+  }
+  if (props.coach.email) {
+    window.location.href = `mailto:${props.coach.email}`;
+  }
+}
+
+function onText(): void {
+  if (props.contactMode === "modal") {
+    emit("open-communication");
+    return;
+  }
+  if (props.coach.phone) {
+    window.location.href = `sms:${props.coach.phone}`;
+  }
+}
+
+function onCall(): void {
+  if (props.coach.phone) {
+    window.location.href = `tel:${props.coach.phone}`;
+  }
+}
 </script>

@@ -1,6 +1,6 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { mount } from "@vue/test-utils";
-import CoachCard from "./CoachCard.vue";
+import CoachCard from "~/components/Coach/CoachCard.vue";
 import { openTwitter } from "~/utils/socialMediaHandlers";
 import type { Coach, School } from "~/types/models";
 
@@ -81,6 +81,13 @@ describe("CoachCard — layout & variants", () => {
 const actionStubs = { NuxtLink: NuxtLinkStub, SchoolLogo: true, UIcon: true };
 
 describe("CoachCard — action row", () => {
+  beforeEach(() => {
+    Object.defineProperty(window, "location", {
+      writable: true,
+      value: { href: "" },
+    });
+  });
+
   it("renders all five actions in fixed order when all data present", () => {
     const w = mount(CoachCard, {
       props: { coach: baseCoach },
@@ -113,15 +120,13 @@ describe("CoachCard — action row", () => {
     expect(w.emitted("open-communication")?.[0]).toEqual(["c1"]);
   });
 
-  it("uses a mailto link (no emit) on Email in native mode", async () => {
+  it("sets a mailto href on window.location (no emit) on Email in native mode", async () => {
     const w = mount(CoachCard, {
       props: { coach: baseCoach, contactMode: "native" },
       global: { stubs: actionStubs },
     });
-    expect(w.get('[data-action="email"]').attributes("href")).toBe(
-      "mailto:bcottom@ashland.edu",
-    );
     await w.get('[data-action="email"]').trigger("click");
+    expect(window.location.href).toBe("mailto:bcottom@ashland.edu");
     expect(w.emitted("open-communication")).toBeUndefined();
   });
 

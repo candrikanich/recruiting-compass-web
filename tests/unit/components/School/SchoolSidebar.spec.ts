@@ -137,24 +137,28 @@ describe("SchoolSidebar", () => {
       expect(wrapper.text()).toContain("Head Coach");
     });
 
-    it("renders email link for coach with email", () => {
+    it("renders an email action for coach with email", () => {
       const wrapper = mount(SchoolSidebar, {
         props: defaultProps,
         global: { stubs },
       });
-      const emailLink = wrapper.find('a[href="mailto:john@duke.edu"]');
-      expect(emailLink.exists()).toBe(true);
+      // CoachCardActions renders native-mode contact actions as buttons
+      // (not anchors) that set window.location.href on click — nesting an
+      // <a> inside the tile's own NuxtLink <a> is invalid HTML.
+      const emailAction = wrapper.find('[data-action="email"]');
+      expect(emailAction.exists()).toBe(true);
+      expect(emailAction.element.tagName).toBe("BUTTON");
     });
 
-    it("renders phone links for coach with phone", () => {
+    it("renders phone actions for coach with phone", () => {
       const wrapper = mount(SchoolSidebar, {
         props: defaultProps,
         global: { stubs },
       });
-      const smsLink = wrapper.find('a[href="sms:555-1234"]');
-      const telLink = wrapper.find('a[href="tel:555-1234"]');
-      expect(smsLink.exists()).toBe(true);
-      expect(telLink.exists()).toBe(true);
+      const smsAction = wrapper.find('[data-action="text"]');
+      const callAction = wrapper.find('[data-action="call"]');
+      expect(smsAction.exists()).toBe(true);
+      expect(callAction.exists()).toBe(true);
     });
 
     it("shows empty state when no coaches", () => {
@@ -184,7 +188,7 @@ describe("SchoolSidebar", () => {
       expect(wrapper.text()).toContain("Assistant Coach");
     });
 
-    it("hides email link when coach has no email", () => {
+    it("hides email action when coach has no email", () => {
       const wrapper = mount(SchoolSidebar, {
         props: {
           ...defaultProps,
@@ -192,11 +196,11 @@ describe("SchoolSidebar", () => {
         },
         global: { stubs },
       });
-      const emailLinks = wrapper.findAll('a[href^="mailto:"]');
-      expect(emailLinks).toHaveLength(0);
+      const emailActions = wrapper.findAll('[data-action="email"]');
+      expect(emailActions).toHaveLength(0);
     });
 
-    it("hides phone links when coach has no phone", () => {
+    it("hides phone actions when coach has no phone", () => {
       const wrapper = mount(SchoolSidebar, {
         props: {
           ...defaultProps,
@@ -204,10 +208,10 @@ describe("SchoolSidebar", () => {
         },
         global: { stubs },
       });
-      const smsLinks = wrapper.findAll('a[href^="sms:"]');
-      const telLinks = wrapper.findAll('a[href^="tel:"]');
-      expect(smsLinks).toHaveLength(0);
-      expect(telLinks).toHaveLength(0);
+      const smsActions = wrapper.findAll('[data-action="text"]');
+      const callActions = wrapper.findAll('[data-action="call"]');
+      expect(smsActions).toHaveLength(0);
+      expect(callActions).toHaveLength(0);
     });
   });
 
