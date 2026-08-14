@@ -173,20 +173,6 @@
       @interaction-logged="handleSchoolCoachInteractionLogged"
     />
 
-    <!-- Live Region for Screen Reader Announcements -->
-    <div v-bind="liveRegionAttrs">{{ announcement }}</div>
-
-    <!-- Confirm Delete Dialog -->
-    <DesignSystemConfirmDialog
-      :is-open="isDeleteDialogOpen"
-      title="Delete Coach"
-      message="Are you sure you want to delete this coach? This will also remove related interactions, offers, and social media posts."
-      confirm-text="Delete"
-      cancel-text="Cancel"
-      variant="danger"
-      @confirm="executeDeleteCoach"
-      @cancel="cancelDeleteCoach"
-    />
   </div>
 </template>
 
@@ -199,7 +185,6 @@ import { useInteractions } from "~/composables/useInteractions";
 import { useCommunication } from "~/composables/useCommunication";
 import { useUserStore } from "~/stores/user";
 import type { School } from "~/types";
-import { useLiveRegion } from "~/composables/useLiveRegion";
 import { createClientLogger } from "~/utils/logger";
 import CoachCard from "~/components/Coach/CoachCard.vue";
 
@@ -233,7 +218,6 @@ const {
   fetchCoaches,
   createCoach,
   deleteCoach: deleteCoachAPI,
-  smartDelete,
   getCoach,
 } = useCoaches();
 const { getSchool } = useSchools();
@@ -247,9 +231,6 @@ const {
 } = useCommunication();
 const userStore = useUserStore();
 
-const { announcement, announce, liveRegionAttrs } = useLiveRegion();
-const isDeleteDialogOpen = ref(false);
-const coachToDeleteId = ref<string | null>(null);
 const showAddForm = ref(false);
 const schoolName = ref("");
 const localError = ref("");
@@ -321,36 +302,6 @@ const handleCoachFormSubmit = async (formData: any) => {
   }
 };
 
-const deleteCoach = (coachId: string) => {
-  coachToDeleteId.value = coachId;
-  isDeleteDialogOpen.value = true;
-};
-
-const executeDeleteCoach = async () => {
-  if (!coachToDeleteId.value) return;
-  const deletingId = coachToDeleteId.value;
-  isDeleteDialogOpen.value = false;
-  coachToDeleteId.value = null;
-  try {
-    const result = await smartDelete(deletingId);
-    const message = result.cascadeUsed
-      ? "Coach and related records deleted"
-      : "Coach deleted";
-    announce(message);
-    await fetchCoaches(route.params.id as string);
-  } catch (err) {
-    const errorMessage =
-      err instanceof Error ? err.message : "Failed to delete coach";
-    announce(errorMessage);
-    logger.error("Failed to delete coach", errorMessage);
-  }
-};
-
-const cancelDeleteCoach = () => {
-  isDeleteDialogOpen.value = false;
-  coachToDeleteId.value = null;
-};
-
 const openCommunicationForId = (coachId: string) => {
   const coach = coaches.value.find((c) => c.id === coachId);
   if (coach) openCommunication(coach, "email");
@@ -378,10 +329,6 @@ defineExpose({
   schoolCoaches,
   filteredCoaches,
   handleCoachFormSubmit,
-  isDeleteDialogOpen,
-  coachToDeleteId,
-  executeDeleteCoach,
-  cancelDeleteCoach,
   clearFilters,
 });
 
