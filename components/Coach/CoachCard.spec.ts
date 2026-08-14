@@ -1,7 +1,13 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { mount } from "@vue/test-utils";
 import CoachCard from "./CoachCard.vue";
+import { openTwitter } from "~/utils/socialMediaHandlers";
 import type { Coach, School } from "~/types/models";
+
+vi.mock("~/utils/socialMediaHandlers", () => ({
+  openTwitter: vi.fn(),
+  openInstagram: vi.fn(),
+}));
 
 const NuxtLinkStub = {
   props: ["to"],
@@ -69,5 +75,62 @@ describe("CoachCard — layout & variants", () => {
     const compact = mountCard({ variant: "compact" });
     expect(full.find('[data-testid="delete-coach"]').exists()).toBe(false);
     expect(compact.find('[data-testid="delete-coach"]').exists()).toBe(false);
+  });
+});
+
+const actionStubs = { NuxtLink: NuxtLinkStub, SchoolLogo: true, UIcon: true };
+
+describe("CoachCard — action row", () => {
+  it("renders all five actions in fixed order when all data present", () => {
+    const w = mount(CoachCard, {
+      props: { coach: baseCoach },
+      global: { stubs: actionStubs },
+    });
+    const labels = w
+      .findAll("[data-action]")
+      .map((n) => n.attributes("data-action"));
+    expect(labels).toEqual(["email", "text", "call", "twitter", "instagram"]);
+  });
+
+  it("omits an action when its data field is missing, preserving order", () => {
+    const coach = { ...baseCoach, phone: null, twitter_handle: null } as unknown as Coach;
+    const w = mount(CoachCard, {
+      props: { coach },
+      global: { stubs: actionStubs },
+    });
+    const labels = w
+      .findAll("[data-action]")
+      .map((n) => n.attributes("data-action"));
+    expect(labels).toEqual(["email", "instagram"]);
+  });
+
+  it("emits open-communication with coach id on Email click in modal mode", async () => {
+    const w = mount(CoachCard, {
+      props: { coach: baseCoach, contactMode: "modal" },
+      global: { stubs: actionStubs },
+    });
+    await w.get('[data-action="email"]').trigger("click");
+    expect(w.emitted("open-communication")?.[0]).toEqual(["c1"]);
+  });
+
+  it("uses a mailto link (no emit) on Email in native mode", async () => {
+    const w = mount(CoachCard, {
+      props: { coach: baseCoach, contactMode: "native" },
+      global: { stubs: actionStubs },
+    });
+    expect(w.get('[data-action="email"]').attributes("href")).toBe(
+      "mailto:bcottom@ashland.edu",
+    );
+    await w.get('[data-action="email"]').trigger("click");
+    expect(w.emitted("open-communication")).toBeUndefined();
+  });
+
+  it("opens Twitter via the social handler without navigating", async () => {
+    const w = mount(CoachCard, {
+      props: { coach: baseCoach },
+      global: { stubs: actionStubs },
+    });
+    await w.get('[data-action="twitter"]').trigger("click");
+    expect(openTwitter).toHaveBeenCalledWith("Brady_Cottom");
   });
 });
