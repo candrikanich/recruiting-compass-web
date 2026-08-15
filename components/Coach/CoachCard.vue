@@ -97,6 +97,8 @@ const props = withDefaults(
     school?: School;
     contactMode?: "native" | "modal";
     detailTo?: string;
+    backTo?: string;
+    backLabel?: string;
   }>(),
   { variant: "full", showSchoolMeta: false, contactMode: "native" },
 );
@@ -108,9 +110,14 @@ const fullName = computed(
 );
 const roleLabel = computed(() => getRoleLabel(props.coach.role));
 const roleBadgeClass = computed(() => getRoleBadgeClass(props.coach.role));
-const resolvedDetailTo = computed(
-  () => props.detailTo ?? `/coaches/${props.coach.id}`,
-);
+const resolvedDetailTo = computed(() => {
+  if (props.detailTo) return props.detailTo;
+  const base = `/coaches/${props.coach.id}`;
+  if (!props.backTo) return base;
+  let qs = `back=${encodeURIComponent(props.backTo)}`;
+  if (props.backLabel) qs += `&label=${encodeURIComponent(props.backLabel)}`;
+  return `${base}?${qs}`;
+});
 const lastContactLabel = computed(() => {
   const d = props.coach.last_contact_date;
   if (!d) return "";

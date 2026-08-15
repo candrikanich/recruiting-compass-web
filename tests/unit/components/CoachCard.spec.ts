@@ -139,3 +139,34 @@ describe("CoachCard — action row", () => {
     expect(openTwitter).toHaveBeenCalledWith("Brady_Cottom");
   });
 });
+
+describe("CoachCard — back-context query", () => {
+  it("appends encoded back + label query when backTo is provided", () => {
+    const w = mountCard({ backTo: "/schools/s1/coaches", backLabel: "Coaches" });
+    expect(w.get("a").attributes("href")).toBe(
+      "/coaches/c1?back=%2Fschools%2Fs1%2Fcoaches&label=Coaches",
+    );
+  });
+
+  it("omits the label param when only backTo is given", () => {
+    const w = mountCard({ backTo: "/coaches" });
+    expect(w.get("a").attributes("href")).toBe("/coaches/c1?back=%2Fcoaches");
+  });
+
+  it("uses the plain detail route when no backTo is provided", () => {
+    const w = mountCard();
+    expect(w.get("a").attributes("href")).toBe("/coaches/c1");
+  });
+
+  it("lets an explicit detailTo override win over backTo", () => {
+    const w = mountCard({ detailTo: "/custom", backTo: "/coaches" });
+    expect(w.get("a").attributes("href")).toBe("/custom");
+  });
+
+  it("encodes a multi-word label with %20 (not +) so it round-trips through the router", () => {
+    const w = mountCard({ backTo: "/coaches", backLabel: "All Coaches" });
+    expect(w.get("a").attributes("href")).toBe(
+      "/coaches/c1?back=%2Fcoaches&label=All%20Coaches",
+    );
+  });
+});
