@@ -219,8 +219,6 @@ const {
   error,
   fetchCoaches,
   createCoach,
-  deleteCoach: deleteCoachAPI,
-  getCoach,
 } = useCoaches();
 const { getSchool } = useSchools();
 const { fetchInteractions } = useInteractions();

@@ -10,11 +10,9 @@ definePageMeta({ middleware: "auth" });
 const route = useRoute();
 const schoolId = route.params.schoolId as string;
 const coachId = route.params.coachId as string;
-const params = new URLSearchParams({
-  back: `/schools/${schoolId}/coaches`,
-  label: "Coaches",
-});
-await navigateTo(`/coaches/${coachId}?${params.toString()}`, {
+const back = encodeURIComponent(`/schools/${schoolId}/coaches`);
+const label = encodeURIComponent("Coaches");
+await navigateTo(`/coaches/${coachId}?back=${back}&label=${label}`, {
   redirectCode: 301,
   replace: true,
 });
