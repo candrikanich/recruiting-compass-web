@@ -157,6 +157,8 @@
             :coach="coach"
             variant="full"
             contact-mode="modal"
+            :back-to="`/schools/${id}/coaches`"
+            back-label="Coaches"
             @open-communication="(coachId) => openCommunicationForId(coachId)"
           />
         </div>
