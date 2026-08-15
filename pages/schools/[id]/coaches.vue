@@ -166,14 +166,49 @@
     </div>
 
     <!-- Communication Panel Modal -->
-    <CommunicationPanel
-      v-if="showPanel && selectedCoach"
-      :coach="selectedCoach"
-      :school="school"
-      :initial-type="communicationType"
-      @close="showPanel = false"
-      @interaction-logged="handleSchoolCoachInteractionLogged"
-    />
+    <Teleport to="body">
+      <div
+        v-if="showPanel && selectedCoach"
+        class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+        @click="showPanel = false"
+        @keydown.escape="showPanel = false"
+      >
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="school-communication-panel-title"
+          class="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+          @click.stop
+        >
+          <div
+            class="sticky top-0 bg-white border-b border-slate-200 p-4 flex items-center justify-between rounded-t-xl"
+          >
+            <h2
+              id="school-communication-panel-title"
+              class="text-xl font-bold text-slate-900"
+            >
+              Quick Communication
+            </h2>
+            <button
+              @click="showPanel = false"
+              aria-label="Close communication panel"
+              class="text-slate-400 hover:text-slate-600"
+            >
+              <UIcon name="i-heroicons-x-mark" class="w-6 h-6" />
+            </button>
+          </div>
+          <div class="p-6">
+            <CommunicationPanel
+              :coach="selectedCoach"
+              :school="school"
+              :initial-type="communicationType"
+              @close="showPanel = false"
+              @interaction-logged="handleSchoolCoachInteractionLogged"
+            />
+          </div>
+        </div>
+      </div>
+    </Teleport>
 
   </div>
 </template>
