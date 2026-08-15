@@ -6,22 +6,15 @@ import { getSupabaseAdmin } from "../seed/helpers/supabase-admin";
 import { TEST_ACCOUNTS } from "../config/test-accounts";
 
 /**
- * Coach tile unification — directory page tap-to-detail smoke.
+ * Coach detail consolidation — legacy-redirect and back-link coverage.
  *
- * The unified CoachCard (components/Coach/CoachCard.vue) wraps the whole
- * tile in a NuxtLink to `/coaches/:id`; action icons use `@click.stop.prevent`
- * so they neither trigger the tile's SPA navigation nor its native anchor
- * fallback. This spec covers
- * the /coaches directory surface (see task-7-brief.md Step 4) — the other
- * two surfaces (school detail sidebar, school-scoped coaches page) reuse the
- * same component and are covered by SchoolSidebar.spec.ts and
- * schools-id-coaches.spec.ts at the unit level.
+ * The legacy school-scoped route (`/schools/:schoolId/coaches/:coachId`) is
+ * now a 301 redirect to the unified detail route (`/coaches/:coachId`),
+ * carrying `back`/`label` query params so the page can render a
+ * context-aware back-link (see composables/useBackLink.ts). This spec
+ * follows the seed/teardown conventions of coaches-tile-navigation.spec.ts.
  */
-test.describe("Coach directory — tile navigation", () => {
-  // fullyParallel would otherwise re-run beforeAll per worker for this
-  // describe's two tests, creating two coaches with the same unique last
-  // name concurrently — serial avoids that cross-worker race (see
-  // coaches-filtering.spec.ts for the same pattern).
+test.describe("Coach detail — back-nav and legacy redirect", () => {
   test.describe.configure({ mode: "serial" });
   test.use({
     storageState: resolve(process.cwd(), "tests/e2e/.auth/player.json"),
@@ -29,7 +22,7 @@ test.describe("Coach directory — tile navigation", () => {
 
   let schoolId: string | undefined;
   let coachId: string | undefined;
-  const coachLastName = `Navigator${Date.now()}`;
+  const coachLastName = `Backnav${Date.now()}`;
 
   test.beforeAll(async () => {
     try {
@@ -54,7 +47,7 @@ test.describe("Coach directory — tile navigation", () => {
         .from("schools")
         .insert([
           {
-            name: generateUniqueSchoolName("Tile Nav School"),
+            name: generateUniqueSchoolName("Backnav School"),
             location: "Test City, USA",
             division: "D3",
             status: "researching",
@@ -73,10 +66,10 @@ test.describe("Coach directory — tile navigation", () => {
         .from("coaches")
         .insert([
           {
-            first_name: "Tile",
+            first_name: "Backnav",
             last_name: coachLastName,
             role: "head",
-            email: generateUniqueCoachEmail("tilenav"),
+            email: generateUniqueCoachEmail("backnav"),
             phone: "555-0100",
             school_id: schoolId,
             user_id: player.id,
@@ -88,10 +81,7 @@ test.describe("Coach directory — tile navigation", () => {
       if (coachErr) throw coachErr;
       coachId = coach.id;
     } catch (err) {
-      console.warn(
-        "⚠️  coaches-tile-navigation beforeAll setup failed:",
-        err,
-      );
+      console.warn("⚠️  coach-detail-backnav beforeAll setup failed:", err);
       // schoolId/coachId stay undefined — beforeEach skips affected tests
     }
   });
@@ -103,10 +93,7 @@ test.describe("Coach directory — tile navigation", () => {
       await supabase.from("coaches").delete().eq("school_id", schoolId);
       await supabase.from("schools").delete().eq("id", schoolId);
     } catch (err) {
-      console.warn(
-        "⚠️  coaches-tile-navigation afterAll teardown failed:",
-        err,
-      );
+      console.warn("⚠️  coach-detail-backnav afterAll teardown failed:", err);
     }
   });
 
@@ -116,7 +103,23 @@ test.describe("Coach directory — tile navigation", () => {
     }
   });
 
-  test("tapping a coach tile navigates to the coach detail page", async ({
+  test("legacy school-scoped URL redirects to the unified detail route with a school-context back-link", async ({
+    page,
+  }) => {
+    await page.goto(`/schools/${schoolId}/coaches/${coachId}`);
+    await page.waitForLoadState("domcontentloaded");
+
+    await expect(page).toHaveURL(new RegExp(`/coaches/${coachId}(\\?.*)?$`));
+
+    const backLink = page.getByRole("link", { name: "Back to Coaches" });
+    await expect(backLink).toBeVisible();
+    await expect(backLink).toHaveAttribute(
+      "href",
+      `/schools/${schoolId}/coaches`,
+    );
+  });
+
+  test("opening a tile from the global coach directory lands on detail with an all-coaches back-link", async ({
     page,
   }) => {
     await page.goto("/coaches");
@@ -126,38 +129,11 @@ test.describe("Coach directory — tile navigation", () => {
     await expect(tile).toBeVisible();
     await tile.click();
 
-    await page.waitForURL(new RegExp(`/coaches/${coachId}(\\?.*)?$`));
+    await page.waitForURL(new RegExp(`/coaches/${coachId}`));
     await expect(page.getByText(coachLastName)).toBeVisible();
+
+    const backLink = page.getByRole("link", { name: "Back to All Coaches" });
+    await expect(backLink).toBeVisible();
+    await expect(backLink).toHaveAttribute("href", /^\/coaches(\?.*)?$/);
   });
-
-  // Regression coverage for a bug found by this spec: `@click.stop` alone on
-  // the nested action button stopped propagation to the surrounding
-  // NuxtLink's own click listener — but that listener is what normally
-  // calls preventDefault() to suppress the native anchor navigation. With
-  // propagation stopped before it fired, nothing called preventDefault(),
-  // so the browser's native href navigation went through uncontested.
-  // Fixed in components/Coach/CoachCardActions.vue by using
-  // `@click.stop.prevent` on all five action buttons (and converting the
-  // native mailto/sms/tel actions from nested `<a>` to `<button>` with a
-  // `window.location.href` handler, since `<a>`-inside-`<a>` is invalid
-  // HTML).
-  test(
-    "tapping the email action icon opens its channel without navigating",
-    async ({ page }) => {
-      await page.goto("/coaches");
-      await page.waitForLoadState("networkidle");
-
-      const emailAction = page
-        .getByRole("button", {
-          name: new RegExp(`Email .*${coachLastName}`, "i"),
-        })
-        .first();
-      await expect(emailAction).toBeVisible();
-      await emailAction.click();
-
-      // contact-mode="modal" on the directory page: the email icon should
-      // open the communication panel in place, not navigate to detail.
-      await expect(page).toHaveURL(/\/coaches$/);
-    },
-  );
 });

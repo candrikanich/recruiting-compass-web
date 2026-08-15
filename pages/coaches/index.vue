@@ -249,6 +249,8 @@
             :show-school-meta="true"
             :school="getSchoolById(coach.school_id, schools)"
             contact-mode="modal"
+            back-to="/coaches"
+            back-label="All Coaches"
             @open-communication="(id) => openCommunicationById(id)"
           />
         </li>

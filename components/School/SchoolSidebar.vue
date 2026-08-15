@@ -66,6 +66,8 @@
           :key="coach.id"
           :coach="coach"
           variant="compact"
+          :back-to="`/schools/${schoolId}`"
+          :back-label="school?.name ?? 'School'"
         />
       </div>
       <div v-else class="text-center py-4 text-slate-500 text-sm">

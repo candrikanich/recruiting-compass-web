@@ -16,13 +16,15 @@ export class CoachesPage extends BasePage {
     await this.waitForURL(/coaches/);
   }
 
-  async goToCoachDetail(schoolId: string, coachId: string) {
-    await super.goto(`/schools/${schoolId}/coaches/${coachId}`);
+  // schoolId is unused now that the unified detail route (`/coaches/:id`)
+  // doesn't need school context in the URL — kept for caller compatibility.
+  async goToCoachDetail(_schoolId: string | undefined, coachId: string) {
+    await super.goto(`/coaches/${coachId}`);
     await this.page.waitForLoadState("domcontentloaded");
   }
 
-  async goToCoachCommunications(schoolId: string, coachId: string) {
-    await super.goto(`/schools/${schoolId}/coaches/${coachId}/communications`);
+  async goToCoachCommunications(_schoolId: string | undefined, coachId: string) {
+    await super.goto(`/coaches/${coachId}/communications`);
     await this.page.waitForLoadState("domcontentloaded");
   }
 

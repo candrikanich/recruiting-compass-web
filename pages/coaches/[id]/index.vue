@@ -14,11 +14,11 @@
     <div class="bg-white border-b border-slate-200">
       <div class="max-w-5xl mx-auto px-4 sm:px-6 py-4">
         <NuxtLink
-          to="/coaches"
+          :to="backLink.to"
           class="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
         >
           <UIcon name="i-heroicons-arrow-left" class="w-4 h-4" />
-          Back to All Coaches
+          {{ backLink.text }}
         </NuxtLink>
       </div>
     </div>
@@ -162,6 +162,7 @@ import { openTwitter, openInstagram } from "~/utils/socialMediaHandlers";
 import { useUserStore } from "~/stores/user";
 import { useDeleteModal } from "~/composables/useDeleteModal";
 import { useCommunicationModal } from "~/composables/useCommunicationModal";
+import { deriveBackLink } from "~/composables/useBackLink";
 import DeleteConfirmationModal from "~/components/DeleteConfirmationModal.vue";
 import CoachHeader from "~/components/Coach/CoachHeader.vue";
 import CoachStatsGrid from "~/components/Coach/CoachStatsGrid.vue";
@@ -179,6 +180,7 @@ definePageMeta({
 const route = useRoute();
 const router = useRouter();
 const coachId = route.params.id as string;
+const backLink = computed(() => deriveBackLink(route.query));
 
 const { getCoach, updateCoach, smartDelete } = useCoaches();
 const { getSchool } = useSchools();
