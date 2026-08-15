@@ -115,8 +115,9 @@ describe("useTemplateResolver", () => {
       expect(ctx.prefs?.ncaa_id).toBe("21");
       expect(ctx.metrics).toHaveLength(1);
       expect(ctx.derived?.sport).toBe("Baseball");
-      expect(ctx.derived?.position).toBe("Shortstop");
-      expect(ctx.derived?.positionSecondary).toBe("Second Base");
+      // Ordered, abbreviated, coach-facing: positions[0]=SS, next distinct=2B.
+      expect(ctx.derived?.position).toBe("SS/2B");
+      expect(ctx.derived?.positionSecondary).toBe("2B");
       expect(ctx.derived?.profileLink).toBe("/jordan");
       expect(ctx.derived?.hsCoachName).toBe("Dave Reilly");
       expect(ctx.derived?.transcriptLink).toBe("https://files.example/transcript.pdf");

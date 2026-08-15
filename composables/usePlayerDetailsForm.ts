@@ -143,16 +143,23 @@ export function usePlayerDetailsForm() {
       const latest = [...travelTeams].sort(
         (a, b) => (b.year ?? 0) - (a.year ?? 0),
       )[0];
+      // positions[] is the ordered source of truth (index 0 = primary). Mirror
+      // it back onto the legacy primary_position string every save so every
+      // downstream reader (template resolver, completeness, recruiting packet,
+      // public profile) stays in sync — this is what permanently reconciles the
+      // two stores that used to drift (onboarding primary vs. edited array).
+      const normalizedPositions = normalizePositionsForSport(
+        form.value.primary_sport,
+        form.value.positions,
+      );
       const detailsToSave = {
         ...form.value,
         travel_teams: travelTeams,
         travel_team_year: latest?.year,
         travel_team_name: latest?.name ?? "",
         travel_team_coach: latest?.coach ?? "",
-        positions: normalizePositionsForSport(
-          form.value.primary_sport,
-          form.value.positions,
-        ),
+        positions: normalizedPositions,
+        primary_position: normalizedPositions[0] ?? form.value.primary_position,
       };
       await setPlayerDetails(detailsToSave);
     },
@@ -209,6 +216,18 @@ export function usePlayerDetailsForm() {
     const idx = form.value.positions.indexOf(pos);
     if (idx >= 0) form.value.positions.splice(idx, 1);
     else form.value.positions.push(pos);
+  };
+
+  // Reorder the selected positions — index 0 is the athlete's primary, index 1
+  // their secondary. Mutates in place so the reactive array reference is stable
+  // (autosave mirrors positions[0] back onto primary_position on save).
+  const movePosition = (index: number, direction: "up" | "down") => {
+    const list = form.value.positions;
+    if (!list) return;
+    const target = direction === "up" ? index - 1 : index + 1;
+    if (target < 0 || target >= list.length) return;
+    const [item] = list.splice(index, 1);
+    list.splice(target, 0, item);
   };
 
   const newCourseInput = ref("");
@@ -399,6 +418,7 @@ export function usePlayerDetailsForm() {
     commonSports,
     isPositionSelected,
     togglePosition,
+    movePosition,
     newCourseInput,
     addCourse,
     removeCourse,

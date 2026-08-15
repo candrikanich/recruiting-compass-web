@@ -155,6 +155,66 @@
         <p v-else class="text-sm text-slate-400 italic">
           Select a sport on the Basics tab to see positions.
         </p>
+
+        <!-- Priority order: index 0 = primary, 1 = secondary. This is what coach
+             outreach, the recruiting packet, and your public profile show. -->
+        <div v-if="orderedSelected.length" class="mt-6">
+          <label
+            class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 ml-1"
+            >Position Priority</label
+          >
+          <p class="text-xs text-slate-500 mb-3 ml-1">
+            Order matters — your first pick is what coaches see (they recruit for
+            specific positions).
+          </p>
+          <ul class="space-y-2">
+            <li
+              v-for="(pos, i) in orderedSelected"
+              :key="pos"
+              class="flex items-center gap-3 px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+            >
+              <span
+                v-if="i < 2"
+                :class="[
+                  'px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wide',
+                  i === 0
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-slate-200 text-slate-600',
+                ]"
+                >{{ i === 0 ? "Primary" : "Secondary" }}</span
+              >
+              <span
+                v-else
+                class="w-5 text-center text-xs font-bold text-slate-400"
+                >{{ i + 1 }}</span
+              >
+              <span class="font-semibold text-slate-700 text-sm">{{ pos }}</span>
+              <span class="text-xs font-mono text-slate-400">{{
+                abbrev(pos)
+              }}</span>
+              <div class="ml-auto flex items-center gap-1">
+                <button
+                  type="button"
+                  :disabled="i === 0 || isParentRole"
+                  @click="reorder(i, 'up')"
+                  class="p-1.5 text-slate-400 hover:text-blue-600 disabled:opacity-30 disabled:cursor-not-allowed rounded-lg hover:bg-white transition"
+                  :aria-label="`Move ${pos} up`"
+                >
+                  <UIcon name="i-heroicons-chevron-up" class="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  :disabled="i === orderedSelected.length - 1 || isParentRole"
+                  @click="reorder(i, 'down')"
+                  class="p-1.5 text-slate-400 hover:text-blue-600 disabled:opacity-30 disabled:cursor-not-allowed rounded-lg hover:bg-white transition"
+                  :aria-label="`Move ${pos} down`"
+                >
+                  <UIcon name="i-heroicons-chevron-down" class="w-4 h-4" />
+                </button>
+              </div>
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
 
@@ -361,6 +421,7 @@ import { computed, onMounted, ref } from "vue";
 import type { PlayerDetails } from "~/types/models";
 import { useVideoLinks } from "~/composables/useVideoLinks";
 import { useAppToast } from "~/composables/useAppToast";
+import { abbreviatePosition } from "~/utils/positions/canonical";
 
 const props = defineProps<{
   form: PlayerDetails;
@@ -370,6 +431,7 @@ const props = defineProps<{
   triggerSave: () => void;
   togglePosition: (pos: string) => void;
   isPositionSelected: (pos: string) => boolean;
+  movePosition: (index: number, direction: "up" | "down") => void;
   batsOptions: readonly { value: "R" | "L" | "S"; label: string }[];
   throwsOptions: readonly { value: "R" | "L"; label: string }[];
 }>();
@@ -382,6 +444,17 @@ const sportLabel = computed(() =>
     ? `${props.form.primary_sport} Details`
     : "Sport Details",
 );
+
+// Selected positions in priority order — index 0 = primary, 1 = secondary.
+const orderedSelected = computed(() => props.form.positions ?? []);
+
+const abbrev = (pos: string) =>
+  abbreviatePosition(props.form.primary_sport, pos);
+
+const reorder = (index: number, direction: "up" | "down") => {
+  props.movePosition(index, direction);
+  props.triggerSave();
+};
 
 const videoLinks = useVideoLinks();
 const { showToast } = useAppToast();

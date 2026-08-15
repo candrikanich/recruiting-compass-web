@@ -146,6 +146,7 @@
             :trigger-save="triggerSave"
             :toggle-position="togglePosition"
             :is-position-selected="isPositionSelected"
+            :move-position="movePosition"
             :bats-options="BATS_OPTIONS"
             :throws-options="THROWS_OPTIONS"
             v-model:height-feet="heightFeet"
@@ -394,6 +395,7 @@ const {
   commonSports,
   isPositionSelected,
   togglePosition,
+  movePosition,
   newCourseInput,
   addCourse,
   removeCourse,
