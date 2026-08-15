@@ -12,6 +12,7 @@ vi.mock("vue-router", () => ({
   })),
   useRoute: vi.fn(() => ({
     params: { id: "coach-123" },
+    query: {},
   })),
 }));
 
