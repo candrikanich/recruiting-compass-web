@@ -6,6 +6,13 @@ export default defineNuxtPlugin(() => {
 
   if (!config.public.posthogPublicKey) return;
 
+  // Honor Global Privacy Control (GPC): opt out of non-essential analytics
+  // when the browser signals it. Required under CCPA/CPRA and several state laws.
+  const gpc = (
+    navigator as Navigator & { globalPrivacyControl?: boolean }
+  ).globalPrivacyControl;
+  if (gpc) return;
+
   posthog.init(config.public.posthogPublicKey as string, {
     api_host: config.public.posthogHost as string,
     autocapture: false,
