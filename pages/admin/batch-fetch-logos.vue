@@ -136,6 +136,10 @@
 </template>
 
 <script setup lang="ts">
+definePageMeta({
+  middleware: ["auth", "admin"],
+});
+
 import { ref } from "vue";
 import { useUserStore } from "~/stores/user";
 import { useSupabase } from "~/composables/useSupabase";

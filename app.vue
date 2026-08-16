@@ -33,6 +33,11 @@ const logger = createClientLogger("app");
 const { public: publicConfig } = useRuntimeConfig();
 const isVercel = publicConfig.isVercel;
 
+const { isAdminHost } = useAppHost();
+if (isAdminHost) {
+  useHead({ meta: [{ name: "robots", content: "noindex, nofollow" }] });
+}
+
 // Service status for error page
 const { isServiceUnavailable } = useServiceStatus();
 

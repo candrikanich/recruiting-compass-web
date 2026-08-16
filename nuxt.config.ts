@@ -138,6 +138,16 @@ export default defineNuxtConfig({
 
   nitro: {
     preset: "vercel",
+    // Nitro bundles all API routes into a single Vercel serverless function, so
+    // maxDuration is necessarily global (no per-route rule in nitropack 2.13.x).
+    // Default Vercel cap (10-15s) is too tight for the housekeeping crons that
+    // iterate every user/row; 60s works on both Hobby and Pro and gives 4-6x
+    // headroom. cron_runs.duration_ms is the signal to revisit if 60s bites.
+    vercel: {
+      functions: {
+        maxDuration: 60,
+      },
+    },
     prerender: {
       crawlLinks: false,
     },
@@ -197,6 +207,7 @@ export default defineNuxtConfig({
       posthogHost: "https://us.i.posthog.com",
       posthogDefaults: "2026-01-30",
       isVercel: process.env.VERCEL === "1",
+      adminHost: process.env.NUXT_PUBLIC_ADMIN_HOST || "admin.myrecruitingcompass.com",
     },
   },
 

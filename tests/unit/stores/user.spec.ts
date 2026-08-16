@@ -162,6 +162,18 @@ describe("useUserStore", () => {
     it("should return false for isParent when no user", () => {
       expect(store.isParent).toBe(false);
     });
+
+    it("should return true for isAdmin when is_admin is true regardless of role", () => {
+      store.user = createMockUser({ role: "parent", is_admin: true });
+
+      expect(store.isAdmin).toBe(true);
+    });
+
+    it("should return false for isAdmin when is_admin is falsy even if role says admin", () => {
+      store.user = createMockUser({ role: "admin" });
+
+      expect(store.isAdmin).toBe(false);
+    });
   });
 
   describe("initializeUser", () => {

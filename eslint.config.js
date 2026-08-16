@@ -115,6 +115,8 @@ export default [
       ".vercel/**/*",
       ".worktrees",
       ".worktrees/**/*",
+      ".claude/worktrees",
+      ".claude/worktrees/**/*",
       "coverage",
       "*.cjs",
       ".vite",

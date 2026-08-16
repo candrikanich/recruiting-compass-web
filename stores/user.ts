@@ -26,7 +26,7 @@ export const useUserStore = defineStore("user", () => {
   const emailVerified = computed(() => isEmailVerified.value);
   const isAthlete = computed(() => user.value?.role === "player");
   const isParent = computed(() => user.value?.role === "parent");
-  const isAdmin = computed(() => user.value?.role === "admin");
+  const isAdmin = computed(() => user.value?.is_admin === true);
 
   async function initializeUser() {
     const supabase = useSupabase();

@@ -261,6 +261,47 @@ describe("onboarding middleware", () => {
     });
   });
 
+  describe("shouldRedirectToOnboarding", () => {
+    it("never redirects an admin, even with incomplete onboarding", async () => {
+      const { shouldRedirectToOnboarding } = await import(
+        "~/middleware/onboarding"
+      );
+
+      expect(
+        shouldRedirectToOnboarding({
+          is_admin: true,
+          onboarding_complete: false,
+        }),
+      ).toBe(false);
+    });
+
+    it("redirects a non-admin with incomplete onboarding", async () => {
+      const { shouldRedirectToOnboarding } = await import(
+        "~/middleware/onboarding"
+      );
+
+      expect(
+        shouldRedirectToOnboarding({
+          is_admin: false,
+          onboarding_complete: false,
+        }),
+      ).toBe(true);
+    });
+
+    it("does not redirect a non-admin who completed onboarding", async () => {
+      const { shouldRedirectToOnboarding } = await import(
+        "~/middleware/onboarding"
+      );
+
+      expect(
+        shouldRedirectToOnboarding({
+          is_admin: false,
+          onboarding_complete: true,
+        }),
+      ).toBe(false);
+    });
+  });
+
   describe("Route Pattern Matching", () => {
     it("should match /onboarding root path", async () => {
       const middleware = await loadMiddleware();
