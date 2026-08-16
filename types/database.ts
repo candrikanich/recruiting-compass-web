@@ -556,6 +556,45 @@ export type Database = {
         }
         Relationships: []
       }
+      cron_runs: {
+        Row: {
+          created_at: string
+          duration_ms: number | null
+          error: string | null
+          finished_at: string | null
+          id: string
+          job_name: string
+          rows_failed: number | null
+          rows_processed: number | null
+          started_at: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          duration_ms?: number | null
+          error?: string | null
+          finished_at?: string | null
+          id?: string
+          job_name: string
+          rows_failed?: number | null
+          rows_processed?: number | null
+          started_at?: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          duration_ms?: number | null
+          error?: string | null
+          finished_at?: string | null
+          id?: string
+          job_name?: string
+          rows_failed?: number | null
+          rows_processed?: number | null
+          started_at?: string
+          status?: string
+        }
+        Relationships: []
+      }
       data_ownership_snapshot: {
         Row: {
           created_at: string | null

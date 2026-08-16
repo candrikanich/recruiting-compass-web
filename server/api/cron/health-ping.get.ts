@@ -7,9 +7,9 @@
  * Security: Vercel sends CRON_SECRET as "Authorization: Bearer <secret>".
  */
 
-import { defineEventHandler, createError, getHeader } from "h3";
+import { defineEventHandler } from "h3";
 import { useLogger } from "~/server/utils/logger";
-import { verifySharedSecret } from "~/server/utils/secrets";
+import { withCronRun } from "~/server/utils/cronRunner";
 import { redis, CACHE_KEYS, TTL } from "~/server/utils/redis";
 
 const COLLEGE_SCORECARD_BASE =
@@ -41,158 +41,152 @@ interface HealthResult {
   errors: string[];
 }
 
-export default defineEventHandler(async (event) => {
-  const logger = useLogger(event, "cron/health-ping");
+export default defineEventHandler(async (event) =>
+  withCronRun(event, "health-ping", async (ctx) => {
+    const logger = useLogger(event, "cron/health-ping");
 
-  const expectedSecret = process.env.CRON_SECRET;
-  const authHeader = getHeader(event, "authorization");
-  const legacyHeader = getHeader(event, "x-cron-secret");
-  const bearerSecret = authHeader?.startsWith("Bearer ")
-    ? authHeader.slice(7)
-    : undefined;
-  const providedSecret = bearerSecret ?? legacyHeader;
+    const result: HealthResult = {
+      siteUp: false,
+      redisUp: false,
+      pagesChecked: [],
+      cacheWarmed: 0,
+      cacheSkipped: 0,
+      errors: [],
+    };
 
-  if (
-    !expectedSecret ||
-    !providedSecret ||
-    !verifySharedSecret(providedSecret, expectedSecret)
-  ) {
-    throw createError({ statusCode: 401, message: "Unauthorized" });
-  }
-
-  const result: HealthResult = {
-    siteUp: false,
-    redisUp: false,
-    pagesChecked: [],
-    cacheWarmed: 0,
-    cacheSkipped: 0,
-    errors: [],
-  };
-
-  // 1. Ping Redis
-  if (redis) {
-    try {
-      await redis.ping();
-      result.redisUp = true;
-    } catch (err) {
-      result.errors.push("Redis ping failed");
-      logger.error("Redis ping failed", err);
-    }
-  } else {
-    result.errors.push("Redis client not initialized — check UPSTASH env vars");
-  }
-
-  // 2. Verify public pages are reachable
-  const baseUrl =
-    process.env.PUBLIC_BASE_URL ?? "https://myrecruitingcompass.com";
-
-  for (const path of PUBLIC_PATHS) {
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000);
-      let res: Response;
+    // 1. Ping Redis
+    if (redis) {
       try {
-        res = await fetch(`${baseUrl}${path}`, {
-          method: "HEAD",
-          signal: controller.signal,
-        });
-      } finally {
-        clearTimeout(timeoutId);
+        await redis.ping();
+        result.redisUp = true;
+      } catch (err) {
+        result.errors.push("Redis ping failed");
+        logger.error("Redis ping failed", err);
       }
-      result.pagesChecked.push({ path, status: res.status });
-      if (res.ok) {
-        result.siteUp = true;
-      } else {
-        result.errors.push(`${path} returned ${res.status} ${res.statusText}`);
-        logger.warn(`Page health check failed for ${path}`, {
-          status: res.status,
-        });
-      }
-    } catch (err) {
-      result.errors.push(`Failed to reach ${path}`);
-      logger.error(`Page health check failed for ${path}`, err);
-    }
-  }
-
-  // 3. Warm Upstash cache with common college search queries
-  // Calls College Scorecard directly (server-side, no user auth required).
-  // Skips queries already in cache to avoid unnecessary API calls.
-  if (redis) {
-    const config = useRuntimeConfig();
-    const apiKey = config.collegeScorecardApiKey as string;
-
-    if (!apiKey) {
-      result.errors.push(
-        "NUXT_COLLEGE_SCORECARD_API_KEY not set — skipping cache warmup",
-      );
-      logger.warn("College Scorecard API key missing, skipping cache warmup");
     } else {
-      // Match the shape the real client caller (useSearchConsolidated's
-      // getCollegeSuggestions) requests, so the cache key this warms up is
-      // actually the one production traffic reads — see
-      // server/api/colleges/search.get.ts's fields/per_page-aware cache key.
-      const WARM_FIELDS =
-        "id,school.name,school.city,school.state,location.lat,location.lon";
-      const WARM_PER_PAGE = "10";
+      result.errors.push(
+        "Redis client not initialized — check UPSTASH env vars",
+      );
+    }
 
-      for (const query of WARM_QUERIES) {
-        const cacheKey = CACHE_KEYS.COLLEGE_SEARCH(
-          query,
-          WARM_FIELDS,
-          WARM_PER_PAGE,
-        );
+    // 2. Verify public pages are reachable
+    const baseUrl =
+      process.env.PUBLIC_BASE_URL ?? "https://myrecruitingcompass.com";
 
+    for (const path of PUBLIC_PATHS) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+        let res: Response;
         try {
-          // Skip if already cached (TTL is 30 days — only stale entries need warming)
-          const existing = await redis.get(cacheKey);
-          if (existing) {
-            result.cacheSkipped++;
-            continue;
-          }
-
-          const params = new URLSearchParams({
-            api_key: apiKey,
-            "school.name": query,
-            fields: WARM_FIELDS,
-            per_page: WARM_PER_PAGE,
+          res = await fetch(`${baseUrl}${path}`, {
+            method: "HEAD",
+            signal: controller.signal,
           });
-
-          const scorecardController = new AbortController();
-          const scorecardTimeoutId = setTimeout(
-            () => scorecardController.abort(),
-            5000,
+        } finally {
+          clearTimeout(timeoutId);
+        }
+        result.pagesChecked.push({ path, status: res.status });
+        if (res.ok) {
+          result.siteUp = true;
+        } else {
+          result.errors.push(
+            `${path} returned ${res.status} ${res.statusText}`,
           );
-          let response: Response;
+          logger.warn(`Page health check failed for ${path}`, {
+            status: res.status,
+          });
+        }
+      } catch (err) {
+        result.errors.push(`Failed to reach ${path}`);
+        logger.error(`Page health check failed for ${path}`, err);
+      }
+    }
+
+    // 3. Warm Upstash cache with common college search queries
+    // Calls College Scorecard directly (server-side, no user auth required).
+    // Skips queries already in cache to avoid unnecessary API calls.
+    if (redis) {
+      const config = useRuntimeConfig();
+      const apiKey = config.collegeScorecardApiKey as string;
+
+      if (!apiKey) {
+        result.errors.push(
+          "NUXT_COLLEGE_SCORECARD_API_KEY not set — skipping cache warmup",
+        );
+        logger.warn("College Scorecard API key missing, skipping cache warmup");
+      } else {
+        // Match the shape the real client caller (useSearchConsolidated's
+        // getCollegeSuggestions) requests, so the cache key this warms up is
+        // actually the one production traffic reads — see
+        // server/api/colleges/search.get.ts's fields/per_page-aware cache key.
+        const WARM_FIELDS =
+          "id,school.name,school.city,school.state,location.lat,location.lon";
+        const WARM_PER_PAGE = "10";
+
+        for (const query of WARM_QUERIES) {
+          const cacheKey = CACHE_KEYS.COLLEGE_SEARCH(
+            query,
+            WARM_FIELDS,
+            WARM_PER_PAGE,
+          );
+
           try {
-            response = await fetch(
-              `${COLLEGE_SCORECARD_BASE}?${params.toString()}`,
-              { signal: scorecardController.signal },
-            );
-          } finally {
-            clearTimeout(scorecardTimeoutId);
-          }
+            // Skip if already cached (TTL is 30 days — only stale entries need warming)
+            const existing = await redis.get(cacheKey);
+            if (existing) {
+              result.cacheSkipped++;
+              continue;
+            }
 
-          if (!response.ok) {
-            result.errors.push(
-              `Scorecard API returned ${response.status} for "${query}"`,
-            );
-            continue;
-          }
+            const params = new URLSearchParams({
+              api_key: apiKey,
+              "school.name": query,
+              fields: WARM_FIELDS,
+              per_page: WARM_PER_PAGE,
+            });
 
-          const data = await response.json();
-          await redis.set(cacheKey, data, { ex: TTL.THIRTY_DAYS });
-          result.cacheWarmed++;
-        } catch (err) {
-          result.errors.push(`Cache warmup failed for "${query}"`);
-          logger.warn(`Cache warmup failed for query "${query}"`, err);
+            const scorecardController = new AbortController();
+            const scorecardTimeoutId = setTimeout(
+              () => scorecardController.abort(),
+              5000,
+            );
+            let response: Response;
+            try {
+              response = await fetch(
+                `${COLLEGE_SCORECARD_BASE}?${params.toString()}`,
+                { signal: scorecardController.signal },
+              );
+            } finally {
+              clearTimeout(scorecardTimeoutId);
+            }
+
+            if (!response.ok) {
+              result.errors.push(
+                `Scorecard API returned ${response.status} for "${query}"`,
+              );
+              continue;
+            }
+
+            const data = await response.json();
+            await redis.set(cacheKey, data, { ex: TTL.THIRTY_DAYS });
+            result.cacheWarmed++;
+          } catch (err) {
+            result.errors.push(`Cache warmup failed for "${query}"`);
+            logger.warn(`Cache warmup failed for query "${query}"`, err);
+          }
         }
       }
     }
-  }
 
-  const status =
-    result.siteUp && result.errors.length === 0 ? "healthy" : "degraded";
-  logger.info(`Health ping complete — ${status}`, result);
+    const status =
+      result.siteUp && result.errors.length === 0 ? "healthy" : "degraded";
+    logger.info(`Health ping complete — ${status}`, result);
 
-  return { status, ...result };
-});
+    // A degraded ping (site unreachable or any warm/ping error) records the run
+    // as 'partial' so the admin Jobs tab flags it, instead of a false 'success'.
+    ctx.setProcessed(result.cacheWarmed);
+    ctx.setFailed(result.errors.length);
+    return { status, ...result };
+  }),
+);

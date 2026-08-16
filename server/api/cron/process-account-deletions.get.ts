@@ -18,11 +18,11 @@
  * Security: Vercel sends CRON_SECRET as "Authorization: Bearer <secret>".
  */
 
-import { defineEventHandler, createError, getHeader } from "h3";
+import { defineEventHandler } from "h3";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import { createLogger } from "~/server/utils/logger";
-import { verifySharedSecret } from "~/server/utils/secrets";
+import { withCronRun } from "~/server/utils/cronRunner";
 import type { Database } from "~/types/database";
 
 const logger = createLogger("cron/process-account-deletions");
@@ -212,107 +212,95 @@ export async function deleteUserAccount(
   return { status: "deleted" };
 }
 
-export default defineEventHandler(async (event) => {
-  const authHeader = getHeader(event, "authorization");
-  const cronSecretHeader = getHeader(event, "x-cron-secret");
-  const cronSecret = process.env.CRON_SECRET;
-  const bearerSecret = authHeader?.startsWith("Bearer ")
-    ? authHeader.slice(7)
-    : undefined;
+export default defineEventHandler(async (event) =>
+  withCronRun(event, "process-account-deletions", async (ctx) => {
+    const supabase = useSupabaseAdmin();
+    const thirtyDaysAgo = new Date(
+      Date.now() - 30 * 24 * 60 * 60 * 1000,
+    ).toISOString();
 
-  const isAuthorized =
-    cronSecret &&
-    ((bearerSecret && verifySharedSecret(bearerSecret, cronSecret)) ||
-      (cronSecretHeader && verifySharedSecret(cronSecretHeader, cronSecret)));
+    // Find accounts ready for hard deletion
+    const { data: pendingUsers, error: fetchError } = await supabase
+      .from("users")
+      .select("id, email")
+      .not("deletion_requested_at", "is", null)
+      .lt("deletion_requested_at", thirtyDaysAgo);
 
-  if (!isAuthorized) {
-    throw createError({ statusCode: 401, statusMessage: "Unauthorized" });
-  }
+    if (fetchError) {
+      logger.error("Failed to fetch pending deletions", fetchError);
+      throw new Error("Failed to fetch pending deletions");
+    }
 
-  const supabase = useSupabaseAdmin();
-  const thirtyDaysAgo = new Date(
-    Date.now() - 30 * 24 * 60 * 60 * 1000,
-  ).toISOString();
+    if (!pendingUsers?.length) {
+      logger.info("No accounts ready for deletion");
+      return { deleted: 0, failed: 0, results: [] };
+    }
 
-  // Find accounts ready for hard deletion
-  const { data: pendingUsers, error: fetchError } = await supabase
-    .from("users")
-    .select("id, email")
-    .not("deletion_requested_at", "is", null)
-    .lt("deletion_requested_at", thirtyDaysAgo);
+    logger.info("Processing account deletions", { count: pendingUsers.length });
 
-  if (fetchError) {
-    logger.error("Failed to fetch pending deletions", fetchError);
-    return { deleted: 0, failed: 0, results: [] };
-  }
+    let deleted = 0;
+    let failed = 0;
+    const results: Array<{
+      userId: string;
+      email: string | null;
+      status: "deleted" | "failed";
+      step?: string;
+      reason?: string;
+    }> = [];
 
-  if (!pendingUsers?.length) {
-    logger.info("No accounts ready for deletion");
-    return { deleted: 0, failed: 0, results: [] };
-  }
+    for (const user of pendingUsers) {
+      try {
+        const outcome = await deleteUserAccount(supabase, user);
 
-  logger.info("Processing account deletions", { count: pendingUsers.length });
-
-  let deleted = 0;
-  let failed = 0;
-  const results: Array<{
-    userId: string;
-    email: string | null;
-    status: "deleted" | "failed";
-    step?: string;
-    reason?: string;
-  }> = [];
-
-  for (const user of pendingUsers) {
-    try {
-      const outcome = await deleteUserAccount(supabase, user);
-
-      if (outcome.status === "deleted") {
-        logger.info("Account hard-deleted", {
-          userId: user.id,
-          email: user.email,
-        });
-        deleted++;
-        results.push({
-          userId: user.id,
-          email: user.email,
-          status: "deleted",
-        });
-      } else {
-        logger.error(
-          "Account deletion failed — leaving user intact for retry",
-          {
+        if (outcome.status === "deleted") {
+          logger.info("Account hard-deleted", {
             userId: user.id,
             email: user.email,
+          });
+          deleted++;
+          results.push({
+            userId: user.id,
+            email: user.email,
+            status: "deleted",
+          });
+        } else {
+          logger.error(
+            "Account deletion failed — leaving user intact for retry",
+            {
+              userId: user.id,
+              email: user.email,
+              step: outcome.step,
+              reason: outcome.reason,
+            },
+          );
+          failed++;
+          results.push({
+            userId: user.id,
+            email: user.email,
+            status: "failed",
             step: outcome.step,
             reason: outcome.reason,
-          },
-        );
+          });
+        }
+      } catch (err) {
+        logger.error("Unexpected error during account deletion", {
+          userId: user.id,
+          email: user.email,
+          err,
+        });
         failed++;
         results.push({
           userId: user.id,
           email: user.email,
           status: "failed",
-          step: outcome.step,
-          reason: outcome.reason,
+          step: "unexpected",
+          reason: err instanceof Error ? err.message : String(err),
         });
       }
-    } catch (err) {
-      logger.error("Unexpected error during account deletion", {
-        userId: user.id,
-        email: user.email,
-        err,
-      });
-      failed++;
-      results.push({
-        userId: user.id,
-        email: user.email,
-        status: "failed",
-        step: "unexpected",
-        reason: err instanceof Error ? err.message : String(err),
-      });
     }
-  }
 
-  return { deleted, failed, results };
-});
+    ctx.setProcessed(deleted + failed);
+    ctx.setFailed(failed);
+    return { deleted, failed, results };
+  }),
+);
