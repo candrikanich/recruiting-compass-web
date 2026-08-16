@@ -18,8 +18,8 @@ export function resolveHostRedirect(
 
 export default defineNuxtRouteMiddleware((to) => {
   if (!import.meta.client) return;
-  const adminHost = useRuntimeConfig().public.adminHost as string;
-  const decision = resolveHostRedirect(window.location.host, to.path, adminHost);
+  const { currentHost, adminHost } = useAppHost();
+  const decision = resolveHostRedirect(currentHost, to.path, adminHost);
   if (!decision) return;
   if (decision.type === "external") {
     return navigateTo(decision.to, { external: true });
