@@ -1,5 +1,8 @@
 export const MINIMUM_AGE = 13;
 
+/** Age at which a player may hold a standalone (unsupervised) account. */
+export const ADULT_AGE = 18;
+
 /**
  * Whole years between a `YYYY-MM-DD` date of birth and today.
  * Returns null when the input is missing or not a valid calendar date.
@@ -27,4 +30,17 @@ export function isUnderMinimumAge(
 ): boolean {
   const age = ageFromDateOfBirth(dateOfBirth);
   return age !== null && age < MINIMUM_AGE;
+}
+
+/**
+ * True when a DOB is present AND resolves to the 13–17 band (inclusive) — a minor
+ * who may use the Service only through a parent/guardian family invitation, not a
+ * standalone signup. Fails open (false) on missing/invalid DOB and for under-13
+ * (that band is handled by {@link isUnderMinimumAge}).
+ */
+export function requiresGuardianInvite(
+  dateOfBirth: string | null | undefined,
+): boolean {
+  const age = ageFromDateOfBirth(dateOfBirth);
+  return age !== null && age >= MINIMUM_AGE && age < ADULT_AGE;
 }

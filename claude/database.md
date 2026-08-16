@@ -36,6 +36,23 @@ Phase 10a (`supabase/migrations/20260728000000_rls_account_links_consolidation_p
 
 Full enumeration and evidence: `tests/integration/rls/rls-phase10a-consolidation.integration.spec.ts` and `tests/integration/rls/rls-security-hotfix.integration.spec.ts` (live-Postgres regression suites, both gate every consolidation/deferral decision above).
 
+### 2026-08-16: minor-consent (13–17 require family invite) trigger applied live
+
+`trg_enforce_minor_requires_invite` (BEFORE INSERT OR UPDATE on `public.users`, function
+`public.enforce_minor_requires_invite()`) raises `check_violation` when `role='player'` and
+`date_of_birth` resolves to age 13–17 UNLESS the user already has a `family_members` row OR a
+matching valid `family_invitations` row (`lower(invited_email)=lower(email)`, role player,
+status pending/accepted, unexpired). Fails open on NULL DOB / 18+. The membership check makes it
+expiry-proof for post-join profile edits (a lone invitation check would lock joined minors out
+once their invite lapses). Complements `trg_enforce_minimum_age` (under-13). Enforces the
+product rule that minors join only via a parent/guardian invite, not standalone signup — the
+client gates (`SignupForm.vue`, `signup.vue`) are bypassable (browser→Supabase-direct signup).
+Also added `guardian_consent_at/by/terms_version` columns to `users` (stamped by the invite
+accept endpoint for minors) + functional index `idx_family_invitations_invited_email_lower`.
+Applied via Supabase MCP; repo file `supabase/migrations/20260822000000_minor_requires_family_invite.sql`.
+Recorded in `schema_migrations` twice (MCP `20260816190054` + repo `20260822000000`). Verified
+live: 0 at-risk existing minors pre-apply, trigger+columns present, reject path proven.
+
 ### 2026-08-16: COPPA minimum-age trigger applied live
 
 `trg_enforce_minimum_age` (BEFORE INSERT OR UPDATE on `public.users`, function `public.enforce_minimum_age()`) raises `check_violation` when `role='player'` and `date_of_birth` resolves to age < 13; fails open on NULL DOB. Applied via Supabase MCP; repo file `supabase/migrations/20260821000000_enforce_minimum_age.sql`. Authoritative COPPA gate — client signup/join writes go browser→Supabase direct, so this trigger (not the client checks) is what actually blocks under-13 player rows. Verified live: 0 pre-existing under-13 players, under-13 update rejected. Boundary: a user turning 13 today (`dob = current_date - 13y`) is allowed.

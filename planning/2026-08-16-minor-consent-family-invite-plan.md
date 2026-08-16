@@ -24,59 +24,123 @@ recruiting process together).
   Terms §1 + §11).
 - **Consent event = the parent inviting the minor** from within their family unit, having
   themselves accepted the Terms. That act is logged.
-- Record on the minor's `users` row at invite-accept time:
+- Record on the minor's `users` row, stamped by the **accept endpoint** (server, service-role):
   - `guardian_consent_at timestamptz`
-  - `guardian_consent_by uuid` (the parent user id)
+  - `guardian_consent_by uuid` (the parent = `family_invitations.invited_by`)
   - `guardian_consent_terms_version text` (e.g. "2026-03-01")
+
+## ⚠️ Architecture correction (Phase 0 finding, 2026-08-16)
+
+- **`public.users` has NO `family_unit_id` column.** Family membership lives only in the
+  `family_members` join table.
+- **Invite-accept is two separate requests, not one transaction:** (1) browser→Supabase-direct
+  `supabase.from("users").upsert(...)` creates the minor's `users` row (`pages/join.vue:163`),
+  then (2) `POST /api/family/invite/[token]/accept` inserts the `family_members` row
+  (`accept.post.ts:78`) and marks the invitation `accepted`.
+- Therefore a trigger cannot gate on `family_unit_id` (no column) or on a `family_members` row
+  (doesn't exist yet at users-insert; normal players never get one).
+- **Working discriminator: the invitation itself.** `family_invitations` has `invited_email`,
+  `role`, `status` ('pending'|'accepted'|'expired'), `expires_at`. At users-upsert time the
+  invitation exists as `pending` (marked `accepted` only in step 2). An invited minor has a
+  matching invitation row; a solo-signup minor does not. Gate on that.
 
 ---
 
-## Phase 0 — Verify current flows (no code)
+## Phase 0 — Verify current flows — ✅ DONE (2026-08-16)
 
-- [ ] Confirm invite-accept path sets `family_unit_id` on the new minor user row (grep
-      `useFamilyInvite`, join accept endpoint / RPC).
-- [ ] Confirm parent signup never collects DOB (so 18+ check only gates `role=player`).
-- [ ] Confirm where the player row is first inserted (browser→Supabase direct vs endpoint) —
-      determines where the server guard must live.
+- [x] Traced invite-accept: `users` upsert (browser-direct, `join.vue:163`) then `family_members`
+      insert (`accept.post.ts:78`) — two requests. `users` has no `family_unit_id`. See
+      Architecture correction above.
+- [x] Parent signup collects no DOB → 18+ gate only touches `role=player`.
+- [x] Player row inserted browser→Supabase-direct (no server endpoint for signup) → server guard
+      must be a **DB trigger**, same as the existing under-13 gate.
+- [x] **Resolved (safe):** email field is editable (`InviteSignupForm.vue:90`), BUT the accept
+      endpoint already enforces strict email-binding — user email must equal `invited_email`
+      case-insensitively or acceptance is blocked (`accept.post.ts:53-65`). So `email ==
+      invited_email` is already a hard invariant for any successful minor join. The trigger's
+      `lower(invited_email)=lower(NEW.email)` match aligns exactly; no false-reject risk (a
+      wrong email just fails at signup instead of at accept — same outcome, earlier).
 
-## Phase 1 — Web: client gate on solo player signup
+## Phase 1 — Web: client gate on solo player signup — ✅ DONE (2026-08-16)
 
-Files: `components/Auth/SignupForm.vue`, `pages/signup.vue`, `utils/age.ts`
+Files: `utils/age.ts`, `components/Auth/SignupForm.vue`, `pages/signup.vue`
 
-- [ ] Compute age from DOB (reuse `utils/age.ts`).
-- [ ] If `userType === 'player'` and age `>= 13 && < 18`:
-  - Disable "Create Account" submit.
-  - Show an inline panel (DesignSystem component, not raw): "Recruiting Compass is built for
-    families. Athletes under 18 join when a parent or guardian sets up the account and invites
-    them." CTA → route to a parent-start page (`/signup?role=parent` or a short explainer).
-- [ ] Keep the existing under-13 block + attestation unchanged (age `< 13`).
-- [ ] 18+ player and any parent: unchanged.
+- [x] Added `ADULT_AGE = 18` + `requiresGuardianInvite(dob)` (13–17 inclusive, fails open) to
+      `utils/age.ts`; unit-tested (`tests/unit/utils/age.spec.ts`, RED→GREEN).
+- [x] `SignupForm.vue`: `minorRequiresGuardian` computed disables submit + shows inline
+      `data-testid="minor-guardian-notice"` panel for 13–17 players. Component tests added.
+- [x] `pages/signup.vue` `handleSignup`: refactored age gate to use `isUnderMinimumAge` +
+      `requiresGuardianInvite` (safety net — hard-stops a 13–17 player with guidance message).
+      Removed the ad-hoc inline age math.
+- [x] Under-13 block + attestation unchanged. 18+ player and parents unchanged.
+- [x] Verified: type-check 0, token audit 0, SignupForm 36 + age 9 + signup page 38 all pass.
+- Note: parent-invited minor path (`InviteSignupForm`) intentionally NOT blocked — that is the
+  approved path.
 
-## Phase 2 — Web: server/DB enforcement (client gate is bypassable)
+## Phase 2 — Web: server/DB enforcement via invitation-existence trigger
 
-Prefer DB-layer so signup (direct-to-Supabase), invite, and profile all covered in one place.
+Client gate (Phase 1) is bypassable (browser→Supabase-direct signup). Enforce at DB layer,
+gating on a matching invitation — NOT on family membership.
 
-- [ ] Extend the users trigger: if `role='player'` and age `>= 13 && < 18` and
-      `family_unit_id IS NULL` → `RAISE check_violation` ("minors must join via a family
-      invitation"). Fails open on NULL DOB (same convention as `trg_enforce_minimum_age`).
-- [ ] Ensure invite-accept sets `family_unit_id` **in the same transaction** as the insert, so
-      a legitimately-invited minor passes the trigger. Verify ordering; adjust accept RPC if it
-      inserts-then-updates.
-- [ ] Migration file: `supabase/migrations/2026XXXX_minor_requires_family.sql`. Apply live via
-      Supabase MCP `apply_migration` (local `db push` is broken — see CLAUDE.local.md).
-- [ ] Backfill check: query for existing `role=player` rows age 13–17 with NULL
-      `family_unit_id` before applying; resolve or the trigger only affects new writes anyway
-      (trigger is INSERT/UPDATE-time; existing rows untouched).
+New trigger on `public.users` BEFORE INSERT OR UPDATE (separate from `trg_enforce_minimum_age`):
+
+```sql
+CREATE OR REPLACE FUNCTION public.enforce_minor_requires_invite()
+RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  -- Player, DOB present, under 18 (>=13 already enforced by trg_enforce_minimum_age)
+  IF NEW.role = 'player'
+     AND NEW.date_of_birth IS NOT NULL
+     AND NEW.date_of_birth > (current_date - interval '18 years')
+  THEN
+    IF NOT EXISTS (
+      SELECT 1 FROM public.family_invitations fi
+      WHERE lower(fi.invited_email) = lower(NEW.email)
+        AND fi.role = 'player'
+        AND fi.status IN ('pending', 'accepted')
+        AND fi.expires_at > now()
+    ) THEN
+      RAISE EXCEPTION 'Players under 18 must join through a family invitation'
+        USING ERRCODE = 'check_violation';
+    END IF;
+  END IF;
+  RETURN NEW;
+END;
+$$;
+```
+
+- [ ] Fails OPEN on NULL DOB (matches existing convention). 18+ passes (dob condition false).
+      Under-13 still caught by `trg_enforce_minimum_age` (both triggers fire; either raise).
+- [x] Email-match dependency resolved (Phase 0): accept endpoint already binds email to
+      `invited_email`, so the trigger match is safe as written. No lock/relax needed.
+- [x] Migration written: `supabase/migrations/20260822000000_minor_requires_family_invite.sql`.
+      Refined vs. original design: passes on **existing family membership** too, so a joined
+      minor's later profile edits aren't false-rejected once their invite expires. Added
+      functional index `idx_family_invitations_invited_email_lower` for the trigger lookup.
+- [x] **APPLIED LIVE 2026-08-16** via Supabase MCP (project `xpxzhqghxecsjhvklsqg`).
+- [x] Pre-apply audit: `at_risk_minors = 0`.
+- [x] `family_members.user_id` already indexed (`idx_family_members_user_id`); no add needed.
+- [x] Verified live: trigger present, 3 consent columns present, reject path proven (under-18
+      no-invite insert rejected via DO block).
+- [x] Post-apply: types regenerated to `types/database.ts` (guardian_consent present); `as never`
+      cast removed from accept endpoint; type-check 0. Version recorded in `schema_migrations`
+      twice (MCP `20260816190054` + repo `20260822000000`).
+- [ ] Still TODO: persistent RED→GREEN integration test in the RLS live-Postgres suite (live
+      behavior verified manually this session, but no committed regression test yet).
 
 ## Phase 3 — Web: record consent at invite-accept
 
-Files: family-invite accept path (`useFamilyInvite`, accept endpoint/RPC), migration
+Files: `server/api/family/invite/[token]/accept.post.ts`, `utils/legal.ts`, migration — ✅ CODE DONE
 
-- [ ] Add `guardian_consent_at`, `guardian_consent_by`, `guardian_consent_terms_version`
-      columns to `users` (same migration as Phase 2 or adjacent).
-- [ ] On invite accept for a minor: stamp the three columns (parent = inviter, version =
-      current Terms date).
-- [ ] Surface nothing in UI yet; this is a compliance record.
+- [x] Consent columns added in the Phase 2 migration (nullable).
+- [x] Accept endpoint stamps `guardian_consent_at/by/terms_version` when the accepting user is a
+      minor (`requiresGuardianInvite(dob)`); parent = `invitation.invited_by`, version from new
+      `utils/legal.ts` `CURRENT_TERMS_VERSION` ("2026-03-01"). Non-fatal on failure (logged).
+      Added `invited_by` to the invitation select. Type-check clean (payload cast `as never`
+      until types regen post-apply); invite unit tests 34 pass.
+- [x] No UI surface — compliance record only.
+- Note: `CURRENT_TERMS_VERSION` must bump in lockstep if the legal pages' "Last Updated" changes
+  (see Open items — the material changes this session arguably warrant bumping it).
 
 ## Phase 4 — iOS parity
 
@@ -106,8 +170,8 @@ Files: iOS `PrivacyPolicyView` / `TermsOfServiceView` string sources + their vie
 ## Phase 6 — Tests
 
 - [ ] Web unit: age-band routing (12→block, 13–17→invite-path, 18→allow, parent→allow).
-- [ ] Web: DB trigger rejects a 13–17 player insert with NULL `family_unit_id`; allows one
-      with a family unit (RED before migration, GREEN after).
+- [ ] Web: DB trigger rejects a 13–17 player insert whose email has no matching pending/accepted
+      unexpired `family_invitations` row; allows one that does (RED before migration, GREEN after).
 - [ ] Web: invite-accept stamps the three consent columns.
 - [ ] iOS: `COPPAHelper` under-13 + under-18 branch tests; SignupViewModel routing test.
 - [ ] E2E (web): minor solo signup is blocked and shows the parent-invite message.

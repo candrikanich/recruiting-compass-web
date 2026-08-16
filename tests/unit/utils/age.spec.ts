@@ -2,7 +2,9 @@ import { describe, it, expect } from "vitest";
 import {
   ageFromDateOfBirth,
   isUnderMinimumAge,
+  requiresGuardianInvite,
   MINIMUM_AGE,
+  ADULT_AGE,
 } from "~/utils/age";
 
 const yearsAgo = (years: number, month = "06", day = "15") =>
@@ -41,5 +43,29 @@ describe("isUnderMinimumAge", () => {
     expect(isUnderMinimumAge(yearsAgo(10))).toBe(true);
     expect(isUnderMinimumAge(yearsAgo(MINIMUM_AGE))).toBe(false);
     expect(isUnderMinimumAge(yearsAgo(30))).toBe(false);
+  });
+});
+
+describe("requiresGuardianInvite", () => {
+  it("fails open (false) on missing or invalid DOB", () => {
+    expect(requiresGuardianInvite(null)).toBe(false);
+    expect(requiresGuardianInvite("")).toBe(false);
+    expect(requiresGuardianInvite("not-a-date")).toBe(false);
+  });
+
+  it("is false for under-13 (handled by the minimum-age gate)", () => {
+    expect(requiresGuardianInvite(yearsAgo(10))).toBe(false);
+    expect(requiresGuardianInvite(yearsAgo(MINIMUM_AGE - 1))).toBe(false);
+  });
+
+  it(`is true for the ${MINIMUM_AGE}-${ADULT_AGE - 1} band (inclusive)`, () => {
+    expect(requiresGuardianInvite(yearsAgo(MINIMUM_AGE))).toBe(true);
+    expect(requiresGuardianInvite(yearsAgo(15))).toBe(true);
+    expect(requiresGuardianInvite(yearsAgo(ADULT_AGE - 1))).toBe(true);
+  });
+
+  it(`is false at ${ADULT_AGE} and above (adults)`, () => {
+    expect(requiresGuardianInvite(yearsAgo(ADULT_AGE))).toBe(false);
+    expect(requiresGuardianInvite(yearsAgo(25))).toBe(false);
   });
 });

@@ -25,7 +25,7 @@
       >
         <!-- UPDATE THIS DATE WHENEVER TERMS ARE MODIFIED -->
         <p class="text-slate-600 mb-4">
-          <strong>Last Updated:</strong> March 1, 2026
+          <strong>Last Updated:</strong> August 16, 2026
         </p>
 
         <p class="text-slate-600 mb-8">
@@ -255,10 +255,52 @@
         <section class="mb-8">
           <h2>12. Dispute Resolution &amp; Arbitration</h2>
           <p>
+            <strong>Informal resolution first.</strong> Before starting an
+            arbitration, you and Recruiting Compass agree to try to resolve any
+            dispute informally. You agree to send a written description of the
+            dispute to
+            <a
+              href="mailto:support@therecruitingcompass.com"
+              class="text-blue-600 hover:underline"
+              >support@therecruitingcompass.com</a
+            >, and both parties will negotiate in good faith for at least 60 days
+            before either may commence arbitration.
+          </p>
+          <p>
             Any dispute, claim, or controversy arising out of or relating to
-            these Terms or the Service shall be resolved by binding arbitration
-            administered by the American Arbitration Association (AAA) under its
-            Consumer Arbitration Rules, rather than in court.
+            these Terms or the Service that is not resolved informally shall be
+            resolved by binding arbitration administered by the American
+            Arbitration Association (AAA) under its Consumer Arbitration Rules,
+            rather than in court.
+          </p>
+          <p>
+            <strong>Delegation.</strong> The arbitrator has the exclusive
+            authority to resolve any dispute about the interpretation,
+            applicability, enforceability, or formation of this arbitration
+            agreement, including whether a claim is subject to arbitration —
+            except that a court decides the enforceability of the class-action
+            waiver below.
+          </p>
+          <p>
+            <strong>Arbitration fees.</strong> For claims subject to the AAA
+            Consumer Arbitration Rules, Recruiting Compass will pay the AAA
+            filing, administrative, and arbitrator fees to the extent those Rules
+            require, and otherwise as required by applicable law.
+          </p>
+          <p>
+            <strong>Mass filings.</strong> If 25 or more similar claims are
+            asserted against Recruiting Compass by or with the assistance of the
+            same or coordinated counsel, the claims will be administered in
+            staged batches of no more than 50 (with representative "bellwether"
+            proceedings first), and any applicable statutes of limitations will
+            be tolled for claims awaiting their batch.
+          </p>
+          <p>
+            <strong>Jury-trial waiver &amp; venue.</strong> You and Recruiting
+            Compass each waive the right to a trial by jury. Any in-person
+            arbitration hearing, and any action permitted to proceed in court,
+            will take place in Cuyahoga County, Ohio, unless applicable law or
+            the AAA Rules require otherwise.
           </p>
           <p>
             <strong
@@ -268,6 +310,13 @@
             All claims must be brought in your individual capacity, not as a
             plaintiff or class member in any purported class or representative
             proceeding.
+          </p>
+          <p>
+            <strong>Severability of this waiver.</strong> If the class-action
+            waiver above is found unenforceable as to a particular claim, then
+            that claim (and only that claim) will be severed from arbitration and
+            brought in a court of competent jurisdiction; the remainder of this
+            arbitration agreement will continue to apply.
           </p>
           <p>
             This arbitration provision does not apply to claims that qualify for

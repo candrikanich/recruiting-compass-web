@@ -94,6 +94,22 @@
       <FieldError id="dateOfBirth-error" :error="fieldErrors.dateOfBirth" />
     </div>
 
+    <!-- Minor (13–17) must join via a parent/guardian family invite -->
+    <div
+      v-if="minorRequiresGuardian"
+      role="alert"
+      class="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900"
+      data-testid="minor-guardian-notice"
+    >
+      <p class="font-semibold">Players under 18 join through a parent or guardian</p>
+      <p class="mt-1">
+        Recruiting Compass is built for families. A parent or guardian creates the
+        account and invites the athlete to their family unit. Ask your parent to
+        sign up, then accept the invitation they send you to finish setting up your
+        player profile.
+      </p>
+    </div>
+
     <!-- Email -->
     <LoginInputField
       id="email"
@@ -274,6 +290,7 @@
 import { computed } from "vue";
 import LoginInputField from "~/components/Auth/LoginInputField.vue";
 import FieldError from "~/components/DesignSystem/FieldError.vue";
+import { requiresGuardianInvite } from "~/utils/age";
 import type { FormFieldError } from "~/composables/useFormValidation";
 
 const props = defineProps<{
@@ -308,9 +325,17 @@ const disabled = computed(() => props.loading);
 // Max selectable date: today (no future dates)
 const maxDateOfBirth = computed(() => new Date().toISOString().split("T")[0]);
 
+// Players aged 13–17 must join through a parent/guardian family invite, not a
+// standalone signup. Block submission and explain the family-invite path.
+const minorRequiresGuardian = computed(
+  () =>
+    props.userType === "player" && requiresGuardianInvite(props.dateOfBirth),
+);
+
 const isFormValid = computed(() => {
   return (
     !props.hasErrors &&
+    !minorRequiresGuardian.value &&
     props.firstName.trim() &&
     props.lastName.trim() &&
     props.email.trim() &&

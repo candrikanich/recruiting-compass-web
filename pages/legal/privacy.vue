@@ -25,7 +25,7 @@
       >
         <!-- UPDATE THIS DATE WHENEVER THE PRIVACY POLICY IS MODIFIED -->
         <p class="text-slate-600 mb-8">
-          <strong>Last Updated:</strong> March 1, 2026
+          <strong>Last Updated:</strong> August 16, 2026
         </p>
 
         <section class="mb-8">

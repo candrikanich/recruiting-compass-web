@@ -116,6 +116,7 @@ import { useUserStore } from "~/stores/user";
 import { useFormValidation } from "~/composables/useFormValidation";
 import { useFormErrorFocus } from "~/composables/useFormErrorFocus";
 import { signupSchema } from "~/utils/validation/schemas";
+import { isUnderMinimumAge, requiresGuardianInvite } from "~/utils/age";
 import {
   SIGNUP_EMAIL_SCHEMA,
   SIGNUP_PASSWORD_SCHEMA,
@@ -198,22 +199,27 @@ const handleSignup = async () => {
     return;
   }
 
-  // COPPA age gate: block users under 13
-  if (dateOfBirth.value) {
-    const dob = new Date(dateOfBirth.value);
-    const today = new Date();
-    const age =
-      today.getFullYear() -
-      dob.getFullYear() -
-      (today < new Date(today.getFullYear(), dob.getMonth(), dob.getDate())
-        ? 1
-        : 0);
-    if (age < 13) {
+  // Age gates (players carry a DOB; parents do not)
+  if (userType.value === "player" && dateOfBirth.value) {
+    // COPPA: block players under 13
+    if (isUnderMinimumAge(dateOfBirth.value)) {
       setErrors([
         {
           field: "form",
           message:
-            "Recruiting Compass is not available for users under 13. If you're a parent, please register with your own information.",
+            "Recruiting Compass is not available for players under 13. If you're a parent, please register with your own information.",
+        },
+      ]);
+      await focusErrorSummary();
+      return;
+    }
+    // Minor consent: players 13–17 join only via a parent/guardian family invite
+    if (requiresGuardianInvite(dateOfBirth.value)) {
+      setErrors([
+        {
+          field: "form",
+          message:
+            "Players under 18 join through a parent or guardian. Ask your parent to create an account and invite you to their family.",
         },
       ]);
       await focusErrorSummary();
