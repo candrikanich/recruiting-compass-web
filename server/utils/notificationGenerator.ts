@@ -8,29 +8,6 @@ export interface NotificationGenerationResult {
   type: string;
 }
 
-// Helper function to check if email should be sent based on user preferences
-async function _shouldSendEmail(
-  supabase: SupabaseClient,
-  userId: string,
-  priority: string,
-): Promise<boolean> {
-  try {
-    const { data: prefs } = await supabase
-      .from("user_preferences")
-      .select("data")
-      .eq("user_id", userId)
-      .eq("category", "notification_settings")
-      .single();
-
-    const settings = prefs?.data as Record<string, unknown> | undefined;
-    if (!settings?.enableEmailNotifications) return false;
-    if (settings.emailOnlyHighPriority && priority !== "high") return false;
-    return true;
-  } catch {
-    return false;
-  }
-}
-
 // Template type definitions
 interface NotificationTemplate {
   title: (arg: string, arg2?: number) => string;
@@ -139,7 +116,7 @@ export async function generateOfferNotifications(
             .eq("user_id", userId)
             .eq("related_entity_id", offer.id)
             .eq("related_entity_type", "offer")
-            .eq("type", "deadline")
+            .eq("type", "deadline_alert")
             // eslint-disable-next-line local/no-date-only-string-constructor -- pre-existing pattern outside Phase 7's assigned sweep (planning/audit-2026-07-27-findings.md cluster); flagged for a follow-up pass, not fixed here to keep this phase scoped.
             .eq("scheduled_for", new Date().toISOString().split("T")[0])
             .maybeSingle();
@@ -153,12 +130,11 @@ export async function generateOfferNotifications(
             await supabase.from("notifications").insert([
               {
                 user_id: userId,
-                type: "deadline",
+                type: "deadline_alert",
                 title: template.title(schoolName),
                 message: template.message(schoolName, days),
                 related_entity_type: "offer",
                 related_entity_id: offer.id,
-                related_offer_id: offer.id,
                 scheduled_for: new Date().toISOString(),
                 priority: days <= 3 ? "high" : "normal",
               },
@@ -219,7 +195,7 @@ export async function generateRecommendationNotifications(
             .eq("user_id", userId)
             .eq("related_entity_id", rec.id)
             .eq("related_entity_type", "recommendation")
-            .eq("type", "deadline")
+            .eq("type", "deadline_alert")
             // eslint-disable-next-line local/no-date-only-string-constructor -- pre-existing pattern outside Phase 7's assigned sweep (planning/audit-2026-07-27-findings.md cluster); flagged for a follow-up pass, not fixed here to keep this phase scoped.
             .eq("scheduled_for", new Date().toISOString().split("T")[0])
             .maybeSingle();
@@ -233,7 +209,7 @@ export async function generateRecommendationNotifications(
             await supabase.from("notifications").insert([
               {
                 user_id: userId,
-                type: "deadline",
+                type: "deadline_alert",
                 title: template.title(personName),
                 message: template.message(personName),
                 related_entity_type: "recommendation",
@@ -294,7 +270,7 @@ export async function generateEventNotifications(
             .eq("user_id", userId)
             .eq("related_entity_id", event.id)
             .eq("related_entity_type", "event")
-            .eq("type", "deadline")
+            .eq("type", "event")
             // eslint-disable-next-line local/no-date-only-string-constructor -- pre-existing pattern outside Phase 7's assigned sweep (planning/audit-2026-07-27-findings.md cluster); flagged for a follow-up pass, not fixed here to keep this phase scoped.
             .eq("scheduled_for", new Date().toISOString().split("T")[0])
             .maybeSingle();
@@ -308,12 +284,11 @@ export async function generateEventNotifications(
             await supabase.from("notifications").insert([
               {
                 user_id: userId,
-                type: "deadline",
+                type: "event",
                 title: template.title(event.name),
                 message: template.message(event.name),
                 related_entity_type: "event",
                 related_entity_id: event.id,
-                related_event_id: event.id,
                 scheduled_for: new Date().toISOString(),
                 priority: days === 1 ? "high" : "normal",
               },
@@ -370,7 +345,7 @@ export async function generateCoachFollowupNotifications(
           .eq("user_id", userId)
           .eq("related_entity_id", coach.id)
           .eq("related_entity_type", "coach")
-          .eq("type", "follow_up")
+          .eq("type", "follow_up_reminder")
           // eslint-disable-next-line local/no-date-only-string-constructor -- pre-existing pattern outside Phase 7's assigned sweep (planning/audit-2026-07-27-findings.md cluster); flagged for a follow-up pass, not fixed here to keep this phase scoped.
           .eq("scheduled_for", new Date().toISOString().split("T")[0])
           .maybeSingle();
@@ -383,12 +358,11 @@ export async function generateCoachFollowupNotifications(
           await supabase.from("notifications").insert([
             {
               user_id: userId,
-              type: "follow_up",
+              type: "follow_up_reminder",
               title: template.title(coachName),
               message: template.message(coachName, daysSince),
               related_entity_type: "coach",
               related_entity_id: coach.id,
-              related_coach_id: coach.id,
               scheduled_for: new Date().toISOString(),
               priority: "normal",
             },
