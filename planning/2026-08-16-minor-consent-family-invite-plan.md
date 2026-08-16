@@ -142,30 +142,40 @@ Files: `server/api/family/invite/[token]/accept.post.ts`, `utils/legal.ts`, migr
 - Note: `CURRENT_TERMS_VERSION` must bump in lockstep if the legal pages' "Last Updated" changes
   (see Open items — the material changes this session arguably warrant bumping it).
 
-## Phase 4 — iOS parity
+## Phase 4 — iOS parity — ✅ DONE (2026-08-16)
 
-Files: `Features/Auth/Views/SignupView.swift`, `Features/Auth/ViewModels/SignupViewModel.swift`,
-`Core/Utilities/COPPAHelper.swift`, `Features/Family/*` (InviteJoin, ParentOnboardingWizard)
+Files: `Core/Utilities/COPPAHelper.swift`, `Features/Auth/ViewModels/SignupViewModel.swift`,
+`Features/Auth/Views/SignupView.swift`
 
-- [ ] Extend `COPPAHelper` (or view model) with an `isUnder18(dob:)` check alongside the
-      existing under-13 logic. Keep the hard under-13 block.
-- [ ] `SignupView`: if player DOB is 13–17, block standalone creation and show the same
-      "join via a parent" messaging + route to the parent/family path.
-- [ ] Confirm the iOS invite-accept path also lands `family_unit_id` (server trigger from
-      Phase 2 protects both clients, so iOS gets enforcement for free once applied).
-- [ ] No under-13 changes.
+- [x] `COPPAHelper`: added `adultAge = 18` + `requiresGuardianInvite(_:)` (13–17 band; returns
+      false for unparseable — the under-13 gate covers those). Under-13 logic unchanged.
+- [x] `SignupViewModel`: `hasValidDOB` now also requires `!requiresGuardianInvite` for players
+      (disables submit for 13–17); added `minorRequiresGuardian` computed.
+- [x] `SignupView`: guardian notice panel below the DOB field when `minorRequiresGuardian`.
+- [x] Enforcement is server-side (Phase 2 DB trigger) for both clients — iOS gets it for free.
+- [x] No under-13 changes. Tests: 4 COPPAHelper + 3 SignupViewModel, all GREEN.
 
-## Phase 5 — iOS legal text sync (folds in the whole legal update)
+## Phase 5 — iOS legal text sync — ✅ DONE (2026-08-16)
 
-Files: iOS `PrivacyPolicyView` / `TermsOfServiceView` string sources + their view models/tests
+Files: `Features/Legal/Views/TermsOfServiceView.swift`, `PrivacyPolicyView.swift`,
+`Models/TermsOfService.swift`, `PrivacyPolicy.swift`, new `Models/LegalRevision.swift`
 
-- [ ] Replace hardcoded legal strings with the **current web content** (Mar 1 2026 +
-      today's additions): arbitration + class waiver + **30-day opt-out**, Fit Score
-      disclaimer, CCPA + other-state rights + minors + GPC, DMCA, General Provisions, and the
-      **new minor-consent clauses** (Terms §1 + §11).
-- [ ] Fix `lastUpdated` timestamp (currently resolves to Feb 2025) to the new revision date.
-- [ ] Update the Legal test suites (`PrivacyPolicyTests`, `TermsOfServiceTests`, section-count
-      assertions) to the new content.
+- [x] `TermsOfServiceView` rewritten 11 → 22 sections matching web: minor consent (§1, §11),
+      liability cap (§4), Ohio/Cuyahoga governing law (§8), NCAA prohibited activity (§10),
+      full arbitration (§12: informal-first, class waiver + severability, delegation, fees,
+      mass-arb, jury/venue, FAA, 30-day opt-out), account termination (§13), user content (§14),
+      third-party disclaimer (§15), Fit Score (§16), email (§17), indemnification (§18),
+      severability (§19), DMCA (§20), General Provisions (§21), contact + address (§22).
+- [x] `PrivacyPolicyView` rewritten 12 → 13 sections: sensitive-data/not-FERPA (§2), Fit Score +
+      opt-out email (§3), third-party sources (§4), family-member sharing (§5), security detail
+      (§6), concrete retention (§7), CCPA + other-state rights + minors + GPC + in-app export
+      (§8), named analytics vendors (§9), COPPA/DOB detail (§10), 14-day change notice (§12),
+      contact + address (§13).
+- [x] Emails corrected to `@therecruitingcompass.com`; address added to match web.
+- [x] `lastUpdated` fixed (was Feb 2025) → single-sourced in new `LegalRevision.lastUpdated`
+      (Aug 16 2026), mirroring web `CURRENT_TERMS_VERSION`. Both models use it.
+- [x] Legal test suites updated (assert `LegalRevision.lastUpdated`); all GREEN.
+- [x] `xcodebuild` app + test targets BUILD SUCCEEDED; 75 targeted tests pass, 0 fail.
 
 ## Phase 6 — Tests
 
