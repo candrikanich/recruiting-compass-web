@@ -17,6 +17,7 @@ global.useAsyncData = vi.fn();
 global.definePageMeta = vi.fn();
 global.useHead = vi.fn();
 global.useSeoMeta = vi.fn();
+global.defineNuxtRouteMiddleware = vi.fn((fn: unknown) => fn);
 
 // Shared vi.fn() so both auto-import (global) and #app import resolve to the same mock
 const _useNuxtAppMock = vi.fn(
