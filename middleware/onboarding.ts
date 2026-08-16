@@ -9,6 +9,14 @@ import { createClientLogger } from "~/utils/logger";
 
 const logger = createClientLogger("middleware/onboarding");
 
+export function shouldRedirectToOnboarding(input: {
+  is_admin?: boolean | null;
+  onboarding_complete?: boolean | null;
+}): boolean {
+  if (input.is_admin === true) return false;
+  return input.onboarding_complete !== true;
+}
+
 export default defineNuxtRouteMiddleware(async (to, _from) => {
   // Skip onboarding check for onboarding page itself
   if (to.path === "/onboarding" || to.path === "/login") {
@@ -28,22 +36,24 @@ export default defineNuxtRouteMiddleware(async (to, _from) => {
     // Get user's onboarding status
     const { data, error } = (await supabase
       .from("users")
-      .select("phase_milestone_data")
+      .select("phase_milestone_data, is_admin")
       .eq("id", session.value.user.id)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .single()) as { data: { phase_milestone_data: any } | null; error: any };
+      .single()) as {
+      data: { phase_milestone_data: { onboarding_complete?: boolean } | null; is_admin: boolean | null } | null;
+      error: unknown;
+    };
 
     if (error) {
       logger.error("Failed to check onboarding status", error);
       return;
     }
 
-    // Check if onboarding is complete
-    const isOnboardingComplete =
-      data?.phase_milestone_data?.onboarding_complete === true;
-
-    // Redirect to onboarding if not complete
-    if (!isOnboardingComplete) {
+    if (
+      shouldRedirectToOnboarding({
+        is_admin: data?.is_admin,
+        onboarding_complete: data?.phase_milestone_data?.onboarding_complete,
+      })
+    ) {
       return navigateTo("/onboarding");
     }
   } catch (err) {

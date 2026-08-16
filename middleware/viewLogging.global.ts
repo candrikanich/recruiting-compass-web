@@ -21,6 +21,8 @@ export default defineNuxtRouteMiddleware(async (to, _from) => {
   // Only run on client
   if (process.server) return;
 
+  if (useAppHost().isAdminHost) return;
+
   try {
     // Try to get the stores safely
     let userStore;
