@@ -345,8 +345,10 @@ export const coachHelpers = {
   /**
    * Navigate to coach detail page
    */
-  async navigateToCoachDetail(page, schoolId, coachId) {
-    await page.goto(`/schools/${schoolId}/coaches/${coachId}`);
+  // schoolId is unused now that the unified detail route (`/coaches/:id`)
+  // doesn't need school context in the URL — kept for caller compatibility.
+  async navigateToCoachDetail(page, _schoolId, coachId) {
+    await page.goto(`/coaches/${coachId}`);
     await page.waitForSelector(coachSelectors.coachDetailTitle);
   },
 

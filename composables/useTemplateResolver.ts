@@ -12,6 +12,11 @@ import {
   type MetricRow,
   type EventLite,
 } from "~/utils/templateResolver";
+import {
+  formatPositionsShort,
+  primaryAndSecondary,
+  abbreviatePosition,
+} from "~/utils/positions/canonical";
 import type { CommunicationTemplate } from "~/types/models";
 
 const logger = createClientLogger("useTemplateResolver");
@@ -121,24 +126,42 @@ export const useTemplateResolver = () => {
           .maybeSingle()) as { data: { name: string } | null };
         if (sportRow?.name) derived.sport = sportRow.name;
       }
-
-      // Position comes from the canonical player-prefs string (the store
-      // onboarding/edit write and completeness reads), NOT the separate
-      // users.primary_position_id / positions table — real users only populate
-      // the prefs string, so the FK store was almost always empty for {{position}}.
-      const primaryPosition = ctx.prefs.primary_position;
-      if (typeof primaryPosition === "string" && primaryPosition.trim()) {
-        derived.position = primaryPosition.trim();
+      // Fallback to the entered prefs.primary_sport string — real accounts
+      // populate the player-prefs jsonb, not the users.primary_sport_id FK, so
+      // without this the FK store is usually empty and position abbreviation
+      // (which is sport-scoped) silently degrades to full names.
+      if (
+        !derived.sport &&
+        typeof ctx.prefs.primary_sport === "string" &&
+        ctx.prefs.primary_sport.trim()
+      ) {
+        derived.sport = ctx.prefs.primary_sport.trim();
       }
 
-      // Secondary: first listed position that isn't the primary.
+      // Position for coach-facing output comes from the athlete's ENTERED,
+      // ordered positions[] (positions[0] = primary, next distinct = secondary),
+      // abbreviated to "3B/SS" — coaches recruit for specific positions. The
+      // legacy primary_position string is only a last-resort fallback for
+      // accounts that predate ordered positions.
       const positionList = Array.isArray(ctx.prefs.positions)
         ? (ctx.prefs.positions as unknown[]).filter(
             (p): p is string => typeof p === "string" && p.trim().length > 0,
           )
         : [];
-      const secondary = positionList.find((p) => p !== derived.position);
-      if (secondary) derived.positionSecondary = secondary;
+      const primaryFallback =
+        typeof ctx.prefs.primary_position === "string"
+          ? ctx.prefs.primary_position
+          : null;
+      const combined = formatPositionsShort(
+        derived.sport,
+        positionList,
+        primaryFallback,
+      );
+      if (combined) derived.position = combined;
+      const { secondary } = primaryAndSecondary(positionList, primaryFallback);
+      if (secondary) {
+        derived.positionSecondary = abbreviatePosition(derived.sport, secondary);
+      }
 
       const hsCoach = pickHsCoach(ctx.prefs, userRow?.graduation_year as number | null | undefined);
       if (hsCoach) derived.hsCoachName = hsCoach;

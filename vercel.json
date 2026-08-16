@@ -28,6 +28,14 @@
     {
       "path": "/api/cron/video-health-check",
       "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cron/generate-notifications",
+      "schedule": "0 8 * * *"
+    },
+    {
+      "path": "/api/cron/weekly-digest",
+      "schedule": "0 13 * * 1"
     }
   ]
 }

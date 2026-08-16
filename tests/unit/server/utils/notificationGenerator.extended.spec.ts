@@ -221,9 +221,9 @@ describe("generateOfferNotifications", () => {
     expect(offerInserts.length).toBeGreaterThan(0);
     const firstRow = (offerInserts[0].rows as Row[])[0] as Row;
     expect(firstRow.user_id).toBe("u-1");
-    expect(firstRow.type).toBe("deadline");
+    expect(firstRow.type).toBe("deadline_alert");
     expect(firstRow.related_entity_type).toBe("offer");
-    expect(firstRow.related_offer_id).toBe("o-1");
+    expect(firstRow.related_entity_id).toBe("o-1");
     // At least one insert at high priority (days <= 3)
     expect(
       offerInserts.some(
@@ -555,8 +555,9 @@ describe("generateEventNotifications", () => {
     expect(result.count).toBeGreaterThan(0);
     const rows = inserts.calls.map((c) => (c.rows as Row[])[0] as Row);
     expect(rows.some((r) => r.priority === "high")).toBe(true);
+    expect(rows[0].type).toBe("event");
     expect(rows[0].related_entity_type).toBe("event");
-    expect(rows[0].related_event_id).toBe("e-1");
+    expect(rows[0].related_entity_id).toBe("e-1");
   });
 
   it("inserts normal priority for event 7 days out", async () => {
@@ -703,9 +704,9 @@ describe("generateCoachFollowupNotifications", () => {
     const result = await generateCoachFollowupNotifications("u-1", supabase);
     expect(result.count).toBe(1);
     const row = (inserts.calls[0].rows as Row[])[0] as Row;
-    expect(row.type).toBe("follow_up");
+    expect(row.type).toBe("follow_up_reminder");
     expect(row.related_entity_type).toBe("coach");
-    expect(row.related_coach_id).toBe("c-1");
+    expect(row.related_entity_id).toBe("c-1");
     expect(row.title).toContain("Jane Doe");
   });
 

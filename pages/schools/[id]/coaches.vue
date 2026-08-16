@@ -151,60 +151,65 @@
           v-if="filteredCoaches.length > 0"
           class="grid grid-cols-1 md:grid-cols-2 gap-6"
         >
-          <div
+          <CoachCard
             v-for="coach in filteredCoaches"
             :key="coach.id"
-            class="relative"
-          >
-            <!-- Delete Button Overlay -->
-            <button
-              @click="deleteCoach(coach.id)"
-              :aria-label="`Delete coach ${coach.first_name} ${coach.last_name}`"
-              class="absolute -top-2 -right-2 z-10 w-8 h-8 bg-red-600 text-white rounded-full hover:bg-red-700 text-xs font-bold transition flex items-center justify-center"
-            >
-              <UIcon
-                name="i-heroicons-x-mark-solid"
-                class="w-4 h-4"
-                aria-hidden="true"
-              />
-            </button>
-            <CoachCard
-              :coach="coach"
-              @email="sendEmail(coach)"
-              @text="sendText(coach)"
-              @tweet="handleOpenTwitter(coach)"
-              @instagram="handleOpenInstagram(coach)"
-              @view="viewCoach(coach)"
-            />
-          </div>
+            :coach="coach"
+            variant="full"
+            contact-mode="modal"
+            :back-to="`/schools/${id}/coaches`"
+            back-label="Coaches"
+            @open-communication="(coachId) => openCommunicationForId(coachId)"
+          />
         </div>
       </PageState>
     </div>
 
     <!-- Communication Panel Modal -->
-    <CommunicationPanel
-      v-if="showPanel && selectedCoach"
-      :coach="selectedCoach"
-      :school="school"
-      :initial-type="communicationType"
-      @close="showPanel = false"
-      @interaction-logged="handleSchoolCoachInteractionLogged"
-    />
+    <Teleport to="body">
+      <div
+        v-if="showPanel && selectedCoach"
+        class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+        @click="showPanel = false"
+        @keydown.escape="showPanel = false"
+      >
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="school-communication-panel-title"
+          class="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+          @click.stop
+        >
+          <div
+            class="sticky top-0 bg-white border-b border-slate-200 p-4 flex items-center justify-between rounded-t-xl"
+          >
+            <h2
+              id="school-communication-panel-title"
+              class="text-xl font-bold text-slate-900"
+            >
+              Quick Communication
+            </h2>
+            <button
+              @click="showPanel = false"
+              aria-label="Close communication panel"
+              class="text-slate-400 hover:text-slate-600"
+            >
+              <UIcon name="i-heroicons-x-mark" class="w-6 h-6" />
+            </button>
+          </div>
+          <div class="p-6">
+            <CommunicationPanel
+              :coach="selectedCoach"
+              :school="school"
+              :initial-type="communicationType"
+              @close="showPanel = false"
+              @interaction-logged="handleSchoolCoachInteractionLogged"
+            />
+          </div>
+        </div>
+      </div>
+    </Teleport>
 
-    <!-- Live Region for Screen Reader Announcements -->
-    <div v-bind="liveRegionAttrs">{{ announcement }}</div>
-
-    <!-- Confirm Delete Dialog -->
-    <DesignSystemConfirmDialog
-      :is-open="isDeleteDialogOpen"
-      title="Delete Coach"
-      message="Are you sure you want to delete this coach? This will also remove related interactions, offers, and social media posts."
-      confirm-text="Delete"
-      cancel-text="Cancel"
-      variant="danger"
-      @confirm="executeDeleteCoach"
-      @cancel="cancelDeleteCoach"
-    />
   </div>
 </template>
 
@@ -217,14 +222,8 @@ import { useInteractions } from "~/composables/useInteractions";
 import { useCommunication } from "~/composables/useCommunication";
 import { useUserStore } from "~/stores/user";
 import type { School } from "~/types";
-import { useLiveRegion } from "~/composables/useLiveRegion";
-import {
-  openTwitter,
-  openInstagram,
-  openEmail,
-  openSMS,
-} from "~/utils/socialMediaHandlers";
 import { createClientLogger } from "~/utils/logger";
+import CoachCard from "~/components/Coach/CoachCard.vue";
 
 const logger = createClientLogger("SchoolCoaches");
 import { useCoachFilters } from "~/composables/useCoachFilters";
@@ -255,9 +254,6 @@ const {
   error,
   fetchCoaches,
   createCoach,
-  deleteCoach: deleteCoachAPI,
-  smartDelete,
-  getCoach,
 } = useCoaches();
 const { getSchool } = useSchools();
 const { fetchInteractions } = useInteractions();
@@ -270,9 +266,6 @@ const {
 } = useCommunication();
 const userStore = useUserStore();
 
-const { announcement, announce, liveRegionAttrs } = useLiveRegion();
-const isDeleteDialogOpen = ref(false);
-const coachToDeleteId = ref<string | null>(null);
 const showAddForm = ref(false);
 const schoolName = ref("");
 const localError = ref("");
@@ -344,42 +337,9 @@ const handleCoachFormSubmit = async (formData: any) => {
   }
 };
 
-const deleteCoach = (coachId: string) => {
-  coachToDeleteId.value = coachId;
-  isDeleteDialogOpen.value = true;
-};
-
-const executeDeleteCoach = async () => {
-  if (!coachToDeleteId.value) return;
-  const deletingId = coachToDeleteId.value;
-  isDeleteDialogOpen.value = false;
-  coachToDeleteId.value = null;
-  try {
-    const result = await smartDelete(deletingId);
-    const message = result.cascadeUsed
-      ? "Coach and related records deleted"
-      : "Coach deleted";
-    announce(message);
-    await fetchCoaches(route.params.id as string);
-  } catch (err) {
-    const errorMessage =
-      err instanceof Error ? err.message : "Failed to delete coach";
-    announce(errorMessage);
-    logger.error("Failed to delete coach", errorMessage);
-  }
-};
-
-const cancelDeleteCoach = () => {
-  isDeleteDialogOpen.value = false;
-  coachToDeleteId.value = null;
-};
-
-const sendEmail = (coach: (typeof coaches.value)[0]) => {
-  openEmail(coach.email);
-};
-
-const sendText = (coach: (typeof coaches.value)[0]) => {
-  openSMS(coach.phone);
+const openCommunicationForId = (coachId: string) => {
+  const coach = coaches.value.find((c) => c.id === coachId);
+  if (coach) openCommunication(coach, "email");
 };
 
 const handleSchoolCoachInteractionLogged = async (interactionData: any) => {
@@ -395,18 +355,6 @@ const handleSchoolCoachInteractionLogged = async (interactionData: any) => {
   }
 };
 
-const handleOpenTwitter = (coach: (typeof coaches.value)[0]) => {
-  openTwitter(coach.twitter_handle);
-};
-
-const handleOpenInstagram = (coach: (typeof coaches.value)[0]) => {
-  openInstagram(coach.instagram_handle);
-};
-
-const viewCoach = (coach: (typeof coaches.value)[0]) => {
-  navigateTo(`/coaches/${coach.id}`);
-};
-
 // Expose reactive variables for testing
 defineExpose({
   showAddForm,
@@ -416,10 +364,6 @@ defineExpose({
   schoolCoaches,
   filteredCoaches,
   handleCoachFormSubmit,
-  isDeleteDialogOpen,
-  coachToDeleteId,
-  executeDeleteCoach,
-  cancelDeleteCoach,
   clearFilters,
 });
 

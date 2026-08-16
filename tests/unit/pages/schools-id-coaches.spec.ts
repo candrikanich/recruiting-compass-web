@@ -11,7 +11,7 @@ import type { School } from "~/types/models";
 const mockFetchCoaches = vi.fn();
 const mockCreateCoach = vi.fn();
 const mockDeleteCoach = vi.fn();
-const mockSmartDelete = vi.fn();
+const mockGetCoach = vi.fn();
 const mockGetSchool = vi.fn();
 
 vi.mock("~/composables/useCoaches", () => ({
@@ -22,7 +22,7 @@ vi.mock("~/composables/useCoaches", () => ({
     fetchCoaches: mockFetchCoaches,
     createCoach: mockCreateCoach,
     deleteCoach: mockDeleteCoach,
-    smartDelete: mockSmartDelete,
+    getCoach: mockGetCoach,
   }),
 }));
 
@@ -55,11 +55,11 @@ vi.mock("~/components/Header.vue", () => ({
 }));
 
 // Mock CoachCard component
-vi.mock("~/components/CoachCard.vue", () => ({
+vi.mock("~/components/Coach/CoachCard.vue", () => ({
   default: {
     name: "CoachCard",
-    props: ["coach"],
-    emits: ["email", "text", "tweet", "instagram"],
+    props: ["coach", "variant", "contactMode"],
+    emits: ["open-communication"],
     template:
       '<div class="coach-card">{{ coach.first_name }} {{ coach.last_name }}</div>',
   },
@@ -659,89 +659,11 @@ describe("pages/schools/[id]/coaches.vue", () => {
     });
   });
 
-  describe("Delete Coach", () => {
-    beforeEach(() => {
-      mockCoaches.value = [
-        createMockCoach({ id: "coach-1" }),
-        createMockCoach({ id: "coach-2" }),
-      ];
-    });
-
-    it("should show delete button on each coach card", () => {
-      const wrapper = mount(SchoolCoachesPage);
-
-      const deleteButtons = wrapper.findAll(
-        'button[aria-label*="Delete coach"]',
-      );
-      expect(deleteButtons.length).toBeGreaterThan(0);
-    });
-
-    it("should open confirm dialog before deleting", async () => {
-      const wrapper = mount(SchoolCoachesPage);
-
-      const deleteButton = wrapper.find('button[aria-label*="Delete coach"]');
-      await deleteButton.trigger("click");
-      await nextTick();
-
-      // Verify dialog state is set (ConfirmDialog uses Teleport so we check via exposed state)
-      expect((wrapper.vm as any).isDeleteDialogOpen).toBe(true);
-    });
-
-    it("should delete coach when confirmed via dialog", async () => {
-      mockSmartDelete.mockResolvedValue({ cascadeUsed: false });
-
-      const wrapper = mount(SchoolCoachesPage);
-
-      const deleteButton = wrapper.find('button[aria-label*="Delete coach"]');
-      await deleteButton.trigger("click");
-      await nextTick();
-
-      // Simulate dialog confirm by calling the handler directly
-      await (wrapper.vm as any).executeDeleteCoach();
-      await flushPromises();
-
-      expect(mockSmartDelete).toHaveBeenCalled();
-    });
-
-    it("should not delete coach when dialog is cancelled", async () => {
-      const wrapper = mount(SchoolCoachesPage);
-
-      const deleteButton = wrapper.find('button[aria-label*="Delete coach"]');
-      await deleteButton.trigger("click");
-      await nextTick();
-
-      // Simulate dialog cancel
-      (wrapper.vm as any).cancelDeleteCoach();
-      await nextTick();
-
-      expect(mockSmartDelete).not.toHaveBeenCalled();
-      expect((wrapper.vm as any).isDeleteDialogOpen).toBe(false);
-    });
-
-    it("should handle delete error", async () => {
-      mockSmartDelete.mockRejectedValue(new Error("Delete failed"));
-
-      const wrapper = mount(SchoolCoachesPage);
-
-      const deleteButton = wrapper.find('button[aria-label*="Delete coach"]');
-      await deleteButton.trigger("click");
-      await nextTick();
-
-      await (wrapper.vm as any).executeDeleteCoach();
-      await flushPromises();
-
-      expect(console.error).toHaveBeenCalledWith(
-        expect.stringContaining("[SchoolCoaches]"),
-        "Failed to delete coach",
-        "Delete failed",
-      );
-    });
-  });
-
   describe("Quick Actions", () => {
     beforeEach(() => {
       mockCoaches.value = [
         createMockCoach({
+          id: "coach-1",
           email: "test@test.edu",
           phone: "555-1234",
           twitter_handle: "@coach",
@@ -750,45 +672,15 @@ describe("pages/schools/[id]/coaches.vue", () => {
       ];
     });
 
-    it("should handle email action", async () => {
+    it("should open the communication panel for the coach on open-communication", async () => {
       const wrapper = mount(SchoolCoachesPage);
 
       const coachCard = wrapper.findComponent({ name: "CoachCard" });
-      await coachCard.vm.$emit("email", mockCoaches.value[0]);
+      await coachCard.vm.$emit("open-communication", "coach-1");
+      await nextTick();
 
-      expect(window.location.href).toBe("mailto:test@test.edu");
-    });
-
-    it("should handle text action", async () => {
-      const wrapper = mount(SchoolCoachesPage);
-
-      const coachCard = wrapper.findComponent({ name: "CoachCard" });
-      await coachCard.vm.$emit("text", mockCoaches.value[0]);
-
-      expect(window.location.href).toBe("sms:5551234");
-    });
-
-    it("should handle twitter action", async () => {
-      const wrapper = mount(SchoolCoachesPage);
-
-      const coachCard = wrapper.findComponent({ name: "CoachCard" });
-      await coachCard.vm.$emit("tweet", mockCoaches.value[0]);
-
-      expect(window.open).toHaveBeenCalledWith(
-        "https://twitter.com/coach",
-        "_blank",
-      );
-    });
-
-    it("should handle instagram action", async () => {
-      const wrapper = mount(SchoolCoachesPage);
-
-      const coachCard = wrapper.findComponent({ name: "CoachCard" });
-      await coachCard.vm.$emit("instagram", mockCoaches.value[0]);
-
-      expect(window.open).toHaveBeenCalledWith(
-        "https://instagram.com/coach",
-        "_blank",
+      expect(wrapper.findComponent({ name: "CommunicationPanel" }).exists()).toBe(
+        true,
       );
     });
   });

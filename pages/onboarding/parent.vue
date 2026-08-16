@@ -73,7 +73,8 @@
                 :class="playerTooYoung ? 'border-red-400' : 'border-slate-300'"
               />
               <p class="text-xs text-slate-500 mt-1">
-                Players must be 13 or older to create an account.
+                Recruiting Compass is for ages 13 and up. By entering a date of
+                birth, you confirm the player is 13 or older.
               </p>
               <p
                 v-if="playerTooYoung"
@@ -287,6 +288,7 @@ import { useFamilyCode } from "~/composables/useFamilyCode";
 import { useFamilyInvite } from "~/composables/useFamilyInvite";
 import type { UseActiveFamilyReturn } from "~/composables/useActiveFamily";
 import { getCanonicalPositions } from "~/utils/positions/canonical";
+import { getGraduationYearOptions } from "~/utils/graduationYears";
 
 definePageMeta({ layout: "default", middleware: "auth" });
 
@@ -339,10 +341,7 @@ const availablePositions = computed(() =>
   getCanonicalPositions(sport.value),
 );
 
-const graduationYears = computed(() => {
-  const currentYear = new Date().getFullYear();
-  return Array.from({ length: 5 }, (_, i) => currentYear + i);
-});
+const graduationYears = computed(() => getGraduationYearOptions());
 
 // Step 2 — Invite
 const inviteEmail = ref("");

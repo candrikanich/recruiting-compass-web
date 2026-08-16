@@ -247,7 +247,7 @@ describe("POST /api/admin/notifications/broadcast", () => {
   it("accepts message=undefined and stores null", async () => {
     readBodyMock.mockResolvedValue({
       target: "all",
-      type: "weekly_digest",
+      type: "daily_digest",
       title: "digest",
     });
     const handler = await loadHandler();

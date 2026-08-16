@@ -16,6 +16,17 @@ Tracks mistake patterns (with recurrence counts) and process insights.
 
 ## Bug & Mistake Patterns
 
+### Dual-Store Drift: FK Column vs. Prefs JSONB for the Same Field
+
+**Times seen:** 1 (two field instances same session: position + sport) | **Last seen:** 2026-08-15
+**Context:** `{{position}}` in coach templates rendered a stale "Utility" for Owen. Root cause: the same logical field lives in TWO places that never reconcile — `users.primary_position_id` (FK to `positions` table) vs `user_preferences.data.primary_position` (jsonb string), AND a separate `user_preferences.data.positions[]` array. Onboarding wrote one, the athletics-tab multiselect wrote another, nothing synced them. The SAME split exists for sport (`users.primary_sport_id` FK is null on real accounts; `prefs.primary_sport` is what's actually populated) — so the resolver's sport lookup was silently empty too, degrading position abbreviation.
+**Root Cause:** Real accounts populate the prefs JSONB; the relational FK columns (`*_id` / `positions` table) are vestigial and usually empty. Any reader that trusts the FK store gets a blank or stale value. Two write paths for "the same" field with no mirror = guaranteed drift.
+**Prevention:**
+- Pick ONE source of truth (here: ordered `positions[]`) and MIRROR it onto the legacy field on every save (`primary_position := positions[0]`), so downstream readers can't observe drift.
+- When a resolver reads a `*_id` FK for athlete data, add a fallback to the prefs JSONB string — real users populate the jsonb, not the FK.
+- Before trusting any `users.<x>_id` FK for display, verify real rows actually populate it (`SELECT count(*) WHERE <x>_id IS NOT NULL`) — these tables were often seeded once and abandoned.
+- Grep for EVERY consumer before repointing; a field like "position" renders in ~13 places (templates, packet, public profile, markdown export, API).
+
 ### Forked web-to-ios-handoff Latches Onto Stale planning/iOS_SPEC_* Instead of the Current Task
 
 **Times seen:** 1 | **Last seen:** 2026-08-11

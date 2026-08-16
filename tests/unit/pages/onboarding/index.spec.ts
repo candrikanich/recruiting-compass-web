@@ -27,6 +27,8 @@ const mockPreferences = {
   setHomeLocation: vi.fn().mockResolvedValue(undefined),
   setPlayerDetails: vi.fn().mockResolvedValue(undefined),
   loadAllPreferences: vi.fn().mockResolvedValue(undefined),
+  getPlayerDetails: vi.fn(() => null),
+  getHomeLocation: { value: null },
 };
 vi.mock("~/composables/usePreferenceManager", () => ({
   usePreferenceManager: () => mockPreferences,

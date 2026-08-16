@@ -1,0 +1,97 @@
+/**
+ * GET /api/cron/generate-notifications
+ * Scheduled cron: generate in-app notifications for all athletes and send
+ * deadline-alert emails, each channel gated per user by `notification_preferences`.
+ * Triggered by Vercel Cron (daily) or manually.
+ *
+ * Security: Vercel sends CRON_SECRET as "Authorization: Bearer <secret>".
+ * Manual callers may also pass it as "x-cron-secret: <secret>".
+ */
+
+import { defineEventHandler, createError, getHeader } from "h3";
+import { createServerSupabaseClient } from "~/server/utils/supabase";
+import { useLogger } from "~/server/utils/logger";
+import { verifySharedSecret } from "~/server/utils/secrets";
+import { deliverNotificationsForUser } from "~/server/utils/notificationDelivery";
+
+interface CronResult {
+  total: number;
+  processed: number;
+  failed: number;
+  inApp: number;
+  emails: number;
+}
+
+export default defineEventHandler(async (event) => {
+  const logger = useLogger(event, "cron/generate-notifications");
+  try {
+    const expectedSecret = process.env.CRON_SECRET;
+    const authHeader = getHeader(event, "authorization");
+    const legacyHeader = getHeader(event, "x-cron-secret");
+    const bearerSecret = authHeader?.startsWith("Bearer ")
+      ? authHeader.slice(7)
+      : undefined;
+    const providedSecret = bearerSecret ?? legacyHeader;
+
+    if (
+      !expectedSecret ||
+      !providedSecret ||
+      !verifySharedSecret(providedSecret, expectedSecret)
+    ) {
+      throw createError({
+        statusCode: 401,
+        message: "Unauthorized: Invalid cron secret",
+      });
+    }
+
+    const supabase = createServerSupabaseClient();
+    const unsubscribeSecret = useRuntimeConfig().unsubscribeSecret;
+
+    const { data: athletes, error: fetchError } = (await supabase
+      .from("users")
+      .select("id, email")
+      .eq("role", "player")) as {
+      data: Array<{ id: string; email: string | null }> | null;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      error: any;
+    };
+
+    if (fetchError || !athletes) {
+      throw createError({ statusCode: 500, message: "Failed to fetch athletes" });
+    }
+
+    const result: CronResult = {
+      total: athletes.length,
+      processed: 0,
+      failed: 0,
+      inApp: 0,
+      emails: 0,
+    };
+
+    for (const athlete of athletes) {
+      try {
+        const { inApp, emails } = await deliverNotificationsForUser(
+          athlete.id,
+          athlete.email,
+          supabase,
+          unsubscribeSecret,
+        );
+        result.inApp += inApp;
+        result.emails += emails;
+        result.processed++;
+      } catch (err) {
+        result.failed++;
+        logger.error(`Failed to deliver notifications for ${athlete.id}`, err);
+      }
+    }
+
+    return result;
+  } catch (error: unknown) {
+    if (error instanceof Error && "statusCode" in error) throw error;
+    logger.error("Unexpected error in cron/generate-notifications", error);
+    throw createError({
+      statusCode: 500,
+      message: "Failed to run generate-notifications cron job",
+    });
+  }
+});

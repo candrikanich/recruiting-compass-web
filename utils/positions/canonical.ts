@@ -24,7 +24,6 @@ export const SPORT_POSITIONS: Record<string, readonly string[]> = {
     "Center Field",
     "Right Field",
     "Designated Hitter",
-    "Utility",
   ],
   Softball: [
     "Pitcher",
@@ -37,7 +36,6 @@ export const SPORT_POSITIONS: Record<string, readonly string[]> = {
     "Center Field",
     "Right Field",
     "Designated Hitter",
-    "Utility",
   ],
   Basketball: [
     "Point Guard",
@@ -118,13 +116,10 @@ const SPORT_ALIASES: Record<string, Record<string, string>> = {
     rf: "Right Field",
     rightfield: "Right Field",
     dh: "Designated Hitter",
-    util: "Utility",
-    infielder: "Utility",
-    infield: "Utility",
-    if: "Utility",
-    outfielder: "Utility",
-    outfield: "Utility",
-    of: "Utility",
+    // "Utility"/"Infielder"/"Outfielder" and their abbreviations are deliberately
+    // NOT mapped: recruiting output must name a specific position, so coarse
+    // catch-alls no longer resolve to a canonical value (they preserve raw on
+    // read, and backfill migrates them to the athlete's real positions[0]).
   },
   Basketball: {
     pg: "Point Guard",
@@ -205,6 +200,77 @@ export function normalizePositions(
     if (resolved && !out.includes(resolved)) out.push(resolved);
   }
   return out;
+}
+
+/**
+ * Sport-scoped map from canonical full name to its short display code. Only
+ * sports with an established shorthand are listed; everything else renders its
+ * full name. Baseball and Softball share standard scorekeeping abbreviations.
+ */
+const POSITION_ABBREVIATIONS: Record<string, Record<string, string>> = {
+  Baseball: {
+    Pitcher: "P",
+    Catcher: "C",
+    "First Base": "1B",
+    "Second Base": "2B",
+    "Third Base": "3B",
+    Shortstop: "SS",
+    "Left Field": "LF",
+    "Center Field": "CF",
+    "Right Field": "RF",
+    "Designated Hitter": "DH",
+  },
+};
+POSITION_ABBREVIATIONS.Softball = POSITION_ABBREVIATIONS.Baseball;
+
+/**
+ * Short display code for a position, for coach-facing output (e.g. "3B", "SS").
+ * Canonicalizes the input first (so "shortstop"/"SS" both resolve), then maps to
+ * the sport's shorthand. Falls back to the canonical full name — or, when the
+ * value can't be resolved at all, the trimmed input — so nothing renders blank.
+ */
+export function abbreviatePosition(
+  sport: string | null | undefined,
+  value: string | null | undefined,
+): string {
+  const raw = typeof value === "string" ? value.trim() : "";
+  const canonical = normalizePosition(sport, raw) ?? raw;
+  if (!sport) return canonical;
+  return POSITION_ABBREVIATIONS[sport]?.[canonical] ?? canonical;
+}
+
+/**
+ * Ordered primary/secondary from an athlete's entered `positions[]`, with the
+ * legacy `primary_position` string as a last-resort fallback only.
+ * `positions[0]` is primary; the first later entry that differs is secondary.
+ */
+export function primaryAndSecondary(
+  positions: string[] | null | undefined,
+  primaryFallback?: string | null,
+): { primary: string; secondary: string } {
+  const list = Array.isArray(positions)
+    ? positions.filter((p): p is string => typeof p === "string" && p.trim().length > 0)
+    : [];
+  const primary = (list[0] ?? primaryFallback ?? "").trim();
+  const secondary = list.find((p) => p.trim() !== primary)?.trim() ?? "";
+  return { primary, secondary };
+}
+
+/**
+ * Coach-facing short position string from entered `positions[]`: the first two,
+ * abbreviated, primary first, joined with "/" (e.g. "3B/SS"). Empty string when
+ * nothing is entered and no fallback is given.
+ */
+export function formatPositionsShort(
+  sport: string | null | undefined,
+  positions: string[] | null | undefined,
+  primaryFallback?: string | null,
+): string {
+  const { primary, secondary } = primaryAndSecondary(positions, primaryFallback);
+  return [primary, secondary]
+    .filter(Boolean)
+    .map((p) => abbreviatePosition(sport, p))
+    .join("/");
 }
 
 /** Whether a value is already a canonical position for the sport. */

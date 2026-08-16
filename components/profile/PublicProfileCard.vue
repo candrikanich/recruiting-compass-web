@@ -1,8 +1,21 @@
 <!-- components/profile/PublicProfileCard.vue -->
 <script setup lang="ts">
+import { computed } from "vue";
 import type { PublicProfileData } from "~/types/models";
+import { formatPositionsShort } from "~/utils/positions/canonical";
 
-withDefaults(defineProps<{ profile: PublicProfileData }>(), {});
+const props = withDefaults(defineProps<{ profile: PublicProfileData }>(), {});
+
+// Coach-facing primary/secondary from the athlete's ENTERED, ordered
+// positions[] (abbreviated "3B/SS"); the stale primary_position string is only
+// a fallback for pre-ordering accounts.
+const primaryPositionLabel = computed(() =>
+  formatPositionsShort(
+    props.profile.athletic?.primary_sport,
+    props.profile.athletic?.positions,
+    props.profile.athletic?.primary_position,
+  ),
+);
 
 const HEADER_GRADIENTS: Record<string, string> = {
   slate: "bg-gradient-to-br from-slate-800 to-slate-700",
@@ -52,8 +65,8 @@ function formatGPA(gpa: number | undefined): string {
             class="mt-1 text-slate-300 text-sm"
           >
             {{ profile.athletic.primary_sport }}
-            <span v-if="profile.athletic.primary_position">
-              · {{ profile.athletic.primary_position }}</span
+            <span v-if="primaryPositionLabel">
+              · {{ primaryPositionLabel }}</span
             >
           </p>
           <p

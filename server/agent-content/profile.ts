@@ -25,8 +25,10 @@ export function renderProfileMarkdown(
     const a = profile.athletic;
     const items: string[] = [];
     if (a.primary_sport) items.push(`- **Sport:** ${a.primary_sport}`);
-    if (a.primary_position)
-      items.push(`- **Primary position:** ${a.primary_position}`);
+    // Primary comes from the entered, ordered positions[]; primary_position is
+    // only a fallback for accounts that predate ordered positions.
+    const primaryPos = a.positions?.[0] ?? a.primary_position;
+    if (primaryPos) items.push(`- **Primary position:** ${primaryPos}`);
     if (a.positions?.length)
       items.push(`- **Positions:** ${a.positions.join(", ")}`);
     if (a.height_inches !== undefined)

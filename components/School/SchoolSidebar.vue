@@ -61,58 +61,14 @@
         </NuxtLink>
       </div>
       <div v-if="coaches.length > 0" class="space-y-3">
-        <div
+        <CoachCard
           v-for="coach in coaches"
           :key="coach.id"
-          class="p-3 border border-slate-200 rounded-lg flex items-center justify-between gap-3"
-        >
-          <div class="min-w-0">
-            <p class="font-medium text-slate-900 text-sm">
-              {{ coach.first_name }} {{ coach.last_name }}
-            </p>
-            <p class="text-xs text-slate-500 capitalize">
-              {{ getRoleLabel(coach.role) }}
-            </p>
-          </div>
-          <div class="flex justify-end gap-1.5 shrink-0">
-            <a
-              v-if="coach.email"
-              :href="`mailto:${coach.email}`"
-              :aria-label="`Send email to ${coach.first_name} ${coach.last_name}`"
-              class="p-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-            >
-              <UIcon
-                name="i-heroicons-envelope"
-                class="w-4 h-4"
-                aria-hidden="true"
-              />
-            </a>
-            <a
-              v-if="coach.phone"
-              :href="`sms:${coach.phone}`"
-              :aria-label="`Send text message to ${coach.first_name} ${coach.last_name}`"
-              class="p-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
-            >
-              <UIcon
-                name="i-heroicons-chat-bubble-left"
-                class="w-4 h-4"
-                aria-hidden="true"
-              />
-            </a>
-            <a
-              v-if="coach.phone"
-              :href="`tel:${coach.phone}`"
-              :aria-label="`Call ${coach.first_name} ${coach.last_name}`"
-              class="p-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
-            >
-              <UIcon
-                name="i-heroicons-phone"
-                class="w-4 h-4"
-                aria-hidden="true"
-              />
-            </a>
-          </div>
-        </div>
+          :coach="coach"
+          variant="compact"
+          :back-to="`/schools/${schoolId}`"
+          :back-label="school?.name ?? 'School'"
+        />
       </div>
       <div v-else class="text-center py-4 text-slate-500 text-sm">
         No coaches added yet
@@ -166,7 +122,6 @@
 </template>
 
 <script setup lang="ts">
-import { getRoleLabel } from "~/utils/coachLabels";
 import type { School, Coach } from "~/types/models";
 import type { DivisionRecommendation } from "~/types/timeline";
 import type {
@@ -176,6 +131,7 @@ import type {
 import SchoolStatusHistory from "~/components/School/SchoolStatusHistory.vue";
 import SchoolFitSignals from "~/components/School/SchoolFitSignals.vue";
 import SchoolRecruitingStatusSection from "~/components/School/SchoolRecruitingStatusSection.vue";
+import CoachCard from "~/components/Coach/CoachCard.vue";
 import type { SchoolStatusValue } from "~/utils/schoolStatusOptions";
 
 defineProps<{

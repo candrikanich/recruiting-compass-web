@@ -25,6 +25,7 @@ import {
 } from "~/utils/recruitingPacketExport";
 import type { School, PlayerDetails, VideoLink } from "~/types/models";
 import { createClientLogger } from "~/utils/logger";
+import { formatPositionsShort } from "~/utils/positions/canonical";
 
 interface PacketGenerationResult {
   html: string;
@@ -106,7 +107,15 @@ export const useRecruitingPacket = () => {
     // player-preferences JSONB — ordered server-side by position.
     await loadVideoLinks();
 
-    const position = details?.positions?.[0] ?? details?.primary_position;
+    // Coach-facing primary/secondary from entered ordered positions[] ("3B/SS"),
+    // stale primary_position only as fallback. Empty → undefined so downstream
+    // "|| 'Athlete'" fallbacks still apply.
+    const position =
+      formatPositionsShort(
+        details?.primary_sport,
+        details?.positions,
+        details?.primary_position,
+      ) || undefined;
 
     return {
       id: userStore.user.id,

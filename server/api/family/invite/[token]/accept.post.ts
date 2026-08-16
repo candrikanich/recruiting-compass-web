@@ -2,6 +2,9 @@ import { defineEventHandler, getRouterParam, createError } from "h3";
 import { useLogger } from "~/server/utils/logger";
 import { requireAuth } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
+import { hydrateAthleteFromPendingDetails } from "~/server/utils/hydrateAthleteProfile";
+import { requiresGuardianInvite } from "~/utils/age";
+import { CURRENT_TERMS_VERSION } from "~/utils/legal";
 import type { Database } from "~/types/database";
 
 export default defineEventHandler(async (event) => {
@@ -21,7 +24,9 @@ export default defineEventHandler(async (event) => {
 
     const { data: invitation } = await supabase
       .from("family_invitations")
-      .select("id, family_unit_id, invited_email, role, status, expires_at")
+      .select(
+        "id, family_unit_id, invited_email, role, status, expires_at, invited_by",
+      )
       .eq("token", token)
       .single();
 
@@ -109,6 +114,33 @@ export default defineEventHandler(async (event) => {
       | undefined;
 
     if (invitation.role === "player") {
+      // Record guardian consent for minor (13–17) players: the inviting parent or
+      // guardian (invited_by) accepted the Terms on the minor's behalf. Compliance
+      // record only; non-fatal if it fails since membership is already established.
+      const { data: acceptingUser } = await supabase
+        .from("users")
+        .select("date_of_birth")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      const dob = (acceptingUser as { date_of_birth?: string | null } | null)
+        ?.date_of_birth;
+
+      if (requiresGuardianInvite(dob)) {
+        const { error: consentError } = await supabase
+          .from("users")
+          .update({
+            guardian_consent_at: new Date().toISOString(),
+            guardian_consent_by: invitation.invited_by,
+            guardian_consent_terms_version: CURRENT_TERMS_VERSION,
+          })
+          .eq("id", user.id);
+
+        if (consentError) {
+          logger.error("Failed to record guardian consent", consentError);
+        }
+      }
+
       const { data: familyUnit } = await supabase
         .from("family_units")
         .select("pending_player_details")
@@ -133,6 +165,15 @@ export default defineEventHandler(async (event) => {
             ? { position: pendingDetails.position as string }
             : {}),
         };
+      }
+
+      if (pendingDetails) {
+        await hydrateAthleteFromPendingDetails(
+          supabase,
+          user.id,
+          pendingDetails,
+          logger,
+        );
       }
     }
 

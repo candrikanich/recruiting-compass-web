@@ -63,7 +63,7 @@ describe("broadcastSchema validation", () => {
     it("accepts a valid all-users broadcast", () => {
       const result = broadcastSchema.safeParse({
         target: "all",
-        type: "weekly_digest",
+        type: "daily_digest",
         title: "Weekly Digest",
         message: "Here is your weekly summary.",
       });
@@ -84,7 +84,9 @@ describe("broadcastSchema validation", () => {
       const types = [
         "follow_up_reminder",
         "deadline_alert",
-        "weekly_digest",
+        "daily_digest",
+        "inbound_interaction",
+        "offer",
         "event",
       ] as const;
       for (const type of types) {
@@ -111,7 +113,7 @@ describe("broadcastSchema validation", () => {
     it("rejects an empty title", () => {
       const result = broadcastSchema.safeParse({
         target: "all",
-        type: "weekly_digest",
+        type: "daily_digest",
         title: "",
       });
       expect(result.success).toBe(false);
@@ -124,7 +126,7 @@ describe("broadcastSchema validation", () => {
     it("rejects a title exceeding 200 characters", () => {
       const result = broadcastSchema.safeParse({
         target: "all",
-        type: "weekly_digest",
+        type: "daily_digest",
         title: "x".repeat(201),
       });
       expect(result.success).toBe(false);

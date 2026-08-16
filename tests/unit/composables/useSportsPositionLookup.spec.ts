@@ -23,10 +23,10 @@ describe("useSportsPositionLookup", () => {
     expect(positions).toContain("First Base");
     expect(positions).toContain("Shortstop");
     expect(positions).toContain("Left Field");
-    expect(positions).toContain("Utility");
+    expect(positions).not.toContain("Utility");
     expect(positions).not.toContain("Infielder");
     expect(positions).not.toContain("Outfielder");
-    expect(positions.length).toBe(11);
+    expect(positions.length).toBe(10);
   });
 
   it("should return basketball positions for Basketball sport", () => {
