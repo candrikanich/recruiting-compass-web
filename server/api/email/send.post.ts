@@ -1,15 +1,6 @@
 import { defineEventHandler, readBody, createError } from "h3";
 import { z } from "zod";
-import {
-  renderWeeklyDigestEmail,
-  renderDeadlineAlertEmail,
-  sendEmail,
-} from "~/server/utils/emailService";
-import {
-  generateUnsubscribeToken,
-  normalizeEmail,
-} from "~/server/utils/unsubscribeToken";
-import { isOptedOut } from "~/server/utils/emailOptouts";
+import { sendRecurringEmail } from "~/server/utils/recurringEmail";
 import { useLogger } from "~/server/utils/logger";
 import { requireAuth } from "~/server/utils/auth";
 
@@ -35,35 +26,19 @@ export default defineEventHandler(async (event) => {
   }
 
   const { to, subject, template, data } = parsed.data;
-  const normalized = normalizeEmail(to);
 
-  if (await isOptedOut(normalized)) {
+  const result = await sendRecurringEmail({
+    to,
+    subject,
+    template,
+    data,
+    unsubscribeSecret: useRuntimeConfig().unsubscribeSecret,
+  });
+
+  if (result.skipped) {
     logger.info("Recipient opted out, skipping recurring email", { template });
     return { success: true, skipped: true };
   }
-
-  const baseUrl =
-    process.env.PUBLIC_BASE_URL ?? "https://myrecruitingcompass.com";
-  const token = generateUnsubscribeToken(
-    normalized,
-    useRuntimeConfig().unsubscribeSecret,
-  );
-  const listUnsubscribeUrl = `${baseUrl}/api/email/unsubscribe?email=${encodeURIComponent(
-    normalized,
-  )}&token=${token}`;
-
-  const html =
-    template === "weekly-digest"
-      ? renderWeeklyDigestEmail(
-          data as Parameters<typeof renderWeeklyDigestEmail>[0],
-          listUnsubscribeUrl,
-        )
-      : renderDeadlineAlertEmail(
-          data as Parameters<typeof renderDeadlineAlertEmail>[0],
-          listUnsubscribeUrl,
-        );
-
-  const result = await sendEmail({ to, subject, html, listUnsubscribeUrl });
 
   if (!result.success) {
     logger.error("Resend delivery error", { error: result.error });
