@@ -48,6 +48,16 @@ const CRON_JOBS: { jobName: string; schedule: string; maxAgeMs: number }[] = [
     schedule: "0 13 * * 1",
     maxAgeMs: 8 * 24 * HOUR_MS,
   },
+  {
+    jobName: "notification-prune",
+    schedule: "0 3 * * 0",
+    maxAgeMs: 8 * 24 * HOUR_MS,
+  },
+  {
+    jobName: "orphaned-storage-sweep",
+    schedule: "0 4 * * 0",
+    maxAgeMs: 8 * 24 * HOUR_MS,
+  },
 ];
 
 export interface CronRunRow {
