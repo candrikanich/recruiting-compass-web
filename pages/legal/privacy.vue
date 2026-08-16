@@ -81,6 +81,19 @@
             </li>
           </ul>
 
+          <h3 class="text-lg font-semibold mt-6 mb-3">Sensitive Information</h3>
+          <p>
+            Some of the profile information we collect — such as a minor's date of
+            birth, academic records (GPA, standardized test scores), and
+            graduation year — may be considered sensitive under certain state
+            privacy laws. We use this information solely to operate the Service
+            (for example, to enforce age eligibility and calculate Fit Scores) and
+            we never sell it or use it for targeted advertising. We are not a
+            school or educational agency, and the academic information you enter is
+            not a FERPA "education record"; it is data you voluntarily provide and
+            control.
+          </p>
+
           <h3 class="text-lg font-semibold mt-6 mb-3">
             Data We Do Not Collect
           </h3>
@@ -131,12 +144,14 @@
               school information
             </li>
             <li>
-              To send transactional emails (account confirmations, invites,
-              security alerts)
+              To send transactional emails (account confirmations, family
+              invitations, and password resets)
             </li>
             <li>
-              To send product updates, recruiting tips, and (with consent)
-              promotional information
+              To send product updates, recruiting tips, and promotional
+              information about paid features — which you may opt out of at any
+              time via the unsubscribe link in any such email or your account
+              settings
             </li>
             <li>To respond to your inquiries and support requests</li>
             <li>To analyze usage patterns and improve our offerings</li>
@@ -235,8 +250,9 @@
               cancel a deletion request within that 30-day window.
             </li>
             <li>
-              <strong>Audit logs:</strong> Deletion event logs are retained for
-              up to 90 days for fraud prevention and legal compliance purposes
+              <strong>Audit logs:</strong> Security- and account-related audit
+              logs are retained for up to one year for fraud prevention and
+              legal compliance purposes
             </li>
           </ul>
         </section>
@@ -279,14 +295,49 @@
               discriminate against you for exercising your CCPA rights
             </li>
           </ul>
+
+          <h3 class="text-lg font-semibold mt-6 mb-3">
+            Residents of Other States
+          </h3>
+          <p>
+            If you reside in a state with a comprehensive consumer privacy law
+            (for example, Virginia, Colorado, Connecticut, Texas, Oregon, or
+            Utah), you may have rights similar to those above — including the
+            right to access, correct, delete, and obtain a portable copy of your
+            personal data, and to opt out of the sale of your personal data,
+            targeted advertising, and certain profiling. We do not sell personal
+            data or use it for targeted advertising or profiling in furtherance of
+            decisions that produce legal or similarly significant effects.
+          </p>
+
+          <h3 class="text-lg font-semibold mt-6 mb-3">Minors</h3>
+          <p>
+            For any user we know to be a minor (under 18), we do not sell their
+            personal data, share it for cross-context behavioral advertising, or
+            use it for targeted advertising or profiling. We limit our collection
+            and use of a minor's data to what is reasonably necessary to provide
+            the Service.
+          </p>
+
+          <h3 class="text-lg font-semibold mt-6 mb-3">
+            Global Privacy Control (GPC)
+          </h3>
+          <p>
+            We honor the Global Privacy Control (GPC) browser signal. If your
+            browser or extension sends a GPC signal, we treat it as a valid
+            request to opt out of any sale or sharing of your personal data and to
+            disable non-essential analytics for that browser.
+          </p>
+
           <p class="mt-4">
-            To exercise these rights, please contact us at
+            You can export a portable copy of your data and delete your account
+            directly from your account settings (Data &amp; Privacy). To exercise
+            any other right, please contact us at
             <a
               href="mailto:privacy@therecruitingcompass.com"
               class="text-blue-600 hover:underline"
               >privacy@therecruitingcompass.com</a
-            >
-            or submit a request through your account settings.
+            >.
           </p>
         </section>
 
@@ -297,6 +348,14 @@
             session and enhance your experience. Most web browsers allow you to
             control cookies through their settings. Disabling cookies may affect
             the functionality of our Service.
+          </p>
+          <p>
+            We use the following third-party providers to operate and improve
+            the Service: <strong>Sentry</strong> (error monitoring),
+            <strong>PostHog</strong> (product analytics), and
+            <strong>Vercel Analytics and Speed Insights</strong> (performance
+            measurement). These providers process usage and device data on our
+            behalf and are not permitted to use it for their own purposes.
           </p>
         </section>
 

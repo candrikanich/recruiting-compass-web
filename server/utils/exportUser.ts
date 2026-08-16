@@ -341,7 +341,7 @@ To import this data into another application:
 
 ## Support
 
-For questions about this export, contact: privacy@baseballrecruitingtracker.local
+For questions about this export, contact: privacy@therecruitingcompass.com
 
 ---
 
