@@ -13,19 +13,24 @@ redirect points at a domain that already resolves.
 - Add a CNAME `admin` → the Vercel target shown in the domain settings.
 - Wait for verification (Vercel shows "Valid Configuration").
 
-## 3. Create the admin account
+## 3. Edge-level noindex (authoritative)
+- On the Vercel project, add a response header for the admin domain: `X-Robots-Tag: noindex, nofollow`. Scope it to `admin.myrecruitingcompass.com` only (do NOT apply to the main app domain). In Nuxt this can be done via `routeRules` keyed by host, or a Vercel project header rule on the admin domain.
+- Serve a `robots.txt` on the admin host that disallows all: `User-agent: *` / `Disallow: /`. (The main host keeps its own robots.txt.)
+- Note: the in-app `<meta name="robots" noindex>` (app.vue) is the JS-rendered fallback for crawlers that execute JS; the edge header is the authoritative control for those that don't.
+
+## 4. Create the admin account
 - Visit https://admin.myrecruitingcompass.com/admin/signup
 - Complete signup with `admin@therecruitingcompass.com` using a valid token
   (HMAC of NUXT_ADMIN_TOKEN_SECRET; see server/utils/adminToken.ts).
 - In the DB: `UPDATE users SET is_admin = true WHERE email = 'admin@therecruitingcompass.com';`
 
-## 4. Smoke test (dual-login)
+## 5. Smoke test (dual-login)
 - Tab A: myrecruitingcompass.com — sign in as a parent test account.
 - Tab B: admin.myrecruitingcompass.com — sign in as admin@. Both persist on reload.
 - On myrecruitingcompass.com, visit /admin → hard-redirects to admin host.
 - On admin host, visit /schools → redirects to /admin.
 - As a non-admin, hit /admin/migrate-school-sizes and /admin/batch-fetch-logos → redirected to /.
 
-## 5. Cookie invariant
+## 6. Cookie invariant
 - Do NOT set the Supabase auth cookie domain to `.myrecruitingcompass.com`.
   Sessions must stay per-origin (localStorage) or dual-login breaks.
