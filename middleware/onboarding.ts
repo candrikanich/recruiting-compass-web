@@ -38,10 +38,9 @@ export default defineNuxtRouteMiddleware(async (to, _from) => {
       .from("users")
       .select("phase_milestone_data, is_admin")
       .eq("id", session.value.user.id)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .single()) as {
-      data: { phase_milestone_data: any; is_admin: boolean | null } | null;
-      error: any;
+      data: { phase_milestone_data: { onboarding_complete?: boolean } | null; is_admin: boolean | null } | null;
+      error: unknown;
     };
 
     if (error) {
