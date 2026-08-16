@@ -25,7 +25,7 @@
       >
         <!-- UPDATE THIS DATE WHENEVER TERMS ARE MODIFIED -->
         <p class="text-slate-600 mb-4">
-          <strong>Last Updated:</strong> March 1, 2026
+          <strong>Last Updated:</strong> August 16, 2026
         </p>
 
         <p class="text-slate-600 mb-8">
@@ -42,6 +42,15 @@
             (the "Service"), you agree to be bound by these Terms and
             Conditions. If you do not agree to abide by the above, please do not
             use this service.
+          </p>
+          <p>
+            <strong>If you are under 18 years of age</strong>, you may use the
+            Service only with the involvement, supervision, and consent of a
+            parent or legal guardian who agrees to these Terms on your behalf and
+            accepts responsibility for your use of the Service. By creating or
+            approving an account for a minor, the parent or guardian represents
+            that they have the legal authority to enter into these Terms on the
+            minor's behalf. See Section 11 for details.
           </p>
         </section>
 
@@ -211,7 +220,7 @@
         </section>
 
         <section class="mb-8">
-          <h2>11. Age Restriction (COPPA)</h2>
+          <h2>11. Age Restriction &amp; Minors</h2>
           <p>
             <strong
               >The Service is not directed to children under the age of
@@ -222,8 +231,19 @@
             information, we will delete it immediately.
           </p>
           <p>
+            <strong>Athletes aged 13 to 17</strong> may use the Service only with
+            the consent and supervision of a parent or legal guardian. A parent
+            or guardian must agree to these Terms on the minor's behalf — either
+            by creating the family unit and inviting the minor, or by consenting
+            to the minor's account at registration. The parent or guardian is the
+            responsible party for the minor's account and use of the Service, and
+            any agreement to arbitration or other provisions in these Terms is
+            entered into by that parent or guardian on the minor's behalf.
+          </p>
+          <p>
             If you are a parent or guardian and believe your child under 13 has
-            registered for the Service, please contact us immediately at
+            registered for the Service, or you wish to review, correct, or delete
+            information relating to your minor, please contact us at
             <a
               href="mailto:support@therecruitingcompass.com"
               class="text-blue-600 hover:underline"
@@ -235,10 +255,52 @@
         <section class="mb-8">
           <h2>12. Dispute Resolution &amp; Arbitration</h2>
           <p>
+            <strong>Informal resolution first.</strong> Before starting an
+            arbitration, you and Recruiting Compass agree to try to resolve any
+            dispute informally. You agree to send a written description of the
+            dispute to
+            <a
+              href="mailto:support@therecruitingcompass.com"
+              class="text-blue-600 hover:underline"
+              >support@therecruitingcompass.com</a
+            >, and both parties will negotiate in good faith for at least 60 days
+            before either may commence arbitration.
+          </p>
+          <p>
             Any dispute, claim, or controversy arising out of or relating to
-            these Terms or the Service shall be resolved by binding arbitration
-            administered by the American Arbitration Association (AAA) under its
-            Consumer Arbitration Rules, rather than in court.
+            these Terms or the Service that is not resolved informally shall be
+            resolved by binding arbitration administered by the American
+            Arbitration Association (AAA) under its Consumer Arbitration Rules,
+            rather than in court.
+          </p>
+          <p>
+            <strong>Delegation.</strong> The arbitrator has the exclusive
+            authority to resolve any dispute about the interpretation,
+            applicability, enforceability, or formation of this arbitration
+            agreement, including whether a claim is subject to arbitration —
+            except that a court decides the enforceability of the class-action
+            waiver below.
+          </p>
+          <p>
+            <strong>Arbitration fees.</strong> For claims subject to the AAA
+            Consumer Arbitration Rules, Recruiting Compass will pay the AAA
+            filing, administrative, and arbitrator fees to the extent those Rules
+            require, and otherwise as required by applicable law.
+          </p>
+          <p>
+            <strong>Mass filings.</strong> If 25 or more similar claims are
+            asserted against Recruiting Compass by or with the assistance of the
+            same or coordinated counsel, the claims will be administered in
+            staged batches of no more than 50 (with representative "bellwether"
+            proceedings first), and any applicable statutes of limitations will
+            be tolled for claims awaiting their batch.
+          </p>
+          <p>
+            <strong>Jury-trial waiver &amp; venue.</strong> You and Recruiting
+            Compass each waive the right to a trial by jury. Any in-person
+            arbitration hearing, and any action permitted to proceed in court,
+            will take place in Cuyahoga County, Ohio, unless applicable law or
+            the AAA Rules require otherwise.
           </p>
           <p>
             <strong
@@ -250,10 +312,31 @@
             proceeding.
           </p>
           <p>
+            <strong>Severability of this waiver.</strong> If the class-action
+            waiver above is found unenforceable as to a particular claim, then
+            that claim (and only that claim) will be severed from arbitration and
+            brought in a court of competent jurisdiction; the remainder of this
+            arbitration agreement will continue to apply.
+          </p>
+          <p>
             This arbitration provision does not apply to claims that qualify for
             small claims court. This arbitration provision is governed by the
             Federal Arbitration Act.
           </p>
+          <p>
+            <strong>Your right to opt out:</strong> You may opt out of this
+            arbitration agreement and class-action waiver by sending written
+            notice to
+            <a
+              href="mailto:support@therecruitingcompass.com"
+              class="text-blue-600 hover:underline"
+              >support@therecruitingcompass.com</a
+            >
+            within 30 days of first accepting these Terms. Your notice must
+            include your name and the email address associated with your account.
+            Opting out will not affect any other part of these Terms.
+          </p>
+          <!-- TODO(attorney): confirm arbitration seat, fee allocation, mass-arbitration handling, and that the 30-day opt-out mechanism is sufficient under AAA Consumer Rules / FAA. -->
         </section>
 
         <section class="mb-8">
@@ -343,8 +426,8 @@
           <p>
             By creating an account, you agree to receive transactional emails
             necessary to operate the Service, including account confirmations,
-            password resets, family invitation notifications, and security
-            alerts. These transactional emails cannot be opted out of while your
+            password resets, and family invitation notifications. These
+            transactional emails cannot be opted out of while your
             account is active.
           </p>
           <p>
@@ -385,7 +468,69 @@
         </section>
 
         <section class="mb-8">
-          <h2>20. Contact Information</h2>
+          <h2>20. Copyright &amp; DMCA Policy</h2>
+          <p>
+            We respect the intellectual property rights of others and expect
+            users to do the same. If you believe that content on the Service
+            infringes your copyright, you may submit a notice under the Digital
+            Millennium Copyright Act (DMCA) to our designated agent at
+            <a
+              href="mailto:support@therecruitingcompass.com"
+              class="text-blue-600 hover:underline"
+              >support@therecruitingcompass.com</a
+            >. Your notice must include: (a) identification of the copyrighted
+            work claimed to be infringed; (b) identification of the material
+            claimed to be infringing and its location on the Service; (c) your
+            contact information; (d) a statement that you have a good-faith belief
+            the use is not authorized; and (e) a statement, under penalty of
+            perjury, that the information is accurate and that you are the
+            copyright owner or authorized to act on their behalf.
+          </p>
+          <p>
+            We will respond to valid notices in accordance with the DMCA,
+            including by removing or disabling access to the allegedly infringing
+            material and, where appropriate, terminating the accounts of repeat
+            infringers.
+          </p>
+        </section>
+
+        <section class="mb-8">
+          <h2>21. General Provisions</h2>
+          <ul>
+            <li>
+              <strong>Assignment:</strong> You may not assign or transfer these
+              Terms without our prior written consent. We may assign these Terms
+              in connection with a merger, acquisition, reorganization, or sale
+              of assets.
+            </li>
+            <li>
+              <strong>Force Majeure:</strong> We are not liable for any failure or
+              delay in performance caused by events beyond our reasonable
+              control, including acts of God, outages, or third-party service
+              failures.
+            </li>
+            <li>
+              <strong>No Waiver:</strong> Our failure to enforce any provision of
+              these Terms is not a waiver of that provision or of our right to
+              enforce it later.
+            </li>
+            <li>
+              <strong>Survival:</strong> Provisions that by their nature should
+              survive termination — including the disclaimers, limitations of
+              liability, arbitration agreement, indemnification, and ownership
+              terms — survive termination of your account or these Terms.
+            </li>
+            <li>
+              <strong>Electronic Communications (E-SIGN):</strong> You consent to
+              receive communications from us electronically, and you agree that
+              electronic notices, agreements, and disclosures satisfy any legal
+              requirement that such communications be in writing.
+            </li>
+          </ul>
+        </section>
+
+        <section class="mb-8">
+          <h2>22. Contact Information</h2>
           <p>
             If you have any questions about these Terms and Conditions, please
             contact us:

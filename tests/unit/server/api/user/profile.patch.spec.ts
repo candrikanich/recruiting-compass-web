@@ -81,6 +81,22 @@ describe("PATCH /api/user/profile", () => {
     });
   });
 
+  it("throws 400 when date_of_birth puts the user under 13", async () => {
+    const currentYear = new Date().getFullYear();
+    const underThirteen = `${currentYear - 10}-01-01`;
+    await expect(
+      handler(makeEvent({ date_of_birth: underThirteen })),
+    ).rejects.toMatchObject({ statusCode: 400 });
+    expect(mockEq).not.toHaveBeenCalled();
+  });
+
+  it("accepts date_of_birth for a user 13 or older", async () => {
+    const currentYear = new Date().getFullYear();
+    const overThirteen = `${currentYear - 20}-06-15`;
+    const result = await handler(makeEvent({ date_of_birth: overThirteen }));
+    expect(result).toEqual({ success: true });
+  });
+
   it("throws 500 on DB error", async () => {
     mockState.updateError = { message: "DB failure" };
     await expect(

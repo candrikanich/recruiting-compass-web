@@ -8,7 +8,7 @@ export default defineEventHandler(async (event) => {
   const user = await requireAuth(event);
   const body = await readBody(event);
 
-  const { playerName, graduationYear, sport, position } = body;
+  const { playerName, playerDob, graduationYear, sport, position } = body;
 
   const supabase = useSupabaseAdmin();
 
@@ -28,7 +28,16 @@ export default defineEventHandler(async (event) => {
   const { error } = await supabase
     .from("family_units")
     .update({
-      pending_player_details: { playerName, graduationYear, sport, position },
+      // Persist every field the parent entered so nothing is lost between parent
+      // onboarding and the player accepting the invite (hydrated into the athlete's
+      // canonical profile in invite/[token]/accept). playerDob was previously dropped.
+      pending_player_details: {
+        playerName,
+        ...(playerDob ? { playerDob } : {}),
+        graduationYear,
+        sport,
+        position,
+      },
     })
     .eq("id", membership.family_unit_id);
 

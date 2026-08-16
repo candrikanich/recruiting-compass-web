@@ -1,8 +1,57 @@
 <template>
-  <section class="bg-white rounded-xl border border-red-200 shadow-xs p-6">
+  <section class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
     <h2 class="text-lg font-semibold text-slate-900 mb-4">
       Data &amp; Privacy
     </h2>
+
+    <!-- Export data -->
+    <div class="space-y-4">
+      <div>
+        <h3 class="text-base font-semibold text-slate-900 mb-1">
+          Export Your Data
+        </h3>
+        <p class="text-sm text-slate-600">
+          Download a copy of your account data as a ZIP file, including your
+          profile, schools, coaches, interactions, and notes. Exports are
+          limited to once per day, and the download link expires after 7 days.
+        </p>
+      </div>
+
+      <UButton
+        v-if="!exportDownloadUrl"
+        data-testid="export-data-button"
+        :disabled="exportLoading"
+        variant="outline"
+        color="neutral"
+        @click="handleExport"
+      >
+        {{ exportLoading ? "Preparing export…" : "Export My Data" }}
+      </UButton>
+
+      <div v-else class="space-y-2">
+        <UAlert color="success">
+          <template #description>
+            <p class="text-sm">
+              Your export is ready. Your download should begin automatically.
+            </p>
+          </template>
+        </UAlert>
+        <UButton
+          data-testid="download-export-button"
+          variant="outline"
+          color="neutral"
+          @click="downloadExport"
+        >
+          Download Again
+        </UButton>
+      </div>
+
+      <p v-if="exportError" class="text-sm text-red-600">{{ exportError }}</p>
+    </div>
+
+    <div class="border-t border-slate-200 my-6" />
+
+    <h3 class="text-base font-semibold text-red-700 mb-4">Delete Account</h3>
 
     <!-- Pending deletion state -->
     <div v-if="isDeletionPending" class="space-y-4">
@@ -100,8 +149,24 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import { useAuthFetch } from "~/composables/useAuthFetch";
+import { useUserExport } from "~/composables/useUserExport";
 
 const { $fetchAuth } = useAuthFetch();
+
+const {
+  initiateExport,
+  downloadExport,
+  isLoading: exportLoading,
+  error: exportError,
+  downloadUrl: exportDownloadUrl,
+} = useUserExport();
+
+async function handleExport() {
+  await initiateExport();
+  if (exportDownloadUrl.value) {
+    downloadExport();
+  }
+}
 
 const confirmStep = ref(false);
 const loading = ref(false);
