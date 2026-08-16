@@ -4,6 +4,7 @@ const mockState = {
   userId: "user-abc",
   membership: { family_unit_id: "family-123" } as object | null,
   updateError: null as object | null,
+  capturedUpdate: null as Record<string, unknown> | null,
 };
 
 vi.mock("~/server/utils/auth", () => ({
@@ -33,9 +34,12 @@ vi.mock("~/server/utils/supabase", () => ({
       }
       if (table === "family_units") {
         return {
-          update: () => ({
-            eq: () => Promise.resolve({ error: mockState.updateError }),
-          }),
+          update: (payload: Record<string, unknown>) => {
+            mockState.capturedUpdate = payload;
+            return {
+              eq: () => Promise.resolve({ error: mockState.updateError }),
+            };
+          },
         };
       }
       return {};
@@ -50,6 +54,7 @@ vi.mock("h3", async (importOriginal) => {
     defineEventHandler: (fn: Function) => fn,
     readBody: vi.fn(async () => ({
       playerName: "Alex Johnson",
+      playerDob: "2010-05-01",
       graduationYear: 2026,
       sport: "Soccer",
       position: "Midfielder",
@@ -76,11 +81,23 @@ describe("POST /api/family/player-details", () => {
     mockState.userId = "user-abc";
     mockState.membership = { family_unit_id: "family-123" };
     mockState.updateError = null;
+    mockState.capturedUpdate = null;
   });
 
   it("saves player details to the family unit", async () => {
     const result = await handler({} as Parameters<typeof handler>[0]);
     expect(result).toMatchObject({ success: true });
+  });
+
+  it("persists playerDob (previously dropped) into pending_player_details", async () => {
+    await handler({} as Parameters<typeof handler>[0]);
+    expect(mockState.capturedUpdate?.pending_player_details).toMatchObject({
+      playerName: "Alex Johnson",
+      playerDob: "2010-05-01",
+      graduationYear: 2026,
+      sport: "Soccer",
+      position: "Midfielder",
+    });
   });
 
   it("returns 403 when the user is not a family member", async () => {

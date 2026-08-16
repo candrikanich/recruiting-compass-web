@@ -2,6 +2,7 @@ import { defineEventHandler, getRouterParam, createError } from "h3";
 import { useLogger } from "~/server/utils/logger";
 import { requireAuth } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
+import { hydrateAthleteFromPendingDetails } from "~/server/utils/hydrateAthleteProfile";
 import type { Database } from "~/types/database";
 
 export default defineEventHandler(async (event) => {
@@ -133,6 +134,15 @@ export default defineEventHandler(async (event) => {
             ? { position: pendingDetails.position as string }
             : {}),
         };
+      }
+
+      if (pendingDetails) {
+        await hydrateAthleteFromPendingDetails(
+          supabase,
+          user.id,
+          pendingDetails,
+          logger,
+        );
       }
     }
 
