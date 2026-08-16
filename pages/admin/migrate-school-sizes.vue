@@ -83,7 +83,7 @@
 import { ref } from "vue";
 
 definePageMeta({
-  middleware: ["auth"],
+  middleware: ["auth", "admin"],
 });
 
 interface MigrationResult {
