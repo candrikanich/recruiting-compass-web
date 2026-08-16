@@ -36,6 +36,10 @@ Phase 10a (`supabase/migrations/20260728000000_rls_account_links_consolidation_p
 
 Full enumeration and evidence: `tests/integration/rls/rls-phase10a-consolidation.integration.spec.ts` and `tests/integration/rls/rls-security-hotfix.integration.spec.ts` (live-Postgres regression suites, both gate every consolidation/deferral decision above).
 
+### 2026-08-16: COPPA minimum-age trigger applied live
+
+`trg_enforce_minimum_age` (BEFORE INSERT OR UPDATE on `public.users`, function `public.enforce_minimum_age()`) raises `check_violation` when `role='player'` and `date_of_birth` resolves to age < 13; fails open on NULL DOB. Applied via Supabase MCP; repo file `supabase/migrations/20260821000000_enforce_minimum_age.sql`. Authoritative COPPA gate — client signup/join writes go browser→Supabase direct, so this trigger (not the client checks) is what actually blocks under-13 player rows. Verified live: 0 pre-existing under-13 players, under-13 update rejected. Boundary: a user turning 13 today (`dob = current_date - 13y`) is allowed.
+
 ### 2026-08-01: deferral preconditions SATISFIED (Phases 1-3 of `planning/rls-family-consolidation-plan.md` applied live)
 
 All three bullets above now have their prep work done — applied to the live DB 2026-08-01 via Supabase MCP, verified same day:

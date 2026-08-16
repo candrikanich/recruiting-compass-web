@@ -4,7 +4,6 @@
  * Contains all validation and calculation logic for the player onboarding flow
  */
 
-export { validatePlayerAge } from "../ageVerification";
 export { validateZipCode } from "../zipCodeValidation";
 export { calculateProfileCompleteness } from "../profileCompletenessCalculation";
 export {

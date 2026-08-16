@@ -76,7 +76,8 @@ const maxDateOfBirth = computed(() => new Date().toISOString().split("T")[0]);
         "
       />
       <p class="mt-1 text-xs text-slate-500">
-        Players must be 13 or older to register.
+        Recruiting Compass is for ages 13 and up. By entering a date of birth,
+        you confirm the player is 13 or older.
       </p>
     </div>
 

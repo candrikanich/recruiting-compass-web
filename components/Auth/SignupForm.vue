@@ -88,7 +88,8 @@
         />
       </div>
       <p id="dateOfBirth-hint" class="text-xs text-slate-500 mt-1">
-        Players must be 13 or older to register.
+        Recruiting Compass is for ages 13 and up. By entering a date of birth,
+        you confirm you are 13 or older.
       </p>
       <FieldError id="dateOfBirth-error" :error="fieldErrors.dateOfBirth" />
     </div>
