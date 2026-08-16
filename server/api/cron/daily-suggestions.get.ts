@@ -7,11 +7,11 @@
  * Manual callers may also pass it as "x-cron-secret: <secret>".
  */
 
-import { defineEventHandler, createError, getHeader } from "h3";
+import { defineEventHandler, createError } from "h3";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
 import { useLogger } from "~/server/utils/logger";
 import { triggerSuggestionUpdate } from "~/server/utils/triggerSuggestionUpdate";
-import { verifySharedSecret } from "~/server/utils/secrets";
+import { withCronRun } from "~/server/utils/cronRunner";
 
 interface CronResult {
   total: number;
@@ -20,30 +20,9 @@ interface CronResult {
   errors: Array<{ athleteId: string; error: string }>;
 }
 
-export default defineEventHandler(async (event) => {
-  const logger = useLogger(event, "cron/daily-suggestions");
-  try {
-    // Verify cron secret — Vercel sends "Authorization: Bearer <CRON_SECRET>",
-    // manual callers may use the legacy "x-cron-secret" header.
-    const expectedSecret = process.env.CRON_SECRET;
-    const authHeader = getHeader(event, "authorization");
-    const legacyHeader = getHeader(event, "x-cron-secret");
-    const bearerSecret = authHeader?.startsWith("Bearer ")
-      ? authHeader.slice(7)
-      : undefined;
-    const providedSecret = bearerSecret ?? legacyHeader;
-
-    if (
-      !expectedSecret ||
-      !providedSecret ||
-      !verifySharedSecret(providedSecret, expectedSecret)
-    ) {
-      throw createError({
-        statusCode: 401,
-        message: "Unauthorized: Invalid cron secret",
-      });
-    }
-
+export default defineEventHandler(async (event) =>
+  withCronRun(event, "daily-suggestions", async (ctx) => {
+    const logger = useLogger(event, "cron/daily-suggestions");
     const supabase = createServerSupabaseClient();
 
     // Fetch all active athletes (users with role='player')
@@ -89,16 +68,8 @@ export default defineEventHandler(async (event) => {
       }
     }
 
+    ctx.setProcessed(result.total);
+    ctx.setFailed(result.failed);
     return result;
-  } catch (error: unknown) {
-    if (error instanceof Error && "statusCode" in error) {
-      throw error;
-    }
-
-    logger.error("Unexpected error in cron/daily-suggestions", error);
-    throw createError({
-      statusCode: 500,
-      message: "Failed to run daily suggestions cron job",
-    });
-  }
-});
+  }),
+);

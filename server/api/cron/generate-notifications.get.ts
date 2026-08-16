@@ -8,10 +8,10 @@
  * Manual callers may also pass it as "x-cron-secret: <secret>".
  */
 
-import { defineEventHandler, createError, getHeader } from "h3";
+import { defineEventHandler, createError } from "h3";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
 import { useLogger } from "~/server/utils/logger";
-import { verifySharedSecret } from "~/server/utils/secrets";
+import { withCronRun } from "~/server/utils/cronRunner";
 import { deliverNotificationsForUser } from "~/server/utils/notificationDelivery";
 
 interface CronResult {
@@ -22,28 +22,9 @@ interface CronResult {
   emails: number;
 }
 
-export default defineEventHandler(async (event) => {
-  const logger = useLogger(event, "cron/generate-notifications");
-  try {
-    const expectedSecret = process.env.CRON_SECRET;
-    const authHeader = getHeader(event, "authorization");
-    const legacyHeader = getHeader(event, "x-cron-secret");
-    const bearerSecret = authHeader?.startsWith("Bearer ")
-      ? authHeader.slice(7)
-      : undefined;
-    const providedSecret = bearerSecret ?? legacyHeader;
-
-    if (
-      !expectedSecret ||
-      !providedSecret ||
-      !verifySharedSecret(providedSecret, expectedSecret)
-    ) {
-      throw createError({
-        statusCode: 401,
-        message: "Unauthorized: Invalid cron secret",
-      });
-    }
-
+export default defineEventHandler(async (event) =>
+  withCronRun(event, "generate-notifications", async (ctx) => {
+    const logger = useLogger(event, "cron/generate-notifications");
     const supabase = createServerSupabaseClient();
     const unsubscribeSecret = useRuntimeConfig().unsubscribeSecret;
 
@@ -57,7 +38,10 @@ export default defineEventHandler(async (event) => {
     };
 
     if (fetchError || !athletes) {
-      throw createError({ statusCode: 500, message: "Failed to fetch athletes" });
+      throw createError({
+        statusCode: 500,
+        message: "Failed to fetch athletes",
+      });
     }
 
     const result: CronResult = {
@@ -85,13 +69,8 @@ export default defineEventHandler(async (event) => {
       }
     }
 
+    ctx.setProcessed(result.total);
+    ctx.setFailed(result.failed);
     return result;
-  } catch (error: unknown) {
-    if (error instanceof Error && "statusCode" in error) throw error;
-    logger.error("Unexpected error in cron/generate-notifications", error);
-    throw createError({
-      statusCode: 500,
-      message: "Failed to run generate-notifications cron job",
-    });
-  }
-});
+  }),
+);

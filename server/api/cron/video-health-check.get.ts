@@ -7,11 +7,11 @@
  * Manual callers may also pass it as "x-cron-secret: <secret>".
  */
 
-import { defineEventHandler, createError, getHeader } from "h3";
+import { defineEventHandler, createError } from "h3";
 import { isIP } from "node:net";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
 import { useLogger } from "~/server/utils/logger";
-import { verifySharedSecret } from "~/server/utils/secrets";
+import { withCronRun } from "~/server/utils/cronRunner";
 import { isPrivateIp, resolvesToPublicIp } from "~/server/utils/faviconLookup";
 import type { Database } from "~/types/database";
 
@@ -67,30 +67,9 @@ async function checkLinkHealth(rawUrl: string): Promise<"healthy" | "broken"> {
   }
 }
 
-export default defineEventHandler(async (event) => {
-  const logger = useLogger(event, "cron/video-health-check");
-  try {
-    // Verify cron secret — Vercel sends "Authorization: Bearer <CRON_SECRET>",
-    // manual callers may use the legacy "x-cron-secret" header.
-    const expectedSecret = process.env.CRON_SECRET;
-    const authHeader = getHeader(event, "authorization");
-    const legacyHeader = getHeader(event, "x-cron-secret");
-    const bearerSecret = authHeader?.startsWith("Bearer ")
-      ? authHeader.slice(7)
-      : undefined;
-    const providedSecret = bearerSecret ?? legacyHeader;
-
-    if (
-      !expectedSecret ||
-      !providedSecret ||
-      !verifySharedSecret(providedSecret, expectedSecret)
-    ) {
-      throw createError({
-        statusCode: 401,
-        message: "Unauthorized: Invalid cron secret",
-      });
-    }
-
+export default defineEventHandler(async (event) =>
+  withCronRun(event, "video-health-check", async (ctx) => {
+    const logger = useLogger(event, "cron/video-health-check");
     const supabase = createServerSupabaseClient();
 
     const response = await supabase.from("video_links").select("id, url");
@@ -129,20 +108,15 @@ export default defineEventHandler(async (event) => {
         .eq("id", link.id);
 
       if (updateError) {
-        logger.error(`Failed to update health status for link ${link.id}`, updateError);
+        logger.error(
+          `Failed to update health status for link ${link.id}`,
+          updateError,
+        );
       }
     }
 
+    // `broken` counts are normal findings, not job failures — record processed only.
+    ctx.setProcessed(result.total);
     return result;
-  } catch (error: unknown) {
-    if (error instanceof Error && "statusCode" in error) {
-      throw error;
-    }
-
-    logger.error("Unexpected error in cron/video-health-check", error);
-    throw createError({
-      statusCode: 500,
-      message: "Failed to run video-health-check cron job",
-    });
-  }
-});
+  }),
+);
