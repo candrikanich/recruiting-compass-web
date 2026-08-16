@@ -1,5 +1,8 @@
 # History: UI
 
+## 2026-02 — Navigation UI updates
+Fixed broken Performance/Analytics "More" dropdown links, moved Search into a header icon beside Notifications, added icons+tooltips to the 6 main nav items. Shipped; later a11y audits confirm the header search button and nav-item icons exist.
+
 ## 2026-03-10 — Vue standards refactor & Vue 3 safe fixes
 Eliminated 20 Vue/Pinia antipatterns from a vue-specialist audit (Setup Stores, store-delegating composables, no self-fetching components) and applied 10 zero-behavior-change Vue 3 quality fixes (dead imports, VueUse adoption, query/template cleanup).
 

@@ -1,5 +1,11 @@
 # History: General
 
+## 2026-02-02 — MVP audit workflow design
+Design for a 4-page MVP audit (Dashboard/Coaches/Schools/Interactions) across perf, a11y, SEO, code quality — Vercel baseline screenshots, 4 parallel agents, post-fix visual verification, plus a reusable audit-workflow skill. One-off run, executed.
+
+## 2026-01 — Shared utilities extraction
+Build writeup for useEntityNames, PageState, usePageFilters, useLinkedAthletes (API + usage examples). Utilities live in code; doc was a one-time extraction record.
+
 ## 2026-05-22 — Offers architecture redesign
 Moved offers to a Pinia store with pagination/invalidation after a per-instance-cache bug; core store + soft-warn card shipped (archive UI deferred to follow-ups).
 

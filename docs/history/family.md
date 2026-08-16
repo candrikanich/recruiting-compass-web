@@ -1,5 +1,8 @@
 # History: Family
 
+## 2026-01-31 — Family-units migration runbook
+Apply guide for migrations 021/022 introducing the family_unit system (family_units/family_members/user_notes tables, family_unit_id columns, helper functions, RLS). Migrations applied live and RLS family consolidation completed; kept as historical runbook.
+
 ## 2026-03-01 — Family connection UX
 "You're connected!" toast on join, family code in the profile dropdown, and a one-time parent acknowledgment banner.
 
