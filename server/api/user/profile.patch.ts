@@ -4,6 +4,7 @@ import { useLogger } from "~/server/utils/logger";
 import { requireAuth } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import { deriveTimezone } from "~/server/utils/timezone";
+import { isUnderMinimumAge, MINIMUM_AGE } from "~/utils/age";
 
 const homeLocationSchema = z.object({
   address: z.string().max(200).optional(),
@@ -43,6 +44,21 @@ export default defineEventHandler(async (event) => {
       throw createError({
         statusCode: 400,
         statusMessage: "At least one field must be provided",
+      });
+    }
+
+    // COPPA: never allow a date of birth that puts the user under 13.
+    if (isUnderMinimumAge(parsed.data.date_of_birth)) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: "Invalid profile data",
+        data: {
+          fieldErrors: {
+            date_of_birth: [
+              `You must be at least ${MINIMUM_AGE} years old to use Recruiting Compass.`,
+            ],
+          },
+        },
       });
     }
 

@@ -12,31 +12,6 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "13.0.5"
   }
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
   public: {
     Tables: {
       account_links: {
@@ -544,6 +519,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      contact_window_rules: {
+        Row: {
+          created_at: string
+          division: string
+          id: string
+          notes: string | null
+          reference: string | null
+          rule_kind: string
+          sport: string
+          updated_at: string
+          window_date: string | null
+        }
+        Insert: {
+          created_at?: string
+          division: string
+          id?: string
+          notes?: string | null
+          reference?: string | null
+          rule_kind: string
+          sport: string
+          updated_at?: string
+          window_date?: string | null
+        }
+        Update: {
+          created_at?: string
+          division?: string
+          id?: string
+          notes?: string | null
+          reference?: string | null
+          rule_kind?: string
+          sport?: string
+          updated_at?: string
+          window_date?: string | null
+        }
+        Relationships: []
       }
       cron_runs: {
         Row: {
@@ -2233,6 +2244,7 @@ export type Database = {
         Row: {
           academic_info: Json | null
           amenities: Json | null
+          athletics_url: string | null
           city: string | null
           coaching_philosophy: string | null
           coaching_style: string | null
@@ -2264,11 +2276,11 @@ export type Database = {
           updated_by: string | null
           user_id: string
           website: string | null
-          athletics_url: string | null
         }
         Insert: {
           academic_info?: Json | null
           amenities?: Json | null
+          athletics_url?: string | null
           city?: string | null
           coaching_philosophy?: string | null
           coaching_style?: string | null
@@ -2300,11 +2312,11 @@ export type Database = {
           updated_by?: string | null
           user_id: string
           website?: string | null
-          athletics_url?: string | null
         }
         Update: {
           academic_info?: Json | null
           amenities?: Json | null
+          athletics_url?: string | null
           city?: string | null
           coaching_philosophy?: string | null
           coaching_style?: string | null
@@ -2336,7 +2348,6 @@ export type Database = {
           updated_by?: string | null
           user_id?: string
           website?: string | null
-          athletics_url?: string | null
         }
         Relationships: [
           {
@@ -2908,6 +2919,9 @@ export type Database = {
           full_name: string | null
           gpa: number | null
           graduation_year: number | null
+          guardian_consent_at: string | null
+          guardian_consent_by: string | null
+          guardian_consent_terms_version: string | null
           height_inches: number | null
           high_school: string | null
           hometown_city: string | null
@@ -2950,6 +2964,9 @@ export type Database = {
           full_name?: string | null
           gpa?: number | null
           graduation_year?: number | null
+          guardian_consent_at?: string | null
+          guardian_consent_by?: string | null
+          guardian_consent_terms_version?: string | null
           height_inches?: number | null
           high_school?: string | null
           hometown_city?: string | null
@@ -2992,6 +3009,9 @@ export type Database = {
           full_name?: string | null
           gpa?: number | null
           graduation_year?: number | null
+          guardian_consent_at?: string | null
+          guardian_consent_by?: string | null
+          guardian_consent_terms_version?: string | null
           height_inches?: number | null
           high_school?: string | null
           hometown_city?: string | null
@@ -3023,6 +3043,13 @@ export type Database = {
           zip_code?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "users_guardian_consent_by_fkey"
+            columns: ["guardian_consent_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "users_primary_position_id_fkey"
             columns: ["primary_position_id"]
@@ -3115,6 +3142,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_access_family_player_prefs: {
+        Args: { target_user: string }
+        Returns: boolean
+      }
       create_audit_log: {
         Args: {
           p_action: string
@@ -3193,7 +3224,12 @@ export type Database = {
         Args: { target_user_id: string }
         Returns: boolean
       }
+      notify_upcoming_events: { Args: never; Returns: undefined }
       safe_jsonb_extract: { Args: { key: string; obj: Json }; Returns: Json }
+      set_athlete_profile_photo: {
+        Args: { athlete_id: string; photo_url: string }
+        Returns: undefined
+      }
       snapshot_data_ownership: {
         Args: { p_link_id: string; p_parent_id: string; p_player_id: string }
         Returns: undefined
@@ -3386,9 +3422,6 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {
       coach_role: ["head", "assistant", "recruiting"],

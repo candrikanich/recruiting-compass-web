@@ -374,6 +374,7 @@ import { useFamilyInvite } from "~/composables/useFamilyInvite";
 import { useAppToast } from "~/composables/useAppToast";
 import { createClientLogger } from "~/utils/logger";
 import { getCanonicalPositions } from "~/utils/positions/canonical";
+import { getGraduationYearOptions } from "~/utils/graduationYears";
 
 const logger = createClientLogger("Onboarding");
 
@@ -381,8 +382,13 @@ definePageMeta({ layout: "default" });
 
 const { saveOnboardingStep, completeOnboarding, getOnboardingProgress } =
   useOnboarding();
-const { setHomeLocation, setPlayerDetails, loadAllPreferences } =
-  usePreferenceManager();
+const {
+  setHomeLocation,
+  setPlayerDetails,
+  loadAllPreferences,
+  getPlayerDetails,
+  getHomeLocation,
+} = usePreferenceManager();
 const { myFamilyCode, fetchMyCode, copyCodeToClipboard } = useFamilyCode();
 const { sendInvite, loading: inviteLoading } = useFamilyInvite();
 const { showToast } = useAppToast();
@@ -441,14 +447,7 @@ const positions = computed(() =>
   getCanonicalPositions(onboardingData.value.primary_sport as string),
 );
 
-const graduationYears = computed(() => {
-  const years = [];
-  const currentYear = new Date().getFullYear();
-  for (let i = 0; i < 5; i++) {
-    years.push(currentYear + i);
-  }
-  return years;
-});
+const graduationYears = computed(() => getGraduationYearOptions());
 
 const progressPercentage = computed(() => {
   return (currentStep.value / totalSteps) * 100;
@@ -607,6 +606,40 @@ const sendParentInvite = async () => {
 
 const route = useRoute();
 
+// Seed onboarding fields from the athlete's canonical profile (populated by a
+// parent's onboarding via the invite-accept hydration). DB-backed, so it works
+// cross-platform (parent on web, player on iOS). Fill-if-empty: anything the
+// player has already entered this session (or via query param) is left untouched.
+const prefillFromCanonical = () => {
+  const seedIfEmpty = (key: string, value: unknown) => {
+    if (
+      value !== null &&
+      value !== undefined &&
+      value !== "" &&
+      (onboardingData.value[key] === undefined ||
+        onboardingData.value[key] === null ||
+        onboardingData.value[key] === "")
+    ) {
+      onboardingData.value[key] = value;
+    }
+  };
+
+  const details = getPlayerDetails();
+  if (details) {
+    seedIfEmpty("graduation_year", details.graduation_year);
+    seedIfEmpty("primary_sport", details.primary_sport);
+    seedIfEmpty("primary_position", details.primary_position);
+    seedIfEmpty("gpa", details.gpa);
+    seedIfEmpty("sat_score", details.sat_score);
+    seedIfEmpty("act_score", details.act_score);
+  }
+
+  const location = getHomeLocation.value;
+  if (location?.zip) {
+    seedIfEmpty("zip_code", location.zip);
+  }
+};
+
 onMounted(async () => {
   // Pre-populate from parent-entered player details passed as query params
   if (route.query.graduationYear) {
@@ -622,6 +655,7 @@ onMounted(async () => {
   try {
     // Load preferences so partial saves (e.g. step 2 then step 4) merge correctly
     await loadAllPreferences();
+    prefillFromCanonical();
     const progress = await getOnboardingProgress();
     const step = Math.ceil((progress / 100) * totalSteps) || 1;
     currentStep.value = Math.min(step, totalSteps);

@@ -34,6 +34,11 @@
           type="date"
           :disabled="loading"
         />
+        <p class="text-xs text-slate-500 mt-1">
+          Recruiting Compass is for ages 13 and up. By entering a date of birth,
+          you confirm you are 13 or older.
+        </p>
+        <p v-if="dobError" class="text-sm text-red-600 mt-1">{{ dobError }}</p>
       </div>
 
       <div class="flex items-center gap-3 pt-2">
@@ -58,6 +63,7 @@
 import { ref } from "vue";
 import { useUserStore } from "~/stores/user";
 import { useUserProfile } from "~/composables/useUserProfile";
+import { isUnderMinimumAge } from "~/utils/age";
 
 const store = useUserStore();
 const {
@@ -74,11 +80,18 @@ const form = ref({
 });
 
 const nameError = ref<string | null>(null);
+const dobError = ref<string | null>(null);
 
 async function handleSave() {
   nameError.value = null;
+  dobError.value = null;
   if (!form.value.full_name.trim()) {
     nameError.value = "Name is required.";
+    return;
+  }
+  if (isUnderMinimumAge(form.value.date_of_birth)) {
+    dobError.value =
+      "You must be at least 13 years old to use Recruiting Compass.";
     return;
   }
   await savePersonalInfo({

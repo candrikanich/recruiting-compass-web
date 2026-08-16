@@ -1,5 +1,8 @@
 # History: E2E
 
+## 2026-05-25 — Skipped-test triage tickets
+Triaged 232 skipped E2E tests across 8 tickets, all closed — rewrote analytics/settings/documents specs, added real recovery-token plumbing for password-reset, fixed a notes-refresh app bug. Result: 0 targeted skips left; ~125 conditional-data-guard skips deferred to seed infra.
+
 ## 2026-05-27 — Skip triage
 Fixed 3 heroicons→UIcon unit regressions (green at 7627); proved the 80 E2E failures were seed/auth-infra flake not a regression; retired skip buckets D+A (B+C remain gated on seed infra).
 

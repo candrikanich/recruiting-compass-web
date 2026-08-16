@@ -1,5 +1,8 @@
 # History: Infrastructure
 
+## 2026-02 — CI/CD setup docs consolidation
+Retired three overlapping CI/CD writeups (CI-CD-RECOMMENDATIONS, CICD_SETUP, ci-cd-setup) covering security.yml/e2e.yml/dependabot, npm audit/CodeQL/TruffleHog, Slack webhook + branch protection + Vercel git settings. All implemented; `docs/deployment/ci-cd.md` remains the canonical reference.
+
 ## 2026-03-18 — Doc hygiene system
 Built the automated weekly doc-cleanup system (`scanner.mjs` manifest + `/doc-cleanup` skill + cron) for the web and iOS repos — the system this pass runs under.
 
