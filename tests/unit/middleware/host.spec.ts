@@ -37,4 +37,23 @@ describe("resolveHostRedirect", () => {
   it("does nothing when host is empty (server/SPA pre-hydration)", () => {
     expect(resolveHostRedirect("", "/admin", admin)).toBeNull();
   });
+
+  it("allows /login on the admin host (avoids redirect loop with auth middleware)", () => {
+    expect(resolveHostRedirect(admin, "/login", admin)).toBeNull();
+  });
+
+  it("allows /verify-email on the admin host", () => {
+    expect(resolveHostRedirect(admin, "/verify-email", admin)).toBeNull();
+  });
+
+  it("allows /reset-password on the admin host", () => {
+    expect(resolveHostRedirect(admin, "/reset-password", admin)).toBeNull();
+  });
+
+  it("still redirects other non-admin, non-auth paths on the admin host to /admin", () => {
+    expect(resolveHostRedirect(admin, "/schools", admin)).toEqual({
+      type: "internal",
+      to: "/admin",
+    });
+  });
 });
