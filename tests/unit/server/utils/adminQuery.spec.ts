@@ -18,4 +18,10 @@ describe("adminQuery", () => {
       { day: "2026-08-17", count: 0 },
     ]);
   });
+
+  it("countByDay buckets a custom timestamp field", () => {
+    const rows = [{ sent_at: "2026-08-16T10:00:00Z" }];
+    const r = countByDay(rows, new Date("2026-08-16T00:00:00Z"), new Date("2026-08-16T00:00:00Z"), "sent_at");
+    expect(r).toEqual([{ day: "2026-08-16", count: 1 }]);
+  });
 });
