@@ -16,9 +16,17 @@
         class="bg-linear-to-r from-slate-900 to-slate-800 text-white px-8 py-8 rounded-2xl shadow-lg mb-8"
       >
         <div class="flex items-center justify-between">
-          <div>
-            <h1 class="text-3xl font-bold">Coaches</h1>
-            <p class="text-slate-300 mt-2">{{ schoolName }}</p>
+          <div class="flex items-center gap-4">
+            <SchoolLogo
+              v-if="school"
+              :school="school"
+              size="lg"
+              :transition-name="`school-logo-${id}`"
+            />
+            <div>
+              <h1 class="text-3xl font-bold">Coaches</h1>
+              <p class="text-slate-300 mt-2">{{ schoolName }}</p>
+            </div>
           </div>
           <button
             @click="showAddForm = !showAddForm"
@@ -261,6 +269,7 @@ const userStore = useUserStore();
 
 const showAddForm = ref(false);
 const schoolName = ref("");
+const schoolData = ref<School | null>(null);
 const localError = ref("");
 
 // Use shared utilities
@@ -272,6 +281,7 @@ const { searchQuery, filters, sortBy, clearFilters } =
 
 // Create a school object from schoolName for CommunicationPanel
 const school = computed((): School | undefined => {
+  if (schoolData.value) return schoolData.value;
   if (!schoolName.value) return undefined;
   return {
     id: id,
@@ -364,6 +374,7 @@ onMounted(async () => {
   const school = await getSchool(id);
   if (school) {
     schoolName.value = school.name;
+    schoolData.value = school;
   }
   await fetchCoaches(id);
 });

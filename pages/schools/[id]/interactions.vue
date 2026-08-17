@@ -18,13 +18,21 @@
         class="bg-white border-b border-slate-200 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-4 mb-8"
       >
         <div class="flex items-center justify-between gap-4 max-w-4xl mx-auto">
-          <div>
-            <h1 class="text-2xl font-semibold text-slate-900">Interactions</h1>
-            <p class="text-slate-600 text-sm">
-              {{ interactions.length }} interaction{{
-                interactions.length !== 1 ? "s" : ""
-              }}
-            </p>
+          <div class="flex items-center gap-4">
+            <SchoolLogo
+              v-if="schoolData"
+              :school="schoolData"
+              size="md"
+              :transition-name="`school-logo-${id}`"
+            />
+            <div>
+              <h1 class="text-2xl font-semibold text-slate-900">Interactions</h1>
+              <p class="text-slate-600 text-sm">
+                {{ interactions.length }} interaction{{
+                  interactions.length !== 1 ? "s" : ""
+                }}
+              </p>
+            </div>
           </div>
           <button
             @click="showAddForm = !showAddForm"
@@ -182,7 +190,7 @@ import { useInteractions } from "~/composables/useInteractions";
 import { useInteractionReminders } from "~/composables/useInteractionReminders";
 import { useCoaches } from "~/composables/useCoaches";
 import { useSchools } from "~/composables/useSchools";
-import type { Interaction } from "~/types/models";
+import type { Interaction, School } from "~/types/models";
 import { useLiveRegion } from "~/composables/useLiveRegion";
 import { parseLocalDateOnly } from "~/utils/localDate";
 import { createClientLogger } from "~/utils/logger";
@@ -209,6 +217,7 @@ const isDeleteDialogOpen = ref(false);
 const interactionToDeleteId = ref<string | null>(null);
 const showAddForm = ref(false);
 const schoolName = ref("");
+const schoolData = ref<School | null>(null);
 const coachMap = ref<Record<string, string>>({});
 
 const selectedType = ref("");
@@ -392,6 +401,7 @@ onMounted(async () => {
     const school = await getSchool(id);
     if (school) {
       schoolName.value = school.name;
+      schoolData.value = school;
     }
 
     await Promise.all([fetchInteractions({ schoolId: id }), fetchCoaches(id)]);
