@@ -96,9 +96,11 @@ test.describe("Signup Page - Full Flow E2E Tests", () => {
 
       await page.click('[data-testid="signup-button"]');
 
-      // COPPA error message
+      // COPPA error message — signup.vue copy says "players under 13"
+      // (the /join page uses "users under 13"; keep this assertion matched to
+      // the page under test to avoid copy-drift false failures).
       await expect(
-        page.locator("text=not available for users under 13"),
+        page.locator("text=not available for players under 13"),
       ).toBeVisible({ timeout: 5000 });
     });
   });

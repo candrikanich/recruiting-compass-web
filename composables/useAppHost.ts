@@ -8,12 +8,20 @@ export interface AppHost {
   toAdminUrl: (path: string) => string;
 }
 
+// Hosts may arrive as fully-qualified domain names with a trailing dot
+// (e.g. NUXT_PUBLIC_ADMIN_HOST copied from a DNS record). window.location.host
+// never carries that dot, so normalize both sides before comparing — otherwise
+// "admin.example.com." !== "admin.example.com" silently disables host routing.
+const stripTrailingDot = (host: string): string => host.replace(/\.$/, "");
+
 export function computeAppHost(currentHost: string, adminHost: string): AppHost {
-  const adminOrigin = `https://${adminHost}`;
+  const normalizedHost = stripTrailingDot(currentHost);
+  const normalizedAdminHost = stripTrailingDot(adminHost);
+  const adminOrigin = `https://${normalizedAdminHost}`;
   return {
-    currentHost,
-    adminHost,
-    isAdminHost: currentHost !== "" && currentHost === adminHost,
+    currentHost: normalizedHost,
+    adminHost: normalizedAdminHost,
+    isAdminHost: normalizedHost !== "" && normalizedHost === normalizedAdminHost,
     adminOrigin,
     toAdminUrl: (path: string) => `${adminOrigin}${path}`,
   };
