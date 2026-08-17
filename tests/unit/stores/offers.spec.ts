@@ -402,14 +402,17 @@ describe("useOffersStore", () => {
 
     it("returns a positive number for future deadlines", () => {
       const store = useOffersStore();
-      const future = new Date(Date.now() + 10 * 86400000)
-        .toISOString()
-        .split("T")[0];
+      // Build the deadline as a LOCAL date-only string — daysUntilDeadline
+      // parses deadline_date as local midnight. Using toISOString() encodes the
+      // UTC date, which is a day ahead in evening US timezones and made this
+      // assertion flip between 10 and 11.
+      const d = new Date();
+      d.setDate(d.getDate() + 10);
+      const future = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
       const days = store.daysUntilDeadline(
         makeOffer({ deadline_date: future }) as never,
       );
-      expect(days).toBeGreaterThanOrEqual(9);
-      expect(days).toBeLessThanOrEqual(10);
+      expect(days).toBe(10);
     });
 
     describe("non-UTC timezone regression (offer flips overdue evening before)", () => {
