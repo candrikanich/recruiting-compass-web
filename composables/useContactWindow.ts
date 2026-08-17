@@ -37,13 +37,18 @@ export const useContactWindow = () => {
     try {
       const { data, error } = (await supabase
         .from("contact_window_rules")
-        .select("sport, division, rule_kind, reference, window_date, notes")) as {
+        .select(
+          "sport, division, rule_kind, reference, window_date, notes",
+        )) as {
         data: ContactWindowRule[] | null;
         error: FetchError | null;
       };
 
       if (error) {
-        if (error.code === "PGRST205" || error.message?.includes("contact_window_rules")) {
+        if (
+          error.code === "PGRST205" ||
+          error.message?.includes("contact_window_rules")
+        ) {
           return rulesCache ?? [];
         }
         throw error;
@@ -56,7 +61,9 @@ export const useContactWindow = () => {
     }
   };
 
-  const evaluate = async (input: ContactWindowInput): Promise<ContactWindowResult> => {
+  const evaluate = async (
+    input: ContactWindowInput,
+  ): Promise<ContactWindowResult> => {
     const rules = await loadRules();
     return evaluateContactWindow(rules, input);
   };

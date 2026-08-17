@@ -260,7 +260,7 @@ describe("SuggestionCard", () => {
       await actionButton?.trigger("click");
 
       expect(mockNavigateTo).toHaveBeenCalledWith(
-        "/settings/player-details?tab=athletics"
+        "/settings/player-details?tab=athletics",
       );
     });
 
@@ -276,7 +276,7 @@ describe("SuggestionCard", () => {
       await actionButton?.trigger("click");
 
       expect(mockNavigateTo).toHaveBeenCalledWith(
-        "/settings/player-details?tab=athletics"
+        "/settings/player-details?tab=athletics",
       );
     });
   });

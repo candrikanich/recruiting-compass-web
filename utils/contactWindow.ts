@@ -70,9 +70,14 @@ const MONTHS: Record<string, number> = {
 };
 
 /** Parse "Aug 1" / "Sept 15" -> { month: 0-11, day }. Returns null if unparseable. */
-function parseWindowDate(raw: string | null | undefined): { month: number; day: number } | null {
+function parseWindowDate(
+  raw: string | null | undefined,
+): { month: number; day: number } | null {
   if (!raw) return null;
-  const match = raw.trim().toLowerCase().match(/^([a-z]+)\.?\s+(\d{1,2})$/);
+  const match = raw
+    .trim()
+    .toLowerCase()
+    .match(/^([a-z]+)\.?\s+(\d{1,2})$/);
   if (!match) return null;
   const month = MONTHS[match[1]];
   const day = Number(match[2]);
@@ -110,7 +115,9 @@ function selectRule(
   const sportKey = (sport ?? "").trim().toLowerCase();
   const forDivision = rules.filter((r) => r.division === division);
   return (
-    forDivision.find((r) => r.sport.toLowerCase() === sportKey && sportKey !== "") ??
+    forDivision.find(
+      (r) => r.sport.toLowerCase() === sportKey && sportKey !== "",
+    ) ??
     forDivision.find((r) => r.sport === "*") ??
     null
   );
@@ -128,7 +135,8 @@ export function evaluateContactWindow(
   const today = input.today ?? new Date();
   const { division, gradYear, sport } = input;
 
-  if (!division || !gradYear) return { state: "open", opensOn: null, rule: null };
+  if (!division || !gradYear)
+    return { state: "open", opensOn: null, rule: null };
 
   const rule = selectRule(rules, sport, division);
   if (!rule) return { state: "open", opensOn: null, rule: null };

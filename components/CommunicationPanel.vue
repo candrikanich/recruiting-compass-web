@@ -181,9 +181,7 @@
                 <div
                   class="w-full px-3 py-2 rounded-lg border border-slate-200 bg-slate-50 text-slate-900 text-sm whitespace-pre-wrap"
                 >
-                  <template
-                    v-for="(seg, i) in emailPreviewSegments"
-                    :key="i"
+                  <template v-for="(seg, i) in emailPreviewSegments" :key="i"
                     ><strong
                       v-if="seg.unresolved"
                       class="text-amber-600 font-semibold"
@@ -388,9 +386,7 @@
                 <div
                   class="w-full px-3 py-2 rounded-lg border border-slate-200 bg-slate-50 text-slate-900 text-sm whitespace-pre-wrap"
                 >
-                  <template
-                    v-for="(seg, i) in textPreviewSegments"
-                    :key="i"
+                  <template v-for="(seg, i) in textPreviewSegments" :key="i"
                     ><strong
                       v-if="seg.unresolved"
                       class="text-amber-600 font-semibold"
@@ -605,10 +601,12 @@ const emit = defineEmits<{
 
 const { getTemplatesByType, loadTemplates } = useCommunicationTemplates();
 const { activeAthleteId } = useFamilyCtx();
-const { buildAthleteContext, resolveTemplate, loadRegistry } = useTemplateResolver();
+const { buildAthleteContext, resolveTemplate, loadRegistry } =
+  useTemplateResolver();
 const { writeField } = useProfileFieldWrite();
 const { checkSend, logSend } = useAthleteMessages();
-const { evaluate: evaluateContactWindow, filterTemplatesByWindow } = useContactWindow();
+const { evaluate: evaluateContactWindow, filterTemplatesByWindow } =
+  useContactWindow();
 // Two-step confirm: a timing warning arms this; the next send click proceeds.
 const emailSendConfirmed = ref(false);
 const textSendConfirmed = ref(false);
@@ -623,7 +621,12 @@ const varSourceTypes = ref<Map<string, string>>(new Map());
 
 // Athlete-owned categories whose non-inline-editable vars link to the profile
 // editor. program/event/system/authored come from elsewhere (no profile link).
-const PROFILE_CATEGORIES = new Set(["player", "academics", "metrics", "contacts"]);
+const PROFILE_CATEGORIES = new Set([
+  "player",
+  "academics",
+  "metrics",
+  "contacts",
+]);
 const PROFILE_EDIT_ROUTE = "/settings/player-details";
 
 // Only the athlete editing their OWN profile can write inline (parents are
@@ -640,7 +643,9 @@ const canEditProfile = computed(
 onMounted(async () => {
   loadTemplates();
   const registry = await loadRegistry();
-  varSourcePaths.value = new Map(registry.map((v) => [v.key, v.source_path ?? ""]));
+  varSourcePaths.value = new Map(
+    registry.map((v) => [v.key, v.source_path ?? ""]),
+  );
   varCategories.value = new Map(registry.map((v) => [v.key, v.category ?? ""]));
   varSourceTypes.value = new Map(registry.map((v) => [v.key, v.source_type]));
   await refreshContactWindow();
@@ -676,7 +681,8 @@ const contactWindowState = ref<"pre" | "open">("open");
 
 const refreshContactWindow = async (): Promise<void> => {
   const ctx = await ensureAthleteContext();
-  const gradYear = ctx.tables?.users?.graduation_year as number | null | undefined;
+  const gradYear = ctx.tables?.users?.graduation_year as
+    number | null | undefined;
   const { state } = await evaluateContactWindow({
     sport: ctx.derived?.sport ?? null,
     division: props.school?.division ?? null,
@@ -688,7 +694,11 @@ const refreshContactWindow = async (): Promise<void> => {
 const composeFromTemplate = async (
   template: CommunicationTemplate,
   authored: Record<string, string> = {},
-): Promise<{ subject: string; body: string; values: Record<string, string> }> => {
+): Promise<{
+  subject: string;
+  body: string;
+  values: Record<string, string>;
+}> => {
   const ctx = await ensureAthleteContext();
   const school =
     props.school ?? (props.schoolName ? { name: props.schoolName } : undefined);
@@ -746,7 +756,9 @@ const tokenOf = (key: string): string => `{{${key}}}`;
 
 /** Variables that appear in a template's raw subject+body, first-seen order. */
 const templateVarKeys = (tpl: CommunicationTemplate | null): string[] =>
-  tpl ? [...new Set(findUnresolved(`${tpl.subject ?? ""}\n${tpl.body ?? ""}`))] : [];
+  tpl
+    ? [...new Set(findUnresolved(`${tpl.subject ?? ""}\n${tpl.body ?? ""}`))]
+    : [];
 
 const toRows = (
   tpl: CommunicationTemplate | null,
@@ -760,7 +772,14 @@ const toRows = (
       !editable &&
       !authored &&
       PROFILE_CATEGORIES.has(varCategories.value.get(key) ?? "");
-    return { key, value: values[key] ?? null, editable, sourcePath, authored, linkToProfile };
+    return {
+      key,
+      value: values[key] ?? null,
+      editable,
+      sourcePath,
+      authored,
+      linkToProfile,
+    };
   });
 
 /** Split rendered body into ordered text/{{unresolved}} segments (no v-html). */
@@ -839,10 +858,16 @@ const emailComposer = ref({ subject: "", body: "" });
 const textComposer = ref({ body: "" });
 
 const emailTemplates = computed(() =>
-  filterTemplatesByWindow(getTemplatesByType("email"), contactWindowState.value),
+  filterTemplatesByWindow(
+    getTemplatesByType("email"),
+    contactWindowState.value,
+  ),
 );
 const messageTemplates = computed(() =>
-  filterTemplatesByWindow(getTemplatesByType("message"), contactWindowState.value),
+  filterTemplatesByWindow(
+    getTemplatesByType("message"),
+    contactWindowState.value,
+  ),
 );
 
 // Watch for template selection — resolve from live athlete/coach/school data.
@@ -887,12 +912,18 @@ watch(selectedTextTemplate, async (templateId) => {
 // Re-run compose for whichever templates are open (after an inline profile save).
 const reresolveSelected = async () => {
   if (selectedEmailTemplateObj.value) {
-    const r = await composeFromTemplate(selectedEmailTemplateObj.value, emailAuthored.value);
+    const r = await composeFromTemplate(
+      selectedEmailTemplateObj.value,
+      emailAuthored.value,
+    );
     emailComposer.value = { subject: r.subject, body: r.body };
     emailResolvedValues.value = r.values;
   }
   if (selectedTextTemplateObj.value) {
-    const r = await composeFromTemplate(selectedTextTemplateObj.value, textAuthored.value);
+    const r = await composeFromTemplate(
+      selectedTextTemplateObj.value,
+      textAuthored.value,
+    );
     textComposer.value = { body: r.body };
     textResolvedValues.value = r.values;
   }
@@ -911,11 +942,18 @@ const saveField = async (
   savingKey.value = errKey;
   saveErrors.value = { ...saveErrors.value, [errKey]: "" };
   try {
-    await writeField(activeAthleteId.value, row.sourcePath, raw === "" ? null : raw);
+    await writeField(
+      activeAthleteId.value,
+      row.sourcePath,
+      raw === "" ? null : raw,
+    );
     athleteCtxId.value = null; // invalidate cache so ensureAthleteContext refetches
     await reresolveSelected();
   } catch {
-    saveErrors.value = { ...saveErrors.value, [errKey]: "Couldn't save — try again" };
+    saveErrors.value = {
+      ...saveErrors.value,
+      [errKey]: "Couldn't save — try again",
+    };
   } finally {
     savingKey.value = null;
   }
@@ -980,11 +1018,14 @@ const sendText = async () => {
 // --- Phase 4 send guardrails: dedupe (block) + timing (confirm) + logging -----
 
 /** Returns false when the send should stop (blocked, or awaiting confirm). */
-const passesSendGuardrails = async (channel: "email" | "text"): Promise<boolean> => {
+const passesSendGuardrails = async (
+  channel: "email" | "text",
+): Promise<boolean> => {
   const athleteUserId = activeAthleteId.value;
   if (!athleteUserId) return true; // can't check without an athlete; don't block
   const warnRef = channel === "email" ? emailSendWarning : textSendWarning;
-  const confirmedRef = channel === "email" ? emailSendConfirmed : textSendConfirmed;
+  const confirmedRef =
+    channel === "email" ? emailSendConfirmed : textSendConfirmed;
   const authored = channel === "email" ? emailAuthored : textAuthored;
   try {
     const check = await checkSend({
@@ -997,7 +1038,10 @@ const passesSendGuardrails = async (channel: "email" | "text"): Promise<boolean>
         "Your reason for reaching out was already sent to another program. Coaches notice reused messages — make it specific to this program before sending.";
       return false; // hard block
     }
-    if (!confirmedRef.value && (check.recentContact || check.messageCountToSchool >= 2)) {
+    if (
+      !confirmedRef.value &&
+      (check.recentContact || check.messageCountToSchool >= 2)
+    ) {
       warnRef.value = check.recentContact
         ? `You last messaged this program ${check.daysSinceLastContact ?? "a few"} day(s) ago. Click Send again to send anyway.`
         : `You've already sent ${check.messageCountToSchool} messages here — consider adding more programs. Click Send again to send anyway.`;
@@ -1014,8 +1058,12 @@ const passesSendGuardrails = async (channel: "email" | "text"): Promise<boolean>
 const logSentMessage = async (channel: "email" | "text"): Promise<void> => {
   const athleteUserId = activeAthleteId.value;
   if (!athleteUserId) return;
-  const tpl = channel === "email" ? selectedEmailTemplateObj.value : selectedTextTemplateObj.value;
-  const authored = channel === "email" ? emailAuthored.value : textAuthored.value;
+  const tpl =
+    channel === "email"
+      ? selectedEmailTemplateObj.value
+      : selectedTextTemplateObj.value;
+  const authored =
+    channel === "email" ? emailAuthored.value : textAuthored.value;
   try {
     await logSend({
       athleteUserId,
@@ -1026,7 +1074,10 @@ const logSentMessage = async (channel: "email" | "text"): Promise<void> => {
       programNote: authored["programNote"] ?? null,
       updateHook: authored["updateHook"] ?? null,
       subject: channel === "email" ? emailComposer.value.subject : null,
-      body: channel === "email" ? emailComposer.value.body : textComposer.value.body,
+      body:
+        channel === "email"
+          ? emailComposer.value.body
+          : textComposer.value.body,
     });
   } catch {
     // Logging failure must not block the send.

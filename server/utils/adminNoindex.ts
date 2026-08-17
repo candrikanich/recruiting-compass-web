@@ -7,10 +7,7 @@
  */
 export function shouldNoindexHost(rawHost: string, adminHost: string): boolean {
   const normalize = (host: string): string =>
-    host
-      .replace(/\.$/, "")
-      .split(":")[0]
-      .toLowerCase();
+    host.replace(/\.$/, "").split(":")[0].toLowerCase();
   const host = normalize(rawHost);
   return host !== "" && host === normalize(adminHost);
 }

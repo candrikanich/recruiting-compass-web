@@ -83,15 +83,15 @@
 
           <h3 class="text-lg font-semibold mt-6 mb-3">Sensitive Information</h3>
           <p>
-            Some of the profile information we collect — such as a minor's date of
-            birth, academic records (GPA, standardized test scores), and
+            Some of the profile information we collect — such as a minor's date
+            of birth, academic records (GPA, standardized test scores), and
             graduation year — may be considered sensitive under certain state
             privacy laws. We use this information solely to operate the Service
-            (for example, to enforce age eligibility and calculate Fit Scores) and
-            we never sell it or use it for targeted advertising. We are not a
-            school or educational agency, and the academic information you enter is
-            not a FERPA "education record"; it is data you voluntarily provide and
-            control.
+            (for example, to enforce age eligibility and calculate Fit Scores)
+            and we never sell it or use it for targeted advertising. We are not
+            a school or educational agency, and the academic information you
+            enter is not a FERPA "education record"; it is data you voluntarily
+            provide and control.
           </p>
 
           <h3 class="text-lg font-semibold mt-6 mb-3">
@@ -306,17 +306,17 @@
             right to access, correct, delete, and obtain a portable copy of your
             personal data, and to opt out of the sale of your personal data,
             targeted advertising, and certain profiling. We do not sell personal
-            data or use it for targeted advertising or profiling in furtherance of
-            decisions that produce legal or similarly significant effects.
+            data or use it for targeted advertising or profiling in furtherance
+            of decisions that produce legal or similarly significant effects.
           </p>
 
           <h3 class="text-lg font-semibold mt-6 mb-3">Minors</h3>
           <p>
             For any user we know to be a minor (under 18), we do not sell their
             personal data, share it for cross-context behavioral advertising, or
-            use it for targeted advertising or profiling. We limit our collection
-            and use of a minor's data to what is reasonably necessary to provide
-            the Service.
+            use it for targeted advertising or profiling. We limit our
+            collection and use of a minor's data to what is reasonably necessary
+            to provide the Service.
           </p>
 
           <h3 class="text-lg font-semibold mt-6 mb-3">
@@ -325,14 +325,14 @@
           <p>
             We honor the Global Privacy Control (GPC) browser signal. If your
             browser or extension sends a GPC signal, we treat it as a valid
-            request to opt out of any sale or sharing of your personal data and to
-            disable non-essential analytics for that browser.
+            request to opt out of any sale or sharing of your personal data and
+            to disable non-essential analytics for that browser.
           </p>
 
           <p class="mt-4">
             You can export a portable copy of your data and delete your account
-            directly from your account settings (Data &amp; Privacy). To exercise
-            any other right, please contact us at
+            directly from your account settings (Data &amp; Privacy). To
+            exercise any other right, please contact us at
             <a
               href="mailto:privacy@therecruitingcompass.com"
               class="text-blue-600 hover:underline"

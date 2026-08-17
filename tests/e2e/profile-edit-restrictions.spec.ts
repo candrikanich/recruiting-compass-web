@@ -77,9 +77,7 @@ test.describe("Profile Edit Restrictions (User Story 2.2)", () => {
           /^(Pitcher|Catcher|First Base|Second Base|Third Base|Shortstop|Left Field|Center Field|Right Field|Designated Hitter|Utility)$/,
       });
       expect(await positionButtons.count()).toBeGreaterThan(0);
-      const disabledPositions = positionButtons.and(
-        page.locator("[disabled]"),
-      );
+      const disabledPositions = positionButtons.and(page.locator("[disabled]"));
       expect(await disabledPositions.count()).toBe(0);
     });
 

@@ -52,7 +52,9 @@ describe("canonical positions", () => {
     it("passes through values that are already canonical (case-insensitive)", () => {
       expect(normalizePosition("Baseball", "Shortstop")).toBe("Shortstop");
       expect(normalizePosition("Baseball", "second base")).toBe("Second Base");
-      expect(normalizePosition("Basketball", "Point Guard")).toBe("Point Guard");
+      expect(normalizePosition("Basketball", "Point Guard")).toBe(
+        "Point Guard",
+      );
     });
 
     it("resolves the C collision by sport: Catcher (baseball) vs Center (basketball)", () => {
@@ -83,7 +85,13 @@ describe("canonical positions", () => {
     it("canonicalizes a mixed-vocabulary array, de-duplicating", () => {
       // Real prod data had both abbreviations and full names in one array.
       expect(
-        normalizePositions("Baseball", ["P", "Pitcher", "SS", "Shortstop", "1B"]),
+        normalizePositions("Baseball", [
+          "P",
+          "Pitcher",
+          "SS",
+          "Shortstop",
+          "1B",
+        ]),
       ).toEqual(["Pitcher", "Shortstop", "First Base"]);
     });
 
@@ -133,7 +141,9 @@ describe("canonical positions", () => {
     });
 
     it("falls back to the canonical full name when a sport has no abbreviation map", () => {
-      expect(abbreviatePosition("Basketball", "Point Guard")).toBe("Point Guard");
+      expect(abbreviatePosition("Basketball", "Point Guard")).toBe(
+        "Point Guard",
+      );
       expect(abbreviatePosition("Soccer", "Goalkeeper")).toBe("Goalkeeper");
     });
 
@@ -147,7 +157,11 @@ describe("canonical positions", () => {
   describe("formatPositionsShort (ordered primary/secondary)", () => {
     it("joins the first two entered positions, abbreviated, primary first", () => {
       expect(
-        formatPositionsShort("Baseball", ["Third Base", "Shortstop", "Pitcher"]),
+        formatPositionsShort("Baseball", [
+          "Third Base",
+          "Shortstop",
+          "Pitcher",
+        ]),
       ).toBe("3B/SS");
     });
 
@@ -161,7 +175,11 @@ describe("canonical positions", () => {
 
     it("uses entered positions over the fallback (fallback is last resort)", () => {
       expect(
-        formatPositionsShort("Baseball", ["Third Base", "Shortstop"], "Utility"),
+        formatPositionsShort(
+          "Baseball",
+          ["Third Base", "Shortstop"],
+          "Utility",
+        ),
       ).toBe("3B/SS");
     });
 

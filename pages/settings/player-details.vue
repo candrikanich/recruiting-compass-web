@@ -364,8 +364,18 @@ const { errors, clearErrors, hasErrors } = useFormValidation();
 // Parents and players collaborate on one player profile; everyone edits.
 const isReadOnly = computed(() => false);
 
-const validTabs = ["basics", "athletics", "academics", "history", "public-profile"];
-const currentTab = ref(validTabs.includes(route.query.tab as string) ? (route.query.tab as string) : "basics");
+const validTabs = [
+  "basics",
+  "athletics",
+  "academics",
+  "history",
+  "public-profile",
+];
+const currentTab = ref(
+  validTabs.includes(route.query.tab as string)
+    ? (route.query.tab as string)
+    : "basics",
+);
 const tabs = [
   { id: "basics", name: "Basics", icon: "i-heroicons-identification" },
   { id: "athletics", name: "Athletics", icon: "i-heroicons-bolt" },

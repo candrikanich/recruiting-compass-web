@@ -29,7 +29,9 @@ describe("ageFromDateOfBirth", () => {
     const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
     const mm = String(tomorrow.getMonth() + 1).padStart(2, "0");
     const dd = String(tomorrow.getDate()).padStart(2, "0");
-    expect(ageFromDateOfBirth(`${now.getFullYear() - 15}-${mm}-${dd}`)).toBe(14);
+    expect(ageFromDateOfBirth(`${now.getFullYear() - 15}-${mm}-${dd}`)).toBe(
+      14,
+    );
   });
 });
 

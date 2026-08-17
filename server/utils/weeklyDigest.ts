@@ -48,7 +48,9 @@ export async function buildWeeklyDigestData(
 ): Promise<WeeklyDigestData | null> {
   try {
     const since = new Date(now.getTime() - LOOKBACK_DAYS * MS_PER_DAY);
-    const horizon = new Date(now.getTime() + DEADLINE_HORIZON_DAYS * MS_PER_DAY);
+    const horizon = new Date(
+      now.getTime() + DEADLINE_HORIZON_DAYS * MS_PER_DAY,
+    );
     const nowIso = now.toISOString();
     const horizonIso = horizon.toISOString();
 

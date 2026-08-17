@@ -5,7 +5,9 @@ const admin = "admin.myrecruitingcompass.com";
 
 describe("shouldNoindexHost", () => {
   it("flags the admin host", () => {
-    expect(shouldNoindexHost("admin.myrecruitingcompass.com", admin)).toBe(true);
+    expect(shouldNoindexHost("admin.myrecruitingcompass.com", admin)).toBe(
+      true,
+    );
   });
 
   it("ignores the main host", () => {
@@ -16,9 +18,9 @@ describe("shouldNoindexHost", () => {
     expect(shouldNoindexHost("admin.myrecruitingcompass.com.", admin)).toBe(
       true,
     );
-    expect(shouldNoindexHost("admin.myrecruitingcompass.com", `${admin}.`)).toBe(
-      true,
-    );
+    expect(
+      shouldNoindexHost("admin.myrecruitingcompass.com", `${admin}.`),
+    ).toBe(true);
   });
 
   it("ignores a :port suffix on the request host", () => {
@@ -28,7 +30,9 @@ describe("shouldNoindexHost", () => {
   });
 
   it("is case-insensitive", () => {
-    expect(shouldNoindexHost("ADMIN.MyRecruitingCompass.com", admin)).toBe(true);
+    expect(shouldNoindexHost("ADMIN.MyRecruitingCompass.com", admin)).toBe(
+      true,
+    );
   });
 
   it("returns false for an empty host", () => {

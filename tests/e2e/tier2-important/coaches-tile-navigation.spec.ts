@@ -88,10 +88,7 @@ test.describe("Coach directory — tile navigation", () => {
       if (coachErr) throw coachErr;
       coachId = coach.id;
     } catch (err) {
-      console.warn(
-        "⚠️  coaches-tile-navigation beforeAll setup failed:",
-        err,
-      );
+      console.warn("⚠️  coaches-tile-navigation beforeAll setup failed:", err);
       // schoolId/coachId stay undefined — beforeEach skips affected tests
     }
   });
@@ -141,23 +138,22 @@ test.describe("Coach directory — tile navigation", () => {
   // native mailto/sms/tel actions from nested `<a>` to `<button>` with a
   // `window.location.href` handler, since `<a>`-inside-`<a>` is invalid
   // HTML).
-  test(
-    "tapping the email action icon opens its channel without navigating",
-    async ({ page }) => {
-      await page.goto("/coaches");
-      await page.waitForLoadState("networkidle");
+  test("tapping the email action icon opens its channel without navigating", async ({
+    page,
+  }) => {
+    await page.goto("/coaches");
+    await page.waitForLoadState("networkidle");
 
-      const emailAction = page
-        .getByRole("button", {
-          name: new RegExp(`Email .*${coachLastName}`, "i"),
-        })
-        .first();
-      await expect(emailAction).toBeVisible();
-      await emailAction.click();
+    const emailAction = page
+      .getByRole("button", {
+        name: new RegExp(`Email .*${coachLastName}`, "i"),
+      })
+      .first();
+    await expect(emailAction).toBeVisible();
+    await emailAction.click();
 
-      // contact-mode="modal" on the directory page: the email icon should
-      // open the communication panel in place, not navigate to detail.
-      await expect(page).toHaveURL(/\/coaches$/);
-    },
-  );
+    // contact-mode="modal" on the directory page: the email icon should
+    // open the communication panel in place, not navigate to detail.
+    await expect(page).toHaveURL(/\/coaches$/);
+  });
 });

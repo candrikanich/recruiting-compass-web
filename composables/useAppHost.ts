@@ -14,14 +14,18 @@ export interface AppHost {
 // "admin.example.com." !== "admin.example.com" silently disables host routing.
 const stripTrailingDot = (host: string): string => host.replace(/\.$/, "");
 
-export function computeAppHost(currentHost: string, adminHost: string): AppHost {
+export function computeAppHost(
+  currentHost: string,
+  adminHost: string,
+): AppHost {
   const normalizedHost = stripTrailingDot(currentHost);
   const normalizedAdminHost = stripTrailingDot(adminHost);
   const adminOrigin = `https://${normalizedAdminHost}`;
   return {
     currentHost: normalizedHost,
     adminHost: normalizedAdminHost,
-    isAdminHost: normalizedHost !== "" && normalizedHost === normalizedAdminHost,
+    isAdminHost:
+      normalizedHost !== "" && normalizedHost === normalizedAdminHost,
     adminOrigin,
     toAdminUrl: (path: string) => `${adminOrigin}${path}`,
   };

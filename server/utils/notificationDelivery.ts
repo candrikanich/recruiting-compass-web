@@ -32,7 +32,9 @@ export interface DeadlineEmailItem extends DeadlineItem {
 }
 
 function daysUntil(deadlineDate: string, now: Date): number {
-  return Math.ceil((new Date(deadlineDate).getTime() - now.getTime()) / MS_PER_DAY);
+  return Math.ceil(
+    (new Date(deadlineDate).getTime() - now.getTime()) / MS_PER_DAY,
+  );
 }
 
 /**
@@ -118,8 +120,7 @@ export async function sendDeadlineAlertEmails(
   let sent = 0;
 
   for (const item of due) {
-    const urgency =
-      item.daysUntil === 1 ? "1 day" : `${item.daysUntil} days`;
+    const urgency = item.daysUntil === 1 ? "1 day" : `${item.daysUntil} days`;
     const result = await sendRecurringEmail({
       to: email,
       subject: `Deadline in ${urgency}: ${item.label}`,
@@ -165,7 +166,8 @@ export async function deliverNotificationsForUser(
   }
   if (prefFor(prefs, "deadline_alert").push_enabled) {
     inApp += (await generateOfferNotifications(userId, supabase)).count;
-    inApp += (await generateRecommendationNotifications(userId, supabase)).count;
+    inApp += (await generateRecommendationNotifications(userId, supabase))
+      .count;
   }
   if (prefFor(prefs, "event").push_enabled) {
     inApp += (await generateEventNotifications(userId, supabase)).count;

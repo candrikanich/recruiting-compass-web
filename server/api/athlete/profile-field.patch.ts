@@ -46,13 +46,22 @@ export default defineEventHandler(async (event) => {
 
   // Authz: athlete may write only their own data; parents are read-only.
   if (!(await canMutateAthleteData(user.id, athleteUserId, supabase))) {
-    logger.warn("Profile-field write denied", { callerId: user.id, athleteUserId });
-    throw createError({ statusCode: 403, statusMessage: "Not authorized to edit this profile" });
+    logger.warn("Profile-field write denied", {
+      callerId: user.id,
+      athleteUserId,
+    });
+    throw createError({
+      statusCode: 403,
+      statusMessage: "Not authorized to edit this profile",
+    });
   }
 
   const column = editableColumnFor(sourcePath);
   if (!column) {
-    throw createError({ statusCode: 400, statusMessage: "Field is not editable" });
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Field is not editable",
+    });
   }
 
   const coercion = coerceProfileValue(value, EDITABLE_USERS_COLUMNS[column]);
@@ -67,10 +76,18 @@ export default defineEventHandler(async (event) => {
     .eq("id", athleteUserId);
 
   if (error) {
-    logger.error("Failed to write profile field", { error, column, athleteUserId });
+    logger.error("Failed to write profile field", {
+      error,
+      column,
+      athleteUserId,
+    });
     throw createError({ statusCode: 500, statusMessage: "Failed to save" });
   }
 
   logger.info("Profile field updated", { athleteUserId, column });
-  return { success: true, sourcePath, value: coerced === null ? null : String(coerced) };
+  return {
+    success: true,
+    sourcePath,
+    value: coerced === null ? null : String(coerced),
+  };
 });

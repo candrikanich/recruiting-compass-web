@@ -7,8 +7,16 @@ import {
 // Canned per-table results + a spy counter for template_variables selects.
 const h = vi.hoisted(() => {
   const registryRows = [
-    { key: "playerName", source_type: "column", source_path: "column:users.full_name" },
-    { key: "schoolName", source_type: "column", source_path: "column:schools.name" },
+    {
+      key: "playerName",
+      source_type: "column",
+      source_path: "column:users.full_name",
+    },
+    {
+      key: "schoolName",
+      source_type: "column",
+      source_path: "column:schools.name",
+    },
     { key: "coachSalutation", source_type: "computed", source_path: null },
     { key: "daysSinceContact", source_type: "computed", source_path: null },
   ];
@@ -54,8 +62,14 @@ const h = vi.hoisted(() => {
     },
     sports: { data: { name: "Baseball" }, error: null },
     positions: { data: { name: "Shortstop" }, error: null },
-    player_profiles: { data: { vanity_slug: "jordan", hash_slug: "abc123" }, error: null },
-    documents: { data: { file_url: "https://files.example/transcript.pdf" }, error: null },
+    player_profiles: {
+      data: { vanity_slug: "jordan", hash_slug: "abc123" },
+      error: null,
+    },
+    documents: {
+      data: { file_url: "https://files.example/transcript.pdf" },
+      error: null,
+    },
   };
   return { RESULTS, templateSelectCalls: { n: 0 } };
 });
@@ -75,7 +89,8 @@ vi.mock("~/composables/useSupabase", () => ({
         or: vi.fn(() => builder),
         maybeSingle: vi.fn(() => Promise.resolve(result)),
         // awaitable for the no-maybeSingle paths (registry, metrics)
-        then: (onFulfilled: (v: unknown) => unknown) => Promise.resolve(result).then(onFulfilled),
+        then: (onFulfilled: (v: unknown) => unknown) =>
+          Promise.resolve(result).then(onFulfilled),
       };
       return builder;
     },
@@ -120,7 +135,9 @@ describe("useTemplateResolver", () => {
       expect(ctx.derived?.positionSecondary).toBe("2B");
       expect(ctx.derived?.profileLink).toBe("/jordan");
       expect(ctx.derived?.hsCoachName).toBe("Dave Reilly");
-      expect(ctx.derived?.transcriptLink).toBe("https://files.example/transcript.pdf");
+      expect(ctx.derived?.transcriptLink).toBe(
+        "https://files.example/transcript.pdf",
+      );
     });
   });
 
@@ -130,8 +147,14 @@ describe("useTemplateResolver", () => {
       const athleteCtx = await resolver.buildAthleteContext("athlete1");
 
       const result = await resolver.resolveTemplate(
-        { subject: "{{playerName}} - {{schoolName}}", body: "{{coachSalutation}}, day {{daysSinceContact}}" },
-        { school: { name: "Ohio State University" }, coach: { last_name: "Delgado" } },
+        {
+          subject: "{{playerName}} - {{schoolName}}",
+          body: "{{coachSalutation}}, day {{daysSinceContact}}",
+        },
+        {
+          school: { name: "Ohio State University" },
+          coach: { last_name: "Delgado" },
+        },
         athleteCtx,
       );
 

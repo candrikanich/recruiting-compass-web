@@ -14,7 +14,10 @@ const mockState = {
 const COACH_ID = "22222222-2222-2222-2222-222222222222";
 
 vi.mock("~/server/utils/auth", () => ({
-  requireAuth: vi.fn(async () => ({ id: "user-id", email: "user@example.com" })),
+  requireAuth: vi.fn(async () => ({
+    id: "user-id",
+    email: "user@example.com",
+  })),
 }));
 
 vi.mock("~/server/utils/validation", () => ({
@@ -106,9 +109,8 @@ import { createServerSupabaseUserClient } from "~/server/utils/supabase";
 const mockEvent = { context: { params: { id: COACH_ID } } } as any;
 
 const getHandler = async () => {
-  const { default: handler } = await import(
-    "~/server/api/coaches/[id]/deletion-blockers.get"
-  );
+  const { default: handler } =
+    await import("~/server/api/coaches/[id]/deletion-blockers.get");
   return handler;
 };
 

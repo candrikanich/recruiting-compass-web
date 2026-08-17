@@ -148,9 +148,7 @@
       </div>
 
       <!-- Social Media -->
-      <div
-        class="pt-8 border-t border-slate-100"
-      >
+      <div class="pt-8 border-t border-slate-100">
         <h2 class="text-base font-bold text-slate-900 mb-6">Social Handles</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div

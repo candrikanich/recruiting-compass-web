@@ -172,7 +172,9 @@ test.describe("Notifications Page", () => {
     page,
   }) => {
     // Race: wait for first notification card or empty-state copy to appear.
-    const notifications = page.locator('[data-testid="notification-card"]').first();
+    const notifications = page
+      .locator('[data-testid="notification-card"]')
+      .first();
     const emptyState = page.locator("text=You're all caught up!");
     await Promise.race([
       notifications
@@ -183,7 +185,8 @@ test.describe("Notifications Page", () => {
         .catch(() => null),
     ]);
 
-    const hasNotifications = (await page.locator('[data-testid="notification-card"]').count()) > 0;
+    const hasNotifications =
+      (await page.locator('[data-testid="notification-card"]').count()) > 0;
     const hasEmptyState = await emptyState.isVisible().catch(() => false);
 
     expect(hasNotifications || hasEmptyState).toBe(true);
@@ -206,7 +209,8 @@ test.describe("Notifications Page", () => {
   // ── Search ──────────────────────────────────────────────────────────────────
 
   test("search filters notification list", async ({ page }) => {
-    const hasNotifications = (await page.locator('[data-testid="notification-card"]').count()) > 0;
+    const hasNotifications =
+      (await page.locator('[data-testid="notification-card"]').count()) > 0;
     if (!hasNotifications) {
       test.skip(
         true,
@@ -219,7 +223,9 @@ test.describe("Notifications Page", () => {
     // Type a search term that won't match anything
     await search.fill("zzz_no_match_xyz");
 
-    const remaining = await page.locator('[data-testid="notification-card"]').count();
+    const remaining = await page
+      .locator('[data-testid="notification-card"]')
+      .count();
     const emptyState = await page
       .locator("text=No notifications")
       .isVisible()
@@ -231,7 +237,9 @@ test.describe("Notifications Page", () => {
     // Clear search — results should restore
     await search.fill("");
 
-    await expect(page.locator('[data-testid="notification-card"]').first()).toBeVisible();
+    await expect(
+      page.locator('[data-testid="notification-card"]').first(),
+    ).toBeVisible();
   });
 
   // ── Type filter ─────────────────────────────────────────────────────────────
@@ -247,7 +255,8 @@ test.describe("Notifications Page", () => {
   });
 
   test("switching back to All filter restores full list", async ({ page }) => {
-    const hasNotifications = (await page.locator('[data-testid="notification-card"]').count()) > 0;
+    const hasNotifications =
+      (await page.locator('[data-testid="notification-card"]').count()) > 0;
     if (!hasNotifications) {
       test.skip(
         true,
@@ -256,7 +265,9 @@ test.describe("Notifications Page", () => {
       return;
     }
 
-    const initialCount = await page.locator('[data-testid="notification-card"]').count();
+    const initialCount = await page
+      .locator('[data-testid="notification-card"]')
+      .count();
 
     // Apply a filter unlikely to match all notifications
     await page.locator('button:has-text("Offers")').first().click();
@@ -264,7 +275,9 @@ test.describe("Notifications Page", () => {
     // Switch back to All — exact match to avoid "Mark all as read" collision
     await page.locator("button").filter({ hasText: /^All$/ }).first().click();
 
-    const restoredCount = await page.locator('[data-testid="notification-card"]').count();
+    const restoredCount = await page
+      .locator('[data-testid="notification-card"]')
+      .count();
     expect(restoredCount).toBe(initialCount);
   });
 
@@ -294,7 +307,9 @@ test.describe("Notifications Page", () => {
   test("unread notifications have blue left border and blue-50 background", async ({
     page,
   }) => {
-    const unread = page.locator('[data-testid="notification-card"][data-read="false"]');
+    const unread = page.locator(
+      '[data-testid="notification-card"][data-read="false"]',
+    );
     const count = await unread.count();
     if (count === 0) {
       test.skip(
@@ -308,7 +323,9 @@ test.describe("Notifications Page", () => {
   });
 
   test("read notifications have gray left border", async ({ page }) => {
-    const read = page.locator('[data-testid="notification-card"][data-read="true"]');
+    const read = page.locator(
+      '[data-testid="notification-card"][data-read="true"]',
+    );
     const count = await read.count();
     if (count === 0) {
       test.skip(
@@ -323,7 +340,9 @@ test.describe("Notifications Page", () => {
   // ── Mark as read ────────────────────────────────────────────────────────────
 
   test("clicking a notification marks it as read", async ({ page }) => {
-    const unread = page.locator('[data-testid="notification-card"][data-read="false"]');
+    const unread = page.locator(
+      '[data-testid="notification-card"][data-read="false"]',
+    );
     const hasUnread = (await unread.count()) > 0;
     if (!hasUnread) {
       test.skip(
@@ -346,7 +365,9 @@ test.describe("Notifications Page", () => {
     page,
   }) => {
     const hasUnread =
-      (await page.locator('[data-testid="notification-card"][data-read="false"]').count()) > 0;
+      (await page
+        .locator('[data-testid="notification-card"][data-read="false"]')
+        .count()) > 0;
     const markAllBtn = page.locator('button:has-text("Mark all as read")');
 
     if (hasUnread) {
@@ -403,7 +424,9 @@ test.describe("Notifications Page", () => {
 
     // The card with that title should be gone within a beat.
     await expect(
-      page.locator(`[data-testid="notification-card"]:has(h3:text-is("${firstTitle}"))`),
+      page.locator(
+        `[data-testid="notification-card"]:has(h3:text-is("${firstTitle}"))`,
+      ),
     ).toHaveCount(0, { timeout: 5000 });
   });
 
@@ -411,7 +434,9 @@ test.describe("Notifications Page", () => {
     page,
   }) => {
     const hasRead =
-      (await page.locator('[data-testid="notification-card"][data-read="true"]').count()) > 0;
+      (await page
+        .locator('[data-testid="notification-card"][data-read="true"]')
+        .count()) > 0;
     const clearReadBtn = page.locator('button:has-text("Clear read")');
 
     if (hasRead) {

@@ -23,7 +23,10 @@ export class CoachesPage extends BasePage {
     await this.page.waitForLoadState("domcontentloaded");
   }
 
-  async goToCoachCommunications(_schoolId: string | undefined, coachId: string) {
+  async goToCoachCommunications(
+    _schoolId: string | undefined,
+    coachId: string,
+  ) {
     await super.goto(`/coaches/${coachId}/communications`);
     await this.page.waitForLoadState("domcontentloaded");
   }

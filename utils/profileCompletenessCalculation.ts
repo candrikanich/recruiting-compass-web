@@ -31,7 +31,9 @@ const WEIGHTS = {
 // Verify weights sum to 1.0 (100%)
 const TOTAL_WEIGHT = Object.values(WEIGHTS).reduce((a, b) => a + b, 0);
 if (Math.abs(TOTAL_WEIGHT - 1) > 0.0001) {
-  logger.warn(`Profile completeness weights do not sum to 1.0: ${TOTAL_WEIGHT}`);
+  logger.warn(
+    `Profile completeness weights do not sum to 1.0: ${TOTAL_WEIGHT}`,
+  );
 }
 
 /**
@@ -119,7 +121,8 @@ export const calculateProfileCompleteness = (
 
   if (isFieldPresent(profile.graduation_year)) score += WEIGHTS.graduationYear;
   if (isFieldPresent(profile.primary_sport)) score += WEIGHTS.primarySport;
-  if (isFieldPresent(profile.primary_position)) score += WEIGHTS.primaryPosition;
+  if (isFieldPresent(profile.primary_position))
+    score += WEIGHTS.primaryPosition;
   if (signals.hasHomeLocation) score += WEIGHTS.homeLocation;
   if (isFieldPresent(profile.gpa)) score += WEIGHTS.gpa;
   if (isFieldPresent(profile.sat_score) || isFieldPresent(profile.act_score)) {

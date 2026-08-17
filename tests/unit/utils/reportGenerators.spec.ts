@@ -15,7 +15,9 @@ vi.mock("~/utils/pdfHelpers", () => ({
   addHeader: vi.fn(),
   addFooter: vi.fn(),
   addMetricsTable: vi.fn((_doc: unknown, _m: unknown, y: number) => y + 30),
-  addChartImage: vi.fn((_doc: unknown, _img: unknown, _t: unknown, y: number) => y + 100),
+  addChartImage: vi.fn(
+    (_doc: unknown, _img: unknown, _t: unknown, y: number) => y + 100,
+  ),
 }));
 
 vi.mock("~/utils/textTemplates", () => ({

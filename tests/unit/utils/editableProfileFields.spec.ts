@@ -9,7 +9,9 @@ import {
 describe("editableColumnFor — the write-back whitelist gate", () => {
   it("accepts a whitelisted users column path and returns the bare column", () => {
     expect(editableColumnFor("column:users.high_school")).toBe("high_school");
-    expect(editableColumnFor("column:users.height_inches")).toBe("height_inches");
+    expect(editableColumnFor("column:users.height_inches")).toBe(
+      "height_inches",
+    );
     expect(editableColumnFor("column:users.gpa")).toBe("gpa");
   });
 
@@ -65,22 +67,46 @@ describe("coerceProfileValue — coercion + bounds", () => {
   });
 
   it("trims text and rejects over-long values", () => {
-    expect(coerceProfileValue("  Olmsted Falls HS  ", text)).toEqual({ ok: true, value: "Olmsted Falls HS" });
+    expect(coerceProfileValue("  Olmsted Falls HS  ", text)).toEqual({
+      ok: true,
+      value: "Olmsted Falls HS",
+    });
     const long = coerceProfileValue("x".repeat(201), text);
     expect(long.ok).toBe(false);
   });
 
   it("parses ints and enforces integer + range", () => {
-    expect(coerceProfileValue("2027", gradYear)).toEqual({ ok: true, value: 2027 });
-    expect(coerceProfileValue("1999", gradYear)).toEqual({ ok: false, error: "Value out of range" });
-    expect(coerceProfileValue("2040", gradYear)).toEqual({ ok: false, error: "Value out of range" });
-    expect(coerceProfileValue("2027.5", gradYear)).toEqual({ ok: false, error: "Value must be a whole number" });
-    expect(coerceProfileValue("abc", gradYear)).toEqual({ ok: false, error: "Value must be a number" });
+    expect(coerceProfileValue("2027", gradYear)).toEqual({
+      ok: true,
+      value: 2027,
+    });
+    expect(coerceProfileValue("1999", gradYear)).toEqual({
+      ok: false,
+      error: "Value out of range",
+    });
+    expect(coerceProfileValue("2040", gradYear)).toEqual({
+      ok: false,
+      error: "Value out of range",
+    });
+    expect(coerceProfileValue("2027.5", gradYear)).toEqual({
+      ok: false,
+      error: "Value must be a whole number",
+    });
+    expect(coerceProfileValue("abc", gradYear)).toEqual({
+      ok: false,
+      error: "Value must be a number",
+    });
   });
 
   it("parses numeric (gpa) with range, allowing decimals", () => {
     expect(coerceProfileValue("3.8", gpa)).toEqual({ ok: true, value: 3.8 });
-    expect(coerceProfileValue("6", gpa)).toEqual({ ok: false, error: "Value out of range" });
-    expect(coerceProfileValue("-1", gpa)).toEqual({ ok: false, error: "Value out of range" });
+    expect(coerceProfileValue("6", gpa)).toEqual({
+      ok: false,
+      error: "Value out of range",
+    });
+    expect(coerceProfileValue("-1", gpa)).toEqual({
+      ok: false,
+      error: "Value out of range",
+    });
   });
 });
