@@ -1,4 +1,5 @@
 import type { Phase, TaskWithStatus } from "~/types/timeline";
+import { CATEGORY_PRIORITY } from "~/utils/taskSort";
 
 export interface WhatMattersItem {
   taskId: string;
@@ -8,20 +9,6 @@ export interface WhatMattersItem {
   priority: number;
   isRequired: boolean;
 }
-
-// Keys MUST match the `task.category` values actually stored in the DB
-// (academic / recruiting / athletic / exposure / mindset). An earlier map used
-// a fictional taxonomy (academic-standing, visibility-building, …) that matched
-// no rows, so every task fell to the `|| 5` default — a total tie that made the
-// #1 "what matters now" task arbitrary (and different between web and iOS,
-// which issue independently-ordered queries).
-const CATEGORY_PRIORITY: Record<string, number> = {
-  academic: 10,
-  recruiting: 9,
-  athletic: 8,
-  exposure: 7,
-  mindset: 5,
-};
 
 export function getWhatMattersNow(params: {
   phase: Phase;
