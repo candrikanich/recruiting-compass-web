@@ -118,19 +118,23 @@
       </div>
     </Transition>
 
-    <!-- Backdrop -->
-    <Teleport to="body">
-      <Transition
-        enter-active-class="transition ease-out duration-100"
-        enter-from-class="opacity-0"
-        enter-to-class="opacity-100"
-        leave-active-class="transition ease-in duration-75"
-        leave-from-class="opacity-100"
-        leave-to-class="opacity-0"
-      >
-        <div v-if="isOpen" class="fixed inset-0 z-40" @click="isOpen = false" />
-      </Transition>
-    </Teleport>
+    <!-- Backdrop (dismiss on outside click). NOT teleported to body: the app
+         root (#__nuxt) has `isolation: isolate`, creating a stacking context.
+         Teleporting the backdrop to <body> put it OUTSIDE that context at z-40,
+         above the whole app — including this panel (trapped inside #__nuxt via
+         the sticky z-50 header) — so it swallowed clicks on the notification
+         items and links (panel closed, action never fired). Kept in-context,
+         panel z-50 > backdrop z-40 as intended. -->
+    <Transition
+      enter-active-class="transition ease-out duration-100"
+      enter-from-class="opacity-0"
+      enter-to-class="opacity-100"
+      leave-active-class="transition ease-in duration-75"
+      leave-from-class="opacity-100"
+      leave-to-class="opacity-0"
+    >
+      <div v-if="isOpen" class="fixed inset-0 z-40" @click="isOpen = false" />
+    </Transition>
   </div>
 </template>
 
