@@ -149,6 +149,7 @@ import { ref } from "vue";
 import { useAuthFetch } from "~/composables/useAuthFetch";
 
 definePageMeta({
+  layout: "admin",
   middleware: "admin",
 });
 
