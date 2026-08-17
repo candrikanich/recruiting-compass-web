@@ -53,9 +53,13 @@ describe("POST /api/admin/cron/trigger", () => {
     );
   });
 
-  it("403s each destructive job and never calls the cron", async () => {
+  it("403s each destructive job, never calls the cron, and audits the block", async () => {
     for (const job of ["process-account-deletions", "notification-prune", "cleanup-expired-invites"]) {
       await expect(handler(mkEvent({ jobName: job }))).rejects.toMatchObject({ statusCode: 403 });
+      expect(logAdminAction).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({ action: "cron.trigger", meta: { jobName: job, blocked: true } }),
+      );
     }
     expect(fetchMock).not.toHaveBeenCalled();
   });
