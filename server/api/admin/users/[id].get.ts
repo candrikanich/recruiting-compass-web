@@ -175,12 +175,65 @@ async function loadUserDetail(
   const asRecord = (row: unknown): Record<string, unknown> | null =>
     (row as Record<string, unknown> | null) ?? null;
 
+  const rawMembers = asRecords(membersResult.data) as {
+    user_id: string;
+    role: string | null;
+    family_unit_id: string;
+    added_at?: string;
+    id?: string;
+  }[];
+
+  const memberUserIds = [
+    ...new Set(rawMembers.map((m) => m.user_id).filter(Boolean)),
+  ];
+
+  let memberUsersById = new Map<
+    string,
+    { email: string | null; full_name: string | null }
+  >();
+
+  if (memberUserIds.length > 0) {
+    const { data: memberUsers, error: memberUsersError } = await db
+      .from("users")
+      .select("id, email, full_name")
+      .in("id", memberUserIds);
+
+    if (memberUsersError) {
+      logger.error(
+        "Failed to load family member accounts for admin detail view",
+        memberUsersError,
+      );
+    } else {
+      memberUsersById = new Map(
+        (memberUsers ?? []).map((u) => [
+          (u as { id: string }).id,
+          {
+            email: (u as { email: string | null }).email,
+            full_name: (u as { full_name: string | null }).full_name,
+          },
+        ]),
+      );
+    }
+  }
+
+  const members: AdminUserDetail["family"]["members"] = rawMembers.map(
+    (m) => {
+      const matched = memberUsersById.get(m.user_id);
+      return {
+        user_id: m.user_id,
+        role: m.role ?? null,
+        email: matched?.email ?? null,
+        full_name: matched?.full_name ?? null,
+      };
+    },
+  );
+
   return {
     account: typedAccount,
     familyUnitId,
     family: {
       unit: asRecord(unitResult.data),
-      members: asRecords(membersResult.data),
+      members,
       pendingInvitations: asRecords(invitationsResult.data),
     },
     athletes: asRecords(athletesResult.data),

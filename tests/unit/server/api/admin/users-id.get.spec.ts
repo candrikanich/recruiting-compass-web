@@ -28,12 +28,14 @@ function tableStub(name: string) {
   const builder: PromiseLike<{ data: unknown[]; error: null; count: number }> & {
     select: (...args: unknown[]) => typeof builder;
     eq: (...args: unknown[]) => typeof builder;
+    in: (...args: unknown[]) => typeof builder;
     order: (...args: unknown[]) => typeof builder;
     limit: (...args: unknown[]) => typeof builder;
     maybeSingle: () => Promise<{ data: unknown; error: null }>;
   } = {
     select: () => builder,
     eq: () => builder,
+    in: () => builder,
     order: () => builder,
     limit: () => builder,
     maybeSingle: () => Promise.resolve({ data: rows[0] ?? null, error: null }),
@@ -177,6 +179,18 @@ describe("GET /api/admin/users/[id]", () => {
         meta: expect.objectContaining({ family_unit_id: null }),
       }),
     );
+  });
+
+  it("joins family member email and full_name from users", async () => {
+    const res = await handler(mkEvent(ACCOUNT.id));
+    expect(res.family.members).toEqual([
+      {
+        user_id: ACCOUNT.id,
+        role: null,
+        email: ACCOUNT.email,
+        full_name: ACCOUNT.full_name,
+      },
+    ]);
   });
 
   it("populates family-scoped recruiting counts and family unit when present", async () => {
