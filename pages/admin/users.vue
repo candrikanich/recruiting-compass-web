@@ -147,9 +147,14 @@
               >
             </td>
             <td class="py-3 px-4">
-              <code class="text-sm bg-slate-100 px-2 py-1 rounded-sm">{{
-                user.email
-              }}</code>
+              <NuxtLink
+                :to="`/admin/users/${user.id}`"
+                class="hover:underline"
+              >
+                <code class="text-sm bg-slate-100 px-2 py-1 rounded-sm">{{
+                  user.email
+                }}</code>
+              </NuxtLink>
             </td>
             <td class="py-3 px-4 text-slate-700">
               {{ user.full_name || "—" }}
