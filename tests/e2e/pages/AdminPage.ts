@@ -7,7 +7,9 @@ export class AdminPage extends BasePage {
   }
 
   async goto() {
-    await super.goto("/admin");
+    // Users tab moved to its own route (pages/admin/users.vue) — Task 9
+    // route migration replaced the in-page tab bar with nav links.
+    await super.goto("/admin/users");
   }
 
   // Select mode operations
