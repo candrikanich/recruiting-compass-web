@@ -30,7 +30,9 @@ let loaded = false;
 const mockLoadAllPreferences = vi.fn(async () => {
   loaded = true;
 });
-const mockGetSchoolPreferences = vi.fn(() => (loaded ? savedPreferences : null));
+const mockGetSchoolPreferences = vi.fn(() =>
+  loaded ? savedPreferences : null,
+);
 
 vi.mock("~/composables/usePreferenceManager", () => ({
   usePreferenceManager: () => ({

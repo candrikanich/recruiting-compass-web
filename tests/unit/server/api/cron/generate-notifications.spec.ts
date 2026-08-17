@@ -14,8 +14,18 @@ vi.mock("~/server/utils/supabase", () => ({
 }));
 
 vi.mock("~/server/utils/logger", () => ({
-  useLogger: () => ({ info: vi.fn(), error: vi.fn(), warn: vi.fn(), debug: vi.fn() }),
-  createLogger: () => ({ info: vi.fn(), error: vi.fn(), warn: vi.fn(), debug: vi.fn() }),
+  useLogger: () => ({
+    info: vi.fn(),
+    error: vi.fn(),
+    warn: vi.fn(),
+    debug: vi.fn(),
+  }),
+  createLogger: () => ({
+    info: vi.fn(),
+    error: vi.fn(),
+    warn: vi.fn(),
+    debug: vi.fn(),
+  }),
 }));
 
 const mockDeliver = vi.fn();
@@ -65,7 +75,9 @@ describe("GET /api/cron/generate-notifications", () => {
 
   it("rejects with no cron secret (401)", async () => {
     const handler = await loadHandler();
-    await expect(handler(fakeEvent())).rejects.toMatchObject({ statusCode: 401 });
+    await expect(handler(fakeEvent())).rejects.toMatchObject({
+      statusCode: 401,
+    });
   });
 
   it("rejects with the wrong cron secret (401)", async () => {
@@ -85,7 +97,12 @@ describe("GET /api/cron/generate-notifications", () => {
       fakeEvent({ authorization: "Bearer test-cron-secret" }),
     )) as { total: number; processed: number; inApp: number; emails: number };
 
-    expect(result).toMatchObject({ total: 2, processed: 2, inApp: 2, emails: 2 });
+    expect(result).toMatchObject({
+      total: 2,
+      processed: 2,
+      inApp: 2,
+      emails: 2,
+    });
     expect(mockDeliver).toHaveBeenCalledTimes(2);
   });
 

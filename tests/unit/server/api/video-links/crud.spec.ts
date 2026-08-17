@@ -45,9 +45,9 @@ vi.mock("h3", async (importOriginal) => {
     }) => Error & { statusCode: number };
   }
 ).createError = (config) => {
-  const err = new Error(
-    config.statusMessage || config.message,
-  ) as Error & { statusCode: number };
+  const err = new Error(config.statusMessage || config.message) as Error & {
+    statusCode: number;
+  };
   err.statusCode = config.statusCode;
   return err;
 };
@@ -71,7 +71,9 @@ describe("GET /api/video-links", () => {
     mockSupabase.from.mockImplementation((table: string) => {
       if (table === "family_members") {
         return {
-          select: () => ({ eq: () => Promise.resolve({ data: [], error: null }) }),
+          select: () => ({
+            eq: () => Promise.resolve({ data: [], error: null }),
+          }),
         };
       }
       if (table === "video_links") {
@@ -135,8 +137,7 @@ describe("DELETE /api/video-links/:id", () => {
           select: () => ({
             eq: () => ({
               eq: () => ({
-                maybeSingle: () =>
-                  Promise.resolve({ data: null, error: null }),
+                maybeSingle: () => Promise.resolve({ data: null, error: null }),
               }),
             }),
           }),

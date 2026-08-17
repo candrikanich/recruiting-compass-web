@@ -2,7 +2,9 @@ import { describe, it, expect } from "vitest";
 import { mount } from "@vue/test-utils";
 import SchoolRecruitingStatusSection from "~/components/School/SchoolRecruitingStatusSection.vue";
 
-const mountSection = (props: Partial<{ status: string; statusUpdating: boolean }> = {}) =>
+const mountSection = (
+  props: Partial<{ status: string; statusUpdating: boolean }> = {},
+) =>
   mount(SchoolRecruitingStatusSection, {
     props: { status: "interested", statusUpdating: false, ...props },
     global: { stubs: { UIcon: true } },

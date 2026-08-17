@@ -63,8 +63,8 @@ export const useProfilePhoto = (
       return;
     }
     remotePhotoUrl.value =
-      (data as { profile_photo_url: string | null } | null)?.profile_photo_url ??
-      null;
+      (data as { profile_photo_url: string | null } | null)
+        ?.profile_photo_url ?? null;
   };
 
   watch(

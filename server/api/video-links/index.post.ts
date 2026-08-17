@@ -60,7 +60,7 @@ export default defineEventHandler(async (event) => {
       platform: parsed.data.platform,
       url: parsed.data.url,
       title: parsed.data.title ?? null,
-      position: parsed.data.position ?? (count ?? 0),
+      position: parsed.data.position ?? count ?? 0,
     };
 
     const { data, error } = await supabase

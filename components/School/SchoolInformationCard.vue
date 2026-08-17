@@ -22,7 +22,9 @@
     <!-- Contact & Social -->
     <section class="space-y-3">
       <div class="flex items-center justify-between">
-        <h3 class="text-lg font-semibold text-slate-900">Contact &amp; Social</h3>
+        <h3 class="text-lg font-semibold text-slate-900">
+          Contact &amp; Social
+        </h3>
         <button
           @click="toggleEdit"
           class="px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-50 rounded-lg transition"
@@ -117,10 +119,11 @@
           class="flex items-start gap-2"
         >
           <span class="text-slate-500 text-sm w-24 shrink-0">Address:</span>
-          <span
-            class="text-sm text-slate-900 flex items-center gap-1"
-          >
-            <UIcon name="i-heroicons-map-pin" class="w-3.5 h-3.5 text-slate-500" />
+          <span class="text-sm text-slate-900 flex items-center gap-1">
+            <UIcon
+              name="i-heroicons-map-pin"
+              class="w-3.5 h-3.5 text-slate-500"
+            />
             {{ school.academic_info.address }}
           </span>
         </div>

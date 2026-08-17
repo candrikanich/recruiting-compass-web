@@ -39,7 +39,9 @@ const mockVideoLinkRows: VideoLinkRow[] = [
   },
 ];
 
-const createSettings = (overrides: Partial<PlayerProfile> = {}): PlayerProfile => ({
+const createSettings = (
+  overrides: Partial<PlayerProfile> = {},
+): PlayerProfile => ({
   id: "profile-1",
   user_id: "user-1",
   family_unit_id: "family-1",

@@ -38,29 +38,92 @@ describe("utils/profileCompletenessCalculation", () => {
     });
 
     describe("per-field weights", () => {
-      const cases: Array<[string, ScorableProfile, ProfileCompletenessSignals, number]> = [
-        ["graduation year", { graduation_year: 2028 }, { hasHighlightVideo: false, hasHomeLocation: false }, 10],
-        ["primary sport", { primary_sport: "soccer" }, { hasHighlightVideo: false, hasHomeLocation: false }, 10],
-        ["primary position", { primary_position: "forward" }, { hasHighlightVideo: false, hasHomeLocation: false }, 10],
-        ["gpa", { gpa: 3.5 }, { hasHighlightVideo: false, hasHomeLocation: false }, 15],
-        ["sat", { sat_score: 1200 }, { hasHighlightVideo: false, hasHomeLocation: false }, 10],
-        ["act", { act_score: 28 }, { hasHighlightVideo: false, hasHomeLocation: false }, 10],
-        ["height", { height_inches: 70 }, { hasHighlightVideo: false, hasHomeLocation: false }, 5],
-        ["weight", { weight_lbs: 160 }, { hasHighlightVideo: false, hasHomeLocation: false }, 5],
-        ["phone", { phone: "555-1234" }, { hasHighlightVideo: false, hasHomeLocation: false }, 10],
-        ["highlight video", {}, { hasHighlightVideo: true, hasHomeLocation: false }, 15],
-        ["home location", {}, { hasHighlightVideo: false, hasHomeLocation: true }, 10],
+      const cases: Array<
+        [string, ScorableProfile, ProfileCompletenessSignals, number]
+      > = [
+        [
+          "graduation year",
+          { graduation_year: 2028 },
+          { hasHighlightVideo: false, hasHomeLocation: false },
+          10,
+        ],
+        [
+          "primary sport",
+          { primary_sport: "soccer" },
+          { hasHighlightVideo: false, hasHomeLocation: false },
+          10,
+        ],
+        [
+          "primary position",
+          { primary_position: "forward" },
+          { hasHighlightVideo: false, hasHomeLocation: false },
+          10,
+        ],
+        [
+          "gpa",
+          { gpa: 3.5 },
+          { hasHighlightVideo: false, hasHomeLocation: false },
+          15,
+        ],
+        [
+          "sat",
+          { sat_score: 1200 },
+          { hasHighlightVideo: false, hasHomeLocation: false },
+          10,
+        ],
+        [
+          "act",
+          { act_score: 28 },
+          { hasHighlightVideo: false, hasHomeLocation: false },
+          10,
+        ],
+        [
+          "height",
+          { height_inches: 70 },
+          { hasHighlightVideo: false, hasHomeLocation: false },
+          5,
+        ],
+        [
+          "weight",
+          { weight_lbs: 160 },
+          { hasHighlightVideo: false, hasHomeLocation: false },
+          5,
+        ],
+        [
+          "phone",
+          { phone: "555-1234" },
+          { hasHighlightVideo: false, hasHomeLocation: false },
+          10,
+        ],
+        [
+          "highlight video",
+          {},
+          { hasHighlightVideo: true, hasHomeLocation: false },
+          15,
+        ],
+        [
+          "home location",
+          {},
+          { hasHighlightVideo: false, hasHomeLocation: true },
+          10,
+        ],
       ];
 
-      it.each(cases)("gives %s its weight", (_label, profile, signals, expected) => {
-        expect(calculateProfileCompleteness(profile, signals)).toBe(expected);
-      });
+      it.each(cases)(
+        "gives %s its weight",
+        (_label, profile, signals, expected) => {
+          expect(calculateProfileCompleteness(profile, signals)).toBe(expected);
+        },
+      );
     });
 
     it("counts SAT or ACT as a single field (no double count)", () => {
       const sat = calculateProfileCompleteness({ sat_score: 1300 });
       const act = calculateProfileCompleteness({ act_score: 30 });
-      const both = calculateProfileCompleteness({ sat_score: 1300, act_score: 30 });
+      const both = calculateProfileCompleteness({
+        sat_score: 1300,
+        act_score: 30,
+      });
       expect(sat).toBe(10);
       expect(act).toBe(10);
       expect(both).toBe(10);
@@ -121,7 +184,9 @@ describe("utils/profileCompletenessCalculation", () => {
     });
 
     it("is true when a coordinate pair is present", () => {
-      expect(isHomeLocationPresent({ latitude: 41.8, longitude: -87.6 })).toBe(true);
+      expect(isHomeLocationPresent({ latitude: 41.8, longitude: -87.6 })).toBe(
+        true,
+      );
       expect(isHomeLocationPresent({ latitude: 41.8 })).toBe(false);
     });
   });

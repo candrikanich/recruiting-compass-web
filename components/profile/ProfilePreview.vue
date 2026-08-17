@@ -1,7 +1,11 @@
 <!-- components/profile/ProfilePreview.vue -->
 <script setup lang="ts">
 import { computed, onMounted } from "vue";
-import type { PlayerProfile, PublicProfileData, VideoLink } from "~/types/models";
+import type {
+  PlayerProfile,
+  PublicProfileData,
+  VideoLink,
+} from "~/types/models";
 import { useUserStore } from "~/stores/user";
 import { useVideoLinks } from "~/composables/useVideoLinks";
 

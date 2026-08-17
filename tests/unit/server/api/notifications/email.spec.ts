@@ -12,7 +12,11 @@ const mockState = {
   } as Record<string, unknown>,
 };
 
-const sendResult = { success: true as boolean, messageId: "email-1", error: "" };
+const sendResult = {
+  success: true as boolean,
+  messageId: "email-1",
+  error: "",
+};
 
 vi.mock("~/server/utils/emailService", () => ({
   sendNotificationEmail: vi.fn(async () => ({ ...sendResult })),
@@ -53,9 +57,8 @@ vi.stubGlobal("process", {
 
 import { sendNotificationEmail } from "~/server/utils/emailService";
 
-const { default: handler } = await import(
-  "~/server/api/notifications/email.post"
-);
+const { default: handler } =
+  await import("~/server/api/notifications/email.post");
 
 const call = () => handler({} as Parameters<typeof handler>[0]);
 

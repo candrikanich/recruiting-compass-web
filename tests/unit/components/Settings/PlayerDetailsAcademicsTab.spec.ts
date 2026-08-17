@@ -46,9 +46,9 @@ describe("PlayerDetailsAcademicsTab", () => {
       props: defaultProps,
       global: { stubs },
     });
-    expect(
-      wrapper.find('[data-testid="social-twitter_handle"]').exists(),
-    ).toBe(false);
+    expect(wrapper.find('[data-testid="social-twitter_handle"]').exists()).toBe(
+      false,
+    );
   });
 
   it("does not render the Contact/Privacy fields", () => {
@@ -56,8 +56,6 @@ describe("PlayerDetailsAcademicsTab", () => {
       props: defaultProps,
       global: { stubs },
     });
-    expect(wrapper.find('[data-testid="contact-phone"]').exists()).toBe(
-      false,
-    );
+    expect(wrapper.find('[data-testid="contact-phone"]').exists()).toBe(false);
   });
 });
