@@ -102,15 +102,23 @@ describe("useDashboardCalculations", () => {
   });
 
   it("should get upcoming events sorted by date", () => {
-    const now = new Date();
-    const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
-    const nextWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-    const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    // Build start dates as LOCAL date-only strings — getUpcomingEvents parses
+    // them via parseLocalDateOnly (local midnight). Using toISOString() encodes
+    // the UTC date, which is a day ahead in evening US timezones, so "yesterday"
+    // parsed as today and slipped into the upcoming list (3 instead of 2).
+    const toLocalDateOnly = (d: Date) =>
+      `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    const base = new Date();
+    const dayOffset = (n: number) => {
+      const d = new Date(base);
+      d.setDate(base.getDate() + n);
+      return toLocalDateOnly(d);
+    };
 
     const events: Event[] = [
-      { id: "1", start_date: nextWeek.toISOString() } as Event,
-      { id: "2", start_date: yesterday.toISOString() } as Event,
-      { id: "3", start_date: tomorrow.toISOString() } as Event,
+      { id: "1", start_date: dayOffset(7) } as Event,
+      { id: "2", start_date: dayOffset(-1) } as Event,
+      { id: "3", start_date: dayOffset(1) } as Event,
     ];
 
     const mockDashboardData = {
