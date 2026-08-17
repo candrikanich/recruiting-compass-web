@@ -101,14 +101,6 @@ test.describe("Admin Dashboard - Bulk Delete Users", () => {
       test.skip(true, `Redirected away from /admin (url=${currentUrl})`);
     }
 
-    // /admin defaults to the "overview" tab; the bulk-delete UI lives under
-    // the "Users" tab — click into it before any select-mode assertions.
-    await page
-      .locator('button:has-text("Users")')
-      .first()
-      .click()
-      .catch(() => null);
-
     await page
       .waitForSelector('[data-testid="select-mode-toggle"]', { timeout: 15000 })
       .catch(() => null);

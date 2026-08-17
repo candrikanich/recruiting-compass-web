@@ -6,6 +6,35 @@ Active session notes only. See [COMPLETED_WORK.md](./COMPLETED_WORK.md) for full
 
 - **Output format by reader, not by default**: For artifacts Chris will read once on a phone or share with someone non-technical — session recaps, status overviews, weekly summaries, "where are we on X" snapshots — invoke the `visual-explainer` skill to produce self-contained HTML. For artifacts that future-Claude or Chris will edit (handoff docs, `planning/*.md`, `COMPLETED_WORK.md`, lesson files, plans) — stay markdown. When unsure: read = HTML, edit = markdown.
 
+## Current Session (2026-08-17 — Admin Suite: Spec A Foundation + Spec B Support DONE)
+
+### Spec B — Support tooling (#1) — COMPLETE, pending branch-finish
+**Status:** DONE on `feat/admin-support` (off develop, 7 commits, **NOT merged/pushed**). SDD ledger `.superpowers/sdd/2026-08-17-admin-support/`. Final review READY TO MERGE + polish fix landed.
+**Built:** read-only user detail — `server/api/admin/users/[id].get.ts` (requireAdmin, service-role SELECT-only, safe-column allowlist NO PII, family_unit_id-scoped aggregate, `view_as.start` audit both paths, member emails joined) + `useAdminUserDetail` + `types/adminUserDetail.ts` + `pages/admin/users/[id].vue` (red read-only banner, no write controls) + users list→detail row link. Renamed `pages/admin/users.vue`→`users/index.vue` (nested-route fix).
+**Tests:** unit 7859/0 (+member-email test); admin E2E green (admin-user-detail + admin-routes regression) w/ NUXT_PUBLIC_ADMIN_HOST=localhost:3003; type-check/lint/audit clean; `view_as.start` audit row confirmed LIVE.
+**Deferred (non-blocking):** logAdminAction not awaited (pre-existing foundation pattern — harden with event.waitUntil if audit reliability matters).
+**Decisions:** delivery log → Spec B2 (Resend webhook + email_events + msgId persist, all net-new); view-as = dedicated snapshot page (not app-page impersonation); read-only only (write actions → later spec).
+**Next arc:** Spec C (#2 Ops: cron upgrade + Sentry API feed + DB health; needs SENTRY_API_TOKEN issue:read) → Spec D (#3 Growth analytics, live-query). Spec B2 (delivery log) whenever.
+
+### Spec A — Admin Foundation — MERGED to develop
+**Status:** COMPLETE + merged to develop @312c456d (**NOT pushed**). SDD ledger deleted (git is record). Built via subagent-driven-development. Final whole-branch review + branch-finish decision pending.
+**Branch:** `feat/admin-suite-foundation` (off main @29eedb47). 20 commits incl. 1 FOREIGN (see below).
+**Tests:** unit 7849 passed / 0 failed / 63 skip; admin E2E 18/18 live (needs `NUXT_PUBLIC_ADMIN_HOST=localhost:3003`); type-check 0, lint 0, audit:tokens 0.
+
+### What shipped (Spec A — shared admin rails)
+- `admin_audit_log` table (**APPLIED LIVE** via MCP, migration `020_admin_audit_log.sql`, RLS no-policy/service-role) + `server/utils/adminAudit.ts` `logAdminAction` (fire-and-forget, never throws) + `requireAdmin` now sets `event.context.adminUserId`.
+- Audit endpoint `GET /api/admin/audit-log` + `useAdminAuditLog` + `pages/admin/audit.vue`.
+- 4 primitives in `components/Admin/` (capital A): AdminChart (Chart.js), AdminStatTile, AdminTimeRange, AdminDataTable. `server/utils/adminQuery.ts` (dayBuckets/countByDay).
+- `layouts/admin.vue` route-based shell; monolith `pages/admin/index.vue` split → per-route pages (index=Overview, users, invitations, health, jobs, tools). `signup.vue` deliberately NOT admin-gated.
+
+### Gotchas found
+- `nuxt.config.ts:210` adminHost defaults to prod subdomain when `NUXT_PUBLIC_ADMIN_HOST` unset → local `/admin` bounces to prod login; admin E2E needs `NUXT_PUBLIC_ADMIN_HOST=localhost:3003`. Consider a `.env` line.
+- **Shared-checkout race hit 3×** (concurrent agent + cron switching branches mid-task). Foreign commit `a2ab66e1` ("fix(rls): allow family members...create interactions", touches only a supabase migration) is interleaved on this branch — **decide at branch-finish: cherry-pick to own branch or keep**.
+- Deferred minors (non-blocking): TS-type-regen to drop `as unknown` cast in adminAudit.ts; AdminDataTable hardcoded "No data"; AdminTimeRange thin coverage; no aria-current on nav.
+
+### Next (this all-day arc)
+Spec B (#1 Support: user lookup + read-only view-as + delivery log) → Spec C (#2 Ops: cron/Sentry/DB) → Spec D (#3 Growth analytics). #1 first step: verify Resend webhook→DB ingestion exists. #2 needs `SENTRY_API_TOKEN` (issue:read).
+
 ## Current Session (2026-08-08 — Coach Outreach: full build, Phases 0–6 DONE)
 
 **Status:** ALL phases (0–6) DONE + committed on `feat/coach-outreach-templates` (**9 commits, NOT pushed**). Remaining = browser verify + full test/E2E + PR.
