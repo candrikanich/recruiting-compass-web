@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { mount } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
 import { ref } from "vue";
-import AdminUsers from "~/pages/admin/users.vue";
+import AdminUsers from "~/pages/admin/users/index.vue";
 
 vi.mock("~/composables/useAuth", () => ({
   useAuth: vi.fn(() => ({
