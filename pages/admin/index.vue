@@ -62,49 +62,6 @@
         </div>
       </div>
 
-      <!-- Health Section -->
-      <div
-        v-if="activeTab === 'health'"
-        class="bg-white rounded-lg shadow-md p-6"
-      >
-        <h2 class="text-2xl font-bold text-slate-900 mb-6">System Health</h2>
-        <div v-if="healthLoading" class="text-center py-12 text-slate-600">
-          Checking...
-        </div>
-        <div
-          v-else-if="healthError"
-          class="bg-red-50 border border-red-200 rounded-lg p-4"
-        >
-          <p class="text-red-800">{{ healthError }}</p>
-        </div>
-        <div v-else class="space-y-3">
-          <div
-            v-for="check in healthChecks"
-            :key="check.name"
-            class="flex items-center gap-3 rounded-lg border border-slate-200 p-3"
-            :class="
-              check.status === 'ok'
-                ? 'bg-green-50/50 border-green-200'
-                : 'bg-red-50/50 border-red-200'
-            "
-          >
-            <span
-              class="inline-block w-3 h-3 rounded-full shrink-0"
-              :class="check.status === 'ok' ? 'bg-green-500' : 'bg-red-500'"
-              aria-hidden="true"
-            />
-            <span class="font-medium text-slate-900">{{ check.name }}</span>
-            <span v-if="check.message" class="text-slate-600 text-sm">
-              {{ check.message }}
-            </span>
-          </div>
-          <p class="mt-4 text-sm text-slate-500">
-            Overall:
-            {{ healthOk ? "All critical checks passed" : "Some checks failed" }}
-          </p>
-        </div>
-      </div>
-
       <!-- Jobs (cron) Section -->
       <div
         v-if="activeTab === 'jobs'"
@@ -305,7 +262,6 @@
 <script setup lang="ts">
 import { computed, onMounted } from "vue";
 import { useAdminStats } from "~/composables/useAdminStats";
-import { useAdminHealthCheck } from "~/composables/useAdminHealthCheck";
 import {
   useAdminCronRuns,
   type CronJobSummary,
@@ -317,14 +273,11 @@ definePageMeta({
 });
 
 const { stats, statsLoading, statsError, loadStats } = useAdminStats();
-const { health, healthLoading, healthError, loadHealth } =
-  useAdminHealthCheck();
 const { jobs, recent, cronLoading, cronError, loadCronRuns } =
   useAdminCronRuns();
 
 const tabs = computed(() => [
   { id: "overview", label: "Overview" },
-  { id: "health", label: "Health" },
   { id: "jobs", label: "Jobs" },
   { id: "tools", label: "Tools" },
 ]);
@@ -340,9 +293,6 @@ const statsCards = computed(() => {
     { key: "family_units", label: "Family units", value: s.family_units },
   ];
 });
-
-const healthChecks = computed(() => health.value?.checks ?? []);
-const healthOk = computed(() => health.value?.ok ?? false);
 
 function formatCronTime(iso: string | null | undefined): string {
   if (!iso) return "—";
@@ -389,7 +339,6 @@ function cronCardClass(job: CronJobSummary): string {
 function selectTab(tabId: string) {
   activeTab.value = tabId;
   if (tabId === "overview") loadStats();
-  else if (tabId === "health") loadHealth();
   else if (tabId === "jobs") loadCronRuns();
 }
 
