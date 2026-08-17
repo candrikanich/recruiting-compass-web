@@ -18,13 +18,7 @@ import { z } from "zod";
 import { requireAdmin } from "~/server/utils/auth";
 import { logAdminAction } from "~/server/utils/adminAudit";
 import { useLogger } from "~/server/utils/logger";
-import {
-  TRIGGERABLE_JOBS,
-  DRYRUN_ONLY_JOBS,
-  BLOCKED_JOBS,
-} from "~/utils/cronDashboard";
-
-export { TRIGGERABLE_JOBS, DRYRUN_ONLY_JOBS, BLOCKED_JOBS };
+import { TRIGGERABLE_JOBS, DRYRUN_ONLY_JOBS } from "~/utils/cronDashboard";
 
 const bodySchema = z.object({
   jobName: z.string(),
@@ -53,6 +47,10 @@ export default defineEventHandler(
 
     if (!isTriggerable && !isDryRunOnly) {
       logger.warn("Blocked cron trigger attempt", { jobName });
+      logAdminAction(event, {
+        action: "cron.trigger",
+        meta: { jobName, blocked: true },
+      });
       throw createError({
         statusCode: 403,
         statusMessage: "This job cannot be triggered from the admin UI",
@@ -80,6 +78,10 @@ export default defineEventHandler(
       // The cron job records its own error row in cron_runs; never leak the
       // secret or the raw upstream error to the client.
       logger.error("Cron trigger failed", { jobName, err: String(err) });
+      logAdminAction(event, {
+        action: "cron.trigger",
+        meta: { jobName, dryRun, failed: true },
+      });
       throw createError({
         statusCode: 502,
         statusMessage: "Job run failed — see the job's recent runs",
