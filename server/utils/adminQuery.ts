@@ -14,14 +14,15 @@ export function dayBuckets(from: Date, to: Date): string[] {
 }
 
 export function countByDay(
-  rows: { created_at: string }[],
+  rows: Record<string, string>[],
   from: Date,
   to: Date,
+  field: string = "created_at",
 ): { day: string; count: number }[] {
   const buckets = dayBuckets(from, to);
   const counts = new Map<string, number>(buckets.map((d) => [d, 0]));
   for (const r of rows) {
-    const key = r.created_at.slice(0, 10);
+    const key = String(r[field] ?? "").slice(0, 10);
     if (counts.has(key)) counts.set(key, (counts.get(key) ?? 0) + 1);
   }
   return buckets.map((day) => ({ day, count: counts.get(day) ?? 0 }));

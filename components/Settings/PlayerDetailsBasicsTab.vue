@@ -92,11 +92,19 @@
             >Recruiting Phone</label
           >
           <input
-            v-model="form.phone"
+            :value="form.phone"
             :disabled="isParentRole"
             type="tel"
-            placeholder="440-555-0134"
+            autocomplete="tel"
+            inputmode="tel"
+            maxlength="14"
+            placeholder="(440) 555-0134"
             data-testid="contact-phone"
+            @input="
+              form.phone = formatPhoneNational(
+                ($event.target as HTMLInputElement).value,
+              )
+            "
             @blur="triggerSave"
             class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 transition font-medium text-slate-700"
           />
@@ -260,6 +268,7 @@
 <script setup lang="ts">
 import type { PlayerDetails } from "~/types/models";
 import { useFamilyCtx } from "~/composables/useFamilyCtx";
+import { formatPhoneNational } from "~/utils/phone";
 
 // Photo targets the athlete being viewed (self for a player, the linked athlete for a parent).
 const { activeAthleteId } = useFamilyCtx();

@@ -15,7 +15,9 @@
       :placeholder="placeholder"
       :required="required"
       :disabled="disabled"
-      :maxlength="maxlength"
+      :maxlength="resolvedMaxlength"
+      :autocomplete="type === 'tel' ? 'tel' : undefined"
+      :inputmode="type === 'tel' ? 'tel' : undefined"
       :aria-required="required || undefined"
       :aria-invalid="error ? 'true' : undefined"
       :aria-describedby="error ? `${inputId}-error` : undefined"
@@ -26,9 +28,7 @@
         'transition-all placeholder:text-slate-600',
         'disabled:opacity-50 disabled:cursor-not-allowed',
       ]"
-      @input="
-        $emit('update:modelValue', ($event.target as HTMLInputElement).value)
-      "
+      @input="onInput"
       @blur="$emit('blur')"
     />
     <DesignSystemFieldError
@@ -40,7 +40,8 @@
 </template>
 
 <script setup lang="ts">
-import { useId } from "vue";
+import { computed, useId } from "vue";
+import { formatPhoneNational } from "~/utils/phone";
 
 const props = withDefaults(
   defineProps<{
@@ -64,10 +65,22 @@ const props = withDefaults(
   },
 );
 
-defineEmits<{
+const emit = defineEmits<{
   "update:modelValue": [value: string];
   blur: [];
 }>();
 
 const inputId = useId();
+const resolvedMaxlength = computed(() => {
+  if (props.maxlength !== undefined) return props.maxlength;
+  return props.type === "tel" ? 14 : undefined;
+});
+
+const onInput = (event: Event) => {
+  const raw = (event.target as HTMLInputElement).value;
+  emit(
+    "update:modelValue",
+    props.type === "tel" ? formatPhoneNational(raw) : raw,
+  );
+};
 </script>

@@ -5,6 +5,8 @@
  * Handles URL formatting, sanitization, and null safety.
  */
 
+import { toSmsHref } from "~/utils/phone";
+
 /**
  * Opens a Twitter profile in a new tab
  * @param handle - Twitter handle (with or without @)
@@ -44,6 +46,6 @@ export const openEmail = (email: string | null | undefined): void => {
 export const openSMS = (phone: string | null | undefined): void => {
   if (!phone) return;
 
-  const cleanPhone = phone.replace(/\D/g, "");
-  window.location.href = `sms:${cleanPhone}`;
+  const href = toSmsHref(phone);
+  if (href) window.location.href = href;
 };

@@ -91,9 +91,17 @@
                 </label>
                 <input
                   id="phone"
-                  v-model="form.phone"
+                  :value="form.phone"
                   type="tel"
+                  autocomplete="tel"
+                  inputmode="tel"
+                  maxlength="14"
                   class="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:ring-2 focus:ring-blue-500/20"
+                  @input="
+                    form.phone = formatPhoneNational(
+                      ($event.target as HTMLInputElement).value,
+                    )
+                  "
                 />
               </div>
             </div>
@@ -199,6 +207,11 @@ import { reactive, ref, watch, toRefs, nextTick } from "vue";
 import { useFocusTrap } from "~/composables/useFocusTrap";
 import type { Coach } from "~/types/models";
 import { createClientLogger } from "~/utils/logger";
+import {
+  formatPhoneDisplay,
+  formatPhoneNational,
+  toStoredPhone,
+} from "~/utils/phone";
 
 const logger = createClientLogger("EditCoachModal");
 
@@ -229,7 +242,7 @@ const form = reactive({
   first_name: props.coach.first_name,
   last_name: props.coach.last_name,
   email: props.coach.email || "",
-  phone: props.coach.phone || "",
+  phone: formatPhoneDisplay(props.coach.phone || ""),
   twitter_handle: props.coach.twitter_handle || "",
   instagram_handle: props.coach.instagram_handle || "",
   role: props.coach.role,
@@ -247,7 +260,7 @@ watch(
         first_name: newCoach.first_name,
         last_name: newCoach.last_name,
         email: newCoach.email || "",
-        phone: newCoach.phone || "",
+        phone: formatPhoneDisplay(newCoach.phone || ""),
         twitter_handle: newCoach.twitter_handle || "",
         instagram_handle: newCoach.instagram_handle || "",
         role: newCoach.role,
@@ -261,7 +274,10 @@ watch(
 const handleSubmit = async () => {
   loading.value = true;
   try {
-    const updated = await props.updateFn(props.coach.id, form);
+    const updated = await props.updateFn(props.coach.id, {
+      ...form,
+      phone: toStoredPhone(form.phone),
+    });
     emit("updated", updated);
     handleClose();
   } catch (err) {

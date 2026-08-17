@@ -11,6 +11,7 @@ import {
   normalizePosition as normalizePositionForSport,
   normalizePositions as normalizePositionsForSport,
 } from "~/utils/positions/canonical";
+import { formatPhoneDisplay, toStoredPhone } from "~/utils/phone";
 import { normalizeHandle, type SocialPlatform } from "~/utils/social";
 import {
   calculateProfileCompleteness,
@@ -160,6 +161,7 @@ export function usePlayerDetailsForm() {
         travel_team_coach: latest?.coach ?? "",
         positions: normalizedPositions,
         primary_position: normalizedPositions[0] ?? form.value.primary_position,
+        phone: toStoredPhone(form.value.phone) ?? "",
       };
       await setPlayerDetails(detailsToSave);
     },
@@ -386,6 +388,7 @@ export function usePlayerDetailsForm() {
           playerDetails.positions,
         ),
       };
+      form.value.phone = formatPhoneDisplay(form.value.phone ?? "");
       form.value.core_courses = playerDetails.core_courses ?? [];
       // Seed the multi-row list from the legacy single-team scalar fields the
       // first time an athlete opens the new UI (no travel_teams stored yet).

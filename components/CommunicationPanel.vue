@@ -65,7 +65,7 @@
             <div class="text-left">
               <p class="font-medium text-slate-900">Send Text</p>
               <p class="text-sm text-slate-500">
-                {{ formatPhone(coach.phone) }}
+                {{ formatPhoneDisplay(coach.phone) }}
               </p>
             </div>
           </div>
@@ -574,6 +574,7 @@ import { useTemplateResolver } from "~/composables/useTemplateResolver";
 import { useProfileFieldWrite } from "~/composables/useProfileFieldWrite";
 import { useAthleteMessages } from "~/composables/useAthleteMessages";
 import { useUserStore } from "~/stores/user";
+import { formatPhoneDisplay, toSmsHref } from "~/utils/phone";
 import { getRoleLabel } from "~/utils/coachLabels";
 import { findUnresolved } from "~/utils/templateResolver";
 import { editableColumnFor } from "~/utils/editableProfileFields";
@@ -959,13 +960,6 @@ const saveField = async (
   }
 };
 
-const formatPhone = (phone: string): string => {
-  const cleaned = phone.replace(/\D/g, "");
-  if (cleaned.length === 10) {
-    return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6)}`;
-  }
-  return phone;
-};
 
 const sendEmail = async () => {
   if (emailUnresolved.value.length > 0) {
@@ -1001,7 +995,10 @@ const sendText = async () => {
   if (!(await passesSendGuardrails("text"))) return;
 
   await logSentMessage("text");
-  window.location.href = `sms:${props.coach.phone?.replace(/\D/g, "")}?body=${encodeURIComponent(textComposer.value.body)}`;
+  window.location.href = toSmsHref(
+    props.coach.phone ?? "",
+    textComposer.value.body,
+  );
 
   if (shouldLogInteraction.value) {
     emit("interaction-logged", {

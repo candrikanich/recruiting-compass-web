@@ -52,10 +52,18 @@
               >Phone</label
             >
             <input
-              v-model="editedBasicInfo.phone"
+              :value="editedBasicInfo.phone"
               type="tel"
+              autocomplete="tel"
+              inputmode="tel"
+              maxlength="14"
               placeholder="(555) 123-4567"
               class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+              @input="
+                editedBasicInfo.phone = formatPhoneNational(
+                  ($event.target as HTMLInputElement).value,
+                )
+              "
             />
           </div>
           <div>
@@ -130,10 +138,10 @@
         <div v-if="school.phone" class="flex items-start gap-2">
           <span class="text-slate-500 text-sm w-24 shrink-0">Phone:</span>
           <a
-            :href="`tel:${school.phone}`"
+            :href="toTelHref(school.phone)"
             class="text-blue-600 hover:text-blue-700 text-sm"
           >
-            {{ school.phone }}
+            {{ formatPhoneDisplay(school.phone) }}
           </a>
         </div>
         <div v-if="school.website" class="flex items-start gap-2">
@@ -313,6 +321,11 @@
 <script setup lang="ts">
 import type { School } from "~/types/models";
 import type { BasicInfoFormData } from "~/composables/useSchoolBasicInfo";
+import {
+  formatPhoneDisplay,
+  formatPhoneNational,
+  toTelHref,
+} from "~/utils/phone";
 import {
   getAcademicInfo,
   hasContactInfo,

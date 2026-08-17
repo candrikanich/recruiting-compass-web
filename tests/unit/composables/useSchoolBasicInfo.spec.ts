@@ -182,7 +182,7 @@ describe("useSchoolBasicInfo", () => {
         athletics_url: null,
         twitter_handle: "@testschool",
         instagram_handle: "@testschool_ig",
-        phone: "(555) 111-2222",
+        phone: "+15551112222",
         academic_info: {
           ...mockSchool.academic_info,
           address: "456 New St",
