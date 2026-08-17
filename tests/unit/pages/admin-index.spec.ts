@@ -25,31 +25,11 @@ vi.mock("~/composables/useSupabase", () => ({
   })),
 }));
 
-const showToastMock = vi.fn();
-vi.mock("~/composables/useAppToast", () => ({
-  useAppToast: vi.fn(() => ({ showToast: showToastMock })),
-}));
-
-const fetchAuthMock = vi.fn();
-vi.mock("~/composables/useAuthFetch", () => ({
-  useAuthFetch: vi.fn(() => ({ $fetchAuth: fetchAuthMock })),
-}));
-
-const BulkDeleteConfirmModalStub = {
-  name: "BulkDeleteConfirmModal",
-  template: "<div data-testid='bulk-delete-modal'><slot /></div>",
-  props: ["isOpen", "emails"],
-};
-
 const mockFetch = vi.fn();
 beforeEach(() => {
   setActivePinia(createPinia());
   vi.clearAllMocks();
   mockFetch.mockImplementation((url: string) => {
-    if (url.includes("/api/admin/users"))
-      return Promise.resolve(
-        new Response(JSON.stringify({ users: [] }), { status: 200 }),
-      );
     if (url.includes("/api/admin/stats"))
       return Promise.resolve(
         new Response(
@@ -63,153 +43,46 @@ beforeEach(() => {
           { status: 200 },
         ),
       );
-    if (url.includes("/api/admin/health"))
-      return Promise.resolve(
-        new Response(
-          JSON.stringify({
-            ok: true,
-            db: "ok",
-            resend: "ok",
-            checks: [
-              { name: "Database", status: "ok" },
-              { name: "Resend (email)", status: "ok" },
-            ],
-          }),
-          { status: 200 },
-        ),
-      );
-    if (url.includes("/api/admin/pending-invitations"))
-      return Promise.resolve(
-        new Response(JSON.stringify({ invitations: [] }), { status: 200 }),
-      );
     return Promise.resolve(new Response(JSON.stringify({}), { status: 200 }));
   });
   (globalThis as any).fetch = mockFetch;
 });
 
-describe("Admin Dashboard (index.vue)", () => {
-  it("renders tab navigation with Overview, Users, Pending, Health, Tools", async () => {
+describe("Admin Overview (index.vue)", () => {
+  it("renders Overview heading with stats cards when stats loaded", async () => {
     const wrapper = mount(AdminIndex, {
       global: {
         plugins: [createPinia()],
-        stubs: {
-          NuxtLink: { template: "<a><slot /></a>", props: ["to"] },
-          BulkDeleteConfirmModal: BulkDeleteConfirmModalStub,
-        },
-      },
-    });
-
-    await wrapper.vm.$nextTick();
-    const buttons = wrapper.findAll("button");
-    const tabLabels = buttons
-      .filter((b) => b.text().match(/^(Overview|Users|Pending|Health|Tools)/))
-      .map((b) => b.text().split(" ")[0]);
-    expect(tabLabels).toContain("Overview");
-    expect(tabLabels).toContain("Users");
-    expect(tabLabels).toContain("Pending");
-    expect(tabLabels).toContain("Health");
-    expect(tabLabels).toContain("Tools");
-  });
-
-  it("shows Overview section by default with stats cards when stats loaded", async () => {
-    const wrapper = mount(AdminIndex, {
-      global: {
-        plugins: [createPinia()],
-        stubs: {
-          NuxtLink: { template: "<a><slot /></a>", props: ["to"] },
-          BulkDeleteConfirmModal: BulkDeleteConfirmModalStub,
-        },
       },
     });
 
     await wrapper.vm.$nextTick();
     await new Promise((r) => setTimeout(r, 50));
-
-    const overviewHeading = wrapper.find("h2");
-    expect(overviewHeading.exists()).toBe(true);
-    expect(overviewHeading.text()).toBe("Overview");
-
     await wrapper.vm.$nextTick();
+
+    const heading = wrapper.find("h1");
+    expect(heading.exists()).toBe(true);
+    expect(heading.text()).toBe("Overview");
+
     const cards = wrapper.findAll(".rounded-lg.border.border-slate-200");
     expect(cards.length).toBeGreaterThanOrEqual(1);
   });
 
-  it("calls $fetch for users and stats on mount", async () => {
+  it("calls $fetch for stats (and not users) on mount", async () => {
     mount(AdminIndex, {
       global: {
         plugins: [createPinia()],
-        stubs: {
-          NuxtLink: { template: "<a><slot /></a>", props: ["to"] },
-          BulkDeleteConfirmModal: BulkDeleteConfirmModalStub,
-        },
       },
     });
 
     await new Promise((r) => setTimeout(r, 100));
     expect(mockFetch).toHaveBeenCalledWith(
-      expect.stringContaining("/api/admin/users"),
-      expect.objectContaining({ headers: expect.any(Object) }),
-    );
-    expect(mockFetch).toHaveBeenCalledWith(
       "/api/admin/stats",
       expect.objectContaining({ headers: expect.any(Object) }),
     );
-  });
-
-  it("Tools tab shows Invite admin and Batch fetch logos links", async () => {
-    const wrapper = mount(AdminIndex, {
-      global: {
-        plugins: [createPinia()],
-        stubs: {
-          NuxtLink: { template: "<a><slot /></a>", props: ["to"] },
-          BulkDeleteConfirmModal: BulkDeleteConfirmModalStub,
-        },
-      },
-    });
-
-    await wrapper.vm.$nextTick();
-    const toolsButton = wrapper
-      .findAll("button")
-      .find((b) => b.text().includes("Tools"));
-    expect(toolsButton).toBeDefined();
-    await toolsButton!.trigger("click");
-    await wrapper.vm.$nextTick();
-
-    expect(wrapper.text()).toContain("Invite admin user");
-    expect(wrapper.text()).toContain("Batch fetch school logos");
-  });
-
-  describe("delete user error handling", () => {
-    it("shows a generic toast (not raw fetch/Postgres error text) when delete fails", async () => {
-      fetchAuthMock.mockRejectedValue(
-        new Error(
-          'duplicate key value violates unique constraint "users_pkey"',
-        ),
-      );
-
-      const wrapper = mount(AdminIndex, {
-        global: {
-          plugins: [createPinia()],
-          stubs: {
-            NuxtLink: { template: "<a><slot /></a>", props: ["to"] },
-            BulkDeleteConfirmModal: BulkDeleteConfirmModalStub,
-          },
-        },
-      });
-
-      await wrapper.vm.$nextTick();
-      const vm = wrapper.vm as any;
-
-      vm.userToDeleteEmail = "someone@test.com";
-      await vm.confirmDeleteUser();
-      await wrapper.vm.$nextTick();
-
-      expect(fetchAuthMock).toHaveBeenCalled();
-      expect(showToastMock).toHaveBeenCalledTimes(1);
-      const [message, type] = showToastMock.mock.calls[0];
-      expect(type).toBe("error");
-      expect(message).toBe("Failed to delete user. Please try again.");
-      expect(message).not.toMatch(/duplicate key|constraint|users_pkey/i);
-    });
+    expect(mockFetch).not.toHaveBeenCalledWith(
+      expect.stringContaining("/api/admin/users"),
+      expect.anything(),
+    );
   });
 });
