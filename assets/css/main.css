@@ -132,6 +132,14 @@
       transition-duration: 0.01ms !important;
       scroll-behavior: auto !important;
     }
+
+    /* Cross-route View Transitions aren't covered by the rules above —
+       the browser plays them even under reduced-motion. Suppress explicitly. */
+    ::view-transition-group(*),
+    ::view-transition-old(*),
+    ::view-transition-new(*) {
+      animation: none !important;
+    }
   }
 
   /* Skip link accessibility */

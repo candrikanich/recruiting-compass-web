@@ -10,6 +10,7 @@
           size="lg"
           fetch-on-mount
           class="shadow-md rounded-lg"
+          :transition-name="`school-logo-${school.id}`"
         />
 
         <div class="flex-1 min-w-0">

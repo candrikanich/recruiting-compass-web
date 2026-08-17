@@ -1,7 +1,12 @@
 <template>
   <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
     <div class="flex items-start gap-4">
-      <SchoolLogo :school="school" size="lg" fetch-on-mount />
+      <SchoolLogo
+        :school="school"
+        size="lg"
+        fetch-on-mount
+        :transition-name="`school-logo-${school.id}`"
+      />
       <div class="flex-1 min-w-0">
         <h1 class="text-2xl font-bold text-slate-900 mb-1">
           {{ school.name }}
