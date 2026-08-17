@@ -15,7 +15,12 @@ export interface AdminUserDetail {
   familyUnitId: string | null;
   family: {
     unit: Record<string, unknown> | null;
-    members: Record<string, unknown>[];
+    members: {
+      user_id: string;
+      role: string | null;
+      email: string | null;
+      full_name: string | null;
+    }[];
     pendingInvitations: Record<string, unknown>[];
   };
   athletes: Record<string, unknown>[];

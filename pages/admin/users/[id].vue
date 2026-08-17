@@ -50,7 +50,7 @@ onMounted(() => fetchDetail(String(route.params.id)));
         </div>
         <div>
           <dt class="text-brand-slate-500">Admin</dt>
-          <dd class="text-brand-slate-800">{{ detail.account.is_admin }}</dd>
+          <dd class="text-brand-slate-800">{{ detail.account.is_admin ? "Yes" : "No" }}</dd>
         </div>
         <div>
           <dt class="text-brand-slate-500">Phase</dt>
@@ -62,7 +62,7 @@ onMounted(() => fetchDetail(String(route.params.id)));
         </div>
         <div>
           <dt class="text-brand-slate-500">Onboarded</dt>
-          <dd class="text-brand-slate-800">{{ detail.account.onboarding_completed }}</dd>
+          <dd class="text-brand-slate-800">{{ detail.account.onboarding_completed ? "Yes" : "No" }}</dd>
         </div>
         <div>
           <dt class="text-brand-slate-500">Joined</dt>
@@ -77,6 +77,7 @@ onMounted(() => fetchDetail(String(route.params.id)));
       <AdminDataTable
         class="mb-6"
         :columns="[
+          { key: 'full_name', label: 'Name' },
           { key: 'email', label: 'Email' },
           { key: 'role', label: 'Role' },
         ]"
