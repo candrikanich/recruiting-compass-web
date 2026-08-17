@@ -129,7 +129,9 @@ export default [
       "playwright-report/**",
       "test-results/**",
       "vitest.config.ts",
-      "utils/positions.test.ts",
+      // tsconfig.json excludes `**/*.test.ts`, so type-aware linting cannot
+      // parse the co-located util tests.
+      "utils/**/*.test.ts",
     ],
   },
   js.configs.recommended,
