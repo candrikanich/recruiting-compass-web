@@ -161,7 +161,7 @@ jobs:
 
       - name: TruffleHog Secret Scan (PR diff)
         if: github.event_name == 'pull_request' && steps.sha-check.outputs.has_diff == 'true'
-        uses: trufflesecurity/trufflehog@v3.96.0
+        uses: trufflesecurity/trufflehog@v3.97.0
         with:
           path: ./
           base: ${{ github.event.pull_request.base.sha }}
@@ -193,7 +193,7 @@ jobs:
 
       - name: TruffleHog Secret Scan (scheduled/manual)
         if: github.event_name != 'pull_request' && steps.scan-base.outputs.has_diff == 'true'
-        uses: trufflesecurity/trufflehog@v3.96.0
+        uses: trufflesecurity/trufflehog@v3.97.0
         with:
           path: ./
           base: ${{ steps.scan-base.outputs.sha }}
