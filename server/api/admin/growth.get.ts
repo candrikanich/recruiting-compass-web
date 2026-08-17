@@ -147,7 +147,13 @@ export default defineEventHandler(async (event): Promise<AdminGrowth> => {
   const weekAgo = new Date(now.getTime() - 7 * 86400000);
   const monthAgo = new Date(now.getTime() - 30 * 86400000);
 
-  const activityRows = await loadActivityRows(db, windowStart, logger);
+  // Activity rows must cover at least a 30d floor regardless of the selected
+  // range, so MAU (and the "Active (30d)" funnel stage) are never undercounted
+  // when the admin picks a shorter window (e.g. 7d/14d). The daily trend below
+  // still scopes to the selected windowStart.
+  const activityFloorDays = Math.max(days, 30);
+  const activityFloorStart = new Date(now.getTime() - activityFloorDays * 86400000);
+  const activityRows = await loadActivityRows(db, activityFloorStart, logger);
   const activity = {
     dau: windowActiveCount(activityRows, dayAgo, now),
     wau: windowActiveCount(activityRows, weekAgo, now),

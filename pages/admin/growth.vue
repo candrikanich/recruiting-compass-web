@@ -14,6 +14,17 @@ const loadError = computed(() => error.value);
 
 const range = ref({ days: 30 });
 
+// "Accepted" is a different (smaller) population than "Accounts" (all users,
+// including self-serve signups + admins), so a later funnel stage can have a
+// higher count than the one before it — dropoffPct goes negative in that
+// case. Only render the badge for an actual drop; a non-positive value isn't
+// a meaningful "drop-off" for this funnel, so we omit the badge rather than
+// show a misleading negative/double-dash figure.
+function formatDropoff(count: number, dropoffPct: number | null): string {
+  if (dropoffPct === null || dropoffPct <= 0) return `${count}`;
+  return `${count} (-${dropoffPct}%)`;
+}
+
 function onRangeChange(value: { days: number }) {
   range.value = value;
   fetchGrowth(value.days);
@@ -69,7 +80,7 @@ onMounted(() => fetchGrowth(30));
           v-for="stage in growth.funnel"
           :key="stage.stage"
           :label="stage.stage"
-          :value="stage.dropoffPct === null ? stage.count : `${stage.count} (-${stage.dropoffPct}%)`"
+          :value="formatDropoff(stage.count, stage.dropoffPct)"
         />
       </div>
 

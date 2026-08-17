@@ -4,13 +4,26 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 const data: Record<string, any[]> = {};
 const counts: Record<string, number> = {};
 function stub(table: string) {
+  let gteCol: string | undefined;
+  let gteVal: string | undefined;
+  const filtered = () => {
+    const rows = data[table] ?? [];
+    if (!gteCol || !gteVal) return rows;
+    return rows.filter((r) => r[gteCol as string] >= (gteVal as string));
+  };
   const b: any = {
     select: (_c?: string, opts?: any) => {
       if (opts?.head) return { gte: () => b, not: () => b, eq: () => b, then: (r: any) => r({ count: counts[table] ?? 0, error: null }) };
       return b;
     },
-    gte: () => b, not: () => b, eq: () => b,
-    then: (r: any) => r({ data: data[table] ?? [], error: null, count: counts[table] ?? 0 }),
+    gte: (col: string, val: string) => {
+      gteCol = col;
+      gteVal = val;
+      return b;
+    },
+    not: () => b,
+    eq: () => b,
+    then: (r: any) => r({ data: filtered(), error: null, count: counts[table] ?? 0 }),
   };
   return b;
 }
@@ -45,5 +58,24 @@ describe("GET /api/admin/growth", () => {
   it("clamps days to 90", async () => {
     const res = await handler(ev("9999"));
     expect(res.windowDays).toBe(90);
+  });
+
+  it("counts MAU from a floor of at least 30d even when a shorter range is selected", async () => {
+    const twentyDaysAgo = new Date(Date.now() - 20 * 86400000).toISOString();
+    data["interactions"] = [
+      { logged_by: "u1", occurred_at: new Date().toISOString() },
+      { logged_by: "u3", occurred_at: twentyDaysAgo },
+    ];
+
+    const res = await handler(ev("7"));
+
+    expect(res.windowDays).toBe(7);
+    // MAU must see the ~20-day-old row even though the selected range is 7d.
+    expect(res.activity.mau).toBeGreaterThanOrEqual(2);
+    // The daily trend stays scoped to the selected 7d window: it must only
+    // reflect today's 2 rows (u1 via interactions, u2 via athlete_messages),
+    // never the 20-day-old u3 row.
+    const trendTotal = res.activity.dailyTrend.reduce((sum, d) => sum + d.count, 0);
+    expect(trendTotal).toBe(2);
   });
 });
