@@ -536,6 +536,12 @@
                 >
                   STALE
                 </span>
+                <span
+                  v-else-if="job.neverRun"
+                  class="ml-auto text-xs font-medium text-slate-500 bg-slate-100 rounded px-2 py-0.5"
+                >
+                  PENDING
+                </span>
               </div>
               <dl class="mt-3 text-sm space-y-1 text-slate-600">
                 <div class="flex justify-between gap-4">

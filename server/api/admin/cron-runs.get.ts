@@ -78,7 +78,9 @@ export interface CronJobSummary {
   lastRun: CronRunRow | null;
   lastSuccessAt: string | null;
   running: boolean;
-  /** No successful run within the expected cadence (or never ran). */
+  /** Has never recorded a run yet (e.g. a freshly deployed schedule). */
+  neverRun: boolean;
+  /** Ran successfully before but has now lapsed past its expected cadence. */
   stale: boolean;
 }
 
@@ -121,15 +123,19 @@ export default defineEventHandler(
           runs.find((r) => r.status === "success" || r.status === "partial") ??
           null;
         const lastSuccessAt = lastSuccess?.started_at ?? null;
+        // Stale only once a job HAS succeeded before and then lapsed past its
+        // cadence. A job that has never run is "pending", not stale — don't
+        // flag a freshly deployed schedule red before its first fire.
         const stale = lastSuccessAt
           ? now - new Date(lastSuccessAt).getTime() > job.maxAgeMs
-          : true;
+          : false;
         return {
           jobName: job.jobName,
           schedule: job.schedule,
           lastRun,
           lastSuccessAt,
           running: lastRun?.status === "running",
+          neverRun: lastRun === null,
           stale,
         };
       });
