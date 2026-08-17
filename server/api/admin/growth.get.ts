@@ -78,14 +78,21 @@ async function loadActivityRows(
   return rows;
 }
 
+// Minimal shape `countOf` actually needs to filter a count-only query:
+// thenable (awaited directly) plus the two filter methods callers chain on.
+interface CountQuery extends PromiseLike<{ count: number | null; error: unknown }> {
+  not: (column: string, operator: string, value: unknown) => CountQuery;
+  eq: (column: string, value: unknown) => CountQuery;
+}
+
 async function countOf(
   db: Db,
   table: string,
   logger: ReturnType<typeof useLogger>,
-  apply?: (q: any) => any, // eslint-disable-line @typescript-eslint/no-explicit-any
+  apply?: (q: CountQuery) => CountQuery,
 ): Promise<number> {
   try {
-    let q = db.from(table).select("id", { count: "exact", head: true });
+    let q = db.from(table).select("id", { count: "exact", head: true }) as unknown as CountQuery;
     if (apply) q = apply(q);
     const { count, error } = await q;
     if (error) {
