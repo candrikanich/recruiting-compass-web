@@ -44,7 +44,7 @@
     "@nuxt/ui": "~3.3.7",
     "@nuxtjs/supabase": "^2.0.10",
     "@pinia/nuxt": "^0.11.3",
-    "@sentry/nuxt": "^10.69.0",
+    "@sentry/nuxt": "^10.70.0",
     "@supabase/supabase-js": "^2.112.3",
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.38.2",
