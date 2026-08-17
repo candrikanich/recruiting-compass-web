@@ -55,12 +55,18 @@ beforeEach(() => {
   (globalThis as any).fetch = mockFetch;
 });
 
+const NuxtLinkStub = {
+  name: "NuxtLink",
+  template: "<a :href=\"to\"><slot /></a>",
+  props: ["to"],
+};
+
 function mountUsers() {
   return mount(AdminUsers, {
     global: {
       plugins: [createPinia()],
       stubs: {
-        NuxtLink: { template: "<a><slot /></a>", props: ["to"] },
+        NuxtLink: NuxtLinkStub,
         BulkDeleteConfirmModal: BulkDeleteConfirmModalStub,
       },
     },
@@ -76,6 +82,36 @@ describe("Admin Users (users.vue)", () => {
       expect.stringContaining("/api/admin/users"),
       expect.objectContaining({ headers: expect.any(Object) }),
     );
+  });
+
+  it("links each user row to its detail page", async () => {
+    mockFetch.mockImplementation((url: string) => {
+      if (url.includes("/api/admin/users"))
+        return Promise.resolve(
+          new Response(
+            JSON.stringify({
+              users: [
+                {
+                  id: "u1",
+                  email: "someone@test.com",
+                  full_name: "Someone Test",
+                  role: "athlete",
+                  is_admin: false,
+                },
+              ],
+            }),
+            { status: 200 },
+          ),
+        );
+      return Promise.resolve(new Response(JSON.stringify({}), { status: 200 }));
+    });
+
+    const wrapper = mountUsers();
+    await new Promise((r) => setTimeout(r, 100));
+    await wrapper.vm.$nextTick();
+
+    const link = wrapper.find("a[href='/admin/users/u1']");
+    expect(link.exists()).toBe(true);
   });
 
   describe("delete user error handling", () => {
