@@ -265,8 +265,12 @@ const { schools, loading, error, fetchSchools, toggleFavorite, smartDelete } =
   useSchools();
 const { fetchMultipleLogos } = useSchoolLogos();
 const { calculateMatchScore } = useSchoolMatching();
-const { getSchoolPreferences, getHomeLocation, loadAllPreferences, getPlayerDetails } =
-  usePreferenceManager();
+const {
+  getSchoolPreferences,
+  getHomeLocation,
+  loadAllPreferences,
+  getPlayerDetails,
+} = usePreferenceManager();
 const offersStore = useOffersStore();
 const { offers } = storeToRefs(offersStore);
 const { fetchOffers } = offersStore;

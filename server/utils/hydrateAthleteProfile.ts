@@ -78,7 +78,8 @@ async function hydratePlayerPreferences(
       typeof pending.graduationYear === "number"
         ? pending.graduationYear
         : undefined,
-    primary_sport: typeof pending.sport === "string" ? pending.sport : undefined,
+    primary_sport:
+      typeof pending.sport === "string" ? pending.sport : undefined,
     primary_position: position,
     positions: position ? [position] : undefined,
   };
@@ -122,7 +123,9 @@ async function hydrateDateOfBirth(
     .maybeSingle();
 
   // Player-authoritative: the player's own signup DOB wins; only fill if absent.
-  if (!isEmpty((userRow as { date_of_birth?: unknown } | null)?.date_of_birth)) {
+  if (
+    !isEmpty((userRow as { date_of_birth?: unknown } | null)?.date_of_birth)
+  ) {
     return;
   }
 

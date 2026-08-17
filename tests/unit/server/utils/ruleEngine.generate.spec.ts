@@ -296,7 +296,9 @@ describe("RuleEngine.generateSuggestions stale invalidation", () => {
       id: "rule-a",
       name: "a",
       description: "",
-      evaluate: vi.fn().mockResolvedValue(buildSuggestion({ rule_type: "rule-a" })),
+      evaluate: vi
+        .fn()
+        .mockResolvedValue(buildSuggestion({ rule_type: "rule-a" })),
     };
     const engine = new RuleEngine([rule]);
     const { supabase, spy } = makeSupabase({

@@ -101,12 +101,14 @@
       class="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900"
       data-testid="minor-guardian-notice"
     >
-      <p class="font-semibold">Players under 18 join through a parent or guardian</p>
+      <p class="font-semibold">
+        Players under 18 join through a parent or guardian
+      </p>
       <p class="mt-1">
-        Recruiting Compass is built for families. A parent or guardian creates the
-        account and invites the athlete to their family unit. Ask your parent to
-        sign up, then accept the invitation they send you to finish setting up your
-        player profile.
+        Recruiting Compass is built for families. A parent or guardian creates
+        the account and invites the athlete to their family unit. Ask your
+        parent to sign up, then accept the invitation they send you to finish
+        setting up your player profile.
       </p>
     </div>
 

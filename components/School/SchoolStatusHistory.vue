@@ -106,8 +106,7 @@ const error = ref<string | null>(null);
 const getStatusColor = (status: string): string =>
   getSchoolStatusBadgeClass(status);
 
-const formatStatus = (status: string): string =>
-  getSchoolStatusLabel(status);
+const formatStatus = (status: string): string => getSchoolStatusLabel(status);
 
 const formatDate = (dateString: string): string => {
   try {

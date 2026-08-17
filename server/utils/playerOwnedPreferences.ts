@@ -7,7 +7,11 @@ import { getUserRole } from "~/server/utils/auth";
 import type { useSupabaseAdmin } from "~/server/utils/supabase";
 
 // Categories stored against the athlete's user_id; a parent is redirected to the athlete's row.
-export const PLAYER_OWNED_CATEGORIES = new Set(["location", "player", "school"]);
+export const PLAYER_OWNED_CATEGORIES = new Set([
+  "location",
+  "player",
+  "school",
+]);
 
 /**
  * Finds the linked athlete's user_id for a parent via family_members.

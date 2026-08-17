@@ -9,7 +9,11 @@ import {
 describe("normalizePrefs", () => {
   it("maps rows by type and preserves booleans", () => {
     const map = normalizePrefs([
-      { notification_type: "deadline_alert", push_enabled: true, email_enabled: false },
+      {
+        notification_type: "deadline_alert",
+        push_enabled: true,
+        email_enabled: false,
+      },
       { notification_type: "event", push_enabled: false, email_enabled: false },
     ]);
     expect(map.get("deadline_alert")).toEqual({
@@ -24,7 +28,11 @@ describe("normalizePrefs", () => {
 
   it("falls back to enabled when a column is null", () => {
     const map = normalizePrefs([
-      { notification_type: "weekly_digest", push_enabled: null, email_enabled: null },
+      {
+        notification_type: "weekly_digest",
+        push_enabled: null,
+        email_enabled: null,
+      },
     ]);
     expect(map.get("weekly_digest")).toEqual(DEFAULT_PREF);
   });

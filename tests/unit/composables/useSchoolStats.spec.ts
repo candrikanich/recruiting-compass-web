@@ -33,9 +33,24 @@ describe("useSchoolStats", () => {
 
   it("counts favorites accurately", () => {
     const schools = ref<School[]>([
-      { id: "1", name: "School 1", is_favorite: true, family_unit_id: "f1" } as School,
-      { id: "2", name: "School 2", is_favorite: false, family_unit_id: "f1" } as School,
-      { id: "3", name: "School 3", is_favorite: true, family_unit_id: "f1" } as School,
+      {
+        id: "1",
+        name: "School 1",
+        is_favorite: true,
+        family_unit_id: "f1",
+      } as School,
+      {
+        id: "2",
+        name: "School 2",
+        is_favorite: false,
+        family_unit_id: "f1",
+      } as School,
+      {
+        id: "3",
+        name: "School 3",
+        is_favorite: true,
+        family_unit_id: "f1",
+      } as School,
     ]);
 
     const { stats } = useSchoolStats(schools, noInteractions(), noEvents());
@@ -47,9 +62,24 @@ describe("useSchoolStats", () => {
   describe("Visited (real visits, not status)", () => {
     const schools = () =>
       ref<School[]>([
-        { id: "1", name: "S1", status: "official_visit_scheduled", family_unit_id: "f1" } as School,
-        { id: "2", name: "S2", status: "committed", family_unit_id: "f1" } as School,
-        { id: "3", name: "S3", status: "interested", family_unit_id: "f1" } as School,
+        {
+          id: "1",
+          name: "S1",
+          status: "official_visit_scheduled",
+          family_unit_id: "f1",
+        } as School,
+        {
+          id: "2",
+          name: "S2",
+          status: "committed",
+          family_unit_id: "f1",
+        } as School,
+        {
+          id: "3",
+          name: "S3",
+          status: "interested",
+          family_unit_id: "f1",
+        } as School,
       ]);
 
     it("does NOT count status alone", () => {
@@ -78,8 +108,18 @@ describe("useSchoolStats", () => {
 
     it("counts a past-dated visit event but not a future one", () => {
       const events = ref<Event[]>([
-        { id: "e1", school_id: "1", type: "official_visit", start_date: yesterday() } as Event,
-        { id: "e2", school_id: "2", type: "unofficial_visit", start_date: tomorrow() } as Event,
+        {
+          id: "e1",
+          school_id: "1",
+          type: "official_visit",
+          start_date: yesterday(),
+        } as Event,
+        {
+          id: "e2",
+          school_id: "2",
+          type: "unofficial_visit",
+          start_date: tomorrow(),
+        } as Event,
       ]);
       const { stats } = useSchoolStats(schools(), noInteractions(), events);
       expect(stats.value[2].value).toBe(1);
@@ -90,7 +130,12 @@ describe("useSchoolStats", () => {
         { id: "i1", school_id: "1", type: "in_person_visit" } as Interaction,
       ]);
       const events = ref<Event[]>([
-        { id: "e1", school_id: "1", type: "official_visit", start_date: yesterday() } as Event,
+        {
+          id: "e1",
+          school_id: "1",
+          type: "official_visit",
+          start_date: yesterday(),
+        } as Event,
       ]);
       const { stats } = useSchoolStats(schools(), interactions, events);
       expect(stats.value[2].value).toBe(1);
@@ -99,8 +144,18 @@ describe("useSchoolStats", () => {
 
   it("counts contacted schools by status", () => {
     const schools = ref<School[]>([
-      { id: "1", name: "S1", status: "contacted", family_unit_id: "f1" } as School,
-      { id: "2", name: "S2", status: "interested", family_unit_id: "f1" } as School,
+      {
+        id: "1",
+        name: "S1",
+        status: "contacted",
+        family_unit_id: "f1",
+      } as School,
+      {
+        id: "2",
+        name: "S2",
+        status: "interested",
+        family_unit_id: "f1",
+      } as School,
     ]);
     const { stats } = useSchoolStats(schools, noInteractions(), noEvents());
     expect(stats.value[3].label).toBe("Contacted");

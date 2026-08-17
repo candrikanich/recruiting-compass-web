@@ -78,7 +78,12 @@ const pending = {
 
 describe("hydrateAthleteFromPendingDetails", () => {
   it("populates an empty athlete profile from staged parent data", async () => {
-    await hydrateAthleteFromPendingDetails(supabase, "athlete-1", pending, logger);
+    await hydrateAthleteFromPendingDetails(
+      supabase,
+      "athlete-1",
+      pending,
+      logger,
+    );
     expect(state.playerUpsert?.data).toMatchObject({
       graduation_year: 2028,
       primary_sport: "Soccer",
@@ -94,7 +99,12 @@ describe("hydrateAthleteFromPendingDetails", () => {
     };
     state.userRow = { date_of_birth: "2009-01-01" };
 
-    await hydrateAthleteFromPendingDetails(supabase, "athlete-1", pending, logger);
+    await hydrateAthleteFromPendingDetails(
+      supabase,
+      "athlete-1",
+      pending,
+      logger,
+    );
 
     // Existing player values preserved; only the empty position is filled.
     expect(state.playerUpsert?.data).toMatchObject({
@@ -115,7 +125,12 @@ describe("hydrateAthleteFromPendingDetails", () => {
         positions: ["Catcher"],
       },
     };
-    await hydrateAthleteFromPendingDetails(supabase, "athlete-1", pending, logger);
+    await hydrateAthleteFromPendingDetails(
+      supabase,
+      "athlete-1",
+      pending,
+      logger,
+    );
     expect(state.playerUpsert).toBeNull();
   });
 

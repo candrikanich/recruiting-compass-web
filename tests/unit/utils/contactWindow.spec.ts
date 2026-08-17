@@ -49,16 +49,22 @@ const d3: ContactWindowRule = {
 describe("computeWindowOpenDate", () => {
   it("baseball D1 opens Aug 1 before junior year (gradYear-2)", () => {
     // gradYear 2028 -> junior academic year starts fall 2026 -> Aug 1, 2026
-    expect(computeWindowOpenDate(baseballD1, 2028)).toEqual(new Date(2026, 7, 1));
+    expect(computeWindowOpenDate(baseballD1, 2028)).toEqual(
+      new Date(2026, 7, 1),
+    );
   });
 
   it("softball D1 (Sept 1 after sophomore) resolves to start of junior year", () => {
     // gradYear 2028 -> sophomore ends spring 2026 -> Sept 1, 2026
-    expect(computeWindowOpenDate(softballD1, 2028)).toEqual(new Date(2026, 8, 1));
+    expect(computeWindowOpenDate(softballD1, 2028)).toEqual(
+      new Date(2026, 8, 1),
+    );
   });
 
   it("default D1 Jun 15 after sophomore -> Jun 15 of gradYear-2", () => {
-    expect(computeWindowOpenDate(defaultD1, 2028)).toEqual(new Date(2026, 5, 15));
+    expect(computeWindowOpenDate(defaultD1, 2028)).toEqual(
+      new Date(2026, 5, 15),
+    );
   });
 
   it("unrestricted rule has no open date", () => {
@@ -154,9 +160,24 @@ describe("evaluateContactWindow", () => {
 });
 
 describe("filterTemplatesByWindow", () => {
-  const introStandard = { slug: "intro-standard", type: "email", stage: "intro", contact_window: "any" as const };
-  const introPre = { slug: "intro-pre-window", type: "email", stage: "intro", contact_window: "pre" as const };
-  const followUp = { slug: "follow-up", type: "email", stage: "follow_up", contact_window: "post" as const };
+  const introStandard = {
+    slug: "intro-standard",
+    type: "email",
+    stage: "intro",
+    contact_window: "any" as const,
+  };
+  const introPre = {
+    slug: "intro-pre-window",
+    type: "email",
+    stage: "intro",
+    contact_window: "pre" as const,
+  };
+  const followUp = {
+    slug: "follow-up",
+    type: "email",
+    stage: "follow_up",
+    contact_window: "post" as const,
+  };
   const all = [introStandard, introPre, followUp];
 
   it("open state hides the pre-window intro, keeps standard", () => {
@@ -170,7 +191,12 @@ describe("filterTemplatesByWindow", () => {
   });
 
   it("pre state keeps an 'any' template that has no pre sibling", () => {
-    const lone = { slug: "thank-you", type: "email", stage: "thanks", contact_window: "any" as const };
+    const lone = {
+      slug: "thank-you",
+      type: "email",
+      stage: "thanks",
+      contact_window: "any" as const,
+    };
     const out = filterTemplatesByWindow([lone], "pre");
     expect(out.map((t) => t.slug)).toEqual(["thank-you"]);
   });

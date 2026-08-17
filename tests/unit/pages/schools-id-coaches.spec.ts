@@ -679,9 +679,9 @@ describe("pages/schools/[id]/coaches.vue", () => {
       await coachCard.vm.$emit("open-communication", "coach-1");
       await nextTick();
 
-      expect(wrapper.findComponent({ name: "CommunicationPanel" }).exists()).toBe(
-        true,
-      );
+      expect(
+        wrapper.findComponent({ name: "CommunicationPanel" }).exists(),
+      ).toBe(true);
     });
   });
 

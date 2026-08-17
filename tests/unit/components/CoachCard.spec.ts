@@ -100,7 +100,11 @@ describe("CoachCard — action row", () => {
   });
 
   it("omits an action when its data field is missing, preserving order", () => {
-    const coach = { ...baseCoach, phone: null, twitter_handle: null } as unknown as Coach;
+    const coach = {
+      ...baseCoach,
+      phone: null,
+      twitter_handle: null,
+    } as unknown as Coach;
     const w = mount(CoachCard, {
       props: { coach },
       global: { stubs: actionStubs },
@@ -142,7 +146,10 @@ describe("CoachCard — action row", () => {
 
 describe("CoachCard — back-context query", () => {
   it("appends encoded back + label query when backTo is provided", () => {
-    const w = mountCard({ backTo: "/schools/s1/coaches", backLabel: "Coaches" });
+    const w = mountCard({
+      backTo: "/schools/s1/coaches",
+      backLabel: "Coaches",
+    });
     expect(w.get("a").attributes("href")).toBe(
       "/coaches/c1?back=%2Fschools%2Fs1%2Fcoaches&label=Coaches",
     );

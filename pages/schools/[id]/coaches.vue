@@ -209,7 +209,6 @@
         </div>
       </div>
     </Teleport>
-
   </div>
 </template>
 
@@ -248,13 +247,7 @@ const selectDropdownStyle = computed(() => ({
   paddingRight: "2.5rem",
 }));
 
-const {
-  coaches,
-  loading,
-  error,
-  fetchCoaches,
-  createCoach,
-} = useCoaches();
+const { coaches, loading, error, fetchCoaches, createCoach } = useCoaches();
 const { getSchool } = useSchools();
 const { fetchInteractions } = useInteractions();
 const {

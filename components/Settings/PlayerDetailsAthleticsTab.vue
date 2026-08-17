@@ -127,7 +127,11 @@
       </div>
 
       <!-- Positions -->
-      <div :class="isBaseballOrSoftball ? 'mt-8 pt-8 border-t border-slate-100' : ''">
+      <div
+        :class="
+          isBaseballOrSoftball ? 'mt-8 pt-8 border-t border-slate-100' : ''
+        "
+      >
         <label
           class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 ml-1"
           >Positions You Play</label
@@ -164,8 +168,8 @@
             >Position Priority</label
           >
           <p class="text-xs text-slate-500 mb-3 ml-1">
-            Order matters — your first pick is what coaches see (they recruit for
-            specific positions).
+            Order matters — your first pick is what coaches see (they recruit
+            for specific positions).
           </p>
           <ul class="space-y-2">
             <li
@@ -188,7 +192,9 @@
                 class="w-5 text-center text-xs font-bold text-slate-400"
                 >{{ i + 1 }}</span
               >
-              <span class="font-semibold text-slate-700 text-sm">{{ pos }}</span>
+              <span class="font-semibold text-slate-700 text-sm">{{
+                pos
+              }}</span>
               <span class="text-xs font-mono text-slate-400">{{
                 abbrev(pos)
               }}</span>
@@ -242,7 +248,10 @@
             class="inline-flex items-center gap-1 mt-1.5 ml-1 text-xs font-medium text-blue-600 hover:text-blue-700"
           >
             Register at NCAA Eligibility Center
-            <UIcon name="i-heroicons-arrow-top-right-on-square" class="w-3 h-3" />
+            <UIcon
+              name="i-heroicons-arrow-top-right-on-square"
+              class="w-3 h-3"
+            />
           </a>
         </div>
         <template v-if="isBaseballOrSoftball">
