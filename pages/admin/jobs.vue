@@ -49,7 +49,21 @@
             >
               PENDING
             </span>
+            <span
+              v-if="!job.stale && consecutiveFailures(recent, job.jobName) >= 2"
+              class="ml-auto text-xs font-medium text-red-700 bg-red-100 rounded px-2 py-0.5"
+            >
+              {{ consecutiveFailures(recent, job.jobName) }} failures in a row
+            </span>
           </div>
+
+          <div class="mt-3 h-8">
+            <AdminChart
+              type="sparkline"
+              :data="sparklineData(recent, job.jobName)"
+            />
+          </div>
+
           <dl class="mt-3 text-sm space-y-1 text-slate-600">
             <div class="flex justify-between gap-4">
               <dt>Schedule</dt>
@@ -98,6 +112,34 @@
               {{ job.lastRun.error }}
             </p>
           </dl>
+
+          <div class="mt-3 pt-3 border-t border-slate-200/70">
+            <button
+              v-if="TRIGGERABLE_JOBS.includes(job.jobName as (typeof TRIGGERABLE_JOBS)[number])"
+              type="button"
+              :disabled="triggering === job.jobName"
+              class="text-sm font-medium text-blue-600 hover:text-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              @click="runJob(job.jobName)"
+            >
+              {{ triggering === job.jobName ? "Running..." : "Run now" }}
+            </button>
+            <button
+              v-else-if="DRYRUN_ONLY_JOBS.includes(job.jobName as (typeof DRYRUN_ONLY_JOBS)[number])"
+              type="button"
+              :disabled="triggering === job.jobName"
+              class="text-sm font-medium text-blue-600 hover:text-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              @click="runJob(job.jobName, true)"
+            >
+              {{ triggering === job.jobName ? "Running..." : "Preview (dry run)" }}
+            </button>
+            <span v-else class="text-xs text-slate-400">Scheduled only</span>
+
+            <pre
+              v-if="dryRunPreview[job.jobName]"
+              class="mt-2 text-xs bg-slate-50 border border-slate-200 rounded p-2 overflow-x-auto"
+              >{{ JSON.stringify(dryRunPreview[job.jobName], null, 2) }}</pre
+            >
+          </div>
         </div>
       </div>
 
@@ -160,19 +202,46 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from "vue";
+import { onMounted, ref } from "vue";
 import {
   useAdminCronRuns,
   type CronJobSummary,
 } from "~/composables/useAdminCronRuns";
+import {
+  consecutiveFailures,
+  sparklineData,
+  TRIGGERABLE_JOBS,
+  DRYRUN_ONLY_JOBS,
+} from "~/utils/cronDashboard";
+import AdminChart from "~/components/Admin/AdminChart.vue";
 
 definePageMeta({
   layout: "admin",
   middleware: ["auth", "admin"],
 });
 
-const { jobs, recent, cronLoading, cronError, loadCronRuns } =
+const { jobs, recent, cronLoading, cronError, loadCronRuns, triggerJob } =
   useAdminCronRuns();
+
+// Which job (by name) currently has an in-flight trigger, if any — disables
+// that job's button only, not every card, while a run is in progress.
+const triggering = ref<string | null>(null);
+const dryRunPreview = ref<Record<string, unknown>>({});
+
+async function runJob(jobName: string, dryRun = false): Promise<void> {
+  triggering.value = jobName;
+  try {
+    const res = await triggerJob(jobName, dryRun);
+    if (dryRun) {
+      dryRunPreview.value = { ...dryRunPreview.value, [jobName]: res.result };
+    }
+  } catch {
+    // Surfaced via the refreshed job/recent history (error status on the
+    // job's own cron_runs row); no separate toast needed here.
+  } finally {
+    triggering.value = null;
+  }
+}
 
 function formatCronTime(iso: string | null | undefined): string {
   if (!iso) return "—";
