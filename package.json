@@ -94,7 +94,7 @@
     "pa11y-ci": "^4.1.1",
     "postcss": "^8.5.26",
     "prettier": "^3.9.6",
-    "supabase": "^2.109.0",
+    "supabase": "^2.114.0",
     "tailwindcss": "^4.3.0",
     "tsx": "^4.23.12",
     "typescript": "^5.9.3",
