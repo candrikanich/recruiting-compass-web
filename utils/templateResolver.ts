@@ -51,10 +51,18 @@ export interface RegistryVar {
 }
 
 type TableName = "users" | "schools" | "coaches" | "events";
-const KNOWN_TABLES: readonly TableName[] = ["users", "schools", "coaches", "events"];
+const KNOWN_TABLES: readonly TableName[] = [
+  "users",
+  "schools",
+  "coaches",
+  "events",
+];
 
 /** Resolve a single source_path against the context. Returns raw value or null. */
-export function resolveSourcePath(sourcePath: string | null | undefined, ctx: ResolverContext): unknown {
+export function resolveSourcePath(
+  sourcePath: string | null | undefined,
+  ctx: ResolverContext,
+): unknown {
   if (!sourcePath) return null;
 
   if (sourcePath.startsWith("column:")) {
@@ -76,7 +84,20 @@ export function resolveSourcePath(sourcePath: string | null | undefined, ctx: Re
 
 // --- metric rendering (product rules #3 provenance, #4 cap-at-4) -------------
 
-const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const MONTHS = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
 
 const humanizeMetricLabel = (metricType?: string | null): string =>
   (metricType ?? "").replace(/_/g, " ").trim();
@@ -118,7 +139,11 @@ const eventLocation = (e: EventLite): string | null => {
 };
 
 /** Upcoming events (end/start still today or later), soonest first, capped. */
-export function selectUpcomingEvents(events: EventLite[], now: Date, cap = 5): EventLite[] {
+export function selectUpcomingEvents(
+  events: EventLite[],
+  now: Date,
+  cap = 5,
+): EventLite[] {
   const today = now.toISOString().slice(0, 10);
   return [...events]
     .filter((e) => {
@@ -130,7 +155,11 @@ export function selectUpcomingEvents(events: EventLite[], now: Date, cap = 5): E
 }
 
 /** Multi-row `{{eventSchedule}}` block. One "- Mon D — name, place" row per event. */
-export function renderEventSchedule(events: EventLite[], now = new Date(), cap = 5): string | null {
+export function renderEventSchedule(
+  events: EventLite[],
+  now = new Date(),
+  cap = 5,
+): string | null {
   const rows = selectUpcomingEvents(events, now, cap)
     .map((e) => {
       const date = monthDay(e.start_date);
@@ -153,7 +182,8 @@ export function nextEvent(
   if (!next) return null;
   const start = monthDay(next.start_date);
   const end = monthDay(next.end_date);
-  const dates = start && end && end !== start ? `${start}–${end}` : (start ?? null);
+  const dates =
+    start && end && end !== start ? `${start}–${end}` : (start ?? null);
   return { name: str(next.name), dates };
 }
 
@@ -165,7 +195,10 @@ const rankMetrics = (metrics: MetricRow[]): MetricRow[] =>
   });
 
 /** Rendered metrics block: primary first, capped at `cap` (default 4). */
-export function renderMetrics(metrics: MetricRow[], opts: { cap?: number } = {}): string {
+export function renderMetrics(
+  metrics: MetricRow[],
+  opts: { cap?: number } = {},
+): string {
   const cap = opts.cap ?? 4;
   return rankMetrics(metrics)
     .slice(0, cap)
@@ -226,9 +259,12 @@ const COMPUTED: Record<string, (ctx: ResolverContext) => string | null> = {
     if (c.tables?.users?.sat_score != null) return "SAT";
     return null;
   },
-  testScore: (c) => str(c.tables?.users?.act_score) ?? str(c.tables?.users?.sat_score),
+  testScore: (c) =>
+    str(c.tables?.users?.act_score) ?? str(c.tables?.users?.sat_score),
   metricsAsOf: (c) => {
-    const dates = (c.metrics ?? []).map((m) => m.recorded_date).filter(Boolean) as string[];
+    const dates = (c.metrics ?? [])
+      .map((m) => m.recorded_date)
+      .filter(Boolean) as string[];
     if (dates.length === 0) return null;
     return monthYear(dates.sort().at(-1)!);
   },
@@ -239,7 +275,13 @@ const COMPUTED: Record<string, (ctx: ResolverContext) => string | null> = {
   carryingTool: (c) => carryingTool(c.metrics ?? []),
   seasonLabel: (c) => {
     const m = (c.now ?? new Date()).getUTCMonth();
-    return m <= 1 || m === 11 ? "winter" : m <= 4 ? "spring" : m <= 7 ? "summer" : "fall";
+    return m <= 1 || m === 11
+      ? "winter"
+      : m <= 4
+        ? "spring"
+        : m <= 7
+          ? "summer"
+          : "fall";
   },
   todayDate: (c) =>
     (c.now ?? new Date()).toLocaleDateString("en-US", {
@@ -251,7 +293,10 @@ const COMPUTED: Record<string, (ctx: ResolverContext) => string | null> = {
 };
 
 /** Build the {{key}} -> value map. Keys resolving to null are omitted. */
-export function resolveVariables(registry: RegistryVar[], ctx: ResolverContext): Record<string, string> {
+export function resolveVariables(
+  registry: RegistryVar[],
+  ctx: ResolverContext,
+): Record<string, string> {
   const out: Record<string, string> = {};
   for (const v of registry) {
     let raw: unknown = null;
@@ -264,7 +309,9 @@ export function resolveVariables(registry: RegistryVar[], ctx: ResolverContext):
         break;
       case "system":
       case "computed":
-        raw = COMPUTED[v.key] ? COMPUTED[v.key](ctx) : (ctx.derived?.[v.key] ?? null);
+        raw = COMPUTED[v.key]
+          ? COMPUTED[v.key](ctx)
+          : (ctx.derived?.[v.key] ?? null);
         break;
     }
     const s = str(raw);
@@ -274,7 +321,10 @@ export function resolveVariables(registry: RegistryVar[], ctx: ResolverContext):
 }
 
 /** Replace every {{key}} with its value. Missing keys are left intact. */
-export function renderTemplate(body: string, values: Record<string, string>): string {
+export function renderTemplate(
+  body: string,
+  values: Record<string, string>,
+): string {
   let rendered = body;
   for (const [key, value] of Object.entries(values)) {
     rendered = rendered.replace(new RegExp(`\\{\\{${key}\\}\\}`, "g"), value);

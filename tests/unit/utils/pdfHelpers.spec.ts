@@ -83,7 +83,12 @@ describe("pdfHelpers", () => {
   describe("addChartImage", () => {
     it("draws the title and image, returning yPosition + 100", () => {
       const doc = makeDoc();
-      const nextY = addChartImage(doc as never, "data:image/png;base64,xx", "Trend", 50);
+      const nextY = addChartImage(
+        doc as never,
+        "data:image/png;base64,xx",
+        "Trend",
+        50,
+      );
       expect(doc.text).toHaveBeenCalledWith("Trend", 15, 50);
       expect(doc.addImage).toHaveBeenCalledWith(
         "data:image/png;base64,xx",

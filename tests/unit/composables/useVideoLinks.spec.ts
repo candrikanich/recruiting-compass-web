@@ -103,9 +103,12 @@ describe("useVideoLinks", () => {
       mockFetchAuth.mockResolvedValueOnce({ success: true });
       await remove(ROW_1.id);
 
-      expect(mockFetchAuth).toHaveBeenCalledWith(`/api/video-links/${ROW_1.id}`, {
-        method: "DELETE",
-      });
+      expect(mockFetchAuth).toHaveBeenCalledWith(
+        `/api/video-links/${ROW_1.id}`,
+        {
+          method: "DELETE",
+        },
+      );
       expect(links.value).toEqual([ROW_2]);
     });
   });

@@ -151,7 +151,9 @@ const SPORT_ALIASES: Record<string, Record<string, string>> = {
 SPORT_ALIASES.Softball = SPORT_ALIASES.Baseball;
 
 /** Canonical position list for a sport (empty array for unknown sports). */
-export function getCanonicalPositions(sport: string | null | undefined): string[] {
+export function getCanonicalPositions(
+  sport: string | null | undefined,
+): string[] {
   if (!sport) return [];
   return [...(SPORT_POSITIONS[sport] ?? [])];
 }
@@ -249,7 +251,9 @@ export function primaryAndSecondary(
   primaryFallback?: string | null,
 ): { primary: string; secondary: string } {
   const list = Array.isArray(positions)
-    ? positions.filter((p): p is string => typeof p === "string" && p.trim().length > 0)
+    ? positions.filter(
+        (p): p is string => typeof p === "string" && p.trim().length > 0,
+      )
     : [];
   const primary = (list[0] ?? primaryFallback ?? "").trim();
   const secondary = list.find((p) => p.trim() !== primary)?.trim() ?? "";
@@ -266,7 +270,10 @@ export function formatPositionsShort(
   positions: string[] | null | undefined,
   primaryFallback?: string | null,
 ): string {
-  const { primary, secondary } = primaryAndSecondary(positions, primaryFallback);
+  const { primary, secondary } = primaryAndSecondary(
+    positions,
+    primaryFallback,
+  );
   return [primary, secondary]
     .filter(Boolean)
     .map((p) => abbreviatePosition(sport, p))

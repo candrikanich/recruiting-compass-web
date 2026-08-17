@@ -224,9 +224,8 @@ describe("Coach Detail Page", () => {
 
   describe("Data Loading", () => {
     it("displays coach data after loading", async () => {
-      const CoachDetailPage = await import("~/pages/coaches/[id]/index.vue").then(
-        (m) => m.default,
-      );
+      const CoachDetailPage =
+        await import("~/pages/coaches/[id]/index.vue").then((m) => m.default);
       const wrapper = mount(CoachDetailPage, {
         global: {
           stubs: { NuxtLink: { template: "<a><slot /></a>" }, Teleport: true },
@@ -240,9 +239,8 @@ describe("Coach Detail Page", () => {
     });
 
     it("loads and displays coach data on mount", async () => {
-      const CoachDetailPage = await import("~/pages/coaches/[id]/index.vue").then(
-        (m) => m.default,
-      );
+      const CoachDetailPage =
+        await import("~/pages/coaches/[id]/index.vue").then((m) => m.default);
       const wrapper = mount(CoachDetailPage, {
         global: {
           stubs: { NuxtLink: { template: "<a><slot /></a>" }, Teleport: true },
@@ -256,9 +254,8 @@ describe("Coach Detail Page", () => {
     });
 
     it("fetches school name for the coach", async () => {
-      const CoachDetailPage = await import("~/pages/coaches/[id]/index.vue").then(
-        (m) => m.default,
-      );
+      const CoachDetailPage =
+        await import("~/pages/coaches/[id]/index.vue").then((m) => m.default);
       const wrapper = mount(CoachDetailPage, {
         global: {
           stubs: { NuxtLink: { template: "<a><slot /></a>" }, Teleport: true },
@@ -271,9 +268,8 @@ describe("Coach Detail Page", () => {
     });
 
     it("fetches interactions for the coach", async () => {
-      const CoachDetailPage = await import("~/pages/coaches/[id]/index.vue").then(
-        (m) => m.default,
-      );
+      const CoachDetailPage =
+        await import("~/pages/coaches/[id]/index.vue").then((m) => m.default);
       const wrapper = mount(CoachDetailPage, {
         global: {
           stubs: { NuxtLink: { template: "<a><slot /></a>" }, Teleport: true },
@@ -291,9 +287,8 @@ describe("Coach Detail Page", () => {
     it("displays error message when coach fetch fails", async () => {
       mockGetCoach.mockRejectedValue(new Error("Failed to load"));
 
-      const CoachDetailPage = await import("~/pages/coaches/[id]/index.vue").then(
-        (m) => m.default,
-      );
+      const CoachDetailPage =
+        await import("~/pages/coaches/[id]/index.vue").then((m) => m.default);
       const wrapper = mount(CoachDetailPage, {
         global: {
           stubs: { NuxtLink: { template: "<a><slot /></a>" }, Teleport: true },
@@ -308,9 +303,8 @@ describe("Coach Detail Page", () => {
     it("shows coach not found when coach is null", async () => {
       mockGetCoach.mockResolvedValue(null);
 
-      const CoachDetailPage = await import("~/pages/coaches/[id]/index.vue").then(
-        (m) => m.default,
-      );
+      const CoachDetailPage =
+        await import("~/pages/coaches/[id]/index.vue").then((m) => m.default);
       const wrapper = mount(CoachDetailPage, {
         global: {
           stubs: { NuxtLink: { template: "<a><slot /></a>" }, Teleport: true },
@@ -325,9 +319,8 @@ describe("Coach Detail Page", () => {
     it("sets error when coach data is undefined", async () => {
       mockGetCoach.mockResolvedValue(undefined);
 
-      const CoachDetailPage = await import("~/pages/coaches/[id]/index.vue").then(
-        (m) => m.default,
-      );
+      const CoachDetailPage =
+        await import("~/pages/coaches/[id]/index.vue").then((m) => m.default);
       const wrapper = mount(CoachDetailPage, {
         global: {
           stubs: { NuxtLink: { template: "<a><slot /></a>" }, Teleport: true },
@@ -342,9 +335,8 @@ describe("Coach Detail Page", () => {
 
   describe("Communication Features", () => {
     it("opens communication panel for email", async () => {
-      const CoachDetailPage = await import("~/pages/coaches/[id]/index.vue").then(
-        (m) => m.default,
-      );
+      const CoachDetailPage =
+        await import("~/pages/coaches/[id]/index.vue").then((m) => m.default);
       const wrapper = mount(CoachDetailPage, {
         global: {
           stubs: { NuxtLink: { template: "<a><slot /></a>" }, Teleport: true },
@@ -363,9 +355,8 @@ describe("Coach Detail Page", () => {
     });
 
     it("opens communication panel for text", async () => {
-      const CoachDetailPage = await import("~/pages/coaches/[id]/index.vue").then(
-        (m) => m.default,
-      );
+      const CoachDetailPage =
+        await import("~/pages/coaches/[id]/index.vue").then((m) => m.default);
       const wrapper = mount(CoachDetailPage, {
         global: {
           stubs: { NuxtLink: { template: "<a><slot /></a>" }, Teleport: true },
@@ -388,9 +379,8 @@ describe("Coach Detail Page", () => {
       delete (window as any).location;
       (window as any).location = { href: "" };
 
-      const CoachDetailPage = await import("~/pages/coaches/[id]/index.vue").then(
-        (m) => m.default,
-      );
+      const CoachDetailPage =
+        await import("~/pages/coaches/[id]/index.vue").then((m) => m.default);
       const wrapper = mount(CoachDetailPage, {
         global: {
           stubs: { NuxtLink: { template: "<a><slot /></a>" }, Teleport: true },
@@ -408,9 +398,8 @@ describe("Coach Detail Page", () => {
     it("handles Twitter action", async () => {
       const { openTwitter } = await import("~/utils/socialMediaHandlers");
 
-      const CoachDetailPage = await import("~/pages/coaches/[id]/index.vue").then(
-        (m) => m.default,
-      );
+      const CoachDetailPage =
+        await import("~/pages/coaches/[id]/index.vue").then((m) => m.default);
       const wrapper = mount(CoachDetailPage, {
         global: {
           stubs: { NuxtLink: { template: "<a><slot /></a>" }, Teleport: true },
@@ -428,9 +417,8 @@ describe("Coach Detail Page", () => {
     it("handles Instagram action", async () => {
       const { openInstagram } = await import("~/utils/socialMediaHandlers");
 
-      const CoachDetailPage = await import("~/pages/coaches/[id]/index.vue").then(
-        (m) => m.default,
-      );
+      const CoachDetailPage =
+        await import("~/pages/coaches/[id]/index.vue").then((m) => m.default);
       const wrapper = mount(CoachDetailPage, {
         global: {
           stubs: { NuxtLink: { template: "<a><slot /></a>" }, Teleport: true },
@@ -448,9 +436,8 @@ describe("Coach Detail Page", () => {
 
   describe("Coach Management", () => {
     it("opens edit modal when edit is clicked", async () => {
-      const CoachDetailPage = await import("~/pages/coaches/[id]/index.vue").then(
-        (m) => m.default,
-      );
+      const CoachDetailPage =
+        await import("~/pages/coaches/[id]/index.vue").then((m) => m.default);
       const wrapper = mount(CoachDetailPage, {
         global: {
           stubs: {
@@ -479,9 +466,8 @@ describe("Coach Detail Page", () => {
     });
 
     it("closes edit modal when close event is emitted", async () => {
-      const CoachDetailPage = await import("~/pages/coaches/[id]/index.vue").then(
-        (m) => m.default,
-      );
+      const CoachDetailPage =
+        await import("~/pages/coaches/[id]/index.vue").then((m) => m.default);
       const wrapper = mount(CoachDetailPage, {
         global: {
           stubs: {
@@ -523,9 +509,8 @@ describe("Coach Detail Page", () => {
     });
 
     it("opens delete modal when delete is clicked", async () => {
-      const CoachDetailPage = await import("~/pages/coaches/[id]/index.vue").then(
-        (m) => m.default,
-      );
+      const CoachDetailPage =
+        await import("~/pages/coaches/[id]/index.vue").then((m) => m.default);
       const wrapper = mount(CoachDetailPage, {
         global: {
           stubs: { NuxtLink: { template: "<a><slot /></a>" }, Teleport: true },
@@ -544,9 +529,8 @@ describe("Coach Detail Page", () => {
     it("deletes coach and navigates when confirmed", async () => {
       mockSmartDelete.mockResolvedValue({ cascadeUsed: false });
 
-      const CoachDetailPage = await import("~/pages/coaches/[id]/index.vue").then(
-        (m) => m.default,
-      );
+      const CoachDetailPage =
+        await import("~/pages/coaches/[id]/index.vue").then((m) => m.default);
       const wrapper = mount(CoachDetailPage, {
         global: {
           stubs: { NuxtLink: { template: "<a><slot /></a>" }, Teleport: true },
@@ -568,9 +552,8 @@ describe("Coach Detail Page", () => {
     });
 
     it("closes delete modal when cancelled", async () => {
-      const CoachDetailPage = await import("~/pages/coaches/[id]/index.vue").then(
-        (m) => m.default,
-      );
+      const CoachDetailPage =
+        await import("~/pages/coaches/[id]/index.vue").then((m) => m.default);
       const wrapper = mount(CoachDetailPage, {
         global: {
           stubs: { NuxtLink: { template: "<a><slot /></a>" }, Teleport: true },
@@ -595,9 +578,8 @@ describe("Coach Detail Page", () => {
     it("handles delete error gracefully", async () => {
       mockSmartDelete.mockRejectedValue(new Error("Delete failed"));
 
-      const CoachDetailPage = await import("~/pages/coaches/[id]/index.vue").then(
-        (m) => m.default,
-      );
+      const CoachDetailPage =
+        await import("~/pages/coaches/[id]/index.vue").then((m) => m.default);
       const wrapper = mount(CoachDetailPage, {
         global: {
           stubs: { NuxtLink: { template: "<a><slot /></a>" }, Teleport: true },
@@ -623,9 +605,8 @@ describe("Coach Detail Page", () => {
     it("saves regular notes when save is clicked", async () => {
       mockUpdateCoach.mockResolvedValue(undefined);
 
-      const CoachDetailPage = await import("~/pages/coaches/[id]/index.vue").then(
-        (m) => m.default,
-      );
+      const CoachDetailPage =
+        await import("~/pages/coaches/[id]/index.vue").then((m) => m.default);
       const wrapper = mount(CoachDetailPage, {
         global: {
           stubs: { NuxtLink: { template: "<a><slot /></a>" }, Teleport: true },
@@ -652,9 +633,8 @@ describe("Coach Detail Page", () => {
 
   describe("Stats and Interactions", () => {
     it("renders stats grid component", async () => {
-      const CoachDetailPage = await import("~/pages/coaches/[id]/index.vue").then(
-        (m) => m.default,
-      );
+      const CoachDetailPage =
+        await import("~/pages/coaches/[id]/index.vue").then((m) => m.default);
       const wrapper = mount(CoachDetailPage, {
         global: {
           stubs: { NuxtLink: { template: "<a><slot /></a>" }, Teleport: true },
@@ -669,9 +649,8 @@ describe("Coach Detail Page", () => {
     });
 
     it("renders recent interactions component", async () => {
-      const CoachDetailPage = await import("~/pages/coaches/[id]/index.vue").then(
-        (m) => m.default,
-      );
+      const CoachDetailPage =
+        await import("~/pages/coaches/[id]/index.vue").then((m) => m.default);
       const wrapper = mount(CoachDetailPage, {
         global: {
           stubs: { NuxtLink: { template: "<a><slot /></a>" }, Teleport: true },
@@ -688,9 +667,8 @@ describe("Coach Detail Page", () => {
 
   describe("Accessibility", () => {
     it("has skip link", async () => {
-      const CoachDetailPage = await import("~/pages/coaches/[id]/index.vue").then(
-        (m) => m.default,
-      );
+      const CoachDetailPage =
+        await import("~/pages/coaches/[id]/index.vue").then((m) => m.default);
       const wrapper = mount(CoachDetailPage, {
         global: {
           stubs: { NuxtLink: { template: "<a><slot /></a>" }, Teleport: true },
@@ -703,9 +681,8 @@ describe("Coach Detail Page", () => {
     });
 
     it("main content has proper id for skip link", async () => {
-      const CoachDetailPage = await import("~/pages/coaches/[id]/index.vue").then(
-        (m) => m.default,
-      );
+      const CoachDetailPage =
+        await import("~/pages/coaches/[id]/index.vue").then((m) => m.default);
       const wrapper = mount(CoachDetailPage, {
         global: {
           stubs: { NuxtLink: { template: "<a><slot /></a>" }, Teleport: true },

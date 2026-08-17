@@ -10,10 +10,7 @@ const logger = createLogger("notifications/preferences");
  * `offer`, but those have no UI toggle and are out of scope for delivery here.
  */
 export type NotificationType =
-  | "follow_up_reminder"
-  | "deadline_alert"
-  | "weekly_digest"
-  | "event";
+  "follow_up_reminder" | "deadline_alert" | "weekly_digest" | "event";
 
 export interface NotificationPref {
   push_enabled: boolean;

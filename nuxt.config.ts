@@ -207,7 +207,8 @@ export default defineNuxtConfig({
       posthogHost: "https://us.i.posthog.com",
       posthogDefaults: "2026-01-30",
       isVercel: process.env.VERCEL === "1",
-      adminHost: process.env.NUXT_PUBLIC_ADMIN_HOST || "admin.myrecruitingcompass.com",
+      adminHost:
+        process.env.NUXT_PUBLIC_ADMIN_HOST || "admin.myrecruitingcompass.com",
     },
   },
 

@@ -15,7 +15,10 @@ import { requireAuth } from "~/server/utils/auth";
 import { resolveViewerAthleteId } from "~/server/utils/athleteAccess";
 import { computePhaseFromGraduationYear } from "~/server/utils/athletePhase";
 import { useLogger } from "~/server/utils/logger";
-import { getWhatMattersNow, type WhatMattersItem } from "~/utils/whatMattersNow";
+import {
+  getWhatMattersNow,
+  type WhatMattersItem,
+} from "~/utils/whatMattersNow";
 import type { Phase, TaskWithStatus } from "~/types/timeline";
 
 // Grade level for each phase — mirrors the mapping inside getWhatMattersNow so

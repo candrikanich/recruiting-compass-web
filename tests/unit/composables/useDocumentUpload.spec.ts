@@ -208,12 +208,10 @@ describe("useDocumentUpload.uploadDocument", () => {
   it("stamps family_unit_id from active family context on insert", async () => {
     const insertSpy = vi.fn().mockReturnValue({
       select: vi.fn().mockReturnValue({
-        single: vi
-          .fn()
-          .mockResolvedValue({
-            data: { ...baseDocData, id: "doc-1" },
-            error: null,
-          }),
+        single: vi.fn().mockResolvedValue({
+          data: { ...baseDocData, id: "doc-1" },
+          error: null,
+        }),
       }),
     });
     mockSupabase.from.mockReturnValue({ insert: insertSpy });
@@ -267,12 +265,10 @@ describe("useDocumentUpload.uploadNewVersion", () => {
     });
     const insertSpy = vi.fn().mockReturnValue({
       select: vi.fn().mockReturnValue({
-        single: vi
-          .fn()
-          .mockResolvedValue({
-            data: { ...currentDoc, version: 3 },
-            error: null,
-          }),
+        single: vi.fn().mockResolvedValue({
+          data: { ...currentDoc, version: 3 },
+          error: null,
+        }),
       }),
     });
     mockSupabase.from.mockReturnValue({ insert: insertSpy });
@@ -307,12 +303,10 @@ describe("useDocumentUpload.uploadNewVersion", () => {
     });
     const insertSpy = vi.fn().mockReturnValue({
       select: vi.fn().mockReturnValue({
-        single: vi
-          .fn()
-          .mockResolvedValue({
-            data: { ...currentDoc, version: 3 },
-            error: null,
-          }),
+        single: vi.fn().mockResolvedValue({
+          data: { ...currentDoc, version: 3 },
+          error: null,
+        }),
       }),
     });
     mockSupabase.from.mockReturnValue({ insert: insertSpy });

@@ -523,8 +523,8 @@ const nextScreen = async () => {
         // Seed the ordered positions[] from the onboarding pick so the array
         // (source of truth for coach-facing output) and primary_position agree
         // from account creation — prevents the two stores drifting apart.
-        const onboardingPosition =
-          onboardingData.value.primary_position as string;
+        const onboardingPosition = onboardingData.value
+          .primary_position as string;
         await setPlayerDetails({
           graduation_year: onboardingData.value.graduation_year as number,
           primary_sport: onboardingData.value.primary_sport as string,

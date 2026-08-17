@@ -73,9 +73,9 @@ describe("PlayerDetailsBasicsTab", () => {
       props: defaultProps,
       global: { stubs },
     });
-    expect(
-      wrapper.find('[data-testid="social-twitter_handle"]').exists(),
-    ).toBe(true);
+    expect(wrapper.find('[data-testid="social-twitter_handle"]').exists()).toBe(
+      true,
+    );
   });
 
   it("does not render the High School field", () => {

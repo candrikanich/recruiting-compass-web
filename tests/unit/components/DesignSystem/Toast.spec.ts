@@ -77,9 +77,9 @@ describe("Toast", () => {
 
       expect(wrapper.text()).toContain(`A ${type} toast`);
       expect(wrapper.find(`[role="${expectedRole}"]`).exists()).toBe(true);
-      expect(
-        wrapper.find(`[aria-live="${expectedAriaLive}"]`).exists(),
-      ).toBe(true);
+      expect(wrapper.find(`[aria-live="${expectedAriaLive}"]`).exists()).toBe(
+        true,
+      );
     },
   );
 

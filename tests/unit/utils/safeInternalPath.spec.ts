@@ -3,12 +3,16 @@ import { safeInternalPath } from "~/utils/safeInternalPath";
 
 describe("safeInternalPath", () => {
   it("returns a valid single-slash internal path unchanged", () => {
-    expect(safeInternalPath("/schools/abc/coaches")).toBe("/schools/abc/coaches");
+    expect(safeInternalPath("/schools/abc/coaches")).toBe(
+      "/schools/abc/coaches",
+    );
     expect(safeInternalPath("/coaches")).toBe("/coaches");
   });
 
   it("preserves an internal path's own query/hash", () => {
-    expect(safeInternalPath("/schools/1/coaches?x=1")).toBe("/schools/1/coaches?x=1");
+    expect(safeInternalPath("/schools/1/coaches?x=1")).toBe(
+      "/schools/1/coaches?x=1",
+    );
   });
 
   it("falls back for protocol-relative and absolute URLs (open-redirect vectors)", () => {

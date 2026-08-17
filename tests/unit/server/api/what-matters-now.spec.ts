@@ -12,12 +12,18 @@ vi.mock("h3", async (importOriginal) => {
   const actual = (await importOriginal()) as Record<string, unknown>;
   return {
     ...actual,
-    createError: vi.fn((opts: { statusCode: number; statusMessage: string }) => {
-      const err = new Error(opts.statusMessage) as Error & { statusCode: number };
-      err.statusCode = opts.statusCode;
-      return err;
-    }),
-    defineEventHandler: vi.fn((handler: (event: unknown) => unknown) => handler),
+    createError: vi.fn(
+      (opts: { statusCode: number; statusMessage: string }) => {
+        const err = new Error(opts.statusMessage) as Error & {
+          statusCode: number;
+        };
+        err.statusCode = opts.statusCode;
+        return err;
+      },
+    ),
+    defineEventHandler: vi.fn(
+      (handler: (event: unknown) => unknown) => handler,
+    ),
   };
 });
 
@@ -30,7 +36,8 @@ function makeSupabaseStub(results: Array<{ data: unknown; error: unknown }>) {
   const chain = {
     select: () => chain,
     eq: () => chain,
-    maybeSingle: () => Promise.resolve(results[i++] ?? { data: null, error: null }),
+    maybeSingle: () =>
+      Promise.resolve(results[i++] ?? { data: null, error: null }),
   };
   return { from: () => chain };
 }
@@ -42,7 +49,8 @@ describe("resolveViewerAthleteId", () => {
     const { getUserRole } = await import("~/server/utils/auth");
     vi.mocked(getUserRole).mockResolvedValue("player" as never);
 
-    const { resolveViewerAthleteId } = await import("~/server/utils/athleteAccess");
+    const { resolveViewerAthleteId } =
+      await import("~/server/utils/athleteAccess");
     const supabase = makeSupabaseStub([]);
 
     const result = await resolveViewerAthleteId(supabase as never, "player-1");
@@ -53,7 +61,8 @@ describe("resolveViewerAthleteId", () => {
     const { getUserRole } = await import("~/server/utils/auth");
     vi.mocked(getUserRole).mockResolvedValue("parent" as never);
 
-    const { resolveViewerAthleteId } = await import("~/server/utils/athleteAccess");
+    const { resolveViewerAthleteId } =
+      await import("~/server/utils/athleteAccess");
     const supabase = makeSupabaseStub([
       { data: { family_unit_id: "unit-1" }, error: null },
       { data: { user_id: "player-9" }, error: null },
@@ -67,7 +76,8 @@ describe("resolveViewerAthleteId", () => {
     const { getUserRole } = await import("~/server/utils/auth");
     vi.mocked(getUserRole).mockResolvedValue("parent" as never);
 
-    const { resolveViewerAthleteId } = await import("~/server/utils/athleteAccess");
+    const { resolveViewerAthleteId } =
+      await import("~/server/utils/athleteAccess");
     const supabase = makeSupabaseStub([
       { data: { family_unit_id: "unit-1" }, error: null },
       { data: null, error: null },
@@ -86,7 +96,9 @@ describe("GET /api/athlete/what-matters-now", () => {
    * both awaitable (for `await from().select().eq(...)`) and terminable via
    * `.maybeSingle()`, resolving to the result queued for that table.
    */
-  function makeSupabase(byTable: Record<string, { data: unknown; error: unknown }>) {
+  function makeSupabase(
+    byTable: Record<string, { data: unknown; error: unknown }>,
+  ) {
     return {
       from(table: string) {
         const result = byTable[table] ?? { data: null, error: null };
@@ -94,8 +106,10 @@ describe("GET /api/athlete/what-matters-now", () => {
           select: () => builder,
           eq: () => builder,
           maybeSingle: () => Promise.resolve(result),
-          then: (resolve: (v: unknown) => unknown, reject: (e: unknown) => unknown) =>
-            Promise.resolve(result).then(resolve, reject),
+          then: (
+            resolve: (v: unknown) => unknown,
+            reject: (e: unknown) => unknown,
+          ) => Promise.resolve(result).then(resolve, reject),
         };
         return builder;
       },
@@ -104,7 +118,8 @@ describe("GET /api/athlete/what-matters-now", () => {
 
   it("returns the highest-priority current-grade task for the athlete", async () => {
     const { requireAuth, getUserRole } = await import("~/server/utils/auth");
-    const { createServerSupabaseClient } = await import("~/server/utils/supabase");
+    const { createServerSupabaseClient } =
+      await import("~/server/utils/supabase");
     vi.mocked(requireAuth).mockResolvedValue({ id: "player-1" } as never);
     vi.mocked(getUserRole).mockResolvedValue("player" as never);
 
@@ -142,9 +157,8 @@ describe("GET /api/athlete/what-matters-now", () => {
       }) as never,
     );
 
-    const { default: handler } = await import(
-      "~/server/api/athlete/what-matters-now.get"
-    );
+    const { default: handler } =
+      await import("~/server/api/athlete/what-matters-now.get");
     const result = await handler({
       context: {},
       node: { req: { headers: {} }, res: {} },
@@ -158,14 +172,14 @@ describe("GET /api/athlete/what-matters-now", () => {
 
   it("rejects unauthenticated requests with 401", async () => {
     const { requireAuth } = await import("~/server/utils/auth");
-    const { createServerSupabaseClient } = await import("~/server/utils/supabase");
+    const { createServerSupabaseClient } =
+      await import("~/server/utils/supabase");
     vi.mocked(requireAuth).mockRejectedValue(
       Object.assign(new Error("Unauthorized"), { statusCode: 401 }),
     );
 
-    const { default: handler } = await import(
-      "~/server/api/athlete/what-matters-now.get"
-    );
+    const { default: handler } =
+      await import("~/server/api/athlete/what-matters-now.get");
     const mockEvent = {
       context: {},
       node: { req: { headers: {} }, res: {} },

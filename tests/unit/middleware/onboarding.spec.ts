@@ -263,9 +263,8 @@ describe("onboarding middleware", () => {
 
   describe("shouldRedirectToOnboarding", () => {
     it("never redirects an admin, even with incomplete onboarding", async () => {
-      const { shouldRedirectToOnboarding } = await import(
-        "~/middleware/onboarding"
-      );
+      const { shouldRedirectToOnboarding } =
+        await import("~/middleware/onboarding");
 
       expect(
         shouldRedirectToOnboarding({
@@ -276,9 +275,8 @@ describe("onboarding middleware", () => {
     });
 
     it("redirects a non-admin with incomplete onboarding", async () => {
-      const { shouldRedirectToOnboarding } = await import(
-        "~/middleware/onboarding"
-      );
+      const { shouldRedirectToOnboarding } =
+        await import("~/middleware/onboarding");
 
       expect(
         shouldRedirectToOnboarding({
@@ -289,9 +287,8 @@ describe("onboarding middleware", () => {
     });
 
     it("does not redirect a non-admin who completed onboarding", async () => {
-      const { shouldRedirectToOnboarding } = await import(
-        "~/middleware/onboarding"
-      );
+      const { shouldRedirectToOnboarding } =
+        await import("~/middleware/onboarding");
 
       expect(
         shouldRedirectToOnboarding({

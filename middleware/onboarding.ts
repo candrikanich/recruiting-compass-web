@@ -39,7 +39,10 @@ export default defineNuxtRouteMiddleware(async (to, _from) => {
       .select("phase_milestone_data, is_admin")
       .eq("id", session.value.user.id)
       .single()) as {
-      data: { phase_milestone_data: { onboarding_complete?: boolean } | null; is_admin: boolean | null } | null;
+      data: {
+        phase_milestone_data: { onboarding_complete?: boolean } | null;
+        is_admin: boolean | null;
+      } | null;
       error: unknown;
     };
 

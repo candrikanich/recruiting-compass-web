@@ -130,7 +130,14 @@ export class RuleEngine {
     }
 
     const staleIds = (activeRows as unknown[])
-      .map((r) => r as { id: string; rule_type: string; related_school_id: string | null })
+      .map(
+        (r) =>
+          r as {
+            id: string;
+            rule_type: string;
+            related_school_id: string | null;
+          },
+      )
       .filter(
         (row) =>
           !validKeys.has(suggestionKey(row.rule_type, row.related_school_id)),

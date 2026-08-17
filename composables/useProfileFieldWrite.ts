@@ -8,7 +8,11 @@ import { useAuthFetch } from "./useAuthFetch";
  * caller can re-resolve the template preview.
  */
 export const useProfileFieldWrite = (): {
-  writeField: (athleteUserId: string, sourcePath: string, value: string | null) => Promise<string | null>;
+  writeField: (
+    athleteUserId: string,
+    sourcePath: string,
+    value: string | null,
+  ) => Promise<string | null>;
   saving: import("vue").Ref<boolean>;
   error: import("vue").Ref<string | null>;
 } => {
@@ -24,10 +28,14 @@ export const useProfileFieldWrite = (): {
     saving.value = true;
     error.value = null;
     try {
-      const res = await $fetchAuth<{ success: boolean; sourcePath: string; value: string | null }>(
-        "/api/athlete/profile-field",
-        { method: "PATCH", body: { athleteUserId, sourcePath, value } },
-      );
+      const res = await $fetchAuth<{
+        success: boolean;
+        sourcePath: string;
+        value: string | null;
+      }>("/api/athlete/profile-field", {
+        method: "PATCH",
+        body: { athleteUserId, sourcePath, value },
+      });
       return res.value;
     } catch (err) {
       error.value = err instanceof Error ? err.message : "Failed to save";
