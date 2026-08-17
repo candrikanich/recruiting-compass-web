@@ -34,5 +34,24 @@ export function useAdminCronRuns() {
     }
   };
 
-  return { jobs, recent, cronLoading, cronError, loadCronRuns };
+  async function triggerJob(
+    jobName: string,
+    dryRun = false,
+  ): Promise<{ ok: true; jobName: string; dryRun: boolean; result?: unknown }> {
+    const headers = await getAuthHeaders();
+    const res = await $fetch<{
+      ok: true;
+      jobName: string;
+      dryRun: boolean;
+      result?: unknown;
+    }>("/api/admin/cron/trigger", {
+      method: "POST",
+      headers,
+      body: { jobName, dryRun },
+    });
+    await loadCronRuns();
+    return res;
+  }
+
+  return { jobs, recent, cronLoading, cronError, loadCronRuns, triggerJob };
 }

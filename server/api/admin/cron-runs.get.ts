@@ -140,7 +140,7 @@ export default defineEventHandler(
         };
       });
 
-      return { jobs, recent: rows.slice(0, 50) };
+      return { jobs, recent: rows.slice(0, 150) };
     } catch (error) {
       logger.error("Admin cron-runs endpoint failed", error);
       if (error instanceof Error && "statusCode" in error) {

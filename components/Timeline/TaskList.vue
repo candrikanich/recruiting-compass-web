@@ -30,6 +30,7 @@ import type {
   TaskStatus,
 } from "~/types/timeline";
 import TaskItem from "~/components/Timeline/TaskItem.vue";
+import { compareTimelineTasks } from "~/utils/taskSort";
 
 interface Props {
   tasks: TaskWithStatus[];
@@ -69,15 +70,7 @@ const filteredAndSortedTasks = computed(() => {
     );
   }
 
-  // Sort by priority: required tasks first, then alphabetically
-  result = [...result].sort((a, b) => {
-    // Required tasks first
-    if (a.required && !b.required) return -1;
-    if (!a.required && b.required) return 1;
-
-    // Then alphabetically by title
-    return a.title.localeCompare(b.title);
-  });
+  result = [...result].sort(compareTimelineTasks);
 
   return result;
 });

@@ -111,6 +111,27 @@ describe("FormInput", () => {
     expect(input.attributes("disabled")).toBeDefined();
   });
 
+  it("masks tel input as the user types and sets tel autocomplete", async () => {
+    const wrapper = mount(FormInput, {
+      props: {
+        modelValue: "",
+        label: "Phone",
+        type: "tel",
+      },
+    });
+
+    const input = wrapper.find("input");
+    expect(input.attributes("autocomplete")).toBe("tel");
+    expect(input.attributes("inputmode")).toBe("tel");
+    expect(input.attributes("maxlength")).toBe("14");
+
+    await input.setValue("4405550134");
+
+    expect(wrapper.emitted("update:modelValue")?.[0]).toEqual([
+      "(440) 555-0134",
+    ]);
+  });
+
   it("emits blur-sm event when input loses focus", async () => {
     const wrapper = mount(FormInput, {
       props: {
