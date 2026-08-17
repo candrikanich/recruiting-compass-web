@@ -230,6 +230,8 @@ export async function requireAdmin(event: H3Event): Promise<AuthUser> {
     });
   }
 
+  event.context.adminUserId = user.id;
+
   return user;
 }
 
