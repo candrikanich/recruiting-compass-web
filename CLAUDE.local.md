@@ -6,7 +6,21 @@ Active session notes only. See [COMPLETED_WORK.md](./COMPLETED_WORK.md) for full
 
 - **Output format by reader, not by default**: For artifacts Chris will read once on a phone or share with someone non-technical — session recaps, status overviews, weekly summaries, "where are we on X" snapshots — invoke the `visual-explainer` skill to produce self-contained HTML. For artifacts that future-Claude or Chris will edit (handoff docs, `planning/*.md`, `COMPLETED_WORK.md`, lesson files, plans) — stay markdown. When unsure: read = HTML, edit = markdown.
 
-## Current Session (2026-08-17 — Admin Suite: Specs A Foundation + B Support + C Ops DONE)
+## Current Session (2026-08-17 — Admin Suite: ALL 4 SPECS DONE — A Foundation + B Support + C Ops + D Growth)
+
+### Spec D — Growth analytics (#3) — COMPLETE, pending branch-finish
+**Status:** DONE on `feat/admin-growth` (off develop, 7 commits + 2 fixes, **NOT merged/pushed**). SDD ledger `.superpowers/sdd/2026-08-17-admin-growth/`. Final review READY TO MERGE + 2 Important correctness fixes landed.
+**Built:** `utils/growthAnalytics.ts` pure helpers (dailyActiveUsers/windowActiveCount/funnelWithDropoff/adoption) + `countByDay` field param. `server/api/admin/growth.get.ts` (requireAdmin, SELECT-only, activity-union DAU/WAU/MAU over interactions/athlete_messages/events/video_links/offers, funnel, adoption, graceful degrade, days clamp, **activity window floor max(days,30)**). `useAdminGrowth` + `types/adminGrowth.ts` + `pages/admin/growth.vue` (AdminTimeRange + funnel tiles w/ `formatDropoff` + DAU/WAU/MAU + trend line + adoption bar) + Growth nav link.
+**Tests:** unit 7878/0 + fixes; admin E2E 2/2 (stable) w/ NUXT_PUBLIC_ADMIN_HOST=localhost:3003; type-check/lint/audit clean.
+**Final-review bugs fixed:** MAU/WAU undercount on <30d windows (activity now floored to 30d, trend stays windowed); funnel drop-off double-dash render (Accounts>Accepted → negative; `formatDropoff` shows drop only when >0).
+**Deferred (non-blocking):** dailyTrend first-bucket partial day; useAdminGrowth raw fetch style; countByDay field param unused-by-growth (guarded).
+**Decisions:** active = write-activity union (not login-recency); cohorts → own spec; funnel/adoption all-time vs DAU/WAU/MAU windowed (intentional).
+**Foreign commit:** `40af6791` (prettier-plugin-tailwindcss, concurrent session) interleaved on branch — config-only, left in place, surface at merge.
+
+### Admin suite arc — remaining backlog after this session
+Spec C2 (Sentry feed — needs SENTRY_AUTH_TOKEN issue:read), Spec B2 (email delivery log — Resend webhook + email_events), retention-cohorts spec (Growth follow-up). All 4 core subsystems (A/B/C/D) merged to develop, **develop NOT pushed** this session.
+
+### Spec C — Ops health (#2) — MERGED to develop
 
 ### Spec C — Ops health (#2) — COMPLETE, pending branch-finish
 **Status:** DONE on `feat/admin-ops` (off develop, 6 commits + forensics fix, **NOT merged/pushed**). SDD ledger `.superpowers/sdd/2026-08-17-admin-ops/`. Final review READY TO MERGE + fix landed.

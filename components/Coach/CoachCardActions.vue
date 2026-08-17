@@ -96,6 +96,7 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
+import { toSmsHref, toTelHref } from "~/utils/phone";
 import { openTwitter, openInstagram } from "~/utils/socialMediaHandlers";
 import type { Coach } from "~/types/models";
 
@@ -126,13 +127,13 @@ function onText(): void {
     return;
   }
   if (props.coach.phone) {
-    window.location.href = `sms:${props.coach.phone}`;
+    window.location.href = toSmsHref(props.coach.phone);
   }
 }
 
 function onCall(): void {
   if (props.coach.phone) {
-    window.location.href = `tel:${props.coach.phone}`;
+    window.location.href = toTelHref(props.coach.phone);
   }
 }
 </script>

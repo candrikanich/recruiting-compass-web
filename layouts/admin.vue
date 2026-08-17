@@ -2,6 +2,7 @@
 const links = [
   { to: "/admin", label: "Overview", exact: true },
   { to: "/admin/users", label: "Users" },
+  { to: "/admin/growth", label: "Growth" },
   { to: "/admin/invitations", label: "Invitations" },
   { to: "/admin/health", label: "Health" },
   { to: "/admin/jobs", label: "Jobs" },
@@ -23,10 +24,13 @@ function isActive(link: { to: string; exact?: boolean }) {
           :key="link.to"
           :to="link.to"
           class="whitespace-nowrap border-b-2 px-3 py-3 text-sm font-medium"
-          :class="isActive(link)
-            ? 'border-brand-blue-600 text-brand-blue-700'
-            : 'border-transparent text-brand-slate-500 hover:text-brand-slate-800'"
-        >{{ link.label }}</NuxtLink>
+          :class="
+            isActive(link)
+              ? 'border-brand-blue-600 text-brand-blue-700'
+              : 'border-transparent text-brand-slate-500 hover:text-brand-slate-800'
+          "
+          >{{ link.label }}</NuxtLink
+        >
       </div>
     </nav>
     <main class="mx-auto max-w-6xl px-4 py-6"><slot /></main>

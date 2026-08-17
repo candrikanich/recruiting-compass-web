@@ -304,3 +304,15 @@ Source: https://www.jstools.space/blog/url-design-routing-query-parameters-fragm
 - **Repeated keys for array params**: Prefer `?tag=a&tag=b` (native `params.getAll('tag')`) over comma-joined values — avoids ambiguity when a value itself contains a comma; document the chosen format so client and Nitro parse it identically.
 - **Use the `URL`/`URLSearchParams` API, never string-split**: Splitting on `/`, `?`, `&` breaks on encoded values, credentials, IPv6 hosts, and nested URLs — construct with `new URL(...)` and read `.pathname`/`.searchParams`.
 - **Fragments never reach the server, and aren't secret**: `#...` is stripped from the HTTP request, so it's useless for SSR-required state; and despite not being sent, it still leaks via history, copied links, extensions, and screenshots — never put tokens there.
+
+---
+
+## Why You Should Never Split Text Field Inputs — 2026-08-17
+Source: https://uxmovement.medium.com/why-you-should-never-split-text-field-inputs-28d7dc977092
+
+- **One field + mask, not N boxes**: Format-heavy values (phone, zip, card) belong in a single `<input>` with a localized mask — split boxes force extra tabs, kill mobile numeric-keyboard flow, and make typo-fixing worse.
+- **Keep first/last split when you consume the parts**: Coach `first_name`/`last_name` drive templates (`Hi Coach {{last_name}}`), sort, and "Email Jane" CTAs — merging then parsing is worse than the article's split-name problem. User `full_name` is already a single column; signup's two boxes just concatenate.
+- **Native `type="date"` beats a text mask**: Player DOB is already one field with `type="date"` + `max` for COPPA — don't replace it with an MM/DD/YYYY mask; the picker localizes and blocks invalid dates.
+- **Phone mask is the gap**: Four `type="tel"` fields (CoachForm, EditCoachModal, SchoolInformationCard, PlayerDetailsBasicsTab) accept free text; `phoneSchema` is US 10-digit and `formatPhone` only runs on CommunicationPanel display. Format-as-you-type `(XXX) XXX-XXXX`, store digits.
+- **Don't invent Address 2**: Campus address and onboarding zip are already single fields — never add a sibling apartment/suite box; if a multi-line address is needed, use a textarea with "(apartment/suite if any)" in the label.
+- **Autocomplete is the cheap anti-split**: `autocomplete="given-name"` / `family-name` / `tel` / `postal-code` lets the browser fill the right box so users don't dump the whole value into the first field — SignupForm has name tokens; InviteSignupForm and coach/phone fields mostly don't.

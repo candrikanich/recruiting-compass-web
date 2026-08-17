@@ -158,6 +158,7 @@ import { useCoaches } from "~/composables/useCoaches";
 import { useSchools } from "~/composables/useSchools";
 import { useInteractions } from "~/composables/useInteractions";
 import { useCoachStats } from "~/composables/useCoachStats";
+import { toTelHref } from "~/utils/phone";
 import { openTwitter, openInstagram } from "~/utils/socialMediaHandlers";
 import { useUserStore } from "~/stores/user";
 import { useDeleteModal } from "~/composables/useDeleteModal";
@@ -256,7 +257,7 @@ const sendText = () => {
 
 const callCoach = () => {
   if (coach.value?.phone) {
-    window.location.href = `tel:${coach.value.phone}`;
+    window.location.href = toTelHref(coach.value.phone);
   }
 };
 

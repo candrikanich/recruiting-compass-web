@@ -128,6 +128,7 @@
 import { reactive, watch, toRefs } from "vue";
 import FormErrorSummary from "~/components/Validation/FormErrorSummary.vue";
 import { useFormValidation } from "~/composables/useFormValidation";
+import { formatPhoneDisplay } from "~/utils/phone";
 import { coachSchema, type CoachInput } from "~/utils/validation/schemas";
 import { z } from "zod";
 
@@ -167,7 +168,7 @@ const formData = reactive({
   first_name: props.initialData?.first_name || "",
   last_name: props.initialData?.last_name || "",
   email: props.initialData?.email || "",
-  phone: props.initialData?.phone || "",
+  phone: formatPhoneDisplay(props.initialData?.phone || ""),
   twitter_handle: props.initialData?.twitter_handle || "",
   instagram_handle: props.initialData?.instagram_handle || "",
   notes: props.initialData?.notes || "",
@@ -185,7 +186,7 @@ watch(
         first_name: newData.first_name ?? formData.first_name,
         last_name: newData.last_name ?? formData.last_name,
         email: newData.email ?? formData.email,
-        phone: newData.phone ?? formData.phone,
+        phone: formatPhoneDisplay(newData.phone ?? formData.phone),
         twitter_handle: newData.twitter_handle ?? formData.twitter_handle,
         instagram_handle: newData.instagram_handle ?? formData.instagram_handle,
         notes: newData.notes ?? formData.notes,

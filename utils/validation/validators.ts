@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { toE164US } from "~/utils/phone";
 import { sanitizeHtml, sanitizeUrl, stripHtml } from "./sanitize";
 
 /**
@@ -37,18 +38,14 @@ export const urlSchema = z.preprocess(
 );
 
 /**
- * Phone number schema with flexible format validation
- * Accepts: (123) 456-7890, 123-456-7890, 123.456.7890, 1234567890, "", null, or undefined
+ * Phone number schema. Accepts common US formats and E.164, then
+ * stores E.164 (`+1XXXXXXXXXX`) for iOS tel:/sms: compatibility.
  */
-export const phoneSchema = z
-  .string()
-  .regex(
-    /^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/,
-    "Please enter a valid phone number",
-  )
-  .or(z.literal(""))
-  .or(z.null())
-  .optional();
+export const phoneSchema = z.preprocess((val) => {
+  if (val == null || val === "") return val;
+  if (typeof val !== "string") return val;
+  return toE164US(val) ?? val;
+}, z.string().regex(/^\+1\d{10}$/, "Please enter a valid phone number").or(z.literal("")).or(z.null()).optional());
 
 /**
  * Twitter handle schema

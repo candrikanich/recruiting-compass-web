@@ -31,6 +31,8 @@ export default defineConfig({
       "tests/unit/**/*.spec.ts",
       "tests/integration/**/*.spec.ts",
       "tests/unit/**/*.test.mjs",
+      // Pure helpers under utils/ keep their tests co-located.
+      "utils/**/*.test.ts",
     ],
     exclude: ["node_modules/", "dist/", ".nuxt/", "tests/e2e/**"],
 
