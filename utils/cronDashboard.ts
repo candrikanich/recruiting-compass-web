@@ -26,3 +26,54 @@ export const BLOCKED_JOBS = [
   "notification-prune",
   "cleanup-expired-invites",
 ] as const;
+
+/**
+ * Pure derivations for the admin Jobs tab (Task 2): sparklines and
+ * consecutive-failure alerts computed client-side from the `recent` run
+ * history returned by `GET /api/admin/cron-runs`. No I/O — safe to unit
+ * test directly and reuse from both `pages/admin/jobs.vue` and the
+ * component test.
+ */
+interface RunRow {
+  job_name: string;
+  status: string;
+  duration_ms: number | null;
+  started_at: string;
+}
+
+/** `recent` is ordered most-recent-first (cron-runs.get.ts orders started_at desc). */
+export function recentForJob<T extends RunRow>(
+  recent: T[],
+  jobName: string,
+  n: number,
+): T[] {
+  return recent.filter((r) => r.job_name === jobName).slice(0, n);
+}
+
+/** Counts trailing non-success runs from the most-recent run backwards. */
+export function consecutiveFailures(recent: RunRow[], jobName: string): number {
+  let n = 0;
+  for (const r of recentForJob(recent, jobName, Number.MAX_SAFE_INTEGER)) {
+    if (r.status === "success") break;
+    n += 1;
+  }
+  return n;
+}
+
+export interface SparklineData {
+  labels: string[];
+  datasets: [{ data: number[] }];
+}
+
+/** Oldest→newest for a left-to-right trend; height = duration_ms. */
+export function sparklineData(
+  recent: RunRow[],
+  jobName: string,
+  n = 14,
+): SparklineData {
+  const rows = recentForJob(recent, jobName, n).slice().reverse();
+  return {
+    labels: rows.map((r) => r.started_at),
+    datasets: [{ data: rows.map((r) => r.duration_ms ?? 0) }],
+  };
+}
