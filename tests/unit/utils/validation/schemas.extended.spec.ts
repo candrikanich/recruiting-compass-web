@@ -469,10 +469,11 @@ describe("coachSchema - Extended", () => {
       "(555) 123-4567",
       "555.123.4567",
       "5551234567",
+      "+15551234567",
     ];
     phoneFormats.forEach((phone) => {
       const data = { ...validCoach, phone };
-      expect(() => coachSchema.parse(data)).not.toThrow();
+      expect(coachSchema.parse(data).phone).toBe("+15551234567");
     });
   });
 

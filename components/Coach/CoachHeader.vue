@@ -48,10 +48,10 @@
         <div>
           <div class="text-slate-600 text-sm">Phone</div>
           <a
-            :href="`tel:${coach.phone}`"
+            :href="toTelHref(coach.phone)"
             class="text-blue-600 hover:text-blue-700"
           >
-            {{ coach.phone }}
+            {{ formatPhoneDisplay(coach.phone) }}
           </a>
         </div>
       </div>
@@ -210,6 +210,7 @@
 import type { Coach } from "~/types/models";
 import { getRoleLabel } from "~/utils/coachLabels";
 import { formatDate, daysAgo } from "~/utils/dateFormatters";
+import { formatPhoneDisplay, toTelHref } from "~/utils/phone";
 defineProps<{
   coach: Coach;
   schoolName?: string;

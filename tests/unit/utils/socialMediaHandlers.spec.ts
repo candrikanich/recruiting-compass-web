@@ -138,22 +138,22 @@ describe("utils/socialMediaHandlers", () => {
       expect(window.location.href).toBe("sms:5551234");
     });
 
-    it("should remove all non-digit characters from phone", () => {
+    it("should use E.164 for complete US numbers", () => {
       openSMS("(555) 123-4567");
 
-      expect(window.location.href).toBe("sms:5551234567");
+      expect(window.location.href).toBe("sms:+15551234567");
     });
 
     it("should handle phone with spaces", () => {
       openSMS("555 123 4567");
 
-      expect(window.location.href).toBe("sms:5551234567");
+      expect(window.location.href).toBe("sms:+15551234567");
     });
 
     it("should handle phone with dots", () => {
       openSMS("555.123.4567");
 
-      expect(window.location.href).toBe("sms:5551234567");
+      expect(window.location.href).toBe("sms:+15551234567");
     });
 
     it("should not set href when phone is null", () => {
