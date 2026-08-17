@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { mount } from "@vue/test-utils";
-import AdminStatTile from "~/components/admin/AdminStatTile.vue";
+import AdminStatTile from "~/components/Admin/AdminStatTile.vue";
 
 describe("AdminStatTile", () => {
   it("renders label and value", () => {

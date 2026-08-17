@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { mount } from "@vue/test-utils";
-import AdminDataTable from "~/components/admin/AdminDataTable.vue";
+import AdminDataTable from "~/components/Admin/AdminDataTable.vue";
 
 const columns = [
   { key: "name", label: "Name" },

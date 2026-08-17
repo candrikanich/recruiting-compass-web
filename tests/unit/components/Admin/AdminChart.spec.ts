@@ -8,7 +8,7 @@ vi.mock("chart.js/auto", () => ({
   }),
 }));
 
-import AdminChart from "~/components/admin/AdminChart.vue";
+import AdminChart from "~/components/Admin/AdminChart.vue";
 
 describe("AdminChart", () => {
   it("renders a canvas and constructs a chart", () => {
