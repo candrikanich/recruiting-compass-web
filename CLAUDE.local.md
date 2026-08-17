@@ -6,9 +6,18 @@ Active session notes only. See [COMPLETED_WORK.md](./COMPLETED_WORK.md) for full
 
 - **Output format by reader, not by default**: For artifacts Chris will read once on a phone or share with someone non-technical — session recaps, status overviews, weekly summaries, "where are we on X" snapshots — invoke the `visual-explainer` skill to produce self-contained HTML. For artifacts that future-Claude or Chris will edit (handoff docs, `planning/*.md`, `COMPLETED_WORK.md`, lesson files, plans) — stay markdown. When unsure: read = HTML, edit = markdown.
 
-## Current Session (2026-08-17 — Admin Suite Foundation: Spec A DONE, subagent-driven)
+## Current Session (2026-08-17 — Admin Suite: Spec A Foundation + Spec B Support DONE)
 
-**Status:** Foundation (Spec A of 4) COMPLETE on `feat/admin-suite-foundation` (**NOT pushed, NO PR yet**). Built via subagent-driven-development (SDD ledger: `.superpowers/sdd/2026-08-17-admin-foundation/progress.md`). Final whole-branch review + branch-finish decision pending.
+### Spec B — Support tooling (#1) — COMPLETE, pending branch-finish
+**Status:** DONE on `feat/admin-support` (off develop, 7 commits, **NOT merged/pushed**). SDD ledger `.superpowers/sdd/2026-08-17-admin-support/`. Final review READY TO MERGE + polish fix landed.
+**Built:** read-only user detail — `server/api/admin/users/[id].get.ts` (requireAdmin, service-role SELECT-only, safe-column allowlist NO PII, family_unit_id-scoped aggregate, `view_as.start` audit both paths, member emails joined) + `useAdminUserDetail` + `types/adminUserDetail.ts` + `pages/admin/users/[id].vue` (red read-only banner, no write controls) + users list→detail row link. Renamed `pages/admin/users.vue`→`users/index.vue` (nested-route fix).
+**Tests:** unit 7859/0 (+member-email test); admin E2E green (admin-user-detail + admin-routes regression) w/ NUXT_PUBLIC_ADMIN_HOST=localhost:3003; type-check/lint/audit clean; `view_as.start` audit row confirmed LIVE.
+**Deferred (non-blocking):** logAdminAction not awaited (pre-existing foundation pattern — harden with event.waitUntil if audit reliability matters).
+**Decisions:** delivery log → Spec B2 (Resend webhook + email_events + msgId persist, all net-new); view-as = dedicated snapshot page (not app-page impersonation); read-only only (write actions → later spec).
+**Next arc:** Spec C (#2 Ops: cron upgrade + Sentry API feed + DB health; needs SENTRY_API_TOKEN issue:read) → Spec D (#3 Growth analytics, live-query). Spec B2 (delivery log) whenever.
+
+### Spec A — Admin Foundation — MERGED to develop
+**Status:** COMPLETE + merged to develop @312c456d (**NOT pushed**). SDD ledger deleted (git is record). Built via subagent-driven-development. Final whole-branch review + branch-finish decision pending.
 **Branch:** `feat/admin-suite-foundation` (off main @29eedb47). 20 commits incl. 1 FOREIGN (see below).
 **Tests:** unit 7849 passed / 0 failed / 63 skip; admin E2E 18/18 live (needs `NUXT_PUBLIC_ADMIN_HOST=localhost:3003`); type-check 0, lint 0, audit:tokens 0.
 
