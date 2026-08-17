@@ -14,7 +14,8 @@ export type AdminAuditAction =
   | "user.bulk_delete"
   | "admin.grant"
   | "admin.revoke"
-  | "invite.resend";
+  | "invite.resend"
+  | "cron.trigger";
 
 interface AdminAuditEntry {
   action: AdminAuditAction;
