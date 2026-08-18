@@ -241,6 +241,22 @@ export const useTemplateResolver = () => {
       if (transcriptRow?.file_url)
         derived.transcriptLink = transcriptRow.file_url;
 
+      // Primary film link comes from the canonical video_links TABLE (prefer a
+      // healthy link, else the first), mirroring iOS. The registry maps
+      // videoLink to this derived value once its source_type is 'computed'.
+      const { data: videoRows } = (await supabase
+        .from("video_links")
+        .select("url, health_status, created_at")
+        .eq("user_id", athleteUserId)
+        .order("created_at", { ascending: true })) as {
+        data: { url: string; health_status: string | null }[] | null;
+      };
+      if (videoRows?.length) {
+        const primary =
+          videoRows.find((v) => v.health_status === "healthy") ?? videoRows[0];
+        if (primary?.url) derived.videoLink = primary.url;
+      }
+
       // Multi-row schedule + next-event vars from the athlete's own events.
       const { data: eventRows } = (await supabase
         .from("events")
