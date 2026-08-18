@@ -140,6 +140,16 @@ export const useTemplateResolver = () => {
       };
       ctx.prefs = prefRow?.data ?? {};
 
+      const { data: locationRow } = (await supabase
+        .from("user_preferences")
+        .select("data")
+        .eq("user_id", athleteUserId)
+        .eq("category", "location")
+        .maybeSingle()) as {
+        data: { data: Record<string, unknown> | null } | null;
+      };
+      ctx.locationPrefs = locationRow?.data ?? {};
+
       const { data: metricRows } = (await supabase
         .from("performance_metrics")
         .select("*")

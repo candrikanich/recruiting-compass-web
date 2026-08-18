@@ -39,6 +39,11 @@ const ctx: ResolverContext = {
     ncaa_id: "2109887654",
     video_links: ["https://film.example/1"],
     travel_team_coach: "Marcus Webb",
+    city: "PLAYER_CITY",
+  },
+  locationPrefs: {
+    city: "Olmsted Township",
+    state: "OH",
   },
   authored: {
     programNote: "Your staff develops middle infielders.",
@@ -63,6 +68,13 @@ describe("resolveSourcePath", () => {
 
   it("resolves pref:player.<key> from the player jsonb", () => {
     expect(resolveSourcePath("pref:player.ncaa_id", ctx)).toBe("2109887654");
+  });
+
+  it("resolves pref:location.<key> from the location jsonb, not player prefs", () => {
+    expect(resolveSourcePath("pref:location.city", ctx)).toBe("Olmsted Township");
+    expect(resolveSourcePath("pref:location.state", ctx)).toBe("OH");
+    // player prefs also carry a `city`; the location prefix must not read it
+    expect(resolveSourcePath("pref:player.city", ctx)).toBe("PLAYER_CITY");
   });
 
   it("returns null for a missing column or unknown table", () => {

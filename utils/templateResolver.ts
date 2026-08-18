@@ -34,6 +34,8 @@ export interface MetricRow {
 export interface ResolverContext {
   tables?: { users?: Row; schools?: Row; coaches?: Row; events?: Row };
   prefs?: Record<string, unknown>;
+  /** Location prefs (user_preferences category "location"): home city/state/zip. */
+  locationPrefs?: Record<string, unknown>;
   metrics?: MetricRow[];
   authored?: Record<string, string>;
   /** Fetch-layer pre-resolved values for computed vars that need DB joins
@@ -76,6 +78,12 @@ export function resolveSourcePath(
   if (sourcePath.startsWith("pref:player.")) {
     const key = sourcePath.slice("pref:player.".length);
     const v = ctx.prefs?.[key];
+    return v ?? null;
+  }
+
+  if (sourcePath.startsWith("pref:location.")) {
+    const key = sourcePath.slice("pref:location.".length);
+    const v = ctx.locationPrefs?.[key];
     return v ?? null;
   }
 
