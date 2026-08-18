@@ -231,6 +231,19 @@ export function carryingTool(metrics: MetricRow[]): string | null {
   return [value, label].filter(Boolean).join(" ") || null;
 }
 
+/** US 10-digit phone → "(216) 534-8996" (leading country-code 1 tolerated); anything
+ *  else returned trimmed and unchanged. Mirrors iOS TemplateComputed.usPhone. */
+export function formatUsPhone(raw: string | null | undefined): string | null {
+  const t = str(raw);
+  if (t === null) return null;
+  const digits = t.replace(/\D/g, "");
+  let core: string;
+  if (digits.length === 11 && digits.startsWith("1")) core = digits.slice(1);
+  else if (digits.length === 10) core = digits;
+  else return t;
+  return `(${core.slice(0, 3)}) ${core.slice(3, 6)}-${core.slice(6)}`;
+}
+
 // --- computed formatters (pure; DB-join computeds come via ctx.derived) ------
 
 const str = (v: unknown): string | null => {

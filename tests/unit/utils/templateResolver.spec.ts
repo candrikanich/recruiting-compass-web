@@ -6,6 +6,7 @@ import {
   resolveVariables,
   renderTemplate,
   renderClean,
+  formatUsPhone,
   findUnresolved,
   type RegistryVar,
   type ResolverContext,
@@ -327,5 +328,18 @@ describe("renderClean", () => {
     expect(renderClean("{{position}} — {{programNote}}", {}, required)).toBe(
       "{{programNote}}",
     );
+  });
+});
+
+describe("formatUsPhone", () => {
+  it("formats US 10-digit and 1-prefixed numbers", () => {
+    expect(formatUsPhone("216-534-8996")).toBe("(216) 534-8996");
+    expect(formatUsPhone("2165348996")).toBe("(216) 534-8996");
+    expect(formatUsPhone("+1 (216) 534.8996")).toBe("(216) 534-8996");
+    expect(formatUsPhone("12165348996")).toBe("(216) 534-8996");
+  });
+  it("leaves non-standard numbers and empties alone", () => {
+    expect(formatUsPhone("555-1234")).toBe("555-1234");
+    expect(formatUsPhone("  ")).toBeNull();
   });
 });

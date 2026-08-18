@@ -4,6 +4,7 @@ import {
   resolveVariables,
   renderTemplate,
   findUnresolved,
+  formatUsPhone,
   renderEventSchedule,
   nextEvent,
   type RegistryVar,
@@ -145,6 +146,10 @@ export const useTemplateResolver = () => {
         data: { data: Record<string, unknown> | null } | null;
       };
       ctx.prefs = prefRow?.data ?? {};
+      if (typeof ctx.prefs.phone === "string") {
+        const formatted = formatUsPhone(ctx.prefs.phone);
+        if (formatted) ctx.prefs.phone = formatted;
+      }
 
       const { data: locationRow } = (await supabase
         .from("user_preferences")
