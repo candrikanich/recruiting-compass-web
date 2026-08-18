@@ -10,7 +10,7 @@ Sentry.init({
 
   integrations: [
     Sentry.replayIntegration(),
-    Sentry.consoleLoggingIntegration({ levels: ["log", "warn", "error"] }),
+    Sentry.consoleLoggingIntegration({ levels: ["warn", "error"] }),
   ],
 
   enableLogs: true,
@@ -33,9 +33,4 @@ Sentry.init({
     // fetch it and Sentry captures the linked FetchError. Not possible in prod.
     /builds\/meta\/dev\.json/,
   ],
-});
-
-// TODO: REMOVE — Sentry logs verification test
-Sentry.logger.info("Sentry client logs verification", {
-  log_source: "sentry_test",
 });
