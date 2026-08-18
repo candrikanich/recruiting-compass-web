@@ -316,3 +316,9 @@ Source: https://uxmovement.medium.com/why-you-should-never-split-text-field-inpu
 - **Phone mask is the gap**: Four `type="tel"` fields (CoachForm, EditCoachModal, SchoolInformationCard, PlayerDetailsBasicsTab) accept free text; `phoneSchema` is US 10-digit and `formatPhone` only runs on CommunicationPanel display. Format-as-you-type `(XXX) XXX-XXXX`, store digits.
 - **Don't invent Address 2**: Campus address and onboarding zip are already single fields — never add a sibling apartment/suite box; if a multi-line address is needed, use a textarea with "(apartment/suite if any)" in the label.
 - **Autocomplete is the cheap anti-split**: `autocomplete="given-name"` / `family-name` / `tel` / `postal-code` lets the browser fill the right box so users don't dump the whole value into the first field — SignupForm has name tokens; InviteSignupForm and coach/phone fields mostly don't.
+
+## Vercel `env rm` deletes the var across ALL environments — 2026-08-18
+
+- **`vercel env rm NAME <environment>` ignores the environment arg for scoping** — it removes the entire variable (Production + Preview + Development), not just the named target. Wiped `NUXT_PUBLIC_ADMIN_HOST` + `PUBLIC_BASE_URL` from Production while trying to change only Preview. Live site survived only because the SPA had already baked the old values at build; the next prod build would have shipped missing values.
+- **To change one environment's value:** just `vercel env add NAME <env>` (add is per-environment and overwrites that target). Do NOT `rm` first on a multi-env var. If you must remove, re-add every other scope immediately and verify with `vercel env pull --environment=production`.
+- **Sensitive vars mask on pull** (`[SENSITIVE]`) so you can't read the value back — recover known values from code defaults (`nuxt.config.ts`) or the live baked bundle before deleting anything.
