@@ -576,7 +576,7 @@ import { useAthleteMessages } from "~/composables/useAthleteMessages";
 import { useUserStore } from "~/stores/user";
 import { formatPhoneDisplay, toSmsHref } from "~/utils/phone";
 import { getRoleLabel } from "~/utils/coachLabels";
-import { findUnresolved } from "~/utils/templateResolver";
+import { findUnresolved, renderClean } from "~/utils/templateResolver";
 import { editableColumnFor } from "~/utils/editableProfileFields";
 import type { ResolverContext, Row } from "~/utils/templateResolver";
 import type { Coach, School, CommunicationTemplate } from "~/types/models";
@@ -619,6 +619,9 @@ const varSourcePaths = ref<Map<string, string>>(new Map());
 const varCategories = ref<Map<string, string>>(new Map());
 // key -> source_type; authored vars get a message-only input (filled per send).
 const varSourceTypes = ref<Map<string, string>>(new Map());
+// Keys marked required — the ONLY ones that block send when unresolved. Optional
+// unresolved tokens are stripped by renderClean (empty lines dropped).
+const varRequired = ref<Set<string>>(new Set());
 
 // Athlete-owned categories whose non-inline-editable vars link to the profile
 // editor. program/event/system/authored come from elsewhere (no profile link).
@@ -649,6 +652,9 @@ onMounted(async () => {
   );
   varCategories.value = new Map(registry.map((v) => [v.key, v.category ?? ""]));
   varSourceTypes.value = new Map(registry.map((v) => [v.key, v.source_type]));
+  varRequired.value = new Set(
+    registry.filter((v) => v.is_required_default).map((v) => v.key),
+  );
   await refreshContactWindow();
 });
 
@@ -806,15 +812,21 @@ const emailVariableRows = computed(() =>
 const textVariableRows = computed(() =>
   toRows(selectedTextTemplateObj.value, textResolvedValues.value),
 );
-const emailPreviewSegments = computed(() =>
-  toSegments(emailComposer.value.body),
+// Cleaned bodies drive preview, the send gate, and the sent/logged message:
+// optional-empty tokens/lines are removed; required unresolved tokens remain.
+const emailCleanBody = computed(() =>
+  renderClean(emailComposer.value.body, {}, varRequired.value),
 );
-const textPreviewSegments = computed(() => toSegments(textComposer.value.body));
+const textCleanBody = computed(() =>
+  renderClean(textComposer.value.body, {}, varRequired.value),
+);
+const emailPreviewSegments = computed(() => toSegments(emailCleanBody.value));
+const textPreviewSegments = computed(() => toSegments(textCleanBody.value));
 const emailUnresolved = computed(() => [
-  ...new Set(findUnresolved(emailComposer.value.body)),
+  ...new Set(findUnresolved(emailCleanBody.value)),
 ]);
 const textUnresolved = computed(() => [
-  ...new Set(findUnresolved(textComposer.value.body)),
+  ...new Set(findUnresolved(textCleanBody.value)),
 ]);
 
 const showEmailComposer = ref(false);
@@ -971,13 +983,13 @@ const sendEmail = async () => {
   if (!(await passesSendGuardrails("email"))) return;
 
   await logSentMessage("email");
-  window.location.href = `mailto:${props.coach.email}?subject=${encodeURIComponent(emailComposer.value.subject)}&body=${encodeURIComponent(emailComposer.value.body)}`;
+  window.location.href = `mailto:${props.coach.email}?subject=${encodeURIComponent(emailComposer.value.subject)}&body=${encodeURIComponent(emailCleanBody.value)}`;
 
   if (shouldLogInteraction.value) {
     emit("interaction-logged", {
       type: "email",
       direction: "outbound",
-      content: emailComposer.value.body,
+      content: emailCleanBody.value,
     });
   }
 
@@ -995,16 +1007,13 @@ const sendText = async () => {
   if (!(await passesSendGuardrails("text"))) return;
 
   await logSentMessage("text");
-  window.location.href = toSmsHref(
-    props.coach.phone ?? "",
-    textComposer.value.body,
-  );
+  window.location.href = toSmsHref(props.coach.phone ?? "", textCleanBody.value);
 
   if (shouldLogInteraction.value) {
     emit("interaction-logged", {
       type: "text",
       direction: "outbound",
-      content: textComposer.value.body,
+      content: textCleanBody.value,
     });
   }
 
@@ -1073,8 +1082,8 @@ const logSentMessage = async (channel: "email" | "text"): Promise<void> => {
       subject: channel === "email" ? emailComposer.value.subject : null,
       body:
         channel === "email"
-          ? emailComposer.value.body
-          : textComposer.value.body,
+          ? emailCleanBody.value
+          : textCleanBody.value,
     });
   } catch {
     // Logging failure must not block the send.

@@ -50,6 +50,8 @@ export interface RegistryVar {
   source_type: "column" | "computed" | "authored" | "system";
   source_path?: string | null;
   category?: string | null;
+  /** When true, an unresolved value blocks send; when false it is stripped by renderClean. */
+  is_required_default?: boolean | null;
 }
 
 type TableName = "users" | "schools" | "coaches" | "events";
@@ -343,4 +345,49 @@ export function renderTemplate(
 /** Variables still unresolved in rendered text — the send-blocking check. */
 export function findUnresolved(text: string): string[] {
   return [...text.matchAll(/\{\{(\w+)\}\}/g)].map((m) => m[1]);
+}
+
+const LINE_SEP = /[ \t—\-|,·•]/;
+
+/** True when — after removing a leading "Label:" and all separators/space — nothing
+ *  meaningful remains, and no other {{token}} sits on the line. */
+function isLabelOnly(line: string): boolean {
+  if (line.includes("{{")) return false;
+  const probe = line.replace(/^\s*[A-Za-z][A-Za-z ]*:/, "");
+  return [...probe].every((ch) => LINE_SEP.test(ch));
+}
+
+/** Collapse runs of spaces and strip dangling leading/trailing separators. */
+function tidyLine(line: string): string {
+  return line
+    .replace(/[ \t]{2,}/g, " ")
+    .replace(/^[ \t—\-|,·•]+/, "")
+    .replace(/[ \t—\-|,·•]+$/, "");
+}
+
+/** Render, then gracefully handle OPTIONAL unresolved tokens: strip the token, and if its
+ *  line collapses to just a label + separators, drop the whole line. REQUIRED unresolved
+ *  tokens are left intact so they still show in preview and gate the send.
+ *  Mirrors iOS `TemplateResolver.renderClean` — keep the two byte-identical. */
+export function renderClean(
+  body: string,
+  values: Record<string, string>,
+  requiredKeys: Set<string>,
+): string {
+  const rendered = renderTemplate(body, values);
+  const kept: string[] = [];
+  for (const line of rendered.split("\n")) {
+    const optional = findUnresolved(line).filter((k) => !requiredKeys.has(k));
+    if (optional.length === 0) {
+      kept.push(line);
+      continue;
+    }
+    let cleaned = line;
+    for (const key of optional) {
+      cleaned = cleaned.replace(new RegExp(`\\{\\{${key}\\}\\}`, "g"), "");
+    }
+    if (isLabelOnly(cleaned)) continue;
+    kept.push(tidyLine(cleaned));
+  }
+  return kept.join("\n").replace(/\n{3,}/g, "\n\n").trim();
 }

@@ -5,6 +5,7 @@ import {
   carryingTool,
   resolveVariables,
   renderTemplate,
+  renderClean,
   findUnresolved,
   type RegistryVar,
   type ResolverContext,
@@ -275,5 +276,56 @@ describe("resolveVariables", () => {
       { tables: { users: {} } },
     );
     expect(sparse.height).toBeUndefined();
+  });
+});
+
+// Shared vectors with iOS TemplateRenderCleanTests — keep the two byte-identical.
+describe("renderClean", () => {
+  const required = new Set(["programNote"]);
+
+  it("drops a label-only line for an empty optional", () => {
+    expect(renderClean("Film: {{videoLink}}\nThanks", {}, required)).toBe(
+      "Thanks",
+    );
+  });
+
+  it("keeps the line when the optional resolves", () => {
+    expect(
+      renderClean("Film: {{videoLink}}\nThanks", { videoLink: "https://film/1" }, required),
+    ).toBe("Film: https://film/1\nThanks");
+  });
+
+  it("keeps a required unresolved token", () => {
+    expect(renderClean("Hi,\n{{programNote}}\nThanks", {}, required)).toBe(
+      "Hi,\n{{programNote}}\nThanks",
+    );
+  });
+
+  it("drops an empty bullet line", () => {
+    expect(renderClean("Numbers:\n- {{metrics}}\nEnd", {}, required)).toBe(
+      "Numbers:\nEnd",
+    );
+  });
+
+  it("tidies a footer with some resolved", () => {
+    expect(
+      renderClean("{{gradYear}} | {{position}} | {{highSchool}}", { gradYear: "2028" }, required),
+    ).toBe("2028");
+  });
+
+  it("drops the footer when all optional are empty", () => {
+    expect(
+      renderClean("Signed,\n{{gradYear}} | {{position}} | {{highSchool}}", {}, required),
+    ).toBe("Signed,");
+  });
+
+  it("collapses blank lines left by a drop", () => {
+    expect(renderClean("A\n\nFilm: {{videoLink}}\n\nB", {}, required)).toBe("A\n\nB");
+  });
+
+  it("keeps required when mixed with optional on one line", () => {
+    expect(renderClean("{{position}} — {{programNote}}", {}, required)).toBe(
+      "{{programNote}}",
+    );
   });
 });
