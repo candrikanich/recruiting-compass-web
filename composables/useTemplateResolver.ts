@@ -21,6 +21,10 @@ import type { CommunicationTemplate } from "~/types/models";
 
 const logger = createClientLogger("useTemplateResolver");
 
+/** Public base for athlete profile links shared with coaches; absolute so the URL is
+ *  clickable in the sent email/SMS (parity with iOS publicProfileBase). */
+const PUBLIC_PROFILE_BASE = "https://myrecruitingcompass.com";
+
 /** PostgREST-ish error shape (avoids `any` while matching the house PGRST205 check). */
 interface FetchError {
   code?: string;
@@ -220,7 +224,9 @@ export const useTemplateResolver = () => {
         data: { vanity_slug: string | null; hash_slug: string | null } | null;
       };
       const slug = profileRow?.vanity_slug || profileRow?.hash_slug;
-      if (slug) derived.profileLink = `/${slug}`;
+      // Absolute so the link is clickable in the email/SMS sent to a coach
+      // (parity with iOS TemplateContextBuilder.publicProfileBase).
+      if (slug) derived.profileLink = `${PUBLIC_PROFILE_BASE}/p/${slug}`;
 
       const { data: transcriptRow } = (await supabase
         .from("documents")
