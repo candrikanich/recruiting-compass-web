@@ -312,7 +312,21 @@ const COMPUTED: Record<string, (ctx: ResolverContext) => string | null> = {
       year: "numeric",
       timeZone: "UTC",
     }),
+  // Optional completion sentence. Renders only when the school's recruiting
+  // questionnaire is marked complete; otherwise resolves to "" (see
+  // OPTIONAL_EMPTY) so the surrounding line collapses instead of leaving a
+  // send-blocking {{questionnaireNote}} literal. Trailing space keeps the
+  // following sentence spaced when present.
+  questionnaireNote: (c) =>
+    c.tables?.schools?.questionnaire_completed === true
+      ? "I've completed your recruiting questionnaire. "
+      : "",
 };
+
+// Computed keys whose empty result must be written as "" rather than omitted.
+// For these, an absent value collapses the template line (no unresolved flag),
+// which is the opposite of the default null-omit behavior used everywhere else.
+const OPTIONAL_EMPTY = new Set(["questionnaireNote"]);
 
 /** Build the {{key}} -> value map. Keys resolving to null are omitted. */
 export function resolveVariables(
@@ -335,6 +349,13 @@ export function resolveVariables(
           ? COMPUTED[v.key](ctx)
           : (ctx.derived?.[v.key] ?? null);
         break;
+    }
+    // Optional keys keep their exact computed string (spacing included) and
+    // fall back to "" instead of being omitted, so the template line collapses
+    // cleanly rather than leaving a send-blocking literal.
+    if (OPTIONAL_EMPTY.has(v.key)) {
+      out[v.key] = raw == null ? "" : String(raw);
+      continue;
     }
     const s = str(raw);
     if (s !== null) out[v.key] = s;

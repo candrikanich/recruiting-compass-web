@@ -63,6 +63,7 @@
             @lookup-data="lookupCollegeData"
             @save="handleSaveBasicInfo"
             @toggle-edit="handleToggleEdit"
+            @set-questionnaire="handleSetQuestionnaire"
           />
 
           <!-- Coach-outreach answers — prefill Quick Comm {{ programNote }} / {{ fitReason }} -->
@@ -579,6 +580,15 @@ const lookupCollegeData = async () => {
       editedBasicInfo.value.website = String(updated.website || "");
     }
   }
+};
+
+const handleSetQuestionnaire = async (completed: boolean) => {
+  if (!school.value) return;
+  const updated = await updateSchool(id, {
+    questionnaire_completed: completed,
+    questionnaire_completed_at: completed ? new Date().toISOString() : null,
+  });
+  if (updated) school.value = updated;
 };
 
 const loadPageData = async () => {

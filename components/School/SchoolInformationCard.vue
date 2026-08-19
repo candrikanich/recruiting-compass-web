@@ -315,6 +315,33 @@
         No college data yet. Use Lookup to pull it from the College Scorecard.
       </p>
     </section>
+
+    <!-- Recruiting -->
+    <section class="mt-4 pt-4 border-t border-slate-200 space-y-3">
+      <h3 class="text-lg font-semibold text-slate-900">Recruiting</h3>
+      <label class="flex items-start gap-3 cursor-pointer">
+        <input
+          type="checkbox"
+          class="mt-0.5 h-4 w-4 rounded-sm border-slate-300 text-blue-600 focus:ring-blue-500"
+          :checked="school.questionnaire_completed === true"
+          @change="
+            $emit(
+              'set-questionnaire',
+              ($event.target as HTMLInputElement).checked,
+            )
+          "
+        />
+        <span class="text-sm">
+          <span class="font-medium text-slate-900"
+            >Recruiting questionnaire completed</span
+          >
+          <span class="block text-slate-500">
+            Enables the "I've completed your recruiting questionnaire" line in
+            coach outreach templates for this school.
+          </span>
+        </span>
+      </label>
+    </section>
   </div>
 </template>
 
@@ -347,6 +374,7 @@ const emit = defineEmits<{
   "lookup-data": [];
   save: [];
   "toggle-edit": [];
+  "set-questionnaire": [completed: boolean];
 }>();
 
 const handleSave = () => {

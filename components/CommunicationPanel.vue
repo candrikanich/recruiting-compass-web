@@ -27,6 +27,37 @@
       <p v-if="schoolName" class="text-sm text-slate-600">{{ schoolName }}</p>
     </div>
 
+    <!-- Questionnaire completion prompt: this template mentions completing the
+         school's recruiting questionnaire. Confirm before it goes to the coach. -->
+    <div
+      v-if="showQuestionnairePrompt"
+      class="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-4"
+    >
+      <p class="text-sm font-medium text-amber-900">
+        Did you complete a recruiting questionnaire for
+        {{ schoolName || "this school" }}?
+      </p>
+      <p class="mt-1 text-sm text-amber-800">
+        This template says you did. We'll only include that line if you confirm.
+      </p>
+      <div class="mt-3 flex gap-2">
+        <button
+          type="button"
+          class="rounded-lg bg-amber-600 px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-amber-700"
+          @click="answerQuestionnaire(true)"
+        >
+          Yes, I completed it
+        </button>
+        <button
+          type="button"
+          class="rounded-lg bg-white px-3 py-1.5 text-sm font-medium text-amber-900 ring-1 ring-amber-300 transition hover:bg-amber-100"
+          @click="answerQuestionnaire(false)"
+        >
+          Skip
+        </button>
+      </div>
+    </div>
+
     <!-- Communication Buttons -->
     <div class="space-y-3 mb-6">
       <!-- Email -->
@@ -601,6 +632,7 @@ import { useFamilyCtx } from "~/composables/useFamilyCtx";
 import { useTemplateResolver } from "~/composables/useTemplateResolver";
 import { useProfileFieldWrite } from "~/composables/useProfileFieldWrite";
 import { useAthleteMessages } from "~/composables/useAthleteMessages";
+import { useSchools } from "~/composables/useSchools";
 import { useUserStore } from "~/stores/user";
 import { formatPhoneDisplay, toSmsHref } from "~/utils/phone";
 import { getRoleLabel } from "~/utils/coachLabels";
@@ -641,6 +673,15 @@ const { evaluate: evaluateContactWindow, filterTemplatesByWindow } =
 const emailSendConfirmed = ref(false);
 const textSendConfirmed = ref(false);
 const userStore = useUserStore();
+
+// Questionnaire completion, per school. Templates carry a {{questionnaireNote}}
+// that only renders "I've completed your recruiting questionnaire" when the
+// school flag is true. If a chosen template needs it and the flag is still
+// unset, we ask once at compose time — but the athlete may skip, in which case
+// we treat it as not-completed and the line is omitted. Override reflects the
+// answer immediately without waiting for the parent to refetch the school.
+const questionnaireOverride = ref<boolean | null>(null);
+const questionnairePromptSkipped = ref(false);
 
 // key -> source_path / category, from the DB registry. source_path drives
 // inline-edit eligibility; category drives the "Edit in profile" link fallback.
@@ -740,8 +781,14 @@ const composeFromTemplate = async (
   values: Record<string, string>;
 }> => {
   const ctx = await ensureAthleteContext();
-  const school =
+  const baseSchool =
     props.school ?? (props.schoolName ? { name: props.schoolName } : undefined);
+  // Reflect an in-session questionnaire answer immediately (before the parent
+  // refetches the school row) so the preview updates on Yes/Skip.
+  const school =
+    baseSchool && questionnaireOverride.value !== null
+      ? { ...baseSchool, questionnaire_completed: questionnaireOverride.value }
+      : baseSchool;
   const { subject, body, values } = await resolveTemplate(
     template,
     { coach: props.coach as unknown as Row, school: school as Row | undefined },
@@ -992,6 +1039,46 @@ const reresolveSelected = async () => {
     textComposer.value = { body: r.body };
     textResolvedValues.value = r.values;
   }
+};
+
+// --- questionnaire completion prompt (ask once, skippable) ------------------
+const questionnaireCompleted = computed(() =>
+  questionnaireOverride.value !== null
+    ? questionnaireOverride.value
+    : props.school?.questionnaire_completed === true,
+);
+
+const activeTemplateUsesQuestionnaire = computed(() =>
+  [selectedEmailTemplateObj.value, selectedTextTemplateObj.value].some((t) =>
+    (t?.body ?? "").includes("{{questionnaireNote}}"),
+  ),
+);
+
+// Ask only when a selected template needs the note, the flag is not already
+// true, and the athlete hasn't skipped the prompt this session.
+const showQuestionnairePrompt = computed(
+  () =>
+    activeTemplateUsesQuestionnaire.value &&
+    !questionnaireCompleted.value &&
+    !questionnairePromptSkipped.value,
+);
+
+// Yes -> persist to the school (best-effort) and re-render with the line.
+// Skip/No -> leave it not-completed; the line stays omitted.
+const answerQuestionnaire = async (completed: boolean) => {
+  questionnaireOverride.value = completed;
+  questionnairePromptSkipped.value = true;
+  if (completed && props.school?.id) {
+    try {
+      await updateSchool(props.school.id, {
+        questionnaire_completed: true,
+        questionnaire_completed_at: new Date().toISOString(),
+      });
+    } catch {
+      // Non-fatal: the override still renders the line for this session.
+    }
+  }
+  await reresolveSelected();
 };
 
 // Persist an inline profile-field edit, then invalidate the cached athlete

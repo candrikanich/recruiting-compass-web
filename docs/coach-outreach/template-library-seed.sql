@@ -78,6 +78,7 @@ values
 ('schoolCity',        'School city',        'Where the campus is',                          'program','column','programs.city',             false,'Columbus',            69),
 ('schoolState',       'School state',       'State abbreviation',                           'program','column','programs.state',            false,'OH',                  70),
 ('schoolTwitter',     'School X handle',    'Handle without the @ — public posts only',     'program','column','programs.twitter_handle',  false,'StateBaseball',       71),
+('questionnaireNote', 'Questionnaire note', 'Completion sentence, shown only when the school''s recruiting questionnaire is marked complete; otherwise renders as nothing.','program','computed',null,false,'I''ve completed your recruiting questionnaire. ',72),
 
 -- Event ------------------------------------------------------------------------
 ('eventName',         'Event name',         'Camp, showcase, tournament, meet, or game',    'event','column','athlete_events.name',        false,'Midwest Prospect Showcase',80),
@@ -165,7 +166,7 @@ My coaches are glad to talk:
 {{hsCoachName}}, {{highSchool}} — {{hsCoachPhone}}
 {{clubCoachName}}, {{clubTeam}} — {{clubCoachPhone}}
 
-I've completed your recruiting questionnaire. I'd welcome any feedback on my film and what you'd want to see from me to fit at {{schoolName}}.
+{{questionnaireNote}}I'd welcome any feedback on my film and what you'd want to see from me to fit at {{schoolName}}.
 
 Thank you for your time,
 {{playerName}}
