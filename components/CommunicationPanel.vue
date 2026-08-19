@@ -263,6 +263,20 @@
                 </div>
               </div>
 
+              <!-- Nudge to add a stat when the athlete has none -->
+              <NuxtLink
+                v-if="showAddMetricCta"
+                to="/performance"
+                class="flex items-center gap-2 p-3 rounded-lg bg-blue-50 text-sm text-blue-700 hover:bg-blue-100 transition"
+              >
+                <UIcon
+                  name="i-heroicons-chart-bar"
+                  class="w-4 h-4 shrink-0"
+                  aria-hidden="true"
+                />
+                <span>Add a metric to strengthen this email — coaches look for numbers.</span>
+              </NuxtLink>
+
               <!-- Unresolved send warning -->
               <p v-if="emailSendWarning" class="text-xs text-amber-700">
                 {{ emailSendWarning }}
@@ -468,6 +482,20 @@
                 </div>
               </div>
 
+              <!-- Nudge to add a stat when the athlete has none -->
+              <NuxtLink
+                v-if="showAddMetricCta"
+                to="/performance"
+                class="flex items-center gap-2 p-3 rounded-lg bg-blue-50 text-sm text-blue-700 hover:bg-blue-100 transition"
+              >
+                <UIcon
+                  name="i-heroicons-chart-bar"
+                  class="w-4 h-4 shrink-0"
+                  aria-hidden="true"
+                />
+                <span>Add a metric to strengthen this message.</span>
+              </NuxtLink>
+
               <!-- Unresolved send warning -->
               <p v-if="textSendWarning" class="text-xs text-amber-700">
                 {{ textSendWarning }}
@@ -604,6 +632,7 @@ const { getTemplatesByType, loadTemplates } = useCommunicationTemplates();
 const { activeAthleteId } = useFamilyCtx();
 const { buildAthleteContext, resolveTemplate, loadRegistry } =
   useTemplateResolver();
+const { updateSchool } = useSchools();
 const { writeField } = useProfileFieldWrite();
 const { checkSend, logSend } = useAthleteMessages();
 const { evaluate: evaluateContactWindow, filterTemplatesByWindow } =
@@ -656,7 +685,11 @@ onMounted(async () => {
     registry.filter((v) => v.is_required_default).map((v) => v.key),
   );
   await refreshContactWindow();
+  seedOutreachAuthored();
 });
+
+// Seed the outreach answers once the school prop resolves (it can load after mount).
+watch(() => props.school?.id, seedOutreachAuthored);
 
 // Re-evaluate the window if the target school (division) or the active athlete
 // changes — either can flip pre <-> open.
@@ -741,6 +774,24 @@ const textInputs = ref<Record<string, string>>({});
 // they fill the template for this send only. Separate from profile inputs.
 const emailAuthored = ref<Record<string, string>>({});
 const textAuthored = ref<Record<string, string>>({});
+
+// Nudge to add a stat when the athlete has logged none.
+const showAddMetricCta = computed(
+  () => (athleteCtx.value?.metrics?.length ?? 0) === 0,
+);
+
+// Seed programNote / fitReason from the school's saved answers (they persist per-school
+// on send), without clobbering anything the athlete already typed this session.
+const seedOutreachAuthored = () => {
+  const s = props.school;
+  if (!s) return;
+  for (const store of [emailAuthored, textAuthored]) {
+    if (!store.value.programNote && s.why_program)
+      store.value.programNote = s.why_program;
+    if (!store.value.fitReason && s.fit_reason)
+      store.value.fitReason = s.fit_reason;
+  }
+};
 // Save error + in-flight row, keyed "<channel>:<key>".
 const saveErrors = ref<Record<string, string>>({});
 const savingKey = ref<string | null>(null);
@@ -1087,6 +1138,28 @@ const logSentMessage = async (channel: "email" | "text"): Promise<void> => {
     });
   } catch {
     // Logging failure must not block the send.
+  }
+  await persistOutreachAnswers(authored);
+};
+
+// Persist the athlete's why-program / why-fit answers back to the school so they
+// prefill next time and show on school detail. Only writes non-empty changes; never
+// blocks the send.
+const persistOutreachAnswers = async (
+  authored: Record<string, string>,
+): Promise<void> => {
+  const schoolId = props.school?.id;
+  if (!schoolId) return;
+  const patch: Partial<School> = {};
+  const wp = authored["programNote"]?.trim();
+  const fr = authored["fitReason"]?.trim();
+  if (wp && wp !== (props.school?.why_program ?? "")) patch.why_program = wp;
+  if (fr && fr !== (props.school?.fit_reason ?? "")) patch.fit_reason = fr;
+  if (Object.keys(patch).length === 0) return;
+  try {
+    await updateSchool(schoolId, patch);
+  } catch {
+    // Best-effort — a save failure must not affect the sent message.
   }
 };
 
