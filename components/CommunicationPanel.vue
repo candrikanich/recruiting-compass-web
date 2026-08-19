@@ -782,7 +782,8 @@ const showAddMetricCta = computed(
 
 // Seed programNote / fitReason from the school's saved answers (they persist per-school
 // on send), without clobbering anything the athlete already typed this session.
-const seedOutreachAuthored = () => {
+// Function declaration (hoisted) so onMounted/watch above can reference it.
+function seedOutreachAuthored() {
   const s = props.school;
   if (!s) return;
   for (const store of [emailAuthored, textAuthored]) {
@@ -791,7 +792,7 @@ const seedOutreachAuthored = () => {
     if (!store.value.fitReason && s.fit_reason)
       store.value.fitReason = s.fit_reason;
   }
-};
+}
 // Save error + in-flight row, keyed "<channel>:<key>".
 const saveErrors = ref<Record<string, string>>({});
 const savingKey = ref<string | null>(null);
