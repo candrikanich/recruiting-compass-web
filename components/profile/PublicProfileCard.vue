@@ -3,8 +3,37 @@
 import { computed } from "vue";
 import type { PublicProfileData } from "~/types/models";
 import { formatPositionsShort } from "~/utils/positions/canonical";
+import {
+  openTwitter,
+  openInstagram,
+  openTikTok,
+  openFacebook,
+} from "~/utils/socialMediaHandlers";
 
 const props = withDefaults(defineProps<{ profile: PublicProfileData }>(), {});
+
+const socialLinks = computed(() => {
+  const s = props.profile.social;
+  if (!s) return [];
+  const links: Array<{ label: string; display: string; open: () => void }> = [];
+  if (s.twitter_handle) {
+    const h = s.twitter_handle;
+    links.push({ label: "Twitter", display: h, open: () => openTwitter(h) });
+  }
+  if (s.instagram_handle) {
+    const h = s.instagram_handle;
+    links.push({ label: "Instagram", display: h, open: () => openInstagram(h) });
+  }
+  if (s.tiktok_handle) {
+    const h = s.tiktok_handle;
+    links.push({ label: "TikTok", display: h, open: () => openTikTok(h) });
+  }
+  if (s.facebook_url) {
+    const u = s.facebook_url;
+    links.push({ label: "Facebook", display: u, open: () => openFacebook(u) });
+  }
+  return links;
+});
 
 // Coach-facing primary/secondary from the athlete's ENTERED, ordered
 // positions[] (abbreviated "3B/SS"); the stale primary_position string is only
@@ -272,6 +301,48 @@ function formatGPA(gpa: number | undefined): string {
             {{ school.name }}
           </li>
         </ul>
+      </section>
+
+      <!-- Social -->
+      <section v-if="socialLinks.length" class="px-6 py-5">
+        <h2
+          class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3"
+        >
+          Social
+        </h2>
+        <dl class="space-y-1.5 text-sm">
+          <div
+            v-for="item in socialLinks"
+            :key="item.label"
+            class="flex justify-between"
+          >
+            <dt class="text-gray-500">{{ item.label }}</dt>
+            <dd class="font-medium">
+              <button
+                type="button"
+                class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 hover:underline"
+                :aria-label="`Open ${item.label} profile ${item.display}`"
+                @click="item.open"
+              >
+                {{ item.display }}
+                <svg
+                  class="w-3 h-3"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M14 5h5m0 0v5m0-5L10 14M9 5H5a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4"
+                  />
+                </svg>
+              </button>
+            </dd>
+          </div>
+        </dl>
       </section>
     </div>
 

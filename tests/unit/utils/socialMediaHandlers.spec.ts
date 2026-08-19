@@ -2,6 +2,8 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import {
   openTwitter,
   openInstagram,
+  openTikTok,
+  openFacebook,
   openEmail,
   openSMS,
 } from "~/utils/socialMediaHandlers";
@@ -97,6 +99,60 @@ describe("utils/socialMediaHandlers", () => {
 
     it("should not open window when handle is empty string", () => {
       openInstagram("");
+
+      expect(window.open).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("openTikTok", () => {
+    it("should open TikTok profile with @ prefix, clean handle", () => {
+      openTikTok("@player");
+
+      expect(window.open).toHaveBeenCalledWith(
+        "https://tiktok.com/@player",
+        "_blank",
+      );
+    });
+
+    it("should open TikTok profile without @ symbol", () => {
+      openTikTok("player");
+
+      expect(window.open).toHaveBeenCalledWith(
+        "https://tiktok.com/@player",
+        "_blank",
+      );
+    });
+
+    it("should not open window when handle is null or empty", () => {
+      openTikTok(null);
+      openTikTok("");
+
+      expect(window.open).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("openFacebook", () => {
+    it("should open a full URL as-is", () => {
+      openFacebook("https://facebook.com/player");
+
+      expect(window.open).toHaveBeenCalledWith(
+        "https://facebook.com/player",
+        "_blank",
+      );
+    });
+
+    it("should prefix https:// when scheme is missing", () => {
+      openFacebook("facebook.com/player");
+
+      expect(window.open).toHaveBeenCalledWith(
+        "https://facebook.com/player",
+        "_blank",
+      );
+    });
+
+    it("should not open window when url is null or blank", () => {
+      openFacebook(null);
+      openFacebook("   ");
 
       expect(window.open).not.toHaveBeenCalled();
     });
