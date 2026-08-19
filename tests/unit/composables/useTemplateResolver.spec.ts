@@ -133,7 +133,7 @@ describe("useTemplateResolver", () => {
       // Ordered, abbreviated, coach-facing: positions[0]=SS, next distinct=2B.
       expect(ctx.derived?.position).toBe("SS/2B");
       expect(ctx.derived?.positionSecondary).toBe("2B");
-      expect(ctx.derived?.profileLink).toBe("/jordan");
+      expect(ctx.derived?.profileLink).toBe("https://myrecruitingcompass.com/p/jordan");
       expect(ctx.derived?.hsCoachName).toBe("Dave Reilly");
       expect(ctx.derived?.transcriptLink).toBe(
         "https://files.example/transcript.pdf",

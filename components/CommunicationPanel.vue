@@ -294,6 +294,20 @@
                 </div>
               </div>
 
+              <!-- Nudge to add a stat when the athlete has none -->
+              <NuxtLink
+                v-if="showAddMetricCta"
+                to="/performance"
+                class="flex items-center gap-2 p-3 rounded-lg bg-blue-50 text-sm text-blue-700 hover:bg-blue-100 transition"
+              >
+                <UIcon
+                  name="i-heroicons-chart-bar"
+                  class="w-4 h-4 shrink-0"
+                  aria-hidden="true"
+                />
+                <span>Add a metric to strengthen this email — coaches look for numbers.</span>
+              </NuxtLink>
+
               <!-- Unresolved send warning -->
               <p v-if="emailSendWarning" class="text-xs text-amber-700">
                 {{ emailSendWarning }}
@@ -499,6 +513,20 @@
                 </div>
               </div>
 
+              <!-- Nudge to add a stat when the athlete has none -->
+              <NuxtLink
+                v-if="showAddMetricCta"
+                to="/performance"
+                class="flex items-center gap-2 p-3 rounded-lg bg-blue-50 text-sm text-blue-700 hover:bg-blue-100 transition"
+              >
+                <UIcon
+                  name="i-heroicons-chart-bar"
+                  class="w-4 h-4 shrink-0"
+                  aria-hidden="true"
+                />
+                <span>Add a metric to strengthen this message.</span>
+              </NuxtLink>
+
               <!-- Unresolved send warning -->
               <p v-if="textSendWarning" class="text-xs text-amber-700">
                 {{ textSendWarning }}
@@ -608,7 +636,7 @@ import { useSchools } from "~/composables/useSchools";
 import { useUserStore } from "~/stores/user";
 import { formatPhoneDisplay, toSmsHref } from "~/utils/phone";
 import { getRoleLabel } from "~/utils/coachLabels";
-import { findUnresolved } from "~/utils/templateResolver";
+import { findUnresolved, renderClean } from "~/utils/templateResolver";
 import { editableColumnFor } from "~/utils/editableProfileFields";
 import type { ResolverContext, Row } from "~/utils/templateResolver";
 import type { Coach, School, CommunicationTemplate } from "~/types/models";
@@ -636,6 +664,7 @@ const { getTemplatesByType, loadTemplates } = useCommunicationTemplates();
 const { activeAthleteId } = useFamilyCtx();
 const { buildAthleteContext, resolveTemplate, loadRegistry } =
   useTemplateResolver();
+const { updateSchool } = useSchools();
 const { writeField } = useProfileFieldWrite();
 const { checkSend, logSend } = useAthleteMessages();
 const { evaluate: evaluateContactWindow, filterTemplatesByWindow } =
@@ -644,7 +673,6 @@ const { evaluate: evaluateContactWindow, filterTemplatesByWindow } =
 const emailSendConfirmed = ref(false);
 const textSendConfirmed = ref(false);
 const userStore = useUserStore();
-const { updateSchool } = useSchools();
 
 // Questionnaire completion, per school. Templates carry a {{questionnaireNote}}
 // that only renders "I've completed your recruiting questionnaire" when the
@@ -661,6 +689,9 @@ const varSourcePaths = ref<Map<string, string>>(new Map());
 const varCategories = ref<Map<string, string>>(new Map());
 // key -> source_type; authored vars get a message-only input (filled per send).
 const varSourceTypes = ref<Map<string, string>>(new Map());
+// Keys marked required — the ONLY ones that block send when unresolved. Optional
+// unresolved tokens are stripped by renderClean (empty lines dropped).
+const varRequired = ref<Set<string>>(new Set());
 
 // Athlete-owned categories whose non-inline-editable vars link to the profile
 // editor. program/event/system/authored come from elsewhere (no profile link).
@@ -691,8 +722,15 @@ onMounted(async () => {
   );
   varCategories.value = new Map(registry.map((v) => [v.key, v.category ?? ""]));
   varSourceTypes.value = new Map(registry.map((v) => [v.key, v.source_type]));
+  varRequired.value = new Set(
+    registry.filter((v) => v.is_required_default).map((v) => v.key),
+  );
   await refreshContactWindow();
+  seedOutreachAuthored();
 });
+
+// Seed the outreach answers once the school prop resolves (it can load after mount).
+watch(() => props.school?.id, seedOutreachAuthored);
 
 // Re-evaluate the window if the target school (division) or the active athlete
 // changes — either can flip pre <-> open.
@@ -783,6 +821,25 @@ const textInputs = ref<Record<string, string>>({});
 // they fill the template for this send only. Separate from profile inputs.
 const emailAuthored = ref<Record<string, string>>({});
 const textAuthored = ref<Record<string, string>>({});
+
+// Nudge to add a stat when the athlete has logged none.
+const showAddMetricCta = computed(
+  () => (athleteCtx.value?.metrics?.length ?? 0) === 0,
+);
+
+// Seed programNote / fitReason from the school's saved answers (they persist per-school
+// on send), without clobbering anything the athlete already typed this session.
+// Function declaration (hoisted) so onMounted/watch above can reference it.
+function seedOutreachAuthored() {
+  const s = props.school;
+  if (!s) return;
+  for (const store of [emailAuthored, textAuthored]) {
+    if (!store.value.programNote && s.why_program)
+      store.value.programNote = s.why_program;
+    if (!store.value.fitReason && s.fit_reason)
+      store.value.fitReason = s.fit_reason;
+  }
+}
 // Save error + in-flight row, keyed "<channel>:<key>".
 const saveErrors = ref<Record<string, string>>({});
 const savingKey = ref<string | null>(null);
@@ -854,15 +911,21 @@ const emailVariableRows = computed(() =>
 const textVariableRows = computed(() =>
   toRows(selectedTextTemplateObj.value, textResolvedValues.value),
 );
-const emailPreviewSegments = computed(() =>
-  toSegments(emailComposer.value.body),
+// Cleaned bodies drive preview, the send gate, and the sent/logged message:
+// optional-empty tokens/lines are removed; required unresolved tokens remain.
+const emailCleanBody = computed(() =>
+  renderClean(emailComposer.value.body, {}, varRequired.value),
 );
-const textPreviewSegments = computed(() => toSegments(textComposer.value.body));
+const textCleanBody = computed(() =>
+  renderClean(textComposer.value.body, {}, varRequired.value),
+);
+const emailPreviewSegments = computed(() => toSegments(emailCleanBody.value));
+const textPreviewSegments = computed(() => toSegments(textCleanBody.value));
 const emailUnresolved = computed(() => [
-  ...new Set(findUnresolved(emailComposer.value.body)),
+  ...new Set(findUnresolved(emailCleanBody.value)),
 ]);
 const textUnresolved = computed(() => [
-  ...new Set(findUnresolved(textComposer.value.body)),
+  ...new Set(findUnresolved(textCleanBody.value)),
 ]);
 
 const showEmailComposer = ref(false);
@@ -1059,13 +1122,13 @@ const sendEmail = async () => {
   if (!(await passesSendGuardrails("email"))) return;
 
   await logSentMessage("email");
-  window.location.href = `mailto:${props.coach.email}?subject=${encodeURIComponent(emailComposer.value.subject)}&body=${encodeURIComponent(emailComposer.value.body)}`;
+  window.location.href = `mailto:${props.coach.email}?subject=${encodeURIComponent(emailComposer.value.subject)}&body=${encodeURIComponent(emailCleanBody.value)}`;
 
   if (shouldLogInteraction.value) {
     emit("interaction-logged", {
       type: "email",
       direction: "outbound",
-      content: emailComposer.value.body,
+      content: emailCleanBody.value,
     });
   }
 
@@ -1083,16 +1146,13 @@ const sendText = async () => {
   if (!(await passesSendGuardrails("text"))) return;
 
   await logSentMessage("text");
-  window.location.href = toSmsHref(
-    props.coach.phone ?? "",
-    textComposer.value.body,
-  );
+  window.location.href = toSmsHref(props.coach.phone ?? "", textCleanBody.value);
 
   if (shouldLogInteraction.value) {
     emit("interaction-logged", {
       type: "text",
       direction: "outbound",
-      content: textComposer.value.body,
+      content: textCleanBody.value,
     });
   }
 
@@ -1161,11 +1221,33 @@ const logSentMessage = async (channel: "email" | "text"): Promise<void> => {
       subject: channel === "email" ? emailComposer.value.subject : null,
       body:
         channel === "email"
-          ? emailComposer.value.body
-          : textComposer.value.body,
+          ? emailCleanBody.value
+          : textCleanBody.value,
     });
   } catch {
     // Logging failure must not block the send.
+  }
+  await persistOutreachAnswers(authored);
+};
+
+// Persist the athlete's why-program / why-fit answers back to the school so they
+// prefill next time and show on school detail. Only writes non-empty changes; never
+// blocks the send.
+const persistOutreachAnswers = async (
+  authored: Record<string, string>,
+): Promise<void> => {
+  const schoolId = props.school?.id;
+  if (!schoolId) return;
+  const patch: Partial<School> = {};
+  const wp = authored["programNote"]?.trim();
+  const fr = authored["fitReason"]?.trim();
+  if (wp && wp !== (props.school?.why_program ?? "")) patch.why_program = wp;
+  if (fr && fr !== (props.school?.fit_reason ?? "")) patch.fit_reason = fr;
+  if (Object.keys(patch).length === 0) return;
+  try {
+    await updateSchool(schoolId, patch);
+  } catch {
+    // Best-effort — a save failure must not affect the sent message.
   }
 };
 

@@ -34,6 +34,8 @@ export interface MetricRow {
 export interface ResolverContext {
   tables?: { users?: Row; schools?: Row; coaches?: Row; events?: Row };
   prefs?: Record<string, unknown>;
+  /** Location prefs (user_preferences category "location"): home city/state/zip. */
+  locationPrefs?: Record<string, unknown>;
   metrics?: MetricRow[];
   authored?: Record<string, string>;
   /** Fetch-layer pre-resolved values for computed vars that need DB joins
@@ -48,6 +50,8 @@ export interface RegistryVar {
   source_type: "column" | "computed" | "authored" | "system";
   source_path?: string | null;
   category?: string | null;
+  /** When true, an unresolved value blocks send; when false it is stripped by renderClean. */
+  is_required_default?: boolean | null;
 }
 
 type TableName = "users" | "schools" | "coaches" | "events";
@@ -76,6 +80,12 @@ export function resolveSourcePath(
   if (sourcePath.startsWith("pref:player.")) {
     const key = sourcePath.slice("pref:player.".length);
     const v = ctx.prefs?.[key];
+    return v ?? null;
+  }
+
+  if (sourcePath.startsWith("pref:location.")) {
+    const key = sourcePath.slice("pref:location.".length);
+    const v = ctx.locationPrefs?.[key];
     return v ?? null;
   }
 
@@ -221,6 +231,19 @@ export function carryingTool(metrics: MetricRow[]): string | null {
   return [value, label].filter(Boolean).join(" ") || null;
 }
 
+/** US 10-digit phone → "(216) 534-8996" (leading country-code 1 tolerated); anything
+ *  else returned trimmed and unchanged. Mirrors iOS TemplateComputed.usPhone. */
+export function formatUsPhone(raw: string | null | undefined): string | null {
+  const t = str(raw);
+  if (t === null) return null;
+  const digits = t.replace(/\D/g, "");
+  let core: string;
+  if (digits.length === 11 && digits.startsWith("1")) core = digits.slice(1);
+  else if (digits.length === 10) core = digits;
+  else return t;
+  return `(${core.slice(0, 3)}) ${core.slice(3, 6)}-${core.slice(6)}`;
+}
+
 // --- computed formatters (pure; DB-join computeds come via ctx.derived) ------
 
 const str = (v: unknown): string | null => {
@@ -235,13 +258,13 @@ const COMPUTED: Record<string, (ctx: ResolverContext) => string | null> = {
     return full ? full.split(/\s+/)[0] : null;
   },
   height: (c) => {
-    const inches = c.tables?.users?.height_inches;
+    const inches = c.prefs?.height_inches;
     if (inches == null || Number.isNaN(Number(inches))) return null;
     const n = Number(inches);
     return `${Math.floor(n / 12)}'${n % 12}"`;
   },
   weight: (c) => {
-    const w = c.tables?.users?.weight_lbs;
+    const w = c.prefs?.weight_lbs;
     return w == null ? null : `${w} lbs`;
   },
   coachSalutation: (c) => {
@@ -255,12 +278,11 @@ const COMPUTED: Record<string, (ctx: ResolverContext) => string | null> = {
     return stripped || name.split(/\s+/)[0];
   },
   testLabel: (c) => {
-    if (c.tables?.users?.act_score != null) return "ACT";
-    if (c.tables?.users?.sat_score != null) return "SAT";
+    if (c.prefs?.act_score != null) return "ACT";
+    if (c.prefs?.sat_score != null) return "SAT";
     return null;
   },
-  testScore: (c) =>
-    str(c.tables?.users?.act_score) ?? str(c.tables?.users?.sat_score),
+  testScore: (c) => str(c.prefs?.act_score) ?? str(c.prefs?.sat_score),
   metricsAsOf: (c) => {
     const dates = (c.metrics ?? [])
       .map((m) => m.recorded_date)
@@ -356,4 +378,49 @@ export function renderTemplate(
 /** Variables still unresolved in rendered text — the send-blocking check. */
 export function findUnresolved(text: string): string[] {
   return [...text.matchAll(/\{\{(\w+)\}\}/g)].map((m) => m[1]);
+}
+
+const LINE_SEP = /[ \t—\-|,·•]/;
+
+/** True when — after removing a leading "Label:" and all separators/space — nothing
+ *  meaningful remains, and no other {{token}} sits on the line. */
+function isLabelOnly(line: string): boolean {
+  if (line.includes("{{")) return false;
+  const probe = line.replace(/^\s*[A-Za-z][A-Za-z ]*:/, "");
+  return [...probe].every((ch) => LINE_SEP.test(ch));
+}
+
+/** Collapse runs of spaces and strip dangling leading/trailing separators. */
+function tidyLine(line: string): string {
+  return line
+    .replace(/[ \t]{2,}/g, " ")
+    .replace(/^[ \t—\-|,·•]+/, "")
+    .replace(/[ \t—\-|,·•]+$/, "");
+}
+
+/** Render, then gracefully handle OPTIONAL unresolved tokens: strip the token, and if its
+ *  line collapses to just a label + separators, drop the whole line. REQUIRED unresolved
+ *  tokens are left intact so they still show in preview and gate the send.
+ *  Mirrors iOS `TemplateResolver.renderClean` — keep the two byte-identical. */
+export function renderClean(
+  body: string,
+  values: Record<string, string>,
+  requiredKeys: Set<string>,
+): string {
+  const rendered = renderTemplate(body, values);
+  const kept: string[] = [];
+  for (const line of rendered.split("\n")) {
+    const optional = findUnresolved(line).filter((k) => !requiredKeys.has(k));
+    if (optional.length === 0) {
+      kept.push(line);
+      continue;
+    }
+    let cleaned = line;
+    for (const key of optional) {
+      cleaned = cleaned.replace(new RegExp(`\\{\\{${key}\\}\\}`, "g"), "");
+    }
+    if (isLabelOnly(cleaned)) continue;
+    kept.push(tidyLine(cleaned));
+  }
+  return kept.join("\n").replace(/\n{3,}/g, "\n\n").trim();
 }

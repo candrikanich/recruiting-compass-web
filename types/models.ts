@@ -102,6 +102,8 @@ export interface School {
   communication_style?: string | null;
   success_metrics?: string | null;
   fit_tier?: string | null;
+  why_program?: string | null; // athlete answer backing {{programNote}}
+  fit_reason?: string | null; // athlete answer backing {{fitReason}}
   family_unit_id?: string | null;
   created_by?: string;
   updated_by?: string;
@@ -417,6 +419,7 @@ export interface PlayerDetails {
   // Course Content (video links are stored in the video_links table, see
   // useVideoLinks/VideoLinkRow — not on PlayerDetails)
   core_courses?: string[];
+  intended_major?: string; // backs template {{intendedMajor}}
 }
 
 export interface PlayerProfile {

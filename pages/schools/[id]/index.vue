@@ -66,6 +66,26 @@
             @set-questionnaire="handleSetQuestionnaire"
           />
 
+          <!-- Coach-outreach answers — prefill Quick Comm {{ programNote }} / {{ fitReason }} -->
+          <SchoolNotesCard
+            :notes="school.why_program ?? null"
+            :school-id="id"
+            title="Why this program"
+            placeholder="What draws you to this program specifically?"
+            empty-text="Not answered yet — add this to personalize coach emails."
+            :hide-history="true"
+            :save-fn="handleUpdateWhyProgram"
+          />
+          <SchoolNotesCard
+            :notes="school.fit_reason ?? null"
+            :school-id="id"
+            title="Why it fits you"
+            placeholder="How do you fit their style, level, or needs?"
+            empty-text="Not answered yet — add this to personalize coach emails."
+            :hide-history="true"
+            :save-fn="handleUpdateFitReason"
+          />
+
           <!-- Notes Cards -->
           <SchoolNotesCard
             :notes="school.notes"
@@ -373,6 +393,20 @@ const handleUpdateNotes = createUpdateHandler(
   school,
   async (notesValue: string) => {
     return await updateSchool(id, { notes: notesValue });
+  },
+);
+
+// Handlers - Coach-outreach answers (why-program / why-fit)
+const handleUpdateWhyProgram = createUpdateHandler(
+  school,
+  async (value: string) => {
+    return await updateSchool(id, { why_program: value });
+  },
+);
+const handleUpdateFitReason = createUpdateHandler(
+  school,
+  async (value: string) => {
+    return await updateSchool(id, { fit_reason: value });
   },
 );
 
