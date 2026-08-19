@@ -4,6 +4,7 @@ import {
   resolveVariables,
   renderTemplate,
   findUnresolved,
+  formatUsPhone,
   renderEventSchedule,
   nextEvent,
   type RegistryVar,
@@ -20,6 +21,10 @@ import {
 import type { CommunicationTemplate } from "~/types/models";
 
 const logger = createClientLogger("useTemplateResolver");
+
+/** Public base for athlete profile links shared with coaches; absolute so the URL is
+ *  clickable in the sent email/SMS (parity with iOS publicProfileBase). */
+const PUBLIC_PROFILE_BASE = "https://myrecruitingcompass.com";
 
 /** PostgREST-ish error shape (avoids `any` while matching the house PGRST205 check). */
 interface FetchError {
@@ -89,7 +94,9 @@ export const useTemplateResolver = () => {
     try {
       const { data, error } = (await supabase
         .from("template_variables")
-        .select("key, source_type, source_path, category")) as {
+        .select(
+          "key, source_type, source_path, category, is_required_default",
+        )) as {
         data: RegistryVar[] | null;
         error: FetchError | null;
       };
@@ -139,6 +146,20 @@ export const useTemplateResolver = () => {
         data: { data: Record<string, unknown> | null } | null;
       };
       ctx.prefs = prefRow?.data ?? {};
+      if (typeof ctx.prefs.phone === "string") {
+        const formatted = formatUsPhone(ctx.prefs.phone);
+        if (formatted) ctx.prefs.phone = formatted;
+      }
+
+      const { data: locationRow } = (await supabase
+        .from("user_preferences")
+        .select("data")
+        .eq("user_id", athleteUserId)
+        .eq("category", "location")
+        .maybeSingle()) as {
+        data: { data: Record<string, unknown> | null } | null;
+      };
+      ctx.locationPrefs = locationRow?.data ?? {};
 
       const { data: metricRows } = (await supabase
         .from("performance_metrics")
@@ -210,7 +231,9 @@ export const useTemplateResolver = () => {
         data: { vanity_slug: string | null; hash_slug: string | null } | null;
       };
       const slug = profileRow?.vanity_slug || profileRow?.hash_slug;
-      if (slug) derived.profileLink = `/${slug}`;
+      // Absolute so the link is clickable in the email/SMS sent to a coach
+      // (parity with iOS TemplateContextBuilder.publicProfileBase).
+      if (slug) derived.profileLink = `${PUBLIC_PROFILE_BASE}/p/${slug}`;
 
       const { data: transcriptRow } = (await supabase
         .from("documents")
@@ -222,6 +245,22 @@ export const useTemplateResolver = () => {
         .maybeSingle()) as { data: { file_url: string | null } | null };
       if (transcriptRow?.file_url)
         derived.transcriptLink = transcriptRow.file_url;
+
+      // Primary film link comes from the canonical video_links TABLE (prefer a
+      // healthy link, else the first), mirroring iOS. The registry maps
+      // videoLink to this derived value once its source_type is 'computed'.
+      const { data: videoRows } = (await supabase
+        .from("video_links")
+        .select("url, health_status, created_at")
+        .eq("user_id", athleteUserId)
+        .order("created_at", { ascending: true })) as {
+        data: { url: string; health_status: string | null }[] | null;
+      };
+      if (videoRows?.length) {
+        const primary =
+          videoRows.find((v) => v.health_status === "healthy") ?? videoRows[0];
+        if (primary?.url) derived.videoLink = primary.url;
+      }
 
       // Multi-row schedule + next-event vars from the athlete's own events.
       const { data: eventRows } = (await supabase

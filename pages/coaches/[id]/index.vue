@@ -118,6 +118,7 @@
             <div class="p-6">
               <CommunicationPanel
                 :coach="coach"
+                :school="school"
                 :school-name="schoolName"
                 :initial-type="communicationType"
                 @close="handleCloseCommunicationPanel"
@@ -169,7 +170,7 @@ import CoachHeader from "~/components/Coach/CoachHeader.vue";
 import CoachStatsGrid from "~/components/Coach/CoachStatsGrid.vue";
 import CoachNotesEditor from "~/components/Coach/CoachNotesEditor.vue";
 import CoachRecentInteractions from "~/components/Coach/CoachRecentInteractions.vue";
-import type { Coach, Interaction } from "~/types/models";
+import type { Coach, Interaction, School } from "~/types/models";
 import { createClientLogger } from "~/utils/logger";
 
 const logger = createClientLogger("CoachDetail");
@@ -193,6 +194,7 @@ const coach = ref<Coach | null>(null);
 const loading = ref(false);
 const error = ref<string | null>(null);
 const schoolName = ref("");
+const school = ref<School | undefined>(undefined);
 
 // Communication modal with focus trap management
 const {
@@ -335,11 +337,13 @@ onMounted(async () => {
     if (coachData) {
       coach.value = coachData;
 
-      // Fetch school name
+      // Fetch the school — full object drives Quick Comm prefill/save of
+      // per-school why-program / why-fit answers, not just the name.
       if (coachData.school_id) {
         const schoolData = await getSchool(coachData.school_id);
         if (schoolData) {
           schoolName.value = String(schoolData.name);
+          school.value = schoolData;
         }
       }
 

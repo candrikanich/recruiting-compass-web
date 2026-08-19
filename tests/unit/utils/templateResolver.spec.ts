@@ -5,6 +5,8 @@ import {
   carryingTool,
   resolveVariables,
   renderTemplate,
+  renderClean,
+  formatUsPhone,
   findUnresolved,
   type RegistryVar,
   type ResolverContext,
@@ -39,6 +41,15 @@ const ctx: ResolverContext = {
     ncaa_id: "2109887654",
     video_links: ["https://film.example/1"],
     travel_team_coach: "Marcus Webb",
+    city: "PLAYER_CITY",
+    // player stats now resolve from prefs (source of truth), not the users mirror
+    height_inches: 74,
+    weight_lbs: 185,
+    act_score: 29,
+  },
+  locationPrefs: {
+    city: "Olmsted Township",
+    state: "OH",
   },
   authored: {
     programNote: "Your staff develops middle infielders.",
@@ -63,6 +74,13 @@ describe("resolveSourcePath", () => {
 
   it("resolves pref:player.<key> from the player jsonb", () => {
     expect(resolveSourcePath("pref:player.ncaa_id", ctx)).toBe("2109887654");
+  });
+
+  it("resolves pref:location.<key> from the location jsonb, not player prefs", () => {
+    expect(resolveSourcePath("pref:location.city", ctx)).toBe("Olmsted Township");
+    expect(resolveSourcePath("pref:location.state", ctx)).toBe("OH");
+    // player prefs also carry a `city`; the location prefix must not read it
+    expect(resolveSourcePath("pref:player.city", ctx)).toBe("PLAYER_CITY");
   });
 
   it("returns null for a missing column or unknown table", () => {
@@ -263,5 +281,69 @@ describe("resolveVariables", () => {
       { tables: { users: {} } },
     );
     expect(sparse.height).toBeUndefined();
+  });
+});
+
+// Shared vectors with iOS TemplateRenderCleanTests — keep the two byte-identical.
+describe("renderClean", () => {
+  const required = new Set(["programNote"]);
+
+  it("drops a label-only line for an empty optional", () => {
+    expect(renderClean("Film: {{videoLink}}\nThanks", {}, required)).toBe(
+      "Thanks",
+    );
+  });
+
+  it("keeps the line when the optional resolves", () => {
+    expect(
+      renderClean("Film: {{videoLink}}\nThanks", { videoLink: "https://film/1" }, required),
+    ).toBe("Film: https://film/1\nThanks");
+  });
+
+  it("keeps a required unresolved token", () => {
+    expect(renderClean("Hi,\n{{programNote}}\nThanks", {}, required)).toBe(
+      "Hi,\n{{programNote}}\nThanks",
+    );
+  });
+
+  it("drops an empty bullet line", () => {
+    expect(renderClean("Numbers:\n- {{metrics}}\nEnd", {}, required)).toBe(
+      "Numbers:\nEnd",
+    );
+  });
+
+  it("tidies a footer with some resolved", () => {
+    expect(
+      renderClean("{{gradYear}} | {{position}} | {{highSchool}}", { gradYear: "2028" }, required),
+    ).toBe("2028");
+  });
+
+  it("drops the footer when all optional are empty", () => {
+    expect(
+      renderClean("Signed,\n{{gradYear}} | {{position}} | {{highSchool}}", {}, required),
+    ).toBe("Signed,");
+  });
+
+  it("collapses blank lines left by a drop", () => {
+    expect(renderClean("A\n\nFilm: {{videoLink}}\n\nB", {}, required)).toBe("A\n\nB");
+  });
+
+  it("keeps required when mixed with optional on one line", () => {
+    expect(renderClean("{{position}} — {{programNote}}", {}, required)).toBe(
+      "{{programNote}}",
+    );
+  });
+});
+
+describe("formatUsPhone", () => {
+  it("formats US 10-digit and 1-prefixed numbers", () => {
+    expect(formatUsPhone("216-534-8996")).toBe("(216) 534-8996");
+    expect(formatUsPhone("2165348996")).toBe("(216) 534-8996");
+    expect(formatUsPhone("+1 (216) 534.8996")).toBe("(216) 534-8996");
+    expect(formatUsPhone("12165348996")).toBe("(216) 534-8996");
+  });
+  it("leaves non-standard numbers and empties alone", () => {
+    expect(formatUsPhone("555-1234")).toBe("555-1234");
+    expect(formatUsPhone("  ")).toBeNull();
   });
 });
