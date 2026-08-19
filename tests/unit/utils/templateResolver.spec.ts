@@ -42,6 +42,10 @@ const ctx: ResolverContext = {
     video_links: ["https://film.example/1"],
     travel_team_coach: "Marcus Webb",
     city: "PLAYER_CITY",
+    // player stats now resolve from prefs (source of truth), not the users mirror
+    height_inches: 74,
+    weight_lbs: 185,
+    act_score: 29,
   },
   locationPrefs: {
     city: "Olmsted Township",

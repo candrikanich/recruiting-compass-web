@@ -258,13 +258,13 @@ const COMPUTED: Record<string, (ctx: ResolverContext) => string | null> = {
     return full ? full.split(/\s+/)[0] : null;
   },
   height: (c) => {
-    const inches = c.tables?.users?.height_inches;
+    const inches = c.prefs?.height_inches;
     if (inches == null || Number.isNaN(Number(inches))) return null;
     const n = Number(inches);
     return `${Math.floor(n / 12)}'${n % 12}"`;
   },
   weight: (c) => {
-    const w = c.tables?.users?.weight_lbs;
+    const w = c.prefs?.weight_lbs;
     return w == null ? null : `${w} lbs`;
   },
   coachSalutation: (c) => {
@@ -278,12 +278,11 @@ const COMPUTED: Record<string, (ctx: ResolverContext) => string | null> = {
     return stripped || name.split(/\s+/)[0];
   },
   testLabel: (c) => {
-    if (c.tables?.users?.act_score != null) return "ACT";
-    if (c.tables?.users?.sat_score != null) return "SAT";
+    if (c.prefs?.act_score != null) return "ACT";
+    if (c.prefs?.sat_score != null) return "SAT";
     return null;
   },
-  testScore: (c) =>
-    str(c.tables?.users?.act_score) ?? str(c.tables?.users?.sat_score),
+  testScore: (c) => str(c.prefs?.act_score) ?? str(c.prefs?.sat_score),
   metricsAsOf: (c) => {
     const dates = (c.metrics ?? [])
       .map((m) => m.recorded_date)
