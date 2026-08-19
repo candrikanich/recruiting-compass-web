@@ -265,3 +265,44 @@ describe("resolveVariables", () => {
     expect(sparse.height).toBeUndefined();
   });
 });
+
+describe("questionnaireNote (optional completion sentence)", () => {
+  const reg: RegistryVar[] = [
+    { key: "questionnaireNote", source_type: "computed", source_path: null },
+  ];
+
+  it("renders the completion sentence when the school flag is true", () => {
+    const out = resolveVariables(reg, {
+      tables: { schools: { name: "Ohio State", questionnaire_completed: true } },
+    });
+    expect(out.questionnaireNote).toBe(
+      "I've completed your recruiting questionnaire. ",
+    );
+  });
+
+  it("resolves to an empty string (not omitted) when the flag is false", () => {
+    const out = resolveVariables(reg, {
+      tables: { schools: { name: "Ohio State", questionnaire_completed: false } },
+    });
+    // Present-but-empty is the key contract: the literal is replaced with
+    // nothing rather than left intact, so findUnresolved does NOT block send.
+    expect(out.questionnaireNote).toBe("");
+    expect("questionnaireNote" in out).toBe(true);
+  });
+
+  it("defaults to empty when the flag is absent", () => {
+    const out = resolveVariables(reg, {
+      tables: { schools: { name: "Ohio State" } },
+    });
+    expect(out.questionnaireNote).toBe("");
+  });
+
+  it("leaves no unresolved token in a rendered body when omitted", () => {
+    const out = resolveVariables(reg, {
+      tables: { schools: { questionnaire_completed: false } },
+    });
+    const body = renderTemplate("{{questionnaireNote}}I'd welcome feedback.", out);
+    expect(body).toBe("I'd welcome feedback.");
+    expect(findUnresolved(body)).toEqual([]);
+  });
+});

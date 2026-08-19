@@ -176,7 +176,7 @@ My coaches are glad to talk:
 {{hsCoachName}}, {{highSchool}} — {{hsCoachPhone}}
 {{clubCoachName}}, {{clubTeam}} — {{clubCoachPhone}}
 
-I've completed your recruiting questionnaire. I'd welcome any feedback on my film and what you'd want to see from me to fit at {{schoolName}}.
+{{questionnaireNote}}I'd welcome any feedback on my film and what you'd want to see from me to fit at {{schoolName}}.
 
 Thank you for your time,
 {{playerName}}

@@ -88,6 +88,8 @@ export interface School {
     | "committed"
     | "not_pursuing";
   status_changed_at?: string | null;
+  questionnaire_completed?: boolean;
+  questionnaire_completed_at?: string | null;
   notes: string | null;
   pros: string[];
   cons: string[];

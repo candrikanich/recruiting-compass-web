@@ -2263,6 +2263,8 @@ export type Database = {
           offer_details: Json | null;
           phone: string | null;
           pros: string[] | null;
+          questionnaire_completed: boolean;
+          questionnaire_completed_at: string | null;
           recruiting_approach: string | null;
           state: string | null;
           status: Database["public"]["Enums"]["school_status"] | null;
@@ -2299,6 +2301,8 @@ export type Database = {
           offer_details?: Json | null;
           phone?: string | null;
           pros?: string[] | null;
+          questionnaire_completed?: boolean;
+          questionnaire_completed_at?: string | null;
           recruiting_approach?: string | null;
           state?: string | null;
           status?: Database["public"]["Enums"]["school_status"] | null;
@@ -2335,6 +2339,8 @@ export type Database = {
           offer_details?: Json | null;
           phone?: string | null;
           pros?: string[] | null;
+          questionnaire_completed?: boolean;
+          questionnaire_completed_at?: string | null;
           recruiting_approach?: string | null;
           state?: string | null;
           status?: Database["public"]["Enums"]["school_status"] | null;
