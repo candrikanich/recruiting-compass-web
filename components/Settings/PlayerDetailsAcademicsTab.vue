@@ -108,6 +108,19 @@
             class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium"
           />
         </div>
+        <div class="sm:col-span-2">
+          <label
+            class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1"
+            >Intended Major</label
+          >
+          <input
+            v-model="form.intended_major"
+            type="text"
+            @blur="triggerSave"
+            placeholder="e.g. Mechanical Engineering"
+            class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium"
+          />
+        </div>
       </div>
     </div>
 

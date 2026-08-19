@@ -415,6 +415,7 @@ export interface PlayerDetails {
   // Course Content (video links are stored in the video_links table, see
   // useVideoLinks/VideoLinkRow — not on PlayerDetails)
   core_courses?: string[];
+  intended_major?: string; // backs template {{intendedMajor}}
 }
 
 export interface PlayerProfile {
