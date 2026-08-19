@@ -35,6 +35,8 @@ export const usePerformance = (): {
     updates: Partial<PerformanceMetric>,
   ) => Promise<PerformanceMetric>;
   deleteMetric: (id: string) => Promise<void>;
+  setPrimaryMetric: (id: string) => Promise<void>;
+  clearPrimaryMetric: (id: string) => Promise<void>;
 } => {
   const supabase = useSupabase();
   const userStore = useUserStore();
@@ -205,6 +207,53 @@ export const usePerformance = (): {
     }
   };
 
+  // Promote a metric to the athlete's headline "carrying tool". The
+  // set_primary_metric RPC atomically clears any prior primary and sets the
+  // target in one transaction (DB enforces one primary per user via a partial
+  // unique index), so we never clear the old primary client-side first.
+  const setPrimaryMetric = async (id: string) => {
+    if (!userStore.user) throw new Error("User not authenticated");
+
+    loading.value = true;
+    error.value = null;
+
+    try {
+      // set_primary_metric is not in the generated Database types; cast the
+      // rpc signature locally (same pattern as server/api/athlete/status.get.ts).
+      const { error: rpcError } = await (
+        supabase as typeof supabase & {
+          rpc: (
+            name: "set_primary_metric",
+            params: { p_metric_id: string },
+          ) => Promise<{ data: null; error: unknown }>;
+        }
+      ).rpc("set_primary_metric", {
+        p_metric_id: id,
+      });
+
+      if (rpcError) throw rpcError;
+
+      // Reflect the single-primary invariant locally (optimistic).
+      metrics.value = metrics.value.map((m) => ({
+        ...m,
+        is_primary: m.id === id,
+      }));
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "Failed to set primary metric";
+      error.value = message;
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  // Demote the current headline metric. No RPC needed — a plain update, since
+  // clearing is_primary can never violate the partial unique index.
+  const clearPrimaryMetric = async (id: string) => {
+    await updateMetric(id, { is_primary: false });
+  };
+
   // Get metrics grouped by type for easy analysis
   const metricsByType = computed(() => {
     const grouped: Record<string, PerformanceMetric[]> = {};
@@ -243,5 +292,7 @@ export const usePerformance = (): {
     createMetric,
     updateMetric,
     deleteMetric,
+    setPrimaryMetric,
+    clearPrimaryMetric,
   };
 };

@@ -17,6 +17,7 @@ import type { PerformanceMetric } from "~/types/models";
 
 const mockSupabase = {
   from: vi.fn(),
+  rpc: vi.fn(),
 };
 
 vi.mock("~/composables/useSupabase", () => ({
@@ -132,6 +133,7 @@ describe("usePerformance", () => {
     mockActiveFamilyId = "family-123";
     mockQuery = buildMockQuery();
     mockSupabase.from.mockReturnValue(mockQuery);
+    mockSupabase.rpc.mockResolvedValue({ data: null, error: null });
   });
 
   // ==========================================================================
@@ -420,6 +422,76 @@ describe("usePerformance", () => {
       const c = usePerformance();
       await expect(c.deleteMetric("m-1")).rejects.toBeDefined();
       expect(c.error.value).toBe("Failed to delete metric");
+    });
+  });
+
+  // ==========================================================================
+  // setPrimaryMetric (RPC) / clearPrimaryMetric
+  // ==========================================================================
+
+  describe("setPrimaryMetric", () => {
+    it("throws when user not authenticated", async () => {
+      mockUser = null;
+      const c = usePerformance();
+      await expect(c.setPrimaryMetric("m-1")).rejects.toThrow(
+        "User not authenticated",
+      );
+      expect(mockSupabase.rpc).not.toHaveBeenCalled();
+    });
+
+    it("calls set_primary_metric RPC with p_metric_id", async () => {
+      const c = usePerformance();
+      await c.setPrimaryMetric("m-1");
+      expect(mockSupabase.rpc).toHaveBeenCalledWith("set_primary_metric", {
+        p_metric_id: "m-1",
+      });
+      expect(c.loading.value).toBe(false);
+    });
+
+    it("reflects the single-primary invariant in local state", async () => {
+      mockQuery.__setTestData([
+        createMockMetric({ id: "a", is_primary: true }),
+        createMockMetric({ id: "b", is_primary: false }),
+        createMockMetric({ id: "c", is_primary: false }),
+      ]);
+      const c = usePerformance();
+      await c.fetchMetrics();
+
+      await c.setPrimaryMetric("b");
+      const byId = Object.fromEntries(
+        c.metrics.value.map((m) => [m.id, m.is_primary]),
+      );
+      expect(byId).toEqual({ a: false, b: true, c: false });
+    });
+
+    it("propagates RPC error and sets error message", async () => {
+      mockSupabase.rpc.mockResolvedValue({
+        data: null,
+        error: new Error("RPC failed"),
+      });
+      const c = usePerformance();
+      await expect(c.setPrimaryMetric("m-1")).rejects.toThrow("RPC failed");
+      expect(c.error.value).toBe("RPC failed");
+      expect(c.loading.value).toBe(false);
+    });
+
+    it("falls back to default message for non-Error throws", async () => {
+      mockSupabase.rpc.mockResolvedValue({ data: null, error: "weird" });
+      const c = usePerformance();
+      await expect(c.setPrimaryMetric("m-1")).rejects.toBeDefined();
+      expect(c.error.value).toBe("Failed to set primary metric");
+    });
+  });
+
+  describe("clearPrimaryMetric", () => {
+    it("updates the row with is_primary=false (no RPC)", async () => {
+      const updated = createMockMetric({ id: "m-1", is_primary: false });
+      mockQuery.__setTestData(updated);
+      const c = usePerformance();
+      await c.clearPrimaryMetric("m-1");
+      expect(mockSupabase.rpc).not.toHaveBeenCalled();
+      expect(mockQuery.update).toHaveBeenCalledWith({ is_primary: false });
+      expect(mockQuery.eq).toHaveBeenCalledWith("id", "m-1");
     });
   });
 
