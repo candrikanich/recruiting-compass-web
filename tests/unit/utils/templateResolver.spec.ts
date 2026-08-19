@@ -2,6 +2,8 @@ import { describe, it, expect } from "vitest";
 import {
   resolveSourcePath,
   renderMetrics,
+  dedupeMostRecentPerType,
+  applyOptionalSegments,
   carryingTool,
   resolveVariables,
   renderTemplate,
@@ -373,6 +375,136 @@ describe("renderClean", () => {
     expect(renderClean("{{position}} — {{programNote}}", {}, required)).toBe(
       "{{programNote}}",
     );
+  });
+});
+
+// Shared vectors with iOS TemplateResolver.applyOptionalSegments — keep byte-identical.
+describe("applyOptionalSegments", () => {
+  it("keeps the inner text when the gate key resolves non-empty", () => {
+    expect(
+      applyOptionalSegments("Hi[[intendedMajor|, planning to study {{intendedMajor}}]].", {
+        intendedMajor: "Engineering",
+      }),
+    ).toBe("Hi, planning to study {{intendedMajor}}.");
+  });
+
+  it("drops the whole span when the gate key is missing", () => {
+    expect(
+      applyOptionalSegments("Hi[[intendedMajor|, planning to study {{intendedMajor}}]].", {}),
+    ).toBe("Hi.");
+  });
+
+  it("drops the span when the gate key is present but blank after trim", () => {
+    expect(
+      applyOptionalSegments("Hi[[intendedMajor|, planning to study X]].", {
+        intendedMajor: "   ",
+      }),
+    ).toBe("Hi.");
+  });
+
+  it("handles a multi-token film clause spanning gate + inner tokens", () => {
+    const body =
+      "[[videoLink|I'd welcome any feedback on my film {{videoLink}} to fit at {{schoolName}}.]]";
+    expect(
+      applyOptionalSegments(body, { videoLink: "https://film/1", schoolName: "OSU" }),
+    ).toBe("I'd welcome any feedback on my film {{videoLink}} to fit at {{schoolName}}.");
+    expect(applyOptionalSegments(body, { schoolName: "OSU" })).toBe("");
+  });
+
+  it("never prints the gate key itself", () => {
+    expect(applyOptionalSegments("[[videoLink|film]]", { videoLink: "x" })).toBe("film");
+  });
+});
+
+describe("renderClean — optional [[gate|text]] segments", () => {
+  const required = new Set<string>();
+
+  it("keeps the major clause and substitutes its inner token when resolved", () => {
+    const body = "I'm a {{position}}[[intendedMajor|, planning to study {{intendedMajor}}]].";
+    expect(
+      renderClean(body, { position: "SS", intendedMajor: "Engineering" }, required),
+    ).toBe("I'm a SS, planning to study Engineering.");
+  });
+
+  it("removes the major clause entirely when the gate is unresolved", () => {
+    const body = "I'm a {{position}}[[intendedMajor|, planning to study {{intendedMajor}}]].";
+    expect(renderClean(body, { position: "SS" }, required)).toBe("I'm a SS.");
+  });
+
+  it("renders a film clause end-to-end when videoLink resolves", () => {
+    const body =
+      "Thanks.\n[[videoLink|I'd welcome any feedback on my film {{videoLink}} to fit at {{schoolName}}.]]";
+    expect(
+      renderClean(body, { videoLink: "https://film/1", schoolName: "OSU" }, required),
+    ).toBe("Thanks.\nI'd welcome any feedback on my film https://film/1 to fit at OSU.");
+  });
+
+  it("drops the film line when videoLink is missing", () => {
+    const body =
+      "Thanks.\n[[videoLink|I'd welcome any feedback on my film {{videoLink}} to fit at {{schoolName}}.]]";
+    expect(renderClean(body, { schoolName: "OSU" }, required)).toBe("Thanks.");
+  });
+});
+
+describe("dedupeMostRecentPerType", () => {
+  it("keeps only the most recent row per metric_type", () => {
+    const rows: MetricRow[] = [
+      { metric_type: "exit_velo", display_value: "90", recorded_date: "2026-05-01" },
+      { metric_type: "exit_velo", display_value: "94", recorded_date: "2026-06-10" },
+      { metric_type: "sixty_yard", display_value: "6.9", recorded_date: "2026-04-01" },
+    ];
+    const out = dedupeMostRecentPerType(rows);
+    expect(out).toHaveLength(2);
+    expect(out.find((m) => m.metric_type === "exit_velo")?.display_value).toBe("94");
+  });
+
+  it("breaks a same-date tie toward the verified row", () => {
+    const rows: MetricRow[] = [
+      { metric_type: "exit_velo", display_value: "90", recorded_date: "2026-06-10", verified: false },
+      { metric_type: "exit_velo", display_value: "94", recorded_date: "2026-06-10", verified: true },
+    ];
+    const out = dedupeMostRecentPerType(rows);
+    expect(out).toHaveLength(1);
+    expect(out[0].display_value).toBe("94");
+  });
+
+  it("breaks a date+verified tie toward the primary row", () => {
+    const rows: MetricRow[] = [
+      {
+        metric_type: "exit_velo",
+        display_value: "90",
+        recorded_date: "2026-06-10",
+        verified: true,
+        is_primary: false,
+      },
+      {
+        metric_type: "exit_velo",
+        display_value: "94",
+        recorded_date: "2026-06-10",
+        verified: true,
+        is_primary: true,
+      },
+    ];
+    expect(dedupeMostRecentPerType(rows)[0].display_value).toBe("94");
+  });
+
+  it("preserves original input order of the surviving rows", () => {
+    const rows: MetricRow[] = [
+      { metric_type: "sixty_yard", display_value: "6.9", recorded_date: "2026-04-01" },
+      { metric_type: "exit_velo", display_value: "94", recorded_date: "2026-06-10" },
+    ];
+    const out = dedupeMostRecentPerType(rows);
+    expect(out.map((m) => m.metric_type)).toEqual(["sixty_yard", "exit_velo"]);
+  });
+
+  it("renderMetrics collapses duplicate types before capping", () => {
+    const rows: MetricRow[] = [
+      { metric_type: "exit_velo", display_value: "90", recorded_date: "2026-05-01" },
+      { metric_type: "exit_velo", display_value: "94", recorded_date: "2026-06-10" },
+    ];
+    const lines = renderMetrics(rows).split("\n").filter(Boolean);
+    expect(lines).toHaveLength(1);
+    expect(lines[0]).toContain("94");
   });
 });
 

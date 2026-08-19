@@ -197,6 +197,34 @@ export function nextEvent(
   return { name: str(next.name), dates };
 }
 
+/** Collapse to ONE row per metric_type: the most recent by recorded_date (compared as
+ *  ISO/yyyy-mm-dd strings, lexicographically), ties broken to verified, then is_primary,
+ *  then original input order (stable). Mirrors iOS `dedupeMostRecentPerType`. */
+export const dedupeMostRecentPerType = (metrics: MetricRow[]): MetricRow[] => {
+  const best = new Map<string, { offset: number; row: MetricRow }>();
+  metrics.forEach((m, idx) => {
+    const key = m.metric_type ?? "";
+    const existing = best.get(key);
+    if (!existing) {
+      best.set(key, { offset: idx, row: m });
+      return;
+    }
+    const e = existing.row;
+    const win =
+      (m.recorded_date ?? "") !== (e.recorded_date ?? "")
+        ? (m.recorded_date ?? "") > (e.recorded_date ?? "")
+        : !!m.verified !== !!e.verified
+          ? !!m.verified
+          : !!m.is_primary !== !!e.is_primary
+            ? !!m.is_primary
+            : false;
+    if (win) best.set(key, { offset: idx, row: m });
+  });
+  return [...best.values()]
+    .sort((a, b) => a.offset - b.offset)
+    .map((entry) => entry.row);
+};
+
 const rankMetrics = (metrics: MetricRow[]): MetricRow[] =>
   [...metrics].sort((a, b) => {
     if (!!b.is_primary !== !!a.is_primary) return b.is_primary ? 1 : -1;
@@ -210,7 +238,7 @@ export function renderMetrics(
   opts: { cap?: number } = {},
 ): string {
   const cap = opts.cap ?? 4;
-  return rankMetrics(metrics)
+  return rankMetrics(dedupeMostRecentPerType(metrics))
     .slice(0, cap)
     .map((m) => {
       const label = humanizeMetricLabel(m.metric_type);
@@ -398,6 +426,23 @@ function tidyLine(line: string): string {
     .replace(/[ \t—\-|,·•]+$/, "");
 }
 
+/** Regex for an optional `[[gateKey|visible text]]` span. Gate is an identifier
+ *  ([A-Za-z]\w*); text is anything (incl. newlines) up to the first `]]`. */
+const OPTIONAL_SEGMENT = /\[\[([A-Za-z]\w*)\|([\s\S]*?)\]\]/g;
+
+/** Resolve `[[gateKey|text]]` spans: keep the inner text (its own {{tokens}} intact for
+ *  later substitution) when `values[gateKey]` is present and non-empty after trim; drop
+ *  the whole span otherwise. The gate key is never printed. Runs BEFORE token
+ *  substitution. Mirrors iOS `TemplateResolver.applyOptionalSegments`. */
+export function applyOptionalSegments(
+  body: string,
+  values: Record<string, string>,
+): string {
+  return body.replace(OPTIONAL_SEGMENT, (_match, gate, text) =>
+    values[gate]?.toString().trim() ? text : "",
+  );
+}
+
 /** Render, then gracefully handle OPTIONAL unresolved tokens: strip the token, and if its
  *  line collapses to just a label + separators, drop the whole line. REQUIRED unresolved
  *  tokens are left intact so they still show in preview and gate the send.
@@ -407,7 +452,8 @@ export function renderClean(
   values: Record<string, string>,
   requiredKeys: Set<string>,
 ): string {
-  const rendered = renderTemplate(body, values);
+  const gated = applyOptionalSegments(body, values);
+  const rendered = renderTemplate(gated, values);
   const kept: string[] = [];
   for (const line of rendered.split("\n")) {
     const optional = findUnresolved(line).filter((k) => !requiredKeys.has(k));
