@@ -144,6 +144,45 @@ describe("LogMetricModal - Form Fields", () => {
     expect(options[8].element.value).toBe("other");
   });
 
+  it("renders unit as a fixed-vocabulary dropdown (no free text)", () => {
+    const wrapper = mount(LogMetricModal, {
+      props: { show: true },
+      global: { stubs: { Teleport: true } },
+    });
+
+    const unitField = wrapper.find("#unit");
+    expect(unitField.element.tagName).toBe("SELECT");
+    const unitValues = unitField
+      .findAll("option")
+      .map((o) => o.element.value);
+    expect(unitValues).toEqual(["", "mph", "sec", "in", "ft", "lbs", "count", "%"]);
+  });
+
+  it("auto-sets and locks the unit for a fixed metric type", async () => {
+    const wrapper = mount(LogMetricModal, {
+      props: { show: true },
+      global: { stubs: { Teleport: true } },
+    });
+
+    await wrapper.find("#metricType").setValue("velocity");
+
+    const unitField = wrapper.find("#unit");
+    expect((unitField.element as HTMLSelectElement).value).toBe("mph");
+    expect(unitField.attributes("disabled")).toBeDefined();
+  });
+
+  it("leaves the unit user-selectable when metric type is Other", async () => {
+    const wrapper = mount(LogMetricModal, {
+      props: { show: true },
+      global: { stubs: { Teleport: true } },
+    });
+
+    await wrapper.find("#metricType").setValue("other");
+
+    const unitField = wrapper.find("#unit");
+    expect(unitField.attributes("disabled")).toBeUndefined();
+  });
+
   it("defaults date to today", async () => {
     const wrapper = mount(LogMetricModal, {
       props: { show: true },

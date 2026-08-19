@@ -60,6 +60,43 @@ const metricTypes = [
   { value: "other", label: "Other" },
 ] as const;
 
+// Canonical unit vocabulary — no user-created units.
+const unitOptions = [
+  { value: "", label: "None" },
+  { value: "mph", label: "mph" },
+  { value: "sec", label: "sec" },
+  { value: "in", label: "inches" },
+  { value: "ft", label: "feet" },
+  { value: "lbs", label: "lbs" },
+  { value: "count", label: "count" },
+  { value: "%", label: "%" },
+] as const;
+
+// Fixed unit per metric type; "other" lets the user pick from the vocabulary.
+const unitByMetricType: Record<MetricType, string> = {
+  velocity: "mph",
+  exit_velo: "mph",
+  sixty_time: "sec",
+  pop_time: "sec",
+  batting_avg: "",
+  era: "",
+  strikeouts: "count",
+  other: "",
+};
+
+// Unit is locked to the metric type unless "other" is selected.
+const unitLocked = computed(
+  () => metricType.value !== "" && metricType.value !== "other",
+);
+
+// Value precision: batting average and ERA carry 3 decimals (e.g. 0.000, 3.250);
+// everything else is fine at 2.
+const valueStep = computed(() =>
+  metricType.value === "batting_avg" || metricType.value === "era"
+    ? "0.001"
+    : "0.01",
+);
+
 // Computed properties
 const isFormValid = computed(() => {
   return metricType.value && value.value !== null && date.value;
@@ -146,6 +183,17 @@ onMounted(() => {
 onBeforeUnmount(() => {
   // Clean up event listener
   document.removeEventListener("keydown", handleKeydown);
+});
+
+// Auto-set canonical unit when metric type changes.
+watch(metricType, (newType) => {
+  if (newType === "") {
+    unit.value = "";
+    return;
+  }
+  if (newType !== "other") {
+    unit.value = unitByMetricType[newType];
+  }
 });
 
 // Watch show prop to fetch events and manage focus
@@ -238,7 +286,7 @@ watch(
                   id="value"
                   v-model.number="value"
                   type="number"
-                  step="0.01"
+                  :step="valueStep"
                   required
                   class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                   placeholder="Enter value"
@@ -269,13 +317,20 @@ watch(
                 >
                   Unit
                 </label>
-                <input
+                <select
                   id="unit"
                   v-model="unit"
-                  type="text"
-                  class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                  placeholder="e.g., mph, seconds, inches"
-                />
+                  :disabled="unitLocked"
+                  class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-500"
+                >
+                  <option
+                    v-for="opt in unitOptions"
+                    :key="opt.value"
+                    :value="opt.value"
+                  >
+                    {{ opt.label }}
+                  </option>
+                </select>
               </div>
             </div>
 
