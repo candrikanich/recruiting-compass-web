@@ -294,7 +294,10 @@ describe("useCommunicationTemplates (extended)", () => {
     });
 
     it("updates in-memory entry on success", async () => {
-      enqueueResult("communication_templates", { error: null });
+      enqueueResult("communication_templates", {
+        data: [makeTemplate({ id: "id1", name: "new" })],
+        error: null,
+      });
       const c = useCommunicationTemplates();
       c.templates.value = [makeTemplate({ id: "id1", name: "old" })];
       const ok = await c.updateTemplate("id1", { name: "new" });
@@ -303,10 +306,30 @@ describe("useCommunicationTemplates (extended)", () => {
     });
 
     it("returns true even if id not in local list", async () => {
-      enqueueResult("communication_templates", { error: null });
+      enqueueResult("communication_templates", {
+        data: [makeTemplate({ id: "missing" })],
+        error: null,
+      });
       const c = useCommunicationTemplates();
       const ok = await c.updateTemplate("missing", { name: "x" });
       expect(ok).toBe(true);
+    });
+
+    it("returns false when no row is updated (0-row select)", async () => {
+      // A non-owned / predefined row matches 0 rows: Supabase returns no error
+      // but an empty data array. This must be treated as a failure, not success.
+      enqueueResult("communication_templates", { data: [], error: null });
+      const c = useCommunicationTemplates();
+      const ok = await c.updateTemplate("predefined-1", { name: "x" });
+      expect(ok).toBe(false);
+      expect(c.error.value).toMatch(/read-only built-in|not owned/i);
+    });
+
+    it("returns false when update returns null data", async () => {
+      enqueueResult("communication_templates", { data: null, error: null });
+      const c = useCommunicationTemplates();
+      const ok = await c.updateTemplate("id1", { name: "x" });
+      expect(ok).toBe(false);
     });
 
     it("returns false and sets error on failure", async () => {
@@ -377,7 +400,10 @@ describe("useCommunicationTemplates (extended)", () => {
     });
 
     it("flips is_favorite on existing template", async () => {
-      enqueueResult("communication_templates", { error: null });
+      enqueueResult("communication_templates", {
+        data: [makeTemplate({ id: "a", is_favorite: true })],
+        error: null,
+      });
       const c = useCommunicationTemplates();
       c.templates.value = [makeTemplate({ id: "a", is_favorite: false })];
       const ok = await c.toggleFavorite("a");
@@ -393,7 +419,10 @@ describe("useCommunicationTemplates (extended)", () => {
     });
 
     it("increments use_count on existing template", async () => {
-      enqueueResult("communication_templates", { error: null });
+      enqueueResult("communication_templates", {
+        data: [makeTemplate({ id: "a", use_count: 5 })],
+        error: null,
+      });
       const c = useCommunicationTemplates();
       c.templates.value = [makeTemplate({ id: "a", use_count: 4 })];
       await c.incrementUseCount("a");
