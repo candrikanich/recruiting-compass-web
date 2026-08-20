@@ -32,29 +32,17 @@
       </div>
 
       <!-- Direction Filter -->
-      <div>
-        <label
-          for="direction-filter"
-          class="block text-sm font-medium text-slate-700 mb-2"
-        >
-          Direction
-        </label>
-        <select
-          id="direction-filter"
-          :value="selectedDirection"
-          @change="
-            $emit(
-              'update:selectedDirection',
-              ($event.target as HTMLSelectElement).value,
-            )
-          "
-          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-        >
-          <option value="">Both</option>
-          <option value="outbound">Sent by Us</option>
-          <option value="inbound">Received</option>
-        </select>
-      </div>
+      <DesignSystemFormSegmentedControl
+        label="Direction"
+        size="sm"
+        :model-value="selectedDirection"
+        :options="[
+          { value: '', label: 'Both' },
+          { value: 'outbound', label: 'Sent by Us' },
+          { value: 'inbound', label: 'Received' },
+        ]"
+        @update:model-value="$emit('update:selectedDirection', $event)"
+      />
 
       <!-- Date Range Filter -->
       <div>

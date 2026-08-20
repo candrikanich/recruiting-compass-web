@@ -1,6 +1,19 @@
 import { describe, it, expect } from "vitest";
-import { mount } from "@vue/test-utils";
+import { mount, type VueWrapper } from "@vue/test-utils";
 import InteractionFiltersBar from "~/components/Interactions/InteractionFiltersBar.vue";
+
+// Direction is a segmented control (radios), not a <select>.
+const directionRadios = (wrapper: VueWrapper) =>
+  wrapper
+    .findAll('input[type="radio"]')
+    .filter((r) => ["", "outbound", "inbound"].includes(r.attributes("value")!));
+
+const checkedDirection = (wrapper: VueWrapper) =>
+  (
+    directionRadios(wrapper).find(
+      (r) => (r.element as HTMLInputElement).checked,
+    )?.element as HTMLInputElement | undefined
+  )?.value ?? "";
 
 describe("InteractionFiltersBar Component", () => {
   describe("Rendering", () => {
@@ -15,7 +28,7 @@ describe("InteractionFiltersBar Component", () => {
       });
 
       expect(wrapper.find("#type-filter").exists()).toBe(true);
-      expect(wrapper.find("#direction-filter").exists()).toBe(true);
+      expect(directionRadios(wrapper).length).toBe(3);
       expect(wrapper.find("#date-filter").exists()).toBe(true);
       expect(wrapper.find("#sentiment-filter").exists()).toBe(true);
     });
@@ -122,13 +135,10 @@ describe("InteractionFiltersBar Component", () => {
         },
       });
 
-      const directionFilter = wrapper.find("#direction-filter");
-      const options = directionFilter.findAll("option");
-
-      expect(options.length).toBe(3); // Both + Outbound + Inbound
-      expect(directionFilter.text()).toContain("Both");
-      expect(directionFilter.text()).toContain("Sent by Us");
-      expect(directionFilter.text()).toContain("Received");
+      expect(directionRadios(wrapper).length).toBe(3); // Both + Outbound + Inbound
+      expect(wrapper.text()).toContain("Both");
+      expect(wrapper.text()).toContain("Sent by Us");
+      expect(wrapper.text()).toContain("Received");
     });
 
     it("should emit update:selectedDirection when direction changes", async () => {
@@ -141,8 +151,10 @@ describe("InteractionFiltersBar Component", () => {
         },
       });
 
-      const directionFilter = wrapper.find("#direction-filter");
-      await directionFilter.setValue("outbound");
+      const outbound = directionRadios(wrapper).find(
+        (r) => r.attributes("value") === "outbound",
+      )!;
+      await outbound.setValue();
 
       expect(wrapper.emitted("update:selectedDirection")).toBeTruthy();
       expect(wrapper.emitted("update:selectedDirection")?.[0]).toEqual([
@@ -160,10 +172,7 @@ describe("InteractionFiltersBar Component", () => {
         },
       });
 
-      const directionFilter = wrapper.find("#direction-filter");
-      expect((directionFilter.element as HTMLSelectElement).value).toBe(
-        "inbound",
-      );
+      expect(checkedDirection(wrapper)).toBe("inbound");
     });
   });
 
@@ -326,14 +335,11 @@ describe("InteractionFiltersBar Component", () => {
       });
 
       const typeFilter = wrapper.find("#type-filter");
-      const directionFilter = wrapper.find("#direction-filter");
       const dateFilter = wrapper.find("#date-filter");
       const sentimentFilter = wrapper.find("#sentiment-filter");
 
       expect((typeFilter.element as HTMLSelectElement).value).toBe("email");
-      expect((directionFilter.element as HTMLSelectElement).value).toBe(
-        "outbound",
-      );
+      expect(checkedDirection(wrapper)).toBe("outbound");
       expect((dateFilter.element as HTMLSelectElement).value).toBe("7");
       expect((sentimentFilter.element as HTMLSelectElement).value).toBe(
         "positive",
@@ -351,7 +357,9 @@ describe("InteractionFiltersBar Component", () => {
       });
 
       await wrapper.find("#type-filter").setValue("email");
-      await wrapper.find("#direction-filter").setValue("outbound");
+      await directionRadios(wrapper)
+        .find((r) => r.attributes("value") === "outbound")!
+        .setValue();
       await wrapper.find("#date-filter").setValue("30");
 
       expect(wrapper.emitted("update:selectedType")).toBeTruthy();
@@ -390,12 +398,11 @@ describe("InteractionFiltersBar Component", () => {
       });
 
       const typeFilter = wrapper.find("#type-filter");
-      const directionFilter = wrapper.find("#direction-filter");
       const dateFilter = wrapper.find("#date-filter");
       const sentimentFilter = wrapper.find("#sentiment-filter");
 
       expect((typeFilter.element as HTMLSelectElement).value).toBe("");
-      expect((directionFilter.element as HTMLSelectElement).value).toBe("");
+      expect(checkedDirection(wrapper)).toBe("");
       expect((dateFilter.element as HTMLSelectElement).value).toBe("");
       expect((sentimentFilter.element as HTMLSelectElement).value).toBe("");
     });
@@ -413,14 +420,17 @@ describe("InteractionFiltersBar Component", () => {
       });
 
       const typeLabel = wrapper.find('label[for="type-filter"]');
-      const directionLabel = wrapper.find('label[for="direction-filter"]');
       const dateLabel = wrapper.find('label[for="date-filter"]');
       const sentimentLabel = wrapper.find('label[for="sentiment-filter"]');
 
       expect(typeLabel.exists()).toBe(true);
-      expect(directionLabel.exists()).toBe(true);
       expect(dateLabel.exists()).toBe(true);
       expect(sentimentLabel.exists()).toBe(true);
+      // Direction is a segmented control: labelled by its <legend>, not a for= label.
+      const directionLegend = wrapper
+        .findAll("legend")
+        .find((l) => l.text().includes("Direction"));
+      expect(directionLegend).toBeTruthy();
     });
 
     it("should have proper ids on all select elements", () => {
@@ -434,7 +444,7 @@ describe("InteractionFiltersBar Component", () => {
       });
 
       expect(wrapper.find("#type-filter").exists()).toBe(true);
-      expect(wrapper.find("#direction-filter").exists()).toBe(true);
+      expect(directionRadios(wrapper).length).toBe(3);
       expect(wrapper.find("#date-filter").exists()).toBe(true);
       expect(wrapper.find("#sentiment-filter").exists()).toBe(true);
     });
