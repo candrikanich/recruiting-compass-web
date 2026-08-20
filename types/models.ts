@@ -88,6 +88,8 @@ export interface School {
     | "committed"
     | "not_pursuing";
   status_changed_at?: string | null;
+  questionnaire_completed?: boolean;
+  questionnaire_completed_at?: string | null;
   notes: string | null;
   pros: string[];
   cons: string[];
@@ -100,6 +102,8 @@ export interface School {
   communication_style?: string | null;
   success_metrics?: string | null;
   fit_tier?: string | null;
+  why_program?: string | null; // athlete answer backing {{programNote}}
+  fit_reason?: string | null; // athlete answer backing {{fitReason}}
   family_unit_id?: string | null;
   created_by?: string;
   updated_by?: string;
@@ -224,6 +228,9 @@ export interface PerformanceMetric {
   event_id?: string | null;
   notes?: string | null;
   verified: boolean;
+  is_primary?: boolean;
+  display_value?: string | null;
+  source?: string | null;
   created_at?: string;
   updated_at?: string;
 }
@@ -415,6 +422,7 @@ export interface PlayerDetails {
   // Course Content (video links are stored in the video_links table, see
   // useVideoLinks/VideoLinkRow — not on PlayerDetails)
   core_courses?: string[];
+  intended_major?: string; // backs template {{intendedMajor}}
 }
 
 export interface PlayerProfile {
@@ -474,6 +482,13 @@ export interface PublicProfileData {
   film: VideoLink[] | null;
   /** null when show_schools is false */
   schools: Array<{ id: string; name: string }> | null;
+  /** null when no social handles are set; not gated by a visibility flag */
+  social: {
+    twitter_handle?: string;
+    instagram_handle?: string;
+    tiktok_handle?: string;
+    facebook_url?: string;
+  } | null;
 }
 
 export interface SchoolPreference {

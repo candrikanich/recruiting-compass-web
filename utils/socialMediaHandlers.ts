@@ -30,6 +30,31 @@ export const openInstagram = (handle: string | null | undefined): void => {
 };
 
 /**
+ * Opens a TikTok profile in a new tab
+ * @param handle - TikTok handle (with or without @)
+ */
+export const openTikTok = (handle: string | null | undefined): void => {
+  if (!handle) return;
+
+  const cleanHandle = handle.replace("@", "");
+  window.open(`https://tiktok.com/@${cleanHandle}`, "_blank");
+};
+
+/**
+ * Opens a Facebook profile in a new tab. Facebook is stored as a full URL
+ * rather than a handle; a missing scheme is prefixed with https://.
+ * @param url - Facebook profile URL
+ */
+export const openFacebook = (url: string | null | undefined): void => {
+  if (!url) return;
+
+  const trimmed = url.trim();
+  if (!trimmed) return;
+  const normalized = trimmed.startsWith("http") ? trimmed : `https://${trimmed}`;
+  window.open(normalized, "_blank");
+};
+
+/**
  * Opens the default email client with the specified email address
  * @param email - Email address
  */

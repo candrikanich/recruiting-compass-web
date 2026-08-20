@@ -70,7 +70,25 @@ const previewData = computed<PublicProfileData>(() => ({
       : null,
   film: props.settings.show_film ? filmLinks.value : null,
   schools: props.settings.show_schools ? props.schools : null,
+  social: previewSocial.value,
 }));
+
+// Socials are not gated by a visibility flag — shown whenever a handle is set.
+const previewSocial = computed<PublicProfileData["social"]>(() => {
+  const d = props.details;
+  if (!d) return null;
+  const str = (v: unknown) => {
+    const s = typeof v === "string" ? v.trim() : "";
+    return s.length ? s : undefined;
+  };
+  const social = {
+    twitter_handle: str(d.twitter_handle),
+    instagram_handle: str(d.instagram_handle),
+    tiktok_handle: str(d.tiktok_handle),
+    facebook_url: str(d.facebook_url),
+  };
+  return Object.values(social).some((v) => v !== undefined) ? social : null;
+});
 </script>
 
 <template>

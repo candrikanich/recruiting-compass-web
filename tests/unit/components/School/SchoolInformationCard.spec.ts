@@ -200,8 +200,19 @@ describe("SchoolInformationCard", () => {
 
     it("hides form when not editing", () => {
       const wrapper = mount(SchoolInformationCard, { props: defaultProps });
-      const inputs = wrapper.findAll("input");
-      expect(inputs.length).toBe(0);
+      // The always-visible questionnaire checkbox is not part of the edit form.
+      const formInputs = wrapper
+        .findAll("input")
+        .filter((i) => i.attributes("type") !== "checkbox");
+      expect(formInputs.length).toBe(0);
+    });
+
+    it("emits set-questionnaire when the questionnaire checkbox is toggled", async () => {
+      const wrapper = mount(SchoolInformationCard, { props: defaultProps });
+      const checkbox = wrapper.find('input[type="checkbox"]');
+      expect(checkbox.exists()).toBe(true);
+      await checkbox.setValue(true);
+      expect(wrapper.emitted("set-questionnaire")?.[0]).toEqual([true]);
     });
 
     it("renders all Contact & Social form fields", () => {

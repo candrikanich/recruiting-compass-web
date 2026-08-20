@@ -2,9 +2,13 @@ import { describe, it, expect } from "vitest";
 import {
   resolveSourcePath,
   renderMetrics,
+  dedupeMostRecentPerType,
+  applyOptionalSegments,
   carryingTool,
   resolveVariables,
   renderTemplate,
+  renderClean,
+  formatUsPhone,
   findUnresolved,
   type RegistryVar,
   type ResolverContext,
@@ -39,6 +43,15 @@ const ctx: ResolverContext = {
     ncaa_id: "2109887654",
     video_links: ["https://film.example/1"],
     travel_team_coach: "Marcus Webb",
+    city: "PLAYER_CITY",
+    // player stats now resolve from prefs (source of truth), not the users mirror
+    height_inches: 74,
+    weight_lbs: 185,
+    act_score: 29,
+  },
+  locationPrefs: {
+    city: "Olmsted Township",
+    state: "OH",
   },
   authored: {
     programNote: "Your staff develops middle infielders.",
@@ -63,6 +76,13 @@ describe("resolveSourcePath", () => {
 
   it("resolves pref:player.<key> from the player jsonb", () => {
     expect(resolveSourcePath("pref:player.ncaa_id", ctx)).toBe("2109887654");
+  });
+
+  it("resolves pref:location.<key> from the location jsonb, not player prefs", () => {
+    expect(resolveSourcePath("pref:location.city", ctx)).toBe("Olmsted Township");
+    expect(resolveSourcePath("pref:location.state", ctx)).toBe("OH");
+    // player prefs also carry a `city`; the location prefix must not read it
+    expect(resolveSourcePath("pref:player.city", ctx)).toBe("PLAYER_CITY");
   });
 
   it("returns null for a missing column or unknown table", () => {
@@ -263,5 +283,240 @@ describe("resolveVariables", () => {
       { tables: { users: {} } },
     );
     expect(sparse.height).toBeUndefined();
+  });
+});
+
+describe("questionnaireNote (optional completion sentence)", () => {
+  const reg: RegistryVar[] = [
+    { key: "questionnaireNote", source_type: "computed", source_path: null },
+  ];
+
+  it("renders the completion sentence when the school flag is true", () => {
+    const out = resolveVariables(reg, {
+      tables: { schools: { name: "Ohio State", questionnaire_completed: true } },
+    });
+    expect(out.questionnaireNote).toBe(
+      "I've completed your recruiting questionnaire. ",
+    );
+  });
+
+  it("resolves to an empty string (not omitted) when the flag is false", () => {
+    const out = resolveVariables(reg, {
+      tables: { schools: { name: "Ohio State", questionnaire_completed: false } },
+    });
+    // Present-but-empty is the key contract: the literal is replaced with
+    // nothing rather than left intact, so findUnresolved does NOT block send.
+    expect(out.questionnaireNote).toBe("");
+    expect("questionnaireNote" in out).toBe(true);
+  });
+
+  it("defaults to empty when the flag is absent", () => {
+    const out = resolveVariables(reg, {
+      tables: { schools: { name: "Ohio State" } },
+    });
+    expect(out.questionnaireNote).toBe("");
+  });
+
+  it("leaves no unresolved token in a rendered body when omitted", () => {
+    const out = resolveVariables(reg, {
+      tables: { schools: { questionnaire_completed: false } },
+    });
+    const body = renderTemplate("{{questionnaireNote}}I'd welcome feedback.", out);
+    expect(body).toBe("I'd welcome feedback.");
+    expect(findUnresolved(body)).toEqual([]);
+  });
+});
+
+// Shared vectors with iOS TemplateRenderCleanTests — keep the two byte-identical.
+describe("renderClean", () => {
+  const required = new Set(["programNote"]);
+
+  it("drops a label-only line for an empty optional", () => {
+    expect(renderClean("Film: {{videoLink}}\nThanks", {}, required)).toBe(
+      "Thanks",
+    );
+  });
+
+  it("keeps the line when the optional resolves", () => {
+    expect(
+      renderClean("Film: {{videoLink}}\nThanks", { videoLink: "https://film/1" }, required),
+    ).toBe("Film: https://film/1\nThanks");
+  });
+
+  it("keeps a required unresolved token", () => {
+    expect(renderClean("Hi,\n{{programNote}}\nThanks", {}, required)).toBe(
+      "Hi,\n{{programNote}}\nThanks",
+    );
+  });
+
+  it("drops an empty bullet line", () => {
+    expect(renderClean("Numbers:\n- {{metrics}}\nEnd", {}, required)).toBe(
+      "Numbers:\nEnd",
+    );
+  });
+
+  it("tidies a footer with some resolved", () => {
+    expect(
+      renderClean("{{gradYear}} | {{position}} | {{highSchool}}", { gradYear: "2028" }, required),
+    ).toBe("2028");
+  });
+
+  it("drops the footer when all optional are empty", () => {
+    expect(
+      renderClean("Signed,\n{{gradYear}} | {{position}} | {{highSchool}}", {}, required),
+    ).toBe("Signed,");
+  });
+
+  it("collapses blank lines left by a drop", () => {
+    expect(renderClean("A\n\nFilm: {{videoLink}}\n\nB", {}, required)).toBe("A\n\nB");
+  });
+
+  it("keeps required when mixed with optional on one line", () => {
+    expect(renderClean("{{position}} — {{programNote}}", {}, required)).toBe(
+      "{{programNote}}",
+    );
+  });
+});
+
+// Shared vectors with iOS TemplateResolver.applyOptionalSegments — keep byte-identical.
+describe("applyOptionalSegments", () => {
+  it("keeps the inner text when the gate key resolves non-empty", () => {
+    expect(
+      applyOptionalSegments("Hi[[intendedMajor|, planning to study {{intendedMajor}}]].", {
+        intendedMajor: "Engineering",
+      }),
+    ).toBe("Hi, planning to study {{intendedMajor}}.");
+  });
+
+  it("drops the whole span when the gate key is missing", () => {
+    expect(
+      applyOptionalSegments("Hi[[intendedMajor|, planning to study {{intendedMajor}}]].", {}),
+    ).toBe("Hi.");
+  });
+
+  it("drops the span when the gate key is present but blank after trim", () => {
+    expect(
+      applyOptionalSegments("Hi[[intendedMajor|, planning to study X]].", {
+        intendedMajor: "   ",
+      }),
+    ).toBe("Hi.");
+  });
+
+  it("handles a multi-token film clause spanning gate + inner tokens", () => {
+    const body =
+      "[[videoLink|I'd welcome any feedback on my film {{videoLink}} to fit at {{schoolName}}.]]";
+    expect(
+      applyOptionalSegments(body, { videoLink: "https://film/1", schoolName: "OSU" }),
+    ).toBe("I'd welcome any feedback on my film {{videoLink}} to fit at {{schoolName}}.");
+    expect(applyOptionalSegments(body, { schoolName: "OSU" })).toBe("");
+  });
+
+  it("never prints the gate key itself", () => {
+    expect(applyOptionalSegments("[[videoLink|film]]", { videoLink: "x" })).toBe("film");
+  });
+});
+
+describe("renderClean — optional [[gate|text]] segments", () => {
+  const required = new Set<string>();
+
+  it("keeps the major clause and substitutes its inner token when resolved", () => {
+    const body = "I'm a {{position}}[[intendedMajor|, planning to study {{intendedMajor}}]].";
+    expect(
+      renderClean(body, { position: "SS", intendedMajor: "Engineering" }, required),
+    ).toBe("I'm a SS, planning to study Engineering.");
+  });
+
+  it("removes the major clause entirely when the gate is unresolved", () => {
+    const body = "I'm a {{position}}[[intendedMajor|, planning to study {{intendedMajor}}]].";
+    expect(renderClean(body, { position: "SS" }, required)).toBe("I'm a SS.");
+  });
+
+  it("renders a film clause end-to-end when videoLink resolves", () => {
+    const body =
+      "Thanks.\n[[videoLink|I'd welcome any feedback on my film {{videoLink}} to fit at {{schoolName}}.]]";
+    expect(
+      renderClean(body, { videoLink: "https://film/1", schoolName: "OSU" }, required),
+    ).toBe("Thanks.\nI'd welcome any feedback on my film https://film/1 to fit at OSU.");
+  });
+
+  it("drops the film line when videoLink is missing", () => {
+    const body =
+      "Thanks.\n[[videoLink|I'd welcome any feedback on my film {{videoLink}} to fit at {{schoolName}}.]]";
+    expect(renderClean(body, { schoolName: "OSU" }, required)).toBe("Thanks.");
+  });
+});
+
+describe("dedupeMostRecentPerType", () => {
+  it("keeps only the most recent row per metric_type", () => {
+    const rows: MetricRow[] = [
+      { metric_type: "exit_velo", display_value: "90", recorded_date: "2026-05-01" },
+      { metric_type: "exit_velo", display_value: "94", recorded_date: "2026-06-10" },
+      { metric_type: "sixty_yard", display_value: "6.9", recorded_date: "2026-04-01" },
+    ];
+    const out = dedupeMostRecentPerType(rows);
+    expect(out).toHaveLength(2);
+    expect(out.find((m) => m.metric_type === "exit_velo")?.display_value).toBe("94");
+  });
+
+  it("breaks a same-date tie toward the verified row", () => {
+    const rows: MetricRow[] = [
+      { metric_type: "exit_velo", display_value: "90", recorded_date: "2026-06-10", verified: false },
+      { metric_type: "exit_velo", display_value: "94", recorded_date: "2026-06-10", verified: true },
+    ];
+    const out = dedupeMostRecentPerType(rows);
+    expect(out).toHaveLength(1);
+    expect(out[0].display_value).toBe("94");
+  });
+
+  it("breaks a date+verified tie toward the primary row", () => {
+    const rows: MetricRow[] = [
+      {
+        metric_type: "exit_velo",
+        display_value: "90",
+        recorded_date: "2026-06-10",
+        verified: true,
+        is_primary: false,
+      },
+      {
+        metric_type: "exit_velo",
+        display_value: "94",
+        recorded_date: "2026-06-10",
+        verified: true,
+        is_primary: true,
+      },
+    ];
+    expect(dedupeMostRecentPerType(rows)[0].display_value).toBe("94");
+  });
+
+  it("preserves original input order of the surviving rows", () => {
+    const rows: MetricRow[] = [
+      { metric_type: "sixty_yard", display_value: "6.9", recorded_date: "2026-04-01" },
+      { metric_type: "exit_velo", display_value: "94", recorded_date: "2026-06-10" },
+    ];
+    const out = dedupeMostRecentPerType(rows);
+    expect(out.map((m) => m.metric_type)).toEqual(["sixty_yard", "exit_velo"]);
+  });
+
+  it("renderMetrics collapses duplicate types before capping", () => {
+    const rows: MetricRow[] = [
+      { metric_type: "exit_velo", display_value: "90", recorded_date: "2026-05-01" },
+      { metric_type: "exit_velo", display_value: "94", recorded_date: "2026-06-10" },
+    ];
+    const lines = renderMetrics(rows).split("\n").filter(Boolean);
+    expect(lines).toHaveLength(1);
+    expect(lines[0]).toContain("94");
+  });
+});
+
+describe("formatUsPhone", () => {
+  it("formats US 10-digit and 1-prefixed numbers", () => {
+    expect(formatUsPhone("216-534-8996")).toBe("(216) 534-8996");
+    expect(formatUsPhone("2165348996")).toBe("(216) 534-8996");
+    expect(formatUsPhone("+1 (216) 534.8996")).toBe("(216) 534-8996");
+    expect(formatUsPhone("12165348996")).toBe("(216) 534-8996");
+  });
+  it("leaves non-standard numbers and empties alone", () => {
+    expect(formatUsPhone("555-1234")).toBe("555-1234");
+    expect(formatUsPhone("  ")).toBeNull();
   });
 });

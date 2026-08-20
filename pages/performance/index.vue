@@ -209,7 +209,33 @@
                 {{ formatDate(metric.recorded_date) }}
               </p>
             </div>
-            <div class="flex gap-2">
+            <div class="flex gap-2 items-center">
+              <button
+                @click="togglePrimary(metric)"
+                :disabled="primaryUpdatingId === metric.id"
+                :aria-pressed="metric.is_primary ? 'true' : 'false'"
+                :aria-label="
+                  metric.is_primary
+                    ? 'Remove as headline stat'
+                    : 'Set as headline stat'
+                "
+                :title="
+                  metric.is_primary
+                    ? 'Headline stat — tap to clear'
+                    : 'Set as headline stat'
+                "
+                class="p-1.5 rounded-sm hover:bg-amber-50 transition disabled:opacity-50"
+              >
+                <UIcon
+                  :name="
+                    metric.is_primary
+                      ? 'i-heroicons-star-solid'
+                      : 'i-heroicons-star'
+                  "
+                  class="w-5 h-5"
+                  :class="metric.is_primary ? 'text-amber-500' : 'text-gray-400'"
+                />
+              </button>
               <button
                 @click="openEditForm(metric)"
                 class="px-3 py-1 bg-blue-100 text-blue-700 rounded-sm hover:bg-blue-200 transition text-sm font-semibold"
@@ -478,6 +504,8 @@ const {
   createMetric,
   deleteMetric: deleteMetricAPI,
   updateMetric,
+  setPrimaryMetric,
+  clearPrimaryMetric,
 } = usePerformance();
 const { showToast } = useAppToast();
 
@@ -753,6 +781,34 @@ const confirmDeleteMetric = async () => {
 const cancelDeleteMetric = () => {
   isDeleteDialogOpen.value = false;
   metricToDeleteId.value = null;
+};
+
+const primaryUpdatingId = ref<string | null>(null);
+
+const togglePrimary = async (metric: PerformanceMetric) => {
+  if (primaryUpdatingId.value) return;
+  primaryUpdatingId.value = metric.id;
+  const wasPrimary = metric.is_primary;
+  try {
+    if (wasPrimary) {
+      await clearPrimaryMetric(metric.id);
+    } else {
+      await setPrimaryMetric(metric.id);
+    }
+    await fetchMetrics();
+    showToast(
+      wasPrimary ? "Headline stat cleared" : "Headline stat updated",
+      "success",
+    );
+  } catch (err) {
+    logger.error("Failed to update headline stat", err);
+    showToast(
+      "Something went wrong updating your headline stat. Please try again.",
+      "error",
+    );
+  } finally {
+    primaryUpdatingId.value = null;
+  }
 };
 
 const openEditForm = (metric: PerformanceMetric) => {

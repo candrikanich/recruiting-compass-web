@@ -6,6 +6,25 @@ import type { PublicProfileData, VideoLink } from "~/types/models";
 const HASH_SLUG_RE = /^[a-z0-9]{6}$/;
 const VANITY_SLUG_RE = /^[a-z0-9][a-z0-9-]{0,28}[a-z0-9]$/;
 
+/** Social handles from player details; null when every handle is blank. */
+function buildSocial(
+  details: Record<string, unknown> | null,
+): PublicProfileData["social"] {
+  if (!details) return null;
+  const str = (v: unknown) => {
+    const s = typeof v === "string" ? v.trim() : "";
+    return s.length ? s : undefined;
+  };
+  const social = {
+    twitter_handle: str(details.twitter_handle),
+    instagram_handle: str(details.instagram_handle),
+    tiktok_handle: str(details.tiktok_handle),
+    facebook_url: str(details.facebook_url),
+  };
+  const hasAny = Object.values(social).some((v) => v !== undefined);
+  return hasAny ? social : null;
+}
+
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "public/profile");
   try {
@@ -79,16 +98,15 @@ export default defineEventHandler(async (event) => {
 
     // Player details live in user_preferences (category = "player").
     // Film no longer reads this — it's sourced from the video_links table below.
-    let details: Record<string, unknown> | null = null;
-    if (profile.show_academics || profile.show_athletic) {
-      const { data: prefs } = await supabase
-        .from("user_preferences")
-        .select("data")
-        .eq("user_id", profile.user_id)
-        .eq("category", "player")
-        .maybeSingle();
-      details = (prefs?.data as Record<string, unknown>) ?? null;
-    }
+    // Always fetched: academics/athletic are gated, but social is not.
+    const { data: prefs } = await supabase
+      .from("user_preferences")
+      .select("data")
+      .eq("user_id", profile.user_id)
+      .eq("category", "player")
+      .maybeSingle();
+    const details: Record<string, unknown> | null =
+      (prefs?.data as Record<string, unknown>) ?? null;
 
     let schools: Array<{ id: string; name: string }> | null = null;
     if (profile.show_schools) {
@@ -150,6 +168,7 @@ export default defineEventHandler(async (event) => {
           : null,
       film: profile.show_film ? videoLinks : null,
       schools: profile.show_schools ? (schools ?? []) : null,
+      social: buildSocial(details),
     };
 
     logger.info("Public profile served", { slug });

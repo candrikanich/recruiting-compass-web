@@ -1,5 +1,9 @@
 <template>
-  <div class="school-logo" :class="sizeClass">
+  <div
+    class="school-logo"
+    :class="sizeClass"
+    :style="transitionName ? { viewTransitionName: transitionName } : undefined"
+  >
     <!-- Favicon image -->
     <img
       v-if="logoUrl && !imageError"
@@ -46,6 +50,15 @@ interface Props {
   size?: "xs" | "sm" | "md" | "lg" | "xl";
   showLabel?: boolean;
   fetchOnMount?: boolean;
+  /**
+   * Opt-in `view-transition-name` for shared-element morphs across route
+   * navigation. Must be unique per rendered page — pass a per-school value
+   * (e.g. `school-logo-${school.id}`). Only set on the logos that should
+   * morph into each other (list card <-> detail header <-> sub-tab headers);
+   * leaving it undefined keeps the logo out of the transition and avoids
+   * name collisions.
+   */
+  transitionName?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {

@@ -27,6 +27,11 @@ export default defineNuxtConfig({
   experimental: {
     viteEnvironmentApi: true,
 
+    // Cross-route View Transitions. Progressive enhancement: unsupported
+    // browsers (Firefox, Safari <18) skip the animation, no breakage. Drives
+    // the shared-element logo morph on schools list -> detail navigation.
+    viewTransition: true,
+
     // A module declaring a Nuxt version range we don't satisfy is otherwise
     // only a build WARN — Nuxt drops the module and exits 0. That is how
     // @nuxt/ui 4.x (requires Nuxt >=4.1) silently took @nuxt/icon down with it

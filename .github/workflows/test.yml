@@ -209,7 +209,11 @@ jobs:
           LHCI_CI_PASSWORD: ${{ secrets.LHCI_CI_PASSWORD }}
           LHCI_PROFILE_SLUG: ${{ secrets.LHCI_PROFILE_SLUG }}
 
+      - name: Run Lighthouse CI assert
+        run: npx lhci assert --config=lighthouserc.cjs
+
       - name: Run Lighthouse CI upload
+        if: always()
         run: npx lhci upload --config=lighthouserc.cjs
 
       - name: Post Slack report
