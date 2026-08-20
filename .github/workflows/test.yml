@@ -90,8 +90,8 @@ jobs:
 
       - uses: actions/setup-node@v7
         with:
-          # Pinned to match deploy-prod.yml — Vercel CLI runs on the same Node
-          # version in both pipelines. Unit/lint jobs above still use NODE_VERSION.
+          # Pinned Node for the Vercel CLI deploy. Unit/lint jobs above still
+          # use NODE_VERSION.
           node-version: "24"
 
       - run: npm install -g vercel
