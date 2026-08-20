@@ -100,4 +100,27 @@ describe("FormSegmentedControl", () => {
       "Pick a direction",
     );
   });
+
+  it("fills width with equal segments by default (block)", () => {
+    const wrapper = mountControl();
+    const container = wrapper.find("fieldset > div");
+    expect(container.classes()).toContain("w-full");
+    expect(wrapper.find("label").classes()).toContain("flex-1");
+  });
+
+  it("sizes to content when block is false", () => {
+    const wrapper = mountControl({ block: false });
+    const container = wrapper.find("fieldset > div");
+    expect(container.classes()).toContain("inline-flex");
+    expect(container.classes()).not.toContain("w-full");
+    expect(wrapper.find("label").classes()).not.toContain("flex-1");
+  });
+
+  it("keeps the legend for screen readers but hides it visually when hideLabel", () => {
+    const wrapper = mountControl({ hideLabel: true });
+    const legend = wrapper.find("legend");
+    expect(legend.exists()).toBe(true);
+    expect(legend.text()).toContain("Direction");
+    expect(legend.classes()).toContain("sr-only");
+  });
 });

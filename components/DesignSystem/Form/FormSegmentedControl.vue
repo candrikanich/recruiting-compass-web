@@ -15,6 +15,12 @@ interface Props {
   disabled?: boolean;
   error?: string;
   size?: "sm" | "md";
+  /** Fill the container width with equal segments (default). Set false to
+   *  size to content when placed inline beside other controls. */
+  block?: boolean;
+  /** Visually hide the legend while keeping it for screen readers. Use when
+   *  the group sits inline and its purpose is clear from context. */
+  hideLabel?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -23,6 +29,8 @@ const props = withDefaults(defineProps<Props>(), {
   disabled: false,
   error: "",
   size: "md",
+  block: true,
+  hideLabel: false,
 });
 
 const emit = defineEmits<{
@@ -50,21 +58,31 @@ const select = (value: string) => {
     :aria-invalid="!!error || undefined"
     class="min-w-0 border-0 p-0"
   >
-    <legend class="block text-sm font-medium text-slate-700 mb-2">
+    <legend
+      :class="
+        hideLabel
+          ? 'sr-only'
+          : 'block text-sm font-medium text-slate-700 mb-2'
+      "
+    >
       {{ label }}
       <span v-if="required" class="text-red-500" aria-hidden="true">*</span>
       <span v-if="required" class="sr-only">(required)</span>
     </legend>
 
     <div
-      class="flex w-full gap-1 rounded-xl border-2 bg-white p-1"
-      :class="error ? 'border-red-500' : 'border-slate-300'"
+      class="gap-1 rounded-xl border-2 bg-white p-1"
+      :class="[
+        block ? 'flex w-full' : 'inline-flex',
+        error ? 'border-red-500' : 'border-slate-300',
+      ]"
     >
       <label
         v-for="option in options"
         :key="option.value"
-        class="flex-1 cursor-pointer rounded-lg text-center font-medium whitespace-nowrap transition-colors select-none focus-within:ring-2 focus-within:ring-blue-500"
+        class="cursor-pointer rounded-lg text-center font-medium whitespace-nowrap transition-colors select-none focus-within:ring-2 focus-within:ring-blue-500"
         :class="[
+          block ? 'flex-1' : '',
           segmentPadding,
           modelValue === option.value
             ? 'bg-blue-600 text-white shadow-xs'
