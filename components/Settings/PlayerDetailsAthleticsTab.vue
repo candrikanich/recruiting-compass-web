@@ -323,23 +323,26 @@
           :key="link.id"
           class="flex items-center gap-3"
         >
-          <select
-            :value="link.platform"
+          <DesignSystemFormSegmentedControl
+            label="Video platform"
+            hide-label
+            :block="false"
+            size="sm"
+            :model-value="link.platform"
             :disabled="isParentRole"
-            @change="
-              (e) =>
+            :options="[
+              { value: 'hudl', label: 'Hudl' },
+              { value: 'youtube', label: 'YouTube' },
+              { value: 'vimeo', label: 'Vimeo' },
+              { value: 'other', label: 'Other' },
+            ]"
+            @update:model-value="
+              (v) =>
                 handleUpdate(link.id, {
-                  platform: (e.target as HTMLSelectElement).value as
-                    'hudl' | 'youtube' | 'vimeo' | 'other',
+                  platform: v as 'hudl' | 'youtube' | 'vimeo' | 'other',
                 })
             "
-            class="px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-700 focus:ring-2 focus:ring-blue-500 transition disabled:opacity-50"
-          >
-            <option value="hudl">Hudl</option>
-            <option value="youtube">YouTube</option>
-            <option value="vimeo">Vimeo</option>
-            <option value="other">Other</option>
-          </select>
+          />
           <input
             :value="link.url"
             :disabled="isParentRole"
@@ -383,15 +386,22 @@
           v-if="!isParentRole && videoLinks.links.value.length < 5"
           class="flex items-center gap-3"
         >
-          <select
-            v-model="newLinkPlatform"
-            class="px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-700 focus:ring-2 focus:ring-blue-500 transition"
-          >
-            <option value="hudl">Hudl</option>
-            <option value="youtube">YouTube</option>
-            <option value="vimeo">Vimeo</option>
-            <option value="other">Other</option>
-          </select>
+          <DesignSystemFormSegmentedControl
+            label="Video platform"
+            hide-label
+            :block="false"
+            size="sm"
+            :model-value="newLinkPlatform"
+            :options="[
+              { value: 'hudl', label: 'Hudl' },
+              { value: 'youtube', label: 'YouTube' },
+              { value: 'vimeo', label: 'Vimeo' },
+              { value: 'other', label: 'Other' },
+            ]"
+            @update:model-value="
+              (v) => (newLinkPlatform = v as 'hudl' | 'youtube' | 'vimeo' | 'other')
+            "
+          />
           <input
             v-model="newLinkUrl"
             type="url"
