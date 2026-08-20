@@ -232,16 +232,30 @@ export const useCommunicationTemplates = (): {
     error.value = null;
 
     try {
+      // .select() lets us confirm a row was actually updated. A 0-row update
+      // (e.g. editing a non-owned predefined/global row) returns NO Supabase
+      // error, so without this it would silently report false success.
       const updateResponse =
         (await // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (supabase.from("communication_templates") as any)
           .update(updates)
           .eq("id", id)
+          .eq("user_id", userStore.user.id)
+          .select()) as {
+          data: CommunicationTemplate[] | null;
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          .eq("user_id", userStore.user.id)) as { error: any };
-      const { error: err } = updateResponse;
+          error: any;
+        };
+      const { data, error: err } = updateResponse;
 
       if (err) throw err;
+
+      if (!data || data.length === 0) {
+        throw new Error(
+          "No template was updated — it may be a read-only built-in " +
+            "template or not owned by you.",
+        );
+      }
 
       const index = templates.value.findIndex((t) => t.id === id);
       if (index !== -1) {

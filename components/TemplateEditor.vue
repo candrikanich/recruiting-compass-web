@@ -2,8 +2,20 @@
   <div class="rounded-lg shadow-sm p-6 bg-white">
     <!-- Header -->
     <h2 class="text-2xl font-bold mb-6 text-slate-900">
-      {{ isEditing ? "Edit Template" : "Create Template" }}
+      {{ headerTitle }}
     </h2>
+
+    <!-- Predefined copy note -->
+    <div
+      v-if="isCustomizingPredefined"
+      class="flex items-start gap-2 mb-6 p-3 rounded-lg text-sm bg-blue-50 border border-blue-200 text-blue-800"
+    >
+      <span aria-hidden="true">📄</span>
+      <span>
+        You're customizing a copy — the built-in template stays unchanged. Save
+        creates your own editable version.
+      </span>
+    </div>
 
     <form @submit.prevent="saveTemplate" class="space-y-6">
       <!-- Template Name -->
@@ -176,15 +188,33 @@ const {
   interpolateTemplate,
 } = useCommunicationTemplates();
 
+// A predefined (global, is_predefined === true) template is a read-only
+// built-in. You don't update it in place — you save a user-owned copy.
+const isCustomizingPredefined = computed(
+  () => props.template?.is_predefined === true,
+);
+
+// Only owned, non-predefined templates edit in place (and can be deleted).
+const isEditing = computed(
+  () => !!props.template && !isCustomizingPredefined.value,
+);
+
+const headerTitle = computed(() => {
+  if (isCustomizingPredefined.value) return "Customize Template";
+  return isEditing.value ? "Edit Template" : "Create Template";
+});
+
 const formData = ref({
-  name: props.template?.name || "",
+  name: props.template
+    ? isCustomizingPredefined.value
+      ? `Copy of ${props.template.name}`
+      : props.template.name
+    : "",
   type: (props.template?.type || "email") as
     "email" | "message" | "phone_script",
   subject: props.template?.subject || "",
   body: props.template?.body || "",
 });
-
-const isEditing = computed(() => !!props.template);
 
 const availableVariables = AVAILABLE_VARIABLES;
 
@@ -244,25 +274,40 @@ const saveTemplate = async () => {
     return;
   }
 
+  // Owned, non-predefined template → update in place.
   if (isEditing.value && props.template) {
-    await updateTemplate(props.template.id, formData.value);
+    const ok = await updateTemplate(props.template.id, formData.value);
+    if (!ok) {
+      showToast(
+        "Something went wrong saving this template. Please try again.",
+        "error",
+      );
+      return;
+    }
     emit("save", {
       ...props.template,
       ...formData.value,
     } as CommunicationTemplate);
-  } else {
-    const newTemplate = await createTemplate(
-      formData.value.name,
-      formData.value.type,
-      formData.value.body,
-      formData.value.subject,
-      undefined,
-      undefined,
-    );
-    if (newTemplate) {
-      emit("save", newTemplate);
-    }
+    return;
   }
+
+  // New template OR customizing a predefined built-in → insert an owned copy.
+  const newTemplate = await createTemplate(
+    formData.value.name,
+    formData.value.type,
+    formData.value.body,
+    formData.value.subject,
+    undefined,
+    undefined,
+  );
+  if (!newTemplate) {
+    showToast(
+      "Something went wrong saving this template. Please try again.",
+      "error",
+    );
+    return;
+  }
+  emit("save", newTemplate);
 };
 
 const isDeleteDialogOpen = ref(false);
