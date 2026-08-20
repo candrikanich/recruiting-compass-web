@@ -9,6 +9,7 @@ export default defineConfig({
   workers: process.env.CI ? 2 : 4,
   reporter: "html",
   globalSetup: "./tests/e2e/global-setup.ts",
+  globalTeardown: "./tests/e2e/global-teardown.ts",
   timeout: 30000, // 30s per test — player auth state cached globally via storageState
 
   use: {
