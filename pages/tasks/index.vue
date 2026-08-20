@@ -244,13 +244,16 @@ const toggleTaskDetails = (taskId: string) => {
 };
 
 const handleAthleteChange = async (athleteId: string) => {
+  // switchAthlete sets currentAthleteId, which fires the watch below and
+  // fetches the tasks — do NOT fetch again here or every switch renders the
+  // task list twice (churn + retained detached DOM).
   await switchAthlete(athleteId);
   loadFilters();
-  await fetchTasksWithStatus(currentGradeLevel.value, athleteId);
 };
 
 // useActiveFamily resolves the parent's active athlete asynchronously after
-// mount; refetch the athlete's tasks once it lands (or changes).
+// mount; refetch the athlete's tasks once it lands (or changes). This is the
+// single fetch path for athlete switches.
 watch(currentAthleteId, async (athleteId) => {
   if (isViewingAsParent.value && athleteId) {
     await fetchTasksWithStatus(currentGradeLevel.value, athleteId);
@@ -458,8 +461,11 @@ const onUrgencyFilterChange = () => {
 
     <!-- Task List -->
     <main class="max-w-4xl mx-auto px-4 sm:px-6 pb-8">
-      <!-- Loading State -->
-      <div v-if="loading" class="space-y-4">
+      <!-- Loading State — only on the initial load. On athlete-switch refetch
+           the list below stays mounted (keyed v-for diffs) instead of the whole
+           list unmounting/remounting, which stranded Transition transitionend
+           handlers on detached DOM and leaked memory per switch. -->
+      <div v-if="loading && filteredTasks.length === 0" class="space-y-4">
         <div
           v-for="i in 5"
           :key="i"
