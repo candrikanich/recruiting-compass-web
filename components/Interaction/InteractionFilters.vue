@@ -100,28 +100,19 @@
       </div>
 
       <!-- Direction -->
-      <div>
-        <label
-          for="filter-direction"
-          class="block text-sm font-medium text-slate-700 mb-1"
-          >Direction</label
-        >
-        <select
-          id="filter-direction"
-          :value="filterValues.get('direction') || ''"
-          @change="
-            emits('update:filter', {
-              field: 'direction',
-              value: ($event.target as HTMLSelectElement).value || null,
-            })
-          "
-          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-2 focus:outline-blue-600 focus:outline-offset-1 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-        >
-          <option value="">-- All --</option>
-          <option value="outbound">Outbound</option>
-          <option value="inbound">Inbound</option>
-        </select>
-      </div>
+      <DesignSystemFormSegmentedControl
+        label="Direction"
+        size="sm"
+        :model-value="filterValues.get('direction') || ''"
+        :options="[
+          { value: '', label: 'All' },
+          { value: 'outbound', label: 'Outbound' },
+          { value: 'inbound', label: 'Inbound' },
+        ]"
+        @update:model-value="
+          emits('update:filter', { field: 'direction', value: $event || null })
+        "
+      />
 
       <!-- Sentiment -->
       <div>
