@@ -48,14 +48,19 @@ jobs:
           # Override Vercel preset so nuxi preview can serve a standard Node.js
           # server in CI. Production builds use the Vercel preset (nuxt.config.ts).
           NITRO_PRESET: node-server
+          # ssr:false bakes NUXT_PUBLIC_* into the client bundle at build time,
+          # so the test project's URL/anon must be present here, not just at run.
+          NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.TEST_SUPABASE_URL }}
+          NUXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.TEST_SUPABASE_ANON_KEY }}
 
       - name: Run E2E tests
         run: npm run test:e2e
         env:
           CI: true
-          NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
-          NUXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NUXT_PUBLIC_SUPABASE_ANON_KEY }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          # E2E runs against the dedicated test Supabase project, never prod.
+          NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.TEST_SUPABASE_URL }}
+          NUXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.TEST_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.TEST_SUPABASE_SERVICE_ROLE_KEY }}
           NUXT_ADMIN_TOKEN_SECRET: ${{ secrets.NUXT_ADMIN_TOKEN_SECRET }}
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
 
@@ -108,15 +113,19 @@ jobs:
         run: npm run build
         env:
           NITRO_PRESET: node-server
+          # ssr:false bakes NUXT_PUBLIC_* into the client bundle at build time.
+          NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.TEST_SUPABASE_URL }}
+          NUXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.TEST_SUPABASE_ANON_KEY }}
 
       - name: Run E2E tests (WebKit only)
         run: npm run test:e2e -- --project webkit
         env:
           CI: true
           FULL_TESTS: "1"
-          NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
-          NUXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NUXT_PUBLIC_SUPABASE_ANON_KEY }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          # E2E runs against the dedicated test Supabase project, never prod.
+          NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.TEST_SUPABASE_URL }}
+          NUXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.TEST_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.TEST_SUPABASE_SERVICE_ROLE_KEY }}
           NUXT_ADMIN_TOKEN_SECRET: ${{ secrets.NUXT_ADMIN_TOKEN_SECRET }}
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
 
