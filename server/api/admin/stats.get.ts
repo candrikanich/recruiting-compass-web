@@ -8,6 +8,14 @@ import { defineEventHandler, createError } from "h3";
 import { requireAdmin } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import { useLogger } from "~/server/utils/logger";
+import {
+  groupCounts,
+  weeklyCounts,
+  type BreakdownSlice,
+  type WeekBucket,
+} from "~/utils/adminBreakdown";
+
+const TREND_WEEKS = 12;
 
 export interface AdminStatsResponse {
   users: number;
@@ -15,6 +23,10 @@ export interface AdminStatsResponse {
   coaches: number;
   interactions: number;
   family_units: number;
+  byDivision: BreakdownSlice[];
+  byCoachRole: BreakdownSlice[];
+  byUserRole: BreakdownSlice[];
+  newUsersWeekly: WeekBucket[];
 }
 
 export default defineEventHandler(
@@ -24,24 +36,38 @@ export default defineEventHandler(
       await requireAdmin(event);
       const supabaseAdmin = useSupabaseAdmin();
 
-      const [usersRes, schoolsRes, coachesRes, interactionsRes, familyRes] =
-        await Promise.all([
-          supabaseAdmin
-            .from("users")
-            .select("*", { count: "exact", head: true }),
-          supabaseAdmin
-            .from("schools")
-            .select("*", { count: "exact", head: true }),
-          supabaseAdmin
-            .from("coaches")
-            .select("*", { count: "exact", head: true }),
-          supabaseAdmin
-            .from("interactions")
-            .select("*", { count: "exact", head: true }),
-          supabaseAdmin
-            .from("family_units")
-            .select("*", { count: "exact", head: true }),
-        ]);
+      const [
+        usersRes,
+        schoolsRes,
+        coachesRes,
+        interactionsRes,
+        familyRes,
+        divisionRows,
+        coachRoleRows,
+        userRoleRows,
+        signupRows,
+      ] = await Promise.all([
+        supabaseAdmin.from("users").select("*", { count: "exact", head: true }),
+        supabaseAdmin
+          .from("schools")
+          .select("*", { count: "exact", head: true }),
+        supabaseAdmin
+          .from("coaches")
+          .select("*", { count: "exact", head: true }),
+        supabaseAdmin
+          .from("interactions")
+          .select("*", { count: "exact", head: true }),
+        supabaseAdmin
+          .from("family_units")
+          .select("*", { count: "exact", head: true }),
+        supabaseAdmin.from("schools").select("division"),
+        supabaseAdmin.from("coaches").select("role"),
+        supabaseAdmin.from("users").select("role"),
+        supabaseAdmin.from("users").select("created_at"),
+      ]);
+
+      const asRows = (data: unknown): Record<string, unknown>[] =>
+        (data ?? []) as Record<string, unknown>[];
 
       return {
         users: usersRes.count ?? 0,
@@ -49,6 +75,14 @@ export default defineEventHandler(
         coaches: coachesRes.count ?? 0,
         interactions: interactionsRes.count ?? 0,
         family_units: familyRes.count ?? 0,
+        byDivision: groupCounts(asRows(divisionRows.data), "division"),
+        byCoachRole: groupCounts(asRows(coachRoleRows.data), "role"),
+        byUserRole: groupCounts(asRows(userRoleRows.data), "role"),
+        newUsersWeekly: weeklyCounts(
+          asRows(signupRows.data),
+          "created_at",
+          TREND_WEEKS,
+        ),
       };
     } catch (error) {
       logger.error("Admin stats endpoint failed", error);
