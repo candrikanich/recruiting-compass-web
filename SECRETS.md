@@ -5,7 +5,13 @@ This document lists all secrets required for CI/CD pipelines. Configure them at:
 
 ## Required Secrets
 
-### Vercel Deployment (Required for deploy-staging.yml and deploy-prod.yml)
+### Vercel Deployment (used by the Deploy to Staging job in test.yml)
+
+> Production deploys via Vercel's Git integration on `main` pushes — there is no
+> production deploy workflow (the old `deploy-prod.yml` was removed 2026-08-19).
+> Post the 2026-08-18 consolidation there is a single Vercel project, so
+> `VERCEL_PROJECT_ID_STAGING` and `VERCEL_PROJECT_ID_PROD` both hold
+> `prj_KcKf2CqlmAk7LEwwSxuOpRFypg0c`; `VERCEL_PROJECT_ID_PROD` is now unused.
 
 **`VERCEL_TOKEN`**
 
@@ -36,8 +42,8 @@ This document lists all secrets required for CI/CD pipelines. Configure them at:
   1. Run: `npx vercel link` locally for staging project
   2. Check `.vercel/project.json`: `"projectId"` field
   3. Or create staging project in Vercel dashboard
-- **Scope:** Staging project only
-- **Used in:** Staging deployment (deploy-staging.yml)
+- **Scope:** The consolidated Vercel project (`prj_KcKf2CqlmAk7LEwwSxuOpRFypg0c`)
+- **Used in:** Staging deployment (the Deploy to Staging job in test.yml)
 
 **`VERCEL_PROJECT_ID_PROD`**
 
@@ -48,7 +54,9 @@ This document lists all secrets required for CI/CD pipelines. Configure them at:
   3. Go to Settings → General → Project ID
   4. Copy the ID
 - **Scope:** Production project only
-- **Used in:** Production deployment with approval gate (deploy-prod.yml)
+- **Used in:** Nothing currently — the `deploy-prod.yml` workflow was removed
+  2026-08-19 (prod now deploys via Vercel Git integration). Safe to delete this
+  secret, or leave it as a spare.
 - **⚠️ Critical:** This secret should be carefully guarded
 
 ---
