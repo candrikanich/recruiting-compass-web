@@ -257,10 +257,10 @@ export const notesFixtures = {
  */
 export const notesSelectors = {
   sharedNotesSection: 'h2.text-lg.font-semibold:has-text("Notes")',
-  editButton: 'button[aria-label="Edit notes"]',
-  cancelButton: 'button[aria-label="Cancel editing notes"]',
-  saveButton: 'button:has-text("Save Notes")',
-  notesTextarea: "#notes-textarea",
+  editButton: 'button[aria-label="Edit Notes"]',
+  cancelButton: 'button[aria-label="Cancel editing Notes"]',
+  saveButton: 'button:has-text("Save")',
+  notesTextarea: '[id^="notes-textarea"]',
   notesDisplay: ".text-slate-700.text-sm.whitespace-pre-wrap",
 };
 
