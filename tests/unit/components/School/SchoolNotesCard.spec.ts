@@ -20,7 +20,7 @@ const makeProps = (overrides: Record<string, unknown> = {}) => ({
 const editBtn = (wrapper: ReturnType<typeof mount>) =>
   wrapper.findAll("button").find((b) => b.text().match(/Edit|Cancel/));
 const saveBtn = (wrapper: ReturnType<typeof mount>) =>
-  wrapper.findAll("button").find((b) => b.text().includes("Save Notes"));
+  wrapper.findAll("button").find((b) => /Save|Saving/.test(b.text()));
 
 describe("SchoolNotesCard", () => {
   describe("Notes section", () => {
