@@ -162,3 +162,62 @@ selected metric type: `batting_avg`/`era → 3`, else `2`. Mirror web's dynamic
    functional gap (iOS can render the sentence when true).
 2. **2 + 3** — metric form UI (cheap, self-contained).
 3. **1d** — send-time prompt (parity nicety, defer-able).
+
+---
+
+## Addendum — 2026-08-20 (post-implementation audit)
+
+A read-only audit of `recruiting-compass-ios` (coach-comms flow) re-scoped this spec.
+Net: **most of it already shipped on iOS.** Only Item 1d remains, plus one net-new gap.
+
+### Confirmed DONE on iOS (no action)
+Evidence from the audit — do not re-implement:
+- **1a School model** — `Features/Dashboard/Models/School.swift:24` (`questionnaireCompleted`) present.
+- **1b Computed variable** — `Features/CommunicationTemplates/Models/TemplateComputed.swift:64-71`
+  mirrors web's `COMPUTED.questionnaireNote`.
+- **1c School-detail toggle** — `Features/Schools/Views/SchoolDetailView.swift:142-157` present + persists.
+- Also verified at/above parity (unrelated to this spec but confirmed): template selection,
+  variable interpolation + live preview (`QuickCommBodyPreview`, amber unresolved-token highlight),
+  NCAA contact-window filtering (`QuickCommunicationViewModel.swift:199-212`, "1:1 with web"),
+  program-note/fit-reason persist (`:169-197`), dedupe/timing guardrails (`:89-122`, "1:1 with web").
+  Email/text compose EXCEED web — native `MFMailComposeViewController`/`MFMessageComposeViewController`
+  (`MailComposeView.swift`, `MessageComposeView.swift`) vs web's `mailto:`/`sms:` handoff. **Do not
+  downgrade iOS toward the web behavior here.**
+
+### Item 1d — send-time questionnaire prompt (NOW THE ONLY REMAINING PIECE of #1)
+Still absent: nothing in `QuickCommunicationView`/`QuickCommunicationViewModel` prompts at compose
+time when a chosen template contains `{{questionnaireNote}}` and `questionnaireCompleted == false`.
+Today iOS silently drops the clause (the school-detail toggle is the only way to set it).
+
+**Implement natively — do NOT port web's inline amber banner.** Use idiomatic SwiftUI:
+- Trigger: on template selection (or on Send-tap) in the compose flow, if the resolved template's
+  raw body contains `{{questionnaireNote}}` AND `school.questionnaireCompleted == false` AND the
+  athlete has not already answered this session.
+- Present a native `.confirmationDialog` (or `.alert`) titled
+  `"Did you complete <school>'s recruiting questionnaire?"` with actions
+  **"Yes, I completed it"** and **"Skip"** (+ implicit Cancel).
+  - **Yes** → set `questionnaireCompleted = true`, persist via the same path 1c uses
+    (`SchoolsManaging.update…`), re-resolve the template so the preview updates, proceed.
+  - **Skip** → mark answered-for-session (don't re-ask), leave flag false, line stays omitted.
+- This slots cleanly into the existing `NavigationStack`/`.sheet` flow — no new screen required;
+  a dialog/alert modifier on the compose view. Mirrors web `showQuestionnairePrompt` /
+  `answerQuestionnaire` (`components/CommunicationPanel.vue`) in BEHAVIOR only, native in FORM.
+- Priority: this is the one real content gap left in coach-comms. Medium — it stops a credibility
+  line from silently vanishing when the athlete genuinely completed the questionnaire.
+
+### Item 4 (NET-NEW) — "skip logging this send" toggle — OPTIONAL / LOW
+Web has an uncheckable `shouldLogInteraction` (default on) so the athlete can send WITHOUT recording
+it to coach history (`components/CommunicationPanel.vue:322-327,542-547`, gates the log at `:1131,1155`).
+iOS logs every confirmed send unconditionally (`QuickCommunicationView.swift:381-397`; no
+`shouldLogInteraction` equivalent exists).
+
+**Recommendation: likely LEAVE AS-IS.** iOS's always-log is a defensible default and arguably better.
+If parity is wanted, add a single native `Toggle("Log this to coach history", isOn:)` (default true)
+in the compose/send step and gate the `logSend` call on it. Do NOT build web-style chrome for this.
+This is a genuine content difference, not styling — flagged for a decision, not assumed to need fixing.
+
+### Revised sequencing
+1. ~~1a + 1b + 1c~~ **DONE on iOS.**
+2. **1d** — native `.confirmationDialog` questionnaire prompt (the remaining #1 work).
+3. **2 + 3** — metric form UI (unchanged from above; verify still open before starting).
+4. **Item 4** — skip-logging toggle: Chris to decide; default is leave-it.
