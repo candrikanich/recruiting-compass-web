@@ -7,12 +7,34 @@ import { getPublicRoutes } from "~/types/routes";
 // an infinite loop. "/" is excluded: it should still redirect to /admin.
 const ADMIN_HOST_PUBLIC_PATHS = getPublicRoutes().filter((p) => p !== "/");
 
+/**
+ * A loopback host (local dev / E2E) serves the admin area and the main app from
+ * ONE origin — there is no separate admin subdomain to bounce to. Detect it so
+ * we can skip all cross-host redirects there.
+ */
+function isLoopbackHost(host: string): boolean {
+  return (
+    host === "localhost" ||
+    host.startsWith("localhost:") ||
+    host === "127.0.0.1" ||
+    host.startsWith("127.0.0.1:") ||
+    host.startsWith("[::1]")
+  );
+}
+
 export function resolveHostRedirect(
   host: string,
   path: string,
   adminHost: string,
 ): { type: "external"; to: string } | { type: "internal"; to: string } | null {
   if (host === "") return null;
+
+  // On a loopback host, admin and main share the origin: never cross-redirect.
+  // Without this, /admin bounces off-origin, and if adminHost is configured to
+  // the loopback host every non-admin page redirects to /admin and never
+  // renders (the E2E-suite-wide blank-page failure). Prod hosts are real
+  // domains, so this branch never triggers there.
+  if (isLoopbackHost(host)) return null;
   const onAdminHost = host === adminHost;
   const isAdminPath = path === "/admin" || path.startsWith("/admin/");
 

@@ -51,7 +51,6 @@ jobs:
           # so the test project's URL/anon must be present here, not just at run.
           NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.TEST_SUPABASE_URL }}
           NUXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.TEST_SUPABASE_ANON_KEY }}
-          NUXT_PUBLIC_ADMIN_HOST: localhost:3003
 
       - name: Run E2E suite with soak specs enabled
         run: npm run test:e2e
@@ -62,7 +61,7 @@ jobs:
           NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.TEST_SUPABASE_URL }}
           NUXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.TEST_SUPABASE_ANON_KEY }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.TEST_SUPABASE_SERVICE_ROLE_KEY }}
-          NUXT_PUBLIC_ADMIN_HOST: localhost:3003
+          # No NUXT_PUBLIC_ADMIN_HOST — see e2e.yml (loopback carve-out).
           NUXT_ADMIN_TOKEN_SECRET: ${{ secrets.NUXT_ADMIN_TOKEN_SECRET }}
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
 

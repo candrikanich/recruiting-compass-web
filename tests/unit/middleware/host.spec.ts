@@ -56,4 +56,30 @@ describe("resolveHostRedirect", () => {
       to: "/admin",
     });
   });
+
+  // Loopback carve-out: local dev / E2E serve admin and main from ONE origin
+  // (localhost). There is no separate admin subdomain to redirect to, so we must
+  // never cross-redirect — otherwise /admin bounces off-origin and, when
+  // adminHost is (mis)configured to the loopback host, every non-admin page
+  // redirects to /admin and never renders.
+  it("serves /admin in place on a loopback host (no external redirect)", () => {
+    expect(resolveHostRedirect("localhost:3003", "/admin", admin)).toBeNull();
+    expect(
+      resolveHostRedirect("localhost:3003", "/admin/users", admin),
+    ).toBeNull();
+  });
+
+  it("serves non-admin pages in place on a loopback host (no /admin redirect)", () => {
+    expect(resolveHostRedirect("localhost:3003", "/dashboard", admin)).toBeNull();
+    expect(resolveHostRedirect("127.0.0.1:3003", "/schools", admin)).toBeNull();
+  });
+
+  it("does not cross-redirect even if adminHost is set to the loopback host", () => {
+    expect(
+      resolveHostRedirect("localhost:3003", "/dashboard", "localhost:3003"),
+    ).toBeNull();
+    expect(
+      resolveHostRedirect("localhost:3003", "/admin", "localhost:3003"),
+    ).toBeNull();
+  });
 });
