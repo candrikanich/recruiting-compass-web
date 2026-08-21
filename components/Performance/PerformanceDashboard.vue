@@ -141,7 +141,7 @@
             </p>
           </div>
           <p class="text-lg font-semibold text-slate-900">
-            {{ metric.value }}
+            {{ formatMetricValue(metric.metric_type, metric.value) }}
             <span class="text-xs text-slate-600">{{
               getUnit(metric.metric_type)
             }}</span>
@@ -157,6 +157,7 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
+import { formatMetricValue } from "~/utils/metricFormat";
 import { usePerformanceAnalytics } from "~/composables/usePerformanceAnalytics";
 import type { Performance } from "~/types/models";
 import MetricSummaryRow from "./MetricSummaryRow.vue";
@@ -220,7 +221,7 @@ const getMetricStats = (type: string) => {
   if (typeMetrics.length === 0) return "—";
 
   const latest = typeMetrics[typeMetrics.length - 1]?.value || 0;
-  return latest.toFixed(1);
+  return formatMetricValue(type, latest);
 };
 
 const getMetricLabel = (type: string): string => {

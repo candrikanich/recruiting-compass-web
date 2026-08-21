@@ -123,10 +123,10 @@
               </span>
             </div>
             <p class="text-sm text-gray-600 mb-3">
-              Last {{ trend.count }} records: {{ trend.min }} to {{ trend.max }}
+              Last {{ trend.count }} records: {{ formatMetricValue(trend.type, trend.min) }} to {{ formatMetricValue(trend.type, trend.max) }}
               {{ trend.unit }}
               <span v-if="trend.average" class="text-gray-700">
-                (avg: {{ trend.average }})</span
+                (avg: {{ formatMetricValue(trend.type, trend.average) }})</span
               >
             </p>
             <!-- Simple bar chart -->
@@ -136,7 +136,7 @@
                 :key="idx"
                 class="flex-1 bg-blue-500 rounded-t hover:bg-blue-600 transition"
                 :style="{ height: `${(value / trend.max) * 100}%` }"
-                :title="`${value}`"
+                :title="formatMetricValue(trend.type, value)"
               />
             </div>
           </div>
@@ -157,7 +157,7 @@
             {{ getMetricLabel(key) }}
           </p>
           <div class="flex items-baseline gap-2">
-            <p class="text-3xl font-bold text-blue-600">{{ metric.value }}</p>
+            <p class="text-3xl font-bold text-blue-600">{{ formatMetricValue(metric.metric_type, metric.value) }}</p>
             <p class="text-gray-500">{{ metric.unit }}</p>
           </div>
           <p class="text-xs text-gray-500 mt-2">
@@ -255,7 +255,7 @@
             <div>
               <p class="text-xs text-gray-600">Value</p>
               <p class="font-bold text-gray-900">
-                {{ metric.value }} {{ metric.unit }}
+                {{ formatMetricValue(metric.metric_type, metric.value) }} {{ metric.unit }}
               </p>
             </div>
             <div v-if="metric.verified">
@@ -457,6 +457,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, reactive, computed, defineAsyncComponent } from "vue";
+import { formatMetricValue } from "~/utils/metricFormat";
 import { usePerformance } from "~/composables/usePerformance";
 import { useAppToast } from "~/composables/useAppToast";
 import { createClientLogger } from "~/utils/logger";
@@ -570,9 +571,7 @@ const metricTrends = computed(() => {
       const values = sorted.map((m) => m.value).slice(-10); // Last 10 records
       const min = Math.min(...values);
       const max = Math.max(...values);
-      const avg = (values.reduce((a, b) => a + b, 0) / values.length).toFixed(
-        2,
-      );
+      const avg = values.reduce((a, b) => a + b, 0) / values.length;
 
       // Determine trend (comparing first 3 to last 3)
       const first3 = values.slice(0, 3);

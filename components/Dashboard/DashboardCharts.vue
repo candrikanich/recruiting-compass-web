@@ -135,7 +135,7 @@
               class="text-xl font-bold"
               :class="getMetricColor(metric.metric_type)"
             >
-              {{ metric.value }}
+              {{ formatMetricValue(metric.metric_type, metric.value) }}
               <span v-if="metric.unit" class="text-slate-500 text-sm ml-1">{{
                 metric.unit
               }}</span>
@@ -175,6 +175,7 @@
 
 <script setup lang="ts">
 import ParentGuidanceCard from "~/components/Dashboard/ParentGuidanceCard.vue";
+import { formatMetricValue } from "~/utils/metricFormat";
 import RecruitingCalendar from "~/components/Dashboard/RecruitingCalendar.vue";
 import InteractionTrendChart from "~/components/Dashboard/InteractionTrendChart.vue";
 import SchoolInterestChart from "~/components/Dashboard/SchoolInterestChart.vue";
