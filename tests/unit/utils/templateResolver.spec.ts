@@ -185,6 +185,20 @@ describe("carryingTool", () => {
     expect(out).toBe("6.71 sixty yard");
   });
 
+  it("uses the registry label for a known metric_type", () => {
+    const out = carryingTool([
+      { metric_type: "batting_avg", display_value: ".410", is_primary: true },
+    ]);
+    expect(out).toBe(".410 Batting Average");
+  });
+
+  it("falls back to a humanized label for an unregistered metric_type", () => {
+    const out = carryingTool([
+      { metric_type: "arm_strength", display_value: "80", is_primary: true },
+    ]);
+    expect(out).toBe("80 arm strength");
+  });
+
   it("returns null when no metric is primary", () => {
     expect(
       carryingTool([

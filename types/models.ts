@@ -210,15 +210,8 @@ export interface PerformanceMetric {
   id: string;
   user_id?: string;
   recorded_date: string;
-  metric_type:
-    | "velocity"
-    | "exit_velo"
-    | "sixty_time"
-    | "pop_time"
-    | "batting_avg"
-    | "era"
-    | "strikeouts"
-    | "other";
+  /** Sport-agnostic metric key — see utils/metrics/canonical.ts for the vocabulary. */
+  metric_type: string;
   value: number;
   unit: string;
   event_id?: string | null;

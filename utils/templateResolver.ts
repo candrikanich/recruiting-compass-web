@@ -19,6 +19,7 @@
  */
 
 import { formatMetricValue } from "./metricFormat";
+import { getKnownMetricDef } from "./metrics/canonical";
 
 export type Row = Record<string, unknown>;
 
@@ -111,8 +112,11 @@ const MONTHS = [
   "Dec",
 ];
 
-const humanizeMetricLabel = (metricType?: string | null): string =>
-  (metricType ?? "").replace(/_/g, " ").trim();
+const humanizeMetricLabel = (metricType?: string | null): string => {
+  const def = getKnownMetricDef(metricType);
+  if (def) return def.label;
+  return (metricType ?? "").replace(/_/g, " ").trim();
+};
 
 const metricDisplay = (m: MetricRow): string => {
   if (m.display_value && m.display_value.trim()) return m.display_value.trim();
