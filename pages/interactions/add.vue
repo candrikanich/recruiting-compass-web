@@ -4,7 +4,8 @@ import { navigateTo } from "#app";
 import { useInteractions } from "~/composables/useInteractions";
 import { useUserStore } from "~/stores/user";
 import { useAppToast } from "~/composables/useAppToast";
-import type { Interaction } from "~/types/models";
+import { useSupabase } from "~/composables/useSupabase";
+import type { Interaction, School } from "~/types/models";
 import { createClientLogger } from "~/utils/logger";
 
 definePageMeta({
@@ -38,7 +39,29 @@ const handleSubmit = async (formData: any) => {
       attachments: [], // Will be populated by createInteraction if files are uploaded
     };
 
+    // A DB trigger auto-advances a pre-contact school to `contacted` when an
+    // interaction is logged. Look up the school's pre-contact state (no School
+    // object is in scope here) so we can confirm the advance afterward — matches
+    // the iOS manual-log flow.
+    let wasPreContact = false;
+    let advancedSchoolName = "";
+    if (formData.school_id) {
+      const supabase = useSupabase();
+      const { data: schoolRow } = await supabase
+        .from("schools")
+        .select("status, name")
+        .eq("id", formData.school_id)
+        .maybeSingle();
+      const school = schoolRow as Pick<School, "status" | "name"> | null;
+      wasPreContact = school?.status === "researching";
+      advancedSchoolName = school?.name ?? "";
+    }
+
     await createInteraction(interactionData);
+
+    if (wasPreContact) {
+      showToast(`${advancedSchoolName} moved to Contacted`, "success");
+    }
 
     await navigateTo("/interactions");
   } catch (err) {
