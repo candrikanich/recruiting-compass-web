@@ -10,6 +10,7 @@ import type { School } from "~/types";
 import type { HomeLocation } from "~/types/models";
 import type { FilterConfig, FilterValue } from "~/types/filters";
 import { extractStateFromLocation } from "~/utils/locationParser";
+import { SCHOOL_STATUS_OPTIONS } from "~/utils/schoolStatusOptions";
 
 export function createSchoolFilterConfigs(
   stateOptions: ComputedRef<{ value: string; label: string }[]>,
@@ -52,13 +53,10 @@ export function createSchoolFilterConfigs(
       type: "select",
       field: "status",
       label: "Status",
-      options: [
-        { value: "researching", label: "Researching" },
-        { value: "contacted", label: "Contacted" },
-        { value: "interested", label: "Interested" },
-        { value: "offer_received", label: "Offer Received" },
-        { value: "committed", label: "Committed" },
-      ],
+      options: SCHOOL_STATUS_OPTIONS.map((option) => ({
+        value: option.value,
+        label: option.label,
+      })),
     },
     { type: "boolean", field: "is_favorite", label: "Favorites Only" },
     {

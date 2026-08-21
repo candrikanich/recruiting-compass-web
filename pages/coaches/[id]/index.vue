@@ -82,24 +82,27 @@
       </div>
     </main>
 
-    <!-- Communication Panel Modal -->
+    <!-- Communication Panel Drawer (right-anchored: keeps the coach page in view) -->
     <Teleport to="body">
       <Transition name="fade">
         <div
           v-if="showPanel && coach"
-          class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+          class="fixed inset-0 bg-black/40 z-50"
+          @click.self="handleCloseCommunicationPanel"
           @keydown.escape="handleCloseCommunicationPanel"
         >
-          <div
-            ref="communicationDialogRef"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="communication-panel-title"
-            class="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
-            @click.stop
-          >
+          <Transition name="drawer">
             <div
-              class="sticky top-0 bg-white border-b border-slate-200 p-4 flex items-center justify-between rounded-t-xl"
+              v-if="showPanel && coach"
+              ref="communicationDialogRef"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="communication-panel-title"
+              class="absolute right-0 top-0 h-full w-full max-w-lg overflow-y-auto border-l border-slate-200 bg-white shadow-2xl"
+              @click.stop
+            >
+            <div
+              class="sticky top-0 bg-white border-b border-slate-200 p-4 flex items-center justify-between"
             >
               <h2
                 id="communication-panel-title"
@@ -125,7 +128,8 @@
                 @interaction-logged="handleCoachInteractionLogged"
               />
             </div>
-          </div>
+            </div>
+          </Transition>
         </div>
       </Transition>
     </Teleport>
@@ -371,5 +375,15 @@ onMounted(async () => {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+.drawer-enter-active,
+.drawer-leave-active {
+  transition: transform 0.25s ease;
+}
+
+.drawer-enter-from,
+.drawer-leave-to {
+  transform: translateX(100%);
 }
 </style>

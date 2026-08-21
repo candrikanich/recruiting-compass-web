@@ -29,7 +29,7 @@ describe("InteractionFilters", () => {
       expect(
         wrapper.find('input[placeholder="Subject, content..."]').exists(),
       ).toBe(true);
-      expect(wrapper.findAll("select")).toHaveLength(4); // Type, Direction, Sentiment, Time Period
+      expect(wrapper.findAll("select")).toHaveLength(3); // Type, Sentiment, Time Period (Direction is a segmented control)
       expect(wrapper.text()).toContain("Search");
       expect(wrapper.text()).toContain("Type");
       expect(wrapper.text()).toContain("Direction");
@@ -40,7 +40,7 @@ describe("InteractionFilters", () => {
     it("renders logged by filter when parent", () => {
       const wrapper = createWrapper({ isParent: true });
 
-      expect(wrapper.findAll("select")).toHaveLength(5); // Type, Logged By, Direction, Sentiment, Time Period
+      expect(wrapper.findAll("select")).toHaveLength(4); // Type, Logged By, Sentiment, Time Period (Direction is a segmented control)
       expect(wrapper.text()).toContain("Logged By");
     });
 
@@ -86,16 +86,20 @@ describe("InteractionFilters", () => {
 
     it("renders all direction options", () => {
       const wrapper = createWrapper();
-      const directionSelect = wrapper.findAll("select")[1];
+      const values = wrapper
+        .findAll('input[type="radio"]')
+        .map((r) => r.attributes("value"));
 
-      expect(directionSelect.html()).toContain("-- All --");
-      expect(directionSelect.html()).toContain("Outbound");
-      expect(directionSelect.html()).toContain("Inbound");
+      expect(values).toContain("");
+      expect(values).toContain("outbound");
+      expect(values).toContain("inbound");
+      expect(wrapper.text()).toContain("Outbound");
+      expect(wrapper.text()).toContain("Inbound");
     });
 
     it("renders all sentiment options", () => {
       const wrapper = createWrapper();
-      const sentimentSelect = wrapper.findAll("select")[2];
+      const sentimentSelect = wrapper.find("#filter-sentiment");
 
       expect(sentimentSelect.html()).toContain("-- All --");
       expect(sentimentSelect.html()).toContain("Very Positive");
@@ -106,7 +110,7 @@ describe("InteractionFilters", () => {
 
     it("renders all time period options", () => {
       const wrapper = createWrapper();
-      const timePeriodSelect = wrapper.findAll("select")[3];
+      const timePeriodSelect = wrapper.find("#filter-time-period");
 
       expect(timePeriodSelect.html()).toContain("-- All Time --");
       expect(timePeriodSelect.html()).toContain("Last 7 days");
@@ -212,17 +216,16 @@ describe("InteractionFilters", () => {
       const filterValues = new Map([["direction", "inbound"]]);
       const wrapper = createWrapper({ filterValues });
 
-      const directionSelect = wrapper.findAll("select")[1];
-      expect((directionSelect.element as HTMLSelectElement).value).toBe(
-        "inbound",
-      );
+      const checked = wrapper.find('input[type="radio"]:checked')
+        .element as HTMLInputElement;
+      expect(checked.value).toBe("inbound");
     });
 
     it("displays current sentiment value", () => {
       const filterValues = new Map([["sentiment", "positive"]]);
       const wrapper = createWrapper({ filterValues });
 
-      const sentimentSelect = wrapper.findAll("select")[2];
+      const sentimentSelect = wrapper.find("#filter-sentiment");
       expect((sentimentSelect.element as HTMLSelectElement).value).toBe(
         "positive",
       );
@@ -232,7 +235,7 @@ describe("InteractionFilters", () => {
       const filterValues = new Map([["timePeriod", "30"]]);
       const wrapper = createWrapper({ filterValues });
 
-      const timePeriodSelect = wrapper.findAll("select")[3];
+      const timePeriodSelect = wrapper.find("#filter-time-period");
       expect((timePeriodSelect.element as HTMLSelectElement).value).toBe("30");
     });
 
@@ -254,7 +257,7 @@ describe("InteractionFilters", () => {
         ],
       });
 
-      const loggedBySelect = wrapper.findAll("select")[1];
+      const loggedBySelect = wrapper.find("#filter-logged-by");
       expect((loggedBySelect.element as HTMLSelectElement).value).toBe(
         "athlete-1",
       );
@@ -302,9 +305,11 @@ describe("InteractionFilters", () => {
 
     it("emits update:filter when direction changes", async () => {
       const wrapper = createWrapper();
-      const directionSelect = wrapper.findAll("select")[1];
+      const outbound = wrapper
+        .findAll('input[type="radio"]')
+        .find((r) => r.attributes("value") === "outbound")!;
 
-      await directionSelect.setValue("outbound");
+      await outbound.setValue();
 
       expect(wrapper.emitted("update:filter")).toBeTruthy();
       expect(wrapper.emitted("update:filter")![0]).toEqual([
@@ -314,7 +319,7 @@ describe("InteractionFilters", () => {
 
     it("emits update:filter when sentiment changes", async () => {
       const wrapper = createWrapper();
-      const sentimentSelect = wrapper.findAll("select")[2];
+      const sentimentSelect = wrapper.find("#filter-sentiment");
 
       await sentimentSelect.setValue("positive");
 
@@ -326,7 +331,7 @@ describe("InteractionFilters", () => {
 
     it("emits update:filter when time period changes", async () => {
       const wrapper = createWrapper();
-      const timePeriodSelect = wrapper.findAll("select")[3];
+      const timePeriodSelect = wrapper.find("#filter-time-period");
 
       await timePeriodSelect.setValue("30");
 
@@ -352,7 +357,7 @@ describe("InteractionFilters", () => {
         ],
       });
 
-      const loggedBySelect = wrapper.findAll("select")[1];
+      const loggedBySelect = wrapper.find("#filter-logged-by");
       await loggedBySelect.setValue("athlete-1");
 
       expect(wrapper.emitted("update:filter")).toBeTruthy();
@@ -373,8 +378,10 @@ describe("InteractionFilters", () => {
       expect(wrapper.html()).toContain('id="filter-type"');
       expect(wrapper.html()).toContain('for="filter-logged-by"');
       expect(wrapper.html()).toContain('id="filter-logged-by"');
-      expect(wrapper.html()).toContain('for="filter-direction"');
-      expect(wrapper.html()).toContain('id="filter-direction"');
+      // Direction is a segmented control: labelled by its <legend>, not a for= label.
+      expect(
+        wrapper.findAll("legend").some((l) => l.text().includes("Direction")),
+      ).toBe(true);
       expect(wrapper.html()).toContain('for="filter-sentiment"');
       expect(wrapper.html()).toContain('id="filter-sentiment"');
       expect(wrapper.html()).toContain('for="filter-time-period"');

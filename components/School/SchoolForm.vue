@@ -215,6 +215,7 @@ import { z } from "zod";
 import type { CollegeDataResult } from "~/composables/useCollegeData";
 import type { CollegeSearchResult } from "~/types/api";
 import FormErrorSummary from "~/components/Validation/FormErrorSummary.vue";
+import { SCHOOL_STATUS_OPTIONS } from "~/utils/schoolStatusOptions";
 
 // Division options
 const divisionOptions = computed(() => [
@@ -224,15 +225,13 @@ const divisionOptions = computed(() => [
   { value: "D3", label: "Division 3 (D3)" },
 ]);
 
-// Status options
-const statusOptions = computed(() => [
-  { value: "researching", label: "Researching" },
-  { value: "contacted", label: "Contacted" },
-  { value: "interested", label: "Interested" },
-  { value: "offer_received", label: "Offer Received" },
-  { value: "declined", label: "Declined" },
-  { value: "committed", label: "Committed" },
-]);
+// Status options — derived from the canonical funnel (single source of truth).
+const statusOptions = computed(() =>
+  SCHOOL_STATUS_OPTIONS.map((option) => ({
+    value: option.value,
+    label: option.label,
+  })),
+);
 
 const props = defineProps<{
   loading: boolean;

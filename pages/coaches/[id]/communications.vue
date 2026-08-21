@@ -49,19 +49,16 @@
           </div>
 
           <!-- Direction Filter -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2"
-              >Direction</label
-            >
-            <select
-              v-model="selectedDirection"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">Both</option>
-              <option value="outbound">Sent by Us</option>
-              <option value="inbound">Received from Coach</option>
-            </select>
-          </div>
+          <DesignSystemFormSegmentedControl
+            v-model="selectedDirection"
+            label="Direction"
+            size="sm"
+            :options="[
+              { value: '', label: 'Both' },
+              { value: 'outbound', label: 'Sent by Us' },
+              { value: 'inbound', label: 'Received from Coach' },
+            ]"
+          />
 
           <!-- Date Range -->
           <div>

@@ -14,7 +14,9 @@
         class="text-center p-4 rounded-lg border border-slate-200"
       >
         <p class="text-2xl mb-1">{{ getStatusEmoji(status.status) }}</p>
-        <p class="text-xs capitalize text-slate-600">{{ status.status }}</p>
+        <p class="text-xs text-slate-600">
+          {{ getSchoolStatusLabel(status.status) }}
+        </p>
         <p class="text-2xl font-bold mt-1 text-slate-900">{{ status.count }}</p>
       </div>
     </div>
@@ -28,7 +30,7 @@
       >
         <h3 class="font-semibold mb-3 flex items-center gap-2 text-slate-900">
           <span>{{ getStatusEmoji(status.status) }}</span>
-          <span class="capitalize">{{ status.status }}</span>
+          <span>{{ getSchoolStatusLabel(status.status) }}</span>
           <span class="text-xs font-normal text-slate-600"
             >({{ status.schools.length }})</span
           >
@@ -65,6 +67,10 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import type { School } from "~/types/models";
+import {
+  SCHOOL_STATUS_OPTIONS,
+  getSchoolStatusLabel,
+} from "~/utils/schoolStatusOptions";
 
 interface Props {
   schools: School[];
@@ -72,44 +78,30 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const statusCounts = computed(() => {
-  const statuses = [
-    "researching",
-    "contacted",
-    "interested",
-    "offer_received",
-    "declined",
-    "committed",
-  ];
-  return statuses.map((status) => ({
+const CANONICAL_STATUSES = SCHOOL_STATUS_OPTIONS.map((option) => option.value);
+
+const statusCounts = computed(() =>
+  CANONICAL_STATUSES.map((status) => ({
     status,
     count: props.schools.filter((s) => s.status === status).length,
-  }));
-});
+  })),
+);
 
-const schoolsByStatus = computed(() => {
-  const statuses = [
-    "researching",
-    "contacted",
-    "interested",
-    "offer_received",
-    "declined",
-    "committed",
-  ];
-  return statuses.map((status) => ({
+const schoolsByStatus = computed(() =>
+  CANONICAL_STATUSES.map((status) => ({
     status,
     schools: props.schools.filter((s) => s.status === status),
-  }));
-});
+  })),
+);
 
 const getStatusEmoji = (status: string): string => {
   const emojis: Record<string, string> = {
     researching: "🔍",
     contacted: "📞",
-    interested: "✨",
+    visiting: "🏫",
     offer_received: "🎉",
-    declined: "❌",
     committed: "✅",
+    not_pursuing: "🚫",
   };
   return emojis[status] || "📌";
 };

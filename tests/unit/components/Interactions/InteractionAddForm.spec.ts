@@ -36,7 +36,13 @@ describe("InteractionAddForm Component", () => {
       });
 
       expect(wrapper.find('select[id="type"]').exists()).toBe(true);
-      expect(wrapper.find('select[id="direction"]').exists()).toBe(true);
+      // Direction is a segmented control (radios), not a <select>.
+      expect(
+        wrapper.findAll('input[type="radio"]').some((r) => {
+          const v = r.attributes("value");
+          return v === "outbound" || v === "inbound";
+        }),
+      ).toBe(true);
       expect(wrapper.find('textarea[id="content"]').exists()).toBe(true);
       expect(wrapper.find('input[id="occurred_at"]').exists()).toBe(true);
     });
@@ -114,8 +120,13 @@ describe("InteractionAddForm Component", () => {
         props: { coaches: mockCoaches, loading: false },
       });
 
-      const directionSelect = wrapper.find('select[id="direction"]');
-      expect(directionSelect.attributes("required")).toBeDefined();
+      const directionRadios = wrapper
+        .findAll('input[type="radio"]')
+        .filter((r) => ["outbound", "inbound"].includes(r.attributes("value")!));
+      expect(directionRadios.length).toBeGreaterThan(0);
+      expect(
+        directionRadios.every((r) => r.attributes("required") != null),
+      ).toBe(true);
     });
 
     it("should require content field", async () => {
@@ -197,7 +208,10 @@ describe("InteractionAddForm Component", () => {
 
       // Fill form
       await wrapper.find('select[id="type"]').setValue("email");
-      await wrapper.find('select[id="direction"]').setValue("outbound");
+      await wrapper
+        .findAll('input[type="radio"]')
+        .find((r) => r.attributes("value") === "outbound")!
+        .setValue();
       await wrapper.find('textarea[id="content"]').setValue("Test content");
       await wrapper
         .find('input[id="occurred_at"]')

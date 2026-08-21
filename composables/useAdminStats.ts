@@ -1,5 +1,6 @@
 import { ref } from "vue";
 import { useAdminAuthHeaders } from "~/composables/useAdminAuthHeaders";
+import type { BreakdownSlice, WeekBucket } from "~/utils/adminBreakdown";
 
 interface AdminStats {
   users: number;
@@ -7,6 +8,10 @@ interface AdminStats {
   coaches: number;
   interactions: number;
   family_units: number;
+  byDivision: BreakdownSlice[];
+  byCoachRole: BreakdownSlice[];
+  byUserRole: BreakdownSlice[];
+  newUsersWeekly: WeekBucket[];
 }
 
 export function useAdminStats() {

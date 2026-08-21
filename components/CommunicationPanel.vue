@@ -128,21 +128,24 @@
       </div>
     </div>
 
-    <!-- Email Composer Modal -->
+    <!-- Email Composer Drawer (right-anchored: keeps coach/school context visible) -->
     <Teleport to="body">
       <Transition name="fade">
         <div
           v-if="showEmailComposer"
-          class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+          class="fixed inset-0 bg-black/40 z-50"
+          @click.self="handleCloseEmail"
           @keydown.escape="handleCloseEmail"
         >
-          <div
-            ref="emailDialogRef"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="email-modal-title"
-            class="bg-white rounded-xl shadow-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-slate-200"
-          >
+          <Transition name="drawer">
+            <div
+              v-if="showEmailComposer"
+              ref="emailDialogRef"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="email-modal-title"
+              class="absolute right-0 top-0 h-full w-full max-w-lg overflow-y-auto border-l border-slate-200 bg-white shadow-2xl"
+            >
             <div
               class="p-6 border-b border-slate-200 flex items-center justify-between"
             >
@@ -342,7 +345,8 @@
                 Cancel
               </button>
             </div>
-          </div>
+            </div>
+          </Transition>
         </div>
       </Transition>
     </Teleport>
@@ -1296,5 +1300,15 @@ watch(showTemplateManager, async (isOpen) => {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+.drawer-enter-active,
+.drawer-leave-active {
+  transition: transform 0.25s ease;
+}
+
+.drawer-enter-from,
+.drawer-leave-to {
+  transform: translateX(100%);
 }
 </style>

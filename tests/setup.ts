@@ -3,6 +3,7 @@ import { nextTick, ref } from "vue";
 import { createPinia, setActivePinia } from "pinia";
 import { config } from "@vue/test-utils";
 import * as axeMatchers from "vitest-axe/matchers";
+import DesignSystemFormSegmentedControl from "~/components/DesignSystem/Form/FormSegmentedControl.vue";
 expect.extend(axeMatchers);
 
 // Set up environment for Pinia
@@ -253,6 +254,19 @@ config.global.stubs = {
     template:
       '<span :class="name" :data-icon="name" aria-hidden="true"><slot /></span>',
   },
+  DesignSystemFieldError: {
+    name: "DesignSystemFieldError",
+    props: ["error", "id"],
+    template: '<div :id="id" role="alert">{{ error }}</div>',
+  },
+};
+
+// Register real DesignSystem primitives that unit tests render directly.
+// Vitest has no Nuxt auto-import, so consumers of these components would
+// otherwise render an unresolved custom element.
+config.global.components = {
+  ...(config.global.components ?? {}),
+  DesignSystemFormSegmentedControl,
 };
 
 // Initialize Pinia for tests

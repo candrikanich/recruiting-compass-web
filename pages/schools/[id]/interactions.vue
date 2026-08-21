@@ -190,6 +190,7 @@ import { useInteractions } from "~/composables/useInteractions";
 import { useInteractionReminders } from "~/composables/useInteractionReminders";
 import { useCoaches } from "~/composables/useCoaches";
 import { useSchools } from "~/composables/useSchools";
+import { useAppToast } from "~/composables/useAppToast";
 import type { Interaction, School } from "~/types/models";
 import { useLiveRegion } from "~/composables/useLiveRegion";
 import { parseLocalDateOnly } from "~/utils/localDate";
@@ -211,6 +212,7 @@ const {
 const { createReminder } = useInteractionReminders();
 const { coaches, fetchCoaches } = useCoaches();
 const { getSchool } = useSchools();
+const { showToast } = useAppToast();
 
 const { announcement, announce, liveRegionAttrs } = useLiveRegion();
 const isDeleteDialogOpen = ref(false);
@@ -315,6 +317,12 @@ const handleAddInteraction = async (data: InteractionSubmitData) => {
     const occurredAtDate = new Date(data.occurred_at);
     const isoDatetime = occurredAtDate.toISOString();
 
+    // A DB trigger auto-advances a pre-contact school to `contacted` when an
+    // interaction is logged. Capture the pre-contact state before the create so
+    // we can confirm the advance to the user afterward (matches iOS manual-log).
+    const wasPreContact = schoolData.value?.status === "researching";
+    const advancedSchoolName = schoolName.value;
+
     const createdInteraction = await createInteraction(
       {
         school_id: id,
@@ -358,6 +366,10 @@ const handleAddInteraction = async (data: InteractionSubmitData) => {
 
     showAddForm.value = false;
     await fetchInteractions({ schoolId: id });
+
+    if (wasPreContact) {
+      showToast(`${advancedSchoolName} moved to Contacted`, "success");
+    }
   } catch (err) {
     logger.error("Failed to log interaction", err);
     const errorMsg =

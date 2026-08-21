@@ -51,10 +51,10 @@
           {{ school.division }}
         </span>
         <span
-          :class="getStatusBadgeClass(school.status)"
+          :class="getSchoolStatusBadgeClass(school.status)"
           class="px-2 py-0.5 text-xs font-medium rounded-full"
         >
-          {{ formatSchoolStatus(school.status) }}
+          {{ getSchoolStatusLabel(school.status) }}
         </span>
         <span
           v-if="overall"
@@ -108,11 +108,11 @@ import { computed } from "vue";
 import type { School } from "~/types";
 import SchoolLogo from "~/components/School/SchoolLogo.vue";
 import { getCarnegieSize } from "~/utils/schoolSize";
+import { getSizeBadgeClass } from "~/utils/schoolBadges";
 import {
-  getStatusBadgeClass,
-  getSizeBadgeClass,
-  formatSchoolStatus,
-} from "~/utils/schoolBadges";
+  getSchoolStatusBadgeClass,
+  getSchoolStatusLabel,
+} from "~/utils/schoolStatusOptions";
 import type { OverallPersonalFit } from "~/utils/fitScoreCalculation";
 
 const props = defineProps<{

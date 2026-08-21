@@ -4,7 +4,7 @@ import Chart from "chart.js/auto";
 import type { ChartData, ChartOptions } from "chart.js";
 
 const props = defineProps<{
-  type: "line" | "bar" | "sparkline";
+  type: "line" | "bar" | "sparkline" | "doughnut";
   data: ChartData;
   options?: ChartOptions;
 }>();

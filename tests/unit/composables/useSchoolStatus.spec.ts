@@ -23,6 +23,7 @@ const mockQuery = {
 
 const mockSupabase = {
   from: vi.fn().mockReturnValue(mockQuery),
+  rpc: vi.fn(),
 };
 
 vi.mock("~/composables/useSupabase", () => ({
@@ -85,6 +86,7 @@ describe("useSchoolStatus", () => {
     mockQuery.eq.mockReturnThis();
     mockQuery.update.mockReturnThis();
     mockQuery.insert.mockReturnThis();
+    mockSupabase.rpc.mockReset();
   });
 
   it("exports updateStatus, loading, and error", async () => {
@@ -249,6 +251,112 @@ describe("useSchoolStatus", () => {
       await expect(updateStatus(SCHOOL_ID, "contacted")).rejects.toThrow(
         "User not authenticated",
       );
+    });
+  });
+
+  describe("updateStatus — reactivation (not_pursuing → researching)", () => {
+    it("calls the reactivate_school RPC and returns the restored status", async () => {
+      const { useSchoolStatus } = await import("~/composables/useSchoolStatus");
+      const { updateStatus } = useSchoolStatus();
+
+      // Only the fetch .single() runs on the reactivation path.
+      mockQuery.single.mockResolvedValueOnce({
+        data: makeSchool("not_pursuing"),
+        error: null,
+      });
+      mockSupabase.rpc.mockResolvedValueOnce({ data: "visiting", error: null });
+
+      const result = await updateStatus(SCHOOL_ID, "researching");
+
+      expect(mockSupabase.rpc).toHaveBeenCalledWith("reactivate_school", {
+        p_school_id: SCHOOL_ID,
+        p_actor: USER_ID,
+      });
+      // Restored status from the RPC, not the requested "researching".
+      expect(result.status).toBe("visiting");
+    });
+
+    it("does NOT run the normal schools update or history insert on reactivation", async () => {
+      const { useSchoolStatus } = await import("~/composables/useSchoolStatus");
+      const { updateStatus } = useSchoolStatus();
+
+      mockQuery.single.mockResolvedValueOnce({
+        data: makeSchool("not_pursuing"),
+        error: null,
+      });
+      mockSupabase.rpc.mockResolvedValueOnce({
+        data: "researching",
+        error: null,
+      });
+
+      await updateStatus(SCHOOL_ID, "researching");
+
+      // The RPC handles both the schools update and the history insert.
+      expect(mockQuery.update).not.toHaveBeenCalled();
+      expect(mockQuery.insert).not.toHaveBeenCalled();
+      const fromCalls = mockSupabase.from.mock.calls.map(
+        (c: unknown[]) => c[0],
+      );
+      expect(fromCalls).not.toContain("school_status_history");
+    });
+
+    it("throws and sets error.value when the RPC fails", async () => {
+      const { useSchoolStatus } = await import("~/composables/useSchoolStatus");
+      const { updateStatus, error } = useSchoolStatus();
+
+      mockQuery.single.mockResolvedValueOnce({
+        data: makeSchool("not_pursuing"),
+        error: null,
+      });
+      mockSupabase.rpc.mockResolvedValueOnce({
+        data: null,
+        error: new Error("RPC failed"),
+      });
+
+      await expect(updateStatus(SCHOOL_ID, "researching")).rejects.toThrow(
+        "RPC failed",
+      );
+      expect(error.value).toBe("RPC failed");
+    });
+
+    it("does NOT call the RPC on a normal transition (researching → contacted)", async () => {
+      const { useSchoolStatus } = await import("~/composables/useSchoolStatus");
+      const { updateStatus } = useSchoolStatus();
+
+      mockQuery.single
+        .mockResolvedValueOnce({
+          data: makeSchool("researching"),
+          error: null,
+        })
+        .mockResolvedValueOnce({ data: makeSchool("contacted"), error: null });
+      mockQuery.insert.mockResolvedValueOnce({ error: null });
+
+      await updateStatus(SCHOOL_ID, "contacted");
+
+      expect(mockSupabase.rpc).not.toHaveBeenCalled();
+      expect(mockQuery.update).toHaveBeenCalled();
+      const fromCalls = mockSupabase.from.mock.calls.map(
+        (c: unknown[]) => c[0],
+      );
+      expect(fromCalls).toContain("school_status_history");
+    });
+
+    it("does NOT call the RPC when leaving not_pursuing to a non-researching status", async () => {
+      const { useSchoolStatus } = await import("~/composables/useSchoolStatus");
+      const { updateStatus } = useSchoolStatus();
+
+      mockQuery.single
+        .mockResolvedValueOnce({
+          data: makeSchool("not_pursuing"),
+          error: null,
+        })
+        .mockResolvedValueOnce({ data: makeSchool("committed"), error: null });
+      mockQuery.insert.mockResolvedValueOnce({ error: null });
+
+      await updateStatus(SCHOOL_ID, "committed");
+
+      expect(mockSupabase.rpc).not.toHaveBeenCalled();
+      expect(mockQuery.update).toHaveBeenCalled();
     });
   });
 });

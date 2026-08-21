@@ -6,7 +6,7 @@ const mountSection = (
   props: Partial<{ status: string; statusUpdating: boolean }> = {},
 ) =>
   mount(SchoolRecruitingStatusSection, {
-    props: { status: "interested", statusUpdating: false, ...props },
+    props: { status: "researching", statusUpdating: false, ...props },
     global: { stubs: { UIcon: true } },
   });
 
@@ -15,33 +15,24 @@ describe("SchoolRecruitingStatusSection", () => {
     expect(mountSection().text()).toContain("Recruiting Status");
   });
 
-  it("renders all 10 parity options in the dropdown", () => {
-    const options = mountSection().find("select").findAll("option");
-    expect(options).toHaveLength(10);
-    expect(options[0].text()).toBe("Researching");
-    expect(options.at(-1)?.text()).toBe("Not Pursuing");
-  });
-
-  it("selects the current status", () => {
-    const select = mountSection({ status: "committed" }).find("select");
-    expect((select.element as HTMLSelectElement).value).toBe("committed");
-  });
-
-  it("emits update:status with the chosen value", async () => {
+  it("renders the 5-node progress stepper (not a dropdown)", () => {
     const wrapper = mountSection();
-    await wrapper.find("select").setValue("offer_received");
-    expect(wrapper.emitted("update:status")?.[0]).toEqual(["offer_received"]);
+    expect(wrapper.find("select").exists()).toBe(false);
+    expect(wrapper.findAll("ol button")).toHaveLength(5);
   });
 
-  it("disables the select while updating", () => {
-    const select = mountSection({ statusUpdating: true }).find("select");
-    expect((select.element as HTMLSelectElement).disabled).toBe(true);
+  it("re-emits update:status when a stepper node is chosen", async () => {
+    const wrapper = mountSection();
+    await wrapper.findAll("ol button")[1].trigger("click");
+    expect(wrapper.emitted("update:status")?.[0]).toEqual(["contacted"]);
   });
 
-  it("does not render a separate status badge (header pill owns that)", () => {
-    const wrapper = mountSection({ status: "committed" });
-    // only occurrence of the label is the selected <option>, no badge pill
-    const badge = wrapper.find("span.rounded-full");
-    expect(badge.exists()).toBe(false);
+  it("shows a spinner and disables nodes while updating", () => {
+    const wrapper = mountSection({ statusUpdating: true });
+    expect(wrapper.find("[role='status']").exists()).toBe(true);
+    const buttons = wrapper.findAll("ol button");
+    expect(buttons.every((b) => b.attributes("disabled") !== undefined)).toBe(
+      true,
+    );
   });
 });

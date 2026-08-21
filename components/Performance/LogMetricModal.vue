@@ -9,9 +9,19 @@ import {
 } from "vue";
 import { useEvents } from "~/composables/useEvents";
 import { usePerformance } from "~/composables/usePerformance";
+import { formatMetricValue } from "~/utils/metricFormat";
+import {
+  metricTypesForSport,
+  getMetricDef,
+  customMetricKey,
+  OTHER_KEY,
+} from "~/utils/metrics/canonical";
 
 interface Props {
   show: boolean;
+  /** Athlete's primary sport — drives the sport-filtered metric-type list.
+   *  Null/undefined falls back to the baseball vocabulary (no regression). */
+  primarySport?: string | null;
 }
 
 const props = defineProps<Props>();
@@ -26,19 +36,11 @@ const { events, loading: eventsLoading, fetchEvents } = useEvents();
 const { createMetric } = usePerformance();
 
 // Form state
-type MetricType =
-  | "velocity"
-  | "exit_velo"
-  | "sixty_time"
-  | "pop_time"
-  | "batting_avg"
-  | "era"
-  | "strikeouts"
-  | "other";
-const metricType = ref<MetricType | "">("");
+const metricType = ref<string>("");
 const value = ref<number | null>(null);
 const date = ref("");
 const unit = ref("");
+const otherName = ref("");
 const eventId = ref<string | null>(null);
 const verified = ref(false);
 const notes = ref("");
@@ -48,19 +50,15 @@ const error = ref<string | null>(null);
 // Refs for focus management
 const firstInputRef = ref<HTMLElement | null>(null);
 
-// Metric type options (per spec)
-const metricTypes = [
-  { value: "velocity", label: "Fastball Velocity (mph)" },
-  { value: "exit_velo", label: "Exit Velocity (mph)" },
-  { value: "sixty_time", label: "60-Yard Dash (sec)" },
-  { value: "pop_time", label: "Pop Time (sec)" },
-  { value: "batting_avg", label: "Batting Average" },
-  { value: "era", label: "ERA" },
-  { value: "strikeouts", label: "Strikeouts" },
-  { value: "other", label: "Other" },
-] as const;
+// Metric type options, ordered for the athlete's sport (registry-backed; "other" always last).
+const metricTypes = computed(() =>
+  metricTypesForSport(props.primarySport).map((key) => ({
+    value: key,
+    label: getMetricDef(key).label,
+  })),
+);
 
-// Canonical unit vocabulary — no user-created units.
+// Canonical unit vocabulary — free picker, offered only for "other".
 const unitOptions = [
   { value: "", label: "None" },
   { value: "mph", label: "mph" },
@@ -72,34 +70,33 @@ const unitOptions = [
   { value: "%", label: "%" },
 ] as const;
 
-// Fixed unit per metric type; "other" lets the user pick from the vocabulary.
-const unitByMetricType: Record<MetricType, string> = {
-  velocity: "mph",
-  exit_velo: "mph",
-  sixty_time: "sec",
-  pop_time: "sec",
-  batting_avg: "",
-  era: "",
-  strikeouts: "count",
-  other: "",
-};
-
-// Unit is locked to the metric type unless "other" is selected.
+// Unit is locked to the registry's unit unless "other" is selected.
 const unitLocked = computed(
-  () => metricType.value !== "" && metricType.value !== "other",
+  () => metricType.value !== "" && metricType.value !== OTHER_KEY,
 );
 
-// Value precision: batting average and ERA carry 3 decimals (e.g. 0.000, 3.250);
-// everything else is fine at 2.
-const valueStep = computed(() =>
-  metricType.value === "batting_avg" || metricType.value === "era"
-    ? "0.001"
-    : "0.01",
-);
+// Value precision from the registry's format (decimal digits), 2 as a sane default.
+const valueStep = computed(() => {
+  if (!metricType.value || metricType.value === OTHER_KEY) return "0.01";
+  const format = getMetricDef(metricType.value).format;
+  if (format.kind === "decimal" || format.kind === "percent") {
+    return `0.${"0".repeat(format.digits - 1)}1`;
+  }
+  return "1";
+});
+
+// The metric_type persisted on submit: the selected key, or the snake_cased
+// custom name when "other" is chosen (mirrors iOS resolvedMetricKey).
+const resolvedMetricKey = computed(() => {
+  if (metricType.value !== OTHER_KEY) return metricType.value;
+  return customMetricKey(otherName.value);
+});
 
 // Computed properties
 const isFormValid = computed(() => {
-  return metricType.value && value.value !== null && date.value;
+  if (!metricType.value || value.value === null || !date.value) return false;
+  if (metricType.value === OTHER_KEY) return otherName.value.trim().length > 0;
+  return true;
 });
 
 const sortedEvents = computed(() => {
@@ -130,6 +127,7 @@ const resetForm = () => {
   value.value = null;
   date.value = "";
   unit.value = "";
+  otherName.value = "";
   eventId.value = null;
   verified.value = false;
   notes.value = "";
@@ -144,14 +142,16 @@ const handleSubmit = async () => {
   error.value = null;
 
   try {
+    const metricKey = resolvedMetricKey.value;
     const newMetric = await createMetric({
-      metric_type: metricType.value as MetricType,
+      metric_type: metricKey,
       value: value.value!,
       recorded_date: date.value,
       unit: unit.value || "",
       event_id: eventId.value,
       verified: verified.value,
       notes: notes.value || null,
+      display_value: `${formatMetricValue(metricKey, value.value!)}${unit.value ? ` ${unit.value}` : ""}`,
     });
 
     emit("metric-created", newMetric);
@@ -185,14 +185,19 @@ onBeforeUnmount(() => {
   document.removeEventListener("keydown", handleKeydown);
 });
 
-// Auto-set canonical unit when metric type changes.
+// Auto-set the registry's unit when metric type changes; reset the custom
+// name whenever the selection moves away from "other".
 watch(metricType, (newType) => {
   if (newType === "") {
     unit.value = "";
+    otherName.value = "";
     return;
   }
-  if (newType !== "other") {
-    unit.value = unitByMetricType[newType];
+  if (newType !== OTHER_KEY) {
+    unit.value = getMetricDef(newType).unit;
+    otherName.value = "";
+  } else {
+    unit.value = "";
   }
 });
 
@@ -332,6 +337,24 @@ watch(
                   </option>
                 </select>
               </div>
+            </div>
+
+            <!-- Custom Metric Name (only for "Other") -->
+            <div v-if="metricType === OTHER_KEY" class="mb-4">
+              <label
+                for="otherName"
+                class="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Metric Name <span class="text-red-500">*</span>
+              </label>
+              <input
+                id="otherName"
+                v-model="otherName"
+                type="text"
+                required
+                class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                placeholder="e.g. Arm Strength"
+              />
             </div>
 
             <!-- Event Dropdown (full width) -->

@@ -25,7 +25,7 @@
             class="text-xl font-bold"
             :class="getMetricColor(metric.metric_type)"
           >
-            {{ metric.value }}
+            {{ formatMetricValue(metric.metric_type, metric.value) }}
             <span v-if="metric.unit" class="text-slate-500 text-sm ml-1">{{
               metric.unit
             }}</span>
@@ -54,6 +54,7 @@
 </template>
 
 <script setup lang="ts">
+import { formatMetricValue } from "~/utils/metricFormat";
 interface Metric {
   id: string;
   metric_type: string;

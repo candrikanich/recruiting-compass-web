@@ -176,22 +176,17 @@
       </div>
 
       <!-- Direction -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1"
-          >Direction</label
-        >
-        <select
-          :value="filters.interactions.direction"
-          @change="
-            updateFilter('interactions', 'direction', getSelectValue($event))
-          "
-          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="">All Directions</option>
-          <option value="inbound">Inbound</option>
-          <option value="outbound">Outbound</option>
-        </select>
-      </div>
+      <DesignSystemFormSegmentedControl
+        label="Direction"
+        size="sm"
+        :model-value="filters.interactions.direction"
+        :options="[
+          { value: '', label: 'All Directions' },
+          { value: 'inbound', label: 'Inbound' },
+          { value: 'outbound', label: 'Outbound' },
+        ]"
+        @update:model-value="updateFilter('interactions', 'direction', $event)"
+      />
 
       <!-- Date Range -->
       <div class="grid grid-cols-2 gap-3">

@@ -1,0 +1,83 @@
+name: Memory Soak Tests
+
+on:
+  # Nightly — CDP heap/node/listener readings vary run-to-run, so soak tests
+  # are unsuitable as a per-PR gate. Runs the full E2E suite with SOAK=1 so the
+  # soak specs (skipped by default) execute in a warmed session/store context.
+  schedule:
+    - cron: "0 8 * * *" # 08:00 UTC daily
+  # Allow manual triggering from the Actions tab
+  workflow_dispatch:
+
+concurrency:
+  group: soak-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: "24"
+
+jobs:
+  soak-tests:
+    name: Playwright Memory Soak Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Prepare Nuxt
+        run: npx nuxi prepare
+
+      - name: Build application
+        run: npm run build
+        env:
+          # Serve a standard Node.js server (precompiled) via nuxi preview, so
+          # the soak specs never race first-request route compilation.
+          NITRO_PRESET: node-server
+          # ssr:false bakes NUXT_PUBLIC_* into the client bundle at build time,
+          # so the test project's URL/anon must be present here, not just at run.
+          NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.TEST_SUPABASE_URL }}
+          NUXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.TEST_SUPABASE_ANON_KEY }}
+          NUXT_PUBLIC_ADMIN_HOST: localhost:3003
+
+      - name: Run E2E suite with soak specs enabled
+        run: npm run test:e2e
+        env:
+          CI: true
+          SOAK: "1"
+          # Soak suite runs against the dedicated test Supabase project, never prod.
+          NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.TEST_SUPABASE_URL }}
+          NUXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.TEST_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.TEST_SUPABASE_SERVICE_ROLE_KEY }}
+          NUXT_PUBLIC_ADMIN_HOST: localhost:3003
+          NUXT_ADMIN_TOKEN_SECRET: ${{ secrets.NUXT_ADMIN_TOKEN_SECRET }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: soak-playwright-report
+          path: playwright-report/
+          retention-days: 30
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: soak-playwright-results
+          path: test-results/
+          retention-days: 30

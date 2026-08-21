@@ -16,7 +16,7 @@ interface Emits {
 }
 
 const props = defineProps<Props>();
-defineEmits<Emits>();
+const emit = defineEmits<Emits>();
 
 const shouldShow = computed<boolean>(() => {
   return props.linkedAthletes.length > 1;
@@ -37,7 +37,6 @@ const handleAthleteChange = (athleteId: string) => {
     window.history.replaceState({}, "", url.toString());
 
     // Emit event
-    const emit = defineEmits<Emits>();
     emit("athlete-changed", athleteId);
   }
 };

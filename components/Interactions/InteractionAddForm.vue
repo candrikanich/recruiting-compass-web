@@ -35,25 +35,16 @@
       </div>
 
       <!-- Direction -->
-      <div>
-        <label
-          for="direction"
-          class="block text-sm font-medium text-slate-700 mb-2"
-        >
-          Direction <span class="text-red-600">*</span>
-        </label>
-        <select
-          id="direction"
-          v-model="newInteraction.direction"
-          required
-          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          :disabled="loading"
-        >
-          <option value="">Select Direction</option>
-          <option value="outbound">Outbound (We initiated)</option>
-          <option value="inbound">Inbound (They contacted us)</option>
-        </select>
-      </div>
+      <DesignSystemFormSegmentedControl
+        v-model="newInteraction.direction"
+        label="Direction"
+        required
+        :disabled="loading"
+        :options="[
+          { value: 'outbound', label: 'Outbound (We initiated)' },
+          { value: 'inbound', label: 'Inbound (They contacted us)' },
+        ]"
+      />
 
       <!-- Coach (optional) -->
       <div v-if="coaches.length > 0">

@@ -21,13 +21,16 @@ const logger = createClientLogger("useSchools");
  * - Queries filter by family_unit_id instead of user_id
  * - Student-created schools are scoped to their family
  *
- * School status levels:
+ * School status — a monotonic recruiting funnel (single source of truth in
+ * utils/schoolStatusOptions.ts):
  * - researching: Initial exploration phase
  * - contacted: First contact made with coaches
- * - interested: School expressed interest
+ * - visiting: Visiting the program (camps, unofficial/official visits)
  * - offer_received: Scholarship offer received
- * - declined: Offer declined or program not pursuing
  * - committed: Committed to attend
+ * - not_pursuing: Terminal off-ramp (no longer pursuing this program)
+ * Affinity ("interested") is NOT a status — it is the favorite flag
+ * (is_favorite), not this enum.
  *
  * Features:
  * - Track school details (location, conference, division)

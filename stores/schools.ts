@@ -401,6 +401,36 @@ export const useSchoolStore = defineStore("schools", () => {
         (currentSchool as { status: School["status"] } | null)?.status ?? null;
       const now = new Date().toISOString();
 
+      // Reactivation: moving a school off the not_pursuing off-ramp back into
+      // the funnel restores the stage it was at before, via the
+      // reactivate_school RPC (which performs both the schools update and the
+      // school_status_history insert atomically). The stepper emits
+      // researching for this action; the RPC decides the real restored stage.
+      if (previousStatus === "not_pursuing" && newStatus === "researching") {
+        const { data: restoredStatus, error: reactivateError } =
+          await supabaseAny.rpc("reactivate_school", {
+            p_school_id: schoolId,
+            p_actor: userStore.user.id,
+          });
+
+        if (reactivateError) throw reactivateError;
+
+        const index = schools.value.findIndex((s) => s.id === schoolId);
+        const reactivated = {
+          ...(schools.value[index] ?? { id: schoolId }),
+          status: restoredStatus as School["status"],
+          status_changed_at: now,
+        } as School;
+
+        if (index !== -1) {
+          schools.value[index] = reactivated;
+        }
+
+        delete statusHistory.value[schoolId];
+
+        return reactivated;
+      }
+
       // Update school status and status_changed_at timestamp
       const schoolUpdateData = {
         status: newStatus,

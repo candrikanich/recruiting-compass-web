@@ -190,7 +190,15 @@ export const useAuth = () => {
     error.value = null;
 
     try {
-      const { error: signOutError } = await supabase.auth.signOut();
+      // scope: "local" ends only THIS session, not every session for the
+      // account. Global (the default) revokes the account's refresh tokens
+      // server-side for all devices — which in E2E, where workers share one
+      // player/admin session, cascades "session expired" failures across
+      // sibling specs. Local is also the correct product behavior for a plain
+      // logout ("sign out everywhere" would be a separate explicit action).
+      const { error: signOutError } = await supabase.auth.signOut({
+        scope: "local",
+      });
 
       if (signOutError) {
         throw signOutError;

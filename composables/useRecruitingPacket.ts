@@ -156,18 +156,12 @@ export const useRecruitingPacket = () => {
         interactionCount: school.id ? countInteractionsForSchool(school.id) : 0,
       };
 
-      // Tier by status and other signals
-      if (
-        school.status === "official_visit_scheduled" ||
-        school.status === "recruited" ||
-        school.status === "offer_received" ||
-        school.status === "committed"
-      ) {
+      // Tier by status and other signals. The legacy camp_invite / recruited /
+      // official_visit_invited / official_visit_scheduled stages collapsed into
+      // the canonical `visiting` funnel stage (tier_b).
+      if (school.status === "offer_received" || school.status === "committed") {
         grouped.tier_a.push(packetData);
-      } else if (
-        school.status === "official_visit_invited" ||
-        school.status === "camp_invite"
-      ) {
+      } else if (school.status === "visiting") {
         grouped.tier_b.push(packetData);
       } else {
         grouped.tier_c.push(packetData);

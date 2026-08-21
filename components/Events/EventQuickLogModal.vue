@@ -38,18 +38,14 @@
           </div>
 
           <!-- Direction -->
-          <div>
-            <label class="block text-sm font-medium text-slate-700 mb-2">
-              Who initiated?
-            </label>
-            <select
-              v-model="data.direction"
-              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="inbound">Coach contacted us</option>
-              <option value="outbound">We contacted coach</option>
-            </select>
-          </div>
+          <DesignSystemFormSegmentedControl
+            v-model="data.direction"
+            label="Who initiated?"
+            :options="[
+              { value: 'inbound', label: 'Coach contacted us' },
+              { value: 'outbound', label: 'We contacted coach' },
+            ]"
+          />
 
           <!-- Notes -->
           <div>

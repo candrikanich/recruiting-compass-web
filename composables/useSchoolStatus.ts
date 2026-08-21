@@ -78,6 +78,34 @@ export const useSchoolStatus = () => {
       const previousStatus = fetchedSchool.status;
       const now = new Date().toISOString();
 
+      // Reactivation: moving a school off the not_pursuing off-ramp back into
+      // the funnel restores the stage it was at before, via the
+      // reactivate_school RPC (which performs both the schools update and the
+      // school_status_history insert atomically). The stepper emits
+      // researching for this action; the RPC decides the real restored stage.
+      if (previousStatus === "not_pursuing" && newStatus === "researching") {
+        // reactivate_school is a newer RPC not yet in the generated Supabase
+        // types, so narrow the call to its real contract here.
+        const reactivate = supabase.rpc as unknown as (
+          fn: "reactivate_school",
+          args: { p_school_id: string; p_actor: string },
+        ) => Promise<{ data: School["status"] | null; error: unknown }>;
+
+        const { data: restoredStatus, error: reactivateError } =
+          await reactivate("reactivate_school", {
+            p_school_id: schoolId,
+            p_actor: userStore.user.id,
+          });
+
+        if (reactivateError) throw reactivateError;
+
+        return {
+          ...fetchedSchool,
+          status: restoredStatus ?? newStatus,
+          status_changed_at: now,
+        };
+      }
+
       // Update school status and status_changed_at timestamp
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const updateStatusResponse = await (supabase.from("schools") as any)

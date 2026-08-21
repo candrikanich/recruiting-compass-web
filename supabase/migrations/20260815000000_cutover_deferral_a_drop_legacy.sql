@@ -22,10 +22,18 @@ SET family_unit_id = s.family_unit_id
 FROM public.schools s
 WHERE d.family_unit_id IS NULL AND d.school_id IS NOT NULL AND d.school_id = s.id AND s.family_unit_id IS NOT NULL;
 
-UPDATE public.social_media_posts smp
-SET family_unit_id = s.family_unit_id
-FROM public.schools s
-WHERE smp.family_unit_id IS NULL AND smp.school_id = s.id AND s.family_unit_id IS NOT NULL;
+-- Guarded: 20260814000000 drops social_media_posts. In prod's real apply order
+-- this ran while the table still existed; in a from-zero rebuild (filename
+-- order) the table is already gone, so skip.
+DO $$
+BEGIN
+  IF to_regclass('public.social_media_posts') IS NOT NULL THEN
+    UPDATE public.social_media_posts smp
+    SET family_unit_id = s.family_unit_id
+    FROM public.schools s
+    WHERE smp.family_unit_id IS NULL AND smp.school_id = s.id AND s.family_unit_id IS NOT NULL;
+  END IF;
+END $$;
 
 UPDATE public.recommendation_letters rl
 SET family_unit_id = d.family_unit_id
@@ -88,9 +96,11 @@ BEGIN
     RAISE EXCEPTION 'Phase 5 cutover aborted: % performance_metrics row(s) have NULL family_unit_id.', orphan_count;
   END IF;
 
-  SELECT count(*) INTO orphan_count FROM public.social_media_posts WHERE family_unit_id IS NULL;
-  IF orphan_count > 0 THEN
-    RAISE EXCEPTION 'Phase 5 cutover aborted: % social_media_posts row(s) have NULL family_unit_id.', orphan_count;
+  IF to_regclass('public.social_media_posts') IS NOT NULL THEN
+    SELECT count(*) INTO orphan_count FROM public.social_media_posts WHERE family_unit_id IS NULL;
+    IF orphan_count > 0 THEN
+      RAISE EXCEPTION 'Phase 5 cutover aborted: % social_media_posts row(s) have NULL family_unit_id.', orphan_count;
+    END IF;
   END IF;
 
   SELECT count(*) INTO orphan_count FROM public.recommendation_letters WHERE family_unit_id IS NULL;
@@ -211,12 +221,19 @@ DROP POLICY IF EXISTS "Users can update own and linked recommendation letters" O
 --   "social_media_posts_select_family": FOR SELECT USING (EXISTS (SELECT 1 FROM coaches c JOIN family_members fm ON fm.family_unit_id = c.family_unit_id WHERE c.id = social_media_posts.coach_id AND fm.user_id = auth.uid()));
 --   "Users can update posts for linked schools": FOR UPDATE USING (school_id IN (SELECT schools.id FROM schools WHERE schools.user_id IN (SELECT user_id FROM get_linked_user_ids())));
 --   "Users can update posts for their schools and coaches": FOR UPDATE USING (school_id IN (SELECT schools.id FROM schools WHERE schools.user_id = auth.uid()) OR coach_id IN (SELECT c.id FROM coaches c JOIN schools s ON c.school_id = s.id WHERE s.user_id = auth.uid())) WITH CHECK (school_id IN (SELECT schools.id FROM schools WHERE schools.user_id = auth.uid()) OR coach_id IN (SELECT c.id FROM coaches c JOIN schools s ON c.school_id = s.id WHERE s.user_id = auth.uid()));
-DROP POLICY IF EXISTS "Users can delete posts for linked schools" ON public.social_media_posts;
-DROP POLICY IF EXISTS "Users can insert posts for own and linked schools" ON public.social_media_posts;
-DROP POLICY IF EXISTS "Users can insert posts for own schools" ON public.social_media_posts;
-DROP POLICY IF EXISTS "Users can view posts for own and linked schools" ON public.social_media_posts;
-DROP POLICY IF EXISTS "Users can view posts for their schools" ON public.social_media_posts;
-DROP POLICY IF EXISTS "Users can view posts for their schools and coaches" ON public.social_media_posts;
-DROP POLICY IF EXISTS "social_media_posts_select_family" ON public.social_media_posts;
-DROP POLICY IF EXISTS "Users can update posts for linked schools" ON public.social_media_posts;
-DROP POLICY IF EXISTS "Users can update posts for their schools and coaches" ON public.social_media_posts;
+-- Guarded: DROP POLICY IF EXISTS still errors if the TABLE is absent (the
+-- IF EXISTS covers the policy, not the table). Skip when already dropped.
+DO $$
+BEGIN
+  IF to_regclass('public.social_media_posts') IS NOT NULL THEN
+    DROP POLICY IF EXISTS "Users can delete posts for linked schools" ON public.social_media_posts;
+    DROP POLICY IF EXISTS "Users can insert posts for own and linked schools" ON public.social_media_posts;
+    DROP POLICY IF EXISTS "Users can insert posts for own schools" ON public.social_media_posts;
+    DROP POLICY IF EXISTS "Users can view posts for own and linked schools" ON public.social_media_posts;
+    DROP POLICY IF EXISTS "Users can view posts for their schools" ON public.social_media_posts;
+    DROP POLICY IF EXISTS "Users can view posts for their schools and coaches" ON public.social_media_posts;
+    DROP POLICY IF EXISTS "social_media_posts_select_family" ON public.social_media_posts;
+    DROP POLICY IF EXISTS "Users can update posts for linked schools" ON public.social_media_posts;
+    DROP POLICY IF EXISTS "Users can update posts for their schools and coaches" ON public.social_media_posts;
+  END IF;
+END $$;

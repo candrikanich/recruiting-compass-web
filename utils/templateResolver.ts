@@ -18,6 +18,9 @@
  * a send-blocking gap.
  */
 
+import { formatMetricValue } from "./metricFormat";
+import { getKnownMetricDef } from "./metrics/canonical";
+
 export type Row = Record<string, unknown>;
 
 export interface MetricRow {
@@ -109,12 +112,17 @@ const MONTHS = [
   "Dec",
 ];
 
-const humanizeMetricLabel = (metricType?: string | null): string =>
-  (metricType ?? "").replace(/_/g, " ").trim();
+const humanizeMetricLabel = (metricType?: string | null): string => {
+  const def = getKnownMetricDef(metricType);
+  if (def) return def.label;
+  return (metricType ?? "").replace(/_/g, " ").trim();
+};
 
 const metricDisplay = (m: MetricRow): string => {
   if (m.display_value && m.display_value.trim()) return m.display_value.trim();
-  if (m.value != null) return `${m.value}${m.unit ? ` ${m.unit}` : ""}`;
+  if (m.value != null) {
+    return `${formatMetricValue(m.metric_type, m.value)}${m.unit ? ` ${m.unit}` : ""}`;
+  }
   return "";
 };
 
