@@ -45,7 +45,7 @@
             </span>
           </div>
           <p class="text-sm font-semibold text-slate-900">
-            {{ metric.value }}
+            {{ formatMetricValue(metric.metric_type, metric.value) }}
             <span class="text-xs font-normal text-slate-600">{{
               metric.unit
             }}</span>
@@ -79,7 +79,7 @@
               </p>
             </div>
             <div class="text-right">
-              <p class="text-sm font-bold text-slate-900">{{ metric.value }}</p>
+              <p class="text-sm font-bold text-slate-900">{{ formatMetricValue(metric.metric_type, metric.value) }}</p>
               <p class="text-xs text-slate-600">{{ metric.unit }}</p>
             </div>
           </div>
@@ -101,6 +101,7 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
+import { formatMetricValue } from "~/utils/metricFormat";
 import type { PerformanceMetric } from "~/types/models";
 
 interface Props {
