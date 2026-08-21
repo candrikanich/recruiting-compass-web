@@ -3,6 +3,9 @@ import { setActivePinia, createPinia } from "pinia";
 import { useSchoolStore } from "~/stores/schools";
 import type { School } from "~/types/models";
 
+// Hoisted so the vi.mock factory below (also hoisted) can close over it.
+const { mockRpc } = vi.hoisted(() => ({ mockRpc: vi.fn() }));
+
 // Mock Supabase
 vi.mock("~/composables/useSupabase", () => ({
   useSupabase: vi.fn(() => {
@@ -66,6 +69,7 @@ vi.mock("~/composables/useSupabase", () => ({
         }
         return {};
       }),
+      rpc: mockRpc,
     };
   }),
 }));
@@ -80,6 +84,7 @@ vi.mock("~/stores/user", () => ({
 describe("Schools Store - Status History (Story 3.4)", () => {
   beforeEach(() => {
     setActivePinia(createPinia());
+    mockRpc.mockReset();
   });
 
   describe("Store state initialization", () => {
@@ -198,6 +203,106 @@ describe("Schools Store - Status History (Story 3.4)", () => {
       await store.updateStatus("school-1", "committed", "family-123");
 
       expect("school-1" in store.statusHistory).toBe(false);
+    });
+  });
+
+  describe("updateStatus — reactivation (not_pursuing → researching)", () => {
+    // A supabase client whose current school status is not_pursuing, so the
+    // reactivation branch fires. history-insert / schools-update spies let us
+    // assert they are NOT used.
+    const historyInsert = vi.fn().mockResolvedValue({ error: null });
+    const schoolsUpdate = vi.fn().mockReturnThis();
+
+    const notPursuingClient = () => ({
+      from: vi.fn((table: string) => {
+        if (table === "schools") {
+          return {
+            update: schoolsUpdate,
+            select: vi.fn().mockReturnThis(),
+            eq: vi.fn().mockReturnThis(),
+            single: vi
+              .fn()
+              .mockResolvedValue({ data: { status: "not_pursuing" }, error: null }),
+          };
+        }
+        if (table === "school_status_history") {
+          return {
+            insert: historyInsert,
+            select: vi.fn().mockReturnThis(),
+            eq: vi.fn().mockReturnThis(),
+            order: vi.fn().mockResolvedValue({ data: [], error: null }),
+          };
+        }
+        return {};
+      }),
+      rpc: mockRpc,
+    });
+
+    beforeEach(() => {
+      historyInsert.mockClear();
+      schoolsUpdate.mockClear();
+    });
+
+    it("calls reactivate_school RPC and applies the restored status locally", async () => {
+      const { useSupabase } = await import("~/composables/useSupabase");
+      vi.mocked(useSupabase).mockReturnValueOnce(notPursuingClient() as any);
+      mockRpc.mockResolvedValueOnce({ data: "visiting", error: null });
+
+      const store = useSchoolStore();
+      store.schools = [{ id: "school-1", status: "not_pursuing" } as School];
+
+      const result = await store.updateStatus(
+        "school-1",
+        "researching",
+        "family-123",
+      );
+
+      expect(mockRpc).toHaveBeenCalledWith("reactivate_school", {
+        p_school_id: "school-1",
+        p_actor: "user-1",
+      });
+      expect(result.status).toBe("visiting");
+      expect(store.schools[0].status).toBe("visiting");
+    });
+
+    it("does NOT run the normal schools update or history insert on reactivation", async () => {
+      const { useSupabase } = await import("~/composables/useSupabase");
+      vi.mocked(useSupabase).mockReturnValueOnce(notPursuingClient() as any);
+      mockRpc.mockResolvedValueOnce({ data: "researching", error: null });
+
+      const store = useSchoolStore();
+      store.schools = [{ id: "school-1", status: "not_pursuing" } as School];
+
+      await store.updateStatus("school-1", "researching", "family-123");
+
+      expect(schoolsUpdate).not.toHaveBeenCalled();
+      expect(historyInsert).not.toHaveBeenCalled();
+    });
+
+    it("throws when the RPC fails", async () => {
+      const { useSupabase } = await import("~/composables/useSupabase");
+      vi.mocked(useSupabase).mockReturnValueOnce(notPursuingClient() as any);
+      mockRpc.mockResolvedValueOnce({
+        data: null,
+        error: new Error("RPC failed"),
+      });
+
+      const store = useSchoolStore();
+      store.schools = [{ id: "school-1", status: "not_pursuing" } as School];
+
+      await expect(
+        store.updateStatus("school-1", "researching", "family-123"),
+      ).rejects.toThrow("RPC failed");
+    });
+
+    it("does NOT call the RPC on a normal transition", async () => {
+      // Default mocked client → current status "interested" (not not_pursuing).
+      const store = useSchoolStore();
+      store.schools = [{ id: "school-1", status: "interested" } as School];
+
+      await store.updateStatus("school-1", "contacted", "family-123");
+
+      expect(mockRpc).not.toHaveBeenCalled();
     });
   });
 
