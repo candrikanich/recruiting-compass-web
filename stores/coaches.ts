@@ -162,7 +162,7 @@ export const useCoachStore = defineStore("coaches", () => {
       const { data, error: fetchError } = await supabase
         .from("coaches")
         .select(
-          "id, school_id, first_name, last_name, email, last_contact_date, role",
+          "id, school_id, first_name, last_name, email, phone, twitter_handle, instagram_handle, last_contact_date, role",
         )
         .in("school_id", schoolIds)
         .order("school_id", { ascending: true })
