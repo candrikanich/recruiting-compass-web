@@ -75,8 +75,8 @@ describe("SchoolInterestChart", () => {
   describe("status counting", () => {
     it("counts schools by their pipeline status", () => {
       const schools = [
-        createMockSchool({ status: "interested" }),
-        createMockSchool({ status: "interested" }),
+        createMockSchool({ status: "visiting" }),
+        createMockSchool({ status: "visiting" }),
         createContactedSchool(),
         createOfferSchool(),
         createCommittedSchool(),
@@ -89,13 +89,13 @@ describe("SchoolInterestChart", () => {
 
       expect(statusData[0]).toBe(0); // researching
       expect(statusData[1]).toBe(1); // contacted
-      expect(statusData[2]).toBe(2); // interested
+      expect(statusData[2]).toBe(2); // visiting
       expect(statusData[3]).toBe(1); // offer_received
       expect(statusData[4]).toBe(1); // committed
     });
 
     it("maps statuses to human-readable labels", () => {
-      const schools = [createMockSchool({ status: "interested" })];
+      const schools = [createMockSchool({ status: "visiting" })];
       wrapper = mountChart(schools);
 
       const chartConfig = chartConstructorCalls[0][1] as any;
@@ -104,14 +104,14 @@ describe("SchoolInterestChart", () => {
       expect(labels).toEqual([
         "Researching",
         "Contacted",
-        "Interested",
+        "Visiting",
         "Offer Received",
         "Committed",
       ]);
     });
 
     it("assigns distinct colors per status", () => {
-      const schools = [createMockSchool({ status: "interested" })];
+      const schools = [createMockSchool({ status: "visiting" })];
       wrapper = mountChart(schools);
 
       const chartConfig = chartConstructorCalls[0][1] as any;
@@ -142,7 +142,7 @@ describe("SchoolInterestChart", () => {
 
   describe("chart lifecycle", () => {
     it("creates a Chart.js bar chart on mount with data", () => {
-      const schools = [createMockSchool({ status: "interested" })];
+      const schools = [createMockSchool({ status: "visiting" })];
       wrapper = mountChart(schools);
 
       expect(chartConstructorCalls).toHaveLength(1);
@@ -153,14 +153,14 @@ describe("SchoolInterestChart", () => {
     });
 
     it("destroys previous chart before creating new one on data change", async () => {
-      const schools = [createMockSchool({ status: "interested" })];
+      const schools = [createMockSchool({ status: "visiting" })];
       wrapper = mountChart(schools);
 
       expect(chartConstructorCalls).toHaveLength(1);
 
       await wrapper.setProps({
         schools: [
-          createMockSchool({ status: "interested" }),
+          createMockSchool({ status: "visiting" }),
           createContactedSchool(),
         ],
       });
@@ -169,14 +169,14 @@ describe("SchoolInterestChart", () => {
     });
 
     it("reinitializes chart when schools data changes", async () => {
-      const schools = [createMockSchool({ status: "interested" })];
+      const schools = [createMockSchool({ status: "visiting" })];
       wrapper = mountChart(schools);
 
       expect(chartConstructorCalls).toHaveLength(1);
 
       await wrapper.setProps({
         schools: [
-          createMockSchool({ status: "interested" }),
+          createMockSchool({ status: "visiting" }),
           createContactedSchool(),
           createOfferSchool(),
         ],

@@ -45,6 +45,17 @@ export function useSchoolStats(
     return ids;
   });
 
+  // School IDs with at least one logged interaction of any type. "Contacted" is
+  // an activity signal (a real interaction exists), not the `contacted` status
+  // stage — a school can be past `contacted` in the funnel yet still counts.
+  const contactedSchoolIds = computed<Set<string>>(() => {
+    const ids = new Set<string>();
+    for (const i of interactions.value) {
+      if (i.school_id) ids.add(i.school_id);
+    }
+    return ids;
+  });
+
   const stats = computed(() => [
     {
       label: "Total Schools",
@@ -70,7 +81,8 @@ export function useSchoolStats(
     },
     {
       label: "Contacted",
-      value: schools.value.filter((s) => s.status === "contacted").length,
+      value: schools.value.filter((s) => contactedSchoolIds.value.has(s.id))
+        .length,
       icon: "i-heroicons-chat-bubble-left-right",
       color: "purple" as const,
       testId: "stat-contacted",

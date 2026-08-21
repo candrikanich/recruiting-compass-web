@@ -6,37 +6,38 @@ import {
 } from "~/utils/schoolStatusOptions";
 
 describe("schoolStatusOptions", () => {
-  it("exposes the full 10-status parity set in funnel order", () => {
+  it("exposes the 6 canonical statuses in funnel order", () => {
     expect(SCHOOL_STATUS_OPTIONS.map((o) => o.value)).toEqual([
       "researching",
-      "interested",
       "contacted",
-      "camp_invite",
-      "recruited",
-      "official_visit_invited",
-      "official_visit_scheduled",
+      "visiting",
       "offer_received",
       "committed",
       "not_pursuing",
     ]);
   });
 
-  it("does not expose unknown or declined as selectable options", () => {
+  it("does not expose unknown, declined, or legacy values as selectable options", () => {
     const values = SCHOOL_STATUS_OPTIONS.map((o) => o.value);
     expect(values).not.toContain("unknown");
     expect(values).not.toContain("declined");
+    expect(values).not.toContain("interested");
+    expect(values).not.toContain("camp_invite");
+    expect(values).not.toContain("recruited");
+    expect(values).not.toContain("official_visit_invited");
+    expect(values).not.toContain("official_visit_scheduled");
   });
 
   it("labels match the iOS displayName vocabulary", () => {
-    expect(getSchoolStatusLabel("camp_invite")).toBe("Camp Invite");
-    expect(getSchoolStatusLabel("official_visit_invited")).toBe(
-      "Official Visit Invited",
-    );
+    expect(getSchoolStatusLabel("researching")).toBe("Researching");
+    expect(getSchoolStatusLabel("visiting")).toBe("Visiting");
+    expect(getSchoolStatusLabel("offer_received")).toBe("Offer Received");
     expect(getSchoolStatusLabel("not_pursuing")).toBe("Not Pursuing");
   });
 
-  it("falls back to Title-Cased snake_case for unmapped values", () => {
+  it("falls back to Title-Cased snake_case for unmapped/legacy values", () => {
     expect(getSchoolStatusLabel("declined")).toBe("Declined");
+    expect(getSchoolStatusLabel("camp_invite")).toBe("Camp Invite");
     expect(getSchoolStatusLabel("some_legacy_value")).toBe("Some Legacy Value");
   });
 

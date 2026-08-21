@@ -101,11 +101,13 @@
           @change="$emit('update:filter', 'status', $event || null)"
         >
           <option value="">All</option>
-          <option value="researching">Researching</option>
-          <option value="contacted">Contacted</option>
-          <option value="interested">Interested</option>
-          <option value="offer_received">Offer</option>
-          <option value="committed">Committed</option>
+          <option
+            v-for="option in statusOptions"
+            :key="option.value"
+            :value="option.value"
+          >
+            {{ option.label }}
+          </option>
         </SchoolFilterSelect>
 
         <!-- State -->
@@ -193,6 +195,13 @@
 
 <script setup lang="ts">
 import type { HomeLocation } from "~/types/models";
+import { SCHOOL_STATUS_OPTIONS } from "~/utils/schoolStatusOptions";
+
+// Status filter choices derived from the canonical funnel (single source of truth).
+const statusOptions = SCHOOL_STATUS_OPTIONS.map((option) => ({
+  value: option.value,
+  label: option.label,
+}));
 
 interface SchoolFilterValues {
   name?: string;

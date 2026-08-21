@@ -1,21 +1,29 @@
 /**
  * Canonical recruiting-status vocabulary — the single source of truth shared by
- * the detail header pill, the sidebar "Recruiting Status" dropdown, and the
- * status-history badges. Kept in lock-step with the iOS SchoolStatus enum
- * (values, labels, and 100/700 badge palette) for web ↔ iOS parity.
+ * the detail header pill, the sidebar "Recruiting Status" dropdown, the school
+ * form, the filter panel, and the status-history badges. Kept in lock-step with
+ * the iOS SchoolStatus enum (values, labels, and 100/700 badge palette) for
+ * web ↔ iOS parity.
  *
- * `unknown` and `declined` exist in the DB enum as fallbacks/legacy but are NOT
- * user-selectable here.
+ * The status field is a monotonic recruiting funnel:
+ *   researching → contacted → visiting → offer_received → committed
+ * plus the terminal off-ramp `not_pursuing`. `visiting` collapses the legacy
+ * camp_invite / recruited / official_visit_invited / official_visit_scheduled
+ * values into one stage; legacy `declined` maps to `not_pursuing`.
+ *
+ * Affinity ("interested") is NOT a status — it is expressed via the school's
+ * favorite flag (`is_favorite`), not this enum.
+ *
+ * See planning/2026-08-21-school-status-pipeline-spec.md.
+ *
+ * `unknown` and legacy values may still exist in the DB enum as fallbacks but
+ * are NOT user-selectable here.
  */
 
 export type SchoolStatusValue =
   | "researching"
-  | "interested"
   | "contacted"
-  | "camp_invite"
-  | "recruited"
-  | "official_visit_invited"
-  | "official_visit_scheduled"
+  | "visiting"
   | "offer_received"
   | "committed"
   | "not_pursuing";
@@ -26,16 +34,11 @@ export interface SchoolStatusOption {
   badgeClass: string;
 }
 
-/** Ordered as a recruiting funnel; drives the dropdown option order. */
+/** Ordered as a monotonic recruiting funnel; drives the dropdown option order. */
 export const SCHOOL_STATUS_OPTIONS: readonly SchoolStatusOption[] = [
   {
     value: "researching",
     label: "Researching",
-    badgeClass: "bg-slate-100 text-slate-700",
-  },
-  {
-    value: "interested",
-    label: "Interested",
     badgeClass: "bg-slate-100 text-slate-700",
   },
   {
@@ -44,23 +47,8 @@ export const SCHOOL_STATUS_OPTIONS: readonly SchoolStatusOption[] = [
     badgeClass: "bg-blue-100 text-blue-700",
   },
   {
-    value: "camp_invite",
-    label: "Camp Invite",
-    badgeClass: "bg-purple-100 text-purple-700",
-  },
-  {
-    value: "recruited",
-    label: "Recruited",
-    badgeClass: "bg-emerald-100 text-emerald-700",
-  },
-  {
-    value: "official_visit_invited",
-    label: "Official Visit Invited",
-    badgeClass: "bg-orange-100 text-orange-700",
-  },
-  {
-    value: "official_visit_scheduled",
-    label: "Official Visit Scheduled",
+    value: "visiting",
+    label: "Visiting",
     badgeClass: "bg-orange-100 text-orange-700",
   },
   {

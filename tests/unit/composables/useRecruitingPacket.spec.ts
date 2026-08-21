@@ -93,7 +93,7 @@ const mockSchoolData: School[] = [
     location: "Houston, TX",
     division: "D1",
     conference: "Conference USA",
-    status: "camp_invite",
+    status: "visiting",
     is_favorite: false,
     user_id: "test-user-id",
     website: null,
@@ -374,7 +374,7 @@ describe("useRecruitingPacket", () => {
         generatedData.value?.schools.tier_a.some((s) => s.id === "school-1"),
       ).toBe(true);
 
-      // Rice should be in tier_b (camp_invite)
+      // Rice should be in tier_b (visiting)
       expect(
         generatedData.value?.schools.tier_b.some((s) => s.id === "school-2"),
       ).toBe(true);

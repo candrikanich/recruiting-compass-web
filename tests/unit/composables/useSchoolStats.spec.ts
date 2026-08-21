@@ -142,22 +142,27 @@ describe("useSchoolStats", () => {
     });
   });
 
-  it("counts contacted schools by status", () => {
+  it("counts contacted schools by logged interactions, not status", () => {
     const schools = ref<School[]>([
+      // Has an interaction → counts, regardless of funnel stage.
       {
         id: "1",
         name: "S1",
-        status: "contacted",
+        status: "committed",
         family_unit_id: "f1",
       } as School,
+      // Sits at `contacted` status but has NO interaction → does NOT count.
       {
         id: "2",
         name: "S2",
-        status: "interested",
+        status: "contacted",
         family_unit_id: "f1",
       } as School,
     ]);
-    const { stats } = useSchoolStats(schools, noInteractions(), noEvents());
+    const interactions = ref<Interaction[]>([
+      { id: "i1", school_id: "1", type: "email" } as Interaction,
+    ]);
+    const { stats } = useSchoolStats(schools, interactions, noEvents());
     expect(stats.value[3].label).toBe("Contacted");
     expect(stats.value[3].value).toBe(1);
   });

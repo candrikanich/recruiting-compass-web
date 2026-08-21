@@ -125,7 +125,7 @@ const chartData = computed(() => {
   const statusCounts: Record<string, number> = {
     researching: 0,
     contacted: 0,
-    interested: 0,
+    visiting: 0,
     offer_received: 0,
     committed: 0,
   };
@@ -140,14 +140,14 @@ const chartData = computed(() => {
   const labels = [
     "Researching",
     "Contacted",
-    "Interested",
+    "Visiting",
     "Offer Received",
     "Committed",
   ];
   const data = [
     statusCounts.researching,
     statusCounts.contacted,
-    statusCounts.interested,
+    statusCounts.visiting,
     statusCounts.offer_received,
     statusCounts.committed,
   ];
@@ -155,7 +155,7 @@ const chartData = computed(() => {
   const colors = [
     "researching",
     "contacted",
-    "interested",
+    "visiting",
     "offer_received",
     "committed",
   ];
@@ -207,9 +207,9 @@ const initializeChart = () => {
     contacted:
       getComputedStyle(root).getPropertyValue("--brand-blue-500").trim() ||
       "#3b82f6", // audit-ignore — Chart.js config requires raw hex
-    interested:
-      getComputedStyle(root).getPropertyValue("--brand-emerald-500").trim() ||
-      "#10b981", // audit-ignore — Chart.js config requires raw hex
+    visiting:
+      getComputedStyle(root).getPropertyValue("--brand-violet-500").trim() ||
+      "#8b5cf6", // audit-ignore — Chart.js config requires raw hex
     offer_received:
       getComputedStyle(root).getPropertyValue("--brand-orange-500").trim() ||
       "#f97316", // audit-ignore — Chart.js config requires raw hex
