@@ -6,7 +6,7 @@ const mountSection = (
   props: Partial<{ status: string; statusUpdating: boolean }> = {},
 ) =>
   mount(SchoolRecruitingStatusSection, {
-    props: { status: "interested", statusUpdating: false, ...props },
+    props: { status: "researching", statusUpdating: false, ...props },
     global: { stubs: { UIcon: true } },
   });
 
@@ -15,9 +15,9 @@ describe("SchoolRecruitingStatusSection", () => {
     expect(mountSection().text()).toContain("Recruiting Status");
   });
 
-  it("renders all 10 parity options in the dropdown", () => {
+  it("renders all 6 canonical options in the dropdown", () => {
     const options = mountSection().find("select").findAll("option");
-    expect(options).toHaveLength(10);
+    expect(options).toHaveLength(6);
     expect(options[0].text()).toBe("Researching");
     expect(options.at(-1)?.text()).toBe("Not Pursuing");
   });

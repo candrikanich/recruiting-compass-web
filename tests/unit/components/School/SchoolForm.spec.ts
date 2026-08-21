@@ -496,10 +496,10 @@ describe("SchoolForm", () => {
       expect(values).toEqual([
         "researching",
         "contacted",
-        "interested",
+        "visiting",
         "offer_received",
-        "declined",
         "committed",
+        "not_pursuing",
       ]);
     });
   });

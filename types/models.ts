@@ -78,12 +78,8 @@ export interface School {
   ncaa_id?: string | null;
   status:
     | "researching"
-    | "interested"
     | "contacted"
-    | "camp_invite"
-    | "recruited"
-    | "official_visit_invited"
-    | "official_visit_scheduled"
+    | "visiting"
     | "offer_received"
     | "committed"
     | "not_pursuing";
