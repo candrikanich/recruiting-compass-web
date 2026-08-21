@@ -5,6 +5,16 @@ import { createPinia, setActivePinia } from "pinia";
 const createInteractionMock = vi.fn();
 const showToastMock = vi.fn();
 
+// Configurable result for the pre-contact school lookup performed before the
+// interaction is created. Defaults to a non-pre-contact school so the baseline
+// success path fires no auto-advance toast.
+let schoolLookupResult: { status: string; name: string } | null = {
+  status: "contacted",
+  name: "State University",
+};
+
+const maybeSingleMock = vi.fn(async () => ({ data: schoolLookupResult }));
+
 vi.mock("~/composables/useInteractions", () => ({
   useInteractions: () => ({
     createInteraction: createInteractionMock,
@@ -14,6 +24,18 @@ vi.mock("~/composables/useInteractions", () => ({
 
 vi.mock("~/composables/useAppToast", () => ({
   useAppToast: () => ({ showToast: showToastMock }),
+}));
+
+vi.mock("~/composables/useSupabase", () => ({
+  useSupabase: () => ({
+    from: () => ({
+      select: () => ({
+        eq: () => ({
+          maybeSingle: maybeSingleMock,
+        }),
+      }),
+    }),
+  }),
 }));
 
 import InteractionsAddPage from "~/pages/interactions/add.vue";
@@ -40,6 +62,7 @@ describe("pages/interactions/add.vue", () => {
   beforeEach(() => {
     setActivePinia(createPinia());
     vi.clearAllMocks();
+    schoolLookupResult = { status: "contacted", name: "State University" };
   });
 
   const mountPage = () =>
@@ -54,6 +77,35 @@ describe("pages/interactions/add.vue", () => {
 
   it("navigates away and shows no error toast on success", async () => {
     createInteractionMock.mockResolvedValue({ id: "int-1" });
+    const wrapper = mountPage();
+    const form = wrapper.findComponent(InteractionFormStub);
+
+    await form.vm.$emit("submit", samplePayload);
+    await wrapper.vm.$nextTick();
+
+    expect(createInteractionMock).toHaveBeenCalled();
+    expect(showToastMock).not.toHaveBeenCalled();
+  });
+
+  it("shows the auto-advance toast when a researching school gets an interaction", async () => {
+    schoolLookupResult = { status: "researching", name: "Coastal College" };
+    createInteractionMock.mockResolvedValue({ id: "int-2" });
+    const wrapper = mountPage();
+    const form = wrapper.findComponent(InteractionFormStub);
+
+    await form.vm.$emit("submit", samplePayload);
+    await wrapper.vm.$nextTick();
+
+    expect(createInteractionMock).toHaveBeenCalled();
+    expect(showToastMock).toHaveBeenCalledWith(
+      "Coastal College moved to Contacted",
+      "success",
+    );
+  });
+
+  it("does not show the auto-advance toast when the school is already contacted", async () => {
+    schoolLookupResult = { status: "contacted", name: "Coastal College" };
+    createInteractionMock.mockResolvedValue({ id: "int-3" });
     const wrapper = mountPage();
     const form = wrapper.findComponent(InteractionFormStub);
 
