@@ -1,7 +1,7 @@
 <template>
   <div
     :data-task-id="task.id"
-    class="flex items-start gap-3 p-3 rounded-lg hover:bg-slate-50 transition"
+    class="flex items-start gap-3 p-3 rounded-xl border border-slate-200 bg-white hover:border-slate-300 transition"
   >
     <!-- Checkbox -->
     <input
@@ -25,7 +25,11 @@
     />
 
     <!-- Task content -->
-    <div class="flex-1 min-w-0">
+    <div
+      class="flex-1 min-w-0"
+      :class="{ 'cursor-pointer': hasDetail }"
+      @click="toggleExpand"
+    >
       <!-- Title and status indicator -->
       <div class="flex items-start gap-2">
         <div
@@ -86,10 +90,10 @@
           ✓ Done
         </span>
 
-        <!-- Expand button (only for dependency warnings) -->
+        <!-- Expand button (task detail + dependency warnings) -->
         <button
-          v-if="expandable && task.has_incomplete_prerequisites"
-          @click="expanded = !expanded"
+          v-if="showChevron"
+          @click.stop="expanded = !expanded"
           class="p-1 hover:bg-slate-200 rounded-sm transition shrink-0"
           :title="expanded ? 'Collapse details' : 'Expand details'"
         >
@@ -111,8 +115,11 @@
         </button>
       </div>
 
-      <!-- Description -->
-      <div v-if="task.description" class="text-slate-600 text-sm mt-1">
+      <!-- Description (revealed on expand) -->
+      <div
+        v-if="task.description && expanded"
+        class="text-slate-600 text-sm mt-1"
+      >
         {{ task.description }}
       </div>
 
@@ -139,9 +146,9 @@
         </span>
       </div>
 
-      <!-- Always-visible guidance -->
+      <!-- Guidance (revealed on expand) -->
       <div
-        v-if="task.why_it_matters && !isCompleted"
+        v-if="task.why_it_matters && !isCompleted && expanded"
         class="mt-2 bg-blue-50 border-l-2 border-blue-200 pl-3 py-2 rounded-r"
       >
         <div class="text-xs font-semibold text-blue-900 mb-0.5">
@@ -150,9 +157,9 @@
         <div class="text-xs text-blue-800">{{ task.why_it_matters }}</div>
       </div>
 
-      <!-- Late-phase nudge for incomplete tasks -->
+      <!-- Late-phase nudge for incomplete tasks (revealed on expand) -->
       <div
-        v-if="showFailureRisk && task.failure_risk"
+        v-if="showFailureRisk && task.failure_risk && expanded"
         class="mt-2 bg-amber-50 border-l-2 border-amber-300 pl-3 py-2 rounded-r"
       >
         <div class="text-xs font-semibold text-amber-900 mb-0.5">
@@ -227,6 +234,26 @@ const isViewingAsParent = computed(() => activeFamily.isViewingAsParent.value);
 const showFailureRisk = computed(
   () => !isCompleted.value && props.phaseProgress >= 75,
 );
+
+// Detail the row can reveal on tap: description + the guidance callouts.
+// Mirrors iOS PhaseCardTaskRow's collapse-by-default behavior.
+const hasDetail = computed(
+  () =>
+    !!props.task.description ||
+    (!!props.task.why_it_matters && !isCompleted.value) ||
+    (showFailureRisk.value && !!props.task.failure_risk),
+);
+
+const showChevron = computed(
+  () =>
+    hasDetail.value ||
+    (props.expandable && !!props.task.has_incomplete_prerequisites),
+);
+
+function toggleExpand() {
+  if (!hasDetail.value) return;
+  expanded.value = !expanded.value;
+}
 </script>
 
 <style scoped>

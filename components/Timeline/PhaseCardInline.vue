@@ -13,17 +13,9 @@
       @click="$emit('toggle')"
       class="w-full p-6 text-left"
     >
-      <div class="flex items-start justify-between gap-4">
-        <!-- Left: Phase title + theme -->
-        <div class="flex-1">
-          <h3 class="text-xl font-bold text-slate-900">{{ title }}</h3>
-          <p class="text-slate-600 text-sm mt-1">{{ theme }}</p>
-        </div>
-
-        <!-- Right: Completion icon + stats + chevron -->
-        <div class="flex items-center gap-4">
-          <!-- Completion status icon -->
-          <div class="w-8 h-8 shrink-0">
+      <div class="flex items-center gap-4">
+        <!-- Completion status icon (leading) -->
+        <div class="w-8 h-8 shrink-0">
             <svg
               v-if="percentComplete === 100"
               class="w-8 h-8 text-emerald-500"
@@ -61,51 +53,64 @@
             >
               <circle cx="12" cy="12" r="10" stroke-width="2" />
             </svg>
-          </div>
-
-          <!-- Stats -->
-          <div class="text-right">
-            <div class="text-2xl font-bold text-slate-900">
-              {{ completedCount }}/{{ totalCount }}
-            </div>
-            <div class="text-slate-500 text-sm">tasks</div>
-          </div>
-
-          <!-- Expand chevron -->
-          <svg
-            :class="{ 'rotate-180': expanded }"
-            class="w-6 h-6 text-slate-400 transition-transform shrink-0 mt-1"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M19 14l-7 7m0 0l-7-7m7 7V3"
-            />
-          </svg>
         </div>
+
+        <!-- Title + theme -->
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <h3 class="text-xl font-bold text-slate-900">{{ title }}</h3>
+            <span
+              v-if="isCurrentPhase"
+              class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold"
+            >
+              <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full" />
+              Current
+            </span>
+          </div>
+          <p class="text-slate-600 text-sm mt-1">{{ theme }}</p>
+        </div>
+
+        <!-- Stats -->
+        <div class="text-right shrink-0">
+          <div class="text-2xl font-bold text-slate-900">
+            {{ completedCount }}/{{ totalCount }}
+          </div>
+          <div class="text-slate-500 text-sm">tasks</div>
+        </div>
+
+        <!-- Expand chevron -->
+        <svg
+          :class="{ 'rotate-180': expanded }"
+          class="w-6 h-6 text-slate-400 transition-transform shrink-0"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M19 14l-7 7m0 0l-7-7m7 7V3"
+          />
+        </svg>
       </div>
 
-      <!-- Progress bar -->
-      <div class="mt-4 h-2 bg-slate-100 rounded-full overflow-hidden">
-        <div
-          class="h-full transition-all duration-300"
-          :class="
-            isCurrentPhase
-              ? 'bg-linear-to-r from-blue-500 to-emerald-500'
-              : 'bg-slate-300'
-          "
-          :style="{ width: `${percentComplete}%` }"
-        />
-      </div>
-
-      <!-- Current phase indicator -->
-      <div v-if="isCurrentPhase" class="mt-2 flex items-center gap-2">
-        <span class="inline-block w-2 h-2 bg-emerald-500 rounded-full" />
-        <span class="text-xs font-medium text-emerald-700">Current Phase</span>
+      <!-- Progress bar + percent -->
+      <div class="mt-4 flex items-center gap-3">
+        <div class="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
+          <div
+            class="h-full transition-all duration-300"
+            :class="
+              isCurrentPhase
+                ? 'bg-linear-to-r from-blue-500 to-emerald-500'
+                : 'bg-slate-300'
+            "
+            :style="{ width: `${percentComplete}%` }"
+          />
+        </div>
+        <span class="text-xs font-semibold text-slate-500 tabular-nums">
+          {{ percentComplete }}%
+        </span>
       </div>
     </button>
 
