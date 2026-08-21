@@ -195,6 +195,33 @@ Each phase: build gate per platform (`npx tsc --noEmit` web,
 
 ---
 
+## Pipeline stepper UI (spec)
+
+A visual progress indicator on the school detail screen, both platforms.
+
+- **Form:** horizontal stepper over the 5 progress stages (researching →
+  contacted → visiting → offer_received → committed) as ordered nodes joined by
+  connectors. Compact labels: Researching / Contacted / Visiting / Offer /
+  Committed.
+- **State per node:** completed (`rank < current`) = filled + checkmark;
+  current (`== current`) = accent, emphasized; upcoming (`rank > current`) =
+  muted/hollow. Connectors before the current node read as "done".
+- **Interactive:** tapping a node sets the school's status to that stage (same
+  path as the old dropdown). Manual moves allowed in either direction (matches
+  web `updateStatus`); auto-advance still only ever moves forward.
+- **Off-ramp:** `not_pursuing` is NOT a 6th node. When active, the stepper
+  renders dimmed and a "Not pursuing" banner shows with a **Reactivate** action
+  (returns to `researching`). When not active, a secondary **Mark not pursuing**
+  button sits below the stepper.
+- **Placement:** replaces the status dropdown as the primary control in the
+  "Recruiting Status" section (iOS `SchoolRecruitingStatusAndTierSection`; web
+  detail header/section). The dropdown is retired.
+- **Accessibility:** each node is a button labelled "Set status to X" plus its
+  state (current/completed/upcoming); the section keeps its "Recruiting Status"
+  header.
+- **Loading:** while a status update is in flight, the stepper is disabled and
+  shows a spinner in the header (existing `isUpdatingStatus` flag).
+
 ## Already shipped (interim)
 
 - Migration `20260828000001_advance_school_status_on_interaction` — trigger +
