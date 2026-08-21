@@ -307,3 +307,13 @@ export function metricTypesForSport(sport: string | null | undefined): string[] 
   const base = (sport && SPORT_METRICS[sport]) || defaultOrder;
   return [...base, OTHER_KEY];
 }
+
+/**
+ * The persisted metric_type for a custom "other" name: trimmed, lowercased,
+ * with runs of whitespace collapsed to a single underscore ("Bat  Speed" ->
+ * "bat_speed"). Byte-identical to iOS `MetricFormState.resolvedMetricKey` so a
+ * custom metric gets the same key on both platforms.
+ */
+export function customMetricKey(name: string): string {
+  return name.trim().toLowerCase().replace(/\s+/g, "_");
+}

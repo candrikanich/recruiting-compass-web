@@ -4,6 +4,7 @@ import {
   getMetricDef,
   getKnownMetricDef,
   metricTypesForSport,
+  customMetricKey,
   METRIC_DEFS,
   SPORT_METRICS,
   OTHER_KEY,
@@ -100,6 +101,16 @@ describe("sport orderings", () => {
     for (const sport of Object.keys(SPORT_METRICS)) {
       expect(SPORT_POSITIONS[sport], `${sport} not in SPORT_POSITIONS`).toBeDefined();
     }
+  });
+});
+
+describe("customMetricKey", () => {
+  it("snake_cases a custom other-name", () => {
+    expect(customMetricKey("Vertical Jump")).toBe("vertical_jump");
+  });
+  it("collapses whitespace runs to a single underscore (iOS parity)", () => {
+    // Byte-identical to iOS MetricFormState.resolvedMetricKey: "Bat  Speed" -> "bat_speed".
+    expect(customMetricKey("  Bat   Speed  ")).toBe("bat_speed");
   });
 });
 

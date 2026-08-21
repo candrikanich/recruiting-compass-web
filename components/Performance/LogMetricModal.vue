@@ -13,6 +13,7 @@ import { formatMetricValue } from "~/utils/metricFormat";
 import {
   metricTypesForSport,
   getMetricDef,
+  customMetricKey,
   OTHER_KEY,
 } from "~/utils/metrics/canonical";
 
@@ -88,7 +89,7 @@ const valueStep = computed(() => {
 // custom name when "other" is chosen (mirrors iOS resolvedMetricKey).
 const resolvedMetricKey = computed(() => {
   if (metricType.value !== OTHER_KEY) return metricType.value;
-  return otherName.value.trim().toLowerCase().replace(/\s+/g, "_");
+  return customMetricKey(otherName.value);
 });
 
 // Computed properties
