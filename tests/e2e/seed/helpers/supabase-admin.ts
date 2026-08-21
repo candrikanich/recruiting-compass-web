@@ -422,24 +422,30 @@ async function setupTestAccountData(
   userId: string,
   account: { displayName: string; role: string; email?: string },
 ) {
-  // Update onboarding status for the user (only update existing row — don't insert)
-  // The users row is created by a DB trigger when auth.users is created.
-  const { error: userError } = await supabase
-    .from("users")
-    .update({
+  // Upsert the public.users row. We can't rely on the on_auth_user_created
+  // trigger: handle_new_user() defaults any non-parent role to 'student', an
+  // enum value that doesn't exist (user_role = admin|parent|player), so its
+  // insert throws and its own EXCEPTION handler swallows it — leaving players
+  // with no users row. Inserting here makes provisioning deterministic
+  // regardless of the trigger (and idempotent on re-runs / existing accounts).
+  const { error: userError } = await supabase.from("users").upsert(
+    {
+      id: userId,
+      email: account.email ?? "",
+      full_name: account.displayName,
       role: account.role as "player" | "parent" | "admin",
       phase_milestone_data: {
         onboarding_complete: true,
         onboarding_completed_at: new Date().toISOString(),
       },
       onboarding_completed: true,
-    })
-    .eq("id", userId);
+    },
+    { onConflict: "id" },
+  );
 
   if (userError) {
-    // Non-fatal — row might not exist yet if trigger hasn't fired
     console.warn(
-      `⚠️  Could not update users row for ${userId}:`,
+      `⚠️  Could not upsert users row for ${userId}:`,
       userError.message,
     );
   }

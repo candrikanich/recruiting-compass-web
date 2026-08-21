@@ -50,7 +50,12 @@ export const useAuthLifecycle = () => {
     const supabase = useSupabase();
 
     try {
-      const { error } = await supabase.auth.signOut();
+      // scope: "local" — "everywhere" here means every client STATE layer
+      // (Pinia stores + family-context singleton), not every device. Global
+      // scope would revoke the account's refresh tokens server-side for all
+      // sessions, cascading "session expired" across E2E workers that share
+      // one player/admin session.
+      const { error } = await supabase.auth.signOut({ scope: "local" });
       if (error) {
         logger.error(
           "[logoutEverywhere] Supabase sign-out returned an error",

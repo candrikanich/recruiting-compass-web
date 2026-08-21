@@ -25,12 +25,11 @@ test.describe("Schools Management", () => {
   });
 
   test("should logout and redirect to login", async ({ page }) => {
-    // Client-only clear: do NOT trigger the real logout button.
-    // The app's logout handler calls supabase.auth.signOut() with global scope,
-    // which revokes the shared player.json refresh token server-side and bounces
-    // every concurrent worker to /login. clearAuthState wipes localStorage,
-    // sessionStorage, and cookies for this context only — verifies the redirect
-    // contract without poisoning parallel runs.
+    // Client-only clear: this test just verifies the "unauthenticated → /login"
+    // redirect contract, so it wipes localStorage/sessionStorage/cookies for
+    // this context rather than driving the real logout button. (App logout is
+    // now scope: "local" and no longer poisons parallel runs, but the
+    // client-only clear remains the tightest way to assert the redirect.)
     await authFixture.clearAuthState(page);
     await expect(page).toHaveURL("/login");
   });

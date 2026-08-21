@@ -22,14 +22,13 @@ import { TEST_ACCOUNTS } from "../config/test-accounts";
  *
  * This test deliberately does NOT use the shared `player.json` /
  * `admin.json` storageState fixtures — it starts from a fully unauthenticated
- * context and drives real UI login/logout for both accounts itself. Its
- * real logout triggers a global-scope supabase.auth.signOut(), which revokes
- * the player/admin accounts' refresh tokens server-side for EVERY session,
- * not just this browser context — so it must never run concurrently with
- * another worker holding a player.json/admin.json session. playwright.config.ts
- * puts this file in its own `cross-account-logout` project that `depends on`
- * the `chromium` project finishing first, guaranteeing no such worker is
- * still live when the signOut() fires.
+ * context and drives real UI login/logout for both accounts itself.
+ *
+ * App logout now uses scope: "local" (useAuth/useAuthLifecycle), so it no
+ * longer revokes the shared player/admin sessions server-side — the old
+ * cross-worker "session expired" cascade is gone. The dedicated
+ * `cross-account-logout` project + sequential ordering in playwright.config.ts
+ * is kept as defense-in-depth, not because a global signOut still fires here.
  */
 test.describe("Cross-account logout — no stale data leak", () => {
   test.use({ storageState: { cookies: [], origins: [] } });

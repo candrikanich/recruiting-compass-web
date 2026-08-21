@@ -18,7 +18,11 @@ jobs:
   e2e-tests:
     name: Playwright E2E Tests
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # 60 not 30: against the dedicated test project the seed populates data, so
+    # far fewer specs skip than on the (data-less) prod runs — the full suite +
+    # sequential cross-account-logout phase runs ~50m. (Follow-up: cut this with
+    # more workers or sharding.)
+    timeout-minutes: 60
     # Dependabot PRs don't have access to secrets — the server can't start without them.
     # Dependency bumps are validated by unit tests, lint, and type-check.
     if: github.actor != 'dependabot[bot]'
@@ -48,14 +52,23 @@ jobs:
           # Override Vercel preset so nuxi preview can serve a standard Node.js
           # server in CI. Production builds use the Vercel preset (nuxt.config.ts).
           NITRO_PRESET: node-server
+          # ssr:false bakes NUXT_PUBLIC_* into the client bundle at build time,
+          # so the test project's URL/anon must be present here, not just at run.
+          NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.TEST_SUPABASE_URL }}
+          NUXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.TEST_SUPABASE_ANON_KEY }}
+          NUXT_PUBLIC_ADMIN_HOST: localhost:3003
 
       - name: Run E2E tests
         run: npm run test:e2e
         env:
           CI: true
-          NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
-          NUXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NUXT_PUBLIC_SUPABASE_ANON_KEY }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          # E2E runs against the dedicated test Supabase project, never prod.
+          NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.TEST_SUPABASE_URL }}
+          NUXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.TEST_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.TEST_SUPABASE_SERVICE_ROLE_KEY }}
+          # Keep admin routes on the local origin; unset defaults to the prod
+          # admin subdomain and bounces every admin spec off localhost.
+          NUXT_PUBLIC_ADMIN_HOST: localhost:3003
           NUXT_ADMIN_TOKEN_SECRET: ${{ secrets.NUXT_ADMIN_TOKEN_SECRET }}
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
 
@@ -79,7 +92,7 @@ jobs:
   e2e-webkit:
     name: Playwright E2E Tests (WebKit/Safari)
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 75
     continue-on-error: true
     if: github.actor != 'dependabot[bot]'
 
@@ -108,15 +121,23 @@ jobs:
         run: npm run build
         env:
           NITRO_PRESET: node-server
+          # ssr:false bakes NUXT_PUBLIC_* into the client bundle at build time.
+          NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.TEST_SUPABASE_URL }}
+          NUXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.TEST_SUPABASE_ANON_KEY }}
+          NUXT_PUBLIC_ADMIN_HOST: localhost:3003
 
       - name: Run E2E tests (WebKit only)
         run: npm run test:e2e -- --project webkit
         env:
           CI: true
           FULL_TESTS: "1"
-          NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
-          NUXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NUXT_PUBLIC_SUPABASE_ANON_KEY }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          # E2E runs against the dedicated test Supabase project, never prod.
+          NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.TEST_SUPABASE_URL }}
+          NUXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.TEST_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.TEST_SUPABASE_SERVICE_ROLE_KEY }}
+          # Keep admin routes on the local origin; unset defaults to the prod
+          # admin subdomain and bounces every admin spec off localhost.
+          NUXT_PUBLIC_ADMIN_HOST: localhost:3003
           NUXT_ADMIN_TOKEN_SECRET: ${{ secrets.NUXT_ADMIN_TOKEN_SECRET }}
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
 
