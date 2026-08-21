@@ -18,7 +18,10 @@ jobs:
   e2e-tests:
     name: Playwright E2E Tests
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # 45 not 30: against the dedicated test project the seed populates data, so
+    # far fewer specs skip than on the (data-less) prod runs — the full suite +
+    # sequential cross-account-logout phase runs longer.
+    timeout-minutes: 45
     # Dependabot PRs don't have access to secrets — the server can't start without them.
     # Dependency bumps are validated by unit tests, lint, and type-check.
     if: github.actor != 'dependabot[bot]'
@@ -88,7 +91,7 @@ jobs:
   e2e-webkit:
     name: Playwright E2E Tests (WebKit/Safari)
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 55
     continue-on-error: true
     if: github.actor != 'dependabot[bot]'
 
