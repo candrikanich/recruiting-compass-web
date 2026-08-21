@@ -437,6 +437,7 @@
       <!-- Log Metric Modal -->
       <PerformanceLogMetricModal
         :show="showLogMetricModal"
+        :primary-sport="primarySport"
         @close="showLogMetricModal = false"
         @metric-created="handleMetricCreated"
       />
@@ -459,6 +460,7 @@
 import { ref, onMounted, reactive, computed, defineAsyncComponent } from "vue";
 import { formatMetricValue } from "~/utils/metricFormat";
 import { usePerformance } from "~/composables/usePerformance";
+import { usePreferenceManager } from "~/composables/usePreferenceManager";
 import { useAppToast } from "~/composables/useAppToast";
 import { createClientLogger } from "~/utils/logger";
 import type { PerformanceMetric } from "~/types/models";
@@ -509,6 +511,7 @@ const {
   clearPrimaryMetric,
 } = usePerformance();
 const { showToast } = useAppToast();
+const { playerPrefs, getPlayerDetails } = usePreferenceManager();
 
 const showAddForm = ref(false);
 const showEditForm = ref(false);
@@ -517,6 +520,7 @@ const showLogMetricModal = ref(false);
 const isUpdating = ref(false);
 const editingMetric = ref<PerformanceMetric | null>(null);
 const selectedMetricType = ref("");
+const primarySport = ref<string | null>(null);
 
 const newMetric = reactive({
   metric_type: "",
@@ -842,5 +846,7 @@ const handleUpdateMetric = async () => {
 
 onMounted(async () => {
   await fetchMetrics();
+  await playerPrefs.loadPreferences();
+  primarySport.value = getPlayerDetails()?.primary_sport ?? null;
 });
 </script>

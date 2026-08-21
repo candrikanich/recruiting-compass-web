@@ -109,7 +109,7 @@ describe("LogMetricModal - Form Fields", () => {
     expect(wrapper.find('input[type="checkbox"]').exists()).toBe(true);
   });
 
-  it("has all metric type options", () => {
+  it("has all metric type options, sport-filtered from the registry (default: baseball)", () => {
     const wrapper = mount(LogMetricModal, {
       props: { show: true },
       global: {
@@ -120,28 +120,56 @@ describe("LogMetricModal - Form Fields", () => {
     });
 
     const options = wrapper.find("#metricType").findAll("option");
-    expect(options).toHaveLength(9); // 8 types + empty option
+    expect(options).toHaveLength(13); // 11 baseball types + "other" + empty option
 
-    // Verify spec-compliant options
+    // Verify registry-backed labels (no unit repeated in the label)
     expect(options[0].text()).toBe("Select Metric");
-    expect(options[1].text()).toBe("Fastball Velocity (mph)");
-    expect(options[2].text()).toBe("Exit Velocity (mph)");
-    expect(options[3].text()).toBe("60-Yard Dash (sec)");
-    expect(options[4].text()).toBe("Pop Time (sec)");
-    expect(options[5].text()).toBe("Batting Average");
+    expect(options[1].text()).toBe("Fastball Velocity");
+    expect(options[2].text()).toBe("Exit Velocity");
+    expect(options[3].text()).toBe("Batting Average");
+    expect(options[4].text()).toBe("60-Yard Dash");
+    expect(options[5].text()).toBe("Pop Time");
     expect(options[6].text()).toBe("ERA");
-    expect(options[7].text()).toBe("Strikeouts");
-    expect(options[8].text()).toBe("Other");
+    expect(options[12].text()).toBe("Other Metric");
 
-    // Verify spec-compliant values
+    // Verify registry-ordered values
     expect(options[1].element.value).toBe("velocity");
     expect(options[2].element.value).toBe("exit_velo");
-    expect(options[3].element.value).toBe("sixty_time");
-    expect(options[4].element.value).toBe("pop_time");
-    expect(options[5].element.value).toBe("batting_avg");
+    expect(options[3].element.value).toBe("batting_avg");
+    expect(options[4].element.value).toBe("sixty_time");
+    expect(options[5].element.value).toBe("pop_time");
     expect(options[6].element.value).toBe("era");
-    expect(options[7].element.value).toBe("strikeouts");
-    expect(options[8].element.value).toBe("other");
+    expect(options[12].element.value).toBe("other");
+  });
+
+  it("filters the metric-type list to the athlete's primary sport", () => {
+    const wrapper = mount(LogMetricModal, {
+      props: { show: true, primarySport: "Basketball" },
+      global: {
+        stubs: {
+          Teleport: true,
+        },
+      },
+    });
+
+    const values = wrapper
+      .find("#metricType")
+      .findAll("option")
+      .map((o) => o.element.value);
+    expect(values).toEqual([
+      "",
+      "points_per_game",
+      "rebounds_per_game",
+      "assists_per_game",
+      "field_goal_pct",
+      "three_point_pct",
+      "free_throw_pct",
+      "steals_per_game",
+      "blocks_per_game",
+      "vertical_jump",
+      "other",
+    ]);
+    expect(values).not.toContain("velocity");
   });
 
   it("renders unit as a fixed-vocabulary dropdown (no free text)", () => {
@@ -284,7 +312,58 @@ describe("LogMetricModal - Form Submission", () => {
       event_id: null,
       verified: true,
       notes: "Test note",
+      display_value: "92.0 mph",
     });
+  });
+
+  it("requires a custom name for Other and persists it snake_cased as metric_type", async () => {
+    mockCreateMetric.mockResolvedValue({ id: "123" });
+
+    const wrapper = mount(LogMetricModal, {
+      props: { show: true },
+      global: {
+        stubs: {
+          Teleport: true,
+        },
+      },
+    });
+
+    await wrapper.find("#metricType").setValue("other");
+    await wrapper.find("#value").setValue("80");
+    await wrapper.find("#date").setValue("2025-01-15");
+
+    // No custom name yet: submit disabled
+    expect(
+      wrapper.find('button[type="submit"]').attributes("disabled"),
+    ).toBeDefined();
+
+    await wrapper.find("#otherName").setValue("Arm Strength");
+    expect(
+      wrapper.find('button[type="submit"]').attributes("disabled"),
+    ).toBeUndefined();
+
+    await wrapper.find("form").trigger("submit");
+    await flushPromises();
+
+    expect(mockCreateMetric).toHaveBeenCalledWith(
+      expect.objectContaining({
+        metric_type: "arm_strength",
+        value: 80,
+      }),
+    );
+  });
+
+  it("does not show the custom-name field for a known metric type", () => {
+    const wrapper = mount(LogMetricModal, {
+      props: { show: true },
+      global: {
+        stubs: {
+          Teleport: true,
+        },
+      },
+    });
+
+    expect(wrapper.find("#otherName").exists()).toBe(false);
   });
 
   it("emits metric-created event on successful submission", async () => {
