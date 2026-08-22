@@ -158,46 +158,46 @@ values
  'First contact',
  'Any time. Athletes may email at any age — only the coach''s ability to reply is regulated.',
  '150 words',
- $s${{gradYear}} {{position}} | {{carryingTool}} | {{playerName}} | {{hometownCity}}, {{hometownState}}$s$,
- $b${{coachSalutation}},
+ $s${{gradYear}}[[position| {{position}}]][[carryingTool| | {{carryingTool}}]][[playerName| | {{playerName}}]][[hometownCity| | {{hometownCity}},]][[hometownState| {{hometownState}}]]$s$,
+ $b$[[coachSalutation|{{coachSalutation}},]]
 
-My name is {{playerName}}. I'm a {{gradYear}} {{position}} at {{highSchool}} in {{hometownCity}}, {{hometownState}}, and I compete for {{clubTeam}}.
+My name is {{playerName}}. I'm a {{gradYear}} {{position}}[[highSchool| at {{highSchool}}]][[hometownCity| in {{hometownCity}},]][[hometownState| {{hometownState}},]] and I compete[[clubTeam| for {{clubTeam}}]].
 
 {{programNote}} {{fitReason}}
 
 Where I am right now:
 {{metrics}}
-- {{gpaUnweighted}} unweighted GPA, {{testLabel}} {{testScore}}, planning to study {{intendedMajor}}
+- {{gpaUnweighted}} unweighted GPA[[testLabel|, {{testLabel}}]][[testScore| {{testScore}}]], planning to study[[intendedMajor| {{intendedMajor}}]]
 
 Film: {{videoLink}}
 Full profile: {{profileLink}}
 
 My coaches are glad to talk:
-{{hsCoachName}}, {{highSchool}} — {{hsCoachPhone}}
-{{clubCoachName}}, {{clubTeam}} — {{clubCoachPhone}}
+{{hsCoachName}}[[highSchool|, {{highSchool}}]][[hsCoachPhone| — {{hsCoachPhone}}]]
+{{clubCoachName}}[[clubTeam|, {{clubTeam}}]][[clubCoachPhone| — {{clubCoachPhone}}]]
 
-{{questionnaireNote}}I'd welcome any feedback on my film and what you'd want to see from me to fit at {{schoolName}}.
+{{questionnaireNote}}I'd welcome any feedback on my film and what you'd want to see from me to fit[[schoolName| at {{schoolName}}]].
 
 Thank you for your time,
 {{playerName}}
-{{gradYear}} | {{position}} | {{highSchool}}
-{{playerPhone}} | {{playerEmail}}$b$,
+{{gradYear}}[[position| | {{position}}]][[highSchool| | {{highSchool}}]]
+{{playerPhone}}[[playerEmail| | {{playerEmail}}]]$b$,
  '["programNote"]'::jsonb, 10, true),
 
 ('intro-pre-window','email','intro','pre',
  'First contact — before the contact date',
  'For athletes whose sport and division don''t yet allow a coach to reply. Setting that expectation yourself reads as maturity.',
  '150 words',
- $s${{gradYear}} {{position}} | {{carryingTool}} | {{playerName}} | {{hometownCity}}, {{hometownState}}$s$,
- $b${{coachSalutation}},
+ $s${{gradYear}}[[position| {{position}}]][[carryingTool| | {{carryingTool}}]][[playerName| | {{playerName}}]][[hometownCity| | {{hometownCity}},]][[hometownState| {{hometownState}}]]$s$,
+ $b$[[coachSalutation|{{coachSalutation}},]]
 
-My name is {{playerName}}. I'm a {{gradYear}} {{position}} at {{highSchool}} in {{hometownCity}}, {{hometownState}}, and I compete for {{clubTeam}}.
+My name is {{playerName}}. I'm a {{gradYear}} {{position}}[[highSchool| at {{highSchool}}]][[hometownCity| in {{hometownCity}},]][[hometownState| {{hometownState}},]] and I compete[[clubTeam| for {{clubTeam}}]].
 
 {{programNote}} {{fitReason}}
 
 Where I am right now:
 {{metrics}}
-- {{gpaUnweighted}} unweighted GPA, planning to study {{intendedMajor}}
+- {{gpaUnweighted}} unweighted GPA, planning to study[[intendedMajor| {{intendedMajor}}]]
 
 Film: {{videoLink}}
 Full profile: {{profileLink}}
@@ -206,57 +206,57 @@ I understand you may not be able to respond in detail yet given where I am in sc
 
 Thank you,
 {{playerName}}
-{{gradYear}} | {{position}} | {{highSchool}}
-{{playerPhone}} | {{playerEmail}}$b$,
+{{gradYear}}[[position| | {{position}}]][[highSchool| | {{highSchool}}]]
+{{playerPhone}}[[playerEmail| | {{playerEmail}}]]$b$,
  '["programNote"]'::jsonb, 20, true),
 
 ('intro-referral','email','intro','any',
  'First contact — referred by a coach',
  'Send within days of the referral, while your name is still fresh with them.',
  '130 words',
- $s${{referrerName}} suggested I reach out — {{playerName}} | {{gradYear}} {{position}}$s$,
- $b${{coachSalutation}},
+ $s${{referrerName}} suggested I reach out[[playerName| — {{playerName}}]][[gradYear| | {{gradYear}}]][[position| {{position}}]]$s$,
+ $b$[[coachSalutation|{{coachSalutation}},]]
 
-{{referrerName}} suggested I get in touch with you. My name is {{playerName}}, a {{gradYear}} {{position}} at {{highSchool}} in {{hometownCity}}, {{hometownState}}.
+{{referrerName}} suggested I get in touch with you. My name is[[playerName| {{playerName}},]] a {{gradYear}} {{position}}[[highSchool| at {{highSchool}}]][[hometownCity| in {{hometownCity}},]][[hometownState| {{hometownState}}]].
 
 {{programNote}}
 
 {{metrics}}
-- {{gpaUnweighted}} unweighted GPA, {{testLabel}} {{testScore}}
+- {{gpaUnweighted}} unweighted GPA[[testLabel|, {{testLabel}}]][[testScore| {{testScore}}]]
 
 Film: {{videoLink}}
 
-{{referrerName}} can speak to how I work and where I'm headed. I'd appreciate any feedback on whether I'd be a fit at {{schoolName}}.
+{{referrerName}} can speak to how I work and where I'm headed. I'd appreciate any feedback on whether I'd be a fit[[schoolName| at {{schoolName}}]].
 
 Thank you,
 {{playerName}}
-{{gradYear}} | {{position}} | {{playerPhone}}$b$,
+{{gradYear}}[[position| | {{position}}]][[playerPhone| | {{playerPhone}}]]$b$,
  '["programNote","referrerName"]'::jsonb, 30, true),
 
 ('intro-late-cycle','email','intro','any',
  'First contact — senior or late in the cycle',
  'For seniors and post-grads still looking. Be direct about timing; D2, D3, NAIA, and JUCO programs recruit late every year.',
  '140 words',
- $s${{gradYear}} {{position}} still available | {{carryingTool}} | {{playerName}}$s$,
- $b${{coachSalutation}},
+ $s${{gradYear}}[[position| {{position}}]] still available[[carryingTool| | {{carryingTool}}]][[playerName| | {{playerName}}]]$s$,
+ $b$[[coachSalutation|{{coachSalutation}},]]
 
-I'm {{playerName}}, a {{gradYear}} {{position}} at {{highSchool}} in {{hometownCity}}, {{hometownState}}. I'm still looking for the right program and wanted to reach out directly.
+I'm[[playerName| {{playerName}},]] a {{gradYear}} {{position}}[[highSchool| at {{highSchool}}]][[hometownCity| in {{hometownCity}},]][[hometownState| {{hometownState}}]]. I'm still looking for the right program and wanted to reach out directly.
 
 {{programNote}}
 
-Current numbers as of {{metricsAsOf}}:
+Current numbers[[metricsAsOf| as of {{metricsAsOf}}]]:
 {{metrics}}
-- {{gpaUnweighted}} unweighted GPA, {{testLabel}} {{testScore}}
+- {{gpaUnweighted}} unweighted GPA[[testLabel|, {{testLabel}}]][[testScore| {{testScore}}]]
 
 Film: {{videoLink}}
 
 I know where I am in the calendar. If you have a need at my position, I'd welcome a conversation — and if you don't, I'd still value knowing what level you think fits me.
 
-{{hsCoachName}}, {{highSchool}} — {{hsCoachPhone}}
-{{clubCoachName}}, {{clubTeam}} — {{clubCoachPhone}}
+{{hsCoachName}}[[highSchool|, {{highSchool}}]][[hsCoachPhone| — {{hsCoachPhone}}]]
+{{clubCoachName}}[[clubTeam|, {{clubTeam}}]][[clubCoachPhone| — {{clubCoachPhone}}]]
 
 Thank you,
-{{playerName}} | {{gradYear}} | {{position}} | {{playerPhone}}$b$,
+{{playerName}}[[gradYear| | {{gradYear}}]][[position| | {{position}}]][[playerPhone| | {{playerPhone}}]]$b$,
  '["programNote"]'::jsonb, 40, true),
 
 -- === UPDATES ================================================================
@@ -265,26 +265,26 @@ Thank you,
  'New verified numbers',
  'Within a week of a new verified reading. No more than about monthly per program.',
  '90 words',
- $s$Updated — {{carryingTool}} | {{playerName}} | {{gradYear}} {{position}}$s$,
- $b${{coachSalutation}},
+ $s$Updated[[carryingTool| — {{carryingTool}}]][[playerName| | {{playerName}}]][[gradYear| | {{gradYear}}]][[position| {{position}}]]$s$,
+ $b$[[coachSalutation|{{coachSalutation}},]]
 
 Quick update: {{updateHook}}
 
-Current numbers as of {{metricsAsOf}}:
+Current numbers[[metricsAsOf| as of {{metricsAsOf}}]]:
 {{metrics}}
 
-{{schoolName}} is still near the top of my list. Film is current here: {{videoLink}}
+{{schoolName}} is still near the top of my list.[[videoLink| Film is current here: {{videoLink}}]]
 
 Thank you,
-{{playerName}} | {{gradYear}} | {{position}} | {{playerPhone}}$b$,
+{{playerName}}[[gradYear| | {{gradYear}}]][[position| | {{position}}]][[playerPhone| | {{playerPhone}}]]$b$,
  '["updateHook"]'::jsonb, 50, true),
 
 ('update-film','email','update','any',
  'New film',
  'Whenever film is genuinely new. Link it — never attach video.',
  '90 words',
- $s$New film — {{playerName}} | {{gradYear}} {{position}} | {{highSchool}}$s$,
- $b${{coachSalutation}},
+ $s$New film[[playerName| — {{playerName}}]][[gradYear| | {{gradYear}}]][[position| {{position}}]][[highSchool| | {{highSchool}}]]$s$,
+ $b$[[coachSalutation|{{coachSalutation}},]]
 
 I posted new film: {{videoLink}}
 
@@ -292,18 +292,18 @@ I posted new film: {{videoLink}}
 
 Since I last reached out, {{updateHook}}
 
-If you have a minute, I'd value your honest read on what stands out and what I need to clean up to compete at {{schoolName}}.
+If you have a minute, I'd value your honest read on what stands out and what I need to clean up to compete[[schoolName| at {{schoolName}}]].
 
 Thank you,
-{{playerName}} | {{gradYear}} | {{position}} | {{playerPhone}}$b$,
+{{playerName}}[[gradYear| | {{gradYear}}]][[position| | {{position}}]][[playerPhone| | {{playerPhone}}]]$b$,
  '["updateHook","filmDescription"]'::jsonb, 60, true),
 
 ('update-academic','email','update','any',
  'Academic update',
  'New transcript, new test score, or a completed eligibility-center step.',
  '80 words',
- $s$Academic update — {{playerName}} | {{gradYear}} {{position}} | {{gpaUnweighted}} GPA$s$,
- $b${{coachSalutation}},
+ $s$Academic update[[playerName| — {{playerName}}]][[gradYear| | {{gradYear}}]][[position| {{position}}]][[gpaUnweighted| | {{gpaUnweighted}} GPA]]$s$,
+ $b$[[coachSalutation|{{coachSalutation}},]]
 
 An academic update: {{updateHook}}
 
@@ -313,20 +313,20 @@ An academic update: {{updateHook}}
 - {{academicHonors}}
 - NCAA Eligibility Center ID: {{ncaaId}}
 
-Still very interested in {{schoolName}}.
+Still very interested[[schoolName| in {{schoolName}}]].
 
 Thank you,
-{{playerName}} | {{gradYear}} | {{position}} | {{playerPhone}}$b$,
+{{playerName}}[[gradYear| | {{gradYear}}]][[position| | {{position}}]][[playerPhone| | {{playerPhone}}]]$b$,
  '["updateHook"]'::jsonb, 70, true),
 
 ('update-season','email','update','any',
  'Season or team result',
  'End of a season, or after a result worth reporting.',
  '90 words',
- $s${{seasonLabel}} results — {{playerName}} | {{gradYear}} {{position}}$s$,
- $b${{coachSalutation}},
+ $s${{seasonLabel}} results[[playerName| — {{playerName}}]][[gradYear| | {{gradYear}}]][[position| {{position}}]]$s$,
+ $b$[[coachSalutation|{{coachSalutation}},]]
 
-Wrapping up {{seasonLabel}}: {{updateHook}}
+Wrapping up[[seasonLabel| {{seasonLabel}}:]] {{updateHook}}
 
 - {{seasonStatLine}}
 - {{teamAccomplishment}}
@@ -334,18 +334,18 @@ Wrapping up {{seasonLabel}}: {{updateHook}}
 
 Film from the season: {{videoLink}}
 
-Still very interested in {{schoolName}}, and I'd value knowing what you'd want to see from me next.
+Still very interested[[schoolName| in {{schoolName}},]] and I'd value knowing what you'd want to see from me next.
 
 Thank you,
-{{playerName}} | {{gradYear}} | {{position}} | {{playerPhone}}$b$,
+{{playerName}}[[gradYear| | {{gradYear}}]][[position| | {{position}}]][[playerPhone| | {{playerPhone}}]]$b$,
  '["updateHook"]'::jsonb, 80, true),
 
 ('update-role-change','email','update','any',
  'Position or role change',
  'When the athlete changes position, event, or role — coaches evaluate by roster slot.',
  '80 words',
- $s$Position update — {{playerName}} | {{gradYear}} | now {{position}}$s$,
- $b${{coachSalutation}},
+ $s$Position update[[playerName| — {{playerName}}]][[gradYear| | {{gradYear}}]][[position| | now {{position}}]]$s$,
+ $b$[[coachSalutation|{{coachSalutation}},]]
 
 Wanted to let you know about a change: {{roleChange}}
 
@@ -359,28 +359,28 @@ Current numbers:
 I think this makes me a better fit for what {{schoolName}} needs, and I'd welcome your read on that.
 
 Thank you,
-{{playerName}} | {{gradYear}} | {{position}} | {{playerPhone}}$b$,
+{{playerName}}[[gradYear| | {{gradYear}}]][[position| | {{position}}]][[playerPhone| | {{playerPhone}}]]$b$,
  '["roleChange","updateHook"]'::jsonb, 90, true),
 
 ('update-injury','email','update','any',
  'Injury and recovery update',
  'Send it. Coaches hear about injuries anyway, and hearing it from the athlete first builds more trust than silence does.',
  '90 words',
- $s$Status update — {{playerName}} | {{gradYear}} {{position}}$s$,
- $b${{coachSalutation}},
+ $s$Status update[[playerName| — {{playerName}}]][[gradYear| | {{gradYear}}]][[position| {{position}}]]$s$,
+ $b$[[coachSalutation|{{coachSalutation}},]]
 
 I want to be straightforward with you about where I am. {{injuryNote}}
 
 {{returnTimeline}}
 
-I'm still very interested in {{schoolName}} and I'm not slowing down on the work — {{updateHook}}
+I'm still very interested[[schoolName| in {{schoolName}}]] and I'm not slowing down on the work — {{updateHook}}
 
-{{hsCoachName}} at {{highSchool}} can speak to my rehab and progress: {{hsCoachPhone}}
+{{hsCoachName}}[[highSchool| at {{highSchool}}]] can speak to my rehab and progress[[hsCoachPhone|: {{hsCoachPhone}}]]
 
 I'll keep you posted as I get closer to full go.
 
 Thank you,
-{{playerName}} | {{gradYear}} | {{position}} | {{playerPhone}}$b$,
+{{playerName}}[[gradYear| | {{gradYear}}]][[position| | {{position}}]][[playerPhone| | {{playerPhone}}]]$b$,
  '["injuryNote","returnTimeline"]'::jsonb, 100, true),
 
 -- === EVENTS =================================================================
@@ -389,10 +389,10 @@ Thank you,
  'Upcoming showcase or tournament',
  '10–14 days out. Coaches build their event schedules days ahead — a night-before email is wasted.',
  '140 words',
- $s${{eventName}} — {{playerName}} | {{gradYear}} {{position}} | #{{jerseyNumber}}$s$,
- $b${{coachSalutation}},
+ $s${{eventName}}[[playerName| — {{playerName}}]][[gradYear| | {{gradYear}}]][[position| {{position}}]][[jerseyNumber| | #{{jerseyNumber}}]]$s$,
+ $b$[[coachSalutation|{{coachSalutation}},]]
 
-I'll be competing at {{eventName}} in {{eventLocation}}, {{eventDates}}, for {{teamAtEvent}}. I'll be #{{jerseyNumber}}.
+I'll be competing[[eventName| at {{eventName}}]][[eventLocation| in {{eventLocation}},]][[eventDates| {{eventDates}},]][[teamAtEvent| for {{teamAtEvent}}]]. I'll be[[jerseyNumber| #{{jerseyNumber}}]].
 
 Schedule:
 {{eventSchedule}}
@@ -404,11 +404,11 @@ If anyone on your staff is on site, I'd love the chance to be evaluated. Any fee
 Film if it's useful beforehand: {{videoLink}}
 Event roster: {{rosterLink}}
 
-{{hsCoachName}}, {{highSchool}} — {{hsCoachPhone}}
-{{clubCoachName}}, {{clubTeam}} — {{clubCoachPhone}}
+{{hsCoachName}}[[highSchool|, {{highSchool}}]][[hsCoachPhone| — {{hsCoachPhone}}]]
+{{clubCoachName}}[[clubTeam|, {{clubTeam}}]][[clubCoachPhone| — {{clubCoachPhone}}]]
 
 Thank you,
-{{playerName}} | {{gradYear}} | {{position}} | {{playerPhone}}$b$,
+{{playerName}}[[gradYear| | {{gradYear}}]][[position| | {{position}}]][[playerPhone| | {{playerPhone}}]]$b$,
  '[]'::jsonb, 110, true),
 
 ('event-season-schedule','email','event','any',
@@ -416,34 +416,34 @@ Thank you,
  'Start of a high school or club season, or when a coach asks for the schedule.',
  '110 words',
  $s${{highSchool}} {{seasonLabel}} schedule — {{playerName}} | {{gradYear}} {{position}}$s$,
- $b${{coachSalutation}},
+ $b$[[coachSalutation|{{coachSalutation}},]]
 
 My {{seasonLabel}} schedule is set. Any of these are open if you or someone on your staff is in the area:
 
 {{eventSchedule}}
 
-I wear #{{jerseyNumber}} and play {{position}}. {{roleNote}}
+I wear[[jerseyNumber| #{{jerseyNumber}}]] and play {{position}}. {{roleNote}}
 
 {{updateHook}}
 
-{{hsCoachName}}, {{highSchool}} — {{hsCoachPhone}}
+{{hsCoachName}}[[highSchool|, {{highSchool}}]][[hsCoachPhone| — {{hsCoachPhone}}]]
 
 Thank you,
-{{playerName}} | {{gradYear}} | {{position}} | {{playerPhone}}$b$,
+{{playerName}}[[gradYear| | {{gradYear}}]][[position| | {{position}}]][[playerPhone| | {{playerPhone}}]]$b$,
  '[]'::jsonb, 120, true),
 
 ('event-camp-registered','email','event','any',
  'Registered for your camp',
  'Right after registering. Coaches build evaluation lists before camp day.',
  '90 words',
- $s$Registered for {{eventName}} — {{playerName}} | {{gradYear}} {{position}}$s$,
- $b${{coachSalutation}},
+ $s$Registered[[eventName| for {{eventName}}]][[playerName| — {{playerName}}]][[gradYear| | {{gradYear}}]][[position| {{position}}]]$s$,
+ $b$[[coachSalutation|{{coachSalutation}},]]
 
-I registered for {{eventName}} on {{visitDate}} and I'm looking forward to it.
+I registered[[eventName| for {{eventName}}]][[visitDate| on {{visitDate}}]] and I'm looking forward to it.
 
 {{programNote}}
 
-So you know what to look for: I'm a {{gradYear}} {{position}}, {{height}}, {{dominantSide}}, and I'll be #{{jerseyNumber}}.
+So you know what to look for: I'm a {{gradYear}} {{position}}[[height|, {{height}}]][[dominantSide|, {{dominantSide}}]][[jerseyNumber|, and I'll be #{{jerseyNumber}}]].
 
 {{metrics}}
 
@@ -452,7 +452,7 @@ Film ahead of time: {{videoLink}}
 I'd appreciate any direct evaluation you can give me while I'm there.
 
 Thank you,
-{{playerName}} | {{gradYear}} | {{position}} | {{playerPhone}}$b$,
+{{playerName}}[[gradYear| | {{gradYear}}]][[position| | {{position}}]][[playerPhone| | {{playerPhone}}]]$b$,
  '["programNote"]'::jsonb, 130, true),
 
 -- === POST-EVENT =============================================================
@@ -461,10 +461,10 @@ Thank you,
  'After a showcase or tournament',
  '24–72 hours after. Honest beats flattering — coaches named self-praise as content they don''t want.',
  '110 words',
- $s$Following up — {{eventName}} | {{playerName}} | {{gradYear}} {{position}}$s$,
- $b${{coachSalutation}},
+ $s$Following up[[eventName| — {{eventName}}]][[playerName| | {{playerName}}]][[gradYear| | {{gradYear}}]][[position| {{position}}]]$s$,
+ $b$[[coachSalutation|{{coachSalutation}},]]
 
-Thanks for the chance to be seen at {{eventName}}. I was #{{jerseyNumber}} for {{teamAtEvent}}.
+Thanks for the chance to be seen[[eventName| at {{eventName}}]]. I was[[jerseyNumber| #{{jerseyNumber}}]][[teamAtEvent| for {{teamAtEvent}}]].
 
 How it went: {{performanceSummary}}
 
@@ -473,27 +473,27 @@ Updated numbers from the event:
 
 Event film: {{videoLink}}
 
-I'd value your evaluation, including what I need to improve. My next event is {{nextEventName}} on {{nextEventDates}}.
+I'd value your evaluation, including what I need to improve. My next event is[[nextEventName| {{nextEventName}}]][[nextEventDates| on {{nextEventDates}}]].
 
 Thank you,
-{{playerName}} | {{gradYear}} | {{position}} | {{playerPhone}}$b$,
+{{playerName}}[[gradYear| | {{gradYear}}]][[position| | {{position}}]][[playerPhone| | {{playerPhone}}]]$b$,
  '["performanceSummary"]'::jsonb, 140, true),
 
 ('post-camp-thanks','email','thanks','any',
  'Thank you after a camp',
  'Within 24–48 hours. CC the rest of the staff. For top programs, consider a handwritten note too — rare enough now that it lands.',
  '80 words',
- $s$Thank you — {{eventName}} | {{playerName}} | {{gradYear}} {{position}}$s$,
- $b${{coachSalutation}},
+ $s$Thank you[[eventName| — {{eventName}}]][[playerName| | {{playerName}}]][[gradYear| | {{gradYear}}]][[position| {{position}}]]$s$,
+ $b$[[coachSalutation|{{coachSalutation}},]]
 
-Thank you for {{eventName}} on {{visitDate}}. {{specificMoment}}
+Thank you[[eventName| for {{eventName}}]][[visitDate| on {{visitDate}}]]. {{specificMoment}}
 
-It confirmed what I thought about {{schoolName}}. I'd like to stay in touch as I keep working.
+It confirmed what I thought[[schoolName| about {{schoolName}}]]. I'd like to stay in touch as I keep working.
 
 Thank you again for your time,
 {{playerName}}
-{{gradYear}} | {{position}} | {{highSchool}}
-{{playerPhone}} | {{playerEmail}}$b$,
+{{gradYear}}[[position| | {{position}}]][[highSchool| | {{highSchool}}]]
+{{playerPhone}}[[playerEmail| | {{playerEmail}}]]$b$,
  '["specificMoment"]'::jsonb, 150, true),
 
 -- === RELATIONSHIP ===========================================================
@@ -502,25 +502,25 @@ Thank you again for your time,
  'Follow up after no response',
  '7–14 days after the intro, and only with a real update. Cap at two — then widen the list instead.',
  '80 words',
- $s${{updateHookShort}} — {{playerName}} | {{gradYear}} {{position}}$s$,
- $b${{coachSalutation}},
+ $s${{updateHookShort}}[[playerName| — {{playerName}}]][[gradYear| | {{gradYear}}]][[position| {{position}}]]$s$,
+ $b$[[coachSalutation|{{coachSalutation}},]]
 
-Following up on my note from {{daysSinceContact}} days ago. Since then, {{updateHook}}
+Following up on my note[[daysSinceContact| from {{daysSinceContact}} days ago]]. Since then, {{updateHook}}
 
 Current film: {{videoLink}}
 
-I'm still very interested in {{schoolName}}. If it helps, my coach {{hsCoachName}} is happy to talk — {{hsCoachPhone}}.
+I'm still very interested[[schoolName| in {{schoolName}}]]. If it helps, my coach {{hsCoachName}} is happy to talk[[hsCoachPhone| — {{hsCoachPhone}}]].
 
 Thank you,
-{{playerName}} | {{gradYear}} | {{position}} | {{playerPhone}}$b$,
+{{playerName}}[[gradYear| | {{gradYear}}]][[position| | {{position}}]][[playerPhone| | {{playerPhone}}]]$b$,
  '["updateHook"]'::jsonb, 160, true),
 
 ('reply-first-response','email','reply','post',
  'Replying to a coach''s first response',
  'Within 24 hours. This is where most athletes stall out.',
  '90 words',
- $s$Re: {{playerName}} | {{gradYear}} {{position}}$s$,
- $b${{coachSalutation}},
+ $s$Re: {{playerName}}[[gradYear| | {{gradYear}}]][[position| {{position}}]]$s$,
+ $b$[[coachSalutation|{{coachSalutation}},]]
 
 Thank you for getting back to me — that means a lot.
 
@@ -532,15 +532,15 @@ My schedule over the next few weeks, in case any of it works:
 {{eventSchedule}}
 
 Thanks again,
-{{playerName}} | {{gradYear}} | {{position}} | {{playerPhone}}$b$,
+{{playerName}}[[gradYear| | {{gradYear}}]][[position| | {{position}}]][[playerPhone| | {{playerPhone}}]]$b$,
  '["answerTheirQuestion","questionBack"]'::jsonb, 170, true),
 
 ('thanks-phone-call','email','thanks','post',
  'Thank you after a phone call',
  'Same day. Short.',
  '70 words',
- $s$Thank you for the call — {{playerName}} | {{gradYear}} {{position}}$s$,
- $b${{coachSalutation}},
+ $s$Thank you for the call[[playerName| — {{playerName}}]][[gradYear| | {{gradYear}}]][[position| {{position}}]]$s$,
+ $b$[[coachSalutation|{{coachSalutation}},]]
 
 Thanks for taking the time to talk today. {{specificTakeaway}}
 
@@ -549,15 +549,15 @@ Thanks for taking the time to talk today. {{specificTakeaway}}
 I'll keep you updated as things develop on my end.
 
 Thank you,
-{{playerName}} | {{gradYear}} | {{position}} | {{playerPhone}}$b$,
+{{playerName}}[[gradYear| | {{gradYear}}]][[position| | {{position}}]][[playerPhone| | {{playerPhone}}]]$b$,
  '["specificTakeaway"]'::jsonb, 180, true),
 
 ('visit-request','email','visit','post',
  'Requesting a visit',
  'After real back-and-forth. Offer specific dates — it makes saying yes easy.',
  '90 words',
- $s$Visit request — {{playerName}} | {{gradYear}} {{position}}$s$,
- $b${{coachSalutation}},
+ $s$Visit request[[playerName| — {{playerName}}]][[gradYear| | {{gradYear}}]][[position| {{position}}]]$s$,
+ $b$[[coachSalutation|{{coachSalutation}},]]
 
 I'd like to get on campus and see {{schoolShortName}} in person.
 
@@ -569,17 +569,17 @@ These dates work for my family:
 If none of those fit, I'm glad to work around your calendar. I'd love to see a practice and meet some of the guys if that's possible.
 
 Thank you,
-{{playerName}} | {{gradYear}} | {{position}} | {{playerPhone}}$b$,
+{{playerName}}[[gradYear| | {{gradYear}}]][[position| | {{position}}]][[playerPhone| | {{playerPhone}}]]$b$,
  '["programNote"]'::jsonb, 190, true),
 
 ('thanks-visit','email','thanks','post',
  'Thank you after a campus visit',
  'Within 24 hours. CC the full staff.',
  '90 words',
- $s$Thank you for the visit — {{playerName}} | {{gradYear}} {{position}}$s$,
- $b${{coachSalutation}},
+ $s$Thank you for the visit[[playerName| — {{playerName}}]][[gradYear| | {{gradYear}}]][[position| {{position}}]]$s$,
+ $b$[[coachSalutation|{{coachSalutation}},]]
 
-Thank you for having me on campus on {{visitDate}}. {{specificMoment}}
+Thank you for having me on campus[[visitDate| on {{visitDate}}]]. {{specificMoment}}
 
 {{fitReason}}
 
@@ -588,34 +588,34 @@ Thank you for having me on campus on {{visitDate}}. {{specificMoment}}
 Please thank the rest of your staff for me as well.
 
 {{playerName}}
-{{gradYear}} | {{position}} | {{highSchool}}
-{{playerPhone}} | {{playerEmail}}$b$,
+{{gradYear}}[[position| | {{position}}]][[highSchool| | {{highSchool}}]]
+{{playerPhone}}[[playerEmail| | {{playerEmail}}]]$b$,
  '["specificMoment"]'::jsonb, 200, true),
 
 ('status-check','email','status','post',
  'Asking where you stand',
  'Only after a call or a visit. Never as a second email.',
  '80 words',
- $s$Checking in on the {{gradYear}} class — {{playerName}} | {{position}}$s$,
- $b${{coachSalutation}},
+ $s$Checking in on the {{gradYear}} class[[playerName| — {{playerName}}]][[position| | {{position}}]]$s$,
+ $b$[[coachSalutation|{{coachSalutation}},]]
 
-I appreciate the conversations we've had about {{schoolName}}.
+I appreciate the conversations we've had[[schoolName| about {{schoolName}}]].
 
 I'd like an honest read: where do I sit for you in the {{gradYear}} class, and what would you need to see from me between now and {{decisionTimeframe}}?
 
 I'd rather know the real answer than guess at it. Either way, thank you for the time you've given me.
 
-{{playerName}} | {{gradYear}} | {{position}} | {{playerPhone}}$b$,
+{{playerName}}[[gradYear| | {{gradYear}}]][[position| | {{position}}]][[playerPhone| | {{playerPhone}}]]$b$,
  '["decisionTimeframe"]'::jsonb, 210, true),
 
 ('decision-request-time','email','decision','post',
  'Asking for time on an offer',
  'Within a day or two of the offer. Being straight about your timeline is normal and coaches expect it.',
  '90 words',
- $s$Thank you — {{playerName}} | {{gradYear}} {{position}}$s$,
- $b${{coachSalutation}},
+ $s$Thank you[[playerName| — {{playerName}}]][[gradYear| | {{gradYear}}]][[position| {{position}}]]$s$,
+ $b$[[coachSalutation|{{coachSalutation}},]]
 
-Thank you for the offer to join {{schoolName}}. It means a great deal, and I want you to know I'm taking it seriously.
+Thank you for the offer to join[[schoolName| {{schoolName}}]]. It means a great deal, and I want you to know I'm taking it seriously.
 
 {{offerDetails}}
 
@@ -624,38 +624,38 @@ I'd like to talk it through with my family and finish two visits I already have 
 If that timeline creates a problem on your end, tell me and we'll work with it.
 
 Thank you again,
-{{playerName}} | {{gradYear}} | {{position}} | {{playerPhone}}$b$,
+{{playerName}}[[gradYear| | {{gradYear}}]][[position| | {{position}}]][[playerPhone| | {{playerPhone}}]]$b$,
  '["decisionTimeframe"]'::jsonb, 220, true),
 
 ('decision-decline','email','decision','post',
  'Declining respectfully',
  'Send it. Coaching staffs are small and they talk — how you close a door matters.',
  '80 words',
- $s$Thank you, {{coachSalutation}} — {{playerName}}$s$,
- $b${{coachSalutation}},
+ $s$Thank you[[coachSalutation|, {{coachSalutation}}]][[playerName| — {{playerName}}]]$s$,
+ $b$[[coachSalutation|{{coachSalutation}},]]
 
 I want you to hear this from me directly: I've decided to commit elsewhere.
 
 Thank you for the time and honesty you gave me through this process. {{specificMoment}}
 
-I have a lot of respect for what you're building at {{schoolName}}, and I'll be pulling for your guys.
+I have a lot of respect for what you're building[[schoolName| at {{schoolName}},]] and I'll be pulling for your guys.
 
 Thank you,
-{{playerName}} | {{gradYear}} | {{position}}$b$,
+{{playerName}}[[gradYear| | {{gradYear}}]][[position| | {{position}}]]$b$,
  '["specificMoment"]'::jsonb, 230, true),
 
 ('reconnect','email','intro','any',
  'Reconnecting after a long gap',
  'Six months or more since the last contact. Lead with what changed, not with an apology.',
  '90 words',
- $s$Reintroducing myself — {{playerName}} | {{gradYear}} {{position}} | {{carryingTool}}$s$,
- $b${{coachSalutation}},
+ $s$Reintroducing myself[[playerName| — {{playerName}}]][[gradYear| | {{gradYear}}]][[position| {{position}}]][[carryingTool| | {{carryingTool}}]]$s$,
+ $b$[[coachSalutation|{{coachSalutation}},]]
 
-We connected a while back — I'm {{playerName}}, a {{gradYear}} {{position}} at {{highSchool}}. A lot has changed since then.
+We connected a while back — I'm[[playerName| {{playerName}},]] a {{gradYear}} {{position}}[[highSchool| at {{highSchool}}]]. A lot has changed since then.
 
 {{updateHook}}
 
-Current numbers as of {{metricsAsOf}}:
+Current numbers[[metricsAsOf| as of {{metricsAsOf}}]]:
 {{metrics}}
 
 New film: {{videoLink}}
@@ -663,7 +663,7 @@ New film: {{videoLink}}
 {{schoolName}} is still a program I'd like to be part of. Worth another look?
 
 Thank you,
-{{playerName}} | {{gradYear}} | {{position}} | {{playerPhone}}$b$,
+{{playerName}}[[gradYear| | {{gradYear}}]][[position| | {{position}}]][[playerPhone| | {{playerPhone}}]]$b$,
  '["updateHook"]'::jsonb, 240, true),
 
 -- === TEXT ===================================================================
@@ -673,57 +673,57 @@ Thank you,
  'First text after permission',
  'Only after the coach texts first or says it''s fine.', '2 lines',
  null,
- $b${{coachSalutation}} — thanks for the OK to text. {{updateHook}}
+ $b$[[coachSalutation|{{coachSalutation}} —]] thanks for the OK to text. {{updateHook}}
 Let me know if a call works better this week.
-— {{playerName}}, {{gradYear}} {{position}}$b$,
+— {{playerName}}[[gradYear|, {{gradYear}}]][[position| {{position}}]]$b$,
  '["updateHook"]'::jsonb, 300, true),
 
 ('text-event-day','message','event','post',
  'Event day heads-up',
  'Morning of, or the night before.', '2 lines',
  null,
- $b${{coachSalutation}} — competing today at {{eventName}}, {{eventSchedule}}. #{{jerseyNumber}}, {{position}}. Hope to see you there.
-— {{playerName}}, {{gradYear}}$b$,
+ $b$[[coachSalutation|{{coachSalutation}} —]] competing today[[eventName| at {{eventName}},]][[eventSchedule| {{eventSchedule}}]].[[jerseyNumber| #{{jerseyNumber}},]][[position| {{position}}]]. Hope to see you there.
+— {{playerName}}[[gradYear|, {{gradYear}}]]$b$,
  '[]'::jsonb, 310, true),
 
 ('text-post-call','message','thanks','post',
  'After a call',
  'Same day. Follow with an email to the full staff.', '2 lines',
  null,
- $b${{coachSalutation}} — thanks for the call today. {{specificTakeaway}} {{schoolShortName}} is a place I could see myself. Talk soon.
-— {{playerName}}, {{gradYear}} {{position}}$b$,
+ $b$[[coachSalutation|{{coachSalutation}} —]] thanks for the call today. {{specificTakeaway}} {{schoolShortName}} is a place I could see myself. Talk soon.
+— {{playerName}}[[gradYear|, {{gradYear}}]][[position| {{position}}]]$b$,
  '["specificTakeaway"]'::jsonb, 320, true),
 
 ('text-arriving','message','visit','post',
  'Arriving on campus',
  'On arrival, if you''ve already been texting.', '1 line',
  null,
- $b${{coachSalutation}} — just got to campus, looking forward to today.
-— {{playerName}}, {{gradYear}}$b$,
+ $b$[[coachSalutation|{{coachSalutation}} —]] just got to campus, looking forward to today.
+— {{playerName}}[[gradYear|, {{gradYear}}]]$b$,
  '[]'::jsonb, 330, true),
 
 ('text-update','message','update','post',
  'Quick update',
  'Sparingly. Email is still the default channel for updates.', '2 lines',
  null,
- $b${{coachSalutation}} — quick one: {{updateHook}}. New film if you want it: {{videoLink}}
-— {{playerName}}, {{gradYear}} {{position}}$b$,
+ $b$[[coachSalutation|{{coachSalutation}} —]] quick one: {{updateHook}}.[[videoLink| New film if you want it: {{videoLink}}]]
+— {{playerName}}[[gradYear|, {{gradYear}}]][[position| {{position}}]]$b$,
  '["updateHook"]'::jsonb, 340, true),
 
 ('text-thanks-visit','message','thanks','post',
  'After a visit',
  'Same day, in addition to the email — not instead of it.', '2 lines',
  null,
- $b${{coachSalutation}} — thank you for today. {{specificTakeaway}} Really appreciated the time.
-— {{playerName}}, {{gradYear}} {{position}}$b$,
+ $b$[[coachSalutation|{{coachSalutation}} —]] thank you for today. {{specificTakeaway}} Really appreciated the time.
+— {{playerName}}[[gradYear|, {{gradYear}}]][[position| {{position}}]]$b$,
  '["specificTakeaway"]'::jsonb, 350, true),
 
 ('text-schedule-reply','message','reply','post',
  'Answering a coach''s question by text',
  'Within a few hours. A reply the same day is plenty.', '2 lines',
  null,
- $b${{coachSalutation}} — {{answerTheirQuestion}}
-— {{playerName}}, {{gradYear}} {{position}}$b$,
+ $b$[[coachSalutation|{{coachSalutation}} —]] {{answerTheirQuestion}}
+— {{playerName}}[[gradYear|, {{gradYear}}]][[position| {{position}}]]$b$,
  '["answerTheirQuestion"]'::jsonb, 360, true),
 
 -- === SOCIAL =================================================================
@@ -732,14 +732,14 @@ Let me know if a call works better this week.
  'Public thank-you after a visit',
  'After the visit, and after the private thank-you email.', '1 post',
  null,
- $b$Thank you to the coaching staff at @{{schoolTwitter}} for having me on campus today. Great to see the program up close.$b$,
+ $b$Thank you to the coaching staff[[schoolTwitter| at @{{schoolTwitter}}]] for having me on campus today. Great to see the program up close.$b$,
  '[]'::jsonb, 400, true),
 
 ('social-commitment','social','decision','any',
  'Commitment announcement',
  'After you''ve told every coach who recruited you, privately, first.', '1 post',
  null,
- $b$Committed. Thank you to @{{schoolTwitter}} for the opportunity, and to my coaches and family for getting me here.$b$,
+ $b$Committed. Thank you[[schoolTwitter| to @{{schoolTwitter}}]] for the opportunity, and to my coaches and family for getting me here.$b$,
  '[]'::jsonb, 410, true)
 
 -- partial unique index arbiter (Phase 0) requires the matching predicate here:
