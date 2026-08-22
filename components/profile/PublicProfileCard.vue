@@ -153,49 +153,30 @@ function formatGPA(gpa: number | undefined): string {
             </dd>
           </div>
         </dl>
-        <!-- Recruiting Database IDs -->
-        <div
-          v-if="
-            profile.athletic.ncaa_id ||
-            profile.athletic.perfect_game_id ||
-            profile.athletic.prep_baseball_id
-          "
-          class="mt-4 pt-4 border-t border-gray-100"
+      </section>
+
+      <!-- Film Links -->
+      <section v-if="profile.film?.length" class="px-6 py-5">
+        <h2
+          class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3"
         >
-          <p class="text-xs text-gray-400 mb-2">Recruiting IDs</p>
-          <dl class="space-y-1.5 text-sm">
-            <div v-if="profile.athletic.ncaa_id" class="flex justify-between">
-              <dt class="text-gray-500">NCAA ID</dt>
-              <dd class="font-mono font-medium text-gray-900">
-                {{ profile.athletic.ncaa_id }}
-              </dd>
-            </div>
-            <div
-              v-if="profile.athletic.perfect_game_id"
-              class="flex justify-between"
+          Film
+        </h2>
+        <ul class="space-y-2">
+          <li v-for="link in profile.film" :key="link.url">
+            <a
+              :href="link.url"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 hover:underline"
             >
-              <dt class="text-gray-500">Perfect Game</dt>
-              <dd class="font-medium">
-                <a
-                  :href="`https://www.perfectgame.org/Players/Playerprofile.aspx?ID=${profile.athletic.perfect_game_id}`"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="text-blue-600 hover:text-blue-800 hover:underline font-mono"
-                  >{{ profile.athletic.perfect_game_id }}</a
-                >
-              </dd>
-            </div>
-            <div
-              v-if="profile.athletic.prep_baseball_id"
-              class="flex justify-between"
-            >
-              <dt class="text-gray-500">Prep Baseball</dt>
-              <dd class="font-mono font-medium text-gray-900">
-                {{ profile.athletic.prep_baseball_id }}
-              </dd>
-            </div>
-          </dl>
-        </div>
+              <span class="capitalize">{{ link.platform }}</span>
+              <span v-if="link.title" class="text-gray-500"
+                >— {{ link.title }}</span
+              >
+            </a>
+          </li>
+        </ul>
       </section>
 
       <!-- Academic Stats -->
@@ -261,48 +242,6 @@ function formatGPA(gpa: number | undefined): string {
         </div>
       </section>
 
-      <!-- Film Links -->
-      <section v-if="profile.film?.length" class="px-6 py-5">
-        <h2
-          class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3"
-        >
-          Film
-        </h2>
-        <ul class="space-y-2">
-          <li v-for="link in profile.film" :key="link.url">
-            <a
-              :href="link.url"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 hover:underline"
-            >
-              <span class="capitalize">{{ link.platform }}</span>
-              <span v-if="link.title" class="text-gray-500"
-                >— {{ link.title }}</span
-              >
-            </a>
-          </li>
-        </ul>
-      </section>
-
-      <!-- Target Schools -->
-      <section v-if="profile.schools?.length" class="px-6 py-5">
-        <h2
-          class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3"
-        >
-          Target Schools
-        </h2>
-        <ul class="space-y-1">
-          <li
-            v-for="school in profile.schools"
-            :key="school.id"
-            class="text-sm text-gray-700"
-          >
-            {{ school.name }}
-          </li>
-        </ul>
-      </section>
-
       <!-- Social -->
       <section v-if="socialLinks.length" class="px-6 py-5">
         <h2
@@ -340,6 +279,55 @@ function formatGPA(gpa: number | undefined): string {
                   />
                 </svg>
               </button>
+            </dd>
+          </div>
+        </dl>
+      </section>
+
+      <!-- Recruiting Database IDs -->
+      <section
+        v-if="
+          profile.athletic &&
+          (profile.athletic.ncaa_id ||
+            profile.athletic.perfect_game_id ||
+            profile.athletic.prep_baseball_id)
+        "
+        class="px-6 py-5"
+      >
+        <h2
+          class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3"
+        >
+          Recruiting IDs
+        </h2>
+        <dl class="space-y-1.5 text-sm">
+          <div v-if="profile.athletic.ncaa_id" class="flex justify-between">
+            <dt class="text-gray-500">NCAA ID</dt>
+            <dd class="font-mono font-medium text-gray-900">
+              {{ profile.athletic.ncaa_id }}
+            </dd>
+          </div>
+          <div
+            v-if="profile.athletic.perfect_game_id"
+            class="flex justify-between"
+          >
+            <dt class="text-gray-500">Perfect Game</dt>
+            <dd class="font-medium">
+              <a
+                :href="`https://www.perfectgame.org/Players/Playerprofile.aspx?ID=${profile.athletic.perfect_game_id}`"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-blue-600 hover:text-blue-800 hover:underline font-mono"
+                >{{ profile.athletic.perfect_game_id }}</a
+              >
+            </dd>
+          </div>
+          <div
+            v-if="profile.athletic.prep_baseball_id"
+            class="flex justify-between"
+          >
+            <dt class="text-gray-500">Prep Baseball</dt>
+            <dd class="font-mono font-medium text-gray-900">
+              {{ profile.athletic.prep_baseball_id }}
             </dd>
           </div>
         </dl>
