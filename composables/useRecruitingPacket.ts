@@ -117,6 +117,12 @@ export const useRecruitingPacket = () => {
         details?.primary_position,
       ) || undefined;
 
+    // Bats/Throws shown as "R/R"; degrade gracefully if only one is set.
+    const batsThrows =
+      details?.bats || details?.throws
+        ? `${details?.bats ?? "—"}/${details?.throws ?? "—"}`
+        : undefined;
+
     return {
       id: userStore.user.id,
       email: userStore.user.email,
@@ -125,6 +131,9 @@ export const useRecruitingPacket = () => {
       height: formatHeight(details?.height_inches),
       weight: details?.weight_lbs ? `${details.weight_lbs} lbs` : undefined,
       position,
+      bats_throws: batsThrows,
+      // Recruiting phone only when the athlete opted to share it.
+      phone: details?.allow_share_phone ? details?.phone : undefined,
       high_school: details?.school_name ?? details?.high_school,
       school_name: details?.school_name,
       graduation_year: details?.graduation_year,
