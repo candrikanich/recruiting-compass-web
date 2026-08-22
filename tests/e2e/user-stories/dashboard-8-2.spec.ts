@@ -1,10 +1,13 @@
 import { test, expect } from "@playwright/test";
 import { DashboardPage } from "../pages/DashboardPage";
+import { AuthPage } from "../pages/AuthPage";
 import {
   getSupabaseAdmin,
   findUserIdByEmail,
   seedSchoolsWithInteractions,
   deleteSeededSchools,
+  createOneOffTestUser,
+  deleteOneOffTestUser,
   type SeededSchools,
 } from "../seed/helpers/supabase-admin";
 import { TEST_ACCOUNTS } from "../config/test-accounts";
@@ -66,71 +69,53 @@ test.describe("User Story 8.2: Contact Frequency Summary", () => {
   test("AC1: Scenario 1 - Contact Summary Metrics displayed correctly", async ({
     page,
   }) => {
-    // beforeEach already navigated to dashboard; no need to goto() again
-
-    const contactFreqWidget = page.locator(
-      '[data-testid="contact-frequency-widget"]',
-    );
+    test.skip(!seedReady, "dashboard-8-2 seed unavailable");
+    // beforeEach seeded ≥4 schools with interactions, so the metrics grid
+    // always renders. Assert on presence/structure — never absolute counts,
+    // which concurrent suites' leaked schools would inflate.
+    const contactFreqWidget = page
+      .locator('[data-testid="contact-frequency-widget"]')
+      .first();
     await expect(contactFreqWidget).toBeVisible();
 
-    // Metrics section only renders when the player has tracked schools.
-    // Without seed data the widget shows "No schools tracked yet" — verify gracefully.
-    const hasMetrics = await page
+    await expect(
+      contactFreqWidget.locator('[data-testid="metric-total-schools"]'),
+    ).toBeVisible();
+    await expect(
+      contactFreqWidget.locator('[data-testid="metric-contacted-7days"]'),
+    ).toBeVisible();
+    await expect(
+      contactFreqWidget.locator('[data-testid="metric-avg-frequency"]'),
+    ).toBeVisible();
+    await expect(
+      contactFreqWidget.locator('[data-testid="metric-need-attention"]'),
+    ).toBeVisible();
+
+    const totalSchools = await contactFreqWidget
       .locator('[data-testid="metric-total-schools"]')
-      .isVisible({ timeout: 3000 })
-      .catch(() => false);
-
-    if (hasMetrics) {
-      await expect(
-        page.locator('[data-testid="metric-contacted-7days"]'),
-      ).toBeVisible();
-      await expect(
-        page.locator('[data-testid="metric-avg-frequency"]'),
-      ).toBeVisible();
-      await expect(
-        page.locator('[data-testid="metric-need-attention"]'),
-      ).toBeVisible();
-
-      const totalSchools = await page
-        .locator('[data-testid="metric-total-schools"]')
-        .textContent();
-      expect(totalSchools).toBeTruthy();
-    } else {
-      // No schools tracked — verify the empty state
-      await expect(contactFreqWidget).toContainText("No schools tracked yet");
-    }
+      .textContent();
+    expect(totalSchools).toMatch(/\d+/);
   });
 
   test("AC1: Scenario 1 - Metrics show correct labels", async ({ page }) => {
-    // beforeEach already navigated to dashboard; no need to goto() again
-
-    const contactFreqWidget = page.locator(
-      '[data-testid="contact-frequency-widget"]',
-    );
+    test.skip(!seedReady, "dashboard-8-2 seed unavailable");
+    const contactFreqWidget = page
+      .locator('[data-testid="contact-frequency-widget"]')
+      .first();
     await expect(contactFreqWidget).toBeVisible();
 
-    // Labels only render when the metrics section is shown (player has schools)
-    const hasMetrics = await page
-      .locator('[data-testid="metric-total-schools"]')
-      .isVisible({ timeout: 3000 })
-      .catch(() => false);
-
-    if (hasMetrics) {
-      await expect(
-        page.locator('[data-testid="metric-total-schools"]'),
-      ).toContainText("Total Schools");
-      await expect(
-        page.locator('[data-testid="metric-contacted-7days"]'),
-      ).toContainText("Last 7 Days");
-      await expect(
-        page.locator('[data-testid="metric-avg-frequency"]'),
-      ).toContainText("Avg/Month");
-      await expect(
-        page.locator('[data-testid="metric-need-attention"]'),
-      ).toContainText("Need Attention");
-    } else {
-      await expect(contactFreqWidget).toContainText("No schools tracked yet");
-    }
+    await expect(
+      contactFreqWidget.locator('[data-testid="metric-total-schools"]'),
+    ).toContainText("Total Schools");
+    await expect(
+      contactFreqWidget.locator('[data-testid="metric-contacted-7days"]'),
+    ).toContainText("Last 7 Days");
+    await expect(
+      contactFreqWidget.locator('[data-testid="metric-avg-frequency"]'),
+    ).toContainText("Avg/Month");
+    await expect(
+      contactFreqWidget.locator('[data-testid="metric-need-attention"]'),
+    ).toContainText("Need Attention");
   });
 
   test("AC2: Scenario 2 - Green border for recent contacts (within 7 days)", async ({
@@ -328,69 +313,62 @@ test.describe("User Story 8.2: Contact Frequency Summary", () => {
   test("Contact Frequency widget displays metrics section", async ({
     page,
   }) => {
-    dashboardPage = new DashboardPage(page);
-    await dashboardPage.goto();
-    await dashboardPage.waitForDashboardLoad();
-
-    const contactFreqWidget = page.locator(
-      '[data-testid="contact-frequency-widget"]',
-    );
-    await expect(contactFreqWidget).toBeVisible();
-
-    // Metrics section only renders when the player has tracked schools.
-    // Without seed data the widget shows an empty state — verify gracefully.
-    const metricCards = contactFreqWidget.locator('[data-testid^="metric-"]');
-    const hasMetrics = (await metricCards.count()) > 0;
-    if (hasMetrics) {
-      await expect(metricCards.first()).toBeVisible();
-    } else {
-      await expect(contactFreqWidget).toContainText("No schools tracked yet");
-    }
-  });
-
-  test("Metrics display with proper formatting", async ({ page }) => {
-    // TODO: test account has 0 schools; avg frequency cannot be calculated without data.
-    // Skipped until seed data added.
+    test.skip(!seedReady, "dashboard-8-2 seed unavailable");
     dashboardPage = new DashboardPage(page);
     await dashboardPage.goto();
     await dashboardPage.waitForDashboardLoad();
     await dashboardPage.waitForContactFrequencySettled();
 
-    const contactFreqWidget = page.locator(
-      '[data-testid="contact-frequency-widget"]',
-    );
-    const avgFrequency = page.locator('[data-testid="metric-avg-frequency"]');
+    const contactFreqWidget = page
+      .locator('[data-testid="contact-frequency-widget"]')
+      .first();
+    await expect(contactFreqWidget).toBeVisible();
 
-    // Format only applies when metrics render (player has tracked schools).
-    // Without seed data the widget shows the empty state — verify gracefully.
-    if (await avgFrequency.isVisible()) {
-      const text = await avgFrequency.textContent();
-      // Should have a decimal number (e.g., "1.2")
-      expect(text).toMatch(/\d+\.\d/);
-    } else {
-      await expect(contactFreqWidget).toContainText("No schools tracked yet");
-    }
+    // Seed guarantees tracked schools, so the metrics grid renders.
+    await expect(
+      contactFreqWidget.locator('[data-testid^="metric-"]').first(),
+    ).toBeVisible();
+  });
+
+  test("Metrics display with proper formatting", async ({ page }) => {
+    test.skip(!seedReady, "dashboard-8-2 seed unavailable");
+    dashboardPage = new DashboardPage(page);
+    await dashboardPage.goto();
+    await dashboardPage.waitForDashboardLoad();
+    await dashboardPage.waitForContactFrequencySettled();
+
+    const contactFreqWidget = page
+      .locator('[data-testid="contact-frequency-widget"]')
+      .first();
+    const avgFrequency = contactFreqWidget.locator(
+      '[data-testid="metric-avg-frequency"]',
+    );
+
+    // Seed guarantees tracked schools, so Avg/Month renders a number. The
+    // widget prints it as either a decimal ("1.4") or a whole number ("2").
+    await expect(avgFrequency).toBeVisible();
+    await expect(avgFrequency).toContainText(/\d/);
   });
 
   test("Contact frequency widget responsive on mobile", async ({ page }) => {
-    // Set mobile viewport then re-navigate so layout renders at mobile size
+    test.skip(!seedReady, "dashboard-8-2 seed unavailable");
+    // Set mobile viewport then re-navigate so layout renders at mobile size.
+    // Re-settle after the re-goto so the widget's async data has loaded before
+    // we assert (the missing settle here was the source of the flake).
     await page.setViewportSize({ width: 375, height: 667 });
     await dashboardPage.goto();
     await dashboardPage.waitForDashboardLoad();
+    await dashboardPage.waitForContactFrequencySettled();
 
-    const contactFreqWidget = page.locator(
-      '[data-testid="contact-frequency-widget"]',
-    );
+    const contactFreqWidget = page
+      .locator('[data-testid="contact-frequency-widget"]')
+      .first();
     await expect(contactFreqWidget).toBeVisible();
 
-    // Metrics only render when player has tracked schools — verify gracefully
-    const metricCards = contactFreqWidget.locator('[data-testid^="metric-"]');
-    const hasMetrics = (await metricCards.count()) > 0;
-    if (hasMetrics) {
-      await expect(metricCards.first()).toBeVisible();
-    } else {
-      await expect(contactFreqWidget).toContainText("No schools tracked yet");
-    }
+    // Metric grid is grid-cols-2 on mobile — cards still render with schools.
+    await expect(
+      contactFreqWidget.locator('[data-testid^="metric-"]').first(),
+    ).toBeVisible();
   });
 
   test("Color-coded schools display properly stacked", async ({ page }) => {
@@ -425,38 +403,33 @@ test.describe("User Story 8.2: Contact Frequency Summary", () => {
   });
 
   test("Summary metrics are accurate for tracked schools", async ({ page }) => {
-    // TODO: test account has 0 schools. Assertion that (0 <= 0) is vacuous.
-    // Skipped until seed data added.
+    test.skip(!seedReady, "dashboard-8-2 seed unavailable");
     dashboardPage = new DashboardPage(page);
     await dashboardPage.goto();
     await dashboardPage.waitForDashboardLoad();
     await dashboardPage.waitForContactFrequencySettled();
 
-    const contactFreqWidget = page.locator(
-      '[data-testid="contact-frequency-widget"]',
-    );
-    const totalSchoolsMetric = page.locator(
+    const contactFreqWidget = page
+      .locator('[data-testid="contact-frequency-widget"]')
+      .first();
+    const totalSchoolsMetric = contactFreqWidget.locator(
       '[data-testid="metric-total-schools"]',
     );
+    await expect(totalSchoolsMetric).toBeVisible();
 
-    // Metrics only render when the player has tracked schools. Without seed
-    // data the widget shows the empty state — verify gracefully instead of
-    // reading textContent() off an absent element (which raced and timed out).
-    if (await totalSchoolsMetric.isVisible()) {
-      const totalSchools = parseInt(
-        (await totalSchoolsMetric.textContent()) || "0",
-      );
-      const contacted7Days = parseInt(
-        (await page
-          .locator('[data-testid="metric-contacted-7days"]')
-          .textContent()) || "0",
-      );
+    const totalSchools = parseInt(
+      (await totalSchoolsMetric.textContent()) || "0",
+    );
+    const contacted7Days = parseInt(
+      (await contactFreqWidget
+        .locator('[data-testid="metric-contacted-7days"]')
+        .textContent()) || "0",
+    );
 
-      // Contacted should be <= total
-      expect(contacted7Days).toBeLessThanOrEqual(totalSchools);
-    } else {
-      await expect(contactFreqWidget).toContainText("No schools tracked yet");
-    }
+    // Seed guarantees ≥4 schools; the invariant holds regardless of how many
+    // other suites leaked in — contacted-in-7-days is a subset of the total.
+    expect(totalSchools).toBeGreaterThan(0);
+    expect(contacted7Days).toBeLessThanOrEqual(totalSchools);
   });
 
   test("Hover effects visible on school rows", async ({ page }) => {
@@ -480,6 +453,53 @@ test.describe("User Story 8.2: Contact Frequency Summary", () => {
       const classes = await firstSchool.getAttribute("class");
       expect(classes).toContain("cursor-pointer");
       expect(classes).toContain("hover:bg-slate-100");
+    }
+  });
+});
+
+test.describe("User Story 8.2: Contact Frequency Summary — empty state", () => {
+  // Dedicated fresh account so the empty state is deterministic. The shared
+  // player account is never actually empty (this suite seeds it, and concurrent
+  // suites leak their own schools into it), so empty-state coverage has to run
+  // against an account guaranteed to own zero schools.
+  test.use({ storageState: { cookies: [], origins: [] } });
+
+  test("shows the empty state when the player has no tracked schools", async ({
+    page,
+  }) => {
+    const email = `empty-dash-${Date.now()}-${Math.random()
+      .toString(36)
+      .slice(2, 8)}@example.com`;
+    const password = "TestPassword123!";
+    const user = await createOneOffTestUser({
+      email,
+      password,
+      displayName: "Empty Dashboard User",
+      role: "player",
+    });
+
+    // Mark onboarding complete so middleware/onboarding.ts lets the account
+    // reach /dashboard — the account still owns zero schools.
+    await getSupabaseAdmin()
+      .from("users")
+      .update({ phase_milestone_data: { onboarding_complete: true } })
+      .eq("id", user.id);
+
+    try {
+      const authPage = new AuthPage(page);
+      await authPage.login(email, password, /\/(dashboard|verify-email)/);
+
+      const dashboardPage = new DashboardPage(page);
+      await dashboardPage.goto();
+      await dashboardPage.waitForDashboardLoad();
+      await dashboardPage.waitForContactFrequencySettled();
+
+      const widget = page
+        .locator('[data-testid="contact-frequency-widget"]')
+        .first();
+      await expect(widget).toContainText("No schools tracked yet");
+    } finally {
+      await deleteOneOffTestUser(email).catch(() => {});
     }
   });
 });
