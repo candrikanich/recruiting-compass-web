@@ -57,8 +57,8 @@ test.describe("Coach detail page", () => {
 
       // Capture the coach id from the URL on the detail page
       await page
-        .getByRole("button", {
-          name: `View details for ${coachData.firstName} ${coachData.lastName}`,
+        .getByRole("link", {
+          name: `View profile for ${coachData.firstName} ${coachData.lastName}`,
         })
         .click();
       await page.waitForURL(/\/coaches\/[a-f0-9-]+/);

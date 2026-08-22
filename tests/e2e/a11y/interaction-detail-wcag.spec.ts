@@ -44,7 +44,7 @@ test.describe("Interaction Detail Page - Accessibility (WCAG 2.1 AA)", () => {
         .locator(":has(> h2:text('Log New Interaction'))")
         .locator("form");
       await addForm.locator("#type").selectOption("email");
-      await addForm.locator("#direction").selectOption("outbound");
+      await addForm.locator(String.raw`label:has(input[value="outbound"])`).click();
       await addForm.locator("#subject").fill("WCAG Test Interaction");
       await addForm.locator("#content").fill("Accessibility test content");
       await addForm.locator("#occurred_at").fill(occurredAt);
