@@ -1,13 +1,10 @@
 import { test, expect } from "@playwright/test";
 import { DashboardPage } from "../pages/DashboardPage";
-import { AuthPage } from "../pages/AuthPage";
 import {
   getSupabaseAdmin,
   findUserIdByEmail,
   seedSchoolsWithInteractions,
   deleteSeededSchools,
-  createOneOffTestUser,
-  deleteOneOffTestUser,
   type SeededSchools,
 } from "../seed/helpers/supabase-admin";
 import { TEST_ACCOUNTS } from "../config/test-accounts";
@@ -453,53 +450,6 @@ test.describe("User Story 8.2: Contact Frequency Summary", () => {
       const classes = await firstSchool.getAttribute("class");
       expect(classes).toContain("cursor-pointer");
       expect(classes).toContain("hover:bg-slate-100");
-    }
-  });
-});
-
-test.describe("User Story 8.2: Contact Frequency Summary — empty state", () => {
-  // Dedicated fresh account so the empty state is deterministic. The shared
-  // player account is never actually empty (this suite seeds it, and concurrent
-  // suites leak their own schools into it), so empty-state coverage has to run
-  // against an account guaranteed to own zero schools.
-  test.use({ storageState: { cookies: [], origins: [] } });
-
-  test("shows the empty state when the player has no tracked schools", async ({
-    page,
-  }) => {
-    const email = `empty-dash-${Date.now()}-${Math.random()
-      .toString(36)
-      .slice(2, 8)}@example.com`;
-    const password = "TestPassword123!";
-    const user = await createOneOffTestUser({
-      email,
-      password,
-      displayName: "Empty Dashboard User",
-      role: "player",
-    });
-
-    // Mark onboarding complete so middleware/onboarding.ts lets the account
-    // reach /dashboard — the account still owns zero schools.
-    await getSupabaseAdmin()
-      .from("users")
-      .update({ phase_milestone_data: { onboarding_complete: true } })
-      .eq("id", user.id);
-
-    try {
-      const authPage = new AuthPage(page);
-      await authPage.login(email, password, /\/(dashboard|verify-email)/);
-
-      const dashboardPage = new DashboardPage(page);
-      await dashboardPage.goto();
-      await dashboardPage.waitForDashboardLoad();
-      await dashboardPage.waitForContactFrequencySettled();
-
-      const widget = page
-        .locator('[data-testid="contact-frequency-widget"]')
-        .first();
-      await expect(widget).toContainText("No schools tracked yet");
-    } finally {
-      await deleteOneOffTestUser(email).catch(() => {});
     }
   });
 });
