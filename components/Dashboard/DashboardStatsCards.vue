@@ -13,7 +13,7 @@
         class="absolute inset-0 bg-linear-to-br from-purple-500 to-purple-600 opacity-90 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity"
       />
       <div class="relative p-6 text-white">
-        <div class="flex items-start mb-2">
+        <div class="flex items-center gap-3 mb-2">
           <div class="p-3 bg-white/20 rounded-lg backdrop-blur-xs">
             <UIcon
               name="i-heroicons-building-library"
@@ -21,9 +21,9 @@
               aria-hidden="true"
             />
           </div>
-        </div>
-        <div class="text-3xl font-bold mb-1" aria-live="polite">
-          {{ schoolCount }}
+          <div class="text-3xl font-bold" aria-live="polite">
+            {{ schoolCount }}
+          </div>
         </div>
         <div class="text-white/90 font-medium">Schools</div>
         <div class="text-white/70 text-sm mt-1">Manage schools</div>
@@ -44,7 +44,7 @@
         class="absolute inset-0 bg-linear-to-br from-blue-500 to-blue-600 opacity-90 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity"
       />
       <div class="relative p-6 text-white">
-        <div class="flex items-start mb-2">
+        <div class="flex items-center gap-3 mb-2">
           <div class="p-3 bg-white/20 rounded-lg backdrop-blur-xs">
             <UIcon
               name="i-heroicons-user-group"
@@ -52,9 +52,9 @@
               aria-hidden="true"
             />
           </div>
-        </div>
-        <div class="text-3xl font-bold mb-1" aria-live="polite">
-          {{ coachCount }}
+          <div class="text-3xl font-bold" aria-live="polite">
+            {{ coachCount }}
+          </div>
         </div>
         <div class="text-white/90 font-medium">Coaches</div>
         <div class="text-white/70 text-sm mt-1">View all coaches</div>
@@ -75,7 +75,7 @@
         class="absolute inset-0 bg-linear-to-br from-emerald-500 to-emerald-600 opacity-90 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity"
       />
       <div class="relative p-6 text-white">
-        <div class="flex items-start mb-2">
+        <div class="flex items-center gap-3 mb-2">
           <div class="p-3 bg-white/20 rounded-lg backdrop-blur-xs">
             <UIcon
               name="i-heroicons-chat-bubble-left-right"
@@ -83,9 +83,9 @@
               aria-hidden="true"
             />
           </div>
-        </div>
-        <div class="text-3xl font-bold mb-1" aria-live="polite">
-          {{ interactionCount }}
+          <div class="text-3xl font-bold" aria-live="polite">
+            {{ interactionCount }}
+          </div>
         </div>
         <div class="text-white/90 font-medium">Interactions</div>
         <div class="text-white/70 text-sm mt-1">Track interactions</div>
@@ -107,7 +107,7 @@
         class="absolute inset-0 bg-linear-to-br from-amber-500 to-amber-600 opacity-90 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity"
       />
       <div class="relative p-6 text-white">
-        <div class="flex items-start mb-2">
+        <div class="flex items-center gap-3 mb-2">
           <div class="p-3 bg-white/20 rounded-lg backdrop-blur-xs">
             <UIcon
               name="i-heroicons-trophy"
@@ -115,9 +115,9 @@
               aria-hidden="true"
             />
           </div>
-        </div>
-        <div class="text-3xl font-bold mb-1" aria-live="polite">
-          {{ eventCount }}
+          <div class="text-3xl font-bold" aria-live="polite">
+            {{ eventCount }}
+          </div>
         </div>
         <div class="text-white/90 font-medium">Events</div>
         <div class="text-white/70 text-sm mt-1">Entered events</div>
@@ -138,9 +138,18 @@
         class="absolute inset-0 bg-linear-to-br from-orange-500 to-orange-600 opacity-90 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity"
       />
       <div class="relative p-6 text-white">
-        <div class="flex items-start justify-between mb-2">
-          <div class="p-3 bg-white/20 rounded-lg backdrop-blur-xs">
-            <UIcon name="i-heroicons-gift" class="w-6 h-6" aria-hidden="true" />
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center gap-3">
+            <div class="p-3 bg-white/20 rounded-lg backdrop-blur-xs">
+              <UIcon
+                name="i-heroicons-gift"
+                class="w-6 h-6"
+                aria-hidden="true"
+              />
+            </div>
+            <div class="text-3xl font-bold" aria-live="polite">
+              {{ acceptedOffers }}/{{ totalOffers }}
+            </div>
           </div>
           <div
             v-if="totalOffers > 0"
@@ -149,9 +158,6 @@
           >
             {{ totalOffers - acceptedOffers }} pending
           </div>
-        </div>
-        <div class="text-3xl font-bold mb-1" aria-live="polite">
-          {{ acceptedOffers }}/{{ totalOffers }}
         </div>
         <div class="text-white/90 font-medium">Offers</div>
         <div class="text-white/70 text-sm mt-1">Accepted / Total</div>
@@ -173,7 +179,7 @@
         class="absolute inset-0 bg-linear-to-br from-teal-500 to-teal-600 opacity-90 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity"
       />
       <div class="relative p-6 text-white">
-        <div class="flex items-start mb-2">
+        <div class="flex items-center gap-3 mb-2">
           <div class="p-3 bg-white/20 rounded-lg backdrop-blur-xs">
             <UIcon
               name="i-heroicons-clock"
@@ -181,9 +187,9 @@
               aria-hidden="true"
             />
           </div>
-        </div>
-        <div class="text-3xl font-bold mb-1" aria-live="polite">
-          {{ lastContactValue }}
+          <div class="text-3xl font-bold" aria-live="polite">
+            {{ lastContactValue }}
+          </div>
         </div>
         <div class="text-white/90 font-medium">Last Contact</div>
         <div class="text-white/70 text-sm mt-1">{{ lastContactCaption }}</div>
