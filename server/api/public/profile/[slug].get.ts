@@ -164,6 +164,9 @@ export default defineEventHandler(async (event) => {
                 (details.perfect_game_id as string | undefined) || undefined,
               prep_baseball_id:
                 (details.prep_baseball_id as string | undefined) || undefined,
+              prep_baseball_state:
+                (details.prep_baseball_state as string | undefined) ||
+                undefined,
             }
           : null,
       film: profile.show_film ? videoLinks : null,

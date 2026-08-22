@@ -375,7 +375,8 @@ export interface PlayerDetails {
   act_score?: number;
   ncaa_id?: string;
   perfect_game_id?: string;
-  prep_baseball_id?: string;
+  prep_baseball_id?: string; // Prep Baseball Report profile name-slug (e.g. "owen-andrikanich")
+  prep_baseball_state?: string; // 2-letter state code the PBR profile is filed under
   // Social Media
   twitter_handle?: string;
   instagram_handle?: string;
@@ -466,6 +467,7 @@ export interface PublicProfileData {
     ncaa_id?: string;
     perfect_game_id?: string;
     prep_baseball_id?: string;
+    prep_baseball_state?: string;
   } | null;
   /** null when show_film is false */
   film: VideoLink[] | null;

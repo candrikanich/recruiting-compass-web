@@ -3,6 +3,7 @@
 import { computed } from "vue";
 import type { PublicProfileData } from "~/types/models";
 import { formatPositionsShort } from "~/utils/positions/canonical";
+import { buildPrepBaseballUrl } from "~/utils/recruitingLinks";
 import {
   openTwitter,
   openInstagram,
@@ -43,6 +44,13 @@ const primaryPositionLabel = computed(() =>
     props.profile.athletic?.primary_sport,
     props.profile.athletic?.positions,
     props.profile.athletic?.primary_position,
+  ),
+);
+
+const prepBaseballUrl = computed(() =>
+  buildPrepBaseballUrl(
+    props.profile.athletic?.prep_baseball_state,
+    props.profile.athletic?.prep_baseball_id,
   ),
 );
 
@@ -290,7 +298,7 @@ function formatGPA(gpa: number | undefined): string {
           profile.athletic &&
           (profile.athletic.ncaa_id ||
             profile.athletic.perfect_game_id ||
-            profile.athletic.prep_baseball_id)
+            prepBaseballUrl)
         "
         class="px-6 py-5"
       >
@@ -321,13 +329,16 @@ function formatGPA(gpa: number | undefined): string {
               >
             </dd>
           </div>
-          <div
-            v-if="profile.athletic.prep_baseball_id"
-            class="flex justify-between"
-          >
+          <div v-if="prepBaseballUrl" class="flex justify-between">
             <dt class="text-gray-500">Prep Baseball</dt>
-            <dd class="font-mono font-medium text-gray-900">
-              {{ profile.athletic.prep_baseball_id }}
+            <dd class="font-medium">
+              <a
+                :href="prepBaseballUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-blue-600 hover:text-blue-800 hover:underline font-mono"
+                >View profile</a
+              >
             </dd>
           </div>
         </dl>

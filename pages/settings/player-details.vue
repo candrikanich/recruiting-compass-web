@@ -143,6 +143,8 @@
             :is-parent-role="isReadOnly"
             :is-baseball-or-softball="isBaseballOrSoftball"
             :available-positions="availablePositions"
+            :player-name="userStore.user?.full_name ?? ''"
+            :home-state="homeState"
             :trigger-save="triggerSave"
             :toggle-position="togglePosition"
             :is-position-selected="isPositionSelected"
@@ -418,6 +420,7 @@ const {
   THROWS_OPTIONS,
   CAMPUS_SIZE_OPTIONS,
   COST_SENSITIVITY_OPTIONS,
+  homeState,
   load,
 } = usePlayerDetailsForm();
 

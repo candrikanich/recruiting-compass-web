@@ -1,4 +1,5 @@
 import type { PublicProfileData } from "~/types/models";
+import { buildPrepBaseballUrl } from "~/utils/recruitingLinks";
 
 function formatHeight(inches: number): string {
   const ft = Math.floor(inches / 12);
@@ -38,8 +39,12 @@ export function renderProfileMarkdown(
     if (a.ncaa_id) items.push(`- **NCAA ID:** ${a.ncaa_id}`);
     if (a.perfect_game_id)
       items.push(`- **Perfect Game ID:** ${a.perfect_game_id}`);
-    if (a.prep_baseball_id)
-      items.push(`- **Prep Baseball ID:** ${a.prep_baseball_id}`);
+    const prepBaseballUrl = buildPrepBaseballUrl(
+      a.prep_baseball_state,
+      a.prep_baseball_id,
+    );
+    if (prepBaseballUrl)
+      items.push(`- **Prep Baseball Report:** ${prepBaseballUrl}`);
     if (items.length) {
       lines.push("## Athletic");
       lines.push("");

@@ -118,6 +118,7 @@ export function validatePlayerDetails(data: unknown): PlayerDetails | null {
     ncaa_id: toString(obj.ncaa_id),
     perfect_game_id: toString(obj.perfect_game_id),
     prep_baseball_id: toString(obj.prep_baseball_id),
+    prep_baseball_state: toString(obj.prep_baseball_state),
     twitter_handle: toString(obj.twitter_handle),
     instagram_handle: toString(obj.instagram_handle),
     tiktok_handle: toString(obj.tiktok_handle),
