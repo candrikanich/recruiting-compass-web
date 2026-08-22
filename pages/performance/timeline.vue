@@ -45,41 +45,23 @@
 
       <!-- Charts -->
       <div v-else class="space-y-8">
-        <!-- Power Metrics Chart -->
+        <!-- One chart per recorded metric type, ordered by the athlete's sport
+             (registry-driven; no hard-coded baseball categories). -->
         <PerformanceChart
-          title="Power Metrics"
-          :metrics="powerMetrics"
-          :metric-types="['velocity', 'exit_velo']"
-          category="power"
+          v-for="section in chartSections"
+          :key="section.type"
+          :title="section.title"
+          :metrics="section.metrics"
+          :metric-types="[section.type]"
           :show-comparison="true"
         />
 
-        <!-- Speed Metrics Chart -->
-        <PerformanceChart
-          title="Speed Metrics"
-          :metrics="speedMetrics"
-          :metric-types="['sixty_time', 'pop_time']"
-          category="speed"
-          :show-comparison="true"
-        />
-
-        <!-- Hitting & Pitching (2-column grid) -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <PerformanceChart
-            title="Hitting Metrics"
-            :metrics="hittingMetrics"
-            :metric-types="['batting_avg']"
-            category="hitting"
-            :show-comparison="false"
-          />
-
-          <PerformanceChart
-            title="Pitching Metrics"
-            :metrics="pitchingMetrics"
-            :metric-types="['era', 'strikeouts']"
-            category="pitching"
-            :show-comparison="false"
-          />
+        <!-- Empty state -->
+        <div
+          v-if="chartSections.length === 0"
+          class="bg-white rounded-lg shadow-sm p-12 text-center text-slate-600"
+        >
+          No performance metrics recorded yet
         </div>
 
         <!-- Radar Chart: Current Performance Snapshot -->
@@ -102,6 +84,8 @@
 import { ref, computed, onMounted, watch, defineAsyncComponent } from "vue";
 import { usePerformance } from "~/composables/usePerformance";
 import { useEvents } from "~/composables/useEvents";
+import { usePreferenceManager } from "~/composables/usePreferenceManager";
+import { metricTypesForSport, getMetricDef } from "~/utils/metrics/canonical";
 const ExportModal = defineAsyncComponent(
   () => import("~/components/Performance/ExportModal.vue"),
 );
@@ -130,25 +114,28 @@ const filteredMetrics = computed(() => {
   return metrics.value.filter((m) => m.verified);
 });
 
-// Computed: Categorize metrics
-const powerMetrics = computed(() =>
-  filteredMetrics.value.filter((m) =>
-    ["velocity", "exit_velo"].includes(m.metric_type),
-  ),
-);
-const speedMetrics = computed(() =>
-  filteredMetrics.value.filter((m) =>
-    ["sixty_time", "pop_time"].includes(m.metric_type),
-  ),
-);
-const hittingMetrics = computed(() =>
-  filteredMetrics.value.filter((m) => m.metric_type === "batting_avg"),
-);
-const pitchingMetrics = computed(() =>
-  filteredMetrics.value.filter((m) =>
-    ["era", "strikeouts"].includes(m.metric_type),
-  ),
-);
+// Athlete's primary sport — drives the registry-backed chart grouping.
+const { playerPrefs, getPlayerDetails } = usePreferenceManager();
+const primarySport = ref<string | null>(null);
+
+// Computed: one chart section per recorded metric type, ordered by the sport's
+// registry ordering (recorded custom/off-sport keys appended). No baseball
+// categories — the registry has no category metadata, so grouping is generic
+// (one section per metric type), titled from the registry label.
+const chartSections = computed(() => {
+  const recorded = new Set(filteredMetrics.value.map((m) => m.metric_type));
+  const ordered = metricTypesForSport(primarySport.value).filter((type) =>
+    recorded.has(type),
+  );
+  const extras = Array.from(recorded).filter(
+    (type) => type && !ordered.includes(type),
+  );
+  return [...ordered, ...extras].map((type) => ({
+    type,
+    title: getMetricDef(type).label,
+    metrics: filteredMetrics.value.filter((m) => m.metric_type === type),
+  }));
+});
 
 // Computed: Filter events by date range
 const filteredEvents = computed(() => {
@@ -161,34 +148,18 @@ const filteredEvents = computed(() => {
   );
 });
 
-// Computed: Latest metrics by type for radar
+// Computed: Latest metric per recorded type, for the radar snapshot.
 const latestMetricsByType = computed(() => {
   const latest: Record<string, PerformanceMetric> = {};
-  const allTypes = [
-    "velocity",
-    "exit_velo",
-    "sixty_time",
-    "pop_time",
-    "batting_avg",
-    "era",
-    "strikeouts",
-    "other",
-  ];
-
-  allTypes.forEach((type) => {
-    const metricsOfType = filteredMetrics.value
-      .filter((m) => m.metric_type === type)
-      .sort(
-        (a, b) =>
-          new Date(b.recorded_date).getTime() -
-          new Date(a.recorded_date).getTime(),
-      );
-
-    if (metricsOfType.length > 0) {
-      latest[type] = metricsOfType[0];
+  const sorted = [...filteredMetrics.value].sort(
+    (a, b) =>
+      new Date(b.recorded_date).getTime() - new Date(a.recorded_date).getTime(),
+  );
+  for (const metric of sorted) {
+    if (!latest[metric.metric_type]) {
+      latest[metric.metric_type] = metric;
     }
-  });
-
+  }
   return latest;
 });
 
@@ -284,6 +255,8 @@ onMounted(async () => {
     }),
     fetchEvents(),
   ]);
+  await playerPrefs.loadPreferences();
+  primarySport.value = getPlayerDetails()?.primary_sport ?? null;
 });
 
 // Watchers

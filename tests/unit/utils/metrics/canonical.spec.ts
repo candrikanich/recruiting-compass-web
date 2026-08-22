@@ -104,6 +104,26 @@ describe("sport orderings", () => {
   });
 });
 
+describe("metric icons", () => {
+  it("sport-specific keys carry a non-default emoji", () => {
+    expect(getMetricDef("points_per_game").icon).toBe("🏀");
+    expect(getMetricDef("goals").icon).toBe("⚽");
+    expect(getMetricDef("passing_yards").icon).toBe("🏈");
+    expect(getMetricDef("event_time").icon).toBe("🏊");
+    expect(getMetricDef("scoring_average").icon).toBe("⛳");
+    expect(getMetricDef("velocity").icon).toBe("🔥");
+  });
+  it("unknown/humanized keys fall back to the neutral default", () => {
+    expect(getMetricDef("wingspan_reach").icon).toBe("📊");
+    expect(getMetricDef(OTHER_KEY).icon).toBe("📊");
+  });
+  it("every registered def has a non-empty icon", () => {
+    for (const d of Object.values(METRIC_DEFS)) {
+      expect(d.icon, `${d.key} missing icon`).toBeTruthy();
+    }
+  });
+});
+
 describe("customMetricKey", () => {
   it("snake_cases a custom other-name", () => {
     expect(customMetricKey("Vertical Jump")).toBe("vertical_jump");

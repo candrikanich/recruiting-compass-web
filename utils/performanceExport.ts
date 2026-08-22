@@ -1,5 +1,6 @@
 import type { PerformanceMetric } from "~/types/models";
 import { createClientLogger } from "~/utils/logger";
+import { getMetricDef } from "~/utils/metrics/canonical";
 
 const logger = createClientLogger("performanceExport");
 
@@ -172,16 +173,4 @@ const formatDate = (date: string): string => {
   });
 };
 
-const getMetricLabel = (type: string): string => {
-  const labels: Record<string, string> = {
-    velocity: "Fastball Velocity",
-    exit_velo: "Exit Velocity",
-    sixty_time: "60-Yard Dash",
-    pop_time: "Pop Time",
-    batting_avg: "Batting Average",
-    era: "ERA",
-    strikeouts: "Strikeouts",
-    other: "Other Metric",
-  };
-  return labels[type] || type;
-};
+const getMetricLabel = (type: string): string => getMetricDef(type).label;

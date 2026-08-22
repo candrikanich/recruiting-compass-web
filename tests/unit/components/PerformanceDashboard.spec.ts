@@ -89,24 +89,18 @@ describe("PerformanceDashboard", () => {
     });
   });
 
-  describe("metric categories", () => {
-    it("should render power metrics section", () => {
-      expect(wrapper.text()).toContain("Power Metrics");
-      expect(wrapper.text()).toContain("Fastball Velocity");
-      expect(wrapper.text()).toContain("Exit Velocity");
+  describe("metric summary (registry-driven)", () => {
+    it("should render a single registry-driven summary section", () => {
+      expect(wrapper.text()).toContain("Metric Summary");
+      // No invented baseball category headers.
+      expect(wrapper.text()).not.toContain("Power Metrics");
+      expect(wrapper.text()).not.toContain("Pitching Metrics");
     });
 
-    it("should render speed metrics section", () => {
-      expect(wrapper.text()).toContain("Speed Metrics");
-      expect(wrapper.text()).toContain("60-Yard Dash");
-    });
-
-    it("should render hitting metrics section", () => {
-      expect(wrapper.text()).toContain("Hitting Metrics");
-    });
-
-    it("should render pitching metrics section", () => {
-      expect(wrapper.text()).toContain("Pitching Metrics");
+    it("should render one summary row per recorded metric type", () => {
+      // Recorded types: velocity, exit_velo, sixty_time → 3 rows.
+      const rows = wrapper.findAll(".metric-summary-row");
+      expect(rows.length).toBe(3);
     });
   });
 
@@ -179,10 +173,11 @@ describe("PerformanceDashboard", () => {
       expect(wrapper.vm.getMetricLabel("sixty_time")).toBe("60-Yard Dash");
     });
 
-    it("should return correct units", () => {
+    it("should return registry units", () => {
       expect(wrapper.vm.getUnit("velocity")).toBe("mph");
       expect(wrapper.vm.getUnit("sixty_time")).toBe("sec");
-      expect(wrapper.vm.getUnit("batting_avg")).toBe("avg");
+      // batting_avg is a unitless ratio in the registry.
+      expect(wrapper.vm.getUnit("batting_avg")).toBe("");
     });
   });
 

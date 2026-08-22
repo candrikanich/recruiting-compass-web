@@ -105,9 +105,9 @@
           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
         >
           <option value="">All Sports</option>
-          <option value="baseball">Baseball</option>
-          <option value="softball">Softball</option>
-          <option value="other">Other</option>
+          <option v-for="sport in sportOptions" :key="sport" :value="sport">
+            {{ sport }}
+          </option>
         </select>
       </div>
 
@@ -239,13 +239,13 @@
           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
         >
           <option value="">All Metrics</option>
-          <option value="velocity">Velocity</option>
-          <option value="exit_velo">Exit Velocity</option>
-          <option value="sixty_time">60-Yard Dash</option>
-          <option value="pop_time">Pop Time</option>
-          <option value="batting_avg">Batting Average</option>
-          <option value="era">ERA</option>
-          <option value="strikeouts">Strikeouts</option>
+          <option
+            v-for="opt in metricTypeOptions"
+            :key="opt.value"
+            :value="opt.value"
+          >
+            {{ opt.label }}
+          </option>
         </select>
       </div>
 
@@ -281,11 +281,39 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from "vue";
+import { SPORT_POSITIONS } from "~/utils/positions/canonical";
+import {
+  SPORT_METRICS,
+  getMetricDef,
+  OTHER_KEY,
+} from "~/utils/metrics/canonical";
+
 interface Props {
   filters: any;
   searchType: string;
   isFiltering: boolean;
 }
+
+// Full sport list from the registry (17 sports) — no baseball-only options.
+const sportOptions = computed(() => Object.keys(SPORT_POSITIONS));
+
+// Full union of metric types across every sport (deduped, ordered), labelled
+// via the registry. Every metric is reachable regardless of the viewer's sport.
+const metricTypeOptions = computed(() => {
+  const seen = new Set<string>();
+  const keys: string[] = [];
+  for (const list of Object.values(SPORT_METRICS)) {
+    for (const key of list) {
+      if (!seen.has(key)) {
+        seen.add(key);
+        keys.push(key);
+      }
+    }
+  }
+  keys.push(OTHER_KEY);
+  return keys.map((key) => ({ value: key, label: getMetricDef(key).label }));
+});
 
 const emit = defineEmits<{
   "update:filters": [filters: any];

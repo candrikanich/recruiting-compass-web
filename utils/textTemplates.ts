@@ -1,4 +1,5 @@
 import type { PerformanceMetric, Event } from "~/types/models";
+import { getMetricDef } from "~/utils/metrics/canonical";
 
 /**
  * Generate coach-friendly email template for performance metrics
@@ -89,18 +90,7 @@ Generated: ${new Date().toLocaleDateString()}
 };
 
 /**
- * Get metric label for display
+ * Get metric label for display, sourced from the sport-agnostic registry so
+ * non-baseball metrics render their real label (never a raw key).
  */
-export const getMetricLabel = (type: string): string => {
-  const labels: Record<string, string> = {
-    velocity: "Fastball Velocity",
-    exit_velo: "Exit Velocity",
-    sixty_time: "60-Yard Dash",
-    pop_time: "Pop Time",
-    batting_avg: "Batting Average",
-    era: "ERA",
-    strikeouts: "Strikeouts",
-    other: "Other Metric",
-  };
-  return labels[type] || type;
-};
+export const getMetricLabel = (type: string): string => getMetricDef(type).label;

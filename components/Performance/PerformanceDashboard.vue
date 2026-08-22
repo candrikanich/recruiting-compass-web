@@ -53,73 +53,17 @@
       </div>
     </div>
 
-    <!-- Metric Categories Summary -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <!-- Power Metrics Summary -->
-      <div class="rounded-lg shadow-sm p-6 bg-white">
-        <h3 class="text-lg font-semibold mb-4 text-slate-900">Power Metrics</h3>
-        <div class="space-y-3">
-          <MetricSummaryRow
-            label="Fastball Velocity"
-            :value="getMetricStats('velocity')"
-            unit="mph"
-          />
-          <MetricSummaryRow
-            label="Exit Velocity"
-            :value="getMetricStats('exit_velo')"
-            unit="mph"
-          />
-        </div>
-      </div>
-
-      <!-- Speed Metrics Summary -->
-      <div class="rounded-lg shadow-sm p-6 bg-white">
-        <h3 class="text-lg font-semibold mb-4 text-slate-900">Speed Metrics</h3>
-        <div class="space-y-3">
-          <MetricSummaryRow
-            label="60-Yard Dash"
-            :value="getMetricStats('sixty_time')"
-            unit="sec"
-          />
-          <MetricSummaryRow
-            label="Pop Time"
-            :value="getMetricStats('pop_time')"
-            unit="sec"
-          />
-        </div>
-      </div>
-
-      <!-- Hitting Metrics Summary -->
-      <div class="rounded-lg shadow-sm p-6 bg-white">
-        <h3 class="text-lg font-semibold mb-4 text-slate-900">
-          Hitting Metrics
-        </h3>
-        <div class="space-y-3">
-          <MetricSummaryRow
-            label="Batting Average"
-            :value="getMetricStats('batting_avg')"
-            unit="avg"
-          />
-        </div>
-      </div>
-
-      <!-- Pitching Metrics Summary -->
-      <div class="rounded-lg shadow-sm p-6 bg-white">
-        <h3 class="text-lg font-semibold mb-4 text-slate-900">
-          Pitching Metrics
-        </h3>
-        <div class="space-y-3">
-          <MetricSummaryRow
-            label="ERA"
-            :value="getMetricStats('era')"
-            unit="era"
-          />
-          <MetricSummaryRow
-            label="Strikeouts"
-            :value="getMetricStats('strikeouts')"
-            unit="k"
-          />
-        </div>
+    <!-- Metric Summary (registry-driven, sport-agnostic) -->
+    <div v-if="summaryMetricTypes.length > 0" class="rounded-lg shadow-sm p-6 bg-white">
+      <h3 class="text-lg font-semibold mb-4 text-slate-900">Metric Summary</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3">
+        <MetricSummaryRow
+          v-for="type in summaryMetricTypes"
+          :key="type"
+          :label="getMetricLabel(type)"
+          :value="getMetricStats(type)"
+          :unit="getUnit(type)"
+        />
       </div>
     </div>
 
@@ -158,12 +102,20 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { formatMetricValue } from "~/utils/metricFormat";
+import {
+  metricTypesForSport,
+  getMetricDef,
+  OTHER_KEY,
+} from "~/utils/metrics/canonical";
 import { usePerformanceAnalytics } from "~/composables/usePerformanceAnalytics";
 import type { Performance } from "~/types/models";
 import MetricSummaryRow from "./MetricSummaryRow.vue";
 
 interface Props {
   metrics: any[];
+  /** Athlete's primary sport — drives the registry-backed metric summary.
+   *  Null/undefined falls back to the baseball vocabulary (no regression). */
+  primarySport?: string | null;
 }
 
 const props = defineProps<Props>();
@@ -224,33 +176,25 @@ const getMetricStats = (type: string) => {
   return formatMetricValue(type, latest);
 };
 
-const getMetricLabel = (type: string): string => {
-  const labels: Record<string, string> = {
-    velocity: "Fastball Velocity",
-    exit_velo: "Exit Velocity",
-    sixty_time: "60-Yard Dash",
-    pop_time: "Pop Time",
-    batting_avg: "Batting Average",
-    era: "ERA",
-    strikeouts: "Strikeouts",
-    other: "Other Metric",
-  };
-  return labels[type] || type;
-};
+const getMetricLabel = (type: string): string => getMetricDef(type).label;
 
-const getUnit = (type: string): string => {
-  const units: Record<string, string> = {
-    velocity: "mph",
-    exit_velo: "mph",
-    sixty_time: "sec",
-    pop_time: "sec",
-    batting_avg: "avg",
-    era: "era",
-    strikeouts: "k",
-    other: "val",
-  };
-  return units[type] || "val";
-};
+const getUnit = (type: string): string => getMetricDef(type).unit;
+
+// Registry-driven metric summary for the athlete's sport: only the metric
+// types they have actually recorded, ordered by the sport's registry ordering.
+// No invented baseball categories — the registry has no category metadata, so
+// we group generically (one row per recorded metric type).
+const summaryMetricTypes = computed(() => {
+  const recorded = new Set(props.metrics.map((m) => m.metric_type));
+  const ordered = metricTypesForSport(props.primarySport).filter(
+    (type) => type !== OTHER_KEY && recorded.has(type),
+  );
+  // Include any recorded custom/off-sport keys the registry ordering omits.
+  const extras = Array.from(recorded).filter(
+    (type) => type && !ordered.includes(type as string),
+  ) as string[];
+  return [...ordered, ...extras];
+});
 
 const getTrendColorClass = (): string => {
   const trend = overallTrend.value.toLowerCase();

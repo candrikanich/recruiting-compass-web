@@ -25,7 +25,13 @@ export interface MetricDef {
   unit: string;
   format: MetricFormat;
   lowerIsBetter: boolean;
+  /** Per-metric display emoji. Mirrors iOS `MetricDef.icon` (SF Symbol there,
+   * emoji here — the values are intentionally per-platform). */
+  icon: string;
 }
+
+/** Neutral fallback emoji for keys without a specific icon. */
+const DEFAULT_ICON = "📊";
 
 // Format constructors — keep call sites terse and consistent.
 const dec = (digits: number, dropLeadingZero = false): MetricFormat => ({
@@ -43,7 +49,102 @@ const def = (
   unit: string,
   format: MetricFormat,
   lowerIsBetter = false,
-): MetricDef => ({ key, label, unit, format, lowerIsBetter });
+): MetricDef => ({ key, label, unit, format, lowerIsBetter, icon: DEFAULT_ICON });
+
+/**
+ * Central emoji per metric key across all 17 sports. Keeps every icon surface
+ * sport-aware without a baseball-only branch. Mirrors iOS
+ * `MetricRegistry.iconByKey` (SF Symbols there, emoji here — values are
+ * intentionally per-platform). Unlisted keys fall back to `DEFAULT_ICON`.
+ */
+const ICON_BY_KEY: Record<string, string> = {
+  // Baseball / Softball
+  velocity: "🔥",
+  exit_velo: "🔥",
+  batting_avg: "🏏",
+  sixty_time: "⏱️",
+  pop_time: "⏱️",
+  era: "⚾",
+  on_base_pct: "🎯",
+  slugging_pct: "🎯",
+  whip: "⚾",
+  strikeouts: "💪",
+  fielding_pct: "🧤",
+  // Basketball
+  points_per_game: "🏀",
+  rebounds_per_game: "🔄",
+  assists_per_game: "🤝",
+  field_goal_pct: "🎯",
+  three_point_pct: "🎯",
+  free_throw_pct: "🎯",
+  steals_per_game: "🖐️",
+  blocks_per_game: "🚫",
+  vertical_jump: "⬆️",
+  // Football
+  forty_time: "⏱️",
+  bench_press: "💪",
+  broad_jump: "↔️",
+  shuttle: "⏱️",
+  three_cone: "⏱️",
+  squat: "💪",
+  passing_yards: "🏈",
+  rushing_yards: "🏃",
+  receiving_yards: "🏈",
+  tackles: "🛡️",
+  // Soccer / Lacrosse / Ice Hockey / Field Hockey / Water Polo
+  goals: "⚽",
+  assists: "🤝",
+  saves: "🧤",
+  clean_sheets: "🛡️",
+  minutes_played: "⏰",
+  ground_balls: "🥍",
+  points: "⭐",
+  save_pct: "🎯",
+  goals_against_avg: "🥅",
+  steals: "🖐️",
+  // Volleyball
+  kills: "💥",
+  blocks: "🚫",
+  digs: "🖐️",
+  aces: "⚡",
+  hitting_pct: "🎯",
+  // Track & Field
+  sprint_time: "🏃",
+  distance_time: "🏃",
+  relay_split: "⏱️",
+  long_jump: "↔️",
+  high_jump: "⬆️",
+  shot_put: "🔵",
+  discus: "🥏",
+  // Cross Country
+  race_time: "🏃",
+  pace_per_mile: "⏱️",
+  // Swimming
+  event_time: "🏊",
+  free_50: "🏊",
+  free_100: "🏊",
+  // Golf
+  scoring_average: "⛳",
+  handicap: "🏌️",
+  // Tennis
+  utr_rating: "🎾",
+  ranking: "🔢",
+  // Wrestling
+  pins: "🤼",
+  takedowns: "🤼",
+  weight_class: "⚖️",
+  // Rowing
+  erg_2k: "🚣",
+  erg_split: "⏱️",
+  // Fallback bucket
+  other: DEFAULT_ICON,
+};
+
+/** Apply the central icon map over a def, keeping every other field. */
+const withIcon = (d: MetricDef): MetricDef => ({
+  ...d,
+  icon: ICON_BY_KEY[d.key] ?? d.icon,
+});
 
 /**
  * Render a raw value to its display string (number only — callers append the
@@ -205,7 +306,7 @@ const allDefs: MetricDef[] = [
 export const METRIC_DEFS: Record<string, MetricDef> = allDefs.reduce(
   (acc, d) => {
     if (acc[d.key]) throw new Error(`Duplicate metric def key: ${d.key}`);
-    acc[d.key] = d;
+    acc[d.key] = withIcon(d);
     return acc;
   },
   {} as Record<string, MetricDef>,

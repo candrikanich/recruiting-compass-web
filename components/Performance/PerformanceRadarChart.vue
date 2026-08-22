@@ -53,6 +53,7 @@ import {
   Legend,
 } from "chart.js";
 import type { PerformanceMetric } from "~/types/models";
+import { getMetricDef } from "~/utils/metrics/canonical";
 
 ChartJS.register(
   RadialLinearScale,
@@ -69,32 +70,12 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const metricTypes = [
-  "velocity",
-  "exit_velo",
-  "sixty_time",
-  "pop_time",
-  "batting_avg",
-  "era",
-  "strikeouts",
-  "other",
-];
+// Whatever metric types the athlete actually has recorded — sport-agnostic.
+const metricTypes = computed(() => Object.keys(props.latestMetrics));
 
 const hasMetrics = computed(() => Object.keys(props.latestMetrics).length > 0);
 
-const getMetricLabel = (type: string): string => {
-  const labels: Record<string, string> = {
-    velocity: "Velocity",
-    exit_velo: "Exit Velo",
-    sixty_time: "60-Yard",
-    pop_time: "Pop Time",
-    batting_avg: "Batting Avg",
-    era: "ERA",
-    strikeouts: "Strikeouts",
-    other: "Other",
-  };
-  return labels[type] || type;
-};
+const getMetricLabel = (type: string): string => getMetricDef(type).label;
 
 const getMetricColor = (type: string): string => {
   const colors: Record<string, string> = {
@@ -117,7 +98,7 @@ const radarData = computed(() => {
   const backgroundColor: string[] = [];
   const borderColors: string[] = [];
 
-  metricTypes.forEach((type) => {
+  metricTypes.value.forEach((type) => {
     if (props.latestMetrics[type]) {
       labels.push(getMetricLabel(type));
       const value = props.latestMetrics[type].value;
