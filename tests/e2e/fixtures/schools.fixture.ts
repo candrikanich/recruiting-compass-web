@@ -23,7 +23,7 @@ export const schoolFixtures = {
     name: "University of Excellence",
     location: "Boston, MA",
     division: "D1",
-    status: "interested",
+    status: "contacted",
     conference: "ACC",
     website: "https://uoe.edu",
     twitter_handle: "@UofExcellence",
@@ -124,7 +124,7 @@ export const schoolFixtures = {
       name: "Interesting School",
       location: "Interest City",
       division: "D1",
-      status: "interested",
+      status: "contacted",
     },
     offerReceived: {
       name: "Offer School",
@@ -477,16 +477,29 @@ export const schoolHelpers = {
     await page.goto(`/schools/${schoolId}`);
     await page.waitForLoadState("domcontentloaded");
 
-    // Sidebar "Recruiting Status" section select (sr-only label "Change recruiting status")
-    const statusSelect = page.getByLabel("Change recruiting status");
-    await statusSelect.waitFor({ state: "visible" });
-    await page.waitForFunction(
-      () =>
-        !document
-          .getElementById("recruiting-status-select")
-          ?.hasAttribute("disabled"),
-    );
-    await statusSelect.selectOption(newStatus);
+    // #412 replaced the sidebar status <select> with SchoolStatusStepper: each
+    // stage is a button aria-labelled "Set status to <Label> (<state>)", plus a
+    // dedicated testid button for the not_pursuing off-ramp.
+    const STATUS_LABELS: Record<string, string> = {
+      researching: "Researching",
+      contacted: "Contacted",
+      visiting: "Visiting",
+      offer_received: "Offer Received",
+      committed: "Committed",
+      not_pursuing: "Not Pursuing",
+    };
+    if (newStatus === "not_pursuing") {
+      const offRamp = page.getByTestId("mark-not-pursuing");
+      await offRamp.waitFor({ state: "visible" });
+      await offRamp.click();
+    } else {
+      const label = STATUS_LABELS[newStatus] ?? newStatus;
+      const stageButton = page.getByRole("button", {
+        name: new RegExp(`Set status to ${label}\\b`),
+      });
+      await stageButton.waitFor({ state: "visible" });
+      await stageButton.click();
+    }
     await page.waitForLoadState("domcontentloaded");
   },
 

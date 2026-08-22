@@ -48,7 +48,7 @@ export const testSchools = {
     division: "D1",
     conference: "ACC",
     website: "https://goduke.com",
-    status: "interested",
+    status: "contacted",
   },
   school2: {
     name: "Boston College",
