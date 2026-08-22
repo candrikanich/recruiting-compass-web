@@ -23,7 +23,7 @@ test.describe("User Story 8.1: Dashboard Overview", () => {
     await dashboardPage.expectStatsCardVisible("Coaches");
     await dashboardPage.expectStatsCardVisible("Schools");
     await dashboardPage.expectStatsCardVisible("Interactions");
-    await dashboardPage.expectMonthlyContactsCardVisible();
+    await dashboardPage.expectLastContactCardVisible();
 
     // 2. Contact Frequency sidebar widget (always visible)
     await dashboardPage.expectContactFrequencyWidget();
@@ -152,19 +152,17 @@ test.describe("User Story 8.1: Dashboard Overview", () => {
     ).toBeVisible();
   });
 
-  test("Monthly contacts card displays count", async ({ page }) => {
+  test("Last contact card displays recency", async ({ page }) => {
     dashboardPage = new DashboardPage(page);
     await dashboardPage.goto();
     await dashboardPage.waitForDashboardLoad();
 
     const contactsCard = page.locator(
-      '[data-testid="stat-card-monthly-contacts"]',
+      '[data-testid="stat-card-last-contact"]',
     );
     await expect(contactsCard).toBeVisible();
 
-    // Should show proper labels
-    await expect(contactsCard).toContainText("Contacts");
-    await expect(contactsCard).toContainText("This month");
+    await expect(contactsCard).toContainText("Last Contact");
   });
 
   test("Dashboard grid layout adjusts based on screen size", async ({

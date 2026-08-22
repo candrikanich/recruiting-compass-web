@@ -10,7 +10,7 @@ describe("DashboardStatsCards", () => {
     totalOffers: 5,
     acceptedOffers: 2,
     eventCount: 3,
-    contactsThisMonth: 18,
+    daysSinceLastContact: 5,
   };
 
   it("renders all 6 stat cards", () => {
@@ -23,7 +23,7 @@ describe("DashboardStatsCards", () => {
     expect(wrapper.text()).toContain("Interactions");
     expect(wrapper.text()).toContain("Events");
     expect(wrapper.text()).toContain("Offers");
-    expect(wrapper.text()).toContain("Contacts");
+    expect(wrapper.text()).toContain("Last Contact");
   });
 
   it("displays correct counts for each stat", () => {
@@ -36,7 +36,7 @@ describe("DashboardStatsCards", () => {
     expect(wrapper.text()).toContain("42");
     expect(wrapper.text()).toContain("2/5");
     expect(wrapper.text()).toContain("3");
-    expect(wrapper.text()).toContain("18");
+    expect(wrapper.text()).toContain("days ago");
   });
 
   it("renders Events card with correct data-testid", () => {
@@ -50,17 +50,40 @@ describe("DashboardStatsCards", () => {
     expect(eventsCard.text()).toContain("Entered events");
   });
 
-  it("renders monthly contacts card with correct data-testid", () => {
+  it("renders last contact card with correct data-testid", () => {
     const wrapper = mount(DashboardStatsCards, {
       props: defaultProps,
     });
 
     const contactsCard = wrapper.find(
-      '[data-testid="stat-card-monthly-contacts"]',
+      '[data-testid="stat-card-last-contact"]',
     );
     expect(contactsCard.exists()).toBe(true);
-    expect(contactsCard.text()).toContain("Contacts");
-    expect(contactsCard.text()).toContain("This month");
+    expect(contactsCard.text()).toContain("Last Contact");
+    expect(contactsCard.text()).toContain("days ago");
+  });
+
+  it("shows Today when the most recent contact is today", () => {
+    const wrapper = mount(DashboardStatsCards, {
+      props: { ...defaultProps, daysSinceLastContact: 0 },
+    });
+
+    const contactsCard = wrapper.find(
+      '[data-testid="stat-card-last-contact"]',
+    );
+    expect(contactsCard.text()).toContain("Today");
+  });
+
+  it("shows an em-dash when there is no logged contact", () => {
+    const wrapper = mount(DashboardStatsCards, {
+      props: { ...defaultProps, daysSinceLastContact: null },
+    });
+
+    const contactsCard = wrapper.find(
+      '[data-testid="stat-card-last-contact"]',
+    );
+    expect(contactsCard.text()).toContain("—");
+    expect(contactsCard.text()).toContain("No contact yet");
   });
 
   it("hides coaches card when showCoaches is false", () => {
@@ -106,13 +129,13 @@ describe("DashboardStatsCards", () => {
     expect(wrapper.text()).not.toContain("Events");
   });
 
-  it("hides monthly contacts card when showMonthlyContacts is false", () => {
+  it("hides last contact card when showLastContact is false", () => {
     const wrapper = mount(DashboardStatsCards, {
-      props: { ...defaultProps, showMonthlyContacts: false },
+      props: { ...defaultProps, showLastContact: false },
     });
 
     expect(wrapper.text()).toContain("Interactions");
-    expect(wrapper.text()).not.toContain("Contacts");
+    expect(wrapper.text()).not.toContain("Last Contact");
   });
 
   it("links coaches card to /coaches", () => {
@@ -193,7 +216,7 @@ describe("DashboardStatsCards", () => {
     expect(eventsLink.attributes("href")).toBe("/events");
   });
 
-  it("links monthly contacts card to /interactions", () => {
+  it("links last contact card to /interactions", () => {
     const wrapper = mount(DashboardStatsCards, {
       props: defaultProps,
       global: {
@@ -203,9 +226,7 @@ describe("DashboardStatsCards", () => {
       },
     });
 
-    const contactsLink = wrapper.find(
-      '[data-testid="stat-card-monthly-contacts"]',
-    );
+    const contactsLink = wrapper.find('[data-testid="stat-card-last-contact"]');
     expect(contactsLink.attributes("href")).toBe("/interactions");
   });
 
@@ -226,7 +247,7 @@ describe("DashboardStatsCards", () => {
         totalOffers: 0,
         acceptedOffers: 0,
         eventCount: 0,
-        contactsThisMonth: 0,
+        daysSinceLastContact: null,
       },
     });
 
@@ -242,7 +263,7 @@ describe("DashboardStatsCards", () => {
         totalOffers: 100,
         acceptedOffers: 50,
         eventCount: 200,
-        contactsThisMonth: 500,
+        daysSinceLastContact: 500,
       },
     });
 
@@ -277,28 +298,13 @@ describe("DashboardStatsCards", () => {
     });
   });
 
-  it("displays coach total badge when count > 0", () => {
+  it("no longer renders duplicate count pills on schools/coaches/interactions", () => {
     const wrapper = mount(DashboardStatsCards, {
-      props: { ...defaultProps, coachCount: 5 },
+      props: { ...defaultProps, schoolCount: 10, coachCount: 5 },
     });
 
-    expect(wrapper.text()).toContain("5 total");
-  });
-
-  it("displays school total badge when count > 0", () => {
-    const wrapper = mount(DashboardStatsCards, {
-      props: { ...defaultProps, schoolCount: 10 },
-    });
-
-    expect(wrapper.text()).toContain("10 total");
-  });
-
-  it("displays interaction logged badge when count > 0", () => {
-    const wrapper = mount(DashboardStatsCards, {
-      props: { ...defaultProps, interactionCount: 42 },
-    });
-
-    expect(wrapper.text()).toContain("42 logged");
+    expect(wrapper.text()).not.toContain("total");
+    expect(wrapper.text()).not.toContain("logged");
   });
 
   it("displays offer pending badge when count > 0", () => {

@@ -8,7 +8,7 @@ import { computed } from "vue";
 import type { ComputedRef, Ref } from "vue";
 import {
   calculateSchoolSizeBreakdown,
-  calculateContactsThisMonth,
+  calculateDaysSinceLastContact,
   calculateTotalOffers,
   calculateAcceptedOffers,
   getUpcomingEvents,
@@ -32,7 +32,7 @@ interface DashboardData {
 
 interface DashboardCalculations {
   schoolSizeBreakdown: ComputedRef<Record<string, number>>;
-  contactsThisMonth: ComputedRef<number>;
+  daysSinceLastContact: ComputedRef<number | null>;
   totalOffers: ComputedRef<number>;
   acceptedOffers: ComputedRef<number>;
   upcomingEvents: ComputedRef<Event[]>;
@@ -51,8 +51,8 @@ export const useDashboardCalculations = (
     calculateSchoolSizeBreakdown(dashboardData.allSchools.value),
   );
 
-  const contactsThisMonth = computed(() =>
-    calculateContactsThisMonth(dashboardData.allInteractions.value),
+  const daysSinceLastContact = computed(() =>
+    calculateDaysSinceLastContact(dashboardData.allInteractions.value),
   );
 
   const totalOffers = computed(() =>
@@ -73,7 +73,7 @@ export const useDashboardCalculations = (
 
   return {
     schoolSizeBreakdown,
-    contactsThisMonth,
+    daysSinceLastContact,
     totalOffers,
     acceptedOffers,
     upcomingEvents,

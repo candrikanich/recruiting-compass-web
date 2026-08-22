@@ -26,7 +26,7 @@ describe("useDashboardCalculations", () => {
     const calculations = useDashboardCalculations(mockDashboardData);
 
     expect(calculations).toHaveProperty("schoolSizeBreakdown");
-    expect(calculations).toHaveProperty("contactsThisMonth");
+    expect(calculations).toHaveProperty("daysSinceLastContact");
     expect(calculations).toHaveProperty("totalOffers");
     expect(calculations).toHaveProperty("acceptedOffers");
     expect(calculations).toHaveProperty("upcomingEvents");

@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import {
   calculateSchoolSizeBreakdown,
   calculateContactsThisMonth,
+  calculateDaysSinceLastContact,
   calculateTotalOffers,
   calculateAcceptedOffers,
   getUpcomingEvents,
@@ -197,6 +198,71 @@ describe("calculateContactsThisMonth", () => {
     } as Interaction;
     // new Date("") is Invalid Date, which is not >= startOfMonth
     expect(calculateContactsThisMonth([interaction])).toBe(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// calculateDaysSinceLastContact
+// ---------------------------------------------------------------------------
+
+describe("calculateDaysSinceLastContact", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-03-19T12:00:00Z"));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("returns null for empty array", () => {
+    expect(calculateDaysSinceLastContact([])).toBeNull();
+  });
+
+  it("returns 0 when the most recent contact is today", () => {
+    expect(
+      calculateDaysSinceLastContact([makeInteraction("2026-03-19T09:00:00Z")]),
+    ).toBe(0);
+  });
+
+  it("returns whole days elapsed since the most recent contact", () => {
+    expect(
+      calculateDaysSinceLastContact([makeInteraction("2026-03-14T12:00:00Z")]),
+    ).toBe(5);
+  });
+
+  it("uses the most recent interaction when several exist", () => {
+    const interactions = [
+      makeInteraction("2026-01-01T12:00:00Z"),
+      makeInteraction("2026-03-17T12:00:00Z"),
+      makeInteraction("2026-02-10T12:00:00Z"),
+    ];
+    expect(calculateDaysSinceLastContact(interactions)).toBe(2);
+  });
+
+  it("falls back to created_at when occurred_at is absent", () => {
+    const interaction: Interaction = {
+      id: "int-fallback",
+      type: "email",
+      direction: "outbound",
+      created_at: "2026-03-16T12:00:00Z",
+    } as Interaction;
+    expect(calculateDaysSinceLastContact([interaction])).toBe(3);
+  });
+
+  it("ignores interactions with invalid/empty dates", () => {
+    const interactions = [
+      { id: "bad", type: "email", direction: "outbound", occurred_at: "" },
+      makeInteraction("2026-03-15T12:00:00Z"),
+    ] as Interaction[];
+    expect(calculateDaysSinceLastContact(interactions)).toBe(4);
+  });
+
+  it("returns null when no interaction has a valid date", () => {
+    const interactions = [
+      { id: "bad", type: "email", direction: "outbound", occurred_at: "" },
+    ] as Interaction[];
+    expect(calculateDaysSinceLastContact(interactions)).toBeNull();
   });
 });
 
