@@ -31,9 +31,11 @@ export class DashboardPage extends BasePage {
    * on widget contents.
    */
   async waitForContactFrequencySettled() {
-    const widget = this.page.locator(
-      '[data-testid="contact-frequency-widget"]',
-    );
+    // The dashboard can render the widget twice (dashboard.vue + DashboardAnalytics)
+    // — scope to the first so a second instance can't trip strict-mode.
+    const widget = this.page
+      .locator('[data-testid="contact-frequency-widget"]')
+      .first();
     await expect(widget).toBeVisible({ timeout: 30000 });
     await expect(async () => {
       const hasMetrics = await widget
