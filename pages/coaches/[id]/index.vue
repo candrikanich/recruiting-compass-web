@@ -78,7 +78,13 @@
         />
 
         <!-- Send Profile -->
-        <CoachProfileLink :coach-id="coachId" />
+        <CoachProfileLink
+          :coach-id="coachId"
+          :coach-email="coach?.email ?? null"
+          :coach-phone="coach?.phone ?? null"
+          :coach-last-name="coach?.last_name ?? null"
+          :school-id="coach?.school_id ?? null"
+        />
       </div>
     </main>
 
