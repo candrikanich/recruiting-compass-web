@@ -109,9 +109,9 @@ describe("LogMetricModal - Form Fields", () => {
     expect(wrapper.find('input[type="checkbox"]').exists()).toBe(true);
   });
 
-  it("has all metric type options, sport-filtered from the registry (default: baseball)", () => {
+  it("has all metric type options, sport-filtered from the registry (Baseball)", () => {
     const wrapper = mount(LogMetricModal, {
-      props: { show: true },
+      props: { show: true, primarySport: "Baseball" },
       global: {
         stubs: {
           Teleport: true,
@@ -188,7 +188,7 @@ describe("LogMetricModal - Form Fields", () => {
 
   it("auto-sets and locks the unit for a fixed metric type", async () => {
     const wrapper = mount(LogMetricModal, {
-      props: { show: true },
+      props: { show: true, primarySport: "Baseball" },
       global: { stubs: { Teleport: true } },
     });
 
@@ -201,7 +201,7 @@ describe("LogMetricModal - Form Fields", () => {
 
   it("leaves the unit user-selectable when metric type is Other", async () => {
     const wrapper = mount(LogMetricModal, {
-      props: { show: true },
+      props: { show: true, primarySport: "Baseball" },
       global: { stubs: { Teleport: true } },
     });
 
@@ -284,7 +284,7 @@ describe("LogMetricModal - Form Submission", () => {
     mockCreateMetric.mockResolvedValue({ id: "123" });
 
     const wrapper = mount(LogMetricModal, {
-      props: { show: true },
+      props: { show: true, primarySport: "Baseball" },
       global: {
         stubs: {
           Teleport: true,
@@ -320,7 +320,7 @@ describe("LogMetricModal - Form Submission", () => {
     mockCreateMetric.mockResolvedValue({ id: "123" });
 
     const wrapper = mount(LogMetricModal, {
-      props: { show: true },
+      props: { show: true, primarySport: "Baseball" },
       global: {
         stubs: {
           Teleport: true,
@@ -371,7 +371,7 @@ describe("LogMetricModal - Form Submission", () => {
     mockCreateMetric.mockResolvedValue(newMetric);
 
     const wrapper = mount(LogMetricModal, {
-      props: { show: true },
+      props: { show: true, primarySport: "Baseball" },
       global: {
         stubs: {
           Teleport: true,
@@ -394,7 +394,7 @@ describe("LogMetricModal - Form Submission", () => {
     mockCreateMetric.mockResolvedValue({ id: "123" });
 
     const wrapper = mount(LogMetricModal, {
-      props: { show: true },
+      props: { show: true, primarySport: "Baseball" },
       global: {
         stubs: {
           Teleport: true,
@@ -416,7 +416,7 @@ describe("LogMetricModal - Form Submission", () => {
     mockCreateMetric.mockRejectedValue(new Error("Network error"));
 
     const wrapper = mount(LogMetricModal, {
-      props: { show: true },
+      props: { show: true, primarySport: "Baseball" },
       global: {
         stubs: {
           Teleport: true,
@@ -441,7 +441,7 @@ describe("LogMetricModal - Form Submission", () => {
     );
 
     const wrapper = mount(LogMetricModal, {
-      props: { show: true },
+      props: { show: true, primarySport: "Baseball" },
       global: {
         stubs: {
           Teleport: true,

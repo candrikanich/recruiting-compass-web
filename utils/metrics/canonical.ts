@@ -380,9 +380,6 @@ export const SPORT_METRICS: Record<string, readonly string[]> = {
   "Water Polo": ["goals", "assists", "saves", "steals"],
 };
 
-/** Fallback order for nil/unknown sports: all legacy baseball keys. */
-const defaultOrder = baseball;
-
 /** The def for a known key, or undefined when the key is unregistered. */
 export function getKnownMetricDef(key: string | null | undefined): MetricDef | undefined {
   if (!key) return undefined;
@@ -401,11 +398,14 @@ export function getMetricDef(key: string | null | undefined): MetricDef {
 }
 
 /**
- * Ordered metric keys offered for a sport, with "other" appended. Nil/unknown
- * sport falls back to the baseball order. Mirrors iOS `types(forSport:)`.
+ * Ordered metric keys offered for a sport, with "other" appended. A nil or
+ * unrecognized sport returns an EMPTY array (no baseball fallback):
+ * `primary_sport` is required going forward, so an unknown sport must not
+ * silently yield the baseball metric vocabulary. Mirrors iOS `types(forSport:)`.
  */
 export function metricTypesForSport(sport: string | null | undefined): string[] {
-  const base = (sport && SPORT_METRICS[sport]) || defaultOrder;
+  const base = sport ? SPORT_METRICS[sport] : undefined;
+  if (!base) return [];
   return [...base, OTHER_KEY];
 }
 
