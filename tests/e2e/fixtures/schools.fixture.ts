@@ -261,7 +261,7 @@ export const notesSelectors = {
   cancelButton: 'button[aria-label="Cancel editing Notes"]',
   saveButton: 'button:has-text("Save")',
   notesTextarea: '[id^="notes-textarea"]',
-  notesDisplay: ".text-slate-700.text-sm.whitespace-pre-wrap",
+  notesDisplay: '[data-testid="school-notes-value-notes"]',
 };
 
 /**

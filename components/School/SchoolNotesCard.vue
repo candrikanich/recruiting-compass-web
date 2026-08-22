@@ -43,7 +43,11 @@
           {{ isSaving ? "Saving..." : "Save" }}
         </button>
       </div>
-      <p v-else class="text-slate-700 text-sm whitespace-pre-wrap">
+      <p
+        v-else
+        :data-testid="`school-notes-value-${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`"
+        class="text-slate-700 text-sm whitespace-pre-wrap"
+      >
         {{ notes || emptyText }}
       </p>
     </div>
