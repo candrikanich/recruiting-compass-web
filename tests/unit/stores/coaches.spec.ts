@@ -226,7 +226,7 @@ describe("useCoachStore", () => {
       await coachStore.fetchCoachesBySchools(["school-1"]);
 
       expect(mockQuery.select).toHaveBeenCalledWith(
-        "id, school_id, first_name, last_name, email, last_contact_date, role",
+        "id, school_id, first_name, last_name, email, phone, twitter_handle, instagram_handle, last_contact_date, role",
       );
     });
 
