@@ -87,10 +87,10 @@ test.describe("Coaches CRUD — atomic lifecycle", () => {
     });
     await expect(coachHeading).toBeVisible();
 
-    // 3. READ — click "View details for {name}" button to open detail page
+    // 3. READ — the coach card is a NuxtLink "View profile for {name}"
     await page
-      .getByRole("button", {
-        name: `View details for ${firstName} ${lastName}`,
+      .getByRole("link", {
+        name: `View profile for ${firstName} ${lastName}`,
       })
       .click();
     await page.waitForURL(/\/coaches\/[a-f0-9-]+/);

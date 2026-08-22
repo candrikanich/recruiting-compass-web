@@ -1,4 +1,5 @@
 import { getSupabaseAdmin, createTestAccounts } from "./helpers/supabase-admin";
+import { seedReferenceData } from "./reference-data";
 
 const SEED_DATA = {
   schools: [
@@ -16,7 +17,7 @@ const SEED_DATA = {
       location: "Boston, MA",
       division: "D1",
       conference: "ACC",
-      status: "interested",
+      status: "contacted",
       coaching_style: "Team-first, defensive emphasis",
       recruiting_approach: "Late bloomers welcome",
     },
@@ -43,7 +44,7 @@ const SEED_DATA = {
       location: "Tucson, AZ",
       division: "D1",
       conference: "Pac-12",
-      status: "interested",
+      status: "contacted",
       coaching_style: "Traditional, proven approach",
       recruiting_approach: "Similar position profiles",
     },
@@ -173,6 +174,9 @@ async function seedDatabase() {
     }
 
     console.log(`✅ Created ${coachData?.length || 0} coaches`);
+
+    // Step 5: Reference/support data a fresh project (or reset.ts) lacks.
+    await seedReferenceData(supabase, playerUserId);
 
     console.log("✅ Test database seeded successfully!");
     console.log(`\n📊 Seed Summary:`);
