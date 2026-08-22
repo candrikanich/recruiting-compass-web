@@ -95,6 +95,9 @@
                 {{ sport }}
               </option>
             </select>
+            <p v-if="sportError" class="text-red-600 text-sm mt-1">
+              {{ sportError }}
+            </p>
           </div>
 
           <!-- Position -->
@@ -340,7 +343,7 @@
 
         <div class="flex gap-4">
           <button
-            v-if="currentStep < 5"
+            v-if="currentStep < 5 && currentStep !== 2"
             @click="skipStep"
             class="px-6 py-3 bg-slate-100 text-slate-600 font-medium rounded-lg hover:bg-slate-200 transition-colors"
           >
@@ -418,6 +421,7 @@ const onboardingData = ref<Record<string, unknown>>({});
 const loading = ref(false);
 const error = ref<string | null>(null);
 const zipCodeError = ref<string | null>(null);
+const sportError = ref<string | null>(null);
 const parentInviteEmail = ref("");
 
 const totalSteps = 5;
@@ -464,8 +468,21 @@ const restrictToNumbers = (event: KeyboardEvent) => {
   }
 };
 
+// Primary sport is required as of Phase 2 (empty string counts as unset).
+const hasSport = (): boolean => {
+  const sport = onboardingData.value.primary_sport;
+  return typeof sport === "string" && sport.trim() !== "";
+};
+
 const validateStep = (): boolean => {
   zipCodeError.value = null;
+  sportError.value = null;
+
+  // Validate step 2 (basic info) — primary sport is required
+  if (currentStep.value === 2 && !hasSport()) {
+    sportError.value = "Primary sport is required";
+    return false;
+  }
 
   // Validate step 3 (location)
   if (currentStep.value === 3) {
@@ -494,6 +511,12 @@ const nextScreen = async () => {
   }
 
   if (currentStep.value === totalSteps) {
+    // Final guard: step-jumping must not let onboarding complete with no sport.
+    if (!hasSport()) {
+      sportError.value = "Primary sport is required";
+      currentStep.value = 2;
+      return;
+    }
     // Complete onboarding
     loading.value = true;
     try {
@@ -570,6 +593,10 @@ const previousScreen = async () => {
 };
 
 const skipStep = async () => {
+  // Skip must never bypass a required step (e.g. primary sport on step 2).
+  if (!validateStep()) {
+    return;
+  }
   loading.value = true;
   try {
     await saveOnboardingStep(currentStep.value, onboardingData.value);
@@ -584,6 +611,12 @@ const skipStep = async () => {
 
 const sendParentInvite = async () => {
   if (!parentInviteEmail.value) return;
+  // Final guard: don't complete onboarding without a primary sport.
+  if (!hasSport()) {
+    sportError.value = "Primary sport is required";
+    currentStep.value = 2;
+    return;
+  }
   loading.value = true;
   try {
     await sendInvite({ email: parentInviteEmail.value, role: "parent" });

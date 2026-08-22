@@ -32,7 +32,7 @@
             </h2>
             <p class="text-slate-500 text-sm">
               We'll pre-fill their profile so they can hit the ground running.
-              Name, sport, and position are optional.
+              Name and position are optional.
             </p>
           </div>
 
@@ -115,7 +115,7 @@
                 for="sport"
                 class="block text-sm font-medium text-slate-700 mb-1"
               >
-                Primary sport
+                Primary sport <span class="text-red-600">*</span>
               </label>
               <select
                 id="sport"
@@ -160,7 +160,7 @@
             <button
               data-testid="next-button"
               type="button"
-              :disabled="!playerDob || playerTooYoung"
+              :disabled="!playerDob || playerTooYoung || !sport"
               class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               @click="savePlayerDetails"
             >

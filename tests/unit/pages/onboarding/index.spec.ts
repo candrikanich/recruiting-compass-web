@@ -126,6 +126,29 @@ describe("pages/onboarding/index.vue", () => {
     expect(mockOnboarding.saveOnboardingStep).not.toHaveBeenCalled();
   });
 
+  it("blocks advancing past step 2 without a primary sport", async () => {
+    const wrapper = mountPage();
+    await flushPromises();
+    // step 1 -> 2
+    await wrapper
+      .findAll("button")
+      .find((b) => b.text() === "Next")
+      ?.trigger("click");
+    await flushPromises();
+    mockOnboarding.saveOnboardingStep.mockClear();
+
+    // step 2 has no sport selected — nextScreen() must refuse to advance
+    await wrapper
+      .findAll("button")
+      .find((b) => b.text() === "Next")
+      ?.trigger("click");
+    await flushPromises();
+
+    expect(mockOnboarding.saveOnboardingStep).not.toHaveBeenCalled();
+    expect(wrapper.text()).toContain("2/5");
+    expect(wrapper.text()).toContain("Primary sport is required");
+  });
+
   it("blocks advancing past step 3 without a valid zip code", async () => {
     const wrapper = mountPage();
     await flushPromises();
@@ -135,6 +158,8 @@ describe("pages/onboarding/index.vue", () => {
       .find((b) => b.text() === "Next")
       ?.trigger("click");
     await flushPromises();
+    // select a sport so step 2 validation passes
+    await wrapper.find("#onboarding-primary-sport").setValue("Baseball");
     // step 2 -> 3
     await wrapper
       .findAll("button")
@@ -170,6 +195,10 @@ describe("pages/onboarding/index.vue", () => {
 
   it("completing step 5 calls completeOnboarding and navigates to /dashboard", async () => {
     mockOnboarding.getOnboardingProgress.mockResolvedValue(100); // resumes at step 5
+    // A sport is required to complete; seed it via the canonical prefill.
+    mockPreferences.getPlayerDetails.mockReturnValueOnce({
+      primary_sport: "Baseball",
+    });
     const wrapper = mountPage();
     await flushPromises();
 
