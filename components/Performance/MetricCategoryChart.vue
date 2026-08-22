@@ -56,6 +56,7 @@ import {
 } from "chart.js";
 import "chartjs-adapter-date-fns";
 import type { PerformanceMetric, Event } from "~/types/models";
+import { getMetricDef } from "~/utils/metrics/canonical";
 
 ChartJS.register(
   CategoryScale,
@@ -92,19 +93,7 @@ const toggleMetric = (type: string) => {
   }
 };
 
-const getMetricLabel = (type: string): string => {
-  const labels: Record<string, string> = {
-    velocity: "Fastball Velocity",
-    exit_velo: "Exit Velocity",
-    sixty_time: "60-Yard Dash",
-    pop_time: "Pop Time",
-    batting_avg: "Batting Average",
-    era: "ERA",
-    strikeouts: "Strikeouts",
-    other: "Other Metric",
-  };
-  return labels[type] || type;
-};
+const getMetricLabel = (type: string): string => getMetricDef(type).label;
 
 const getMetricColor = (type: string): string => {
   const colors: Record<string, string> = {
@@ -246,18 +235,11 @@ const chartOptions = computed(() => ({
   },
 }));
 
+// Y-axis label derived from the first metric type's registry def (sport-agnostic).
 const getYAxisLabel = (): string => {
-  switch (props.category) {
-    case "power":
-      return "Velocity (mph)";
-    case "speed":
-      return "Time (seconds)";
-    case "hitting":
-      return "Batting Average";
-    case "pitching":
-      return "Value";
-    default:
-      return "Value";
-  }
+  const first = props.metricTypes[0];
+  if (!first) return "Value";
+  const def = getMetricDef(first);
+  return def.unit ? `${def.label} (${def.unit})` : def.label;
 };
 </script>

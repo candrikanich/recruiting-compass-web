@@ -116,9 +116,18 @@ describe("Parent Onboarding", () => {
       expect(btn.attributes("disabled")).toBeDefined();
     });
 
+    it("Next button is disabled without a primary sport", async () => {
+      const wrapper = createWrapper();
+      await setDob(wrapper);
+      // DOB is valid but no sport selected — sport is required
+      const btn = wrapper.find('[data-testid="next-button"]');
+      expect(btn.attributes("disabled")).toBeDefined();
+    });
+
     it("proceeds to step 2 when Next is clicked", async () => {
       const wrapper = createWrapper();
       await setDob(wrapper);
+      await wrapper.find('[data-testid="sport"]').setValue("Baseball");
       await wrapper.find('[data-testid="next-button"]').trigger("click");
       await flushPromises();
       await wrapper.vm.$nextTick();
@@ -162,6 +171,7 @@ describe("Parent Onboarding", () => {
   describe("Step 2: Invite Player", () => {
     const goToStep2 = async (wrapper: ReturnType<typeof mount>) => {
       await setDob(wrapper);
+      await wrapper.find('[data-testid="sport"]').setValue("Baseball");
       await wrapper.find('[data-testid="next-button"]').trigger("click");
       await flushPromises();
       await wrapper.vm.$nextTick();

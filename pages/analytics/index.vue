@@ -94,7 +94,7 @@
         <ScatterChart
           title="Performance Correlation Analysis"
           :datasets="chartData.performanceData"
-          x-label="Exit Velocity (mph)"
+          :x-label="performanceScatterXLabel"
           y-label="Distance (feet)"
           chart-height="400px"
           :show-stats="true"
@@ -144,6 +144,7 @@ import StatCard from "~/components/Analytics/StatCard.vue";
 import PieChart from "~/components/Analytics/PieChart.vue";
 import FunnelChart from "~/components/Analytics/FunnelChart.vue";
 import ScatterChart from "~/components/Analytics/ScatterChart.vue";
+import { getMetricDef } from "~/utils/metrics/canonical";
 import { useDashboardData } from "~/composables/useDashboardData";
 import { useFamilyCtx } from "~/composables/useFamilyCtx";
 import { createClientLogger } from "~/utils/logger";
@@ -164,6 +165,12 @@ const activeFamily = useFamilyCtx();
 const userStore = useUserStore();
 
 const { allSchools, allOffers, schoolCount, interactionCount } = dashboardData;
+
+// Scatter x-axis label sourced from the metric registry (not a baseball literal).
+const performanceScatterXLabel = computed(() => {
+  const def = getMetricDef("exit_velo");
+  return def.unit ? `${def.label} (${def.unit})` : def.label;
+});
 
 const stats = computed(() => ({
   totalSchools: schoolCount.value,

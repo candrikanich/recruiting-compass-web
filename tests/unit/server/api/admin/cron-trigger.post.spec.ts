@@ -7,8 +7,11 @@
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-const fetchMock = vi.fn();
-vi.stubGlobal("$fetch", fetchMock);
+// The handler invokes the cron job in-process via useNitroApp().localFetch
+// (not a relative $fetch — see trigger.post.ts), so mock that path and have it
+// resolve a Response-like { ok, json() }.
+const localFetchMock = vi.fn();
+vi.stubGlobal("useNitroApp", () => ({ localFetch: localFetchMock }));
 
 const { requireAdmin, logAdminAction } = vi.hoisted(() => ({
   requireAdmin: vi.fn(async (e: any) => {
@@ -33,7 +36,9 @@ import handler from "~/server/api/admin/cron/trigger.post";
 const mkEvent = (body: any) => ({ context: {}, _body: body, node: { req: {} } }) as any;
 
 beforeEach(() => {
-  fetchMock.mockReset().mockResolvedValue({ ok: true });
+  localFetchMock
+    .mockReset()
+    .mockResolvedValue({ ok: true, json: async () => ({ ran: true }) });
   requireAdmin.mockClear();
   logAdminAction.mockClear();
   process.env.CRON_SECRET = "secret-x";
@@ -43,7 +48,7 @@ describe("POST /api/admin/cron/trigger", () => {
   it("triggers a safe job with the cron secret and audits it", async () => {
     const res = await handler(mkEvent({ jobName: "health-ping" }));
     expect(res).toMatchObject({ ok: true, jobName: "health-ping", dryRun: false });
-    expect(fetchMock).toHaveBeenCalledWith(
+    expect(localFetchMock).toHaveBeenCalledWith(
       "/api/cron/health-ping",
       expect.objectContaining({ headers: expect.objectContaining({ "x-cron-secret": "secret-x" }) }),
     );
@@ -61,7 +66,7 @@ describe("POST /api/admin/cron/trigger", () => {
         expect.objectContaining({ action: "cron.trigger", meta: { jobName: job, blocked: true } }),
       );
     }
-    expect(fetchMock).not.toHaveBeenCalled();
+    expect(localFetchMock).not.toHaveBeenCalled();
   });
 
   it("403s an unknown job", async () => {
@@ -71,9 +76,10 @@ describe("POST /api/admin/cron/trigger", () => {
   it("forces dryRun for orphaned-storage-sweep even if body says false", async () => {
     const res = await handler(mkEvent({ jobName: "orphaned-storage-sweep", dryRun: false }));
     expect(res.dryRun).toBe(true);
-    expect(fetchMock).toHaveBeenCalledWith(
-      "/api/cron/orphaned-storage-sweep",
-      expect.objectContaining({ query: { dryRun: 1 } }),
+    // dryRun is encoded in the URL, not a `query` option.
+    expect(localFetchMock).toHaveBeenCalledWith(
+      "/api/cron/orphaned-storage-sweep?dryRun=1",
+      expect.objectContaining({ method: "GET" }),
     );
   });
 });

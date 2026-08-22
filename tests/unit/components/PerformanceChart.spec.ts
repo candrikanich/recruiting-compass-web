@@ -207,12 +207,12 @@ describe("PerformanceChart", () => {
       expect(wrapper.vm.getMetricLabel("sixty_time")).toBe("60-Yard Dash");
     });
 
-    it("should return correct units for category", () => {
-      expect(wrapper.vm.getUnit()).toBe("mph"); // power category
+    it("should return the registry unit for the first metric type", () => {
+      expect(wrapper.vm.getUnit()).toBe("mph"); // velocity → mph
     });
 
-    it("should return correct y-axis label based on category", () => {
-      expect(wrapper.vm.getYAxisLabel()).toBe("Velocity (mph)");
+    it("should return a registry-derived y-axis label", () => {
+      expect(wrapper.vm.getYAxisLabel()).toBe("Fastball Velocity (mph)");
     });
   });
 
@@ -232,7 +232,7 @@ describe("PerformanceChart", () => {
       });
 
       expect(wrapper.vm.getUnit()).toBe("sec");
-      expect(wrapper.vm.getYAxisLabel()).toBe("Time (seconds)");
+      expect(wrapper.vm.getYAxisLabel()).toBe("60-Yard Dash (sec)");
     });
 
     it("should render hitting metrics", async () => {
@@ -244,7 +244,8 @@ describe("PerformanceChart", () => {
         ],
       });
 
-      expect(wrapper.vm.getUnit()).toBe("avg");
+      // batting_avg is a unitless ratio in the registry.
+      expect(wrapper.vm.getUnit()).toBe("");
     });
 
     it("should render pitching metrics", async () => {
@@ -254,7 +255,8 @@ describe("PerformanceChart", () => {
         metrics: [createMockMetric({ metric_type: "era", value: 2.85 })],
       });
 
-      expect(wrapper.vm.getUnit()).toBe("val");
+      // ERA is unitless in the registry.
+      expect(wrapper.vm.getUnit()).toBe("");
     });
   });
 

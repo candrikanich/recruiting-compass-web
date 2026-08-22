@@ -27,6 +27,7 @@
       </div>
       <div class="h-1.5 bg-slate-100 rounded-full overflow-hidden">
         <div
+          data-testid="status-dot"
           class="h-full transition-all duration-300"
           :class="statusBarClass"
           :style="{ width: `${statusScore}%` }"
@@ -58,6 +59,7 @@
       </div>
       <div class="h-1.5 bg-slate-100 rounded-full overflow-hidden">
         <div
+          data-testid="task-bar"
           class="h-full bg-blue-500 transition-all duration-300"
           :style="{ width: `${taskPercent}%` }"
         />

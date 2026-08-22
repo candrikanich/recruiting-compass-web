@@ -45,7 +45,7 @@
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <!-- Performance Dashboard (Analytics Overview) -->
       <div v-if="metrics.length > 0" class="mb-8">
-        <PerformanceDashboard :metrics="metrics" />
+        <PerformanceDashboard :metrics="metrics" :primary-sport="primarySport" />
       </div>
 
       <!-- Metric Charts -->
@@ -310,14 +310,13 @@
                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value="">Select Metric</option>
-                  <option value="velocity">Fastball Velocity (mph)</option>
-                  <option value="exit_velo">Exit Velocity (mph)</option>
-                  <option value="sixty_time">60-Yard Dash (sec)</option>
-                  <option value="pop_time">Pop Time (sec)</option>
-                  <option value="batting_avg">Batting Average</option>
-                  <option value="era">ERA</option>
-                  <option value="strikeouts">Strikeouts</option>
-                  <option value="other">Other</option>
+                  <option
+                    v-for="opt in metricTypeOptions"
+                    :key="opt.value"
+                    :value="opt.value"
+                  >
+                    {{ opt.label }}
+                  </option>
                 </select>
               </div>
 
@@ -459,6 +458,10 @@
 <script setup lang="ts">
 import { ref, onMounted, reactive, computed, defineAsyncComponent } from "vue";
 import { formatMetricValue } from "~/utils/metricFormat";
+import {
+  metricTypesForSport,
+  getMetricDef,
+} from "~/utils/metrics/canonical";
 import { usePerformance } from "~/composables/usePerformance";
 import { usePreferenceManager } from "~/composables/usePreferenceManager";
 import { useAppToast } from "~/composables/useAppToast";
@@ -583,8 +586,8 @@ const metricTrends = computed(() => {
       const firstAvg = first3.reduce((a, b) => a + b, 0) / first3.length;
       const lastAvg = last3.reduce((a, b) => a + b, 0) / last3.length;
 
-      // For metrics like 60-time, ERA, lower is better; for velocity, exit velo, higher is better
-      const lowerIsBetter = ["sixty_time", "pop_time", "era"].includes(type);
+      // Direction ("lower is better") comes from the metric registry, per sport.
+      const lowerIsBetter = getMetricDef(type).lowerIsBetter;
       let trend: "improving" | "declining" | "stable";
 
       if (lowerIsBetter) {
@@ -696,19 +699,18 @@ const chartOptions = {
   },
 };
 
-const getMetricLabel = (type: string): string => {
-  const labels: Record<string, string> = {
-    velocity: "Fastball Velocity",
-    exit_velo: "Exit Velocity",
-    sixty_time: "60-Yard Dash",
-    pop_time: "Pop Time",
-    batting_avg: "Batting Average",
-    era: "ERA",
-    strikeouts: "Strikeouts",
-    other: "Other Metric",
-  };
-  return labels[type] || type;
-};
+const getMetricLabel = (type: string): string => getMetricDef(type).label;
+
+// Metric-type dropdown options, ordered for the athlete's sport (registry-backed).
+const metricTypeOptions = computed(() =>
+  metricTypesForSport(primarySport.value).map((key) => {
+    const def = getMetricDef(key);
+    return {
+      value: key,
+      label: def.unit ? `${def.label} (${def.unit})` : def.label,
+    };
+  }),
+);
 
 const formatDate = (dateStr: string): string => {
   const date = new Date(dateStr);
@@ -722,15 +724,8 @@ const formatDate = (dateStr: string): string => {
 const handleAddMetric = async () => {
   try {
     await createMetric({
-      metric_type: newMetric.metric_type as
-        | "velocity"
-        | "exit_velo"
-        | "sixty_time"
-        | "pop_time"
-        | "batting_avg"
-        | "era"
-        | "strikeouts"
-        | "other",
+      // metric_type is a registry key (any of 17 sports), not a baseball union.
+      metric_type: newMetric.metric_type,
       value: newMetric.value!,
       recorded_date: newMetric.recorded_date,
       unit: newMetric.unit || "unit",

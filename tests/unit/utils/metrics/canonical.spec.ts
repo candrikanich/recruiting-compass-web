@@ -77,10 +77,12 @@ describe("sport orderings", () => {
     expect(t[0]).toBe("points_per_game");
     expect(t[t.length - 1]).toBe(OTHER_KEY);
   });
-  it("nil sport falls back to baseball + other", () => {
-    const t = metricTypesForSport(null);
-    expect(t[0]).toBe("velocity");
-    expect(t[t.length - 1]).toBe(OTHER_KEY);
+  it("nil sport returns empty (no baseball fallback)", () => {
+    expect(metricTypesForSport(null)).toEqual([]);
+    expect(metricTypesForSport(undefined)).toEqual([]);
+  });
+  it("unrecognized sport returns empty (no baseball fallback)", () => {
+    expect(metricTypesForSport("Quidditch")).toEqual([]);
   });
   it("baseball grew to 11 keys, fielding_pct last", () => {
     expect(SPORT_METRICS.Baseball).toHaveLength(11);
@@ -100,6 +102,26 @@ describe("sport orderings", () => {
   it("sport keys match the positions registry exactly", () => {
     for (const sport of Object.keys(SPORT_METRICS)) {
       expect(SPORT_POSITIONS[sport], `${sport} not in SPORT_POSITIONS`).toBeDefined();
+    }
+  });
+});
+
+describe("metric icons", () => {
+  it("sport-specific keys carry a non-default emoji", () => {
+    expect(getMetricDef("points_per_game").icon).toBe("🏀");
+    expect(getMetricDef("goals").icon).toBe("⚽");
+    expect(getMetricDef("passing_yards").icon).toBe("🏈");
+    expect(getMetricDef("event_time").icon).toBe("🏊");
+    expect(getMetricDef("scoring_average").icon).toBe("⛳");
+    expect(getMetricDef("velocity").icon).toBe("🔥");
+  });
+  it("unknown/humanized keys fall back to the neutral default", () => {
+    expect(getMetricDef("wingspan_reach").icon).toBe("📊");
+    expect(getMetricDef(OTHER_KEY).icon).toBe("📊");
+  });
+  it("every registered def has a non-empty icon", () => {
+    for (const d of Object.values(METRIC_DEFS)) {
+      expect(d.icon, `${d.key} missing icon`).toBeTruthy();
     }
   });
 });

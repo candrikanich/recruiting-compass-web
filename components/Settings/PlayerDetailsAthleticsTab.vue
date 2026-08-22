@@ -279,17 +279,75 @@
               />
             </a>
           </div>
-          <div>
+          <div class="md:col-span-3">
             <label
               class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1"
-              >Prep Baseball ID</label
+              >Prep Baseball Report Profile</label
             >
-            <input
-              v-model="form.prep_baseball_id"
-              @blur="triggerSave"
-              placeholder="ID Number"
-              class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium"
-            />
+            <div class="grid grid-cols-1 sm:grid-cols-[7rem_1fr] gap-3">
+              <select
+                v-model="form.prep_baseball_state"
+                :disabled="isParentRole"
+                @change="triggerSave"
+                class="w-full px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-700"
+                aria-label="Prep Baseball Report state"
+              >
+                <option value="">State</option>
+                <option
+                  v-for="opt in prepBaseballStateOptions"
+                  :key="opt.code"
+                  :value="opt.code"
+                >
+                  {{ opt.code }}
+                </option>
+              </select>
+              <input
+                v-model="form.prep_baseball_id"
+                :disabled="isParentRole"
+                @blur="triggerSave"
+                placeholder="e.g. owen-andrikanich"
+                class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium"
+              />
+            </div>
+
+            <p
+              v-if="
+                !isParentRole &&
+                suggestedPrepBaseballSlug &&
+                form.prep_baseball_id !== suggestedPrepBaseballSlug
+              "
+              class="mt-1.5 ml-1 text-xs text-slate-500"
+            >
+              Suggested name:
+              <button
+                type="button"
+                @click="applySuggestedPrepBaseballSlug"
+                class="font-mono font-medium text-blue-600 hover:text-blue-700 hover:underline"
+              >
+                {{ suggestedPrepBaseballSlug }}
+              </button>
+            </p>
+
+            <p v-if="prepBaseballPreviewUrl" class="mt-1.5 ml-1 text-xs">
+              <span class="text-slate-500">Your profile link: </span>
+              <a
+                :href="prepBaseballPreviewUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex items-center gap-1 font-medium text-blue-600 hover:text-blue-700 break-all"
+              >
+                {{ prepBaseballPreviewUrl }}
+                <UIcon
+                  name="i-heroicons-arrow-top-right-on-square"
+                  class="w-3 h-3 shrink-0"
+                />
+              </a>
+            </p>
+            <p v-else class="mt-1.5 ml-1 text-xs text-slate-400">
+              Pick your state and enter the name from your profile URL. Example:
+              <span class="font-mono">{{ prepBaseballExampleUrl }}</span>
+            </p>
+
             <a
               href="https://www.prepbaseballreport.com/"
               target="_blank"
@@ -441,12 +499,20 @@ import type { PlayerDetails } from "~/types/models";
 import { useVideoLinks } from "~/composables/useVideoLinks";
 import { useAppToast } from "~/composables/useAppToast";
 import { abbreviatePosition } from "~/utils/positions/canonical";
+import {
+  buildPrepBaseballUrl,
+  slugifyPlayerName,
+  normalizeStateCode,
+  US_STATE_OPTIONS,
+} from "~/utils/recruitingLinks";
 
 const props = defineProps<{
   form: PlayerDetails;
   isParentRole: boolean;
   isBaseballOrSoftball: boolean;
   availablePositions: string[];
+  playerName: string;
+  homeState: string;
   triggerSave: () => void;
   togglePosition: (pos: string) => void;
   isPositionSelected: (pos: string) => boolean;
@@ -457,6 +523,35 @@ const props = defineProps<{
 
 const heightFeet = defineModel<number | undefined>("heightFeet");
 const heightInches = defineModel<number | undefined>("heightInches");
+
+// --- Prep Baseball Report profile link (state + name-slug -> URL) ---
+const prepBaseballStateOptions = US_STATE_OPTIONS;
+const suggestedPrepBaseballSlug = computed(() =>
+  slugifyPlayerName(props.playerName),
+);
+const prepBaseballPreviewUrl = computed(() =>
+  buildPrepBaseballUrl(
+    props.form.prep_baseball_state,
+    props.form.prep_baseball_id,
+  ),
+);
+const prepBaseballExampleUrl =
+  "https://www.prepbaseballreport.com/profiles/OH/owen-andrikanich";
+
+// Pre-select the athlete's home state (high-confidence guess) when no PBR
+// state is set yet; the athlete can change it if their profile is filed
+// elsewhere. Persisted on next save once they fill the name-slug.
+onMounted(() => {
+  if (!props.isParentRole && !props.form.prep_baseball_state) {
+    const code = normalizeStateCode(props.homeState);
+    if (code) props.form.prep_baseball_state = code;
+  }
+});
+
+function applySuggestedPrepBaseballSlug() {
+  props.form.prep_baseball_id = suggestedPrepBaseballSlug.value;
+  props.triggerSave();
+}
 
 const sportLabel = computed(() =>
   props.form.primary_sport

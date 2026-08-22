@@ -105,6 +105,7 @@ import {
 } from "chart.js";
 import "chartjs-adapter-date-fns";
 import { usePerformanceAnalytics } from "~/composables/usePerformanceAnalytics";
+import { getMetricDef } from "~/utils/metrics/canonical";
 import type { Performance } from "~/types/models";
 import StatCard from "./StatCard.vue";
 import ComparisonCard from "./ComparisonCard.vue";
@@ -125,7 +126,9 @@ interface Props {
   title: string;
   metrics: any[];
   metricTypes: string[];
-  category: "power" | "speed" | "hitting" | "pitching";
+  /** Legacy baseball category — retained for compatibility, no longer drives
+   *  units/labels (those come from the metric registry). */
+  category?: "power" | "speed" | "hitting" | "pitching";
   showComparison?: boolean;
 }
 
@@ -147,33 +150,12 @@ const toggleMetric = (type: string) => {
   }
 };
 
-const getMetricLabel = (type: string): string => {
-  const labels: Record<string, string> = {
-    velocity: "Fastball Velocity",
-    exit_velo: "Exit Velocity",
-    sixty_time: "60-Yard Dash",
-    pop_time: "Pop Time",
-    batting_avg: "Batting Average",
-    era: "ERA",
-    strikeouts: "Strikeouts",
-    other: "Other Metric",
-  };
-  return labels[type] || type;
-};
+const getMetricLabel = (type: string): string => getMetricDef(type).label;
 
+// Unit for the stat cards, sourced from the first metric type's registry def.
 const getUnit = (): string => {
-  switch (props.category) {
-    case "power":
-      return "mph";
-    case "speed":
-      return "sec";
-    case "hitting":
-      return "avg";
-    case "pitching":
-      return "val";
-    default:
-      return "val";
-  }
+  const first = props.metricTypes[0];
+  return first ? getMetricDef(first).unit : "";
 };
 
 const getMetricColor = (type: string): string => {
@@ -366,18 +348,11 @@ const chartOptions = computed(() => ({
   },
 }));
 
+// Y-axis label derived from the first metric type's registry def (sport-agnostic).
 const getYAxisLabel = (): string => {
-  switch (props.category) {
-    case "power":
-      return "Velocity (mph)";
-    case "speed":
-      return "Time (seconds)";
-    case "hitting":
-      return "Batting Average";
-    case "pitching":
-      return "Value";
-    default:
-      return "Value";
-  }
+  const first = props.metricTypes[0];
+  if (!first) return "Value";
+  const def = getMetricDef(first);
+  return def.unit ? `${def.label} (${def.unit})` : def.label;
 };
 </script>

@@ -349,14 +349,13 @@
                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="">Select Metric</option>
-                  <option value="velocity">Fastball Velocity (mph)</option>
-                  <option value="exit_velo">Exit Velocity (mph)</option>
-                  <option value="sixty_time">60-Yard Dash (sec)</option>
-                  <option value="pop_time">Pop Time (sec)</option>
-                  <option value="batting_avg">Batting Average</option>
-                  <option value="era">ERA</option>
-                  <option value="strikeouts">Strikeouts</option>
-                  <option value="other">Other</option>
+                  <option
+                    v-for="opt in metricTypeOptions"
+                    :key="opt.value"
+                    :value="opt.value"
+                  >
+                    {{ opt.label }}
+                  </option>
                 </select>
               </div>
 
@@ -391,7 +390,7 @@
                   id="unit"
                   v-model="newMetric.unit"
                   type="text"
-                  placeholder="e.g., mph, sec, avg"
+                  placeholder="e.g., mph, sec, m"
                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                 />
               </div>
@@ -503,8 +502,10 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, defineAsyncComponent } from "vue";
+import { onMounted, computed, ref, defineAsyncComponent } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import { usePreferenceManager } from "~/composables/usePreferenceManager";
+import { metricTypesForSport, getMetricDef } from "~/utils/metrics/canonical";
 import ExportButton from "~/components/Performance/ExportButton.vue";
 const ExportModal = defineAsyncComponent(
   () => import("~/components/Performance/ExportModal.vue"),
@@ -582,6 +583,19 @@ const {
 const { showQuickLogModal, quickLogData, handleQuickLogInteraction } =
   useEventQuickLog(eventId, event);
 
+// Metric-type dropdown options, ordered for the athlete's sport (registry-backed).
+const { playerPrefs, getPlayerDetails } = usePreferenceManager();
+const primarySport = ref<string | null>(null);
+const metricTypeOptions = computed(() =>
+  metricTypesForSport(primarySport.value).map((key) => {
+    const def = getMetricDef(key);
+    return {
+      value: key,
+      label: def.unit ? `${def.label} (${def.unit})` : def.label,
+    };
+  }),
+);
+
 const markAsAttended = () =>
   markEventAttended(() => {
     // Show quick interaction logging modal
@@ -600,5 +614,7 @@ onMounted(async () => {
     await loadEventMetrics();
     await loadCoaches();
   }
+  await playerPrefs.loadPreferences();
+  primarySport.value = getPlayerDetails()?.primary_sport ?? null;
 });
 </script>
