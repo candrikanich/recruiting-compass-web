@@ -171,6 +171,7 @@ import { useInteractions } from "~/composables/useInteractions";
 import { useCoachStats } from "~/composables/useCoachStats";
 import { toTelHref } from "~/utils/phone";
 import { openTwitter, openInstagram } from "~/utils/socialMediaHandlers";
+import { socialDmInteraction } from "~/utils/socialDm";
 import { useUserStore } from "~/stores/user";
 import { useDeleteModal } from "~/composables/useDeleteModal";
 import { useCommunicationModal } from "~/composables/useCommunicationModal";
@@ -196,7 +197,7 @@ const backLink = computed(() => deriveBackLink(route.query));
 
 const { getCoach, updateCoach, smartDelete } = useCoaches();
 const { getSchool } = useSchools();
-const { interactions, fetchInteractions } = useInteractions();
+const { interactions, fetchInteractions, createInteraction } = useInteractions();
 const userStore = useUserStore();
 
 // Coach data and loading state
@@ -275,11 +276,31 @@ const callCoach = () => {
 
 const handleOpenTwitter = () => {
   openTwitter(coach.value?.twitter_handle);
+  void logSocialDm();
 };
 
 const handleOpenInstagram = () => {
   openInstagram(coach.value?.instagram_handle);
+  void logSocialDm();
 };
+
+// Best-effort: opening a social profile is a hand-off, so like mailto/sms this logs
+// on click. createInteraction is player-role + family gated, so a parent-viewed
+// coach simply won't log — never surface that as an error.
+async function logSocialDm(): Promise<void> {
+  if (!coach.value) return;
+  try {
+    await createInteraction({
+      ...socialDmInteraction(coach.value),
+      occurred_at: new Date().toISOString(),
+    });
+    if (coach.value.school_id) {
+      await fetchInteractions({ schoolId: coach.value.school_id, coachId });
+    }
+  } catch {
+    // swallow — logging is best-effort
+  }
+}
 
 const handleCoachInteractionLogged = async (interactionData: {
   type: string;
