@@ -44,6 +44,8 @@ const h = vi.hoisted(() => {
           twelfth_grade_coach: "Dave Reilly",
           primary_position: "Shortstop",
           positions: ["Shortstop", "Second Base"],
+          prep_baseball_id: "jordan-ellis",
+          prep_baseball_state: "OH",
         },
       },
       error: null,
@@ -134,6 +136,9 @@ describe("useTemplateResolver", () => {
       expect(ctx.derived?.position).toBe("SS/2B");
       expect(ctx.derived?.positionSecondary).toBe("2B");
       expect(ctx.derived?.profileLink).toBe("https://myrecruitingcompass.com/p/jordan");
+      expect(ctx.derived?.prepBaseballLink).toBe(
+        "https://www.prepbaseballreport.com/profiles/OH/jordan-ellis",
+      );
       expect(ctx.derived?.hsCoachName).toBe("Dave Reilly");
       expect(ctx.derived?.transcriptLink).toBe(
         "https://files.example/transcript.pdf",

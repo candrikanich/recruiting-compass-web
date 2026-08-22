@@ -76,6 +76,7 @@ export function usePlayerDetailsForm() {
     ncaa_id: "",
     perfect_game_id: "",
     prep_baseball_id: "",
+    prep_baseball_state: "",
     twitter_handle: "",
     instagram_handle: "",
     tiktok_handle: "",
@@ -119,6 +120,8 @@ export function usePlayerDetailsForm() {
   // table, location store). Fetched once in load(); they don't change while the
   // athlete edits player details, but the score stays reactive to form edits.
   const hasHighlightVideo = computed(() => videoLinks.value.length > 0);
+  const homeState = computed(() => getHomeLocation.value?.state ?? "");
+
   const hasHomeLocation = ref(false);
 
   const profileCompleteness = computed(() =>
@@ -434,6 +437,7 @@ export function usePlayerDetailsForm() {
     THROWS_OPTIONS,
     CAMPUS_SIZE_OPTIONS,
     COST_SENSITIVITY_OPTIONS,
+    homeState,
     load,
   };
 }

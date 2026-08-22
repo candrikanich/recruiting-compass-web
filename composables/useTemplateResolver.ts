@@ -18,6 +18,7 @@ import {
   primaryAndSecondary,
   abbreviatePosition,
 } from "~/utils/positions/canonical";
+import { buildPrepBaseballUrl } from "~/utils/recruitingLinks";
 import type { CommunicationTemplate } from "~/types/models";
 
 const logger = createClientLogger("useTemplateResolver");
@@ -234,6 +235,15 @@ export const useTemplateResolver = () => {
       // Absolute so the link is clickable in the email/SMS sent to a coach
       // (parity with iOS TemplateContextBuilder.publicProfileBase).
       if (slug) derived.profileLink = `${PUBLIC_PROFILE_BASE}/p/${slug}`;
+
+      // Prep Baseball Report profile URL, built from the athlete's stored
+      // state + name-slug; omitted when either is missing so the variable
+      // renders as nothing rather than a broken link.
+      const prepBaseballLink = buildPrepBaseballUrl(
+        ctx.prefs.prep_baseball_state as string | undefined,
+        ctx.prefs.prep_baseball_id as string | undefined,
+      );
+      if (prepBaseballLink) derived.prepBaseballLink = prepBaseballLink;
 
       const { data: transcriptRow } = (await supabase
         .from("documents")

@@ -89,6 +89,13 @@ export const AVAILABLE_VARIABLES: TemplateVariable[] = [
     description: "All video links, one per line (Title (PLATFORM): url)",
     example: "Senior Highlights (HUDL): https://www.hudl.com/video/12345",
   },
+  {
+    name: "Prep Baseball Link",
+    key: "prepBaseballLink",
+    description:
+      "Prep Baseball Report profile URL; renders as nothing unless the athlete has set both state and profile name",
+    example: "https://www.prepbaseballreport.com/profiles/OH/owen-andrikanich",
+  },
 ];
 
 /**
