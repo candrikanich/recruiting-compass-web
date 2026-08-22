@@ -45,9 +45,11 @@ export const useCoachPageFilters = (
         const days = parseInt(String(lastContactFilter), 10);
         const cutoffDate = new Date();
         cutoffDate.setDate(cutoffDate.getDate() - days);
-        if (coach.last_contact_date) {
-          matchesLastContact = new Date(coach.last_contact_date) >= cutoffDate;
-        }
+        // Never-contacted coaches (null date) are excluded when this filter is
+        // active, matching iOS CoachesListViewModel behavior.
+        matchesLastContact = coach.last_contact_date
+          ? new Date(coach.last_contact_date) >= cutoffDate
+          : false;
       }
 
       return matchesSearch && matchesRole && matchesLastContact;

@@ -6,6 +6,20 @@ Active session notes only. See [COMPLETED_WORK.md](./COMPLETED_WORK.md) for full
 
 - **Output format by reader, not by default**: For artifacts Chris will read once on a phone or share with someone non-technical — session recaps, status overviews, weekly summaries, "where are we on X" snapshots — invoke the `visual-explainer` skill to produce self-contained HTML. For artifacts that future-Claude or Chris will edit (handoff docs, `planning/*.md`, `COMPLETED_WORK.md`, lesson files, plans) — stay markdown. When unsure: read = HTML, edit = markdown.
 
+## Current Session (2026-08-22 — E2E suite GREEN + shipped to develop)
+
+**Status:** ✅ DONE. E2E suite **177 → 0**. PR #419 (debug/e2e-green → develop) MERGED @ `f186dad0`. Branch deleted. develop in sync.
+**Final CI (run 32588335716):** Chromium 491 pass / 0 fail / 3 flaky; WebKit 493 pass / 0 fail / 1 flaky. Seed validated live in global-setup.
+**Confirm-email toggle:** Chris disabled it on test project `ahpethltxopkjxxzwmmb` → cleared the 8 auth/signup fails.
+**Shipped (3 commits on develop now):**
+- `33392454` admin cron trigger → `useNitroApp().localFetch` (relative `$fetch` 502'd in CI node-server preset). Lesson in MEMORY: [[internal-fetch-use-localfetch]].
+- `bfc1f796` WebKit specs: signup-a11y outline-longhand serialization + Space-select radio; session-timeout tolerant `goto`.
+- `7f30ce81` seed codified — `tests/e2e/seed/reference-data.ts` (player Baseball pref, 8 nces e2e rows, task deadline_offset ×77 by slug, cron_runs). Idempotent; runs via `db:seed:test` (global-setup `shouldSeed = CI==='true'`).
+**⚠️ Shared-checkout race hit again this session:** concurrent session `recruiting-compass-web-57` merged **PR #420** (`fix/template-optional-token-orphans` — template optional-token gating + dashboard stat layout) onto develop mid-session; the "Dashboard WIP" at session start was ITS work, not stray. develop tip now `0616f705` (#420 on top of #419). My local checkout got branch-switched under me. See [[shared-checkout-git-race]].
+
+### NEXT (own effort — Chris queued): E2E test-isolation tech debt
+Remaining flakes are the **school-leak** bucket: suites leak `schools` into the shared `player@test.com` account → dashboard-8-2 "No schools tracked yet" empty-state assertions see leaked `e2e-<runid>` schools; also `interaction-detail-wcag:300` context-close. Non-blocking (pass on retry) but real. See MEMORY [[e2e-test-account-school-leak]] + [[e2e-cross-worker-afterall-race]]. Fix direction: per-run RUN_ID-scoped school data + teardown, OR dedicated per-worker accounts. Separate branch off develop.
+
 ## Current Session (2026-08-17 — Admin Suite: ALL 4 SPECS DONE — A Foundation + B Support + C Ops + D Growth)
 
 ### Spec D — Growth analytics (#3) — COMPLETE, pending branch-finish

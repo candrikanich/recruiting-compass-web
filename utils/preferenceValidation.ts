@@ -359,8 +359,8 @@ export function getDefaultDashboardLayout(): DashboardLayout {
       { id: "atAGlanceSummary", visible: true },
     ],
     rightColumn: [
-      { id: "schoolStatusOverview", visible: true },
       { id: "eventsSummary", visible: true },
+      { id: "schoolStatusOverview", visible: true },
       { id: "recentNotifications", visible: true },
     ],
   };

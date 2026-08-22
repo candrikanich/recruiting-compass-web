@@ -1,10 +1,27 @@
 <script setup lang="ts">
 import { usePlayerProfileStore } from "~/stores/playerProfile";
 import { useTrackingLink } from "~/composables/useTrackingLink";
+import { useInteractions } from "~/composables/useInteractions";
+import { formatPositionsShort } from "~/utils/positions/canonical";
+import { toSmsHref } from "~/utils/phone";
+import {
+  sendProfileSubject,
+  sendProfileEmailBody,
+  sendProfileTextBody,
+  sendProfileChannel,
+} from "~/utils/sendProfile";
+import type { PublicProfileData } from "~/types/models";
 
-const props = defineProps<{ coachId: string }>();
+const props = defineProps<{
+  coachId: string;
+  coachEmail?: string | null;
+  coachPhone?: string | null;
+  coachLastName?: string | null;
+  schoolId?: string | null;
+}>();
 
 const profileStore = usePlayerProfileStore();
+const { createInteraction } = useInteractions();
 const {
   link,
   loading,
@@ -15,6 +32,104 @@ const {
   generateLink,
   copyLink,
 } = useTrackingLink(computed(() => props.coachId));
+
+// Athlete display data for the coach-facing boilerplate. Sourced from the same
+// public-profile view a coach would see; fields the athlete hid come back null
+// and are simply omitted (graceful, matching iOS).
+const playerName = ref("");
+const graduationYear = ref<number | undefined>(undefined);
+const positionsShort = ref("");
+const sending = ref(false);
+
+const channel = computed(() =>
+  sendProfileChannel(props.coachEmail, props.coachPhone),
+);
+const canSend = computed(
+  () => profileStore.isPublished && channel.value !== "none",
+);
+
+onMounted(async () => {
+  if (!profileStore.profile) {
+    await profileStore.fetchProfile();
+  }
+  const slug = profileStore.profileUrl?.replace(/^\/p\//, "");
+  if (!slug) return;
+  try {
+    const data = await $fetch<PublicProfileData>(
+      `/api/public/profile/${slug}`,
+    );
+    playerName.value = data.playerName ?? "";
+    graduationYear.value = data.academics?.graduation_year;
+    positionsShort.value = formatPositionsShort(
+      data.athletic?.primary_sport,
+      data.athletic?.positions,
+      data.athletic?.primary_position,
+    );
+  } catch {
+    // Non-fatal: boilerplate still works with just the name/link.
+  }
+});
+
+async function handleSend(kind: "email" | "text"): Promise<void> {
+  if (sending.value) return;
+  sending.value = true;
+  try {
+    if (!link.value) await generateLink();
+    const url = trackingUrl.value;
+    if (!url) return;
+
+    const subject = sendProfileSubject(
+      playerName.value,
+      graduationYear.value,
+      positionsShort.value,
+    );
+
+    if (kind === "email" && props.coachEmail) {
+      const body = sendProfileEmailBody(
+        playerName.value,
+        props.coachLastName ?? "",
+        url,
+      );
+      window.location.href = `mailto:${props.coachEmail}?subject=${encodeURIComponent(
+        subject,
+      )}&body=${encodeURIComponent(body)}`;
+    } else if (kind === "text" && props.coachPhone) {
+      const body = sendProfileTextBody(
+        playerName.value,
+        graduationYear.value,
+        url,
+      );
+      window.location.href = toSmsHref(props.coachPhone, body);
+    }
+
+    await logSend(kind, subject, url);
+  } finally {
+    sending.value = false;
+  }
+}
+
+// Best-effort: web has no native composer to confirm the send, and
+// createInteraction is player-role + family gated — a parent-sent profile
+// simply won't log. Never block the mailto/sms hand-off on it.
+async function logSend(
+  kind: "email" | "text",
+  subject: string,
+  url: string,
+): Promise<void> {
+  try {
+    await createInteraction({
+      school_id: props.schoolId ?? undefined,
+      coach_id: props.coachId,
+      type: kind,
+      direction: "outbound",
+      subject,
+      content: url,
+      occurred_at: new Date().toISOString(),
+    });
+  } catch {
+    // swallow — logging is best-effort
+  }
+}
 
 function formatDate(iso: string | null): string {
   if (!iso) return "Never";
@@ -87,6 +202,26 @@ function formatDate(iso: string | null): string {
           ⚠️ Your profile is not published. Coaches who click this link will see
           a "not available" message.
         </p>
+      </div>
+
+      <!-- Send via email / text with boilerplate (generates a link on demand) -->
+      <div v-if="canSend" class="flex gap-2 pt-1">
+        <button
+          v-if="channel === 'email' || channel === 'both'"
+          class="px-3 py-2 text-xs bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 disabled:opacity-50"
+          :disabled="sending"
+          @click="handleSend('email')"
+        >
+          Email profile
+        </button>
+        <button
+          v-if="channel === 'text' || channel === 'both'"
+          class="px-3 py-2 text-xs bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 disabled:opacity-50"
+          :disabled="sending"
+          @click="handleSend('text')"
+        >
+          Text profile
+        </button>
       </div>
 
       <p v-if="error" class="text-xs text-red-500">{{ error }}</p>

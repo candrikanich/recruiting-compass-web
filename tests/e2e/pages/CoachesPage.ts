@@ -205,11 +205,13 @@ export class CoachesPage extends BasePage {
   }
 
   async getCoachCount(): Promise<number> {
-    // Wait for Supabase data to load — poll until count stabilizes
+    // Each CoachCard is a NuxtLink aria-labelled "View profile for {name}" —
+    // a stable count of rendered coach cards (the old h3 class selector broke
+    // when the card markup was restructured).
     let count = 0;
     for (let i = 0; i < 10; i++) {
       count = await this.page
-        .locator("h3.text-lg.font-bold.text-slate-900")
+        .getByRole("link", { name: /^View profile for / })
         .count();
       if (count > 0) break;
       await this.page.waitForTimeout(500);

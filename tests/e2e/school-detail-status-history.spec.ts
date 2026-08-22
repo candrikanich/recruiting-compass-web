@@ -31,7 +31,7 @@ test.describe("School Detail - Status History", () => {
   test("should show empty state when no history exists", async ({ page }) => {
     const schoolData = createSchoolData({
       name: generateUniqueSchoolName("No History"),
-      status: "interested",
+      status: "contacted",
     });
     schoolId = await schoolHelpers.createSchool(page, schoolData);
 
@@ -45,7 +45,7 @@ test.describe("School Detail - Status History", () => {
   test("should display status change timeline", async ({ page }) => {
     const schoolData = createSchoolData({
       name: generateUniqueSchoolName("Timeline Test"),
-      status: "interested",
+      status: "contacted",
     });
     schoolId = await schoolHelpers.createSchool(page, schoolData);
 
@@ -66,7 +66,7 @@ test.describe("School Detail - Status History", () => {
   }) => {
     const schoolData = createSchoolData({
       name: generateUniqueSchoolName("Initial Test"),
-      status: "interested",
+      status: "contacted",
     });
     schoolId = await schoolHelpers.createSchool(page, schoolData);
 
@@ -86,7 +86,7 @@ test.describe("School Detail - Status History", () => {
   test("should apply correct colors to status badges", async ({ page }) => {
     const schoolData = createSchoolData({
       name: generateUniqueSchoolName("Badge Colors"),
-      status: "interested",
+      status: "contacted",
     });
     schoolId = await schoolHelpers.createSchool(page, schoolData);
 
@@ -111,7 +111,7 @@ test.describe("School Detail - Status History", () => {
   test("should show 'You' for current user's changes", async ({ page }) => {
     const schoolData = createSchoolData({
       name: generateUniqueSchoolName("User Attribution"),
-      status: "interested",
+      status: "contacted",
     });
     schoolId = await schoolHelpers.createSchool(page, schoolData);
 
@@ -132,7 +132,7 @@ test.describe("School Detail - Status History", () => {
   test("should display timestamps correctly", async ({ page }) => {
     const schoolData = createSchoolData({
       name: generateUniqueSchoolName("Timestamp Test"),
-      status: "interested",
+      status: "contacted",
     });
     schoolId = await schoolHelpers.createSchool(page, schoolData);
 
@@ -154,7 +154,7 @@ test.describe("School Detail - Status History", () => {
   test("should display arrow icons between statuses", async ({ page }) => {
     const schoolData = createSchoolData({
       name: generateUniqueSchoolName("Arrow Test"),
-      status: "interested",
+      status: "contacted",
     });
     schoolId = await schoolHelpers.createSchool(page, schoolData);
 

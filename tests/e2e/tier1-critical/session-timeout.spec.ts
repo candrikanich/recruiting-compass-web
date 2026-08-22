@@ -75,7 +75,11 @@ test.describe("Tier 1: Session Timeout - Warning and Logout", () => {
       }
     });
 
-    await page.goto("/dashboard");
+    // Loading /dashboard with a near-timeout session makes the app re-evaluate
+    // auth and fire its own navigation, which supersedes this goto in WebKit
+    // ("interrupted by another navigation"). Chromium swallows it; tolerate the
+    // interrupt and let the warning-modal assertion below be the real check.
+    await page.goto("/dashboard").catch(() => {});
 
     const warningModal = page.locator("text=Session Timeout Warning");
     await expect(warningModal).toBeVisible({ timeout: 5000 });
@@ -122,7 +126,11 @@ test.describe("Tier 1: Session Timeout - Warning and Logout", () => {
       }
     });
 
-    await page.goto("/dashboard");
+    // Loading /dashboard with a near-timeout session makes the app re-evaluate
+    // auth and fire its own navigation, which supersedes this goto in WebKit
+    // ("interrupted by another navigation"). Chromium swallows it; tolerate the
+    // interrupt and let the warning-modal assertion below be the real check.
+    await page.goto("/dashboard").catch(() => {});
 
     const warningModal = page.locator("text=Session Timeout Warning");
     await expect(warningModal).toBeVisible({ timeout: 5000 });
@@ -165,7 +173,11 @@ test.describe("Tier 1: Session Timeout - Warning and Logout", () => {
       }
     });
 
-    await page.goto("/dashboard");
+    // Loading /dashboard with a near-timeout session makes the app re-evaluate
+    // auth and fire its own navigation, which supersedes this goto in WebKit
+    // ("interrupted by another navigation"). Chromium swallows it; tolerate the
+    // interrupt and let the warning-modal assertion below be the real check.
+    await page.goto("/dashboard").catch(() => {});
 
     const warningModal = page.locator("text=Session Timeout Warning");
     await expect(warningModal).toBeVisible({ timeout: 5000 });

@@ -54,6 +54,32 @@ export const calculateContactsThisMonth = (
 };
 
 /**
+ * Days elapsed since the most recent logged interaction.
+ * Returns null when there is no interaction with a valid date, so the UI can
+ * render an em-dash rather than a misleading "0". Today's contact reads as 0.
+ */
+export const calculateDaysSinceLastContact = (
+  interactions: Interaction[],
+): number | null => {
+  const now = Date.now();
+  let mostRecent = -Infinity;
+
+  interactions.forEach((interaction) => {
+    const time = new Date(
+      interaction.occurred_at || interaction.created_at || "",
+    ).getTime();
+    if (!Number.isNaN(time) && time > mostRecent) {
+      mostRecent = time;
+    }
+  });
+
+  if (mostRecent === -Infinity) return null;
+
+  const msPerDay = 1000 * 60 * 60 * 24;
+  return Math.max(0, Math.floor((now - mostRecent) / msPerDay));
+};
+
+/**
  * Calculate total offers
  */
 export const calculateTotalOffers = (offers: Offer[]): number => {

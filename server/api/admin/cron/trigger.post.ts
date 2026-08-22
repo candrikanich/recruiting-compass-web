@@ -68,12 +68,24 @@ export default defineEventHandler(
       });
     }
 
+    // Invoke the job in-process via Nitro's localFetch rather than a relative
+    // $fetch. A relative server-side $fetch has to resolve a base URL, which is
+    // unreliable in the built node-server preset (it intermittently fails to
+    // reach the handler in CI → the job never runs). localFetch dispatches
+    // straight to the local h3 app with no socket/base-URL round-trip, so the
+    // cron handler (and its withCronRun bookkeeping) always executes.
     let result: unknown;
     try {
-      result = await $fetch(`/api/cron/${jobName}`, {
+      const nitroApp = useNitroApp();
+      const path = `/api/cron/${jobName}${dryRun ? "?dryRun=1" : ""}`;
+      const res = await nitroApp.localFetch(path, {
+        method: "GET",
         headers: { "x-cron-secret": secret },
-        ...(dryRun ? { query: { dryRun: 1 } } : {}),
       });
+      if (!res.ok) {
+        throw new Error(`cron ${jobName} responded ${res.status}`);
+      }
+      result = await res.json();
     } catch (err) {
       // The cron job records its own error row in cron_runs; never leak the
       // secret or the raw upstream error to the client.

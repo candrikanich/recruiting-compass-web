@@ -44,26 +44,26 @@ test.describe("Schools CRUD — atomic lifecycle", () => {
       "D1",
     );
 
-    // 3. UPDATE — change status via sidebar "Recruiting Status" section (auto-saves)
-    const statusSelect = page.getByLabel("Change recruiting status");
-    await statusSelect.waitFor({ state: "visible" });
-    await page.waitForFunction(
-      () =>
-        !document
-          .getElementById("recruiting-status-select")
-          ?.hasAttribute("disabled"),
-    );
-    await statusSelect.selectOption("interested");
+    // 3. UPDATE — change status via the sidebar SchoolStatusStepper (auto-saves;
+    // #412 replaced the old <select> with a clickable stage stepper).
+    const contactedStep = page.getByRole("button", {
+      name: /Set status to Contacted\b/,
+    });
+    await contactedStep.waitFor({ state: "visible" });
+    await contactedStep.click();
 
-    // Wait for the Supabase write to complete (aria-busy flips true→false)
-    await expect(statusSelect).toHaveAttribute("aria-busy", "false");
+    // Wait for the optimistic update + Supabase write to land before reloading
+    // (Contacted becomes the current stage).
+    await expect(
+      page.getByRole("button", { name: /Set status to Contacted\b/ }),
+    ).toHaveAttribute("aria-current", "step");
 
-    // Reload to confirm persistence
+    // Reload to confirm persistence.
     await page.reload();
     await page.waitForLoadState("domcontentloaded");
-    await expect(page.getByLabel("Change recruiting status")).toHaveValue(
-      "interested",
-    );
+    await expect(
+      page.getByRole("button", { name: /Set status to Contacted\b/ }),
+    ).toHaveAttribute("aria-current", "step");
 
     // 4. DELETE — sidebar button → confirm dialog → back at /schools
     await page.locator('button:has-text("Delete School")').click();

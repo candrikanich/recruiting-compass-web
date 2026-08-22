@@ -282,9 +282,10 @@ test.describe("Coach Search and Filtering", () => {
       const coachCount = await coachesPage.getCoachCount();
       expect(coachCount).toBeGreaterThan(0);
 
-      // First coach heading should be defined
+      // First coach card should be defined (CoachCard link, stable across the
+      // card markup restructure that changed the old h3 classes).
       const firstCoach = await page
-        .locator("h3.text-lg.font-bold")
+        .getByRole("link", { name: /^View profile for / })
         .first()
         .textContent();
       expect(firstCoach).toBeTruthy();

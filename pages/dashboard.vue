@@ -46,7 +46,7 @@
           :event-count="eventCount"
           :total-offers="totalOffers"
           :accepted-offers="acceptedOffers"
-          :contacts-this-month="contactsThisMonth"
+          :days-since-last-contact="daysSinceLastContact"
           :show-coaches="dashboardLayout.statsCards.coaches"
           :show-schools="dashboardLayout.statsCards.schools"
           :show-interactions="dashboardLayout.statsCards.interactions"
@@ -116,17 +116,14 @@
 
         <!-- Right: persistent sidebar (2 cols) -->
         <aside class="lg:col-span-2 space-y-6" aria-label="Dashboard sidebar">
-          <!-- Always-visible sidebar widgets -->
+          <!-- Recruiting packet pinned to top; Upcoming Events sits directly
+               below it via the eventsSummary-first default right-column order. -->
           <DashboardRecruitingPacketWidget
             :recruiting-packet-loading="recruitingPacketLoading"
             :recruiting-packet-error="recruitingPacketError"
             :has-generated-packet="hasGeneratedPacket"
             @generate-packet="handleGeneratePacket"
             @email-packet="handleEmailPacket"
-          />
-          <DashboardContactFrequencyWidget
-            :interactions="allInteractions"
-            :schools="allSchools"
           />
 
           <!-- Dynamic right column widgets -->
@@ -141,6 +138,12 @@
               </template>
             </Suspense>
           </template>
+
+          <!-- Contact frequency — always visible, below configurable widgets -->
+          <DashboardContactFrequencyWidget
+            :interactions="allInteractions"
+            :schools="allSchools"
+          />
 
           <!-- Parent-only widget — always last -->
           <DashboardAthleteActivityWidget v-if="userStore.isParent" />
@@ -260,7 +263,7 @@ const suggestionsMoreCount = computed(
 // Dashboard calculations derived from dashboard data
 const {
   schoolSizeBreakdown,
-  contactsThisMonth,
+  daysSinceLastContact,
   totalOffers,
   acceptedOffers,
   upcomingEvents,

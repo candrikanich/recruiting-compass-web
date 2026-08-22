@@ -72,16 +72,8 @@ export class DashboardPage extends BasePage {
     return match ? parseInt(match[0]) : 0;
   }
 
-  async expectMonthlyContactsCardVisible() {
-    await this.expectVisible('[data-testid="stat-card-monthly-contacts"]');
-  }
-
-  async getMonthlyContactsCount(): Promise<number> {
-    const element = this.page.locator(
-      '[data-testid="stat-card-monthly-contacts"]',
-    );
-    const text = await element.locator("div").nth(2).textContent();
-    return text ? parseInt(text) : 0;
+  async expectLastContactCardVisible() {
+    await this.expectVisible('[data-testid="stat-card-last-contact"]');
   }
 
   async expectUpcomingEventsVisible() {
@@ -193,8 +185,8 @@ export class DashboardPage extends BasePage {
     expect(ratio).toBeLessThan(maxRatio);
   }
 
-  async clickMonthlyContactsCard() {
-    await this.click('[data-testid="stat-card-monthly-contacts"]');
+  async clickLastContactCard() {
+    await this.click('[data-testid="stat-card-last-contact"]');
   }
 
   async getPageURL(): Promise<string> {
