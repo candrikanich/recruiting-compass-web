@@ -29,7 +29,7 @@
         >
           <div class="flex items-start justify-between mb-2">
             <span class="text-2xl">{{
-              getMetricEmoji(metric.metric_type)
+              getMetricIcon(metric.metric_type)
             }}</span>
             <span
               v-if="getTrend(metric.metric_type)"
@@ -102,6 +102,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { formatMetricValue } from "~/utils/metricFormat";
+import { getMetricDef } from "~/utils/metrics/canonical";
 import type { PerformanceMetric } from "~/types/models";
 
 interface Props {
@@ -169,31 +170,9 @@ const formatDate = (dateString: string) => {
   return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 };
 
-const getMetricEmoji = (type: string) => {
-  const emojiMap: Record<string, string> = {
-    velocity: "⚡",
-    exit_velo: "💥",
-    sixty_time: "🏃",
-    pop_time: "🎯",
-    batting_avg: "🏏",
-    era: "🎪",
-    strikeouts: "⚾",
-    other: "📈",
-  };
-  return emojiMap[type] || "📊";
-};
+// Sport-aware per-metric emoji from the canonical registry (neutral default
+// for unknown/humanized keys).
+const getMetricIcon = (type: string) => getMetricDef(type).icon;
 
-const getMetricLabel = (type: string) => {
-  const labels: Record<string, string> = {
-    velocity: "Fastball Velocity",
-    exit_velo: "Exit Velocity",
-    sixty_time: "60-Yard Dash",
-    pop_time: "Pop Time",
-    batting_avg: "Batting Avg",
-    era: "ERA",
-    strikeouts: "Strikeouts",
-    other: "Other",
-  };
-  return labels[type] || type;
-};
+const getMetricLabel = (type: string) => getMetricDef(type).label;
 </script>

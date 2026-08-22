@@ -229,8 +229,10 @@ describe("getMetricLabel", () => {
     expect(getMetricLabel("other")).toBe("Other Metric");
   });
 
-  it("returns the raw type string for unknown metric type", () => {
-    expect(getMetricLabel("custom_metric")).toBe("custom_metric");
+  it("returns a humanized label for unknown metric type", () => {
+    // Registry synthesizes a fallback label (underscores → spaces) so no
+    // athlete ever sees a raw metric key.
+    expect(getMetricLabel("custom_metric")).toBe("custom metric");
   });
 
   it("returns the raw type string for empty string", () => {

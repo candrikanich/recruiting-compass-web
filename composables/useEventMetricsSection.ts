@@ -3,6 +3,7 @@ import { usePerformance } from "~/composables/usePerformance";
 import { useAppToast } from "~/composables/useAppToast";
 import { createClientLogger } from "~/utils/logger";
 import type { Event, PerformanceMetric } from "~/types/models";
+import { getMetricDef } from "~/utils/metrics/canonical";
 
 const logger = createClientLogger("EventDetail");
 
@@ -29,19 +30,7 @@ export function useEventMetricsSection(
     verified: false,
   });
 
-  const getMetricLabel = (type: string): string => {
-    const labels: Record<string, string> = {
-      velocity: "Fastball Velocity",
-      exit_velo: "Exit Velocity",
-      sixty_time: "60-Yard Dash",
-      pop_time: "Pop Time",
-      batting_avg: "Batting Average",
-      era: "ERA",
-      strikeouts: "Strikeouts",
-      other: "Other Metric",
-    };
-    return labels[type] || type;
-  };
+  const getMetricLabel = (type: string): string => getMetricDef(type).label;
 
   const loadEventMetrics = async () => {
     try {
@@ -57,15 +46,8 @@ export function useEventMetricsSection(
     try {
       metricLoading.value = true;
       await createMetric({
-        metric_type: newMetric.metric_type as
-          | "velocity"
-          | "exit_velo"
-          | "sixty_time"
-          | "pop_time"
-          | "batting_avg"
-          | "era"
-          | "strikeouts"
-          | "other",
+        // metric_type is a registry key (any of 17 sports), not a baseball union.
+        metric_type: newMetric.metric_type,
         value: newMetric.value!,
         recorded_date: event.value!.start_date,
         unit: newMetric.unit || "unit",
