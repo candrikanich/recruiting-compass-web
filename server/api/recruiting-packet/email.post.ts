@@ -150,11 +150,19 @@ export default defineEventHandler(async (event) => {
       ),
     );
 
-    // Check for failures
-    const failures = results.filter((r) => r && "error" in r);
+    // Resend's SDK always returns { data, error } — `error` is null on success,
+    // so presence of the key is meaningless. Inspect the value instead.
+    const failures = results.filter((r) => r?.error != null);
     if (failures.length > 0) {
-      logger.error("Resend email send failures", { count: failures.length });
-      throw new Error(`Failed to send to ${failures.length} recipients`);
+      const reason = failures[0]?.error?.message ?? "Unknown Resend error";
+      logger.error("Resend email send failures", {
+        count: failures.length,
+        reason,
+      });
+      throw createError({
+        statusCode: 502,
+        statusMessage: `Failed to send to ${failures.length} recipient(s): ${reason}`,
+      });
     }
 
     logger.info("Recruiting packet email sent", {

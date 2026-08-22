@@ -280,6 +280,12 @@ watch(
   () => props.isOpen,
   async (isOpen) => {
     if (isOpen) {
+      // Re-seed from the latest computed defaults every time the modal opens.
+      // The parent regenerates the packet before opening, so the freshly
+      // resolved subject/body must overwrite any stale fallback captured at
+      // mount time (when generatedData was still null).
+      form.value.subject = props.defaultSubject || "";
+      form.value.body = props.defaultBody || "";
       await nextTick();
       activate();
     } else {
