@@ -196,7 +196,7 @@ const EmailRecruitingPacketModal = defineAsyncComponent(
 );
 
 definePageMeta({
-  middleware: ["auth", "onboarding"],
+  middleware: "auth",
 });
 
 const logger = createClientLogger("dashboard");

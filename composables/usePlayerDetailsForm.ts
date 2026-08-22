@@ -6,8 +6,6 @@ import { useAutoSave } from "~/composables/useAutoSave";
 import {
   shouldClearPositionOnSportChange,
   reconcilePositionOptions,
-} from "~/utils/positions";
-import {
   normalizePosition as normalizePositionForSport,
   normalizePositions as normalizePositionsForSport,
 } from "~/utils/positions/canonical";

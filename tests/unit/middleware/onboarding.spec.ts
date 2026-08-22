@@ -91,7 +91,7 @@ describe("onboarding middleware", () => {
       mockSession.value = null;
       mockNavigateTo.mockClear();
 
-      const mod = await import("~/middleware/onboarding");
+      const mod = await import("~/middleware/onboarding.global");
       const middleware = mod.default as (
         to: { path: string; fullPath: string },
         from: unknown,
@@ -264,7 +264,7 @@ describe("onboarding middleware", () => {
   describe("shouldRedirectToOnboarding", () => {
     it("never redirects an admin, even with incomplete onboarding", async () => {
       const { shouldRedirectToOnboarding } =
-        await import("~/middleware/onboarding");
+        await import("~/middleware/onboarding.global");
 
       expect(
         shouldRedirectToOnboarding({
@@ -276,7 +276,7 @@ describe("onboarding middleware", () => {
 
     it("redirects a non-admin with incomplete onboarding", async () => {
       const { shouldRedirectToOnboarding } =
-        await import("~/middleware/onboarding");
+        await import("~/middleware/onboarding.global");
 
       expect(
         shouldRedirectToOnboarding({
@@ -288,13 +288,63 @@ describe("onboarding middleware", () => {
 
     it("does not redirect a non-admin who completed onboarding", async () => {
       const { shouldRedirectToOnboarding } =
-        await import("~/middleware/onboarding");
+        await import("~/middleware/onboarding.global");
 
       expect(
         shouldRedirectToOnboarding({
           is_admin: false,
           onboarding_complete: true,
         }),
+      ).toBe(false);
+    });
+  });
+
+  describe("needsSportSelection", () => {
+    it("gates a player whose primary_sport is null", async () => {
+      const { needsSportSelection } = await import(
+        "~/middleware/onboarding.global"
+      );
+      expect(
+        needsSportSelection({ role: "player", primary_sport: null }),
+      ).toBe(true);
+    });
+
+    it("treats an empty/whitespace string as unset", async () => {
+      const { needsSportSelection } = await import(
+        "~/middleware/onboarding.global"
+      );
+      expect(needsSportSelection({ role: "player", primary_sport: "" })).toBe(
+        true,
+      );
+      expect(
+        needsSportSelection({ role: "player", primary_sport: "   " }),
+      ).toBe(true);
+    });
+
+    it("does not gate a player who has a sport", async () => {
+      const { needsSportSelection } = await import(
+        "~/middleware/onboarding.global"
+      );
+      expect(
+        needsSportSelection({ role: "player", primary_sport: "Baseball" }),
+      ).toBe(false);
+    });
+
+    it("never gates an admin, even with no sport", async () => {
+      const { needsSportSelection } = await import(
+        "~/middleware/onboarding.global"
+      );
+      expect(
+        needsSportSelection({ is_admin: true, primary_sport: null }),
+      ).toBe(false);
+    });
+
+    it("never gates a parent (their sport lives on the athlete's row)", async () => {
+      const { needsSportSelection } = await import(
+        "~/middleware/onboarding.global"
+      );
+      expect(
+        needsSportSelection({ role: "parent", primary_sport: null }),
       ).toBe(false);
     });
   });

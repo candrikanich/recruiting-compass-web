@@ -151,7 +151,7 @@ import {
 import ActivityEventItem from "~/components/Dashboard/ActivityEventItem.vue";
 
 definePageMeta({
-  middleware: ["auth", "onboarding"],
+  middleware: "auth",
 });
 
 const { activities, loading, error, fetchActivities } = useActivityFeed();

@@ -77,10 +77,12 @@ describe("sport orderings", () => {
     expect(t[0]).toBe("points_per_game");
     expect(t[t.length - 1]).toBe(OTHER_KEY);
   });
-  it("nil sport falls back to baseball + other", () => {
-    const t = metricTypesForSport(null);
-    expect(t[0]).toBe("velocity");
-    expect(t[t.length - 1]).toBe(OTHER_KEY);
+  it("nil sport returns empty (no baseball fallback)", () => {
+    expect(metricTypesForSport(null)).toEqual([]);
+    expect(metricTypesForSport(undefined)).toEqual([]);
+  });
+  it("unrecognized sport returns empty (no baseball fallback)", () => {
+    expect(metricTypesForSport("Quidditch")).toEqual([]);
   });
   it("baseball grew to 11 keys, fielding_pct last", () => {
     expect(SPORT_METRICS.Baseball).toHaveLength(11);
