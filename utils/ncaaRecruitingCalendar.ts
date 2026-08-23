@@ -131,25 +131,19 @@ export const ACT_TEST_DATES_2026: Milestone[] = [
   },
 ];
 
-// NOTE: pre-existing division-value bug, tracked separately — these entries
-// use "DI" (not the "D1" value everything else in this file uses), so
-// division-scoped filters silently exclude them. Not fixed here; fixing would
-// surface previously-hidden milestones, an unrelated behavior change.
+// Division values here use the app-wide "D1" convention (the production
+// `Division` union in ~/utils/recruitingCalendar/types.ts is "D1"|"D2"|"D3"),
+// so `matchesDivision` in the resolver actually matches them for D1 athletes.
+// The generic "D1 Contact Period Begins" entry was removed: contact periods are
+// now sport-specific and live on each sport's own SportCalendar.
 export const NCAA_DEADLINES_2026: Milestone[] = [
   {
     date: "2026-04-01",
     title: "NCAA Eligibility Center Registration - Juniors",
     type: "deadline",
-    division: "DI" as const,
+    division: "D1",
     url: "https://www.eligibilitycenter.org/",
     description: "Register with NCAA to begin eligibility evaluation",
-  },
-  {
-    date: "2026-06-15",
-    title: "D1 Contact Period Begins",
-    type: "ncaa-period",
-    division: "DI" as const,
-    description: "NCAA allows recruiting contact to begin for juniors",
   },
 ];
 
