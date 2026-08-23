@@ -141,7 +141,6 @@
           <PlayerDetailsAthleticsTab
             :form="form"
             :is-parent-role="isReadOnly"
-            :is-baseball-or-softball="isBaseballOrSoftball"
             :available-positions="availablePositions"
             :player-name="userStore.user?.full_name ?? ''"
             :home-state="homeState"
@@ -149,8 +148,6 @@
             :toggle-position="togglePosition"
             :is-position-selected="isPositionSelected"
             :move-position="movePosition"
-            :bats-options="BATS_OPTIONS"
-            :throws-options="THROWS_OPTIONS"
             v-model:height-feet="heightFeet"
             v-model:height-inches="heightInches"
           />
@@ -398,7 +395,6 @@ const {
   heightFeet,
   heightInches,
   availablePositions,
-  isBaseballOrSoftball,
   profileCompleteness,
   isSaving,
   saving,
@@ -416,8 +412,6 @@ const {
   handleSocialBlur,
   socialInputs,
   gradeLevels,
-  BATS_OPTIONS,
-  THROWS_OPTIONS,
   CAMPUS_SIZE_OPTIONS,
   COST_SENSITIVITY_OPTIONS,
   homeState,

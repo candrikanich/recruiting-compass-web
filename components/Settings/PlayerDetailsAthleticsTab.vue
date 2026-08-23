@@ -67,70 +67,34 @@
         {{ sportLabel }}
       </h2>
 
-      <!-- Bats/Throws (Sport Specific) -->
-      <div
-        v-if="isBaseballOrSoftball"
-        class="grid grid-cols-1 md:grid-cols-2 gap-8"
-      >
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label
-              class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1"
-              >Bats</label
-            >
-            <div class="flex p-1 bg-slate-100 rounded-xl">
-              <button
-                v-for="opt in batsOptions"
-                :key="opt.value"
-                type="button"
-                @click="
-                  form.bats = opt.value;
-                  triggerSave();
-                "
-                :class="[
-                  'flex-1 py-1.5 text-xs font-bold rounded-lg transition-all',
-                  form.bats === opt.value
-                    ? 'bg-white text-blue-600 shadow-sm'
-                    : 'text-slate-500 hover:text-slate-700',
-                ]"
-              >
-                {{ opt.label }}
-              </button>
-            </div>
-          </div>
-          <div>
-            <label
-              class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1"
-              >Throws</label
-            >
-            <div class="flex p-1 bg-slate-100 rounded-xl">
-              <button
-                v-for="opt in throwsOptions"
-                :key="opt.value"
-                type="button"
-                @click="
-                  form.throws = opt.value;
-                  triggerSave();
-                "
-                :class="[
-                  'flex-1 py-1.5 text-xs font-bold rounded-lg transition-all',
-                  form.throws === opt.value
-                    ? 'bg-white text-blue-600 shadow-sm'
-                    : 'text-slate-500 hover:text-slate-700',
-                ]"
-              >
-                {{ opt.label }}
-              </button>
-            </div>
-          </div>
+      <!-- Sport attributes (registry-driven: bats/throws for baseball, shooting
+           hand for basketball, etc. — gated by sport and, where set, position). -->
+      <div v-if="attributes.length" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div v-for="a in attributes" :key="a.key">
+          <label
+            class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1"
+            >{{ a.label }}</label
+          >
+          <select
+            :value="attrValue(a.key)"
+            :disabled="isParentRole"
+            @change="
+              setAttrValue(a.key, ($event.target as HTMLSelectElement).value)
+            "
+            :aria-label="a.label"
+            class="w-full px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl focus-visible:ring-2 focus-visible:ring-blue-500 font-medium text-slate-700"
+          >
+            <option value="">—</option>
+            <option v-for="opt in a.options" :key="opt" :value="opt">
+              {{ a.optionLabels[opt] }}
+            </option>
+          </select>
         </div>
       </div>
 
       <!-- Positions -->
       <div
-        :class="
-          isBaseballOrSoftball ? 'mt-8 pt-8 border-t border-slate-100' : ''
-        "
+        :class="attributes.length ? 'mt-8 pt-8 border-t border-slate-100' : ''"
       >
         <label
           class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 ml-1"
@@ -254,114 +218,70 @@
             />
           </a>
         </div>
-        <template v-if="isBaseballOrSoftball">
-          <div>
-            <label
-              class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1"
-              >Perfect Game ID</label
-            >
-            <input
-              v-model="form.perfect_game_id"
-              @blur="triggerSave"
-              placeholder="ID Number"
-              class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium"
-            />
-            <a
-              href="https://www.perfectgame.org/"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="inline-flex items-center gap-1 mt-1.5 ml-1 text-xs font-medium text-blue-600 hover:text-blue-700"
-            >
-              Get your Perfect Game profile
-              <UIcon
-                name="i-heroicons-arrow-top-right-on-square"
-                class="w-3 h-3"
-              />
-            </a>
-          </div>
-          <div class="md:col-span-3">
-            <label
-              class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1"
-              >Prep Baseball Report Profile</label
-            >
-            <div class="grid grid-cols-1 sm:grid-cols-[7rem_1fr] gap-3">
-              <select
-                v-model="form.prep_baseball_state"
-                :disabled="isParentRole"
-                @change="triggerSave"
-                class="w-full px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-700"
-                aria-label="Prep Baseball Report state"
-              >
-                <option value="">State</option>
-                <option
-                  v-for="opt in prepBaseballStateOptions"
-                  :key="opt.code"
-                  :value="opt.code"
-                >
-                  {{ opt.code }}
-                </option>
-              </select>
-              <input
-                v-model="form.prep_baseball_id"
-                :disabled="isParentRole"
-                @blur="triggerSave"
-                placeholder="e.g. owen-andrikanich"
-                class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium"
-              />
-            </div>
-
-            <p
-              v-if="
-                !isParentRole &&
-                suggestedPrepBaseballSlug &&
-                form.prep_baseball_id !== suggestedPrepBaseballSlug
+        <!-- Recruiting services (registry-driven, gated by primary sport). -->
+        <div v-for="svc in services" :key="svc.key">
+          <label
+            class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1"
+            >{{ svc.label }}</label
+          >
+          <!-- Prep Baseball Report: pick the filing state; the profile slug is
+               derived from the athlete's name, so the link builds itself. -->
+          <template v-if="svc.linkKind === 'prepBaseball'">
+            <select
+              :value="prepBaseballState"
+              :disabled="isParentRole"
+              @change="
+                setPrepBaseballState(($event.target as HTMLSelectElement).value)
               "
-              class="mt-1.5 ml-1 text-xs text-slate-500"
+              aria-label="Prep Baseball Report state"
+              class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-700"
             >
-              Suggested name:
-              <button
-                type="button"
-                @click="applySuggestedPrepBaseballSlug"
-                class="font-mono font-medium text-blue-600 hover:text-blue-700 hover:underline"
+              <option value="">State</option>
+              <option
+                v-for="opt in US_STATE_OPTIONS"
+                :key="opt.code"
+                :value="opt.code"
               >
-                {{ suggestedPrepBaseballSlug }}
-              </button>
-            </p>
-
+                {{ opt.name }}
+              </option>
+            </select>
             <p v-if="prepBaseballPreviewUrl" class="mt-1.5 ml-1 text-xs">
               <span class="text-slate-500">Your profile link: </span>
               <a
                 :href="prepBaseballPreviewUrl"
                 target="_blank"
                 rel="noopener noreferrer"
-                class="inline-flex items-center gap-1 font-medium text-blue-600 hover:text-blue-700 break-all"
+                class="text-blue-600 hover:text-blue-700 break-all"
+                >{{ prepBaseballPreviewUrl }}</a
               >
-                {{ prepBaseballPreviewUrl }}
-                <UIcon
-                  name="i-heroicons-arrow-top-right-on-square"
-                  class="w-3 h-3 shrink-0"
-                />
-              </a>
             </p>
-            <p v-else class="mt-1.5 ml-1 text-xs text-slate-400">
-              Pick your state and enter the name from your profile URL. Example:
-              <span class="font-mono">{{ prepBaseballExampleUrl }}</span>
-            </p>
-
-            <a
-              href="https://www.prepbaseballreport.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="inline-flex items-center gap-1 mt-1.5 ml-1 text-xs font-medium text-blue-600 hover:text-blue-700"
-            >
-              Get your Prep Baseball Report profile
-              <UIcon
-                name="i-heroicons-arrow-top-right-on-square"
-                class="w-3 h-3"
-              />
-            </a>
-          </div>
-        </template>
+          </template>
+          <input
+            v-else
+            :value="serviceValue(svc.key)"
+            :disabled="isParentRole"
+            :type="svc.valueKind === 'url' ? 'url' : 'text'"
+            :placeholder="svc.placeholder"
+            @input="
+              setServiceValue(svc.key, ($event.target as HTMLInputElement).value)
+            "
+            @blur="triggerSave"
+            :aria-label="svc.label"
+            class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium"
+          />
+          <a
+            :href="svc.signupUrl"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-1 mt-1.5 ml-1 text-xs font-medium text-blue-600 hover:text-blue-700"
+          >
+            Get your profile
+            <UIcon
+              name="i-heroicons-arrow-top-right-on-square"
+              class="w-3 h-3"
+            />
+          </a>
+        </div>
       </div>
     </div>
 
@@ -499,17 +419,17 @@ import type { PlayerDetails } from "~/types/models";
 import { useVideoLinks } from "~/composables/useVideoLinks";
 import { useAppToast } from "~/composables/useAppToast";
 import { abbreviatePosition } from "~/utils/positions/canonical";
+import { attributesForSport } from "~/utils/attributes/canonical";
+import { servicesForSport } from "~/utils/services/canonical";
 import {
-  buildPrepBaseballUrl,
-  slugifyPlayerName,
-  normalizeStateCode,
   US_STATE_OPTIONS,
+  normalizeStateCode,
+  buildPrepBaseballUrl,
 } from "~/utils/recruitingLinks";
 
 const props = defineProps<{
   form: PlayerDetails;
   isParentRole: boolean;
-  isBaseballOrSoftball: boolean;
   availablePositions: string[];
   playerName: string;
   homeState: string;
@@ -517,41 +437,59 @@ const props = defineProps<{
   togglePosition: (pos: string) => void;
   isPositionSelected: (pos: string) => boolean;
   movePosition: (index: number, direction: "up" | "down") => void;
-  batsOptions: readonly { value: "R" | "L" | "S"; label: string }[];
-  throwsOptions: readonly { value: "R" | "L"; label: string }[];
 }>();
 
 const heightFeet = defineModel<number | undefined>("heightFeet");
 const heightInches = defineModel<number | undefined>("heightInches");
 
-// --- Prep Baseball Report profile link (state + name-slug -> URL) ---
-const prepBaseballStateOptions = US_STATE_OPTIONS;
-const suggestedPrepBaseballSlug = computed(() =>
-  slugifyPlayerName(props.playerName),
+// The athlete's primary position (positions[0], with the legacy scalar as a
+// fallback) — used to apply an attribute's optional position gate.
+const primaryPosition = computed(
+  () => props.form.positions?.[0] ?? props.form.primary_position ?? "",
 );
-const prepBaseballPreviewUrl = computed(() =>
-  buildPrepBaseballUrl(
-    props.form.prep_baseball_state,
-    props.form.prep_baseball_id,
+
+// Attributes offered for the sport, minus any whose position gate excludes the
+// athlete's primary position. Empty for sports without laterality attributes.
+const attributes = computed(() =>
+  attributesForSport(props.form.primary_sport).filter(
+    (a) => !a.positions || a.positions.includes(primaryPosition.value),
   ),
 );
-const prepBaseballExampleUrl =
-  "https://www.prepbaseballreport.com/profiles/OH/owen-andrikanich";
 
-// Pre-select the athlete's home state (high-confidence guess) when no PBR
-// state is set yet; the athlete can change it if their profile is filed
-// elsewhere. Persisted on next save once they fill the name-slug.
-onMounted(() => {
-  if (!props.isParentRole && !props.form.prep_baseball_state) {
-    const code = normalizeStateCode(props.homeState);
-    if (code) props.form.prep_baseball_state = code;
-  }
-});
+// Recruiting services offered for the sport (NCSA everywhere, Hudl for team
+// sports, Perfect Game / Prep Baseball for baseball & softball).
+const services = computed(() => servicesForSport(props.form.primary_sport));
 
-function applySuggestedPrepBaseballSlug() {
-  props.form.prep_baseball_id = suggestedPrepBaseballSlug.value;
+// Dynamic-key access into the flat player-details record. Mutating props.form
+// is the established pattern here (the parent owns the reactive object and
+// autosaves it); attribute changes save immediately, service text saves on blur.
+const formRecord = computed(
+  () => props.form as unknown as Record<string, unknown>,
+);
+const attrValue = (key: string) =>
+  (formRecord.value[key] as string | undefined) ?? "";
+const setAttrValue = (key: string, value: string) => {
+  formRecord.value[key] = value || undefined;
   props.triggerSave();
-}
+};
+const serviceValue = (key: string) =>
+  (formRecord.value[key] as string | undefined) ?? "";
+const setServiceValue = (key: string, value: string) => {
+  formRecord.value[key] = value;
+};
+
+// Prep Baseball Report: the athlete picks the state their profile is filed
+// under; the slug comes from their name, so the link resolves automatically.
+const prepBaseballState = computed(
+  () => (formRecord.value.prep_baseball_state as string | undefined) ?? "",
+);
+const setPrepBaseballState = (value: string) => {
+  formRecord.value.prep_baseball_state = value || undefined;
+  props.triggerSave();
+};
+const prepBaseballPreviewUrl = computed(() =>
+  buildPrepBaseballUrl(prepBaseballState.value, props.playerName),
+);
 
 const sportLabel = computed(() =>
   props.form.primary_sport
@@ -575,6 +513,20 @@ const { showToast } = useAppToast();
 
 onMounted(() => {
   videoLinks.load();
+
+  // Pre-seed the PBR state with the athlete's home state (a high-confidence
+  // guess) when it's offered for this sport and not already set.
+  const offersPrepBaseball = services.value.some(
+    (s) => s.linkKind === "prepBaseball",
+  );
+  if (
+    offersPrepBaseball &&
+    !props.isParentRole &&
+    !prepBaseballState.value
+  ) {
+    const code = normalizeStateCode(props.homeState);
+    if (code) formRecord.value.prep_baseball_state = code;
+  }
 });
 
 const newLinkPlatform = ref<"hudl" | "youtube" | "vimeo" | "other">("hudl");

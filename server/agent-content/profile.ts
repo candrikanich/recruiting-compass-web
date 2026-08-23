@@ -1,5 +1,8 @@
 import type { PublicProfileData } from "~/types/models";
-import { buildPrepBaseballUrl } from "~/utils/recruitingLinks";
+import {
+  servicesForSport,
+  serviceProfileUrl,
+} from "~/utils/services/canonical";
 
 function formatHeight(inches: number): string {
   const ft = Math.floor(inches / 12);
@@ -37,14 +40,30 @@ export function renderProfileMarkdown(
     if (a.weight_lbs !== undefined)
       items.push(`- **Weight:** ${a.weight_lbs} lbs`);
     if (a.ncaa_id) items.push(`- **NCAA ID:** ${a.ncaa_id}`);
-    if (a.perfect_game_id)
-      items.push(`- **Perfect Game ID:** ${a.perfect_game_id}`);
-    const prepBaseballUrl = buildPrepBaseballUrl(
-      a.prep_baseball_state,
-      a.prep_baseball_id,
-    );
-    if (prepBaseballUrl)
-      items.push(`- **Prep Baseball Report:** ${prepBaseballUrl}`);
+    // Recruiting services for the athlete's sport (link when the registry
+    // supplies one, otherwise the raw id/value).
+    const serviceRecord = a as unknown as Record<string, unknown>;
+    const pbrState =
+      typeof serviceRecord.prep_baseball_state === "string"
+        ? serviceRecord.prep_baseball_state
+        : undefined;
+    for (const def of servicesForSport(a.primary_sport)) {
+      const raw = serviceRecord[def.key];
+      const value = typeof raw === "string" ? raw : "";
+      const url = serviceProfileUrl(def, {
+        value,
+        state: pbrState,
+        name: profile.playerName,
+      });
+      // PBR link comes from state + name, not the stored id — emit it whenever
+      // the URL resolves. Other services still key on their stored value.
+      if (def.linkKind === "prepBaseball") {
+        if (url) items.push(`- **${def.label}:** ${url}`);
+        continue;
+      }
+      if (!value) continue;
+      items.push(`- **${def.label}:** ${url ?? value}`);
+    }
     if (items.length) {
       lines.push("## Athletic");
       lines.push("");

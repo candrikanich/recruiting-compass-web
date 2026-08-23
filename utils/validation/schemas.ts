@@ -294,8 +294,23 @@ export const offerSchema = z
 export const playerDetailsSchema = z.object({
   graduation_year: graduationYearSchema,
   positions: z.array(z.string()).default([]),
+  // Per-sport athlete attributes (registry: utils/attributes/canonical.ts).
   bats: z.enum(["L", "R", "S"]).nullable().optional(),
   throws: z.enum(["L", "R"]).nullable().optional(),
+  shooting_hand: z.enum(["L", "R"]).nullable().optional(),
+  dominant_foot: z.enum(["L", "R", "Both"]).nullable().optional(),
+  hitting_hand: z.enum(["L", "R"]).nullable().optional(),
+  racket_hand: z.enum(["L", "R"]).nullable().optional(),
+  backhand_style: z.enum(["one", "two"]).nullable().optional(),
+  golf_handedness: z.enum(["L", "R"]).nullable().optional(),
+  dominant_hand: z.enum(["L", "R"]).nullable().optional(),
+  shoots: z.enum(["L", "R"]).nullable().optional(),
+  catches: z.enum(["L", "R"]).nullable().optional(),
+  wp_dominant_hand: z.enum(["L", "R"]).nullable().optional(),
+  rowing_side: z.enum(["port", "starboard", "both", "cox"]).nullable().optional(),
+  rowing_discipline: z.enum(["sweep", "scull", "both"]).nullable().optional(),
+  throwing_hand: z.enum(["L", "R"]).nullable().optional(),
+  kicking_foot: z.enum(["L", "R"]).nullable().optional(),
   height_inches: heightSchema,
   weight_lbs: weightSchema,
   gpa: gpaSchema,
@@ -311,7 +326,11 @@ export const playerDetailsSchema = z.object({
   facebook_handle: facebookHandleSchema,
   share_contact_with_coaches: z.boolean().default(false),
   ncaa_id: sanitizedTextSchema(50),
+  // Recruiting services (registry: utils/services/canonical.ts).
+  ncsa_id: sanitizedTextSchema(50),
+  hudl_url: urlSchema.nullable().optional(),
   perfect_game_id: sanitizedTextSchema(50),
+  prep_baseball_id: sanitizedTextSchema(100),
   showcase_id: sanitizedTextSchema(50),
 });
 

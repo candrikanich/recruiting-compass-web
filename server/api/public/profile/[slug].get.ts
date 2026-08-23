@@ -160,6 +160,8 @@ export default defineEventHandler(async (event) => {
               height_inches: details.height_inches as number | undefined,
               weight_lbs: details.weight_lbs as number | undefined,
               ncaa_id: (details.ncaa_id as string | undefined) || undefined,
+              ncsa_id: (details.ncsa_id as string | undefined) || undefined,
+              hudl_url: (details.hudl_url as string | undefined) || undefined,
               perfect_game_id:
                 (details.perfect_game_id as string | undefined) || undefined,
               prep_baseball_id:
