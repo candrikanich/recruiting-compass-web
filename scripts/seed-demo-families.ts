@@ -288,11 +288,10 @@ const FAMILIES: DemoFamily[] = [
   },
 ];
 
-async function resolveSportAndPosition(
+async function resolveSport(
   supabase: Supabase,
   sportName: string,
-  positionName: string,
-): Promise<{ sportId: string; positionId: string }> {
+): Promise<{ sportId: string }> {
   const { data: sport, error: sportErr } = await supabase
     .from("sports")
     .select("id")
@@ -302,17 +301,7 @@ async function resolveSportAndPosition(
     throw new Error(
       `sport not found: ${sportName} (${sportErr?.message ?? ""})`,
     );
-  const sportId = (sport as { id: string }).id;
-
-  const { data: pos, error: posErr } = await supabase
-    .from("positions")
-    .select("id")
-    .eq("sport_id", sportId)
-    .eq("name", positionName)
-    .maybeSingle();
-  if (posErr || !pos)
-    throw new Error(`position not found: ${positionName} for ${sportName}`);
-  return { sportId, positionId: (pos as { id: string }).id };
+  return { sportId: (sport as { id: string }).id };
 }
 
 /** Remove previously-seeded demo content for this player so re-runs stay clean. */
@@ -502,11 +491,7 @@ async function seedFamily(
   if (!playerId || !parentId)
     throw new Error("auth user missing id after create");
 
-  const { sportId, positionId } = await resolveSportAndPosition(
-    supabase,
-    family.player.sport,
-    family.player.position,
-  );
+  const { sportId } = await resolveSport(supabase, family.player.sport);
 
   // Admin createUser does NOT populate public.users on this project (the mirror
   // trigger only fires on app-side signup), so upsert the row ourselves.
@@ -522,7 +507,6 @@ async function seedFamily(
       full_name: family.player.displayName,
       graduation_year: family.player.graduationYear,
       primary_sport_id: sportId,
-      primary_position_id: positionId,
       gpa: family.player.gpa,
       sat_score: family.player.satScore,
       zip_code: family.player.zip,
