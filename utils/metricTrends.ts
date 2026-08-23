@@ -3,9 +3,11 @@
  * improving/declining/stable logic is unit-testable in isolation.
  *
  * A metric type qualifies once it has >= 2 records. Trend direction compares the
- * mean of the first 3 records to the mean of the last 3 (chronological), with a
- * ±1% dead-band → "stable". Whether higher or lower is better comes from the
- * metric registry per sport (`getMetricDef(type).lowerIsBetter`).
+ * mean of the earliest half of records to the mean of the latest half — the two
+ * halves never overlap (the middle record is dropped at odd counts), so a real
+ * direction shows from the very first two records. A ±1% dead-band → "stable".
+ * Whether higher or lower is better comes from the metric registry per sport
+ * (`getMetricDef(type).lowerIsBetter`).
  */
 
 import { getMetricDef } from "~/utils/metrics/canonical";
@@ -53,8 +55,11 @@ export function computeMetricTrends(
       const max = Math.max(...values);
       const average = mean(values);
 
-      const firstAvg = mean(values.slice(0, 3));
-      const lastAvg = mean(values.slice(-3));
+      // Non-overlapping early vs recent halves (middle dropped at odd counts) so
+      // direction is meaningful from n=2, not just n>=6 as a first3/last3 compare.
+      const half = Math.floor(values.length / 2);
+      const firstAvg = mean(values.slice(0, half));
+      const lastAvg = mean(values.slice(values.length - half));
 
       // Direction ("lower is better") comes from the metric registry, per sport.
       const lowerIsBetter = getMetricDef(type).lowerIsBetter;
