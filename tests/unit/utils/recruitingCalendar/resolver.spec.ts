@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { resolveCalendarKey } from "~/utils/recruitingCalendar/resolver";
+import { resolveCalendarKey, NO_SPORT_FALLBACK } from "~/utils/recruitingCalendar/resolver";
 
 describe("resolveCalendarKey", () => {
   it("maps single-calendar sports", () => {
@@ -39,6 +39,9 @@ describe("resolveCalendarKey", () => {
     for (const s of ["Tennis", "Water Polo"] as const) {
       expect(resolveCalendarKey(s)).toBe("Other");
     }
+  });
+  it("NO_SPORT_FALLBACK (the decoupled neutral-sport default) resolves to Other", () => {
+    expect(resolveCalendarKey(NO_SPORT_FALLBACK)).toBe("Other");
   });
   it("Other-bundle sports with enumerated per-sport windows resolve to their sub-key", () => {
     expect(resolveCalendarKey("Swimming")).toBe("OTHER_SWIM");

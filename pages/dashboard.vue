@@ -177,7 +177,7 @@ import { useRecruitingPacket } from "~/composables/useRecruitingPacket";
 import { useDashboardData } from "~/composables/useDashboardData";
 import { useDashboardCalculations } from "~/composables/useDashboardCalculations";
 import { usePreferenceManager } from "~/composables/usePreferenceManager";
-import { getDeadPeriodMessage, type AppSport } from "~/utils/recruitingCalendar";
+import { getDeadPeriodMessage, NO_SPORT_FALLBACK, type AppSport } from "~/utils/recruitingCalendar";
 import { WIDGET_SIZES } from "~/types/models";
 import type { WidgetId, WidgetEntry } from "~/types/models";
 import ParentContextBanner from "~/components/Dashboard/ParentContextBanner.vue";
@@ -201,11 +201,10 @@ const { getDashboardLayout, dashboardPrefs, playerPrefs, getPlayerDetails } =
 const dashboardLayout = computed(() => getDashboardLayout());
 
 // Athlete's sport/gender for sport-aware NCAA recruiting-calendar rules.
-// Mirrors the ruleEngine fallback (server/utils/ruleEngine.ts): "Tennis" has
-// no published NCAA calendar, so an unset sport never falsely reports a
-// dead period.
+// Mirrors the ruleEngine fallback (server/utils/ruleEngine.ts): an unset
+// sport never falsely reports a dead period.
 const athleteSport = computed<AppSport>(
-  () => (getPlayerDetails()?.primary_sport as AppSport | undefined) ?? "Tennis",
+  () => (getPlayerDetails()?.primary_sport as AppSport | undefined) ?? NO_SPORT_FALLBACK,
 );
 const athleteGender = computed<string | null>(
   () => getPlayerDetails()?.gender ?? null,

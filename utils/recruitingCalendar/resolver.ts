@@ -38,14 +38,28 @@ const SINGLE_CALENDAR_SPORTS: Partial<Record<AppSport, NcaaCalendarKey>> = {
  * Wrestling are "Other"-bundle sports whose PDF enumerates separate men's/
  * women's windows (see calendarData.ts OTHER_MSOCCER/OTHER_WSOCCER/
  * OTHER_MICEHOCKEY/OTHER_WICEHOCKEY/OTHER_MWRESTLING/OTHER_WWRESTLING).
+ *
+ * Exported so UI callers (e.g. `RecruitingCalendar.vue`'s men's/women's
+ * toggle) can reuse this exact set instead of keeping a duplicate in sync.
  */
-const GENDER_SPLIT_SPORTS: Partial<Record<AppSport, { men: NcaaCalendarKey; women: NcaaCalendarKey }>> = {
+export const GENDER_SPLIT_SPORTS: Partial<Record<AppSport, { men: NcaaCalendarKey; women: NcaaCalendarKey }>> = {
   Basketball: { men: "MBB", women: "WBB" },
   Lacrosse: { men: "MLA", women: "WLA" },
   Soccer: { men: "OTHER_MSOCCER", women: "OTHER_WSOCCER" },
   "Ice Hockey": { men: "OTHER_MICEHOCKEY", women: "OTHER_WICEHOCKEY" },
   Wrestling: { men: "OTHER_MWRESTLING", women: "OTHER_WWRESTLING" },
 };
+
+/**
+ * The codebase's neutral sport fallback for any caller not yet wired to pass
+ * the athlete's real sport. "Tennis" has no published NCAA recruiting
+ * calendar of its own, so it resolves to the generic "Other" track — the
+ * least-restrictive, lowest-surprise default (matches the D2/D3 fallback
+ * calendars' own choice). Named + exported so the neutral-default choice
+ * lives in one place instead of being repeated as a bare `?? "Tennis"`
+ * literal at every call site.
+ */
+export const NO_SPORT_FALLBACK: AppSport = "Tennis";
 
 const isMen = (gender: string | null | undefined): boolean => gender !== "female";
 

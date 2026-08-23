@@ -25,15 +25,32 @@
  */
 import type { NcaaCalendarKey, SportCalendar } from "./types";
 
+/**
+ * The single NCAA recruiting-calendar season this dataset covers. Bump this
+ * (plus `SEASON_END` and the transcription below it) once a year — every
+ * plain-hyphen `source` URL and the app's disclaimer/staleness check read
+ * from here.
+ */
+export const SEASON = "2026-27";
+
+/** The last date `SEASON`'s data is current through — drives the L6b staleness banner. */
+export const SEASON_END = new Date("2027-07-31T23:59:59Z");
+
 const VERIFIED_ON = "2026-08-23";
 
-const BUCKET = "https://ncaaorg.s3.amazonaws.com/compliance/recruiting/calendar/2026-27";
+const BUCKET = `https://ncaaorg.s3.amazonaws.com/compliance/recruiting/calendar/${SEASON}`;
+
+// The "Other" bundle PDF's filename uses an EN DASH (U+2013) in "2026–27",
+// not a hyphen — verified as the real working NCAA URL; a hyphenated form
+// 404s. Kept as its own token, deliberately NOT derived from `SEASON`, so
+// nothing ever silently ASCII-ifies it.
+const OTHER_SEASON_EN_DASH = "2026–27";
 
 // ---------------------------------------------------------------------------
 // MBA — Division I Baseball
 // ---------------------------------------------------------------------------
 const MBA: SportCalendar = {
-  source: `${BUCKET}/2026-27D1Rec_MBARecruitingCalendar.pdf`,
+  source: `${BUCKET}/${SEASON}D1Rec_MBARecruitingCalendar.pdf`,
   verifiedOn: VERIFIED_ON,
   periods: [
     {
@@ -120,7 +137,7 @@ const MBA: SportCalendar = {
 // WSB — Division I Softball
 // ---------------------------------------------------------------------------
 const WSB: SportCalendar = {
-  source: `${BUCKET}/2026-27D1Rec_WSBRecruitingCalendar.pdf`,
+  source: `${BUCKET}/${SEASON}D1Rec_WSBRecruitingCalendar.pdf`,
   verifiedOn: VERIFIED_ON,
   periods: [
     { type: "contact", start: "2026-08-01", end: "2026-08-09", description: "Contact Period", confidence: "HIGH" },
@@ -214,7 +231,7 @@ const WSB: SportCalendar = {
 // MBB — Division I Men's Basketball
 // ---------------------------------------------------------------------------
 const MBB: SportCalendar = {
-  source: `${BUCKET}/2026-27D1Rec_MBBRecruitingCalendar.pdf`,
+  source: `${BUCKET}/${SEASON}D1Rec_MBBRecruitingCalendar.pdf`,
   verifiedOn: VERIFIED_ON,
   periods: [
     { type: "dead", start: "2026-08-01", end: "2026-08-19", description: "Dead Period", confidence: "HIGH" },
@@ -312,7 +329,7 @@ const MBB: SportCalendar = {
 // WBB — Division I Women's Basketball
 // ---------------------------------------------------------------------------
 const WBB: SportCalendar = {
-  source: `${BUCKET}/2026-27D1Rec_WBBRecruitingCalendar.pdf`,
+  source: `${BUCKET}/${SEASON}D1Rec_WBBRecruitingCalendar.pdf`,
   verifiedOn: VERIFIED_ON,
   periods: [
     {
@@ -447,7 +464,7 @@ const WBB: SportCalendar = {
 // FBS — Division I Football Bowl Subdivision
 // ---------------------------------------------------------------------------
 const FBS: SportCalendar = {
-  source: `${BUCKET}/2026-27D1Rec_FBSRecruitingCalendar.pdf`,
+  source: `${BUCKET}/${SEASON}D1Rec_FBSRecruitingCalendar.pdf`,
   verifiedOn: VERIFIED_ON,
   periods: [
     { type: "dead", start: "2026-08-01", end: "2026-08-31", description: "Dead Period — full month of August", confidence: "HIGH" },
@@ -495,7 +512,7 @@ const FBS: SportCalendar = {
 // FCS — Division I Football Championship Subdivision
 // ---------------------------------------------------------------------------
 const FCS: SportCalendar = {
-  source: `${BUCKET}/2026-27D1Rec_FCSRecruitingCalendar.pdf`,
+  source: `${BUCKET}/${SEASON}D1Rec_FCSRecruitingCalendar.pdf`,
   verifiedOn: VERIFIED_ON,
   periods: [
     { type: "dead", start: "2026-08-01", end: "2026-08-31", description: "Dead Period — full month of August", confidence: "HIGH" },
@@ -559,7 +576,7 @@ const FCS: SportCalendar = {
 // XCTF — Division I Cross Country / Track & Field (combined)
 // ---------------------------------------------------------------------------
 const XCTF: SportCalendar = {
-  source: `${BUCKET}/2026-27D1Rec_XCTFRecruitingCalendar.pdf`,
+  source: `${BUCKET}/${SEASON}D1Rec_XCTFRecruitingCalendar.pdf`,
   verifiedOn: VERIFIED_ON,
   periods: [
     {
@@ -621,7 +638,7 @@ const XCTF: SportCalendar = {
 // WVB — Division I Women's Volleyball
 // ---------------------------------------------------------------------------
 const WVB: SportCalendar = {
-  source: `${BUCKET}/2026-27D1Rec_WVBRecruitingCalendar.pdf`,
+  source: `${BUCKET}/${SEASON}D1Rec_WVBRecruitingCalendar.pdf`,
   verifiedOn: VERIFIED_ON,
   periods: [
     { type: "quiet", start: "2026-08-01", end: "2026-08-31", description: "Quiet Period — in-person contact only on campus", confidence: "MEDIUM" },
@@ -677,7 +694,7 @@ const WVB: SportCalendar = {
 // MGO — Division I Men's Golf
 // ---------------------------------------------------------------------------
 const MGO: SportCalendar = {
-  source: `${BUCKET}/2026-27D1Rec_MGORecruitingCalendar.pdf`,
+  source: `${BUCKET}/${SEASON}D1Rec_MGORecruitingCalendar.pdf`,
   verifiedOn: VERIFIED_ON,
   periods: [
     { type: "contact", start: "2026-08-01", end: "2026-11-25", description: "Contact Period", confidence: "MEDIUM" },
@@ -733,7 +750,7 @@ const MGO: SportCalendar = {
 // MLA — Division I Men's Lacrosse
 // ---------------------------------------------------------------------------
 const MLA: SportCalendar = {
-  source: `${BUCKET}/2026-27D1Rec_MLARecruitingCalendar.pdf`,
+  source: `${BUCKET}/${SEASON}D1Rec_MLARecruitingCalendar.pdf`,
   verifiedOn: VERIFIED_ON,
   periods: [
     { type: "contact", start: "2026-08-01", end: "2026-08-03", description: "Contact Period", confidence: "MEDIUM" },
@@ -831,7 +848,7 @@ const MLA: SportCalendar = {
 // WLA — Division I Women's Lacrosse
 // ---------------------------------------------------------------------------
 const WLA: SportCalendar = {
-  source: `${BUCKET}/2026-27D1Rec_WLARecruitingCalendar.pdf`,
+  source: `${BUCKET}/${SEASON}D1Rec_WLARecruitingCalendar.pdf`,
   verifiedOn: VERIFIED_ON,
   periods: [
     {
@@ -950,6 +967,13 @@ const WLA: SportCalendar = {
 };
 
 // ---------------------------------------------------------------------------
+// OTHER_SOURCE — shared source PDF for the generic OTHER default below and
+// every OTHER_* per-sport sub-calendar (all transcribed from the same D1
+// "Other" bundle PDF).
+// ---------------------------------------------------------------------------
+const OTHER_SOURCE = `${BUCKET}/${OTHER_SEASON_EN_DASH}D1Rec_OtherRecruitingCalendar.pdf`;
+
+// ---------------------------------------------------------------------------
 // Other — Division I "All Other Sports" generic default. Used for app
 // sports with no dedicated NCAA recruiting calendar AND no sport-specific
 // windows enumerated in the "Other" bundle PDF: Tennis, Water Polo, and
@@ -958,7 +982,7 @@ const WLA: SportCalendar = {
 // same PDF) instead of falling back to this generic default.
 // ---------------------------------------------------------------------------
 const OTHER: SportCalendar = {
-  source: `${BUCKET}/2026–27D1Rec_OtherRecruitingCalendar.pdf`,
+  source: OTHER_SOURCE,
   verifiedOn: VERIFIED_ON,
   periods: [
     {
@@ -981,8 +1005,6 @@ const OTHER: SportCalendar = {
 // default above (see resolver.ts + task report for the Wrestling scope note).
 // All cite the same "Other" D1 PDF as OTHER.
 // ---------------------------------------------------------------------------
-const OTHER_SOURCE = `${BUCKET}/2026–27D1Rec_OtherRecruitingCalendar.pdf`;
-
 const OTHER_MSOCCER: SportCalendar = {
   source: OTHER_SOURCE,
   verifiedOn: VERIFIED_ON,
@@ -1281,7 +1303,7 @@ export const D1_CALENDARS: Record<NcaaCalendarKey, SportCalendar> = {
 // scope for this generic fallback).
 // ---------------------------------------------------------------------------
 export const D2_ALL_SPORTS: SportCalendar = {
-  source: `${BUCKET}/2026-27D2Rec_RecruitingCalendar_AllSports.pdf`,
+  source: `${BUCKET}/${SEASON}D2Rec_RecruitingCalendar_AllSports.pdf`,
   verifiedOn: VERIFIED_ON,
   periods: [
     {

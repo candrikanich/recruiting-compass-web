@@ -233,7 +233,7 @@ import { getWhatMattersNow } from "~/utils/whatMattersNow";
 import { getCommonWorries } from "~/utils/parentWorries";
 import { getReassuranceMessages } from "~/utils/parentReassurance";
 import { createClientLogger } from "~/utils/logger";
-import { getUpcomingMilestones, type AppSport } from "~/utils/recruitingCalendar";
+import { getUpcomingMilestones, NO_SPORT_FALLBACK, type AppSport } from "~/utils/recruitingCalendar";
 import { usePreferenceManager } from "~/composables/usePreferenceManager";
 
 const logger = createClientLogger("Timeline");
@@ -337,10 +337,10 @@ const reassuranceMessages = computed(() =>
   getReassuranceMessages(currentPhase.value),
 );
 
-// Mirrors the ruleEngine/dashboard fallback: "Tennis" has no published NCAA
-// calendar, so an unset sport never falsely surfaces sport-specific windows.
+// Mirrors the ruleEngine/dashboard fallback: an unset sport never falsely
+// surfaces sport-specific windows.
 const athleteSport = computed<AppSport>(
-  () => (getPlayerDetails()?.primary_sport as AppSport | undefined) ?? "Tennis",
+  () => (getPlayerDetails()?.primary_sport as AppSport | undefined) ?? NO_SPORT_FALLBACK,
 );
 const athleteGender = computed<string | null>(
   () => getPlayerDetails()?.gender ?? null,

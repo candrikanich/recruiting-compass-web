@@ -200,6 +200,10 @@ import { ref, computed } from "vue";
 import {
   getSportCalendar,
   getUpcomingMilestones,
+  GENDER_SPLIT_SPORTS,
+  NO_SPORT_FALLBACK,
+  SEASON,
+  SEASON_END,
   type AppSport,
   type Division,
 } from "~/utils/recruitingCalendar";
@@ -218,42 +222,25 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   graduationYear: 2028,
-  // "Tennis" is this codebase's neutral sport fallback (no published NCAA
-  // recruiting calendar of its own) for any caller not yet wired to pass the
-  // athlete's real sport.
-  sport: "Tennis",
+  sport: NO_SPORT_FALLBACK,
   gender: null,
   division: "D1",
   footballSubdivision: "FBS",
   now: () => new Date(),
 });
 
-// L6a/L6b: the 2026-27 NCAA calendar dataset this component reads (see
+// L6a/L6b: `SEASON`/`SEASON_END` (from `~/utils/recruitingCalendar`) name the
+// NCAA calendar dataset this component reads (see
 // utils/recruitingCalendar/calendarData.ts `VERIFIED_ON`/`BUCKET`) and the
-// date it stops being current. Task 7 formalizes a shared `SEASON` const;
-// this local copy is deliberately temporary until that lands.
-const SEASON = "2026-27";
-const SEASON_END = new Date("2027-07-31T23:59:59Z");
+// date it stops being current.
 
 const NEUTRAL_GENDERS = new Set(["other", "prefer_not_to_say", null, undefined]);
-
-/**
- * Sports with distinct men's/women's NCAA calendars — kept in sync with
- * `GENDER_SPLIT_SPORTS` in `~/utils/recruitingCalendar/resolver.ts`.
- */
-const GENDER_SPLIT_SPORTS = new Set<AppSport>([
-  "Basketball",
-  "Lacrosse",
-  "Soccer",
-  "Ice Hockey",
-  "Wrestling",
-]);
 
 const genderOverride = ref<"male" | "female">("male");
 const subdivisionOverride = ref<"FBS" | "FCS">("FBS");
 
 const showGenderToggle = computed(
-  () => GENDER_SPLIT_SPORTS.has(props.sport) && NEUTRAL_GENDERS.has(props.gender),
+  () => props.sport in GENDER_SPLIT_SPORTS && NEUTRAL_GENDERS.has(props.gender),
 );
 const showSubdivisionToggle = computed(() => props.sport === "Football");
 
