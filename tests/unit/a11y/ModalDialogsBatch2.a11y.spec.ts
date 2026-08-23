@@ -6,7 +6,6 @@ import DocumentUploadModal from "~/components/School/DocumentUploadModal.vue";
 import RecoveryModal from "~/components/Recovery/RecoveryModal.vue";
 import SaveSearchDialog from "~/components/Search/SaveSearchDialog.vue";
 import SuggestionHelpModal from "~/components/Suggestion/SuggestionHelpModal.vue";
-import EmailRecruitingPacketModal from "~/components/EmailRecruitingPacketModal.vue";
 import HelpModal from "~/components/Help/HelpModal.vue";
 import OfferComparison from "~/components/OfferComparison.vue";
 
@@ -122,12 +121,6 @@ describe("modal dialog accessibility (batch 2)", () => {
       component: SuggestionHelpModal,
       props: { isOpen: true, ruleType: "ncaa-registration" },
       title: "Register with NCAA Eligibility Center",
-    },
-    {
-      name: "EmailRecruitingPacketModal",
-      component: EmailRecruitingPacketModal,
-      props: { isOpen: true },
-      title: "Email Recruiting Packet",
     },
     {
       name: "HelpModal",

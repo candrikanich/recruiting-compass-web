@@ -121,9 +121,7 @@
           <DashboardRecruitingPacketWidget
             :recruiting-packet-loading="recruitingPacketLoading"
             :recruiting-packet-error="recruitingPacketError"
-            :has-generated-packet="hasGeneratedPacket"
             @generate-packet="handleGeneratePacket"
-            @email-packet="handleEmailPacket"
           />
 
           <!-- Dynamic right column widgets -->
@@ -149,16 +147,6 @@
           <DashboardAthleteActivityWidget v-if="userStore.isParent" />
         </aside>
       </div>
-
-      <!-- Email Recruiting Packet Modal -->
-      <EmailRecruitingPacketModal
-        :is-open="showEmailModal"
-        :available-coaches="allCoaches"
-        :default-subject="defaultEmailSubject"
-        :default-body="defaultEmailBody"
-        @close="setShowEmailModal(false)"
-        @send="handleSendEmail"
-      />
     </main>
   </div>
 </template>
@@ -191,9 +179,6 @@ import DashboardSuggestions from "~/components/Dashboard/DashboardSuggestions.vu
 import DashboardRecruitingPacketWidget from "~/components/Dashboard/RecruitingPacketWidget.vue";
 import DashboardContactFrequencyWidget from "~/components/Dashboard/ContactFrequencyWidget.vue";
 import DashboardAthleteActivityWidget from "~/components/Dashboard/AthleteActivityWidget.vue";
-const EmailRecruitingPacketModal = defineAsyncComponent(
-  () => import("~/components/EmailRecruitingPacketModal.vue"),
-);
 
 definePageMeta({
   middleware: "auth",
@@ -215,15 +200,6 @@ const userTasksComposable = useUserTasks();
 const suggestionsComposable = useSuggestions();
 const viewLoggingComposable = useViewLogging();
 const recruitingPacketComposable = useRecruitingPacket();
-
-// Destructure recruiting packet refs for template auto-unwrapping
-const {
-  hasGeneratedPacket,
-  showEmailModal,
-  defaultEmailSubject,
-  defaultEmailBody,
-  setShowEmailModal,
-} = recruitingPacketComposable;
 
 // Destructure suggestions ref for template auto-unwrapping
 const { dashboardSuggestions } = suggestionsComposable ?? {
@@ -457,47 +433,6 @@ const handleGeneratePacket = async () => {
     logger.error("Packet generation error", err);
   } finally {
     recruitingPacketLoading.value = false;
-  }
-};
-
-const handleEmailPacket = async () => {
-  recruitingPacketLoading.value = true;
-  recruitingPacketError.value = null;
-
-  try {
-    // Generate packet if not already generated
-    if (!recruitingPacketComposable.hasGeneratedPacket.value) {
-      await recruitingPacketComposable.generatePacket();
-    }
-
-    // Open email modal
-    recruitingPacketComposable.setShowEmailModal(true);
-  } catch (err) {
-    const message = "Failed to prepare packet for email";
-    recruitingPacketError.value = message;
-    showToast(message, "error");
-    logger.error("Packet email prep error", err);
-  } finally {
-    recruitingPacketLoading.value = false;
-  }
-};
-
-const handleSendEmail = async (emailData: {
-  recipients: string[];
-  subject: string;
-  body: string;
-}) => {
-  try {
-    await recruitingPacketComposable.emailPacket(emailData);
-    showToast(
-      `Email sent to ${emailData.recipients.length} coach${emailData.recipients.length === 1 ? "" : "es"}!`,
-      "success",
-    );
-  } catch (err) {
-    const message = "Failed to send email";
-    recruitingPacketError.value = message;
-    showToast(message, "error");
-    logger.error("Email sending error", err);
   }
 };
 

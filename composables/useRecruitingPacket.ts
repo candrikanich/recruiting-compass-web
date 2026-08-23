@@ -5,7 +5,6 @@
  */
 
 import { ref, computed } from "vue";
-import { useAuthFetch } from "./useAuthFetch";
 import { useUserStore } from "~/stores/user";
 import { useSchools } from "./useSchools";
 import { useCoaches } from "./useCoaches";
@@ -36,7 +35,6 @@ interface PacketGenerationResult {
 const logger = createClientLogger("useRecruitingPacket");
 
 export const useRecruitingPacket = () => {
-  const { $fetchAuth } = useAuthFetch();
   const userStore = useUserStore();
   const { schools } = useSchools();
   const { coaches } = useCoaches();
@@ -49,7 +47,6 @@ export const useRecruitingPacket = () => {
   const error = ref<string | null>(null);
   const generatedHtml = ref<string | null>(null);
   const generatedData = ref<RecruitingPacketData | null>(null);
-  const showEmailModal = ref(false);
 
   // Derived state
   const hasGeneratedPacket = computed(() => !!generatedHtml.value);
@@ -334,122 +331,12 @@ export const useRecruitingPacket = () => {
   };
 
   /**
-   * Convert HTML to PDF blob (for email attachment)
-   * Note: Server-side PDF generation is handled by the API endpoint
-   */
-  const convertHtmlToPdfBlob = async (): Promise<Blob> => {
-    if (!generatedHtml.value) {
-      throw new Error("No packet generated");
-    }
-
-    // Create blob from HTML string
-    return new Blob([generatedHtml.value], { type: "text/html" });
-  };
-
-  /**
-   * Convert HTML to base64 for email attachment
-   */
-  const getPacketAsBase64 = async (): Promise<string> => {
-    if (!generatedHtml.value) {
-      throw new Error("No packet generated");
-    }
-
-    try {
-      // For now, return HTML as base64 (actual PDF conversion handled by server)
-      return btoa(unescape(encodeURIComponent(generatedHtml.value)));
-    } catch (err) {
-      logger.error("Base64 encoding error:", err);
-      throw err;
-    }
-  };
-
-  /**
-   * Email packet to coaches
-   */
-  const emailPacket = async (emailData: {
-    recipients: string[];
-    subject: string;
-    body: string;
-  }): Promise<void> => {
-    loading.value = true;
-    error.value = null;
-
-    try {
-      if (!generatedHtml.value || !generatedData.value) {
-        await generatePacket();
-      }
-
-      // Convert to base64 for transmission
-      const pdfBase64 = await getPacketAsBase64();
-      const filename = generatePacketFilename(
-        generatedData.value!.athlete.full_name || "athlete",
-      );
-
-      // Call API endpoint
-      await $fetchAuth("/api/recruiting-packet/email", {
-        method: "POST",
-        body: {
-          recipients: emailData.recipients,
-          subject: emailData.subject,
-          body: emailData.body,
-          htmlContent: generatedHtml.value,
-          pdfBase64,
-          athleteName: generatedData.value!.athlete.full_name,
-          filename,
-        },
-      });
-
-      showEmailModal.value = false;
-    } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : "Failed to send email";
-      error.value = message;
-      logger.error("Email error:", err);
-      throw err;
-    } finally {
-      loading.value = false;
-    }
-  };
-
-  /**
-   * Get default email subject
-   */
-  const getDefaultEmailSubject = (): string => {
-    const athleteName = generatedData.value?.athlete.full_name || "Athlete";
-    return `${athleteName} - Recruiting Profile`;
-  };
-
-  /**
-   * Get default email body
-   */
-  const getDefaultEmailBody = (): string => {
-    const athleteName = generatedData.value?.athlete.full_name || "Athlete";
-    const graduationYear =
-      generatedData.value?.athlete.graduation_year || "N/A";
-    const position = generatedData.value?.athlete.position || "Athlete";
-
-    return `Dear Coach,
-
-I hope this email finds you well. I am excited to share my recruiting profile with you as I explore collegiate opportunities.
-
-${athleteName} is a ${position} graduating in ${graduationYear}. The attached recruiting packet includes my athletic profile, academic information, schools of interest, and recent recruiting activity.
-
-I am very interested in learning more about your program and would welcome the opportunity to discuss how I might contribute to your team.
-
-Thank you for your time and consideration. I look forward to hearing from you.
-
-Best regards,
-${athleteName}`;
-  };
-
-  /**
    * Reset generated packet
    */
   const resetPacket = (): void => {
     generatedHtml.value = null;
     generatedData.value = null;
     error.value = null;
-    showEmailModal.value = false;
   };
 
   return {
@@ -458,23 +345,13 @@ ${athleteName}`;
     error: computed(() => error.value),
     generatedHtml: computed(() => generatedHtml.value),
     generatedData: computed(() => generatedData.value),
-    showEmailModal: computed(() => showEmailModal.value),
     hasGeneratedPacket: computed(() => hasGeneratedPacket.value),
-    defaultEmailSubject: computed(() => getDefaultEmailSubject()),
-    defaultEmailBody: computed(() => getDefaultEmailBody()),
 
     // Methods
     generatePacket,
     openPacketPreview,
     downloadPacket,
-    emailPacket,
     resetPacket,
-    convertHtmlToPdfBlob,
     aggregateAthleteData,
-
-    // Toggles
-    setShowEmailModal: (show: boolean) => {
-      showEmailModal.value = show;
-    },
   };
 };

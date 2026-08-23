@@ -2,18 +2,24 @@ import { describe, it, expect } from "vitest";
 import { mount } from "@vue/test-utils";
 import RecruitingPacketWidget from "~/components/Dashboard/RecruitingPacketWidget.vue";
 
+const NuxtLinkStub = {
+  props: ["to"],
+  template: '<a :href="to"><slot /></a>',
+};
+
 const mountWidget = (
   props: {
     recruitingPacketLoading?: boolean;
     recruitingPacketError?: string | null;
-    hasGeneratedPacket?: boolean;
   } = {},
 ) =>
   mount(RecruitingPacketWidget, {
     props: {
       recruitingPacketLoading: props.recruitingPacketLoading ?? false,
       recruitingPacketError: props.recruitingPacketError ?? null,
-      hasGeneratedPacket: props.hasGeneratedPacket ?? false,
+    },
+    global: {
+      stubs: { NuxtLink: NuxtLinkStub },
     },
   });
 
@@ -34,9 +40,14 @@ describe("RecruitingPacketWidget", () => {
       expect(wrapper.text()).toContain("Generating...");
     });
 
-    it("shows Email to Coach button", () => {
+    it("shows a Share with a coach link to /coaches", () => {
       const wrapper = mountWidget();
-      expect(wrapper.text()).toContain("Email to Coach");
+      const link = wrapper
+        .findAll("a")
+        .find((a) => a.text().includes("Share with a coach"));
+
+      expect(link).toBeTruthy();
+      expect(link!.attributes("href")).toBe("/coaches");
     });
   });
 
@@ -57,39 +68,6 @@ describe("RecruitingPacketWidget", () => {
         .find((b) => b.text().includes("Generating..."));
 
       expect(generateButton!.attributes("disabled")).toBeDefined();
-    });
-
-    it("disables email button when no packet has been generated", () => {
-      const wrapper = mountWidget({ hasGeneratedPacket: false });
-      const emailButton = wrapper
-        .findAll("button")
-        .find((b) => b.text().includes("Email to Coach"));
-
-      expect(emailButton!.attributes("disabled")).toBeDefined();
-    });
-
-    it("enables email button when packet has been generated and not loading", () => {
-      const wrapper = mountWidget({
-        hasGeneratedPacket: true,
-        recruitingPacketLoading: false,
-      });
-      const emailButton = wrapper
-        .findAll("button")
-        .find((b) => b.text().includes("Email to Coach"));
-
-      expect(emailButton!.attributes("disabled")).toBeUndefined();
-    });
-
-    it("disables email button when loading even if packet exists", () => {
-      const wrapper = mountWidget({
-        hasGeneratedPacket: true,
-        recruitingPacketLoading: true,
-      });
-      const emailButton = wrapper
-        .findAll("button")
-        .find((b) => b.text().includes("Email to Coach"));
-
-      expect(emailButton!.attributes("disabled")).toBeDefined();
     });
   });
 
@@ -118,19 +96,6 @@ describe("RecruitingPacketWidget", () => {
       await generateButton!.trigger("click");
 
       expect(wrapper.emitted("generate-packet")).toBeTruthy();
-    });
-
-    it("emits email-packet when clicking email button", async () => {
-      const wrapper = mountWidget({
-        hasGeneratedPacket: true,
-        recruitingPacketLoading: false,
-      });
-      const emailButton = wrapper
-        .findAll("button")
-        .find((b) => b.text().includes("Email to Coach"));
-      await emailButton!.trigger("click");
-
-      expect(wrapper.emitted("email-packet")).toBeTruthy();
     });
   });
 
