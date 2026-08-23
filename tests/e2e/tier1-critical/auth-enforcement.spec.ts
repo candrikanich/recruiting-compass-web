@@ -50,7 +50,7 @@ test.describe("Auth Enforcement - Protected Routes", () => {
   });
 
   test("should preserve redirect URL for nested routes", async ({ page }) => {
-    await page.goto("/coaches/123/analytics");
+    await page.goto("/schools/123/coaches");
     await page.waitForURL(/\/login/, { timeout: 30000 });
     expect(page.url()).toContain("redirect=");
     expect(page.url()).toContain("coaches");

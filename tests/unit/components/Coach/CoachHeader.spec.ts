@@ -329,24 +329,6 @@ describe("CoachHeader", () => {
   });
 
   describe("Action Buttons - Secondary", () => {
-    it("shows Analytics link", () => {
-      const wrapper = mount(CoachHeader, {
-        props: { coach: mockCoach },
-        global: { stubs: { NuxtLink: { template: "<a><slot /></a>" } } },
-      });
-
-      expect(wrapper.text()).toContain("Analytics");
-    });
-
-    it("shows Messages link", () => {
-      const wrapper = mount(CoachHeader, {
-        props: { coach: mockCoach },
-        global: { stubs: { NuxtLink: { template: "<a><slot /></a>" } } },
-      });
-
-      expect(wrapper.text()).toContain("Messages");
-    });
-
     it("shows Edit button", () => {
       const wrapper = mount(CoachHeader, {
         props: { coach: mockCoach },

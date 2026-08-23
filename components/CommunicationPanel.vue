@@ -351,21 +351,24 @@
       </Transition>
     </Teleport>
 
-    <!-- Text Composer Modal -->
+    <!-- Text Composer Drawer (right-anchored: matches the email composer) -->
     <Teleport to="body">
       <Transition name="fade">
         <div
           v-if="showTextComposer"
-          class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+          class="fixed inset-0 bg-black/40 z-50"
+          @click.self="handleCloseText"
           @keydown.escape="handleCloseText"
         >
-          <div
-            ref="textDialogRef"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="text-modal-title"
-            class="bg-white rounded-xl shadow-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-slate-200"
-          >
+          <Transition name="drawer">
+            <div
+              v-if="showTextComposer"
+              ref="textDialogRef"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="text-modal-title"
+              class="absolute right-0 top-0 h-full w-full max-w-lg overflow-y-auto border-l border-slate-200 bg-white shadow-2xl"
+            >
             <div
               class="p-6 border-b border-slate-200 flex items-center justify-between"
             >
@@ -565,7 +568,8 @@
                 Cancel
               </button>
             </div>
-          </div>
+            </div>
+          </Transition>
         </div>
       </Transition>
     </Teleport>

@@ -3,6 +3,7 @@ import { createClientLogger } from "~/utils/logger";
 import {
   resolveVariables,
   renderTemplate,
+  applyOptionalSegments,
   findUnresolved,
   formatUsPhone,
   renderEventSchedule,
@@ -313,8 +314,18 @@ export const useTemplateResolver = () => {
       authored,
     };
     const values = resolveVariables(registry, ctx);
-    const subject = renderTemplate(template.subject ?? "", values);
-    const body = renderTemplate(template.body ?? "", values);
+    // Resolve `[[gate|text]]` optional spans BEFORE token substitution, else the
+    // bracket wrappers leak into the editable Subject/Message fields. Authored
+    // `{{key}}` placeholders survive (applyOptionalSegments keeps inner tokens;
+    // renderTemplate leaves unmatched keys intact for the athlete to fill).
+    const subject = renderTemplate(
+      applyOptionalSegments(template.subject ?? "", values),
+      values,
+    );
+    const body = renderTemplate(
+      applyOptionalSegments(template.body ?? "", values),
+      values,
+    );
     return {
       subject,
       body,
