@@ -331,6 +331,17 @@ export const playerDetailsSchema = z.object({
   hudl_url: urlSchema.nullable().optional(),
   perfect_game_id: sanitizedTextSchema(50),
   prep_baseball_id: sanitizedTextSchema(100),
+  // Recruiting services v2 — free-text ids and full profile URLs.
+  athletic_net_id: sanitizedTextSchema(50),
+  milesplit_url: urlSchema.nullable().optional(),
+  swimcloud_id: sanitizedTextSchema(50),
+  utr_id: sanitizedTextSchema(50),
+  tennis_recruiting_id: sanitizedTextSchema(50),
+  elite_prospects_id: sanitizedTextSchema(50),
+  sportsrecruits_id: sanitizedTextSchema(50),
+  concept2_id: sanitizedTextSchema(50),
+  on3_url: urlSchema.nullable().optional(),
+  sports247_url: urlSchema.nullable().optional(),
   showcase_id: sanitizedTextSchema(50),
 });
 

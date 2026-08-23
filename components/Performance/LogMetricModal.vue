@@ -12,6 +12,7 @@ import { usePerformance } from "~/composables/usePerformance";
 import { formatMetricValue } from "~/utils/metricFormat";
 import {
   metricTypesForSport,
+  metricGroupsForSport,
   getMetricDef,
   customMetricKey,
   OTHER_KEY,
@@ -57,6 +58,28 @@ const metricTypes = computed(() =>
     label: getMetricDef(key).label,
   })),
 );
+
+// Sectioned picker for the 6 metric-dense sports; null → flat picker (all
+// other sports). Any offered key not in a group lands in a trailing "Other".
+const metricGroupOptions = computed(() => {
+  const groups = metricGroupsForSport(props.primarySport);
+  if (groups.length === 0) return null;
+
+  const grouped = groups.map((group) => ({
+    category: group.category,
+    options: group.keys.map((key) => ({
+      value: key,
+      label: getMetricDef(key).label,
+    })),
+  }));
+
+  const groupedKeys = new Set(groups.flatMap((group) => group.keys));
+  const leftover = metricTypes.value.filter((type) => !groupedKeys.has(type.value));
+  if (leftover.length > 0) {
+    grouped.push({ category: "Other", options: leftover });
+  }
+  return grouped;
+});
 
 // Canonical unit vocabulary — free picker, offered only for "other".
 const unitOptions = [
@@ -270,8 +293,24 @@ watch(
                   class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                 >
                   <option value="">Select Metric</option>
+                  <template v-if="metricGroupOptions">
+                    <optgroup
+                      v-for="group in metricGroupOptions"
+                      :key="group.category"
+                      :label="group.category"
+                    >
+                      <option
+                        v-for="type in group.options"
+                        :key="type.value"
+                        :value="type.value"
+                      >
+                        {{ type.label }}
+                      </option>
+                    </optgroup>
+                  </template>
                   <option
                     v-for="type in metricTypes"
+                    v-else
                     :key="type.value"
                     :value="type.value"
                   >

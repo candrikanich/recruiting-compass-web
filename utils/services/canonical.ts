@@ -83,6 +83,16 @@ const HUDL_SPORTS: readonly string[] = [
 
 const BASEBALL_SOFTBALL: readonly string[] = ["Baseball", "Softball"];
 
+const TRACK_XC: readonly string[] = ["Track & Field", "Cross Country"];
+const TENNIS: readonly string[] = ["Tennis"];
+const SPORTSRECRUITS_SPORTS: readonly string[] = [
+  "Soccer",
+  "Lacrosse",
+  "Volleyball",
+  "Field Hockey",
+];
+const FOOTBALL_BASKETBALL: readonly string[] = ["Football", "Basketball"];
+
 const NCSA: ServiceDef = {
   key: "ncsa_id",
   label: "NCSA",
@@ -123,6 +133,108 @@ const PREP_BASEBALL: ServiceDef = {
   placeholder: "ID Number",
 };
 
+// ── Services v2 ──────────────────────────────────────────────────────────
+// id-kind: clean stable numeric id whose bare-id URL resolves → linkKind
+// 'template' with a {value} urlTemplate. url-kind: name/compound-slug where a
+// bare id fails → store the full URL, link is the value itself (like Hudl).
+
+const ATHLETIC_NET: ServiceDef = {
+  key: "athletic_net_id",
+  label: "Athletic.net",
+  valueKind: "id",
+  linkKind: "template",
+  urlTemplate: "https://www.athletic.net/athlete/{value}",
+  signupUrl: "https://www.athletic.net/",
+  placeholder: "ID Number",
+};
+
+const MILESPLIT: ServiceDef = {
+  key: "milesplit_url",
+  label: "MileSplit",
+  valueKind: "url",
+  linkKind: "url",
+  signupUrl: "https://www.milesplit.com/",
+  placeholder: "Profile URL",
+};
+
+const SWIMCLOUD: ServiceDef = {
+  key: "swimcloud_id",
+  label: "SwimCloud",
+  valueKind: "id",
+  linkKind: "template",
+  urlTemplate: "https://www.swimcloud.com/swimmer/{value}/",
+  signupUrl: "https://www.swimcloud.com/",
+  placeholder: "ID Number",
+};
+
+const UTR: ServiceDef = {
+  key: "utr_id",
+  label: "Universal Tennis (UTR)",
+  valueKind: "id",
+  linkKind: "template",
+  urlTemplate: "https://app.utrsports.net/profiles/{value}",
+  signupUrl: "https://www.utrsports.net/",
+  placeholder: "ID Number",
+};
+
+const TENNIS_RECRUITING: ServiceDef = {
+  key: "tennis_recruiting_id",
+  label: "Tennis Recruiting Network",
+  valueKind: "id",
+  linkKind: "template",
+  urlTemplate: "https://www.tennisrecruiting.net/player.asp?id={value}",
+  signupUrl: "https://www.tennisrecruiting.net/",
+  placeholder: "ID Number",
+};
+
+const ELITE_PROSPECTS: ServiceDef = {
+  key: "elite_prospects_id",
+  label: "Elite Prospects",
+  valueKind: "id",
+  linkKind: "template",
+  urlTemplate: "https://www.eliteprospects.com/player/{value}",
+  signupUrl: "https://www.eliteprospects.com/",
+  placeholder: "ID Number",
+};
+
+const SPORTSRECRUITS: ServiceDef = {
+  key: "sportsrecruits_id",
+  label: "SportsRecruits",
+  valueKind: "id",
+  linkKind: "template",
+  urlTemplate: "https://sportsrecruits.com/athlete/{value}",
+  signupUrl: "https://sportsrecruits.com/",
+  placeholder: "ID Number",
+};
+
+const CONCEPT2: ServiceDef = {
+  key: "concept2_id",
+  label: "Concept2 Logbook",
+  valueKind: "id",
+  linkKind: "template",
+  urlTemplate: "https://log.concept2.com/profile/{value}",
+  signupUrl: "https://log.concept2.com/",
+  placeholder: "ID Number",
+};
+
+const ON3: ServiceDef = {
+  key: "on3_url",
+  label: "On3",
+  valueKind: "url",
+  linkKind: "url",
+  signupUrl: "https://www.on3.com/",
+  placeholder: "Profile URL",
+};
+
+const SPORTS247: ServiceDef = {
+  key: "sports247_url",
+  label: "247Sports",
+  valueKind: "url",
+  linkKind: "url",
+  signupUrl: "https://247sports.com/",
+  placeholder: "Profile URL",
+};
+
 /** Service → the sports that expose it, in display order. */
 const SERVICE_MEMBERSHIP: ReadonlyArray<{
   def: ServiceDef;
@@ -132,6 +244,17 @@ const SERVICE_MEMBERSHIP: ReadonlyArray<{
   { def: HUDL, sports: HUDL_SPORTS },
   { def: PERFECT_GAME, sports: BASEBALL_SOFTBALL },
   { def: PREP_BASEBALL, sports: BASEBALL_SOFTBALL },
+  // Services v2 — ordered after the v1 four in every sport's list.
+  { def: ATHLETIC_NET, sports: TRACK_XC },
+  { def: MILESPLIT, sports: TRACK_XC },
+  { def: SWIMCLOUD, sports: ["Swimming"] },
+  { def: UTR, sports: TENNIS },
+  { def: TENNIS_RECRUITING, sports: TENNIS },
+  { def: ELITE_PROSPECTS, sports: ["Ice Hockey"] },
+  { def: SPORTSRECRUITS, sports: SPORTSRECRUITS_SPORTS },
+  { def: CONCEPT2, sports: ["Rowing"] },
+  { def: ON3, sports: FOOTBALL_BASKETBALL },
+  { def: SPORTS247, sports: FOOTBALL_BASKETBALL },
 ];
 
 /** Every service def, once each (for label lookups). */

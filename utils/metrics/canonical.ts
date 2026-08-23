@@ -380,6 +380,73 @@ export const SPORT_METRICS: Record<string, readonly string[]> = {
   "Water Polo": ["goals", "assists", "saves", "steals"],
 };
 
+// MARK: Sport metric groups (log-picker section headers — 6 dense sports only)
+
+/**
+ * One labeled section of the log-metric picker. `category` is a plain display
+ * string (byte-identical with iOS categories); `keys` are metric keys in
+ * display order. Parallel to `SPORT_METRICS` rather than a field on `MetricDef`
+ * because a shared key (e.g. `assists` = "Setting" in Volleyball) can't carry a
+ * single global category.
+ */
+export interface MetricGroup {
+  category: string;
+  keys: readonly string[];
+}
+
+/**
+ * Per-sport picker groupings for the 6 metric-dense sports. Every other sport
+ * has NO entry and renders flat (zero change). Array order = section order;
+ * keys within a group in display order. Baseball and Softball share groups
+ * (identical vocabularies), mirroring their shared `SPORT_METRICS` ordering.
+ */
+const baseballGroups: readonly MetricGroup[] = [
+  { category: "Hitting", keys: ["exit_velo", "batting_avg", "on_base_pct", "slugging_pct"] },
+  { category: "Pitching", keys: ["velocity", "era", "whip", "strikeouts"] },
+  { category: "Fielding", keys: ["pop_time", "fielding_pct"] },
+  { category: "Speed", keys: ["sixty_time"] },
+];
+
+export const SPORT_METRIC_GROUPS: Record<string, readonly MetricGroup[]> = {
+  Baseball: baseballGroups,
+  Softball: baseballGroups,
+  Basketball: [
+    {
+      category: "Scoring",
+      keys: ["points_per_game", "field_goal_pct", "three_point_pct", "free_throw_pct"],
+    },
+    { category: "Playmaking", keys: ["assists_per_game"] },
+    { category: "Defense", keys: ["rebounds_per_game", "steals_per_game", "blocks_per_game"] },
+    { category: "Athleticism", keys: ["vertical_jump"] },
+  ],
+  Football: [
+    { category: "Combine", keys: ["forty_time", "vertical_jump", "broad_jump", "shuttle", "three_cone"] },
+    { category: "Strength", keys: ["bench_press", "squat"] },
+    { category: "Offense", keys: ["passing_yards", "rushing_yards", "receiving_yards"] },
+    { category: "Defense", keys: ["tackles"] },
+  ],
+  "Track & Field": [
+    { category: "Running", keys: ["sprint_time", "distance_time", "relay_split"] },
+    { category: "Jumps", keys: ["long_jump", "high_jump"] },
+    { category: "Throws", keys: ["shot_put", "discus"] },
+  ],
+  Volleyball: [
+    { category: "Attacking", keys: ["kills", "hitting_pct", "aces"] },
+    { category: "Setting", keys: ["assists"] },
+    { category: "Defense", keys: ["blocks", "digs"] },
+  ],
+};
+
+/**
+ * The picker section groups for a sport, or an EMPTY array for a nil, unknown,
+ * or ungrouped sport (the 11 non-dense sports) — those render flat. Mirrors iOS
+ * `MetricRegistry.sportMetricGroups[sport]`.
+ */
+export function metricGroupsForSport(sport?: string | null): readonly MetricGroup[] {
+  const groups = sport ? SPORT_METRIC_GROUPS[sport] : undefined;
+  return groups ?? [];
+}
+
 /** The def for a known key, or undefined when the key is unregistered. */
 export function getKnownMetricDef(key: string | null | undefined): MetricDef | undefined {
   if (!key) return undefined;

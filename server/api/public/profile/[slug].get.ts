@@ -169,6 +169,26 @@ export default defineEventHandler(async (event) => {
               prep_baseball_state:
                 (details.prep_baseball_state as string | undefined) ||
                 undefined,
+              athletic_net_id:
+                (details.athletic_net_id as string | undefined) || undefined,
+              swimcloud_id:
+                (details.swimcloud_id as string | undefined) || undefined,
+              utr_id: (details.utr_id as string | undefined) || undefined,
+              tennis_recruiting_id:
+                (details.tennis_recruiting_id as string | undefined) ||
+                undefined,
+              elite_prospects_id:
+                (details.elite_prospects_id as string | undefined) ||
+                undefined,
+              sportsrecruits_id:
+                (details.sportsrecruits_id as string | undefined) || undefined,
+              concept2_id:
+                (details.concept2_id as string | undefined) || undefined,
+              milesplit_url:
+                (details.milesplit_url as string | undefined) || undefined,
+              on3_url: (details.on3_url as string | undefined) || undefined,
+              sports247_url:
+                (details.sports247_url as string | undefined) || undefined,
             }
           : null,
       film: profile.show_film ? videoLinks : null,
