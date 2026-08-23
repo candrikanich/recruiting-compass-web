@@ -127,6 +127,7 @@
             :common-sports="commonSports"
             :campus-size-options="CAMPUS_SIZE_OPTIONS"
             :cost-sensitivity-options="COST_SENSITIVITY_OPTIONS"
+            :gender-options="GENDER_OPTIONS"
             :trigger-save="triggerSave"
             :social-inputs="socialInputs"
             :handle-social-blur="handleSocialBlur"
@@ -414,6 +415,7 @@ const {
   gradeLevels,
   CAMPUS_SIZE_OPTIONS,
   COST_SENSITIVITY_OPTIONS,
+  GENDER_OPTIONS,
   homeState,
   load,
 } = usePlayerDetailsForm();

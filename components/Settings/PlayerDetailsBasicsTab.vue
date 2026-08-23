@@ -60,6 +60,28 @@
                 </option>
               </select>
             </div>
+            <div>
+              <label
+                class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1 whitespace-nowrap"
+              >
+                Gender <span class="normal-case text-slate-400">(optional)</span>
+              </label>
+              <select
+                v-model="form.gender"
+                :disabled="isParentRole"
+                @change="triggerSave"
+                class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition disabled:opacity-50 appearance-none font-medium text-slate-700"
+              >
+                <option :value="undefined">Prefer not to answer</option>
+                <option
+                  v-for="opt in genderOptions"
+                  :key="opt.value"
+                  :value="opt.value"
+                >
+                  {{ opt.label }}
+                </option>
+              </select>
+            </div>
           </div>
         </div>
       </div>
@@ -281,6 +303,10 @@ defineProps<{
   campusSizeOptions: { value: "small" | "medium" | "large"; label: string }[];
   costSensitivityOptions: {
     value: "high" | "medium" | "low";
+    label: string;
+  }[];
+  genderOptions: {
+    value: "male" | "female" | "other" | "prefer_not_to_say";
     label: string;
   }[];
   triggerSave: () => void;
