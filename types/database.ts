@@ -1957,41 +1957,6 @@ export type Database = {
           },
         ];
       };
-      positions: {
-        Row: {
-          created_at: string | null;
-          display_order: number;
-          id: string;
-          name: string;
-          sport_id: string;
-          updated_at: string | null;
-        };
-        Insert: {
-          created_at?: string | null;
-          display_order?: number;
-          id?: string;
-          name: string;
-          sport_id: string;
-          updated_at?: string | null;
-        };
-        Update: {
-          created_at?: string | null;
-          display_order?: number;
-          id?: string;
-          name?: string;
-          sport_id?: string;
-          updated_at?: string | null;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "positions_sport_id_fkey";
-            columns: ["sport_id"];
-            isOneToOne: false;
-            referencedRelation: "sports";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
       preference_history: {
         Row: {
           category: string;
@@ -2937,7 +2902,6 @@ export type Database = {
           onboarding_completed: boolean;
           phase_milestone_data: Json | null;
           primary_position_custom: string | null;
-          primary_position_id: string | null;
           primary_sport_id: string | null;
           profile_completeness: number | null;
           profile_photo_url: string | null;
@@ -2946,7 +2910,6 @@ export type Database = {
           role: Database["public"]["Enums"]["user_role"];
           sat_score: number | null;
           secondary_position_custom: string | null;
-          secondary_position_id: string | null;
           secondary_sport_id: string | null;
           status_label: string | null;
           status_score: number | null;
@@ -2982,7 +2945,6 @@ export type Database = {
           onboarding_completed?: boolean;
           phase_milestone_data?: Json | null;
           primary_position_custom?: string | null;
-          primary_position_id?: string | null;
           primary_sport_id?: string | null;
           profile_completeness?: number | null;
           profile_photo_url?: string | null;
@@ -2991,7 +2953,6 @@ export type Database = {
           role: Database["public"]["Enums"]["user_role"];
           sat_score?: number | null;
           secondary_position_custom?: string | null;
-          secondary_position_id?: string | null;
           secondary_sport_id?: string | null;
           status_label?: string | null;
           status_score?: number | null;
@@ -3027,7 +2988,6 @@ export type Database = {
           onboarding_completed?: boolean;
           phase_milestone_data?: Json | null;
           primary_position_custom?: string | null;
-          primary_position_id?: string | null;
           primary_sport_id?: string | null;
           profile_completeness?: number | null;
           profile_photo_url?: string | null;
@@ -3036,7 +2996,6 @@ export type Database = {
           role?: Database["public"]["Enums"]["user_role"];
           sat_score?: number | null;
           secondary_position_custom?: string | null;
-          secondary_position_id?: string | null;
           secondary_sport_id?: string | null;
           status_label?: string | null;
           status_score?: number | null;
@@ -3054,24 +3013,10 @@ export type Database = {
             referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "users_primary_position_id_fkey";
-            columns: ["primary_position_id"];
-            isOneToOne: false;
-            referencedRelation: "positions";
-            referencedColumns: ["id"];
-          },
-          {
             foreignKeyName: "users_primary_sport_id_fkey";
             columns: ["primary_sport_id"];
             isOneToOne: false;
             referencedRelation: "sports";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "users_secondary_position_id_fkey";
-            columns: ["secondary_position_id"];
-            isOneToOne: false;
-            referencedRelation: "positions";
             referencedColumns: ["id"];
           },
           {
