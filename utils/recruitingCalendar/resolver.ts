@@ -61,7 +61,7 @@ export const GENDER_SPLIT_SPORTS: Partial<Record<AppSport, { men: NcaaCalendarKe
  */
 export const NO_SPORT_FALLBACK: AppSport = "Tennis";
 
-const isMen = (gender: string | null | undefined): boolean => gender !== "female";
+const isMen = (gender: string | null | undefined): boolean => (gender ?? "").toLowerCase() !== "female";
 
 /**
  * Maps an app sport (plus optional gender/football-subdivision context) to

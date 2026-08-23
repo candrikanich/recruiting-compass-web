@@ -228,6 +228,11 @@ export const ALL_MILESTONES: Milestone[] = [
  * Get upcoming milestones filtered by date, phase, and division
  * @param params - Configuration object
  * @returns Array of upcoming milestones, sorted by date
+ *
+ * Superseded by the sport-aware `getUpcomingMilestones` in
+ * `~/utils/recruitingCalendar/resolver.ts` — this legacy, non-sport-aware
+ * version is retained only because its own existing tests still cover it.
+ * Retire in a follow-up once those tests are ported/removed.
  */
 export function getUpcomingMilestones(params: {
   currentDate?: Date;

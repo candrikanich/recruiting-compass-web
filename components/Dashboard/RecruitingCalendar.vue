@@ -206,6 +206,7 @@ import {
   SEASON_END,
   type AppSport,
   type Division,
+  type RecruitingPeriod,
 } from "~/utils/recruitingCalendar";
 import { getMilestoneTypeIcon } from "~/utils/ncaaRecruitingCalendar";
 import { parseLocalDateOnly, exclusiveEndOfDay } from "~/utils/localDate";
@@ -347,13 +348,42 @@ const resolvedCalendar = computed(() =>
 // holds — revisit this check if/when a second season's data is added.
 const isStale = computed(() => props.now.getTime() > SEASON_END.getTime());
 
-// Current period: whichever of this sport's resolved calendar periods covers
-// today, if any.
+// Severity rank for picking which period to display when today falls inside
+// MULTIPLE overlapping windows (the data lists broad periods before their
+// nested carve-outs — e.g. a Dead or Recruiting Shutdown day nested inside a
+// wider Contact/Quiet window). Always surface the MOST restrictive match —
+// showing a less-restrictive enclosing period on a dead/shutdown day would
+// wrongly tell the athlete contact is OK. This ranking is display-only; the
+// enforcement path (isDeadPeriod/getDeadPeriodMessage in resolver.ts) is
+// already order-independent via BLOCKING_TYPES and must not change.
+const PERIOD_SEVERITY: Record<RecruitingPeriod["type"], number> = {
+  recruiting_shutdown: 5,
+  dead: 4,
+  evaluation: 3,
+  quiet: 2,
+  contact: 1,
+};
+
+const periodSpanDays = (p: RecruitingPeriod): number =>
+  (parseLocalDateOnly(p.end).getTime() - parseLocalDateOnly(p.start).getTime()) / (1000 * 60 * 60 * 24);
+
+// Current period: the MOST RESTRICTIVE of this sport's resolved calendar
+// periods covering today, if any (see PERIOD_SEVERITY above); ties broken by
+// shortest span.
 const currentPeriod = computed<CurrentPeriodDisplay | null>(() => {
-  const period = resolvedCalendar.value.periods.find(
+  const matches = resolvedCalendar.value.periods.filter(
     (p) => today >= parseLocalDateOnly(p.start) && today < exclusiveEndOfDay(p.end),
   );
-  if (!period) return null;
+  if (matches.length === 0) return null;
+
+  const period = matches.reduce((best, candidate) => {
+    const bestSeverity = PERIOD_SEVERITY[best.type] ?? 0;
+    const candidateSeverity = PERIOD_SEVERITY[candidate.type] ?? 0;
+    if (candidateSeverity !== bestSeverity) {
+      return candidateSeverity > bestSeverity ? candidate : best;
+    }
+    return periodSpanDays(candidate) < periodSpanDays(best) ? candidate : best;
+  });
 
   return {
     name: PERIOD_TYPE_LABELS[period.type] ?? period.type,

@@ -16,6 +16,10 @@ describe("resolveCalendarKey", () => {
     expect(resolveCalendarKey("Basketball", { gender: null })).toBe("MBB"); // default men's
     expect(resolveCalendarKey("Basketball", { gender: "prefer_not_to_say" })).toBe("MBB");
   });
+  it("normalizes gender case — a capitalized 'Female' still resolves to the women's calendar", () => {
+    expect(resolveCalendarKey("Basketball", { gender: "Female" })).toBe("WBB");
+    expect(resolveCalendarKey("Basketball", { gender: "FEMALE" })).toBe("WBB");
+  });
   it("golf: men→MGO, else Other", () => {
     expect(resolveCalendarKey("Golf", { gender: "male" })).toBe("MGO");
     expect(resolveCalendarKey("Golf", { gender: "female" })).toBe("Other");

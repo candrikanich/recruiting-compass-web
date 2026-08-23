@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, afterEach, vi } from "vitest";
 import { mount } from "@vue/test-utils";
 import RecruitingCalendar from "~/components/Dashboard/RecruitingCalendar.vue";
 
@@ -117,6 +117,40 @@ describe("RecruitingCalendar Component", () => {
       );
       expect(link.attributes("target")).toBe("_blank");
       expect(link.attributes("rel")).toBe("noopener");
+    });
+  });
+
+  describe("current-period banner: most-restrictive selection on nested/overlapping periods", () => {
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it("on 2027-07-04, Baseball shows the nested Dead period, not the enclosing Contact period", () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date("2027-07-04T12:00:00"));
+
+      const wrapper = mount(RecruitingCalendar, {
+        props: { graduationYear: 2028, sport: "Baseball" },
+      });
+
+      const currentPeriodText = wrapper.text();
+      expect(currentPeriodText).toContain("Current Period");
+      expect(currentPeriodText).toContain("Dead Period");
+      expect(currentPeriodText).not.toContain("Contact Period");
+    });
+
+    it("on 2026-11-25, Baseball shows the Recruiting Shutdown, not the enclosing Quiet period", () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date("2026-11-25T12:00:00"));
+
+      const wrapper = mount(RecruitingCalendar, {
+        props: { graduationYear: 2028, sport: "Baseball" },
+      });
+
+      const currentPeriodText = wrapper.text();
+      expect(currentPeriodText).toContain("Current Period");
+      expect(currentPeriodText).toContain("Recruiting Shutdown");
+      expect(currentPeriodText).not.toContain("Quiet Period");
     });
   });
 
