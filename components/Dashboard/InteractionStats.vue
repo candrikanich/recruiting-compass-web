@@ -184,7 +184,7 @@ const getTypeEmoji = (type: string): string => {
     phone_call: "☎️",
     in_person_visit: "👥",
     virtual_meeting: "💻",
-    camp: "⚾",
+    camp: "⛺",
     showcase: "🎯",
     tweet: "𝕏",
     dm: "💭",

@@ -1,6 +1,6 @@
 /**
  * NCAA Recruiting Calendar utility for managing dead periods, recruiting windows, and important milestones
- * Reference: NCAA Division I Baseball Recruiting Rules
+ * Reference: NCAA Division I Recruiting Rules
  * 2026-2027 Calendar dates based on official NCAA guidelines and standardized testing calendars
  */
 
@@ -24,7 +24,7 @@ export interface Milestone {
 }
 
 /**
- * NCAA Division I Baseball Recruiting Calendar for 2026
+ * NCAA Division I Recruiting Calendar for 2026
  * Dead periods = No recruiting contact allowed
  * Quiet periods = Limited contact, no in-person visits
  * Contact/Evaluation = Normal recruiting allowed

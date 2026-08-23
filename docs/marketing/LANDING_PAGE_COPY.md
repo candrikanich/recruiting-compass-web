@@ -24,7 +24,7 @@ The all-in-one platform for student-athletes and families to organize schools, t
 
 Stop tracking recruiting in spreadsheets. Stop missing follow-ups. Stop second-guessing your decisions.
 
-Recruiting Compass brings clarity to the college baseball recruiting process. From managing your target schools to logging every coach interaction, we help you stay organized and make smarter decisions about your future.
+Recruiting Compass brings clarity to the college recruiting process. From managing your target schools to logging every coach interaction, we help you stay organized and make smarter decisions about your future.
 
 **Perfect for:**
 
@@ -203,7 +203,7 @@ Stay engaged and informed:
 
 **"We recommend it to all our families"**
 
-> _"So many families don't have a system for recruiting. We love that Recruiting Compass is free and easy to use." — Coach Wilson, High School Baseball_
+> _"So many families don't have a system for recruiting. We love that Recruiting Compass is free and easy to use." — Coach Wilson, High School Athletics_
 
 ### Numbers (Optional - if data exists)
 
@@ -377,7 +377,7 @@ Sign up for free and start tracking your recruiting journey today. No credit car
 
 ### Color Palette (Suggestions)
 
-- **Primary**: Sport-related (baseball blue #003087, grass green #2E7D32)
+- **Primary**: Sport-related (compass blue #003087, grass green #2E7D32)
 - **Accent**: Energy/growth (orange #FF8C00 for CTAs)
 - **Neutral**: Light gray backgrounds (#F5F5F5), dark text (#333)
 

@@ -108,16 +108,16 @@ const PARENT_WORRIES: ParentWorry[] = [
   {
     id: "all-late-bloomers",
     question:
-      "Are late bloomers common in baseball recruiting? My athlete just started improving.",
+      "Are late bloomers common in recruiting? My athlete just started improving.",
     answer:
-      "Very common. Baseball development varies greatly by individual. Some athletes peak junior/senior year. Coaches know this and continue evaluating. Improvement is what matters. Don't lose hope if your athlete is still developing.",
+      "Very common. Athletic development varies greatly by individual. Some athletes peak junior/senior year. Coaches know this and continue evaluating. Improvement is what matters. Don't lose hope if your athlete is still developing.",
     phases: ["freshman", "sophomore", "junior"],
     category: "timeline",
   },
   {
     id: "all-grades-matter",
     question:
-      "How important are grades in recruiting? My athlete focuses more on baseball.",
+      "How important are grades in recruiting? My athlete focuses more on their sport.",
     answer:
       "Grades matter significantly. Most college programs require minimum GPA, and good grades keep options open at selective schools. Recruiting is about both athleticism AND academics. Strong grades make your athlete more attractive overall.",
     phases: ["freshman", "sophomore", "junior", "senior"],
@@ -128,7 +128,7 @@ const PARENT_WORRIES: ParentWorry[] = [
     question:
       "What does walk-on mean? Is it a legitimate way to play in college?",
     answer:
-      "Walk-ons are students who try out for the team without a scholarship offer. It's completely legitimate. Many walk-ons eventually earn scholarships or become key contributors. Walk-on can lead to college baseball, even D1. Consider it a viable option.",
+      "Walk-ons are students who try out for the team without a scholarship offer. It's completely legitimate. Many walk-ons eventually earn scholarships or become key contributors. Walk-on can lead to a college roster spot, even D1. Consider it a viable option.",
     phases: ["junior", "senior"],
     category: "recruiting",
   },

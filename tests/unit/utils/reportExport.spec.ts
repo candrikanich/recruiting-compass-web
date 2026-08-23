@@ -33,7 +33,7 @@ describe("reportExport", () => {
         "2024-01-31",
       );
 
-      expect(report.title).toBe("Baseball Recruiting Report");
+      expect(report.title).toBe("The Recruiting Compass Report");
       expect(report.dateRange.from).toBe("2024-01-01");
       expect(report.dateRange.to).toBe("2024-01-31");
       expect(report.schools).toBeDefined();

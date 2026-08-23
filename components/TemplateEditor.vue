@@ -56,7 +56,7 @@
         <input
           v-model="formData.subject"
           type="text"
-          placeholder="e.g., Baseball Recruitment Inquiry - {{playerName}}"
+          placeholder="e.g., Recruiting Inquiry - {{playerName}}"
           class="w-full px-4 py-2 rounded-lg border border-slate-300 text-slate-900 bg-white"
         />
         <p class="text-xs mt-1 text-slate-600">
@@ -242,10 +242,10 @@ const preview = computed(() => {
     schoolName: "Ohio State University",
     highSchool: "Lincoln High School",
     gradYear: "2025",
-    position: "Shortstop",
+    position: "Captain",
     division: "D1",
     eventName: "Area Code Games",
-    schoolTwitter: "OhioStateBB",
+    schoolTwitter: "OhioStateAthletics",
     todayDate: new Date().toLocaleDateString("en-US", {
       month: "long",
       day: "numeric",

@@ -158,7 +158,7 @@ const getKeyDates = () => {
       name: "Junior Fall Showcase Season",
       description: "Peak recruiting exposure events",
       date: new Date(year - 2, 8, 1), // September, junior year
-      emoji: "⚾",
+      emoji: "🎯",
     },
     {
       id: "early-signing",

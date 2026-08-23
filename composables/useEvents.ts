@@ -20,7 +20,7 @@ type _EventUpdate = Database["public"]["Tables"]["events"]["Update"];
  * Manages recruiting events and performance opportunities
  *
  * Event types:
- * - camp: College baseball camp
+ * - camp: College athletic camp
  * - showcase: Prospect showcase/tournament
  * - official_visit: Official campus visit (OV)
  * - unofficial_visit: Unofficial campus visit

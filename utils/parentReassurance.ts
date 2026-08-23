@@ -29,7 +29,7 @@ const REASSURANCE_MESSAGES: ReassuranceMessage[] = [
     id: "junior-late-bloomers",
     title: "Late Bloomers Are Very Common",
     message:
-      "Baseball players develop at different rates. Many elite players weren't heavily recruited until late junior or even senior year. Your athlete still has plenty of time.",
+      "Athletes develop at different rates. Many elite players weren't heavily recruited until late junior or even senior year. Your athlete still has plenty of time.",
     phases: ["junior"],
     icon: "🌱",
   },
@@ -53,7 +53,7 @@ const REASSURANCE_MESSAGES: ReassuranceMessage[] = [
     id: "senior-walkon-path",
     title: "Walk-On is a Legitimate Path",
     message:
-      "Walk-ons become key contributors and future pros. It's a valid way to play college baseball, even at top programs. Don't view it as a fallback.",
+      "Walk-ons become key contributors and future pros. It's a valid way to play in college, even at top programs. Don't view it as a fallback.",
     phases: ["senior"],
     icon: "🚪",
   },

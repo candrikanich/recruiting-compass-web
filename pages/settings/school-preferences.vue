@@ -533,7 +533,7 @@ const TEMPLATES = [
     id: "d1_power",
     name: "D1 Power Conference",
     icon: "🏆",
-    description: "Focus on top-tier D1 programs with competitive baseball",
+    description: "Focus on top-tier D1 programs with competitive athletics",
     preferences: [
       {
         category: "program",

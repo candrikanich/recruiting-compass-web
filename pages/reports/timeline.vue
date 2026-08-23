@@ -552,7 +552,7 @@ const formatEventType = (type: string) => {
 const getEventEmoji = (type: string) => {
   const emojis: Record<string, string> = {
     showcase: "🎯",
-    camp: "⚾",
+    camp: "⛺",
     official_visit: "✈️",
     unofficial_visit: "🚗",
     game: "🏟️",
@@ -582,7 +582,7 @@ const getInteractionEmoji = (type: string) => {
     text: "💬",
     in_person_visit: "👥",
     virtual_meeting: "💻",
-    camp: "⚾",
+    camp: "⛺",
     showcase: "🎯",
     tweet: "𝕏",
     dm: "💭",
