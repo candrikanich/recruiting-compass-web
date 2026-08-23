@@ -16,7 +16,7 @@
           :target-user-id="activeAthleteId ?? undefined"
         />
         <div class="flex-1 space-y-5 w-full">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div class="space-y-5">
             <div>
               <label
                 class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1 whitespace-nowrap"
@@ -72,7 +72,7 @@
                 @change="triggerSave"
                 class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition disabled:opacity-50 appearance-none font-medium text-slate-700"
               >
-                <option :value="undefined">Prefer not to answer</option>
+                <option :value="undefined" disabled>Select…</option>
                 <option
                   v-for="opt in genderOptions"
                   :key="opt.value"
