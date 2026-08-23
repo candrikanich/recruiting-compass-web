@@ -13,9 +13,15 @@ vi.mock("~/server/utils/rules/index", async () => {
   };
 });
 
-vi.mock("~/server/utils/ncaaRecruitingCalendar", () => ({
-  isDeadPeriod: vi.fn(() => false),
-}));
+vi.mock("~/utils/recruitingCalendar", async () => {
+  const actual = await vi.importActual<typeof import("~/utils/recruitingCalendar")>(
+    "~/utils/recruitingCalendar",
+  );
+  return {
+    ...actual,
+    isDeadPeriod: vi.fn(() => false),
+  };
+});
 
 vi.mock("~/server/utils/rules/ruleEngineHelpers", () => ({
   escalateUrgency: vi.fn((u: string) => (u === "low" ? "medium" : "high")),

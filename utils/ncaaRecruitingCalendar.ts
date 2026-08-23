@@ -23,144 +23,11 @@ export interface Milestone {
   description?: string;
 }
 
-/**
- * NCAA Division I Recruiting Calendar for 2026
- * Dead periods = No recruiting contact allowed
- * Quiet periods = Limited contact, no in-person visits
- * Contact/Evaluation = Normal recruiting allowed
- */
-export const RECRUITING_CALENDAR_2026: RecruitingPeriod[] = [
-  // Dead Periods (No contact permitted)
-  {
-    type: "dead",
-    // eslint-disable-next-line local/no-date-only-string-constructor -- pre-existing pattern outside Phase 7's assigned sweep (planning/audit-2026-07-27-findings.md cluster); flagged for a follow-up pass, not fixed here to keep this phase scoped.
-    start: new Date("2026-11-22"),
-    // eslint-disable-next-line local/no-date-only-string-constructor -- pre-existing pattern outside Phase 7's assigned sweep (planning/audit-2026-07-27-findings.md cluster); flagged for a follow-up pass, not fixed here to keep this phase scoped.
-    end: new Date("2026-11-29"),
-    division: "D1",
-    description: "Thanksgiving Break",
-  },
-  {
-    type: "dead",
-    // eslint-disable-next-line local/no-date-only-string-constructor -- pre-existing pattern outside Phase 7's assigned sweep (planning/audit-2026-07-27-findings.md cluster); flagged for a follow-up pass, not fixed here to keep this phase scoped.
-    start: new Date("2026-12-20"),
-    // eslint-disable-next-line local/no-date-only-string-constructor -- pre-existing pattern outside Phase 7's assigned sweep (planning/audit-2026-07-27-findings.md cluster); flagged for a follow-up pass, not fixed here to keep this phase scoped.
-    end: new Date("2027-01-03"),
-    division: "D1",
-    description: "Winter Break",
-  },
-  {
-    type: "dead",
-    // eslint-disable-next-line local/no-date-only-string-constructor -- pre-existing pattern outside Phase 7's assigned sweep (planning/audit-2026-07-27-findings.md cluster); flagged for a follow-up pass, not fixed here to keep this phase scoped.
-    start: new Date("2027-03-15"),
-    // eslint-disable-next-line local/no-date-only-string-constructor -- pre-existing pattern outside Phase 7's assigned sweep (planning/audit-2026-07-27-findings.md cluster); flagged for a follow-up pass, not fixed here to keep this phase scoped.
-    end: new Date("2027-04-10"),
-    division: "D1",
-    description: "Spring Break / Early Season",
-  },
-
-  // Quiet Periods (Limited contact only)
-  {
-    type: "quiet",
-    // eslint-disable-next-line local/no-date-only-string-constructor -- pre-existing pattern outside Phase 7's assigned sweep (planning/audit-2026-07-27-findings.md cluster); flagged for a follow-up pass, not fixed here to keep this phase scoped.
-    start: new Date("2026-09-01"),
-    // eslint-disable-next-line local/no-date-only-string-constructor -- pre-existing pattern outside Phase 7's assigned sweep (planning/audit-2026-07-27-findings.md cluster); flagged for a follow-up pass, not fixed here to keep this phase scoped.
-    end: new Date("2026-09-10"),
-    division: "D1",
-    description: "Dead Period for Freshmen",
-  },
-];
-
-/**
- * Check if a given date falls within a dead period
- * @param date - Date to check
- * @param division - NCAA division (default: D1)
- * @returns true if date is during a dead period
- */
-export function isDeadPeriod(
-  date: Date,
-  division: "D1" | "D2" | "D3" = "D1",
-): boolean {
-  return RECRUITING_CALENDAR_2026.some(
-    (period) =>
-      period.type === "dead" &&
-      period.division === division &&
-      date >= period.start &&
-      date <= period.end,
-  );
-}
-
-/**
- * Check if a given date falls within a quiet period
- * @param date - Date to check
- * @param division - NCAA division (default: D1)
- * @returns true if date is during a quiet period
- */
-export function isQuietPeriod(
-  date: Date,
-  division: "D1" | "D2" | "D3" = "D1",
-): boolean {
-  return RECRUITING_CALENDAR_2026.some(
-    (period) =>
-      period.type === "quiet" &&
-      period.division === division &&
-      date >= period.start &&
-      date <= period.end,
-  );
-}
-
-/**
- * Get the message for a dead period at a given date
- * @param date - Date to check
- * @param division - NCAA division (default: D1)
- * @returns Message describing the dead period, or null if not in dead period
- */
-export function getDeadPeriodMessage(
-  date: Date,
-  division: "D1" | "D2" | "D3" = "D1",
-): string | null {
-  const period = RECRUITING_CALENDAR_2026.find(
-    (p) =>
-      p.type === "dead" &&
-      p.division === division &&
-      date >= p.start &&
-      date <= p.end,
-  );
-
-  if (!period) return null;
-
-  return `Dead period - no recruiting contact permitted per NCAA rules (${period.description})`;
-}
-
-/**
- * Get the next dead period from a given date
- * @param date - Starting date to check from (default: today)
- * @param division - NCAA division (default: D1)
- * @returns Next dead period or null if none found
- */
-export function getNextDeadPeriod(
-  date: Date = new Date(),
-  division: "D1" | "D2" | "D3" = "D1",
-): RecruitingPeriod | null {
-  const futurePeriods = RECRUITING_CALENDAR_2026.filter(
-    (p) => p.type === "dead" && p.division === division && p.start >= date,
-  );
-
-  if (futurePeriods.length === 0) return null;
-
-  return futurePeriods.sort((a, b) => a.start.getTime() - b.start.getTime())[0];
-}
-
-/**
- * Get all recruiting periods for a division
- * @param division - NCAA division (default: D1)
- * @returns Array of recruiting periods
- */
-export function getRecruitingCalendar(
-  division: "D1" | "D2" | "D3" = "D1",
-): RecruitingPeriod[] {
-  return RECRUITING_CALENDAR_2026.filter((p) => p.division === division);
-}
+// NOTE: dead/quiet period data (RECRUITING_CALENDAR_2026) and the queries
+// over it (isDeadPeriod/isQuietPeriod/getDeadPeriodMessage/getNextDeadPeriod/
+// getRecruitingCalendar) were sportless and D1-only; they now live sport-aware
+// in ~/utils/recruitingCalendar (see resolver.ts + calendarData.ts). Only the
+// still-generic milestone lists and helpers below remain here.
 
 // ============================================================================
 // MILESTONE CALENDAR - Important dates for recruiting timeline
@@ -264,6 +131,10 @@ export const ACT_TEST_DATES_2026: Milestone[] = [
   },
 ];
 
+// NOTE: pre-existing division-value bug, tracked separately — these entries
+// use "DI" (not the "D1" value everything else in this file uses), so
+// division-scoped filters silently exclude them. Not fixed here; fixing would
+// surface previously-hidden milestones, an unrelated behavior change.
 export const NCAA_DEADLINES_2026: Milestone[] = [
   {
     date: "2026-04-01",
@@ -340,35 +211,10 @@ export const COLLEGE_APPLICATION_DEADLINES_2026: Milestone[] = [
   },
 ];
 
-export const BASEBALL_SIGNING_PERIODS_2026: Milestone[] = [
-  {
-    date: "2026-11-11",
-    title: "Early Signing Period Begins",
-    type: "signing",
-    division: "D1",
-    description: "D1 early national signing period (Nov 11-13, 2026)",
-  },
-  {
-    date: "2026-11-13",
-    title: "Early Signing Period Ends",
-    type: "signing",
-    division: "D1",
-  },
-  {
-    date: "2027-02-03",
-    title: "Regular Signing Period Begins",
-    type: "signing",
-    division: "D1",
-    description: "D1 regular signing period begins",
-  },
-  {
-    date: "2027-04-15",
-    title: "Regular Signing Period Ends",
-    type: "signing",
-    division: "D1",
-    description: "D1 regular signing period ends",
-  },
-];
+// Sport signing-period milestones (e.g. baseball's early/regular signing
+// periods) are no longer generic — they live on each sport's own
+// `SportCalendar.milestones` in ~/utils/recruitingCalendar/calendarData.ts
+// (see MBA) and are merged in sport-aware by getUpcomingMilestones there.
 
 export const ALL_MILESTONES: Milestone[] = [
   ...SAT_TEST_DATES_2026,
@@ -376,13 +222,17 @@ export const ALL_MILESTONES: Milestone[] = [
   ...NCAA_DEADLINES_2026,
   ...NAIA_DEADLINES_2026,
   ...COLLEGE_APPLICATION_DEADLINES_2026,
-  ...BASEBALL_SIGNING_PERIODS_2026,
 ];
 
 /**
  * Get upcoming milestones filtered by date, phase, and division
  * @param params - Configuration object
  * @returns Array of upcoming milestones, sorted by date
+ *
+ * Superseded by the sport-aware `getUpcomingMilestones` in
+ * `~/utils/recruitingCalendar/resolver.ts` — this legacy, non-sport-aware
+ * version is retained only because its own existing tests still cover it.
+ * Retire in a follow-up once those tests are ported/removed.
  */
 export function getUpcomingMilestones(params: {
   currentDate?: Date;

@@ -124,6 +124,15 @@
             @generate-packet="handleGeneratePacket"
           />
 
+          <!-- Sport-aware NCAA recruiting calendar (contact periods, key
+               dates), same sport/gender source as the dead-period banner
+               above. -->
+          <RecruitingCalendar
+            :graduation-year="getPlayerDetails()?.graduation_year"
+            :sport="athleteSport"
+            :gender="athleteGender"
+          />
+
           <!-- Dynamic right column widgets -->
           <template v-for="entry in rightColumnVisible" :key="entry.id">
             <Suspense>
@@ -168,7 +177,7 @@ import { useRecruitingPacket } from "~/composables/useRecruitingPacket";
 import { useDashboardData } from "~/composables/useDashboardData";
 import { useDashboardCalculations } from "~/composables/useDashboardCalculations";
 import { usePreferenceManager } from "~/composables/usePreferenceManager";
-import { getDeadPeriodMessage } from "~/utils/ncaaRecruitingCalendar";
+import { getDeadPeriodMessage, NO_SPORT_FALLBACK, type AppSport } from "~/utils/recruitingCalendar";
 import { WIDGET_SIZES } from "~/types/models";
 import type { WidgetId, WidgetEntry } from "~/types/models";
 import ParentContextBanner from "~/components/Dashboard/ParentContextBanner.vue";
@@ -179,6 +188,7 @@ import DashboardSuggestions from "~/components/Dashboard/DashboardSuggestions.vu
 import DashboardRecruitingPacketWidget from "~/components/Dashboard/RecruitingPacketWidget.vue";
 import DashboardContactFrequencyWidget from "~/components/Dashboard/ContactFrequencyWidget.vue";
 import DashboardAthleteActivityWidget from "~/components/Dashboard/AthleteActivityWidget.vue";
+import RecruitingCalendar from "~/components/Dashboard/RecruitingCalendar.vue";
 
 definePageMeta({
   middleware: "auth",
@@ -186,8 +196,19 @@ definePageMeta({
 
 const logger = createClientLogger("dashboard");
 
-const { getDashboardLayout, dashboardPrefs } = usePreferenceManager();
+const { getDashboardLayout, dashboardPrefs, playerPrefs, getPlayerDetails } =
+  usePreferenceManager();
 const dashboardLayout = computed(() => getDashboardLayout());
+
+// Athlete's sport/gender for sport-aware NCAA recruiting-calendar rules.
+// Mirrors the ruleEngine fallback (server/utils/ruleEngine.ts): an unset
+// sport never falsely reports a dead period.
+const athleteSport = computed<AppSport>(
+  () => (getPlayerDetails()?.primary_sport as AppSport | undefined) ?? NO_SPORT_FALLBACK,
+);
+const athleteGender = computed<string | null>(
+  () => getPlayerDetails()?.gender ?? null,
+);
 
 const { logout } = useAuth();
 const { showToast } = useAppToast();
@@ -225,11 +246,15 @@ const {
 const deadPeriodMessage = computed((): string | null => {
   if (!allSchools.value.length) return null;
   const now = new Date();
+  const sport = athleteSport.value;
+  const opts = { gender: athleteGender.value };
   const allInDeadPeriod = allSchools.value.every((school) => {
     const div = (school.division as string) || "D1";
-    return !!getDeadPeriodMessage(now, div as "D1" | "D2" | "D3");
+    return !!getDeadPeriodMessage(now, sport, div as "D1" | "D2" | "D3", opts);
   });
-  return allInDeadPeriod ? (getDeadPeriodMessage(now, "D1") ?? null) : null;
+  return allInDeadPeriod
+    ? (getDeadPeriodMessage(now, sport, "D1", opts) ?? null)
+    : null;
 });
 
 const suggestionsMoreCount = computed(
@@ -510,6 +535,6 @@ watch(
 );
 
 onMounted(async () => {
-  await dashboardPrefs.loadPreferences();
+  await Promise.all([dashboardPrefs.loadPreferences(), playerPrefs.loadPreferences()]);
 });
 </script>

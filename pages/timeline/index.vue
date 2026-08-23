@@ -162,6 +162,11 @@
               :collapsed="milestonesCollapsed"
               @toggle="milestonesCollapsed = !milestonesCollapsed"
             />
+            <RecruitingCalendar
+              :graduation-year="athleteGraduationYear"
+              :sport="athleteSport"
+              :gender="athleteGender"
+            />
             <CommonWorries
               :worries="commonWorries"
               :collapsed="worriesCollapsed"
@@ -223,11 +228,13 @@ import WhatMattersNow from "~/components/Timeline/WhatMattersNow.vue";
 import CommonWorries from "~/components/Timeline/CommonWorries.vue";
 import WhatNotToStress from "~/components/Timeline/WhatNotToStress.vue";
 import UpcomingMilestones from "~/components/Timeline/UpcomingMilestones.vue";
+import RecruitingCalendar from "~/components/Dashboard/RecruitingCalendar.vue";
 import { getWhatMattersNow } from "~/utils/whatMattersNow";
 import { getCommonWorries } from "~/utils/parentWorries";
 import { getReassuranceMessages } from "~/utils/parentReassurance";
 import { createClientLogger } from "~/utils/logger";
-import { getUpcomingMilestones } from "~/utils/ncaaRecruitingCalendar";
+import { getUpcomingMilestones, NO_SPORT_FALLBACK, type AppSport } from "~/utils/recruitingCalendar";
+import { usePreferenceManager } from "~/composables/usePreferenceManager";
 
 const logger = createClientLogger("Timeline");
 
@@ -244,6 +251,7 @@ const {
   fetchTasksWithStatus,
 } = useTasks();
 const { showToast } = useAppToast();
+const { getPlayerDetails, playerPrefs } = usePreferenceManager();
 const {
   currentPhase,
   milestoneProgress,
@@ -329,12 +337,26 @@ const reassuranceMessages = computed(() =>
   getReassuranceMessages(currentPhase.value),
 );
 
+// Mirrors the ruleEngine/dashboard fallback: an unset sport never falsely
+// surfaces sport-specific windows.
+const athleteSport = computed<AppSport>(
+  () => (getPlayerDetails()?.primary_sport as AppSport | undefined) ?? NO_SPORT_FALLBACK,
+);
+const athleteGender = computed<string | null>(
+  () => getPlayerDetails()?.gender ?? null,
+);
+const athleteGraduationYear = computed(
+  () => getPlayerDetails()?.graduation_year,
+);
+
 const upcomingMilestones = computed(() =>
   getUpcomingMilestones({
     currentDate: new Date(),
-    phase: currentPhase.value,
-    graduationYear: 2027, // TODO: Get from user profile via graduation_year field
+    sport: athleteSport.value,
+    division: "D1",
+    graduationYear: athleteGraduationYear.value,
     limit: 5,
+    opts: { gender: athleteGender.value },
   }),
 );
 
@@ -434,7 +456,12 @@ const getStatusColorClass = (label: StatusLabel): string => {
 
 // Lifecycle
 onMounted(async () => {
-  await Promise.all([fetchTasksWithStatus(), fetchPhase(), fetchStatusScore()]);
+  await Promise.all([
+    fetchTasksWithStatus(),
+    fetchPhase(),
+    fetchStatusScore(),
+    playerPrefs.loadPreferences(),
+  ]);
   initialLoadComplete.value = true;
   initializeExpanded();
 });

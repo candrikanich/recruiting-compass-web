@@ -10,6 +10,7 @@ import { useLogger } from "~/server/utils/logger";
 import { RuleEngine } from "~/server/utils/ruleEngine";
 import { requireAuth, assertNotParent } from "~/server/utils/auth";
 import type { RuleContext } from "~/server/utils/rules/index";
+import type { AppSport } from "~/utils/recruitingCalendar";
 import { calculateCurrentGrade } from "~/utils/gradeHelpers";
 import { interactionGapRule } from "~/server/utils/rules/interactionGap";
 import { missingVideoRule } from "~/server/utils/rules/missingVideo";
@@ -92,6 +93,14 @@ export default defineEventHandler(async (event) => {
     const gradeLevel = graduationYear
       ? calculateCurrentGrade(graduationYear)
       : 9;
+    const sport =
+      typeof playerData?.primary_sport === "string"
+        ? (playerData.primary_sport as AppSport)
+        : undefined;
+    const gender =
+      typeof playerData?.gender === "string"
+        ? (playerData.gender as string)
+        : null;
 
     const context: RuleContext = {
       athleteId,
@@ -102,6 +111,8 @@ export default defineEventHandler(async (event) => {
       athleteTasks: athleteTasks.data || [],
       videos: videos.data || [],
       events: events.data || [],
+      sport,
+      gender,
     };
 
     const engine = new RuleEngine([
