@@ -1,9 +1,18 @@
 // Run with: npx tsx scripts/seed-system-calendar.ts
+//
+// TODO(sport-aware-calendar): `system_calendar` is not queried anywhere in
+// app code (grepped 2026-08-23 — only this script writes to it; the table
+// exists from migration 20260318000001 but has no reader). This script is
+// effectively orphaned. It previously seeded ONLY baseball's D1 periods
+// (hardcoded `sport: "baseball"`), so this rewire preserves that exact
+// scope — pulling from the new sport-aware module's `D1_CALENDARS.MBA`
+// (baseball's D1 calendar) instead of the removed `RECRUITING_CALENDAR_2026`
+// constant — rather than inventing a new all-sports seeding scheme. If a
+// future task wires a reader for `system_calendar`, revisit whether it
+// should seed every sport's D1 calendar (`D1_CALENDARS`) instead.
 import { createClient } from "@supabase/supabase-js";
-import {
-  RECRUITING_CALENDAR_2026,
-  ALL_MILESTONES,
-} from "../server/utils/ncaaRecruitingCalendar";
+import { ALL_MILESTONES } from "../server/utils/ncaaRecruitingCalendar";
+import { D1_CALENDARS } from "../utils/recruitingCalendar";
 
 const supabase = createClient(
   process.env.NUXT_PUBLIC_SUPABASE_URL!,
@@ -14,6 +23,10 @@ const supabase = createClient(
 function periodCategory(type: string): string {
   const map: Record<string, string> = {
     dead: "dead_period",
+    // recruiting_shutdown is the stricter dead-period variant (no calls/
+    // texts/correspondence either) — buckets with "dead" here, same as
+    // ruleEngine's contact-gating treats them as equally blocking.
+    recruiting_shutdown: "dead_period",
     quiet: "quiet_period",
     contact: "contact_period",
     evaluation: "evaluation_period",
@@ -45,15 +58,17 @@ function normalizeDivision(div: string | undefined | null): string | null {
   return map[div] ?? null; // ALL, NAIA, JUCO → null
 }
 
-const periodRows = RECRUITING_CALENDAR_2026.map((p) => ({
+// Baseball's D1 calendar only — matches this script's pre-existing scope
+// (see TODO above). Periods carry no per-period division in the new module
+// (division is a property of which calendar you resolved, not the period
+// itself) — MBA is D1-only, so it's hardcoded here same as before.
+const periodRows = D1_CALENDARS.MBA.periods.map((p) => ({
   category: periodCategory(p.type),
   sport: "baseball",
-  division: normalizeDivision(p.division),
+  division: normalizeDivision("D1"),
   label: p.description,
-  // eslint-disable-next-line local/no-date-only-string-constructor -- pre-existing pattern outside Phase 7's assigned sweep (planning/audit-2026-07-27-findings.md cluster); flagged for a follow-up pass, not fixed here to keep this phase scoped.
-  start_date: p.start.toISOString().split("T")[0],
-  // eslint-disable-next-line local/no-date-only-string-constructor -- pre-existing pattern outside Phase 7's assigned sweep (planning/audit-2026-07-27-findings.md cluster); flagged for a follow-up pass, not fixed here to keep this phase scoped.
-  end_date: p.end.toISOString().split("T")[0],
+  start_date: p.start,
+  end_date: p.end,
   season_year: 2026,
 }));
 

@@ -1,6 +1,7 @@
 import type { SuggestionData, Suggestion } from "~/types/timeline";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "~/types/database";
+import type { AppSport } from "~/utils/recruitingCalendar";
 
 export interface RuleContext {
   athleteId: string;
@@ -11,6 +12,15 @@ export interface RuleContext {
   athleteTasks: unknown[];
   videos: unknown[];
   events: unknown[];
+  /**
+   * The athlete's primary sport, used to resolve which NCAA recruiting
+   * calendar governs contact-period dead-period gating in the rule engine.
+   * Optional (falls back to the generic "Other" calendar in ruleEngine.ts)
+   * so existing sport-agnostic rule tests don't need updating.
+   */
+  sport?: AppSport;
+  /** Needed to resolve gender-split sport calendars (e.g. Basketball, Soccer). */
+  gender?: string | null;
 }
 
 export interface Rule {

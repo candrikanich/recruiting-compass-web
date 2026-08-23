@@ -5,7 +5,7 @@ const logger = createLogger("rule-engine");
 import { findExistingSuggestion } from "./rules/index";
 import type { SuggestionData, Suggestion, Urgency } from "~/types/timeline";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { isDeadPeriod } from "./ncaaRecruitingCalendar";
+import { isDeadPeriod, type AppSport } from "~/utils/recruitingCalendar";
 import { escalateUrgency } from "./rules/ruleEngineHelpers";
 
 const CONTACT_RULES = [
@@ -58,6 +58,14 @@ export class RuleEngine {
     const succeededRuleTypes: string[] = [];
     const now = new Date();
 
+    // Sport-aware NCAA calendars are keyed by AppSport; a context built
+    // without a sport (legacy callers, sport-agnostic rule tests) falls back
+    // to "Tennis", which has no dedicated NCAA sub-calendar and resolves to
+    // the generic "Other" track — the least-restrictive, lowest-surprise
+    // default (matches the D2/D3 fallback calendars' own choice).
+    const sport: AppSport = context.sport ?? "Tennis";
+    const gender = context.gender;
+
     for (const rule of this.rules) {
       try {
         // Skip contact-related rules during NCAA dead periods
@@ -68,7 +76,7 @@ export class RuleEngine {
               const school = s as Record<string, unknown>;
               const division = ((school.division as string | null) || "D1") as
                 "D1" | "D2" | "D3";
-              return isDeadPeriod(now, division);
+              return isDeadPeriod(now, sport, division, { gender });
             },
           );
 
