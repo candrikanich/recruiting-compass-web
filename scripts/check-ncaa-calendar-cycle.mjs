@@ -69,7 +69,6 @@ async function main() {
   );
 
   const found = results.filter((r) => r.status === 200);
-  const missing = results.filter((r) => r.status !== 200);
 
   console.log(`NCAA calendar cycle check — season ${season}`);
   console.log(`  transcribed season: ${CURRENT_SEASON}`);
