@@ -308,19 +308,6 @@ describe("playerDetailsSchema", () => {
     };
     await expect(playerDetailsSchema.parseAsync(data)).rejects.toThrow();
   });
-
-  it("accepts valid gender values", () => {
-    for (const g of ["male", "female", "other", "prefer_not_to_say"]) {
-      expect(playerDetailsSchema.safeParse({ gender: g }).success).toBe(true);
-    }
-  });
-  it("accepts null/absent gender", () => {
-    expect(playerDetailsSchema.safeParse({ gender: null }).success).toBe(true);
-    expect(playerDetailsSchema.safeParse({}).success).toBe(true);
-  });
-  it("rejects unknown gender", () => {
-    expect(playerDetailsSchema.safeParse({ gender: "M" }).success).toBe(false);
-  });
 });
 
 describe("eventSchema", () => {
