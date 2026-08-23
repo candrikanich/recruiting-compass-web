@@ -51,6 +51,13 @@ export function usePlayerDetailsForm() {
     { value: "large" as const, label: "Large (25K+)" },
   ];
 
+  const GENDER_OPTIONS = [
+    { value: "male" as const, label: "Male" },
+    { value: "female" as const, label: "Female" },
+    { value: "other" as const, label: "Other" },
+    { value: "prefer_not_to_say" as const, label: "Prefer not to say" },
+  ];
+
   const COST_SENSITIVITY_OPTIONS = [
     { value: "high" as const, label: "High" },
     { value: "medium" as const, label: "Medium" },
@@ -62,6 +69,7 @@ export function usePlayerDetailsForm() {
 
   const form = ref<PlayerDetails>({
     graduation_year: undefined,
+    gender: undefined,
     club_team: "",
     positions: [],
     bats: undefined,
@@ -435,6 +443,7 @@ export function usePlayerDetailsForm() {
     THROWS_OPTIONS,
     CAMPUS_SIZE_OPTIONS,
     COST_SENSITIVITY_OPTIONS,
+    GENDER_OPTIONS,
     homeState,
     load,
   };

@@ -294,6 +294,7 @@ export const offerSchema = z
 export const playerDetailsSchema = z.object({
   graduation_year: graduationYearSchema,
   positions: z.array(z.string()).default([]),
+  gender: z.enum(["male", "female", "other", "prefer_not_to_say"]).nullable().optional(),
   // Per-sport athlete attributes (registry: utils/attributes/canonical.ts).
   bats: z.enum(["L", "R", "S"]).nullable().optional(),
   throws: z.enum(["L", "R"]).nullable().optional(),

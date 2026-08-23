@@ -21,6 +21,7 @@ interface PendingPlayerDetails {
   graduationYear?: unknown;
   sport?: unknown;
   position?: unknown;
+  gender?: unknown;
 }
 
 interface HydrationLogger {
@@ -82,6 +83,7 @@ async function hydratePlayerPreferences(
       typeof pending.sport === "string" ? pending.sport : undefined,
     primary_position: position,
     positions: position ? [position] : undefined,
+    gender: typeof pending.gender === "string" ? pending.gender : undefined,
   };
 
   const merged = { ...existing };

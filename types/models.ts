@@ -366,6 +366,7 @@ export interface PlayerDetails {
   nces_school_id?: string; // NCES school identifier; null if free-text entry was used
   club_team?: string;
   positions?: string[];
+  gender?: "male" | "female" | "other" | "prefer_not_to_say";
   // Per-sport athlete attributes (registry: utils/attributes/canonical.ts).
   // Flat keys in user_preferences.data; each shown only for its sport(s).
   bats?: "L" | "R" | "S";
