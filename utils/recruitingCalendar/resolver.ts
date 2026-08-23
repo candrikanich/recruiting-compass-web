@@ -37,12 +37,6 @@ const GENDER_SPLIT_SPORTS: Partial<Record<AppSport, { men: NcaaCalendarKey; wome
   Wrestling: { men: "OTHER_MWRESTLING", women: "OTHER_WWRESTLING" },
 };
 
-/**
- * App sports with no published NCAA recruiting calendar AND no sport-specific
- * windows in the "Other" bundle — always the generic "Other" default.
- */
-const NO_CALENDAR_SPORTS: ReadonlySet<AppSport> = new Set<AppSport>(["Tennis", "Water Polo"]);
-
 const isMen = (gender: string | null | undefined): boolean => gender !== "female";
 
 /**
@@ -73,9 +67,8 @@ export function resolveCalendarKey(sport: AppSport, opts?: ResolveCalendarKeyOpt
     return single;
   }
 
-  if (NO_CALENDAR_SPORTS.has(sport)) {
-    return "Other";
-  }
-
+  // Any remaining AppSport (currently: Tennis, Water Polo) has no published
+  // NCAA recruiting calendar and no sport-specific windows in the "Other"
+  // bundle — falls to the generic "Other" default.
   return "Other";
 }

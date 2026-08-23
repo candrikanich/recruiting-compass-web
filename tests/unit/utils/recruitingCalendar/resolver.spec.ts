@@ -20,6 +20,17 @@ describe("resolveCalendarKey", () => {
     expect(resolveCalendarKey("Golf", { gender: "male" })).toBe("MGO");
     expect(resolveCalendarKey("Golf", { gender: "female" })).toBe("Other");
   });
+  it("golf: defaults to men's (MGO) for null/undefined-opts/other/prefer_not_to_say — locked, do not change", () => {
+    expect(resolveCalendarKey("Golf", { gender: null })).toBe("MGO");
+    expect(resolveCalendarKey("Golf")).toBe("MGO");
+    expect(resolveCalendarKey("Golf", { gender: "other" })).toBe("MGO");
+    expect(resolveCalendarKey("Golf", { gender: "prefer_not_to_say" })).toBe("MGO");
+    expect(resolveCalendarKey("Golf", { gender: "female" })).toBe("Other");
+  });
+  it("lacrosse: covers the male and no-opts branches (only WLA/female was previously tested)", () => {
+    expect(resolveCalendarKey("Lacrosse", { gender: "male" })).toBe("MLA");
+    expect(resolveCalendarKey("Lacrosse")).toBe("MLA");
+  });
   it("football subdivision toggle, default FBS", () => {
     expect(resolveCalendarKey("Football")).toBe("FBS");
     expect(resolveCalendarKey("Football", { footballSubdivision: "FCS" })).toBe("FCS");

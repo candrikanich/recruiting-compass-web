@@ -83,20 +83,21 @@ describe("D2/D3 fallbacks", () => {
 });
 
 describe("Other sub-calendars (per-sport bundle expansion)", () => {
-  it("each new sub-key has more/different periods than the generic Other default", () => {
-    const subKeys = [
-      "OTHER_MSOCCER",
-      "OTHER_WSOCCER",
-      "OTHER_SWIM",
-      "OTHER_MICEHOCKEY",
-      "OTHER_WICEHOCKEY",
-      "OTHER_ROWING",
-      "OTHER_FIELDHOCKEY",
-      "OTHER_MWRESTLING",
-      "OTHER_WWRESTLING",
-    ] as const;
-    for (const k of subKeys) {
+  const SUB_KEYS = [
+    "OTHER_MSOCCER",
+    "OTHER_WSOCCER",
+    "OTHER_SWIM",
+    "OTHER_MICEHOCKEY",
+    "OTHER_WICEHOCKEY",
+    "OTHER_ROWING",
+    "OTHER_FIELDHOCKEY",
+    "OTHER_MWRESTLING",
+    "OTHER_WWRESTLING",
+  ] as const;
+  it("each new sub-key's periods differ from the generic Other default (not just a copy/fallback)", () => {
+    for (const k of SUB_KEYS) {
       expect(D1_CALENDARS[k].periods.length, k).toBeGreaterThan(0);
+      expect(D1_CALENDARS[k].periods, k).not.toEqual(D1_CALENDARS.Other.periods);
     }
   });
   it("soccer sub-calendars are gender-distinct", () => {

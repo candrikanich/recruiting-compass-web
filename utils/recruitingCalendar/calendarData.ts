@@ -1236,9 +1236,13 @@ const OTHER_WWRESTLING: SportCalendar = {
       confidence: "HIGH",
     },
     {
+      // Fragment dates this 2026 but flags the year as ambiguous ("could be
+      // read as generic annual recurrence"); rolled to 2027 for consistency
+      // with every other July period in this file (WLA, MLA, OTHER_WSOCCER)
+      // and because the 2026-27 season calendar runs Aug 2026 -> Jul 2027.
       type: "dead",
-      start: "2026-07-26",
-      end: "2026-08-01",
+      start: "2027-07-26",
+      end: "2027-08-01",
       description:
         "Dead Period — Monday before the National Wrestling Coaches Association Convention through the day of adjournment of the convention",
       confidence: "MEDIUM",
