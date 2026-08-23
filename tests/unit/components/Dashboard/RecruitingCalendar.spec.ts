@@ -96,4 +96,54 @@ describe("RecruitingCalendar Component", () => {
     });
     expect(wrapper.find("[data-testid='subdivision-toggle-fbs']").exists()).toBe(false);
   });
+
+  describe("L6a: compliance disclaimer", () => {
+    it("renders the disclaimer with the resolved calendar's verifiedOn date and a link to its source PDF", () => {
+      const wrapper = mount(RecruitingCalendar, {
+        props: { graduationYear: 2028, sport: "Baseball" },
+      });
+
+      const disclaimer = wrapper.find("[data-testid='calendar-disclaimer']");
+      expect(disclaimer.exists()).toBe(true);
+      expect(disclaimer.text()).toContain("Based on NCAA 2026-27");
+      expect(disclaimer.text()).toContain("confirm with your compliance office");
+      // Baseball's own resolved calendar's verifiedOn, not a hardcoded stub.
+      expect(disclaimer.text()).toContain("2026-08-23");
+
+      const link = disclaimer.find("a");
+      expect(link.exists()).toBe(true);
+      expect(link.attributes("href")).toBe(
+        "https://ncaaorg.s3.amazonaws.com/compliance/recruiting/calendar/2026-27/2026-27D1Rec_MBARecruitingCalendar.pdf",
+      );
+      expect(link.attributes("target")).toBe("_blank");
+      expect(link.attributes("rel")).toBe("noopener");
+    });
+  });
+
+  describe("L6b: staleness banner", () => {
+    it("does not render before the season end", () => {
+      const wrapper = mount(RecruitingCalendar, {
+        props: {
+          graduationYear: 2028,
+          sport: "Baseball",
+          now: new Date("2027-01-01"),
+        },
+      });
+      expect(wrapper.find("[data-testid='calendar-staleness-banner']").exists()).toBe(false);
+    });
+
+    it("renders once `now` is past the season end and no newer data exists", () => {
+      const wrapper = mount(RecruitingCalendar, {
+        props: {
+          graduationYear: 2028,
+          sport: "Baseball",
+          now: new Date("2027-08-01"),
+        },
+      });
+      const banner = wrapper.find("[data-testid='calendar-staleness-banner']");
+      expect(banner.exists()).toBe(true);
+      expect(banner.text()).toContain("may be out of date");
+      expect(banner.text()).toContain("verify with your compliance office");
+    });
+  });
 });

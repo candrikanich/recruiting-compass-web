@@ -162,6 +162,11 @@
               :collapsed="milestonesCollapsed"
               @toggle="milestonesCollapsed = !milestonesCollapsed"
             />
+            <RecruitingCalendar
+              :graduation-year="athleteGraduationYear"
+              :sport="athleteSport"
+              :gender="athleteGender"
+            />
             <CommonWorries
               :worries="commonWorries"
               :collapsed="worriesCollapsed"
@@ -223,6 +228,7 @@ import WhatMattersNow from "~/components/Timeline/WhatMattersNow.vue";
 import CommonWorries from "~/components/Timeline/CommonWorries.vue";
 import WhatNotToStress from "~/components/Timeline/WhatNotToStress.vue";
 import UpcomingMilestones from "~/components/Timeline/UpcomingMilestones.vue";
+import RecruitingCalendar from "~/components/Dashboard/RecruitingCalendar.vue";
 import { getWhatMattersNow } from "~/utils/whatMattersNow";
 import { getCommonWorries } from "~/utils/parentWorries";
 import { getReassuranceMessages } from "~/utils/parentReassurance";

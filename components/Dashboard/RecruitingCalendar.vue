@@ -15,6 +15,31 @@
       <div class="text-sm text-slate-600">Class of {{ graduationYear }}</div>
     </div>
 
+    <!-- L6b: staleness banner — only when `now` is past the season this
+         dataset covers and no newer season data has been added. -->
+    <div
+      v-if="isStale"
+      data-testid="calendar-staleness-banner"
+      class="rounded-xl p-3 mb-4 bg-amber-50 border border-amber-200 text-sm text-amber-900"
+    >
+      This calendar may be out of date — verify with your compliance office.
+    </div>
+
+    <!-- L6a: compliance disclaimer — cites the exact NCAA PDF this data was
+         transcribed from and when it was last verified against it. -->
+    <p data-testid="calendar-disclaimer" class="text-xs text-slate-500 mb-4">
+      Based on NCAA {{ SEASON }}, verified {{ resolvedCalendar.verifiedOn }} —
+      confirm with your compliance office.
+      <a
+        :href="resolvedCalendar.source"
+        target="_blank"
+        rel="noopener"
+        class="text-blue-600 hover:text-blue-700 underline"
+      >
+        View official calendar
+      </a>
+    </p>
+
     <!-- Self-select toggle: gender-split sports / Football subdivision, only
          shown when the stored profile doesn't already resolve one. -->
     <div v-if="showGenderToggle" class="flex items-center gap-2 mb-4">
@@ -187,17 +212,28 @@ interface Props {
   gender?: string | null;
   division?: Division;
   footballSubdivision?: "FBS" | "FCS";
+  /** Injectable "now" for the staleness check (L6b) — defaults to real now. */
+  now?: Date;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   graduationYear: 2028,
-  // "Baseball" preserves this component's pre-sport-aware behavior for any
-  // caller that hasn't been wired to pass the athlete's real sport yet.
-  sport: "Baseball",
+  // "Tennis" is this codebase's neutral sport fallback (no published NCAA
+  // recruiting calendar of its own) for any caller not yet wired to pass the
+  // athlete's real sport.
+  sport: "Tennis",
   gender: null,
   division: "D1",
   footballSubdivision: "FBS",
+  now: () => new Date(),
 });
+
+// L6a/L6b: the 2026-27 NCAA calendar dataset this component reads (see
+// utils/recruitingCalendar/calendarData.ts `VERIFIED_ON`/`BUCKET`) and the
+// date it stops being current. Task 7 formalizes a shared `SEASON` const;
+// this local copy is deliberately temporary until that lands.
+const SEASON = "2026-27";
+const SEASON_END = new Date("2027-07-31T23:59:59Z");
 
 const NEUTRAL_GENDERS = new Set(["other", "prefer_not_to_say", null, undefined]);
 
@@ -312,11 +348,22 @@ const upcomingDates = computed<RecruitingDate[]>(() => {
   });
 });
 
+// The resolved SportCalendar this sport/division/gender/subdivision
+// combination reads from — shared by the current-period lookup and the L6a
+// disclaimer (source PDF + verifiedOn).
+const resolvedCalendar = computed(() =>
+  getSportCalendar(props.sport, props.division, resolverOpts.value),
+);
+
+// L6b: stale once `now` is past the season this dataset covers. There is
+// currently only one dataset (2026-27), so "no newer data exists" always
+// holds — revisit this check if/when a second season's data is added.
+const isStale = computed(() => props.now.getTime() > SEASON_END.getTime());
+
 // Current period: whichever of this sport's resolved calendar periods covers
 // today, if any.
 const currentPeriod = computed<CurrentPeriodDisplay | null>(() => {
-  const calendar = getSportCalendar(props.sport, props.division, resolverOpts.value);
-  const period = calendar.periods.find(
+  const period = resolvedCalendar.value.periods.find(
     (p) => today >= parseLocalDateOnly(p.start) && today < exclusiveEndOfDay(p.end),
   );
   if (!period) return null;

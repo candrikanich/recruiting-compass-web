@@ -124,6 +124,15 @@
             @generate-packet="handleGeneratePacket"
           />
 
+          <!-- Sport-aware NCAA recruiting calendar (contact periods, key
+               dates), same sport/gender source as the dead-period banner
+               above. -->
+          <RecruitingCalendar
+            :graduation-year="getPlayerDetails()?.graduation_year"
+            :sport="athleteSport"
+            :gender="athleteGender"
+          />
+
           <!-- Dynamic right column widgets -->
           <template v-for="entry in rightColumnVisible" :key="entry.id">
             <Suspense>
@@ -179,6 +188,7 @@ import DashboardSuggestions from "~/components/Dashboard/DashboardSuggestions.vu
 import DashboardRecruitingPacketWidget from "~/components/Dashboard/RecruitingPacketWidget.vue";
 import DashboardContactFrequencyWidget from "~/components/Dashboard/ContactFrequencyWidget.vue";
 import DashboardAthleteActivityWidget from "~/components/Dashboard/AthleteActivityWidget.vue";
+import RecruitingCalendar from "~/components/Dashboard/RecruitingCalendar.vue";
 
 definePageMeta({
   middleware: "auth",
