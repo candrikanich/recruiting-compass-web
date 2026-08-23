@@ -15,6 +15,72 @@
       <div class="text-sm text-slate-600">Class of {{ graduationYear }}</div>
     </div>
 
+    <!-- Self-select toggle: gender-split sports / Football subdivision, only
+         shown when the stored profile doesn't already resolve one. -->
+    <div v-if="showGenderToggle" class="flex items-center gap-2 mb-4">
+      <span class="text-xs font-medium text-slate-500">Calendar:</span>
+      <div class="inline-flex rounded-lg border border-slate-200 p-0.5 bg-slate-50">
+        <button
+          type="button"
+          data-testid="gender-toggle-men"
+          :class="[
+            'px-3 py-1 text-xs font-medium rounded-md transition-colors',
+            genderOverride === 'male'
+              ? 'bg-white text-slate-900 shadow-sm'
+              : 'text-slate-500 hover:text-slate-700',
+          ]"
+          @click="genderOverride = 'male'"
+        >
+          Men's
+        </button>
+        <button
+          type="button"
+          data-testid="gender-toggle-women"
+          :class="[
+            'px-3 py-1 text-xs font-medium rounded-md transition-colors',
+            genderOverride === 'female'
+              ? 'bg-white text-slate-900 shadow-sm'
+              : 'text-slate-500 hover:text-slate-700',
+          ]"
+          @click="genderOverride = 'female'"
+        >
+          Women's
+        </button>
+      </div>
+    </div>
+
+    <div v-if="showSubdivisionToggle" class="flex items-center gap-2 mb-4">
+      <span class="text-xs font-medium text-slate-500">Calendar:</span>
+      <div class="inline-flex rounded-lg border border-slate-200 p-0.5 bg-slate-50">
+        <button
+          type="button"
+          data-testid="subdivision-toggle-fbs"
+          :class="[
+            'px-3 py-1 text-xs font-medium rounded-md transition-colors',
+            subdivisionOverride === 'FBS'
+              ? 'bg-white text-slate-900 shadow-sm'
+              : 'text-slate-500 hover:text-slate-700',
+          ]"
+          @click="subdivisionOverride = 'FBS'"
+        >
+          FBS
+        </button>
+        <button
+          type="button"
+          data-testid="subdivision-toggle-fcs"
+          :class="[
+            'px-3 py-1 text-xs font-medium rounded-md transition-colors',
+            subdivisionOverride === 'FCS'
+              ? 'bg-white text-slate-900 shadow-sm'
+              : 'text-slate-500 hover:text-slate-700',
+          ]"
+          @click="subdivisionOverride = 'FCS'"
+        >
+          FCS
+        </button>
+      </div>
+    </div>
+
     <!-- Current Period Highlight -->
     <div
       v-if="currentPeriod"
@@ -59,6 +125,13 @@
           <p class="text-xs text-slate-500">{{ formatDate(date.date) }}</p>
         </div>
       </div>
+
+      <div
+        v-if="upcomingDates.length === 0"
+        class="text-sm text-slate-500 py-4 text-center"
+      >
+        No upcoming dates for this sport's calendar.
+      </div>
     </div>
 
     <!-- Division Rules Summary -->
@@ -73,8 +146,8 @@
           <div class="p-3 rounded-xl bg-blue-50 border border-blue-200">
             <p class="font-semibold text-blue-900">Division I</p>
             <p class="text-slate-700 mt-1">
-              Coaches can contact you starting June 15 after sophomore year.
-              Official visits allowed after August 1 before junior year.
+              Contact windows vary by sport — see the current period above for
+              this athlete's calendar.
             </p>
           </div>
           <div class="p-3 rounded-xl bg-emerald-50 border border-emerald-200">
@@ -98,15 +171,70 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { ref, computed } from "vue";
+import {
+  getSportCalendar,
+  getUpcomingMilestones,
+  type AppSport,
+  type Division,
+} from "~/utils/recruitingCalendar";
+import { getMilestoneTypeIcon } from "~/utils/ncaaRecruitingCalendar";
+import { parseLocalDateOnly, exclusiveEndOfDay } from "~/utils/localDate";
 
 interface Props {
   graduationYear?: number;
+  sport?: AppSport;
+  gender?: string | null;
+  division?: Division;
+  footballSubdivision?: "FBS" | "FCS";
 }
 
 const props = withDefaults(defineProps<Props>(), {
   graduationYear: 2028,
+  // "Baseball" preserves this component's pre-sport-aware behavior for any
+  // caller that hasn't been wired to pass the athlete's real sport yet.
+  sport: "Baseball",
+  gender: null,
+  division: "D1",
+  footballSubdivision: "FBS",
 });
+
+const NEUTRAL_GENDERS = new Set(["other", "prefer_not_to_say", null, undefined]);
+
+/**
+ * Sports with distinct men's/women's NCAA calendars — kept in sync with
+ * `GENDER_SPLIT_SPORTS` in `~/utils/recruitingCalendar/resolver.ts`.
+ */
+const GENDER_SPLIT_SPORTS = new Set<AppSport>([
+  "Basketball",
+  "Lacrosse",
+  "Soccer",
+  "Ice Hockey",
+  "Wrestling",
+]);
+
+const genderOverride = ref<"male" | "female">("male");
+const subdivisionOverride = ref<"FBS" | "FCS">("FBS");
+
+const showGenderToggle = computed(
+  () => GENDER_SPLIT_SPORTS.has(props.sport) && NEUTRAL_GENDERS.has(props.gender),
+);
+const showSubdivisionToggle = computed(() => props.sport === "Football");
+
+const effectiveGender = computed<string | null>(() =>
+  showGenderToggle.value ? genderOverride.value : props.gender,
+);
+const effectiveFootballSubdivision = computed(() =>
+  showSubdivisionToggle.value ? subdivisionOverride.value : props.footballSubdivision,
+);
+
+const resolverOpts = computed(() => ({
+  gender: effectiveGender.value,
+  footballSubdivision: effectiveFootballSubdivision.value,
+}));
+
+const today = new Date();
+today.setHours(0, 0, 0, 0);
 
 interface RecruitingDate {
   id: string;
@@ -118,76 +246,17 @@ interface RecruitingDate {
   isUrgent: boolean;
 }
 
-interface RecruitingPeriod {
+interface CurrentPeriodDisplay {
   name: string;
   description: string;
-  startDate: Date;
-  endDate: Date;
 }
 
-const today = new Date();
-today.setHours(0, 0, 0, 0);
-
-// Calculate key dates based on graduation year
-const getKeyDates = () => {
-  const year = props.graduationYear;
-
-  // For a 2028 graduate:
-  // Freshman year: 2024-2025
-  // Sophomore year: 2025-2026 (June 15, 2026 = D1 contact opens)
-  // Junior year: 2026-2027
-  // Senior year: 2027-2028
-
-  const dates = [
-    {
-      id: "contact-opens",
-      name: "D1 Contact Period Opens",
-      description: "Coaches can initiate contact via email/text",
-      date: new Date(year - 2, 5, 15), // June 15, sophomore year
-      emoji: "📧",
-    },
-    {
-      id: "official-visits",
-      name: "Official Visits Allowed",
-      description: "Can take official visits to D1 schools",
-      date: new Date(year - 2, 7, 1), // August 1, before junior year
-      emoji: "✈️",
-    },
-    {
-      id: "junior-fall",
-      name: "Junior Fall Showcase Season",
-      description: "Peak recruiting exposure events",
-      date: new Date(year - 2, 8, 1), // September, junior year
-      emoji: "🎯",
-    },
-    {
-      id: "early-signing",
-      name: "Early Signing Period",
-      description: "NLI can be signed",
-      date: new Date(year - 1, 10, 8), // November, senior year
-      emoji: "✍️",
-    },
-    {
-      id: "regular-signing",
-      name: "Regular Signing Period",
-      description: "Spring signing window opens",
-      date: new Date(year, 3, 15), // April, senior year
-      emoji: "📝",
-    },
-    {
-      id: "graduation",
-      name: "High School Graduation",
-      description: "Class of " + year,
-      date: new Date(year, 4, 31), // May 31
-      emoji: "🎓",
-    },
-  ];
-
-  return dates.map((d) => ({
-    ...d,
-    countdown: getCountdown(d.date),
-    isUrgent: isWithin30Days(d.date),
-  }));
+const PERIOD_TYPE_LABELS: Record<string, string> = {
+  dead: "Dead Period",
+  recruiting_shutdown: "Recruiting Shutdown",
+  quiet: "Quiet Period",
+  contact: "Contact Period",
+  evaluation: "Evaluation Period",
 };
 
 const getCountdown = (date: Date): string => {
@@ -217,48 +286,44 @@ const formatDate = (date: Date): string => {
   });
 };
 
-// Get upcoming dates (filter out past dates, limit to 5)
+// Next key dates: this sport's own resolved SportCalendar milestones plus the
+// still-generic SAT/ACT/NCAA/NAIA/application deadlines, sport/division-scoped.
 const upcomingDates = computed<RecruitingDate[]>(() => {
-  const allDates = getKeyDates();
-  return allDates.filter((d) => d.date >= today).slice(0, 5);
+  const milestones = getUpcomingMilestones({
+    sport: props.sport,
+    division: props.division,
+    graduationYear: props.graduationYear,
+    limit: 5,
+    opts: resolverOpts.value,
+    currentDate: today,
+  });
+
+  return milestones.map((m) => {
+    const date = parseLocalDateOnly(m.date);
+    return {
+      id: `${m.date}-${m.title}`,
+      name: m.title,
+      description: m.description ?? "",
+      date,
+      emoji: getMilestoneTypeIcon(m.type),
+      countdown: getCountdown(date),
+      isUrgent: isWithin30Days(date),
+    };
+  });
 });
 
-// Determine current recruiting period
-const currentPeriod = computed<RecruitingPeriod | null>(() => {
-  const year = props.graduationYear;
-
-  const periods: RecruitingPeriod[] = [
-    {
-      name: "Quiet Period",
-      description:
-        "Focus on academics and skill development. Coaches can respond to your emails.",
-      startDate: new Date(year - 4, 7, 1),
-      endDate: new Date(year - 2, 5, 14),
-    },
-    {
-      name: "Contact Period",
-      description:
-        "Coaches can initiate contact! Be proactive with outreach and responses.",
-      startDate: new Date(year - 2, 5, 15),
-      endDate: new Date(year - 1, 10, 7),
-    },
-    {
-      name: "Early Signing Period",
-      description:
-        "National Letters of Intent can be signed. Make your decision!",
-      startDate: new Date(year - 1, 10, 8),
-      endDate: new Date(year - 1, 10, 15),
-    },
-    {
-      name: "Final Decision Period",
-      description: "Finalize your college choice before spring signing.",
-      startDate: new Date(year - 1, 10, 16),
-      endDate: new Date(year, 3, 14),
-    },
-  ];
-
-  return (
-    periods.find((p) => today >= p.startDate && today <= p.endDate) || null
+// Current period: whichever of this sport's resolved calendar periods covers
+// today, if any.
+const currentPeriod = computed<CurrentPeriodDisplay | null>(() => {
+  const calendar = getSportCalendar(props.sport, props.division, resolverOpts.value);
+  const period = calendar.periods.find(
+    (p) => today >= parseLocalDateOnly(p.start) && today < exclusiveEndOfDay(p.end),
   );
+  if (!period) return null;
+
+  return {
+    name: PERIOD_TYPE_LABELS[period.type] ?? period.type,
+    description: period.description,
+  };
 });
 </script>

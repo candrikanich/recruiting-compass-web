@@ -23,6 +23,7 @@ import {
   createVeryLargeSchool,
 } from "~/tests/fixtures/schools.fixture";
 import { getCarnegieSize } from "~/utils/schoolSize";
+import { getDeadPeriodMessage, type AppSport } from "~/utils/recruitingCalendar";
 
 // Mock modules
 vi.mock("~/composables/useSupabase");
@@ -2362,6 +2363,111 @@ describe("Dashboard Page Logic", () => {
         ).length;
         expect(acceptedCount).toBe(1);
       });
+    });
+  });
+
+  describe("deadPeriodMessage computed property (sport-aware)", () => {
+    // Mirrors pages/dashboard.vue's deadPeriodMessage computed exactly,
+    // against the real sport-aware ~/utils/recruitingCalendar module.
+    const computeDeadPeriodMessage = (params: {
+      now: Date;
+      schools: Array<{ division?: string | null }>;
+      sport: AppSport;
+      gender: string | null;
+    }) => {
+      const { now, schools, sport, gender } = params;
+      if (!schools.length) return null;
+      const opts = { gender };
+      const allInDeadPeriod = schools.every((school) => {
+        const div = (school.division as string) || "D1";
+        return !!getDeadPeriodMessage(now, sport, div as "D1" | "D2" | "D3", opts);
+      });
+      return allInDeadPeriod
+        ? (getDeadPeriodMessage(now, sport, "D1", opts) ?? null)
+        : null;
+    };
+
+    it("returns null when there are no schools", () => {
+      expect(
+        computeDeadPeriodMessage({
+          now: new Date("2026-08-23"),
+          schools: [],
+          sport: "Baseball",
+          gender: null,
+        }),
+      ).toBeNull();
+    });
+
+    it("resolves the dead period using the athlete's real sport, not baseball", () => {
+      // Men's D1 basketball has a dead period Aug 1-19, 2026 (calendarData.ts);
+      // baseball's first 2026 dead period doesn't open until Nov 9.
+      const now = new Date(2026, 7, 10); // local Aug 10, 2026 — avoid UTC date-string offset drift
+      const baseballResult = computeDeadPeriodMessage({
+        now,
+        schools: [{ division: "D1" }],
+        sport: "Baseball",
+        gender: null,
+      });
+      const basketballResult = computeDeadPeriodMessage({
+        now,
+        schools: [{ division: "D1" }],
+        sport: "Basketball",
+        gender: "male",
+      });
+
+      expect(baseballResult).toBeNull();
+      expect(basketballResult).not.toBeNull();
+    });
+
+    it("passes gender through to the resolver for gender-split sports", () => {
+      // Aug 10, 2026 is a "Dead Period" for men's D1 basketball but a
+      // "Recruiting Shutdown" for women's — independently transcribed
+      // windows, so the gender opt must reach the resolver, not just the sport.
+      const now = new Date(2026, 7, 10); // local Aug 10, 2026 — avoid UTC date-string offset drift
+      const mensResult = computeDeadPeriodMessage({
+        now,
+        schools: [{ division: "D1" }],
+        sport: "Basketball",
+        gender: "male",
+      });
+      const womensResult = computeDeadPeriodMessage({
+        now,
+        schools: [{ division: "D1" }],
+        sport: "Basketball",
+        gender: "female",
+      });
+
+      expect(mensResult).toContain("Dead Period");
+      expect(womensResult).toContain("Recruiting Shutdown");
+      expect(mensResult).not.toEqual(womensResult);
+    });
+
+    it("falls back to a neutral sport with no calendar when primary_sport is unset — never a false-positive dead period", () => {
+      const now = new Date("2026-08-25");
+      const result = computeDeadPeriodMessage({
+        now,
+        schools: [{ division: "D1" }],
+        sport: "Tennis",
+        gender: null,
+      });
+      expect(result).toBeNull();
+    });
+
+    it("D2/D3 schools use their shared calendar regardless of sport", () => {
+      const now = new Date("2026-08-25");
+      const d3Baseball = computeDeadPeriodMessage({
+        now,
+        schools: [{ division: "D3" }],
+        sport: "Baseball",
+        gender: null,
+      });
+      const d3Basketball = computeDeadPeriodMessage({
+        now,
+        schools: [{ division: "D3" }],
+        sport: "Basketball",
+        gender: "male",
+      });
+      expect(d3Baseball).toEqual(d3Basketball);
     });
   });
 });

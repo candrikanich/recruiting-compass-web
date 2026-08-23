@@ -227,7 +227,8 @@ import { getWhatMattersNow } from "~/utils/whatMattersNow";
 import { getCommonWorries } from "~/utils/parentWorries";
 import { getReassuranceMessages } from "~/utils/parentReassurance";
 import { createClientLogger } from "~/utils/logger";
-import { getUpcomingMilestones } from "~/utils/ncaaRecruitingCalendar";
+import { getUpcomingMilestones, type AppSport } from "~/utils/recruitingCalendar";
+import { usePreferenceManager } from "~/composables/usePreferenceManager";
 
 const logger = createClientLogger("Timeline");
 
@@ -244,6 +245,7 @@ const {
   fetchTasksWithStatus,
 } = useTasks();
 const { showToast } = useAppToast();
+const { getPlayerDetails, playerPrefs } = usePreferenceManager();
 const {
   currentPhase,
   milestoneProgress,
@@ -329,12 +331,26 @@ const reassuranceMessages = computed(() =>
   getReassuranceMessages(currentPhase.value),
 );
 
+// Mirrors the ruleEngine/dashboard fallback: "Tennis" has no published NCAA
+// calendar, so an unset sport never falsely surfaces sport-specific windows.
+const athleteSport = computed<AppSport>(
+  () => (getPlayerDetails()?.primary_sport as AppSport | undefined) ?? "Tennis",
+);
+const athleteGender = computed<string | null>(
+  () => getPlayerDetails()?.gender ?? null,
+);
+const athleteGraduationYear = computed(
+  () => getPlayerDetails()?.graduation_year,
+);
+
 const upcomingMilestones = computed(() =>
   getUpcomingMilestones({
     currentDate: new Date(),
-    phase: currentPhase.value,
-    graduationYear: 2027, // TODO: Get from user profile via graduation_year field
+    sport: athleteSport.value,
+    division: "D1",
+    graduationYear: athleteGraduationYear.value,
     limit: 5,
+    opts: { gender: athleteGender.value },
   }),
 );
 
@@ -434,7 +450,12 @@ const getStatusColorClass = (label: StatusLabel): string => {
 
 // Lifecycle
 onMounted(async () => {
-  await Promise.all([fetchTasksWithStatus(), fetchPhase(), fetchStatusScore()]);
+  await Promise.all([
+    fetchTasksWithStatus(),
+    fetchPhase(),
+    fetchStatusScore(),
+    playerPrefs.loadPreferences(),
+  ]);
   initialLoadComplete.value = true;
   initializeExpanded();
 });

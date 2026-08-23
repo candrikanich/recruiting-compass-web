@@ -168,7 +168,7 @@ import { useRecruitingPacket } from "~/composables/useRecruitingPacket";
 import { useDashboardData } from "~/composables/useDashboardData";
 import { useDashboardCalculations } from "~/composables/useDashboardCalculations";
 import { usePreferenceManager } from "~/composables/usePreferenceManager";
-import { getDeadPeriodMessage } from "~/utils/ncaaRecruitingCalendar";
+import { getDeadPeriodMessage, type AppSport } from "~/utils/recruitingCalendar";
 import { WIDGET_SIZES } from "~/types/models";
 import type { WidgetId, WidgetEntry } from "~/types/models";
 import ParentContextBanner from "~/components/Dashboard/ParentContextBanner.vue";
@@ -186,8 +186,20 @@ definePageMeta({
 
 const logger = createClientLogger("dashboard");
 
-const { getDashboardLayout, dashboardPrefs } = usePreferenceManager();
+const { getDashboardLayout, dashboardPrefs, playerPrefs, getPlayerDetails } =
+  usePreferenceManager();
 const dashboardLayout = computed(() => getDashboardLayout());
+
+// Athlete's sport/gender for sport-aware NCAA recruiting-calendar rules.
+// Mirrors the ruleEngine fallback (server/utils/ruleEngine.ts): "Tennis" has
+// no published NCAA calendar, so an unset sport never falsely reports a
+// dead period.
+const athleteSport = computed<AppSport>(
+  () => (getPlayerDetails()?.primary_sport as AppSport | undefined) ?? "Tennis",
+);
+const athleteGender = computed<string | null>(
+  () => getPlayerDetails()?.gender ?? null,
+);
 
 const { logout } = useAuth();
 const { showToast } = useAppToast();
@@ -225,11 +237,15 @@ const {
 const deadPeriodMessage = computed((): string | null => {
   if (!allSchools.value.length) return null;
   const now = new Date();
+  const sport = athleteSport.value;
+  const opts = { gender: athleteGender.value };
   const allInDeadPeriod = allSchools.value.every((school) => {
     const div = (school.division as string) || "D1";
-    return !!getDeadPeriodMessage(now, div as "D1" | "D2" | "D3");
+    return !!getDeadPeriodMessage(now, sport, div as "D1" | "D2" | "D3", opts);
   });
-  return allInDeadPeriod ? (getDeadPeriodMessage(now, "D1") ?? null) : null;
+  return allInDeadPeriod
+    ? (getDeadPeriodMessage(now, sport, "D1", opts) ?? null)
+    : null;
 });
 
 const suggestionsMoreCount = computed(
@@ -510,6 +526,6 @@ watch(
 );
 
 onMounted(async () => {
-  await dashboardPrefs.loadPreferences();
+  await Promise.all([dashboardPrefs.loadPreferences(), playerPrefs.loadPreferences()]);
 });
 </script>
