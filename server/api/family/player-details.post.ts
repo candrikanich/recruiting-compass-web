@@ -8,7 +8,8 @@ export default defineEventHandler(async (event) => {
   const user = await requireAuth(event);
   const body = await readBody(event);
 
-  const { playerName, playerDob, graduationYear, sport, position } = body;
+  const { playerName, playerDob, graduationYear, sport, position, gender } =
+    body;
 
   const supabase = useSupabaseAdmin();
 
@@ -37,6 +38,7 @@ export default defineEventHandler(async (event) => {
         graduationYear,
         sport,
         position,
+        ...(gender ? { gender } : {}),
       },
     })
     .eq("id", membership.family_unit_id);
