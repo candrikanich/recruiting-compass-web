@@ -69,7 +69,12 @@ describe("servicesForSport", () => {
       "perfect_game_id",
       "prep_baseball_id",
     ]);
-    expect(keys("Football")).toEqual(["ncsa_id", "hudl_url"]);
+    expect(keys("Football")).toEqual([
+      "ncsa_id",
+      "hudl_url",
+      "on3_url",
+      "sports247_url",
+    ]);
     expect(keys("Golf")).toEqual(["ncsa_id"]);
   });
 
@@ -78,6 +83,59 @@ describe("servicesForSport", () => {
     expect(servicesForSport(undefined)).toEqual([]);
     expect(servicesForSport("")).toEqual([]);
     expect(servicesForSport("Quidditch")).toEqual([]);
+  });
+
+  it("offers athletic_net_id for Track & Field and Cross Country only", () => {
+    for (const sport of ALL_SPORTS) {
+      const expected = sport === "Track & Field" || sport === "Cross Country";
+      expect(keys(sport).includes("athletic_net_id")).toBe(expected);
+    }
+  });
+
+  it("offers swimcloud_id for Swimming only", () => {
+    for (const sport of ALL_SPORTS) {
+      expect(keys(sport).includes("swimcloud_id")).toBe(sport === "Swimming");
+    }
+  });
+
+  it("offers on3_url and sports247_url for Football and Basketball only", () => {
+    for (const sport of ALL_SPORTS) {
+      const expected = sport === "Football" || sport === "Basketball";
+      expect(keys(sport).includes("on3_url")).toBe(expected);
+      expect(keys(sport).includes("sports247_url")).toBe(expected);
+    }
+  });
+
+  it("keeps the v1 four (perfect_game_id) baseball/softball-only after v2", () => {
+    for (const sport of ALL_SPORTS) {
+      const expected = sport === "Baseball" || sport === "Softball";
+      expect(keys(sport).includes("perfect_game_id")).toBe(expected);
+    }
+  });
+
+  it("still offers NCSA for every sport after v2", () => {
+    for (const sport of ALL_SPORTS) {
+      expect(keys(sport)).toContain("ncsa_id");
+    }
+  });
+
+  it("orders v2 services after the v1 four in each sport's list", () => {
+    expect(keys("Track & Field")).toEqual([
+      "ncsa_id",
+      "athletic_net_id",
+      "milesplit_url",
+    ]);
+    expect(keys("Tennis")).toEqual([
+      "ncsa_id",
+      "utr_id",
+      "tennis_recruiting_id",
+    ]);
+    expect(keys("Football")).toEqual([
+      "ncsa_id",
+      "hudl_url",
+      "on3_url",
+      "sports247_url",
+    ]);
   });
 
   it("uses the exact Perfect Game urlTemplate", () => {
@@ -103,6 +161,30 @@ describe("serviceProfileUrl", () => {
   it("returns the stored value itself for url-kind services", () => {
     expect(serviceProfileUrl(hudl, "https://hudl.com/profile/abc")).toBe(
       "https://hudl.com/profile/abc",
+    );
+  });
+
+  it("returns the stored value itself for url-kind v2 services (On3/247)", () => {
+    const on3 = ALL_SERVICE_DEFS.find((s) => s.key === "on3_url")!;
+    const s247 = ALL_SERVICE_DEFS.find((s) => s.key === "sports247_url")!;
+    expect(on3.linkKind).toBe("url");
+    expect(s247.linkKind).toBe("url");
+    expect(serviceProfileUrl(on3, "https://www.on3.com/db/jane-doe/")).toBe(
+      "https://www.on3.com/db/jane-doe/",
+    );
+    expect(serviceProfileUrl(s247, "https://247sports.com/player/jane-doe/")).toBe(
+      "https://247sports.com/player/jane-doe/",
+    );
+  });
+
+  it("builds template links for id-kind v2 services", () => {
+    const anet = ALL_SERVICE_DEFS.find((s) => s.key === "athletic_net_id")!;
+    const swim = ALL_SERVICE_DEFS.find((s) => s.key === "swimcloud_id")!;
+    expect(serviceProfileUrl(anet, "12345")).toBe(
+      "https://www.athletic.net/athlete/12345",
+    );
+    expect(serviceProfileUrl(swim, "678")).toBe(
+      "https://www.swimcloud.com/swimmer/678/",
     );
   });
 
