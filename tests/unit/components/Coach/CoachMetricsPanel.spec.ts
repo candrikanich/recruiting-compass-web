@@ -35,9 +35,12 @@ describe("CoachMetricsPanel", () => {
       props: { metrics: metrics(), comparison: null, insights: [] },
     });
     const text = wrapper.text();
-    expect(text).toContain("Total interactions");
+    // Total / days-since / preferred live in CoachStatsGrid; the panel carries
+    // the non-duplicated analytics only.
+    expect(text).toContain("Sent / received");
     expect(text).toContain("Response rate");
     expect(text).toContain("50%");
+    expect(text).not.toContain("Total interactions");
   });
 
   it("shows the ranking line only with 2+ coaches", () => {

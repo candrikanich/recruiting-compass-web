@@ -71,7 +71,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import type { CoachMetrics, CoachComparison } from "~/composables/useCoachAnalytics";
-import { formatType } from "~/utils/interactionFormatters";
 
 const props = defineProps<{
   metrics: CoachMetrics;
@@ -79,8 +78,9 @@ const props = defineProps<{
   insights: string[];
 }>();
 
+// Total interactions, days-since-contact, and preferred method already live in
+// CoachStatsGrid above — the panel only carries the non-duplicated analytics.
 const rows = computed(() => [
-  { label: "Total interactions", value: String(props.metrics.totalInteractions) },
   {
     label: "Sent / received",
     value: `${props.metrics.outboundCount} / ${props.metrics.inboundCount}`,
@@ -93,13 +93,5 @@ const rows = computed(() => [
         ? `${props.metrics.averageResponseTime}h`
         : "—",
   },
-  {
-    label: "Days since contact",
-    value:
-      props.metrics.daysSinceContact >= 0
-        ? String(props.metrics.daysSinceContact)
-        : "N/A",
-  },
-  { label: "Preferred method", value: formatType(props.metrics.preferredMethod) },
 ]);
 </script>
