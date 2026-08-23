@@ -362,3 +362,13 @@ Marked `@deprecated`, scheduled for removal:
 | performance | 5 | Lighthouse CI, bundle/image/SSR optimization (~39% reduction), perf regression tests |
 | testing | 3 | Coverage 63%→75% (CI-enforced), completion report, suite index |
 | onboarding | 3 | Parent onboarding banner + empty state, data prepopulation with autosave |
+
+## Doc Cleanup Run — 2026-08-23
+- Deleted: 0 files
+- Compressed: 6 files → docs/history/{general,onboarding}.md (2 domains)
+- Kept: 97 files (active/future-looking: iOS specs, a11y audits with open findings, launch/marketing plans, design system, user manual/FAQ, RLS/security docs)
+
+| Domain | Compressed | Summary |
+|--------|-----------|---------|
+| general | 4 | Public player-profile plan (/p/[slug], shipped), web-completeness parity misdiagnosis (#352/#353), social-tracking removal, stale tech-debt snapshot |
+| onboarding | 2 | Position-vocabulary normalization (canonical.ts, Phases 1-2), player onboarding + family linking plan (shipped) |
