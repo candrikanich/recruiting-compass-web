@@ -66,6 +66,30 @@ const previewData = computed<PublicProfileData>(() => ({
             (props.details.perfect_game_id as string | undefined) || undefined,
           prep_baseball_id:
             (props.details.prep_baseball_id as string | undefined) || undefined,
+          prep_baseball_state:
+            (props.details.prep_baseball_state as string | undefined) ||
+            undefined,
+          athletic_net_id:
+            (props.details.athletic_net_id as string | undefined) || undefined,
+          swimcloud_id:
+            (props.details.swimcloud_id as string | undefined) || undefined,
+          utr_id: (props.details.utr_id as string | undefined) || undefined,
+          tennis_recruiting_id:
+            (props.details.tennis_recruiting_id as string | undefined) ||
+            undefined,
+          elite_prospects_id:
+            (props.details.elite_prospects_id as string | undefined) ||
+            undefined,
+          sportsrecruits_id:
+            (props.details.sportsrecruits_id as string | undefined) ||
+            undefined,
+          concept2_id:
+            (props.details.concept2_id as string | undefined) || undefined,
+          milesplit_url:
+            (props.details.milesplit_url as string | undefined) || undefined,
+          on3_url: (props.details.on3_url as string | undefined) || undefined,
+          sports247_url:
+            (props.details.sports247_url as string | undefined) || undefined,
         }
       : null,
   film: props.settings.show_film ? filmLinks.value : null,

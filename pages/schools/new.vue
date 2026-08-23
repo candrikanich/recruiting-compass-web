@@ -83,13 +83,22 @@
       @collegeSelect="handleCollegeSelect"
       @cancel="() => navigateTo('/schools')"
     />
+
+    <SchoolDuplicateDialog
+      v-if="duplicateSchool"
+      :is-open="showDuplicateDialog"
+      :duplicate="duplicateSchool"
+      :match-type="duplicateMatchType"
+      @confirm="confirmDuplicateCreate"
+      @cancel="cancelDuplicateCreate"
+    />
   </FormPageLayout>
 </template>
 
 <script setup lang="ts">
 definePageMeta({ middleware: "auth" });
 
-import { ref, reactive } from "vue";
+import { ref, reactive, onMounted } from "vue";
 import { useSchools } from "~/composables/useSchools";
 import { useNcaaLookup } from "~/composables/useNcaaLookup";
 import {
@@ -102,7 +111,16 @@ import { createClientLogger } from "~/utils/logger";
 
 const logger = createClientLogger("SchoolNew");
 
-const { createSchool, loading, error } = useSchools();
+const { createSchool, findDuplicate, fetchSchools, loading, error } =
+  useSchools();
+
+// The duplicate gate matches against the in-memory school list, so it must be
+// loaded before the first add attempt or a genuine duplicate slips through.
+onMounted(() => {
+  fetchSchools().catch((err) => {
+    logger.warn("Failed to preload schools for duplicate check", err);
+  });
+});
 const { lookupDivision } = useNcaaLookup();
 const {
   fetchByName,
@@ -199,8 +217,39 @@ const clearSelection = () => {
   autoFilledFields.conference = false;
 };
 
+// Duplicate-confirmation dialog state
+const showDuplicateDialog = ref(false);
+const duplicateSchool = ref<School | null>(null);
+const duplicateMatchType = ref<"name" | "domain" | "ncaa_id" | null>(null);
+const pendingFormData = ref<any>(null);
+
 const handleSchoolFormSubmit = async (formData: any) => {
+  const { duplicate, matchType } = findDuplicate(formData);
+  if (duplicate) {
+    // Hold the submission and let the user confirm this is a distinct program.
+    duplicateSchool.value = duplicate;
+    duplicateMatchType.value = matchType;
+    pendingFormData.value = formData;
+    showDuplicateDialog.value = true;
+    return;
+  }
   await createSchoolWithData(formData);
+};
+
+const confirmDuplicateCreate = async () => {
+  showDuplicateDialog.value = false;
+  const formData = pendingFormData.value;
+  pendingFormData.value = null;
+  if (formData) {
+    await createSchoolWithData(formData);
+  }
+};
+
+const cancelDuplicateCreate = () => {
+  showDuplicateDialog.value = false;
+  duplicateSchool.value = null;
+  duplicateMatchType.value = null;
+  pendingFormData.value = null;
 };
 
 const createSchoolWithData = async (formData: any) => {

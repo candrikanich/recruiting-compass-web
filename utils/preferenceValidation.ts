@@ -108,6 +108,10 @@ export function validatePlayerDetails(data: unknown): PlayerDetails | null {
     high_school: toString(obj.high_school),
     club_team: toString(obj.club_team),
     positions: normalizePositionsForSport(sport, toStringArray(obj.positions)),
+    gender: toOption<"male" | "female" | "other" | "prefer_not_to_say">(
+      obj.gender,
+      ["male", "female", "other", "prefer_not_to_say"],
+    ),
     bats: toOption<"L" | "R" | "S">(obj.bats, ["L", "R", "S"]),
     throws: toOption<"L" | "R">(obj.throws, ["L", "R"]),
     height_inches: toNumber(obj.height_inches),

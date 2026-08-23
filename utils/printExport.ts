@@ -117,7 +117,7 @@ export const printContent = (title: string, htmlContent: string) => {
         ${htmlContent}
       </div>
       <footer>
-        <p>Baseball Recruiting Compass • Confidential</p>
+        <p>The Recruiting Compass • Confidential</p>
       </footer>
     </body>
     </html>

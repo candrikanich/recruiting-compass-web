@@ -1,5 +1,17 @@
 # History: General
 
+## 2026-08-14 — Social-media tracking removal
+Executed full-deletion plan for social-media monitoring (Chris ruling: X API ~$200/mo, Instagram Graph gated — not worth it). All listed social pages/composables removed; retained here as the record of what was cut and why.
+
+## 2026-08-09 — Web profile-completeness parity (misdiagnosis resolved)
+Web profile-completeness undercounted ~10% vs iOS. Original home-location hypothesis was wrong — real cause was `primary_position` silently wiped on load; fixed in #352/#353.
+
+## 2026-03-16 — Public shareable player profile
+Multi-task plan for public player-profile pages (`/p/[slug]`) backed by `player_profiles` / `profile_tracking_links` / `profile_views` tables, with per-coach tracking links (`?ref=` view counts) and player-managed per-section visibility toggles. Now live; became the canonical coach-outreach share path.
+
+## 2026-01-28 — Tech-debt snapshot (point-in-time)
+Dated tech-debt dashboard; stats now stale (2,869 tests vs 7,800+, migration 017 note obsolete). Captured a deprecated-composable list; superseded by later work.
+
 ## 2026-02-02 — MVP audit workflow design
 Design for a 4-page MVP audit (Dashboard/Coaches/Schools/Interactions) across perf, a11y, SEO, code quality — Vercel baseline screenshots, 4 parallel agents, post-fix visual verification, plus a reusable audit-workflow skill. One-off run, executed.
 

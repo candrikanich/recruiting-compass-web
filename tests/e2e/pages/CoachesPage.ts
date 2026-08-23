@@ -23,14 +23,6 @@ export class CoachesPage extends BasePage {
     await this.page.waitForLoadState("domcontentloaded");
   }
 
-  async goToCoachCommunications(
-    _schoolId: string | undefined,
-    coachId: string,
-  ) {
-    await super.goto(`/coaches/${coachId}/communications`);
-    await this.page.waitForLoadState("domcontentloaded");
-  }
-
   // CRUD Operations
   async clickAddCoach() {
     // Look for add coach button or navigate to add coach page
@@ -293,24 +285,6 @@ export class CoachesPage extends BasePage {
         instagramButton.click(),
       ]);
       await popup.close();
-    }
-  }
-
-  // Communication and History
-  async navigateToCommunications() {
-    const commButton = await this.page
-      .locator('button:has-text("Messages"), a[href*="/communications"]')
-      .first();
-    await commButton.click();
-    await this.waitForURL(/\/communications/);
-  }
-
-  async viewCoachAnalytics() {
-    const analyticsTab = await this.page
-      .locator('[data-testid="analytics-tab"], button:has-text("Analytics")')
-      .first();
-    if (await analyticsTab.isVisible()) {
-      await analyticsTab.click();
     }
   }
 

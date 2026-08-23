@@ -71,8 +71,15 @@
           :save-fn="saveNotes"
         />
 
-        <!-- Recent Interactions Component -->
-        <CoachRecentInteractions
+        <!-- Communication Analytics (folded in from the former /analytics page) -->
+        <CoachMetricsPanel
+          :metrics="coachMetrics"
+          :comparison="coachComparison"
+          :insights="coachInsightsList"
+        />
+
+        <!-- Interactions Log (filter + expand; folded in from /communications) -->
+        <CoachInteractionsLog
           :interactions="recentInteractions"
           :coach-name="`${coach.first_name} ${coach.last_name}`"
         />
@@ -169,6 +176,11 @@ import { useCoaches } from "~/composables/useCoaches";
 import { useSchools } from "~/composables/useSchools";
 import { useInteractions } from "~/composables/useInteractions";
 import { useCoachStats } from "~/composables/useCoachStats";
+import {
+  calcCoachMetrics,
+  compareCoachToSchool,
+  coachInsights,
+} from "~/composables/useCoachAnalytics";
 import { toTelHref } from "~/utils/phone";
 import { openTwitter, openInstagram } from "~/utils/socialMediaHandlers";
 import { socialDmInteraction } from "~/utils/socialDm";
@@ -180,7 +192,8 @@ import DeleteConfirmationModal from "~/components/DeleteConfirmationModal.vue";
 import CoachHeader from "~/components/Coach/CoachHeader.vue";
 import CoachStatsGrid from "~/components/Coach/CoachStatsGrid.vue";
 import CoachNotesEditor from "~/components/Coach/CoachNotesEditor.vue";
-import CoachRecentInteractions from "~/components/Coach/CoachRecentInteractions.vue";
+import CoachMetricsPanel from "~/components/Coach/CoachMetricsPanel.vue";
+import CoachInteractionsLog from "~/components/Coach/CoachInteractionsLog.vue";
 import type { Coach, Interaction, School } from "~/types/models";
 import { createClientLogger } from "~/utils/logger";
 
@@ -195,7 +208,8 @@ const router = useRouter();
 const coachId = route.params.id as string;
 const backLink = computed(() => deriveBackLink(route.query));
 
-const { getCoach, updateCoach, smartDelete } = useCoaches();
+const { getCoach, updateCoach, smartDelete, coaches, fetchCoaches } =
+  useCoaches();
 const { getSchool } = useSchools();
 const { interactions, fetchInteractions, createInteraction } = useInteractions();
 const userStore = useUserStore();
@@ -244,6 +258,23 @@ const recentInteractions = computed<Interaction[]>(() => {
 
 // Use the coach stats composable
 const { stats } = useCoachStats(coach, recentInteractions);
+
+// Communication analytics — computed from the school-wide interactions this page
+// already loads (ranking needs every coach at the school), plus the coaches list.
+const coachMetrics = computed(() =>
+  calcCoachMetrics(interactions.value || [], coachId),
+);
+const coachComparison = computed(() =>
+  compareCoachToSchool(
+    interactions.value || [],
+    coaches.value || [],
+    coachId,
+    coach.value?.school_id ?? undefined,
+  ),
+);
+const coachInsightsList = computed(() =>
+  coachInsights(interactions.value || [], coachId),
+);
 
 // Notes v-models
 const notes = computed({
@@ -295,7 +326,9 @@ async function logSocialDm(): Promise<void> {
       occurred_at: new Date().toISOString(),
     });
     if (coach.value.school_id) {
-      await fetchInteractions({ schoolId: coach.value.school_id, coachId });
+      // School-wide (not coach-filtered): the metrics panel ranks this coach
+      // against the school's other coaches; the log/recent list filter by coach.
+      await fetchInteractions({ schoolId: coach.value.school_id });
     }
   } catch {
     // swallow — logging is best-effort
@@ -315,7 +348,9 @@ const handleCoachInteractionLogged = async (interactionData: {
       }
 
       if (coach.value?.school_id) {
-        await fetchInteractions({ schoolId: coach.value.school_id, coachId });
+        // School-wide (not coach-filtered): the metrics panel ranks this coach
+      // against the school's other coaches; the log/recent list filter by coach.
+      await fetchInteractions({ schoolId: coach.value.school_id });
       }
     };
 
@@ -378,9 +413,13 @@ onMounted(async () => {
         }
       }
 
-      // Fetch interactions for this coach
+      // Fetch school-wide interactions + coaches so the metrics panel can rank
+      // this coach against the school's others; the log filters by coach in-page.
       if (coachData.school_id) {
-        await fetchInteractions({ schoolId: coachData.school_id, coachId });
+        await Promise.all([
+          fetchInteractions({ schoolId: coachData.school_id }),
+          fetchCoaches(coachData.school_id),
+        ]);
       }
     } else {
       error.value = "Coach not found";

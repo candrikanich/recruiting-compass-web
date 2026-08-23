@@ -366,17 +366,48 @@ export interface PlayerDetails {
   nces_school_id?: string; // NCES school identifier; null if free-text entry was used
   club_team?: string;
   positions?: string[];
+  gender?: "male" | "female" | "other" | "prefer_not_to_say";
+  // Per-sport athlete attributes (registry: utils/attributes/canonical.ts).
+  // Flat keys in user_preferences.data; each shown only for its sport(s).
   bats?: "L" | "R" | "S";
   throws?: "L" | "R";
+  shooting_hand?: "L" | "R"; // Basketball
+  dominant_foot?: "L" | "R" | "Both"; // Soccer
+  hitting_hand?: "L" | "R"; // Volleyball
+  racket_hand?: "L" | "R"; // Tennis
+  backhand_style?: "one" | "two"; // Tennis
+  golf_handedness?: "L" | "R"; // Golf
+  dominant_hand?: "L" | "R"; // Lacrosse
+  shoots?: "L" | "R"; // Ice Hockey
+  catches?: "L" | "R"; // Ice Hockey (Goalie)
+  wp_dominant_hand?: "L" | "R"; // Water Polo
+  rowing_side?: "port" | "starboard" | "both" | "cox"; // Rowing
+  rowing_discipline?: "sweep" | "scull" | "both"; // Rowing
+  throwing_hand?: "L" | "R"; // Football (Quarterback)
+  kicking_foot?: "L" | "R"; // Football (Kicker/Punter)
   height_inches?: number;
   weight_lbs?: number;
   gpa?: number;
   sat_score?: number;
   act_score?: number;
   ncaa_id?: string;
+  // Recruiting services (registry: utils/services/canonical.ts).
+  ncsa_id?: string; // NCSA (all sports)
+  hudl_url?: string; // Hudl profile URL (team sports)
   perfect_game_id?: string;
   prep_baseball_id?: string; // Prep Baseball Report profile name-slug (e.g. "owen-andrikanich")
   prep_baseball_state?: string; // 2-letter state code the PBR profile is filed under
+  // Recruiting services v2 (free-text ids / URLs; sport-gated in the registry).
+  athletic_net_id?: string | null; // Track & Field, Cross Country
+  milesplit_url?: string | null; // Track & Field, Cross Country
+  swimcloud_id?: string | null; // Swimming
+  utr_id?: string | null; // Tennis
+  tennis_recruiting_id?: string | null; // Tennis
+  elite_prospects_id?: string | null; // Ice Hockey
+  sportsrecruits_id?: string | null; // Soccer, Lacrosse, Volleyball, Field Hockey
+  concept2_id?: string | null; // Rowing
+  on3_url?: string | null; // Football, Basketball
+  sports247_url?: string | null; // Football, Basketball
   // Social Media
   twitter_handle?: string;
   instagram_handle?: string;
@@ -465,9 +496,21 @@ export interface PublicProfileData {
     height_inches?: number;
     weight_lbs?: number;
     ncaa_id?: string;
+    ncsa_id?: string;
+    hudl_url?: string;
     perfect_game_id?: string;
     prep_baseball_id?: string;
     prep_baseball_state?: string;
+    athletic_net_id?: string;
+    swimcloud_id?: string;
+    utr_id?: string;
+    tennis_recruiting_id?: string;
+    elite_prospects_id?: string;
+    sportsrecruits_id?: string;
+    concept2_id?: string;
+    milesplit_url?: string;
+    on3_url?: string;
+    sports247_url?: string;
   } | null;
   /** null when show_film is false */
   film: VideoLink[] | null;

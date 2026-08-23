@@ -683,7 +683,7 @@ While your recruiting journey is complete, you might want to:
 
 **You've got this!**
 
-Welcome to the next chapter of your baseball journey. We can't wait to see what you accomplish in college.
+Welcome to the next chapter of your athletic journey. We can't wait to see what you accomplish in college.
 
 ---
 

@@ -114,7 +114,7 @@ export const generateReportData = (
   });
 
   return {
-    title: "Baseball Recruiting Report",
+    title: "The Recruiting Compass Report",
     dateRange: { from, to },
     schools: {
       total: schools.length,

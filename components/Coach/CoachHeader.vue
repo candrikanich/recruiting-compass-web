@@ -155,20 +155,6 @@
         </svg>
         Instagram
       </button>
-      <NuxtLink
-        :to="`/coaches/${coach.id}/analytics`"
-        class="inline-flex items-center gap-2 px-4 py-2 bg-linear-to-r from-indigo-500 to-indigo-600 text-white text-sm font-semibold rounded-lg hover:from-indigo-600 hover:to-indigo-700 transition shadow-xs"
-      >
-        <UIcon name="i-heroicons-chart-bar" class="w-4 h-4" />
-        Analytics
-      </NuxtLink>
-      <NuxtLink
-        :to="`/coaches/${coach.id}/communications`"
-        class="inline-flex items-center gap-2 px-4 py-2 bg-linear-to-r from-slate-500 to-slate-600 text-white text-sm font-semibold rounded-lg hover:from-slate-600 hover:to-slate-700 transition shadow-xs"
-      >
-        <UIcon name="i-heroicons-chat-bubble-left-right" class="w-4 h-4" />
-        Messages
-      </NuxtLink>
     </div>
 
     <!-- Secondary Actions -->

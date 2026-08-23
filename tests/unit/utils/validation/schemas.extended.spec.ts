@@ -928,6 +928,30 @@ describe("playerDetailsSchema - Extended", () => {
     expect(() => playerDetailsSchema.parse(data)).not.toThrow();
   });
 
+  it("should accept all gender values", () => {
+    const genders = ["male", "female", "other", "prefer_not_to_say"];
+    genders.forEach((gender) => {
+      const data = { ...validPlayerDetails, gender };
+      expect(() => playerDetailsSchema.parse(data)).not.toThrow();
+    });
+  });
+
+  it("should accept null/absent gender", () => {
+    expect(() =>
+      playerDetailsSchema.parse({ ...validPlayerDetails, gender: null }),
+    ).not.toThrow();
+    const { gender: _gender, ...withoutGender } = {
+      ...validPlayerDetails,
+      gender: "male",
+    };
+    expect(() => playerDetailsSchema.parse(withoutGender)).not.toThrow();
+  });
+
+  it("should reject unknown gender", () => {
+    const data = { ...validPlayerDetails, gender: "M" };
+    expect(() => playerDetailsSchema.parse(data)).toThrow();
+  });
+
   it("should validate height range", () => {
     const data = { ...validPlayerDetails, height_inches: 50 };
     expect(() => playerDetailsSchema.parse(data)).not.toThrow();

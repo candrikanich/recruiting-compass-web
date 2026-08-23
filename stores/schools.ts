@@ -239,10 +239,17 @@ export const useSchoolStore = defineStore("schools", () => {
       schools.value.unshift(data as School);
       return data as School;
     } catch (err: unknown) {
+      // Unique-index violation (schools_family_unit_name_unique) — the DB
+      // safety net for a duplicate that slipped past the client-side gate.
+      const code = (err as { code?: string })?.code;
       const message =
-        err instanceof Error ? err.message : "Failed to create school";
+        code === "23505"
+          ? "This school is already on your list."
+          : err instanceof Error
+            ? err.message
+            : "Failed to create school";
       error.value = message;
-      throw err;
+      throw new Error(message);
     } finally {
       loading.value = false;
     }

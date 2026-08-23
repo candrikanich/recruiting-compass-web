@@ -1,5 +1,5 @@
 /**
- * NCAA baseball schools database
+ * NCAA schools database
  * Comprehensive list of 600+ NCAA Division I, II, III schools
  * Data extracted from data/ncaaSchools.json
  */
@@ -14,7 +14,7 @@ export interface SchoolInfo {
 }
 
 /**
- * Comprehensive database of NCAA baseball schools by division
+ * Comprehensive database of NCAA schools by division
  * Organized by division for efficient lookups
  */
 export const DIVISION_SCHOOLS: Record<NcaaDivision, SchoolInfo[]> =

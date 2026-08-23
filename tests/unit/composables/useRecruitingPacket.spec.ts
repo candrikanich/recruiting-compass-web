@@ -14,11 +14,6 @@ import type {
   VideoLinkRow,
 } from "~/types/models";
 
-const mockFetchAuth = vi.fn();
-
-vi.mock("~/composables/useAuthFetch", () => ({
-  useAuthFetch: () => ({ $fetchAuth: mockFetchAuth }),
-}));
 vi.mock("~/stores/user");
 vi.mock("~/composables/useSchools");
 vi.mock("~/composables/useCoaches");
@@ -518,7 +513,6 @@ describe("useRecruitingPacket", () => {
         generatedHtml,
         generatedData,
         error,
-        showEmailModal,
       } = useRecruitingPacket();
 
       await generatePacket();
@@ -531,80 +525,6 @@ describe("useRecruitingPacket", () => {
       expect(generatedHtml.value).toBeNull();
       expect(generatedData.value).toBeNull();
       expect(error.value).toBeNull();
-      expect(showEmailModal.value).toBe(false);
-    });
-  });
-
-  describe("emailPacket", () => {
-    it("calls API endpoint with email data", async () => {
-      mockFetchAuth.mockResolvedValue({ ok: true });
-
-      const { generatePacket, emailPacket } = useRecruitingPacket();
-
-      await generatePacket();
-
-      await emailPacket({
-        recipients: ["coach@example.com"],
-        subject: "John Smith - Recruiting Profile",
-        body: "Here is my recruiting packet",
-      });
-
-      expect(mockFetchAuth).toHaveBeenCalledWith(
-        "/api/recruiting-packet/email",
-        expect.objectContaining({ method: "POST" }),
-      );
-    });
-
-    it("handles email errors", async () => {
-      mockFetchAuth.mockRejectedValue(new Error("Email send failed"));
-
-      const { generatePacket, emailPacket, error } = useRecruitingPacket();
-
-      await generatePacket();
-
-      try {
-        await emailPacket({
-          recipients: ["coach@example.com"],
-          subject: "Test",
-          body: "Test",
-        });
-      } catch {
-        // Expected
-      }
-
-      expect(error.value).toBeTruthy();
-    });
-
-    it("closes email modal after successful send", async () => {
-      mockFetchAuth.mockResolvedValue({ ok: true });
-
-      const { generatePacket, emailPacket, showEmailModal, setShowEmailModal } =
-        useRecruitingPacket();
-
-      await generatePacket();
-      setShowEmailModal(true);
-
-      expect(showEmailModal.value).toBe(true);
-
-      await emailPacket({
-        recipients: ["coach@example.com"],
-        subject: "Test",
-        body: "Test",
-      });
-
-      expect(showEmailModal.value).toBe(false);
-    });
-  });
-
-  describe("setShowEmailModal", () => {
-    it("toggles email modal visibility", () => {
-      const { showEmailModal, setShowEmailModal } = useRecruitingPacket();
-
-      expect(showEmailModal.value).toBe(false);
-      setShowEmailModal(true);
-      expect(showEmailModal.value).toBe(true);
-      setShowEmailModal(false);
-      expect(showEmailModal.value).toBe(false);
     });
   });
 
@@ -636,36 +556,4 @@ describe("useRecruitingPacket", () => {
     });
   });
 
-  describe("Email defaults", () => {
-    it("generates default subject with athlete name", async () => {
-      const { generatePacket, defaultEmailSubject } = useRecruitingPacket();
-
-      await generatePacket();
-
-      expect(defaultEmailSubject.value).toContain("John Smith");
-      expect(defaultEmailSubject.value).toContain("Recruiting Profile");
-      expect(defaultEmailSubject.value).toBe("John Smith - Recruiting Profile");
-    });
-
-    it("generates default body with athlete details", async () => {
-      const { generatePacket, defaultEmailBody } = useRecruitingPacket();
-
-      await generatePacket();
-
-      expect(defaultEmailBody.value).toContain("John Smith");
-      expect(defaultEmailBody.value).toContain("Dear Coach");
-      expect(defaultEmailBody.value).toContain("Pitcher");
-      expect(defaultEmailBody.value).toContain("2025");
-    });
-
-    it("includes professional intro in email body", async () => {
-      const { generatePacket, defaultEmailBody } = useRecruitingPacket();
-
-      await generatePacket();
-
-      expect(defaultEmailBody.value).toContain("recruiting profile");
-      expect(defaultEmailBody.value).toContain("collegiate opportunities");
-      expect(defaultEmailBody.value).toContain("Best regards");
-    });
-  });
 });

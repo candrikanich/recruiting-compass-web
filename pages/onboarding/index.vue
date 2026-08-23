@@ -100,6 +100,27 @@
             </p>
           </div>
 
+          <!-- Gender -->
+          <div>
+            <label
+              for="onboarding-gender"
+              class="block text-sm font-medium text-slate-700 mb-2"
+            >
+              Gender (Optional)
+            </label>
+            <select
+              id="onboarding-gender"
+              v-model="onboardingData.gender"
+              class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option :value="undefined">Select gender</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+              <option value="other">Other</option>
+              <option value="prefer_not_to_say">Prefer not to say</option>
+            </select>
+          </div>
+
           <!-- Position -->
           <div v-if="onboardingData.primary_sport">
             <label
@@ -378,6 +399,7 @@ import { useAppToast } from "~/composables/useAppToast";
 import { createClientLogger } from "~/utils/logger";
 import { getCanonicalPositions } from "~/utils/positions/canonical";
 import { getGraduationYearOptions } from "~/utils/graduationYears";
+import type { PlayerDetails } from "~/types/models";
 
 const logger = createClientLogger("Onboarding");
 
@@ -553,6 +575,7 @@ const nextScreen = async () => {
           primary_sport: onboardingData.value.primary_sport as string,
           primary_position: onboardingPosition,
           positions: onboardingPosition ? [onboardingPosition] : [],
+          gender: onboardingData.value.gender as PlayerDetails["gender"],
         });
       }
 
@@ -662,6 +685,7 @@ const prefillFromCanonical = () => {
     seedIfEmpty("graduation_year", details.graduation_year);
     seedIfEmpty("primary_sport", details.primary_sport);
     seedIfEmpty("primary_position", details.primary_position);
+    seedIfEmpty("gender", details.gender);
     seedIfEmpty("gpa", details.gpa);
     seedIfEmpty("sat_score", details.sat_score);
     seedIfEmpty("act_score", details.act_score);

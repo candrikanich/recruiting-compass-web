@@ -53,15 +53,9 @@
           {{ recruitingPacketLoading ? "Generating..." : "Generate Packet" }}
         </button>
 
-        <button
-          @click="emit('email-packet')"
-          :disabled="!hasGeneratedPacket || recruitingPacketLoading"
-          class="w-full inline-flex items-center justify-center px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200"
-          :class="
-            !hasGeneratedPacket || recruitingPacketLoading
-              ? 'bg-slate-100 text-slate-500 cursor-not-allowed'
-              : 'bg-linear-to-r from-brand-emerald-600 to-brand-emerald-700 text-white hover:from-brand-emerald-700 hover:to-brand-emerald-800 shadow-xs hover:shadow-md'
-          "
+        <NuxtLink
+          to="/coaches"
+          class="w-full inline-flex items-center justify-center px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 bg-linear-to-r from-brand-emerald-600 to-brand-emerald-700 text-white hover:from-brand-emerald-700 hover:to-brand-emerald-800 shadow-xs hover:shadow-md"
         >
           <svg
             class="w-4 h-4 mr-2"
@@ -76,8 +70,8 @@
               d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
             />
           </svg>
-          Email to Coach
-        </button>
+          Share with a coach
+        </NuxtLink>
       </div>
       <div
         v-if="recruitingPacketError"
@@ -426,7 +420,6 @@ interface Props {
   schoolSizeBreakdown?: Record<string, number>;
   recruitingPacketLoading?: boolean;
   recruitingPacketError?: string | null;
-  hasGeneratedPacket?: boolean;
   showEvents?: boolean;
   showNotifications?: boolean;
   showTasks?: boolean;
@@ -442,7 +435,6 @@ const props = withDefaults(defineProps<Props>(), {
   schoolSizeBreakdown: () => ({}),
   recruitingPacketLoading: false,
   recruitingPacketError: null,
-  hasGeneratedPacket: false,
   showEvents: true,
   showNotifications: true,
   showTasks: true,
@@ -456,7 +448,6 @@ const emit = defineEmits<{
   "delete-task": [id: string];
   "clear-completed": [];
   "generate-packet": [];
-  "email-packet": [];
 }>();
 
 const showTaskForm = ref(false);

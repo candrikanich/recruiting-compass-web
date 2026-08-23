@@ -141,7 +141,7 @@ const getEventEmoji = (type: string) => {
     camp: "⛺",
     official_visit: "🏟️",
     unofficial_visit: "🏫",
-    game: "⚾",
+    game: "🏟️",
   };
   return emojiMap[type] || "📅";
 };

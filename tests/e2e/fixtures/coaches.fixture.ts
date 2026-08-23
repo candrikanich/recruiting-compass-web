@@ -249,7 +249,6 @@ export const coachSelectors = {
   instagramAction: 'button[aria-label*="instagram"], a[href*="instagram.com"]',
 
   // Communication/History
-  communicationsTab: 'button:has-text("Messages"), a[href*="/communications"]',
   logInteractionButton: 'button:has-text("Log Interaction")',
   interactionList: '[data-testid="interaction-list"]',
   interactionItem: '[data-testid="interaction-item"]',
@@ -429,14 +428,6 @@ export const coachHelpers = {
    */
   async clickTextAction(page) {
     await page.click(coachSelectors.textAction);
-  },
-
-  /**
-   * Navigate to coach communications page
-   */
-  async navigateToCommunications(page) {
-    await page.click(coachSelectors.communicationsTab);
-    await page.waitForURL(/\/communications/);
   },
 
   /**

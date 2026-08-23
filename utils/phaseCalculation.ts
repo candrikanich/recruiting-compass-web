@@ -84,7 +84,7 @@ export const PHASE_INFO: Record<
     label: "Committed",
     grade: 12,
     theme: "Post-Commitment",
-    description: "Signed and ready for college baseball",
+    description: "Signed and ready for college",
   },
 };
 

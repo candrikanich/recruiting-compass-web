@@ -18,6 +18,8 @@ export interface AthletePacketData extends Partial<User> {
   height?: string;
   weight?: string;
   position?: string;
+  bats_throws?: string; // e.g. "R/R" — bats/throws, coach-facing
+  phone?: string; // Only set when the athlete allows sharing their phone
   high_school?: string; // Legacy field - prefer school_name
   school_name?: string;
   graduation_year?: number;
@@ -214,17 +216,18 @@ export const getRecruitingPacketStyles = (): string => `
   /* Contact Info */
   .contact-info {
     background: #f8fafc;
-    padding: 0.2in;
+    padding: 0.25in;
     border-radius: 6px;
     margin: 0.2in 0;
-    font-size: 12px;
+    font-size: 15px;
+    line-height: 1.8;
   }
 
   .contact-info-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 0.15in;
-    margin-bottom: 0.05in;
+    gap: 0.2in;
+    margin-bottom: 0.1in;
   }
 
   .contact-info-row:last-child {
@@ -232,13 +235,13 @@ export const getRecruitingPacketStyles = (): string => `
   }
 
   .info-label {
-    font-weight: 600;
-    color: #334155;
+    font-weight: 700;
+    color: #1e293b;
   }
 
   .info-value {
-    color: #475569;
-    word-break: break-all;
+    color: #334155;
+    word-break: break-word;
   }
 
   /* Video Links */
@@ -486,7 +489,10 @@ const renderCoverPage = (athlete: AthletePacketData): string => {
 /**
  * Render athlete profile section with stats and academics
  */
-const renderAthleteProfile = (athlete: AthletePacketData): string => {
+const renderAthleteProfile = (
+  athlete: AthletePacketData,
+  summary: ActivitySummary,
+): string => {
   return `
     <div class="page profile-section">
       <h1>Athlete Profile</h1>
@@ -494,7 +500,7 @@ const renderAthleteProfile = (athlete: AthletePacketData): string => {
       <div class="stats-grid">
         ${athlete.height ? `<div class="stat-card"><div class="value">${athlete.height}</div><div class="label">Height</div></div>` : ""}
         ${athlete.weight ? `<div class="stat-card"><div class="value">${athlete.weight}</div><div class="label">Weight</div></div>` : ""}
-        ${athlete.gpa ? `<div class="stat-card"><div class="value">${athlete.gpa.toFixed(2)}</div><div class="label">GPA</div></div>` : ""}
+        ${athlete.bats_throws ? `<div class="stat-card"><div class="value">${athlete.bats_throws}</div><div class="label">Bats/Throws</div></div>` : ""}
         ${athlete.position ? `<div class="stat-card"><div class="value">${athlete.position}</div><div class="label">Position</div></div>` : ""}
       </div>
 
@@ -502,7 +508,7 @@ const renderAthleteProfile = (athlete: AthletePacketData): string => {
       <div class="contact-info">
         <div class="contact-info-row">
           <div><span class="info-label">Email:</span> <span class="info-value">${athlete.email || "Not provided"}</span></div>
-          <div><span class="info-label">Phone:</span> <span class="info-value">Available upon request</span></div>
+          <div><span class="info-label">Phone:</span> <span class="info-value">${athlete.phone || "Available upon request"}</span></div>
         </div>
       </div>
 
@@ -510,15 +516,15 @@ const renderAthleteProfile = (athlete: AthletePacketData): string => {
         athlete.gpa ||
         athlete.sat_score ||
         athlete.act_score ||
-        athlete.core_courses
+        (athlete.core_courses && athlete.core_courses.length > 0)
           ? `
         <h2>Academic Information</h2>
-        <div class="contact-info">
-          ${athlete.gpa ? `<div class="contact-info-row"><div><span class="info-label">GPA:</span></div><div><span class="info-value">${athlete.gpa.toFixed(2)}</span></div></div>` : ""}
-          ${athlete.sat_score ? `<div class="contact-info-row"><div><span class="info-label">SAT:</span></div><div><span class="info-value">${athlete.sat_score}</span></div></div>` : ""}
-          ${athlete.act_score ? `<div class="contact-info-row"><div><span class="info-label">ACT:</span></div><div><span class="info-value">${athlete.act_score}</span></div></div>` : ""}
-          ${athlete.core_courses && athlete.core_courses.length > 0 ? `<div class="contact-info-row"><div><span class="info-label">Core Courses:</span></div><div><span class="info-value">${athlete.core_courses.join(", ")}</span></div></div>` : ""}
+        <div class="stats-grid">
+          ${athlete.gpa ? `<div class="stat-card"><div class="value">${athlete.gpa.toFixed(2)}</div><div class="label">GPA</div></div>` : ""}
+          ${athlete.sat_score ? `<div class="stat-card"><div class="value">${athlete.sat_score}</div><div class="label">SAT</div></div>` : ""}
+          ${athlete.act_score ? `<div class="stat-card"><div class="value">${athlete.act_score}</div><div class="label">ACT</div></div>` : ""}
         </div>
+        ${athlete.core_courses && athlete.core_courses.length > 0 ? `<div class="contact-info"><div class="contact-info-row"><div><span class="info-label">Core Courses:</span> <span class="info-value">${athlete.core_courses.join(", ")}</span></div></div></div>` : ""}
       `
           : ""
       }
@@ -541,6 +547,8 @@ const renderAthleteProfile = (athlete: AthletePacketData): string => {
       `
           : ""
       }
+
+      ${renderActivitySummary(summary)}
     </div>
   `;
 };
@@ -603,8 +611,8 @@ const renderSchoolsSection = (schools: SchoolGroupedByPriority): string => {
  */
 const renderActivitySummary = (summary: ActivitySummary): string => {
   return `
-    <div class="page activity-summary">
-      <h1>Activity Summary</h1>
+    <div class="activity-summary">
+      <h2>Activity Summary</h2>
 
       <div class="summary-stats">
         <div class="summary-card">
@@ -703,9 +711,8 @@ export const generateRecruitingPacketHTML = (
     <body>
       <div class="packet-container">
         ${renderCoverPage(data.athlete)}
-        ${renderAthleteProfile(data.athlete)}
+        ${renderAthleteProfile(data.athlete, data.activitySummary)}
         ${renderSchoolsSection(data.schools)}
-        ${renderActivitySummary(data.activitySummary)}
       </div>
       <div class="no-print" style="text-align: center; padding: 1in 0; background: #f0f4f8;">
         <button onclick="window.print()" style="padding: 12px 24px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600;">
