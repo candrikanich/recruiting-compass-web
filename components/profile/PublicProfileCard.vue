@@ -3,7 +3,10 @@
 import { computed } from "vue";
 import type { PublicProfileData } from "~/types/models";
 import { formatPositionsShort } from "~/utils/positions/canonical";
-import { buildPrepBaseballUrl } from "~/utils/recruitingLinks";
+import {
+  servicesForSport,
+  serviceProfileUrl,
+} from "~/utils/services/canonical";
 import {
   openTwitter,
   openInstagram,
@@ -47,12 +50,34 @@ const primaryPositionLabel = computed(() =>
   ),
 );
 
-const prepBaseballUrl = computed(() =>
-  buildPrepBaseballUrl(
-    props.profile.athletic?.prep_baseball_state,
-    props.profile.athletic?.prep_baseball_id,
-  ),
-);
+// Recruiting-service rows for the athlete's sport (NCAA ID is handled
+// separately — it is an eligibility-center id, not a registry service).
+const recruitingServices = computed(() => {
+  const a = props.profile.athletic;
+  if (!a) return [];
+  const record = a as Record<string, unknown>;
+  const state =
+    typeof record.prep_baseball_state === "string"
+      ? record.prep_baseball_state
+      : undefined;
+  const name = props.profile.playerName;
+  return servicesForSport(a.primary_sport)
+    .map((def) => {
+      const raw = record[def.key];
+      const value = typeof raw === "string" ? raw : "";
+      const url = serviceProfileUrl(def, { value, state, name });
+      // PBR link is built from state + name, so its row appears whenever that
+      // URL resolves (the stored id is irrelevant); the athlete's name is the
+      // link text. Every other service still keys on its stored value.
+      if (def.linkKind === "prepBaseball") {
+        if (!url) return null;
+        return { key: def.key, label: def.label, value: name, url };
+      }
+      if (!value) return null;
+      return { key: def.key, label: def.label, value, url };
+    })
+    .filter((s): s is NonNullable<typeof s> => s !== null);
+});
 
 const HEADER_GRADIENTS: Record<string, string> = {
   slate: "bg-gradient-to-br from-slate-800 to-slate-700",
@@ -296,9 +321,7 @@ function formatGPA(gpa: number | undefined): string {
       <section
         v-if="
           profile.athletic &&
-          (profile.athletic.ncaa_id ||
-            profile.athletic.perfect_game_id ||
-            prepBaseballUrl)
+          (profile.athletic.ncaa_id || recruitingServices.length)
         "
         class="px-6 py-5"
       >
@@ -315,30 +338,23 @@ function formatGPA(gpa: number | undefined): string {
             </dd>
           </div>
           <div
-            v-if="profile.athletic.perfect_game_id"
+            v-for="svc in recruitingServices"
+            :key="svc.key"
             class="flex justify-between"
           >
-            <dt class="text-gray-500">Perfect Game</dt>
+            <dt class="text-gray-500">{{ svc.label }}</dt>
             <dd class="font-medium">
               <a
-                :href="`https://www.perfectgame.org/Players/Playerprofile.aspx?ID=${profile.athletic.perfect_game_id}`"
+                v-if="svc.url"
+                :href="svc.url"
                 target="_blank"
                 rel="noopener noreferrer"
                 class="text-blue-600 hover:text-blue-800 hover:underline font-mono"
-                >{{ profile.athletic.perfect_game_id }}</a
+                >{{ svc.value }}</a
               >
-            </dd>
-          </div>
-          <div v-if="prepBaseballUrl" class="flex justify-between">
-            <dt class="text-gray-500">Prep Baseball</dt>
-            <dd class="font-medium">
-              <a
-                :href="prepBaseballUrl"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="text-blue-600 hover:text-blue-800 hover:underline font-mono"
-                >View profile</a
-              >
+              <span v-else class="font-mono text-gray-900">{{
+                svc.value
+              }}</span>
             </dd>
           </div>
         </dl>

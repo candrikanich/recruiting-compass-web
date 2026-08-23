@@ -66,6 +66,9 @@ const previewData = computed<PublicProfileData>(() => ({
             (props.details.perfect_game_id as string | undefined) || undefined,
           prep_baseball_id:
             (props.details.prep_baseball_id as string | undefined) || undefined,
+          prep_baseball_state:
+            (props.details.prep_baseball_state as string | undefined) ||
+            undefined,
         }
       : null,
   film: props.settings.show_film ? filmLinks.value : null,

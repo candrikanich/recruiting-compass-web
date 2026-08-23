@@ -3,6 +3,8 @@ import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
 import { createClientLogger } from "~/utils/logger";
 import { compressImage, validateImageFile } from "~/utils/image/compressImage";
+import { ALL_ATTRIBUTE_DEFS } from "~/utils/attributes/canonical";
+import { ALL_SERVICE_DEFS } from "~/utils/services/canonical";
 import type { PreferenceHistoryEntry } from "~/types/models";
 
 export interface UploadResult {
@@ -20,24 +22,28 @@ export interface FormattedHistoryEntry extends PreferenceHistoryEntry {
   }>;
 }
 
+// Attribute (bats/throws/…) and service (perfect_game_id/…) labels come from
+// the canonical registries so edit-history labels stay in sync with the form.
+const REGISTRY_FIELD_LABELS: Record<string, string> = {
+  ...Object.fromEntries(ALL_ATTRIBUTE_DEFS.map((d) => [d.key, d.label])),
+  ...Object.fromEntries(ALL_SERVICE_DEFS.map((s) => [s.key, s.label])),
+};
+
 /**
- * Field labels for profile edit history
+ * Field labels for profile edit history. Registry-sourced attribute/service
+ * labels are merged in last so they win over any local copy.
  */
 const FIELD_LABELS: Record<string, string> = {
   graduation_year: "Graduation Year",
   high_school: "High School",
   club_team: "Club/Travel Team",
   positions: "Positions",
-  bats: "Bats",
-  throws: "Throws",
   height_inches: "Height",
   weight_lbs: "Weight",
   gpa: "GPA",
   sat_score: "SAT Score",
   act_score: "ACT Score",
   ncaa_id: "NCAA ID",
-  perfect_game_id: "Perfect Game ID",
-  prep_baseball_id: "Prep Baseball ID",
   twitter_handle: "Twitter Handle",
   instagram_handle: "Instagram Handle",
   tiktok_handle: "TikTok Handle",
@@ -61,6 +67,7 @@ const FIELD_LABELS: Record<string, string> = {
   travel_team_year: "Travel Team Year",
   travel_team_name: "Travel Team Name",
   travel_team_coach: "Travel Team Coach",
+  ...REGISTRY_FIELD_LABELS,
 };
 
 const logger = createClientLogger("useProfile");
