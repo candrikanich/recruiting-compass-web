@@ -541,7 +541,28 @@ export async function createOneOffTestUser(opts: {
         perPage: 1000,
       });
       const existing = list?.users?.find((u) => u.email === opts.email);
-      if (existing) return existing;
+      if (existing) {
+        // Self-heal: reset the password + keep the email confirmed and metadata
+        // so a re-seed restores known credentials even if they drifted (e.g. a
+        // password-reset test changed a shared demo account). Without this the
+        // account silently keeps whatever password it last had and logins fail.
+        const { data: updated } = await supabase.auth.admin.updateUserById(
+          existing.id,
+          {
+            password: opts.password,
+            email_confirm: true,
+            user_metadata: {
+              ...existing.user_metadata,
+              display_name: opts.displayName,
+              first_name: firstName,
+              last_name: lastName,
+              full_name: opts.displayName,
+              role,
+            },
+          },
+        );
+        return updated?.user ?? existing;
+      }
     }
     throw new Error(`createOneOffTestUser failed: ${error.message}`);
   }
