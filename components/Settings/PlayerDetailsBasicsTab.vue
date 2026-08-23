@@ -64,7 +64,7 @@
               <label
                 class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1 whitespace-nowrap"
               >
-                Gender <span class="normal-case text-slate-400">(optional)</span>
+                Gender <span class="normal-case text-slate-400">(Optional)</span>
               </label>
               <select
                 v-model="form.gender"
