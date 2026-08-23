@@ -88,8 +88,8 @@ describe("MessageComposer", () => {
   it("hides the subject field and shows the SMS counter for the text channel", () => {
     const wrapper = mountComposer(buildController("text"));
     expect(wrapper.find('input[placeholder="Email subject..."]').exists()).toBe(false);
-    expect(wrapper.text()).toContain("/160");
-    expect(wrapper.text()).toContain("SMS limited to 160 characters");
+    expect(wrapper.text()).toContain("/480");
+    expect(wrapper.text()).toContain("Texts are limited to 480 characters");
   });
 
   it("renders the live preview segments, marking unresolved tokens", () => {

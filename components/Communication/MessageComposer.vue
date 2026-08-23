@@ -74,18 +74,18 @@
                     >Message</label
                   >
                   <span v-if="!isEmail" class="text-xs text-slate-500"
-                    >{{ channel.composer.value.body.length }}/160</span
+                    >{{ channel.composer.value.body.length }}/{{ SMS_TEXT_LIMIT }}</span
                   >
                 </div>
                 <textarea
                   v-model="channel.composer.value.body"
                   :rows="isEmail ? 6 : 4"
-                  :maxlength="isEmail ? undefined : 160"
+                  :maxlength="isEmail ? undefined : SMS_TEXT_LIMIT"
                   class="w-full px-3 py-2 rounded-lg border border-slate-300 text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                   placeholder="Your message..."
                 />
                 <p v-if="!isEmail" class="text-xs text-slate-500 mt-2">
-                  SMS limited to 160 characters
+                  Texts are limited to {{ SMS_TEXT_LIMIT }} characters
                 </p>
               </div>
 
@@ -176,6 +176,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, nextTick } from "vue";
 import { useFocusTrap } from "~/composables/useFocusTrap";
+import { SMS_TEXT_LIMIT } from "~/utils/phone";
 import type { ChannelController } from "~/composables/useQuickCommunication";
 import type { Coach } from "~/types/models";
 
