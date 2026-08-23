@@ -25,7 +25,7 @@ describe("resolveCalendarKey", () => {
     expect(resolveCalendarKey("Football", { footballSubdivision: "FCS" })).toBe("FCS");
   });
   it("sports without any published NCAA calendar fall to the generic Other default", () => {
-    for (const s of ["Tennis", "Wrestling", "Water Polo"] as const) {
+    for (const s of ["Tennis", "Water Polo"] as const) {
       expect(resolveCalendarKey(s)).toBe("Other");
     }
   });
@@ -46,5 +46,12 @@ describe("resolveCalendarKey", () => {
     expect(resolveCalendarKey("Ice Hockey", { gender: "female" })).toBe("OTHER_WICEHOCKEY");
     expect(resolveCalendarKey("Ice Hockey", { gender: null })).toBe("OTHER_MICEHOCKEY");
     expect(resolveCalendarKey("Ice Hockey", { gender: "prefer_not_to_say" })).toBe("OTHER_MICEHOCKEY");
+  });
+  it("Wrestling: gender-split sub-keys, default men's", () => {
+    expect(resolveCalendarKey("Wrestling", { gender: "male" })).toBe("OTHER_MWRESTLING");
+    expect(resolveCalendarKey("Wrestling", { gender: "female" })).toBe("OTHER_WWRESTLING");
+    expect(resolveCalendarKey("Wrestling", { gender: null })).toBe("OTHER_MWRESTLING");
+    expect(resolveCalendarKey("Wrestling", { gender: "other" })).toBe("OTHER_MWRESTLING");
+    expect(resolveCalendarKey("Wrestling", { gender: "prefer_not_to_say" })).toBe("OTHER_MWRESTLING");
   });
 });

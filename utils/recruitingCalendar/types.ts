@@ -22,7 +22,9 @@ export type NcaaCalendarKey =
   | "OTHER_MICEHOCKEY"
   | "OTHER_WICEHOCKEY"
   | "OTHER_ROWING"
-  | "OTHER_FIELDHOCKEY";
+  | "OTHER_FIELDHOCKEY"
+  | "OTHER_MWRESTLING"
+  | "OTHER_WWRESTLING";
 
 export type Division = "D1" | "D2" | "D3";
 

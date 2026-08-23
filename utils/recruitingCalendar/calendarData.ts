@@ -952,12 +952,10 @@ const WLA: SportCalendar = {
 // ---------------------------------------------------------------------------
 // Other — Division I "All Other Sports" generic default. Used for app
 // sports with no dedicated NCAA recruiting calendar AND no sport-specific
-// windows enumerated in the "Other" bundle PDF: Tennis, Water Polo, Wrestling
-// (see resolver.ts comment — Wrestling IS enumerated in the source but is
-// deliberately kept on the generic default per task scope), non-male Golf.
-// Soccer, Swimming, Ice Hockey, Rowing, and Field Hockey have their own
-// OTHER_* sub-calendars below (transcribed from the same PDF) instead of
-// falling back to this generic default.
+// windows enumerated in the "Other" bundle PDF: Tennis, Water Polo, and
+// non-male Golf. Soccer, Swimming, Ice Hockey, Rowing, Field Hockey, and
+// Wrestling have their own OTHER_* sub-calendars below (transcribed from the
+// same PDF) instead of falling back to this generic default.
 // ---------------------------------------------------------------------------
 const OTHER: SportCalendar = {
   source: `${BUCKET}/2026–27D1Rec_OtherRecruitingCalendar.pdf`,
@@ -1195,6 +1193,60 @@ const OTHER_FIELDHOCKEY: SportCalendar = {
   milestones: [],
 };
 
+const OTHER_MWRESTLING: SportCalendar = {
+  source: OTHER_SOURCE,
+  verifiedOn: VERIFIED_ON,
+  periods: [
+    {
+      type: "dead",
+      start: "2026-11-09",
+      end: "2026-11-12",
+      description:
+        "Dead Period — Monday through Thursday of the initial week for the fall signing date for athletics aid agreements",
+      confidence: "HIGH",
+    },
+    {
+      type: "recruiting_shutdown",
+      start: "2026-12-24",
+      end: "2026-12-26",
+      description: "Recruiting Shutdown, Dec 24–26 (label only)",
+      confidence: "HIGH",
+    },
+    {
+      type: "recruiting_shutdown",
+      start: "2027-03-16",
+      end: "2027-03-21",
+      description: "Recruiting Shutdown — Tuesday through Sunday of the NCAA Division I Wrestling Championships",
+      confidence: "HIGH",
+    },
+  ],
+  milestones: [],
+};
+
+const OTHER_WWRESTLING: SportCalendar = {
+  source: OTHER_SOURCE,
+  verifiedOn: VERIFIED_ON,
+  periods: [
+    {
+      type: "dead",
+      start: "2026-11-09",
+      end: "2026-11-12",
+      description:
+        "Dead Period — Monday through Thursday of the initial week for the fall signing date for athletics aid agreements",
+      confidence: "HIGH",
+    },
+    {
+      type: "dead",
+      start: "2026-07-26",
+      end: "2026-08-01",
+      description:
+        "Dead Period — Monday before the National Wrestling Coaches Association Convention through the day of adjournment of the convention",
+      confidence: "MEDIUM",
+    },
+  ],
+  milestones: [],
+};
+
 export const D1_CALENDARS: Record<NcaaCalendarKey, SportCalendar> = {
   MBA,
   WSB,
@@ -1215,6 +1267,8 @@ export const D1_CALENDARS: Record<NcaaCalendarKey, SportCalendar> = {
   OTHER_WICEHOCKEY,
   OTHER_ROWING,
   OTHER_FIELDHOCKEY,
+  OTHER_MWRESTLING,
+  OTHER_WWRESTLING,
 };
 
 // ---------------------------------------------------------------------------

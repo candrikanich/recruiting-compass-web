@@ -24,29 +24,24 @@ const SINGLE_CALENDAR_SPORTS: Partial<Record<AppSport, NcaaCalendarKey>> = {
 };
 
 /**
- * Sports with distinct men's/women's NCAA calendars. Soccer and Ice Hockey
- * are "Other"-bundle sports whose PDF enumerates separate men's/women's
- * windows (see calendarData.ts OTHER_MSOCCER/OTHER_WSOCCER/
- * OTHER_MICEHOCKEY/OTHER_WICEHOCKEY).
+ * Sports with distinct men's/women's NCAA calendars. Soccer, Ice Hockey, and
+ * Wrestling are "Other"-bundle sports whose PDF enumerates separate men's/
+ * women's windows (see calendarData.ts OTHER_MSOCCER/OTHER_WSOCCER/
+ * OTHER_MICEHOCKEY/OTHER_WICEHOCKEY/OTHER_MWRESTLING/OTHER_WWRESTLING).
  */
 const GENDER_SPLIT_SPORTS: Partial<Record<AppSport, { men: NcaaCalendarKey; women: NcaaCalendarKey }>> = {
   Basketball: { men: "MBB", women: "WBB" },
   Lacrosse: { men: "MLA", women: "WLA" },
   Soccer: { men: "OTHER_MSOCCER", women: "OTHER_WSOCCER" },
   "Ice Hockey": { men: "OTHER_MICEHOCKEY", women: "OTHER_WICEHOCKEY" },
+  Wrestling: { men: "OTHER_MWRESTLING", women: "OTHER_WWRESTLING" },
 };
 
 /**
  * App sports with no published NCAA recruiting calendar AND no sport-specific
  * windows in the "Other" bundle — always the generic "Other" default.
- *
- * NOTE: the "Other" bundle PDF does enumerate Men's/Women's Wrestling windows
- * (Nov dead period + Dec/March recruiting shutdowns), but per task scope
- * Wrestling is intentionally kept on the generic default rather than split
- * into its own sub-calendar — see task-2b-report.md "concerns" for the
- * data-vs-instruction discrepancy this leaves on record.
  */
-const NO_CALENDAR_SPORTS: ReadonlySet<AppSport> = new Set<AppSport>(["Tennis", "Wrestling", "Water Polo"]);
+const NO_CALENDAR_SPORTS: ReadonlySet<AppSport> = new Set<AppSport>(["Tennis", "Water Polo"]);
 
 const isMen = (gender: string | null | undefined): boolean => gender !== "female";
 

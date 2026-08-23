@@ -21,6 +21,8 @@ const ALL_KEYS = [
   "OTHER_WICEHOCKEY",
   "OTHER_ROWING",
   "OTHER_FIELDHOCKEY",
+  "OTHER_MWRESTLING",
+  "OTHER_WWRESTLING",
 ] as const;
 const ISO = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -90,6 +92,8 @@ describe("Other sub-calendars (per-sport bundle expansion)", () => {
       "OTHER_WICEHOCKEY",
       "OTHER_ROWING",
       "OTHER_FIELDHOCKEY",
+      "OTHER_MWRESTLING",
+      "OTHER_WWRESTLING",
     ] as const;
     for (const k of subKeys) {
       expect(D1_CALENDARS[k].periods.length, k).toBeGreaterThan(0);
@@ -100,5 +104,8 @@ describe("Other sub-calendars (per-sport bundle expansion)", () => {
   });
   it("ice hockey sub-calendars are gender-distinct", () => {
     expect(D1_CALENDARS.OTHER_MICEHOCKEY.periods).not.toEqual(D1_CALENDARS.OTHER_WICEHOCKEY.periods);
+  });
+  it("wrestling sub-calendars are gender-distinct", () => {
+    expect(D1_CALENDARS.OTHER_MWRESTLING.periods).not.toEqual(D1_CALENDARS.OTHER_WWRESTLING.periods);
   });
 });
