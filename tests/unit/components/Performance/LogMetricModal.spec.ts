@@ -122,24 +122,38 @@ describe("LogMetricModal - Form Fields", () => {
     const options = wrapper.find("#metricType").findAll("option");
     expect(options).toHaveLength(13); // 11 baseball types + "other" + empty option
 
-    // Verify registry-backed labels (no unit repeated in the label)
-    expect(options[0].text()).toBe("Select Metric");
-    expect(options[1].text()).toBe("Fastball Velocity");
-    expect(options[2].text()).toBe("Exit Velocity");
-    expect(options[3].text()).toBe("Batting Average");
-    expect(options[4].text()).toBe("60-Yard Dash");
-    expect(options[5].text()).toBe("Pop Time");
-    expect(options[6].text()).toBe("ERA");
-    expect(options[12].text()).toBe("Other Metric");
-
-    // Verify registry-ordered values
-    expect(options[1].element.value).toBe("velocity");
-    expect(options[2].element.value).toBe("exit_velo");
-    expect(options[3].element.value).toBe("batting_avg");
-    expect(options[4].element.value).toBe("sixty_time");
-    expect(options[5].element.value).toBe("pop_time");
-    expect(options[6].element.value).toBe("era");
-    expect(options[12].element.value).toBe("other");
+    // Grouped picker order (Hitting → Pitching → Fielding → Speed → Other),
+    // registry-backed labels (no unit repeated in the label).
+    expect(options.map((o) => o.text())).toEqual([
+      "Select Metric",
+      "Exit Velocity",
+      "Batting Average",
+      "On-Base Percentage",
+      "Slugging Percentage",
+      "Fastball Velocity",
+      "ERA",
+      "WHIP",
+      "Strikeouts",
+      "Pop Time",
+      "Fielding Percentage",
+      "60-Yard Dash",
+      "Other Metric",
+    ]);
+    expect(options.map((o) => o.element.value)).toEqual([
+      "",
+      "exit_velo",
+      "batting_avg",
+      "on_base_pct",
+      "slugging_pct",
+      "velocity",
+      "era",
+      "whip",
+      "strikeouts",
+      "pop_time",
+      "fielding_pct",
+      "sixty_time",
+      "other",
+    ]);
   });
 
   it("filters the metric-type list to the athlete's primary sport", () => {
@@ -159,11 +173,11 @@ describe("LogMetricModal - Form Fields", () => {
     expect(values).toEqual([
       "",
       "points_per_game",
-      "rebounds_per_game",
-      "assists_per_game",
       "field_goal_pct",
       "three_point_pct",
       "free_throw_pct",
+      "assists_per_game",
+      "rebounds_per_game",
       "steals_per_game",
       "blocks_per_game",
       "vertical_jump",
