@@ -68,7 +68,7 @@ const typeOptions = computed(() => [
   { value: "phone_call", label: "☎️ Phone Call" },
   { value: "in_person_visit", label: "👥 In-Person Visit" },
   { value: "virtual_meeting", label: "💻 Virtual Meeting" },
-  { value: "camp", label: "⚾ Camp" },
+  { value: "camp", label: "⛺ Camp" },
   { value: "showcase", label: "🎯 Showcase" },
   { value: "tweet", label: "X (Twitter)" },
   { value: "dm", label: "💭 DM" },

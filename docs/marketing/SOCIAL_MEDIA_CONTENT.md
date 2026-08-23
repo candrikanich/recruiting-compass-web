@@ -44,7 +44,7 @@ coaches reaching out without context.
 We built a better way. Sign up free today.
 
 recruitingcompass.com
-#BaseballRecruiting #CollegeAthletics
+#CollegeRecruiting #CollegeAthletics
 ```
 
 **Post 1B (Afternoon)**
@@ -227,7 +227,7 @@ Coaches care about:
 Recruiting Compass helps you demonstrate all three.
 
 recruitingcompass.com
-#BaseballRecruiting
+#CollegeRecruiting
 ```
 
 ### Day 5 - CTA & Momentum
@@ -277,7 +277,7 @@ You'll thank yourself later.
 
 ↓ Start free (no credit card)
 recruitingcompass.com
-#BaseballRecruiting
+#CollegeRecruiting
 ```
 
 ---
@@ -290,7 +290,7 @@ recruitingcompass.com
 
 ```
 Caption:
-Your recruiting headquarters is here. 🎓⚾
+Your recruiting headquarters is here. 🎓🏅
 
 Tired of juggling spreadsheets, email threads, and text chains?
 Meet Recruiting Compass—the free platform that organizes your
@@ -306,7 +306,7 @@ Everything you need in one place.
 
 Link in bio to sign up free (no credit card required)
 
-#RecruitingCompass #CollegeBaseball #Recruiting101
+#RecruitingCompass #CollegeSports #Recruiting101
 ```
 
 **Day 3 Post**
@@ -417,7 +417,7 @@ Stop wondering what to do. Get coached through it.
 ```
 Introducing Recruiting Compass: Bringing Clarity to College Recruiting
 
-The college baseball recruiting process is unnecessarily complex.
+The college recruiting process is unnecessarily complex.
 Student-athletes and families navigate:
 
 • Managing 15-20+ potential schools
@@ -453,14 +453,14 @@ Join us. Free to start, no credit card required.
 - #RecruitingCompass
 - #CollegeRecruiting
 - #CollegeAthletics
-- #BaseballRecruiting
+- #CollegeRecruiting
 
 ### Secondary Hashtags (Mix and match)
 
 - #StudentAthlete
 - #Recruiting101
-- #CollegeBaseball
-- #D1Baseball
+- #CollegeSports
+- #D1Athletics
 - #AthleteLife
 - #RecruitingTips
 - #CollegeFootball (if expanding)
@@ -521,16 +521,16 @@ Join us. Free to start, no credit card required.
 
 ### Accounts to Follow/Mention
 
-- @ABCA (American Baseball Coaches Association)
+- @NCAA (college athletics governing body)
 - @Perfect_Game (recruiting service)
-- @BaseballAmerica (media)
-- College baseball programs (where you recruit)
-- High school baseball programs
+- College recruiting media outlets
+- College athletic programs (where you recruit)
+- High school athletic programs
 
 ### Collaboration Opportunities
 
-- Partner with baseball Twitter influencers
-- Feature in baseball news websites
+- Partner with recruiting Twitter influencers
+- Feature in recruiting news websites
 - Guest post on recruiting blogs
 - Sponsorships of recruiting events
 
@@ -608,7 +608,7 @@ Thanks for your patience.
 
 ### Student-Athlete Stories
 
-- Journey to college baseball
+- Journey to college athletics
 - Recruiting lessons learned
 - How Recruiting Compass helped
 - Advice for younger players

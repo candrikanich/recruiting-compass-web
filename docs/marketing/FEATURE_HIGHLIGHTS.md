@@ -114,7 +114,7 @@ Get a fit score (1-10 scale) for every school based on your academic, athletic, 
 
 ### Feature Overview (2-3 Sentences)
 
-With 1,000+ colleges offering baseball, how do you know which ones are actually a good fit? Recruiting Compass analyzes your academics, athleticism, location preferences, and goals to give each school a fit score. No more guessing—understand exactly why a school is (or isn't) right for you.
+With thousands of colleges offering athletic programs, how do you know which ones are actually a good fit? Recruiting Compass analyzes your academics, athleticism, location preferences, and goals to give each school a fit score. No more guessing—understand exactly why a school is (or isn't) right for you.
 
 ### Key Benefits
 

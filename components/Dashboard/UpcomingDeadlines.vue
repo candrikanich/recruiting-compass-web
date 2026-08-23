@@ -162,7 +162,7 @@ const getOfferTypeLabel = (type: string): string => {
 const getEventTypeLabel = (type: string): string => {
   const labels: Record<string, string> = {
     showcase: "🎯 Showcase",
-    camp: "⚾ Camp",
+    camp: "⛺ Camp",
     official_visit: "🏫 Official Visit",
     unofficial_visit: "🏫 Unofficial Visit",
     game: "🎮 Game",

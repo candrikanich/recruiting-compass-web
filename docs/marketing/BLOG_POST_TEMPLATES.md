@@ -217,9 +217,9 @@ For each school, find:
 Resources:
 
 - Perfect Game rankings
-- College Baseball websites
+- College athletics websites
 - Coaching staff social media
-- Baseball America
+- College sports media outlets
 
 Write down 5-7 schools.
 
@@ -337,10 +337,10 @@ Start with this framework. Build your list. And then attack it with focus and in
 
 ---
 
-### POST 3: 5 Mistakes Parents Make in College Baseball Recruiting (And How to Avoid Them)
+### POST 3: 5 Mistakes Parents Make in College Recruiting (And How to Avoid Them)
 
 **Headline:**
-5 Critical Mistakes Parents Make in College Baseball Recruiting (And How to Avoid Them)
+5 Critical Mistakes Parents Make in College Recruiting (And How to Avoid Them)
 
 **Subheading:**
 Learn from common recruiting pitfalls so you can support your student-athlete effectively without sabotaging their opportunities.
@@ -352,7 +352,7 @@ Learn from common recruiting pitfalls so you can support your student-athlete ef
 
 **Body:**
 
-If your son or daughter is a baseball player, you know how intense the recruiting process can be. As a parent, you want to help. But navigating recruiting waters can be tricky—there are plenty of ways to inadvertently hurt your student's chances.
+If your son or daughter is a student-athlete, you know how intense the recruiting process can be. As a parent, you want to help. But navigating recruiting waters can be tricky—there are plenty of ways to inadvertently hurt your student's chances.
 
 I've worked with hundreds of families going through recruiting. I've seen the good, the bad, and the ugly. Here are the five most common mistakes parents make—and how to avoid them.
 

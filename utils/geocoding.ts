@@ -34,7 +34,7 @@ export const geocodeAddress = async (
       `https://nominatim.openstreetmap.org/search?q=${encodedAddress}&format=json&limit=1`,
       {
         headers: {
-          "User-Agent": "BaseballRecruitingTracker/1.0",
+          "User-Agent": "TheRecruitingCompass/1.0",
         },
       },
     );
@@ -79,7 +79,7 @@ export const reverseGeocode = async (
       `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`,
       {
         headers: {
-          "User-Agent": "BaseballRecruitingTracker/1.0",
+          "User-Agent": "TheRecruitingCompass/1.0",
         },
       },
     );

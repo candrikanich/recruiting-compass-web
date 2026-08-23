@@ -67,14 +67,14 @@ Recruiting Compass brings everything together in one intuitive platform:
 
 **Market Size:**
 
-- 300,000+ student-athletes in college baseball annually
+- 300,000+ student-athletes in college athletics annually
 - 4 million+ high school student-athletes across all sports
 - Every student-athlete goes through recruiting
 - Parent involvement is critical
 
 **Target Audience:**
 
-- High school student-athletes (baseball initially, expandable)
+- High school student-athletes (all sports)
 - Parents helping guide the recruiting process
 - Coaches looking for better tools
 
@@ -146,7 +146,7 @@ Chris is passionate about [your passions] and believes that better tools and org
 
 **Market Context:**
 
-- 300,000+ baseball student-athletes annually
+- 300,000+ college student-athletes annually
 - 4 million+ high school student-athletes (all sports)
 - Target demographic: 14-18 year-olds + parents
 - Peak recruiting season: Sophomore-Junior year
@@ -211,11 +211,11 @@ Chris is passionate about [your passions] and believes that better tools and org
 ```
 FOR IMMEDIATE RELEASE
 
-Recruiting Compass Launches Free Platform to Simplify College Baseball Recruiting
+Recruiting Compass Launches Free Platform to Simplify College Recruiting
 
 New platform brings clarity to chaotic recruiting process for student-athletes and families
 
-[Your City], [Date] – Recruiting Compass today announced the launch of its free platform designed to organize the entire college baseball recruiting journey. The platform solves a critical gap in the market: bringing together school management, coach interaction tracking, recruiting timeline, and family collaboration in one place.
+[Your City], [Date] – Recruiting Compass today announced the launch of its free platform designed to organize the entire college recruiting journey. The platform solves a critical gap in the market: bringing together school management, coach interaction tracking, recruiting timeline, and family collaboration in one place.
 
 The platform launches with four core features:
 • School list management with fit scores
@@ -410,7 +410,7 @@ Location: [Your city, state]
 
 ### Sports/Athletic Angles
 
-- "Baseball recruiting getting organized with new platform"
+- "Recruiting getting organized with new platform"
 - "How technology is changing college recruiting"
 - "Player development and recruitment: The next frontier"
 
