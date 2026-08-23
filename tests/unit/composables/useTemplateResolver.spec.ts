@@ -171,5 +171,29 @@ describe("useTemplateResolver", () => {
       expect(result.values.playerName).toBe("Jordan Ellis");
       expect(result.values.daysSinceContact).toBeUndefined();
     });
+
+    it("resolves [[gate|text]] optional spans — no bracket leak into fields", async () => {
+      const resolver = useTemplateResolver();
+      const athleteCtx = await resolver.buildAthleteContext("athlete1");
+
+      const result = await resolver.resolveTemplate(
+        {
+          subject: "[[coachSalutation|{{coachSalutation}}]] — recruit",
+          body: "Reaching out.[[missingGate| SHOULD DROP]] Thanks.",
+        },
+        {
+          school: { name: "Ohio State University" },
+          coach: { last_name: "Delgado" },
+        },
+        athleteCtx,
+      );
+
+      // Present gate keeps inner text (with its {{token}} substituted); absent
+      // gate drops the whole span. No raw `[[` wrapper survives into the fields.
+      expect(result.subject).not.toContain("[[");
+      expect(result.subject).toBe("Coach Delgado — recruit");
+      expect(result.body).not.toContain("[[");
+      expect(result.body).not.toContain("SHOULD DROP");
+    });
   });
 });

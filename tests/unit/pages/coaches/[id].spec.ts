@@ -30,6 +30,8 @@ vi.mock("~/composables/useCoaches", () => ({
     getCoach: mockGetCoach,
     updateCoach: mockUpdateCoach,
     smartDelete: mockSmartDelete,
+    coaches: ref([]),
+    fetchCoaches: vi.fn().mockResolvedValue(undefined),
   })),
 }));
 
@@ -138,11 +140,19 @@ vi.mock("~/components/Coach/CoachNotesEditor.vue", () => ({
   },
 }));
 
-vi.mock("~/components/Coach/CoachRecentInteractions.vue", () => ({
+vi.mock("~/components/Coach/CoachInteractionsLog.vue", () => ({
   default: {
-    name: "CoachRecentInteractions",
+    name: "CoachInteractionsLog",
     props: ["interactions", "coachName"],
-    template: '<div data-test="coach-recent-interactions">Interactions</div>',
+    template: '<div data-test="coach-interactions-log">Interactions</div>',
+  },
+}));
+
+vi.mock("~/components/Coach/CoachMetricsPanel.vue", () => ({
+  default: {
+    name: "CoachMetricsPanel",
+    props: ["metrics", "comparison", "insights"],
+    template: '<div data-test="coach-metrics-panel">Metrics</div>',
   },
 }));
 
@@ -278,9 +288,10 @@ describe("Coach Detail Page", () => {
 
       await flushPromises();
 
+      // School-wide (not coach-filtered): the metrics panel ranks this coach
+      // against the school's others; per-coach filtering happens in-page.
       expect(mockFetchInteractions).toHaveBeenCalledWith({
         schoolId: "school-123",
-        coachId: "coach-123",
       });
     });
 
@@ -660,7 +671,7 @@ describe("Coach Detail Page", () => {
       await flushPromises();
 
       expect(
-        wrapper.find('[data-test="coach-recent-interactions"]').exists(),
+        wrapper.find('[data-test="coach-interactions-log"]').exists(),
       ).toBe(true);
     });
   });
