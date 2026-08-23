@@ -1,7 +1,27 @@
 import { describe, it, expect } from "vitest";
 import { D1_CALENDARS, D2_ALL_SPORTS, D3_FALLBACK } from "~/utils/recruitingCalendar/calendarData";
 
-const ALL_KEYS = ["MBA", "WSB", "MBB", "WBB", "FBS", "FCS", "XCTF", "WVB", "MGO", "MLA", "WLA", "Other"] as const;
+const ALL_KEYS = [
+  "MBA",
+  "WSB",
+  "MBB",
+  "WBB",
+  "FBS",
+  "FCS",
+  "XCTF",
+  "WVB",
+  "MGO",
+  "MLA",
+  "WLA",
+  "Other",
+  "OTHER_MSOCCER",
+  "OTHER_WSOCCER",
+  "OTHER_SWIM",
+  "OTHER_MICEHOCKEY",
+  "OTHER_WICEHOCKEY",
+  "OTHER_ROWING",
+  "OTHER_FIELDHOCKEY",
+] as const;
 const ISO = /^\d{4}-\d{2}-\d{2}$/;
 
 describe("calendarData integrity (L1)", () => {
@@ -54,5 +74,31 @@ describe("D2/D3 fallbacks", () => {
       expect(c.periods.length).toBeGreaterThan(0);
       expect(c.verifiedOn).toBe("2026-08-23");
     }
+  });
+  it("D3_FALLBACK is the generic Other default, not a sub-calendar", () => {
+    expect(D3_FALLBACK).toBe(D1_CALENDARS.Other);
+  });
+});
+
+describe("Other sub-calendars (per-sport bundle expansion)", () => {
+  it("each new sub-key has more/different periods than the generic Other default", () => {
+    const subKeys = [
+      "OTHER_MSOCCER",
+      "OTHER_WSOCCER",
+      "OTHER_SWIM",
+      "OTHER_MICEHOCKEY",
+      "OTHER_WICEHOCKEY",
+      "OTHER_ROWING",
+      "OTHER_FIELDHOCKEY",
+    ] as const;
+    for (const k of subKeys) {
+      expect(D1_CALENDARS[k].periods.length, k).toBeGreaterThan(0);
+    }
+  });
+  it("soccer sub-calendars are gender-distinct", () => {
+    expect(D1_CALENDARS.OTHER_MSOCCER.periods).not.toEqual(D1_CALENDARS.OTHER_WSOCCER.periods);
+  });
+  it("ice hockey sub-calendars are gender-distinct", () => {
+    expect(D1_CALENDARS.OTHER_MICEHOCKEY.periods).not.toEqual(D1_CALENDARS.OTHER_WICEHOCKEY.periods);
   });
 });

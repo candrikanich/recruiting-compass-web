@@ -950,14 +950,14 @@ const WLA: SportCalendar = {
 };
 
 // ---------------------------------------------------------------------------
-// Other — Division I "All Other Sports" (catch-all for app sports with no
-// dedicated NCAA recruiting calendar: Soccer, Swimming, Tennis, Wrestling,
-// Ice Hockey, Field Hockey, Rowing, Water Polo — and non-male Golf).
-// Only the "ALL OTHER SPORTS" track is used here (the app's true fallback);
-// the per-sport breakdowns in the source fragment (field hockey, women's
-// golf, gymnastics, rowing, ice hockey, soccer, swimming, wrestling) are
-// finer-grained than this project's single "Other" calendar key models, and
-// are not separately surfaced.
+// Other — Division I "All Other Sports" generic default. Used for app
+// sports with no dedicated NCAA recruiting calendar AND no sport-specific
+// windows enumerated in the "Other" bundle PDF: Tennis, Water Polo, Wrestling
+// (see resolver.ts comment — Wrestling IS enumerated in the source but is
+// deliberately kept on the generic default per task scope), non-male Golf.
+// Soccer, Swimming, Ice Hockey, Rowing, and Field Hockey have their own
+// OTHER_* sub-calendars below (transcribed from the same PDF) instead of
+// falling back to this generic default.
 // ---------------------------------------------------------------------------
 const OTHER: SportCalendar = {
   source: `${BUCKET}/2026–27D1Rec_OtherRecruitingCalendar.pdf`,
@@ -969,6 +969,226 @@ const OTHER: SportCalendar = {
       end: "2026-11-12",
       description:
         "Dead Period — Monday through Thursday of the initial week for the fall signing date for athletics aid agreements",
+      confidence: "HIGH",
+    },
+  ],
+  milestones: [],
+};
+
+// ---------------------------------------------------------------------------
+// OTHER_* — per-sport sub-calendars enumerated within the D1 "Other" bundle
+// PDF. Only sports the fragment actually enumerates dead/quiet/
+// recruiting_shutdown windows for get a sub-key; Tennis, Wrestling, and Water
+// Polo have no dedicated table in the source and stay on the generic OTHER
+// default above (see resolver.ts + task report for the Wrestling scope note).
+// All cite the same "Other" D1 PDF as OTHER.
+// ---------------------------------------------------------------------------
+const OTHER_SOURCE = `${BUCKET}/2026–27D1Rec_OtherRecruitingCalendar.pdf`;
+
+const OTHER_MSOCCER: SportCalendar = {
+  source: OTHER_SOURCE,
+  verifiedOn: VERIFIED_ON,
+  periods: [
+    {
+      type: "dead",
+      start: "2026-11-09",
+      end: "2026-11-12",
+      description:
+        "Dead Period — Monday through Thursday of the initial week for the fall signing date for athletics aid agreements",
+      confidence: "HIGH",
+    },
+    {
+      type: "dead",
+      start: "2026-12-11",
+      end: "2026-12-14",
+      description:
+        "Dead Period — Friday through Monday of the NCAA Division I Men's Soccer Championship. A coaching staff member may attend an event conducted in conjunction with and in the host city of the championship.",
+      confidence: "HIGH",
+    },
+    {
+      type: "quiet",
+      start: "2026-12-23",
+      end: "2026-12-25",
+      description: "Quiet Period, Dec 23–25 (label only)",
+      confidence: "HIGH",
+    },
+  ],
+  milestones: [],
+};
+
+const OTHER_WSOCCER: SportCalendar = {
+  source: OTHER_SOURCE,
+  verifiedOn: VERIFIED_ON,
+  periods: [
+    {
+      type: "dead",
+      start: "2026-08-01",
+      end: "2026-08-11",
+      description: "Dead Period, Aug 1–11 (label only)",
+      confidence: "HIGH",
+    },
+    {
+      type: "dead",
+      start: "2026-11-09",
+      end: "2026-11-12",
+      description:
+        "Dead Period — Monday through Thursday of the initial week for the fall signing date for athletics aid agreements",
+      confidence: "HIGH",
+    },
+    {
+      type: "dead",
+      start: "2026-12-16",
+      end: "2027-01-06",
+      description: "Dead Period, Dec 16–Jan 6, 2027 (label only)",
+      confidence: "HIGH",
+    },
+    {
+      type: "dead",
+      start: "2027-07-28",
+      end: "2027-07-31",
+      description:
+        "For four-year prospective student-athletes, three (3) consecutive weeks starting 21 days following the final date to provide notification of transfer",
+      confidence: "MEDIUM",
+    },
+  ],
+  milestones: [],
+};
+
+const OTHER_SWIM: SportCalendar = {
+  source: OTHER_SOURCE,
+  verifiedOn: VERIFIED_ON,
+  periods: [
+    {
+      type: "recruiting_shutdown",
+      start: "2026-08-17",
+      end: "2026-08-23",
+      description: "Recruiting Shutdown — the third Monday in August through the following Sunday",
+      confidence: "HIGH",
+    },
+    {
+      type: "dead",
+      start: "2026-11-09",
+      end: "2026-11-12",
+      description:
+        "Dead Period — Monday through Thursday of the initial week for the fall signing date for athletics aid agreements",
+      confidence: "HIGH",
+    },
+    {
+      type: "recruiting_shutdown",
+      start: "2026-12-18",
+      end: "2027-01-07",
+      description: "Recruiting Shutdown, Dec 18–Jan 7, 2027 (label only)",
+      confidence: "HIGH",
+    },
+    {
+      type: "recruiting_shutdown",
+      start: "2027-02-07",
+      end: "2027-02-20",
+      description:
+        "Recruiting Shutdown — 14 consecutive days beginning with the Sunday that is 38 days before the first day of the NCAA Division I Women's Swimming Championship",
+      confidence: "HIGH",
+    },
+  ],
+  milestones: [],
+};
+
+const OTHER_MICEHOCKEY: SportCalendar = {
+  source: OTHER_SOURCE,
+  verifiedOn: VERIFIED_ON,
+  periods: [
+    {
+      type: "dead",
+      start: "2026-11-09",
+      end: "2026-11-12",
+      description:
+        "Dead Period — Monday through Thursday of the initial week for the fall signing date for athletics aid agreements",
+      confidence: "HIGH",
+    },
+    {
+      // "@ NOON" end-time boundary rounded to the day per the locked edge-case rule.
+      type: "dead",
+      start: "2027-04-07",
+      end: "2027-04-11",
+      description:
+        "Dead Period — Wednesday before the NCAA Division I Men's Ice Hockey Championship to the Sunday after the championship game (effective noon)",
+      confidence: "HIGH",
+    },
+  ],
+  milestones: [],
+};
+
+const OTHER_WICEHOCKEY: SportCalendar = {
+  source: OTHER_SOURCE,
+  verifiedOn: VERIFIED_ON,
+  periods: [
+    {
+      type: "dead",
+      start: "2026-11-09",
+      end: "2026-11-12",
+      description:
+        "Dead Period — Monday through Thursday of the initial week for the fall signing date for athletics aid agreements",
+      confidence: "HIGH",
+    },
+    {
+      // "@ NOON" end-time boundary rounded to the day per the locked edge-case rule.
+      type: "dead",
+      start: "2027-03-18",
+      end: "2027-03-22",
+      description:
+        "Dead Period — the day prior to the National Collegiate Women's Ice Hockey Championship to the day after the game (effective noon)",
+      confidence: "HIGH",
+    },
+    {
+      type: "quiet",
+      start: "2027-04-26",
+      end: "2027-05-31",
+      description:
+        "Quiet Period — the Monday prior to the American Hockey Coaches Association Convention through May 31",
+      confidence: "HIGH",
+    },
+  ],
+  milestones: [],
+};
+
+const OTHER_ROWING: SportCalendar = {
+  source: OTHER_SOURCE,
+  verifiedOn: VERIFIED_ON,
+  periods: [
+    {
+      type: "dead",
+      start: "2026-11-09",
+      end: "2026-11-12",
+      description:
+        "Dead Period — Monday through Thursday of the initial week for the fall signing date for athletics aid agreements",
+      confidence: "HIGH",
+    },
+    {
+      type: "recruiting_shutdown",
+      start: "2026-12-22",
+      end: "2027-01-02",
+      description: "Recruiting Shutdown, Dec 22–Jan 2, 2027",
+      confidence: "HIGH",
+    },
+  ],
+  milestones: [],
+};
+
+const OTHER_FIELDHOCKEY: SportCalendar = {
+  source: OTHER_SOURCE,
+  verifiedOn: VERIFIED_ON,
+  periods: [
+    {
+      type: "quiet",
+      start: "2026-12-20",
+      end: "2026-12-23",
+      description: "Quiet Period (label only; no detail text on source card)",
+      confidence: "HIGH",
+    },
+    {
+      type: "recruiting_shutdown",
+      start: "2026-12-24",
+      end: "2027-01-01",
+      description: "Recruiting Shutdown (label only; no detail text on source card)",
       confidence: "HIGH",
     },
   ],
@@ -988,6 +1208,13 @@ export const D1_CALENDARS: Record<NcaaCalendarKey, SportCalendar> = {
   MLA,
   WLA,
   Other: OTHER,
+  OTHER_MSOCCER,
+  OTHER_WSOCCER,
+  OTHER_SWIM,
+  OTHER_MICEHOCKEY,
+  OTHER_WICEHOCKEY,
+  OTHER_ROWING,
+  OTHER_FIELDHOCKEY,
 };
 
 // ---------------------------------------------------------------------------

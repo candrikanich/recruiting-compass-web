@@ -5,32 +5,48 @@ export interface ResolveCalendarKeyOptions {
   footballSubdivision?: "FBS" | "FCS";
 }
 
-/** Sports with a single NCAA recruiting calendar (no gender split). */
+/**
+ * Sports with a single NCAA recruiting calendar (no gender split). Includes
+ * three "Other"-bundle sports whose PDF enumerates real dead/quiet/
+ * recruiting_shutdown windows with no men's/women's split: Swimming (combined
+ * "Swimming and Diving" table) and the two NCAA women's-only sports Rowing
+ * and Field Hockey.
+ */
 const SINGLE_CALENDAR_SPORTS: Partial<Record<AppSport, NcaaCalendarKey>> = {
   Baseball: "MBA",
   Softball: "WSB",
   Volleyball: "WVB",
   "Track & Field": "XCTF",
   "Cross Country": "XCTF",
+  Swimming: "OTHER_SWIM",
+  Rowing: "OTHER_ROWING",
+  "Field Hockey": "OTHER_FIELDHOCKEY",
 };
 
-/** Sports with distinct men's/women's NCAA calendars. */
+/**
+ * Sports with distinct men's/women's NCAA calendars. Soccer and Ice Hockey
+ * are "Other"-bundle sports whose PDF enumerates separate men's/women's
+ * windows (see calendarData.ts OTHER_MSOCCER/OTHER_WSOCCER/
+ * OTHER_MICEHOCKEY/OTHER_WICEHOCKEY).
+ */
 const GENDER_SPLIT_SPORTS: Partial<Record<AppSport, { men: NcaaCalendarKey; women: NcaaCalendarKey }>> = {
   Basketball: { men: "MBB", women: "WBB" },
   Lacrosse: { men: "MLA", women: "WLA" },
+  Soccer: { men: "OTHER_MSOCCER", women: "OTHER_WSOCCER" },
+  "Ice Hockey": { men: "OTHER_MICEHOCKEY", women: "OTHER_WICEHOCKEY" },
 };
 
-/** App sports with no published NCAA recruiting calendar — always "Other". */
-const NO_CALENDAR_SPORTS: ReadonlySet<AppSport> = new Set<AppSport>([
-  "Soccer",
-  "Swimming",
-  "Tennis",
-  "Wrestling",
-  "Ice Hockey",
-  "Field Hockey",
-  "Rowing",
-  "Water Polo",
-]);
+/**
+ * App sports with no published NCAA recruiting calendar AND no sport-specific
+ * windows in the "Other" bundle — always the generic "Other" default.
+ *
+ * NOTE: the "Other" bundle PDF does enumerate Men's/Women's Wrestling windows
+ * (Nov dead period + Dec/March recruiting shutdowns), but per task scope
+ * Wrestling is intentionally kept on the generic default rather than split
+ * into its own sub-calendar — see task-2b-report.md "concerns" for the
+ * data-vs-instruction discrepancy this leaves on record.
+ */
+const NO_CALENDAR_SPORTS: ReadonlySet<AppSport> = new Set<AppSport>(["Tennis", "Wrestling", "Water Polo"]);
 
 const isMen = (gender: string | null | undefined): boolean => gender !== "female";
 

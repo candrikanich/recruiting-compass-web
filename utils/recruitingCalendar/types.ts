@@ -15,7 +15,14 @@ export type NcaaCalendarKey =
   | "MGO"
   | "MLA"
   | "WLA"
-  | "Other";
+  | "Other"
+  | "OTHER_MSOCCER"
+  | "OTHER_WSOCCER"
+  | "OTHER_SWIM"
+  | "OTHER_MICEHOCKEY"
+  | "OTHER_WICEHOCKEY"
+  | "OTHER_ROWING"
+  | "OTHER_FIELDHOCKEY";
 
 export type Division = "D1" | "D2" | "D3";
 
