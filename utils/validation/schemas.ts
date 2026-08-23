@@ -24,6 +24,8 @@ import {
   strongPasswordSchema,
   weakPasswordSchema,
 } from "./validators";
+import { ALL_ATTRIBUTE_DEFS } from "~/utils/attributes/canonical";
+import { ALL_SERVICE_DEFS } from "~/utils/services/canonical";
 
 // ============================================================================
 // AUTHENTICATION SCHEMAS
@@ -291,27 +293,35 @@ export const offerSchema = z
 // PLAYER DETAILS SCHEMAS
 // ============================================================================
 
+// Per-sport athlete attributes + recruiting services are derived from their
+// registries (single source of truth) rather than hand-listed, so a new registry
+// entry can never be silently stripped on save. See the drift-guard tests in
+// tests/unit/utils/validation/playerDetailsSchema.registry.spec.ts.
+const playerAttributeShapes = Object.fromEntries(
+  ALL_ATTRIBUTE_DEFS.map((def) => [
+    def.key,
+    z
+      .enum(def.options as [string, ...string[]])
+      .nullable()
+      .optional(),
+  ]),
+);
+
+const playerServiceShapes = Object.fromEntries(
+  ALL_SERVICE_DEFS.map((def) => [
+    def.key,
+    def.valueKind === "url"
+      ? urlSchema.nullable().optional()
+      : sanitizedTextSchema(def.maxLength ?? 50),
+  ]),
+);
+
 export const playerDetailsSchema = z.object({
   graduation_year: graduationYearSchema,
   positions: z.array(z.string()).default([]),
   gender: z.enum(["male", "female", "other", "prefer_not_to_say"]).nullable().optional(),
   // Per-sport athlete attributes (registry: utils/attributes/canonical.ts).
-  bats: z.enum(["L", "R", "S"]).nullable().optional(),
-  throws: z.enum(["L", "R"]).nullable().optional(),
-  shooting_hand: z.enum(["L", "R"]).nullable().optional(),
-  dominant_foot: z.enum(["L", "R", "Both"]).nullable().optional(),
-  hitting_hand: z.enum(["L", "R"]).nullable().optional(),
-  racket_hand: z.enum(["L", "R"]).nullable().optional(),
-  backhand_style: z.enum(["one", "two"]).nullable().optional(),
-  golf_handedness: z.enum(["L", "R"]).nullable().optional(),
-  dominant_hand: z.enum(["L", "R"]).nullable().optional(),
-  shoots: z.enum(["L", "R"]).nullable().optional(),
-  catches: z.enum(["L", "R"]).nullable().optional(),
-  wp_dominant_hand: z.enum(["L", "R"]).nullable().optional(),
-  rowing_side: z.enum(["port", "starboard", "both", "cox"]).nullable().optional(),
-  rowing_discipline: z.enum(["sweep", "scull", "both"]).nullable().optional(),
-  throwing_hand: z.enum(["L", "R"]).nullable().optional(),
-  kicking_foot: z.enum(["L", "R"]).nullable().optional(),
+  ...playerAttributeShapes,
   height_inches: heightSchema,
   weight_lbs: weightSchema,
   gpa: gpaSchema,
@@ -326,24 +336,12 @@ export const playerDetailsSchema = z.object({
   tiktok_handle: tiktokHandleSchema,
   facebook_handle: facebookHandleSchema,
   share_contact_with_coaches: z.boolean().default(false),
+  // NCAA Eligibility Center id + generic showcase id — NOT registry-backed
+  // recruiting services, so they stay hand-listed.
   ncaa_id: sanitizedTextSchema(50),
-  // Recruiting services (registry: utils/services/canonical.ts).
-  ncsa_id: sanitizedTextSchema(50),
-  hudl_url: urlSchema.nullable().optional(),
-  perfect_game_id: sanitizedTextSchema(50),
-  prep_baseball_id: sanitizedTextSchema(100),
-  // Recruiting services v2 — free-text ids and full profile URLs.
-  athletic_net_id: sanitizedTextSchema(50),
-  milesplit_url: urlSchema.nullable().optional(),
-  swimcloud_id: sanitizedTextSchema(50),
-  utr_id: sanitizedTextSchema(50),
-  tennis_recruiting_id: sanitizedTextSchema(50),
-  elite_prospects_id: sanitizedTextSchema(50),
-  sportsrecruits_id: sanitizedTextSchema(50),
-  concept2_id: sanitizedTextSchema(50),
-  on3_url: urlSchema.nullable().optional(),
-  sports247_url: urlSchema.nullable().optional(),
   showcase_id: sanitizedTextSchema(50),
+  // Recruiting services (registry: utils/services/canonical.ts).
+  ...playerServiceShapes,
 });
 
 // ============================================================================

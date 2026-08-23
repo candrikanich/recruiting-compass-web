@@ -37,6 +37,9 @@ export interface ServiceDef {
   /** "Get your profile" sign-up destination. */
   signupUrl: string;
   placeholder: string;
+  /** Max stored length for an `id`-kind value (drives the validation schema).
+   *  Defaults to 50; PBR ids run longer. Ignored for `url`-kind services. */
+  maxLength?: number;
 }
 
 /** Context for `serviceProfileUrl`; a bare string is treated as `{ value }`. */
@@ -131,6 +134,7 @@ const PREP_BASEBALL: ServiceDef = {
   linkKind: "prepBaseball",
   signupUrl: "https://www.prepbaseballreport.com/",
   placeholder: "ID Number",
+  maxLength: 100,
 };
 
 // ── Services v2 ──────────────────────────────────────────────────────────
