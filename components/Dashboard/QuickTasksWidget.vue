@@ -98,13 +98,11 @@
             : 'border-slate-200 bg-white hover:border-blue-300',
         ]"
       >
-        <input
-          type="checkbox"
+        <DesignSystemFormAnimatedCheck
           :id="`task-${task.id}`"
-          :checked="task.completed"
-          @change="$emit('toggle-task', task.id)"
-          class="h-5 w-5 cursor-pointer rounded-md border-2 border-slate-300 checked:border-blue-500 checked:bg-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          :model-value="task.completed"
           :aria-label="`${task.text}, toggle completion status`"
+          @update:model-value="$emit('toggle-task', task.id)"
         />
         <label
           :for="`task-${task.id}`"

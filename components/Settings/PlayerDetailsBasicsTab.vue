@@ -137,44 +137,24 @@
         </div>
 
         <div class="space-y-4 rounded-2xl bg-slate-50 p-4 md:col-span-2">
-          <label class="group flex cursor-pointer items-center gap-3">
-            <div class="relative flex items-center">
-              <input
-                v-model="form.allow_share_phone"
-                type="checkbox"
-                data-testid="share-phone"
-                @change="triggerSave"
-                class="peer h-6 w-6 cursor-pointer appearance-none rounded-lg border border-slate-300 bg-white shadow-sm transition-all checked:border-blue-600 checked:bg-blue-600"
-              />
-              <UIcon
-                name="i-heroicons-check"
-                class="pointer-events-none absolute top-1 left-1 h-4 w-4 stroke-[3] text-white opacity-0 peer-checked:opacity-100"
-              />
-            </div>
-            <span
-              class="text-sm font-bold text-slate-600 transition group-hover:text-slate-900"
+          <DesignSystemFormAnimatedCheck
+            v-model="form.allow_share_phone"
+            data-testid="share-phone"
+            @update:model-value="triggerSave"
+          >
+            <span class="text-sm font-bold text-slate-600"
               >Show phone number to verified coaches</span
             >
-          </label>
-          <label class="group flex cursor-pointer items-center gap-3">
-            <div class="relative flex items-center">
-              <input
-                v-model="form.allow_share_email"
-                type="checkbox"
-                data-testid="share-email"
-                @change="triggerSave"
-                class="peer h-6 w-6 cursor-pointer appearance-none rounded-lg border border-slate-300 bg-white shadow-sm transition-all checked:border-blue-600 checked:bg-blue-600"
-              />
-              <UIcon
-                name="i-heroicons-check"
-                class="pointer-events-none absolute top-1 left-1 h-4 w-4 stroke-[3] text-white opacity-0 peer-checked:opacity-100"
-              />
-            </div>
-            <span
-              class="text-sm font-bold text-slate-600 transition group-hover:text-slate-900"
+          </DesignSystemFormAnimatedCheck>
+          <DesignSystemFormAnimatedCheck
+            v-model="form.allow_share_email"
+            data-testid="share-email"
+            @update:model-value="triggerSave"
+          >
+            <span class="text-sm font-bold text-slate-600"
               >Show email to verified coaches</span
             >
-          </label>
+          </DesignSystemFormAnimatedCheck>
         </div>
       </div>
 

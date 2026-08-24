@@ -4,17 +4,8 @@
     class="flex items-start gap-3 rounded-xl border border-slate-200 bg-white p-3 transition hover:border-slate-300"
   >
     <!-- Checkbox -->
-    <input
-      type="checkbox"
-      :checked="isCompleted"
-      :disabled="isViewingAsParent || isLocked"
-      @change="$emit('toggle-complete', task.id)"
-      :class="[
-        'mt-1 h-4 w-4 shrink-0 rounded-sm border-slate-300 text-blue-600 transition',
-        isViewingAsParent || isLocked
-          ? 'cursor-not-allowed opacity-50'
-          : 'cursor-pointer',
-      ]"
+    <span
+      class="mt-0.5 shrink-0"
       :title="
         isViewingAsParent
           ? 'Parents can view tasks but cannot mark them complete'
@@ -22,7 +13,15 @@
             ? 'Complete prerequisites to unlock this task'
             : 'Mark task complete'
       "
-    />
+    >
+      <DesignSystemFormAnimatedCheck
+        size="sm"
+        :model-value="isCompleted"
+        :disabled="isViewingAsParent || isLocked"
+        aria-label="Mark task complete"
+        @update:model-value="$emit('toggle-complete', task.id)"
+      />
+    </span>
 
     <!-- Task content -->
     <div

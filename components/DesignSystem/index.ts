@@ -16,6 +16,7 @@ export { default as DSFieldError } from "./FieldError.vue";
 export { default as DSCardSkeleton } from "./CardSkeleton.vue";
 export { default as DSChartSkeleton } from "./ChartSkeleton.vue";
 export { default as DSListSkeleton } from "./ListSkeleton.vue";
+export { default as DSAnimatedCheck } from "./Form/AnimatedCheck.vue";
 
 // Re-export types for external use
 export type { ButtonVariant, ButtonColor, ButtonSize } from "./Button.vue";
@@ -23,6 +24,7 @@ export type { CardPadding } from "./Card.vue";
 export type { GradientColor } from "./GradientCard.vue";
 export type { BadgeColor, BadgeVariant, BadgeSize } from "./Badge.vue";
 export type { InputSize } from "./Input.vue";
+export type { AnimatedCheckSize } from "./Form/AnimatedCheck.vue";
 export type { Toast, ToastType } from "~/types/toast";
 export type { LoadingStateVariant } from "./LoadingState.vue";
 export type {

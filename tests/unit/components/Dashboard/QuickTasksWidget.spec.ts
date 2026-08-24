@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { mount } from "@vue/test-utils";
 import QuickTasksWidget from "~/components/Dashboard/QuickTasksWidget.vue";
+import DesignSystemFormAnimatedCheck from "~/components/DesignSystem/Form/AnimatedCheck.vue";
 
 type Task = {
   id: string;
@@ -20,6 +21,9 @@ const mountWidget = (props: { tasks?: Task[]; showTasks?: boolean } = {}) =>
     props: {
       tasks: props.tasks ?? [],
       showTasks: props.showTasks ?? true,
+    },
+    global: {
+      components: { DesignSystemFormAnimatedCheck },
     },
   });
 
