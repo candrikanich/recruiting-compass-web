@@ -238,25 +238,51 @@ export function getUpcomingMilestones(params: GetUpcomingMilestonesParams): Cale
   const generic = GENERIC_MILESTONES.filter((m) => matchesDivision(m, division)).map(toCalendarMilestone);
 
   const currentDateISO = formatLocalDateOnly(currentDate);
-  let combined = [...calendar.milestones, ...generic].filter((m) => m.date >= currentDateISO);
+  const byDate = (a: CalendarMilestone, b: CalendarMilestone) => a.date.localeCompare(b.date);
+  const typeAllowed = gradeTypeFilter(graduationYear, currentDateISO);
+  const isUpcoming = (m: CalendarMilestone) => m.date >= currentDateISO && typeAllowed(m);
 
-  if (graduationYear) {
-    const currentYear = currentDate.getFullYear();
-    if (graduationYear === currentYear + 3) {
-      // Senior year
-      combined = combined.filter(
-        (m) => m.type === "test" || m.type === "application" || m.type === "signing" || m.type === "ncaa-period",
-      );
-    } else if (graduationYear === currentYear + 2) {
-      // Junior year
-      combined = combined.filter(
-        (m) => m.type === "test" || m.type === "deadline" || m.type === "ncaa-period" || m.type === "application",
-      );
-    } else {
-      // Freshman/Sophomore - focus on tests
-      combined = combined.filter((m) => m.type === "test" || m.type === "ncaa-period");
-    }
+  // Two sources, capped differently: the generic SAT/ACT/deadline bucket is
+  // capped at `limit` (soonest first) so it can't flood the list, while the
+  // resolved sport calendar's OWN milestones (signing etc. — few per sport,
+  // high-value) are ALWAYS included in full. This stops a far-off signing date
+  // from being starved out by nearer generic dates (and vice versa). Merge,
+  // dedup any coincident date+title, sort ascending by date.
+  const cappedGeneric = generic.filter(isUpcoming).sort(byDate).slice(0, limit);
+  const sportMilestones = calendar.milestones.filter(isUpcoming);
+
+  const seen = new Set(cappedGeneric.map((m) => `${m.date}|${m.title}`));
+  const merged = [...cappedGeneric, ...sportMilestones.filter((m) => !seen.has(`${m.date}|${m.title}`))];
+
+  return merged.sort(byDate);
+}
+
+/**
+ * Grade-year milestone-type filter (mirrors the legacy phase buckets). Returns
+ * a predicate; no `graduationYear` → keep everything. `currentYear` is parsed
+ * from the already-local `currentDateISO` prefix rather than
+ * `currentDate.getFullYear()`, so a date-only `currentDate` (UTC midnight)
+ * can't shift the grade math by a year across a TZ boundary.
+ */
+function gradeTypeFilter(
+  graduationYear: number | undefined,
+  currentDateISO: string,
+): (m: CalendarMilestone) => boolean {
+  if (!graduationYear) return () => true;
+
+  const currentYear = Number(currentDateISO.slice(0, 4));
+  const yearsOut = graduationYear - currentYear;
+
+  if (yearsOut === 3) {
+    // Senior year
+    return (m) =>
+      m.type === "test" || m.type === "application" || m.type === "signing" || m.type === "ncaa-period";
   }
-
-  return combined.sort((a, b) => a.date.localeCompare(b.date)).slice(0, limit);
+  if (yearsOut === 2) {
+    // Junior year
+    return (m) =>
+      m.type === "test" || m.type === "deadline" || m.type === "ncaa-period" || m.type === "application";
+  }
+  // Freshman/Sophomore — focus on tests
+  return (m) => m.type === "test" || m.type === "ncaa-period";
 }
