@@ -55,6 +55,8 @@ export interface RegistryVar {
   category?: string | null;
   /** When true, an unresolved value blocks send; when false it is stripped by renderClean. */
   is_required_default?: boolean | null;
+  /** Human label (drives the missing-info step titles). */
+  label?: string | null;
 }
 
 type TableName = "users" | "schools" | "coaches" | "events";

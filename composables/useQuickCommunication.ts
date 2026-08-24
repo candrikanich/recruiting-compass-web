@@ -5,10 +5,15 @@ import { useTemplateResolver } from "~/composables/useTemplateResolver";
 import { useProfileFieldWrite } from "~/composables/useProfileFieldWrite";
 import { useAthleteMessages } from "~/composables/useAthleteMessages";
 import { useSchools } from "~/composables/useSchools";
+import { usePreferenceManager } from "~/composables/usePreferenceManager";
 import { useUserStore } from "~/stores/user";
 import { toSmsHref } from "~/utils/phone";
 import { findUnresolved, renderClean } from "~/utils/templateResolver";
 import { editableColumnFor } from "~/utils/editableProfileFields";
+import {
+  deriveMissingInfoFields,
+  type MissingInfoField,
+} from "~/utils/communication/missingInfo";
 import type { ResolverContext, Row } from "~/utils/templateResolver";
 import type { Coach, School, CommunicationTemplate } from "~/types/models";
 
@@ -52,6 +57,16 @@ export interface ChannelController {
   variableRows: ComputedRef<VariableRow[]>;
   previewSegments: ComputedRef<PreviewSegment[]>;
   unresolved: ComputedRef<string[]>;
+  /** Ordered, missing-only fields the selected template still needs (unified step). */
+  missingInfoFields: ComputedRef<MissingInfoField[]>;
+  /** True when the info step has anything to collect; false auto-skips to preview. */
+  hasMissingInfo: ComputedRef<boolean>;
+  /** Info-step yes/skip toggle for the questionnaire row. */
+  questionnaireDraft: Ref<boolean>;
+  /** Info-step input for the intended-major row. */
+  intendedMajorDraft: Ref<string>;
+  /** Persist the info-step answers (questionnaire flag + intended major), re-resolve. */
+  commitMissingInfo: () => Promise<void>;
   /** Persist an inline profile-field edit, then re-resolve open templates. */
   saveField: (row: VariableRow) => Promise<void>;
   /** Re-author input for authored (message-only) rows. */
@@ -87,16 +102,18 @@ export function useQuickCommunication(params: QuickCommunicationParams) {
   const { buildAthleteContext, resolveTemplate, loadRegistry } =
     useTemplateResolver();
   const { updateSchool } = useSchools();
+  const { loadAllPreferences, setPlayerDetails } = usePreferenceManager();
   const { writeField } = useProfileFieldWrite();
   const { checkSend, logSend } = useAthleteMessages();
   const { evaluate: evaluateContactWindow, filterTemplatesByWindow } =
     useContactWindow();
   const userStore = useUserStore();
 
-  // key -> source_path / category / source_type, from the DB registry.
+  // key -> source_path / category / source_type / label, from the DB registry.
   const varSourcePaths = ref<Map<string, string>>(new Map());
   const varCategories = ref<Map<string, string>>(new Map());
   const varSourceTypes = ref<Map<string, string>>(new Map());
+  const varLabels = ref<Map<string, string>>(new Map());
   // Keys marked required — the ONLY ones that block send when unresolved.
   const varRequired = ref<Set<string>>(new Set());
 
@@ -336,6 +353,51 @@ export function useQuickCommunication(params: QuickCommunicationParams) {
     const previewSegments = computed(() => toSegments(cleanBody.value));
     const unresolved = computed(() => [...new Set(findUnresolved(cleanBody.value))]);
 
+    // --- unified missing-info step (per channel) -----------------------------
+    const questionnaireDraft = ref(false);
+    const intendedMajorDraft = ref("");
+
+    const missingInfoFields = computed(() =>
+      deriveMissingInfoFields({
+        referencedKeys: templateVarKeys(selectedTemplateObj.value),
+        values: resolvedValues.value,
+        authoredKeys: new Set(
+          [...varSourceTypes.value.entries()]
+            .filter(([, t]) => t === "authored")
+            .map(([k]) => k),
+        ),
+        labels: Object.fromEntries(varLabels.value),
+        body: selectedTemplateObj.value?.body ?? "",
+        questionnaireComplete: questionnaireCompleted.value,
+        hasMetric: (athleteCtx.value?.metrics?.length ?? 0) > 0,
+        canEditProfile: canEditProfile.value,
+      }),
+    );
+    const hasMissingInfo = computed(() => missingInfoFields.value.length > 0);
+
+    const commitMissingInfo = async (): Promise<void> => {
+      if (
+        missingInfoFields.value.some((f) => f.id === "questionnaireNote") &&
+        questionnaireDraft.value
+      ) {
+        await answerQuestionnaire(true);
+      }
+      const major = intendedMajorDraft.value.trim();
+      if (major) {
+        try {
+          // Load current prefs into the store FIRST so setPlayerDetails merges
+          // against the full object — otherwise it would replace prefs with just
+          // { intended_major } and wipe the athlete's other player details.
+          await loadAllPreferences();
+          await setPlayerDetails({ intended_major: major });
+          invalidateAthleteContext();
+        } catch {
+          // Best-effort — a persist failure must never block the send.
+        }
+      }
+      await reresolveSelected();
+    };
+
     const controller: ChannelController = {
       channel,
       selectedTemplateId,
@@ -351,6 +413,11 @@ export function useQuickCommunication(params: QuickCommunicationParams) {
       variableRows,
       previewSegments,
       unresolved,
+      missingInfoFields,
+      hasMissingInfo,
+      questionnaireDraft,
+      intendedMajorDraft,
+      commitMissingInfo,
       saveField: async (row) => saveField(controller, row),
       reresolve: () => reresolveSelected(),
       send: async () => sendMessage(controller),
@@ -377,6 +444,8 @@ export function useQuickCommunication(params: QuickCommunicationParams) {
       authored.value = {};
       sendWarning.value = "";
       sendConfirmed[channel].value = false;
+      questionnaireDraft.value = false;
+      intendedMajorDraft.value = "";
     });
 
     return controller;
@@ -504,6 +573,7 @@ export function useQuickCommunication(params: QuickCommunicationParams) {
       varSourcePaths.value = new Map(registry.map((v) => [v.key, v.source_path ?? ""]));
       varCategories.value = new Map(registry.map((v) => [v.key, v.category ?? ""]));
       varSourceTypes.value = new Map(registry.map((v) => [v.key, v.source_type]));
+      varLabels.value = new Map(registry.map((v) => [v.key, v.label ?? ""]));
       varRequired.value = new Set(
         registry.filter((v) => v.is_required_default).map((v) => v.key),
       );
