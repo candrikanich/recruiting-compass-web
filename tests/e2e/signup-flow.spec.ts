@@ -103,6 +103,36 @@ test.describe("Signup Page - Full Flow E2E Tests", () => {
         page.locator("text=not available for players under 13"),
       ).toBeVisible({ timeout: 5000 });
     });
+
+    test("minor (13-17) player is steered to a guardian invite and cannot submit", async ({
+      page,
+    }) => {
+      await page.click('[data-testid="user-type-player"]');
+
+      // DOB ~15 years ago: old enough for COPPA (13+) but a minor (<18), so the
+      // account must be created through a parent/guardian family invite.
+      const fifteenYearsAgo = new Date();
+      fifteenYearsAgo.setFullYear(fifteenYearsAgo.getFullYear() - 15);
+      await page.fill("#firstName", "Minor");
+      await page.fill("#lastName", "Player");
+      await page.fill(
+        "#dateOfBirth",
+        fifteenYearsAgo.toISOString().split("T")[0],
+      );
+      await page.fill("#email", `minor-e2e-${RUN}@example.com`);
+      await page.fill("#password", "SecurePass123");
+      await page.fill("#confirmPassword", "SecurePass123");
+      await page.check("#agreeToTerms");
+
+      // The guardian-invite notice appears and the form cannot be submitted
+      // even with every other field valid + terms agreed.
+      await expect(
+        page.locator('[data-testid="minor-guardian-notice"]'),
+      ).toBeVisible();
+      await expect(
+        page.locator('[data-testid="signup-button"]'),
+      ).toBeDisabled();
+    });
   });
 
   test.describe("Parent Signup Flow", () => {
