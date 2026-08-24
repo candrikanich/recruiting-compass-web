@@ -18,6 +18,7 @@ import {
   pickHsCoach,
   derivePositions,
 } from "~/utils/templateResolver/athleteDerived";
+import { useTemplateRegistryStore } from "~/stores/templateRegistry";
 import { buildPrepBaseballUrl } from "~/utils/recruitingLinks";
 import type { CommunicationTemplate } from "~/types/models";
 
@@ -26,20 +27,6 @@ const logger = createClientLogger("useTemplateResolver");
 /** Public base for athlete profile links shared with coaches; absolute so the URL is
  *  clickable in the sent email/SMS (parity with iOS publicProfileBase). */
 const PUBLIC_PROFILE_BASE = "https://myrecruitingcompass.com";
-
-/** PostgREST-ish error shape (avoids `any` while matching the house PGRST205 check). */
-interface FetchError {
-  code?: string;
-  message?: string;
-}
-
-/** template_variables is global reference data — cache it once per page load. */
-let registryCache: RegistryVar[] | null = null;
-
-/** Test-only: clear the module-level registry cache between cases. */
-export const __resetTemplateRegistryCache = (): void => {
-  registryCache = null;
-};
 
 export interface ResolveResult {
   subject: string;
@@ -52,35 +39,11 @@ export interface ResolveResult {
 
 export const useTemplateResolver = () => {
   const supabase = useSupabase();
+  const registryStore = useTemplateRegistryStore();
 
-  const loadRegistry = async (force = false): Promise<RegistryVar[]> => {
-    if (registryCache && !force) return registryCache;
-    try {
-      const { data, error } = (await supabase
-        .from("template_variables")
-        .select(
-          "key, source_type, source_path, category, is_required_default, label",
-        )) as {
-        data: RegistryVar[] | null;
-        error: FetchError | null;
-      };
-
-      if (error) {
-        if (
-          error.code === "PGRST205" ||
-          error.message?.includes("template_variables")
-        ) {
-          return registryCache ?? [];
-        }
-        throw error;
-      }
-      registryCache = data ?? [];
-      return registryCache;
-    } catch (err) {
-      logger.error("Load registry error:", err);
-      return registryCache ?? [];
-    }
-  };
+  /** Delegates to the registry store (session-cached global reference data). */
+  const loadRegistry = (force = false): Promise<RegistryVar[]> =>
+    registryStore.load(force);
 
   // --- buildAthleteContext steps ---------------------------------------------
   // Each fetches + shapes one slice of the athlete context. The orchestrator

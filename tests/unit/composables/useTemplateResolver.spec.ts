@@ -1,8 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import {
-  useTemplateResolver,
-  __resetTemplateRegistryCache,
-} from "~/composables/useTemplateResolver";
+import { setActivePinia, createPinia } from "pinia";
+import { useTemplateResolver } from "~/composables/useTemplateResolver";
 
 // Canned per-table results + a spy counter for template_variables selects.
 const h = vi.hoisted(() => {
@@ -104,7 +102,8 @@ vi.mock("~/stores/user", () => ({
 describe("useTemplateResolver", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    __resetTemplateRegistryCache();
+    // Fresh Pinia → the template-registry store's cache starts empty each test.
+    setActivePinia(createPinia());
     h.templateSelectCalls.n = 0;
   });
 
