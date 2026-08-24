@@ -54,7 +54,7 @@ useSeoMeta({
     <!-- Loading -->
     <div
       v-if="status === 'pending'"
-      class="flex items-center justify-center min-h-screen"
+      class="flex min-h-screen items-center justify-center"
     >
       <div class="text-gray-400">Loading profile…</div>
     </div>
@@ -62,7 +62,7 @@ useSeoMeta({
     <!-- Not found -->
     <div
       v-else-if="notFound"
-      class="flex flex-col items-center justify-center min-h-screen gap-4 text-center px-4"
+      class="flex min-h-screen flex-col items-center justify-center gap-4 px-4 text-center"
     >
       <h1 class="text-2xl font-semibold text-gray-800">Profile not found</h1>
       <p class="text-gray-500">
@@ -73,7 +73,7 @@ useSeoMeta({
     <!-- Unavailable (unpublished or cancelled) -->
     <div
       v-else-if="unavailable"
-      class="flex flex-col items-center justify-center min-h-screen gap-4 text-center px-4"
+      class="flex min-h-screen flex-col items-center justify-center gap-4 px-4 text-center"
     >
       <h1 class="text-2xl font-semibold text-gray-800">
         Profile not available
@@ -84,14 +84,14 @@ useSeoMeta({
     </div>
 
     <!-- Profile card -->
-    <div v-else-if="profile" class="max-w-2xl mx-auto py-8 px-4">
+    <div v-else-if="profile" class="mx-auto max-w-2xl px-4 py-8">
       <ProfilePublicProfileCard :profile="profile" />
     </div>
 
     <!-- Generic error fallback (500 or unexpected status) -->
     <div
       v-else
-      class="flex flex-col items-center justify-center min-h-screen gap-4 text-center px-4"
+      class="flex min-h-screen flex-col items-center justify-center gap-4 px-4 text-center"
     >
       <h1 class="text-2xl font-semibold text-gray-800">Something went wrong</h1>
       <p class="text-gray-500">

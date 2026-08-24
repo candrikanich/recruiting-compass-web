@@ -1,6 +1,6 @@
 <template>
   <span
-    class="inline-block px-2 py-1 text-xs rounded-full"
+    class="inline-block rounded-full px-2 py-1 text-xs"
     :class="statusColorClass"
   >
     <template v-if="showLabel">{{ formatStatus(status) }}</template>

@@ -2,23 +2,23 @@
   <div
     class="min-h-screen bg-linear-to-br from-blue-50 to-indigo-100 px-4 py-12"
   >
-    <div class="max-w-2xl mx-auto">
+    <div class="mx-auto max-w-2xl">
       <!-- Header -->
-      <div class="text-center mb-8">
-        <h1 class="text-3xl font-bold text-slate-900 mb-2">
+      <div class="mb-8 text-center">
+        <h1 class="mb-2 text-3xl font-bold text-slate-900">
           Welcome to The Recruiting Compass
         </h1>
-        <p class="text-slate-600 mb-6">
+        <p class="mb-6 text-slate-600">
           Let's get you set up in just a few steps
         </p>
 
         <!-- Progress Indicator -->
-        <div class="flex items-center justify-between mb-8">
+        <div class="mb-8 flex items-center justify-between">
           <div class="flex-1">
-            <div class="w-full bg-slate-200 rounded-full h-2">
+            <div class="h-2 w-full rounded-full bg-slate-200">
               <div
                 :style="{ width: `${progressPercentage}%` }"
-                class="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                class="h-2 rounded-full bg-blue-500 transition-all duration-300"
               ></div>
             </div>
           </div>
@@ -35,13 +35,13 @@
         tabindex="-1"
         :aria-label="`Step ${currentStep} of ${totalSteps}`"
         :aria-busy="loading"
-        class="bg-white rounded-lg shadow-lg p-8 mb-8 focus:outline-none"
+        class="mb-8 rounded-lg bg-white p-8 shadow-lg focus:outline-none"
       >
         <!-- Screen 1: Welcome -->
         <div v-if="currentStep === 1" class="space-y-6">
           <div class="text-center">
-            <h2 class="text-2xl font-bold text-slate-900 mb-4">Welcome!</h2>
-            <p class="text-slate-600 mb-6">
+            <h2 class="mb-4 text-2xl font-bold text-slate-900">Welcome!</h2>
+            <p class="mb-6 text-slate-600">
               This onboarding will help us understand your recruiting goals and
               preferences. It should take about 5 minutes.
             </p>
@@ -50,7 +50,7 @@
 
         <!-- Screen 2: Basic Info -->
         <div v-if="currentStep === 2" class="space-y-6">
-          <h2 class="text-2xl font-bold text-slate-900 mb-4">
+          <h2 class="mb-4 text-2xl font-bold text-slate-900">
             Basic Information
           </h2>
 
@@ -58,14 +58,14 @@
           <div>
             <label
               for="onboarding-graduation-year"
-              class="block text-sm font-medium text-slate-700 mb-2"
+              class="mb-2 block text-sm font-medium text-slate-700"
             >
               Expected Graduation Year *
             </label>
             <select
               id="onboarding-graduation-year"
               v-model="onboardingData.graduation_year"
-              class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              class="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
               required
             >
               <option value="">Select graduation year</option>
@@ -79,7 +79,7 @@
           <div>
             <label
               for="onboarding-primary-sport"
-              class="block text-sm font-medium text-slate-700 mb-2"
+              class="mb-2 block text-sm font-medium text-slate-700"
             >
               Primary Sport *
             </label>
@@ -87,7 +87,7 @@
               id="onboarding-primary-sport"
               v-model="onboardingData.primary_sport"
               @change="onSportChange"
-              class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              class="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
               required
             >
               <option value="">Select your sport</option>
@@ -95,7 +95,7 @@
                 {{ sport }}
               </option>
             </select>
-            <p v-if="sportError" class="text-red-600 text-sm mt-1">
+            <p v-if="sportError" class="mt-1 text-sm text-red-600">
               {{ sportError }}
             </p>
           </div>
@@ -104,14 +104,14 @@
           <div>
             <label
               for="onboarding-gender"
-              class="block text-sm font-medium text-slate-700 mb-2"
+              class="mb-2 block text-sm font-medium text-slate-700"
             >
               Gender (Optional)
             </label>
             <select
               id="onboarding-gender"
               v-model="onboardingData.gender"
-              class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              class="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
             >
               <option :value="undefined">Select gender</option>
               <option value="male">Male</option>
@@ -125,14 +125,14 @@
           <div v-if="onboardingData.primary_sport">
             <label
               for="onboarding-primary-position"
-              class="block text-sm font-medium text-slate-700 mb-2"
+              class="mb-2 block text-sm font-medium text-slate-700"
             >
               Primary Position *
             </label>
             <select
               id="onboarding-primary-position"
               v-model="onboardingData.primary_position"
-              class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              class="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
               required
             >
               <option value="">Select position</option>
@@ -145,14 +145,14 @@
 
         <!-- Screen 3: Location -->
         <div v-if="currentStep === 3" class="space-y-6">
-          <h2 class="text-2xl font-bold text-slate-900 mb-4">Your Location</h2>
-          <p class="text-slate-600 mb-4">
+          <h2 class="mb-4 text-2xl font-bold text-slate-900">Your Location</h2>
+          <p class="mb-4 text-slate-600">
             Tell us your zip code so we can find nearby schools.
           </p>
 
           <!-- Zip Code -->
           <div>
-            <label class="block text-sm font-medium text-slate-700 mb-2">
+            <label class="mb-2 block text-sm font-medium text-slate-700">
               Zip Code *
             </label>
             <input
@@ -161,11 +161,11 @@
               autocomplete="postal-code"
               placeholder="Enter your 5-digit zip code"
               maxlength="5"
-              class="w-full px-4 py-2 border border-slate-300 rounded-lg focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:border-transparent"
+              class="w-full rounded-lg border border-slate-300 px-4 py-2 focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-blue-500"
               @keypress="restrictToNumbers"
               required
             />
-            <p v-if="zipCodeError" class="text-red-600 text-sm mt-1">
+            <p v-if="zipCodeError" class="mt-1 text-sm text-red-600">
               {{ zipCodeError }}
             </p>
           </div>
@@ -173,15 +173,15 @@
 
         <!-- Screen 4: Academic Info -->
         <div v-if="currentStep === 4" class="space-y-6">
-          <h2 class="text-2xl font-bold text-slate-900 mb-4">Academic Info</h2>
-          <p class="text-slate-600 mb-4">
+          <h2 class="mb-4 text-2xl font-bold text-slate-900">Academic Info</h2>
+          <p class="mb-4 text-slate-600">
             Share your GPA and test scores (optional) for better
             recommendations.
           </p>
 
           <!-- GPA -->
           <div>
-            <label class="block text-sm font-medium text-slate-700 mb-2">
+            <label class="mb-2 block text-sm font-medium text-slate-700">
               GPA (Optional)
             </label>
             <input
@@ -192,14 +192,14 @@
               min="0"
               max="4.0"
               placeholder="e.g., 3.8"
-              class="w-full px-4 py-2 border border-slate-300 rounded-lg focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:border-transparent"
+              class="w-full rounded-lg border border-slate-300 px-4 py-2 focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-blue-500"
             />
-            <p class="text-slate-500 text-xs mt-1">Scale of 0.0 - 4.0</p>
+            <p class="mt-1 text-xs text-slate-500">Scale of 0.0 - 4.0</p>
           </div>
 
           <!-- SAT Score -->
           <div>
-            <label class="block text-sm font-medium text-slate-700 mb-2">
+            <label class="mb-2 block text-sm font-medium text-slate-700">
               SAT Score (Optional)
             </label>
             <input
@@ -209,14 +209,14 @@
               min="400"
               max="1600"
               placeholder="e.g., 1500"
-              class="w-full px-4 py-2 border border-slate-300 rounded-lg focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:border-transparent"
+              class="w-full rounded-lg border border-slate-300 px-4 py-2 focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-blue-500"
             />
-            <p class="text-slate-500 text-xs mt-1">Score between 400-1600</p>
+            <p class="mt-1 text-xs text-slate-500">Score between 400-1600</p>
           </div>
 
           <!-- ACT Score -->
           <div>
-            <label class="block text-sm font-medium text-slate-700 mb-2">
+            <label class="mb-2 block text-sm font-medium text-slate-700">
               ACT Score (Optional)
             </label>
             <input
@@ -226,9 +226,9 @@
               min="1"
               max="36"
               placeholder="e.g., 35"
-              class="w-full px-4 py-2 border border-slate-300 rounded-lg focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:border-transparent"
+              class="w-full rounded-lg border border-slate-300 px-4 py-2 focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-blue-500"
             />
-            <p class="text-slate-500 text-xs mt-1">Score between 1-36</p>
+            <p class="mt-1 text-xs text-slate-500">Score between 1-36</p>
           </div>
         </div>
 
@@ -238,8 +238,8 @@
           class="space-y-6"
           data-testid="step-5-invite"
         >
-          <div class="text-center mb-4">
-            <h2 class="text-2xl font-bold text-slate-900 mb-2">
+          <div class="mb-4 text-center">
+            <h2 class="mb-2 text-2xl font-bold text-slate-900">
               Invite a parent
             </h2>
             <p class="text-slate-600">
@@ -257,33 +257,33 @@
               type="email"
               autocomplete="email"
               placeholder="parent@example.com"
-              class="w-full px-4 py-3 border border-slate-200 rounded-lg focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:border-blue-500"
+              class="w-full rounded-lg border border-slate-200 px-4 py-3 focus-visible:border-blue-500 focus-visible:ring-2 focus-visible:ring-blue-500"
             />
           </div>
 
           <button
             data-testid="send-parent-invite-button"
             :disabled="!parentInviteEmail || inviteLoading"
-            class="w-full px-6 py-3 bg-blue-500 text-white font-medium rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            class="w-full rounded-lg bg-blue-500 px-6 py-3 font-medium text-white transition-colors hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
             @click="sendParentInvite"
           >
             {{ inviteLoading ? "Sending..." : "Send invite" }}
           </button>
 
-          <div class="mt-6 pt-4 border-t border-slate-200">
-            <p class="text-sm text-slate-500 mb-3">Or share your family code</p>
+          <div class="mt-6 border-t border-slate-200 pt-4">
+            <p class="mb-3 text-sm text-slate-500">Or share your family code</p>
             <div
-              class="flex items-center gap-3 bg-slate-50 rounded-lg px-4 py-3"
+              class="flex items-center gap-3 rounded-lg bg-slate-50 px-4 py-3"
             >
               <span
-                class="font-mono font-semibold text-slate-900 tracking-widest flex-1"
+                class="flex-1 font-mono font-semibold tracking-widest text-slate-900"
               >
                 {{ myFamilyCode ?? "..." }}
               </span>
               <button
                 v-if="myFamilyCode"
                 type="button"
-                class="text-slate-400 hover:text-slate-700 transition-colors"
+                class="text-slate-400 transition-colors hover:text-slate-700"
                 :aria-label="codeCopied ? 'Code copied' : 'Copy family code'"
                 :title="codeCopied ? 'Copied!' : 'Copy code'"
                 @click="copyCode"
@@ -292,7 +292,7 @@
                   v-if="!codeCopied"
                   xmlns="http://www.w3.org/2000/svg"
                   aria-hidden="true"
-                  class="w-5 h-5"
+                  class="h-5 w-5"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -307,7 +307,7 @@
                   v-else
                   xmlns="http://www.w3.org/2000/svg"
                   aria-hidden="true"
-                  class="w-5 h-5 text-green-500"
+                  class="h-5 w-5 text-green-500"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -325,27 +325,27 @@
           v-if="loading"
           role="status"
           aria-live="polite"
-          class="text-center py-8"
+          class="py-8 text-center"
         >
           <div class="inline-block">
             <div
               aria-hidden="true"
-              class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"
+              class="h-8 w-8 animate-spin rounded-full border-b-2 border-blue-500"
             ></div>
           </div>
-          <p class="text-slate-600 mt-4">Saving your progress...</p>
+          <p class="mt-4 text-slate-600">Saving your progress...</p>
         </div>
 
         <!-- Error message -->
         <div
           v-if="error"
           role="alert"
-          class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4"
+          class="mb-4 rounded-lg border border-red-200 bg-red-50 p-4"
         >
           <p class="text-red-800">{{ error }}</p>
           <button
             @click="clearError"
-            class="text-sm text-red-600 hover:text-red-700 mt-2"
+            class="mt-2 text-sm text-red-600 hover:text-red-700"
           >
             Dismiss
           </button>
@@ -353,11 +353,11 @@
       </div>
 
       <!-- Navigation Buttons -->
-      <div class="flex gap-4 justify-between">
+      <div class="flex justify-between gap-4">
         <button
           @click="previousScreen"
           :disabled="currentStep === 1 || loading"
-          class="px-6 py-3 bg-slate-200 text-slate-700 font-medium rounded-lg hover:bg-slate-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          class="rounded-lg bg-slate-200 px-6 py-3 font-medium text-slate-700 transition-colors hover:bg-slate-300 disabled:cursor-not-allowed disabled:opacity-50"
         >
           Back
         </button>
@@ -366,14 +366,14 @@
           <button
             v-if="currentStep < 5 && currentStep !== 2"
             @click="skipStep"
-            class="px-6 py-3 bg-slate-100 text-slate-600 font-medium rounded-lg hover:bg-slate-200 transition-colors"
+            class="rounded-lg bg-slate-100 px-6 py-3 font-medium text-slate-600 transition-colors hover:bg-slate-200"
           >
             Skip
           </button>
           <button
             @click="nextScreen"
             :disabled="loading"
-            class="px-6 py-3 bg-blue-500 text-white font-medium rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            class="rounded-lg bg-blue-500 px-6 py-3 font-medium text-white transition-colors hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {{
               currentStep === 5

@@ -1,9 +1,9 @@
 <template>
-  <div class="min-h-screen relative overflow-hidden bg-emerald-600">
+  <div class="relative min-h-screen overflow-hidden bg-emerald-600">
     <AuthMultiSportFieldBackground />
 
     <main
-      class="relative z-10 min-h-screen flex items-center justify-center px-6 py-12"
+      class="relative z-10 flex min-h-screen items-center justify-center px-6 py-12"
     >
       <div class="w-full max-w-md">
         <!-- Skip link -->
@@ -13,11 +13,11 @@
         <nav aria-label="Page navigation" class="mb-6">
           <NuxtLink
             to="/"
-            class="text-white hover:text-white/80 transition-colors flex items-center gap-2 rounded-sm px-2 py-1 focus:ring-2 focus:ring-white focus:ring-offset-2"
+            class="flex items-center gap-2 rounded-sm px-2 py-1 text-white transition-colors hover:text-white/80 focus:ring-2 focus:ring-white focus:ring-offset-2"
           >
             <UIcon
               name="i-heroicons-arrow-left"
-              class="w-4 h-4"
+              class="h-4 w-4"
               aria-hidden="true"
             />
             Back to Home
@@ -27,12 +27,12 @@
         <!-- Verify Email Card -->
         <div
           id="verify-card"
-          class="bg-white/95 backdrop-blur-xs rounded-2xl shadow-2xl p-8 border border-white/20"
+          class="rounded-2xl border border-white/20 bg-white/95 p-8 shadow-2xl backdrop-blur-xs"
         >
           <!-- Status Icon & Header -->
-          <div class="text-center mb-8">
+          <div class="mb-8 text-center">
             <div
-              class="w-20 h-20 rounded-full mx-auto mb-4 flex items-center justify-center shadow-lg"
+              class="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full shadow-lg"
               :class="{
                 'bg-emerald-100': isVerified,
                 'bg-amber-100': !isVerified && !loading,
@@ -44,7 +44,7 @@
               <!-- Loading state -->
               <svg
                 v-if="loading"
-                class="w-11 h-11 text-blue-600 animate-spin motion-reduce:animate-none"
+                class="h-11 w-11 animate-spin text-blue-600 motion-reduce:animate-none"
                 fill="none"
                 viewBox="0 0 24 24"
                 aria-hidden="true"
@@ -67,7 +67,7 @@
               <!-- Verified state -->
               <svg
                 v-else-if="isVerified"
-                class="w-11 h-11 text-emerald-600"
+                class="h-11 w-11 text-emerald-600"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -84,7 +84,7 @@
               <!-- Pending state -->
               <svg
                 v-else
-                class="w-11 h-11 text-amber-600"
+                class="h-11 w-11 text-amber-600"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -99,7 +99,7 @@
               </svg>
             </div>
 
-            <h1 class="text-slate-900 text-3xl font-bold mb-2">
+            <h1 class="mb-2 text-3xl font-bold text-slate-900">
               Verify Your Email
             </h1>
             <p class="text-slate-600">
@@ -119,9 +119,9 @@
               role="status"
               aria-live="polite"
               aria-atomic="true"
-              class="p-4 bg-blue-50 border border-blue-200 rounded-lg"
+              class="rounded-lg border border-blue-200 bg-blue-50 p-4"
             >
-              <p class="text-blue-900 text-sm font-medium">
+              <p class="text-sm font-medium text-blue-900">
                 Checking verification status...
               </p>
             </div>
@@ -132,9 +132,9 @@
               role="status"
               aria-live="polite"
               aria-atomic="true"
-              class="p-4 bg-emerald-50 border border-emerald-200 rounded-lg"
+              class="rounded-lg border border-emerald-200 bg-emerald-50 p-4"
             >
-              <p class="text-emerald-900 text-sm font-medium">
+              <p class="text-sm font-medium text-emerald-900">
                 Welcome! Your email is verified. You can now access all features
                 of Recruiting Compass.
               </p>
@@ -146,13 +146,13 @@
               role="status"
               aria-live="polite"
               aria-atomic="true"
-              class="p-4 bg-amber-50 border border-amber-200 rounded-lg"
+              class="rounded-lg border border-amber-200 bg-amber-50 p-4"
             >
-              <p class="text-amber-900 text-sm">
+              <p class="text-sm text-amber-900">
                 We sent a verification email to:
                 <span class="font-semibold">{{ userEmail }}</span>
               </p>
-              <p class="text-amber-900 text-sm mt-2">
+              <p class="mt-2 text-sm text-amber-900">
                 Click the verification link in the email to confirm your
                 account. It may take a minute to arrive.
               </p>
@@ -164,9 +164,9 @@
               role="alert"
               aria-live="assertive"
               aria-atomic="true"
-              class="p-4 bg-red-50 border border-red-200 rounded-lg"
+              class="rounded-lg border border-red-200 bg-red-50 p-4"
             >
-              <p class="text-red-900 text-sm font-medium">
+              <p class="text-sm font-medium text-red-900">
                 {{ emailVerification.error.value }}
               </p>
             </div>
@@ -191,7 +191,7 @@
               :disabled="emailVerification.loading.value || resendCooldown > 0"
               :aria-busy="emailVerification.loading.value"
               :aria-label="resendButtonLabel"
-              class="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-medium rounded-lg transition-colors focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              class="w-full rounded-lg bg-blue-600 px-4 py-3 font-medium text-white transition-colors hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-gray-400"
             >
               <span v-if="emailVerification.loading.value">Sending...</span>
               <span v-else-if="resendCooldown > 0">
@@ -205,7 +205,7 @@
               v-if="isVerified"
               ref="dashboardButtonRef"
               @click="goToDashboard"
-              class="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg transition-colors focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
+              class="w-full rounded-lg bg-emerald-600 px-4 py-3 font-medium text-white transition-colors hover:bg-emerald-700 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
             >
               Go to Dashboard
             </button>
@@ -214,12 +214,12 @@
           <!-- Help section -->
           <section
             aria-labelledby="help-heading"
-            class="mt-8 p-4 bg-slate-50 rounded-lg border border-slate-200"
+            class="mt-8 rounded-lg border border-slate-200 bg-slate-50 p-4"
           >
-            <h2 id="help-heading" class="font-semibold text-slate-700 text-xs">
+            <h2 id="help-heading" class="text-xs font-semibold text-slate-700">
               Need help?
             </h2>
-            <p class="text-slate-600 text-xs leading-relaxed mt-1">
+            <p class="mt-1 text-xs leading-relaxed text-slate-600">
               Check your spam folder if you haven't received the verification
               email. If you continue to have issues, please contact support.
             </p>

@@ -7,9 +7,7 @@ import type { PlayerProfile } from "~/types/models";
 
 vi.mock("~/composables/usePlayerProfile");
 
-const createProfile = (
-  overrides: Partial<PlayerProfile> = {},
-): PlayerProfile =>
+const createProfile = (overrides: Partial<PlayerProfile> = {}): PlayerProfile =>
   ({
     id: "profile-1",
     user_id: "user-1",

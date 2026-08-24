@@ -99,7 +99,7 @@
         Go to
         <NuxtLink
           to="/search"
-          class="font-medium text-primary-600 hover:underline"
+          class="text-primary-600 font-medium hover:underline"
           >Search</NuxtLink
         >
         and filter by division, sport, location, or size. Add any school that

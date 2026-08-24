@@ -1,18 +1,18 @@
 <template>
   <div
-    class="bg-white rounded-xl border border-slate-200 shadow-xs p-6"
+    class="rounded-xl border border-slate-200 bg-white p-6 shadow-xs"
     data-testid="coaching-philosophy-section"
   >
-    <div class="flex items-center justify-between mb-4">
+    <div class="mb-4 flex items-center justify-between">
       <h2 class="text-lg font-semibold text-slate-900">Coaching Philosophy</h2>
       <div class="flex items-center gap-2">
         <NotesHistory :school-id="schoolId" />
         <button
           data-testid="coaching-philosophy-edit-btn"
           @click="toggleEditing"
-          class="px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-50 rounded-lg transition flex items-center gap-1"
+          class="flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm font-medium text-slate-600 transition hover:bg-slate-50"
         >
-          <UIcon name="i-heroicons-pencil" class="w-4 h-4" />
+          <UIcon name="i-heroicons-pencil" class="h-4 w-4" />
           {{ isEditing ? "Cancel" : "Edit" }}
         </button>
       </div>
@@ -21,7 +21,7 @@
     <!-- Edit Mode -->
     <div v-if="isEditing" class="space-y-4">
       <div>
-        <label class="block text-sm font-medium text-slate-700 mb-2">
+        <label class="mb-2 block text-sm font-medium text-slate-700">
           Coaching Style
         </label>
         <textarea
@@ -29,12 +29,12 @@
           data-testid="coaching-style-textarea"
           rows="3"
           placeholder="e.g., High-intensity, Player development focused, Defensive emphasis..."
-          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
         />
       </div>
 
       <div>
-        <label class="block text-sm font-medium text-slate-700 mb-2">
+        <label class="mb-2 block text-sm font-medium text-slate-700">
           Recruiting Approach
         </label>
         <textarea
@@ -42,12 +42,12 @@
           data-testid="recruiting-approach-textarea"
           rows="3"
           placeholder="e.g., Early recruiting, Late bloomers, All-around athletes..."
-          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
         />
       </div>
 
       <div>
-        <label class="block text-sm font-medium text-slate-700 mb-2">
+        <label class="mb-2 block text-sm font-medium text-slate-700">
           Communication Style
         </label>
         <textarea
@@ -55,12 +55,12 @@
           data-testid="communication-style-textarea"
           rows="3"
           placeholder="e.g., Regular emails, Phone calls, In-person only, Direct and honest..."
-          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
         />
       </div>
 
       <div>
-        <label class="block text-sm font-medium text-slate-700 mb-2">
+        <label class="mb-2 block text-sm font-medium text-slate-700">
           Success Metrics
         </label>
         <textarea
@@ -68,12 +68,12 @@
           data-testid="success-metrics-textarea"
           rows="3"
           placeholder="e.g., Success with similar athletes, Draft history, MLB placement..."
-          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
         />
       </div>
 
       <div>
-        <label class="block text-sm font-medium text-slate-700 mb-2">
+        <label class="mb-2 block text-sm font-medium text-slate-700">
           Overall Philosophy
         </label>
         <textarea
@@ -81,7 +81,7 @@
           data-testid="overall-philosophy-textarea"
           rows="3"
           placeholder="General notes about the coaching philosophy and program culture..."
-          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
         />
       </div>
 
@@ -89,7 +89,7 @@
         data-testid="save-philosophy-btn"
         @click="savePhilosophy"
         :disabled="loading"
-        class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
+        class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:opacity-50"
       >
         {{ loading ? "Saving..." : "Save Philosophy" }}
       </button>
@@ -97,57 +97,57 @@
 
     <!-- View Mode -->
     <div v-else class="space-y-4">
-      <div v-if="school?.coaching_style" class="pb-4 border-b border-slate-200">
-        <h3 class="text-sm font-medium text-slate-700 mb-1">Coaching Style</h3>
-        <p class="text-slate-700 text-sm whitespace-pre-wrap">
+      <div v-if="school?.coaching_style" class="border-b border-slate-200 pb-4">
+        <h3 class="mb-1 text-sm font-medium text-slate-700">Coaching Style</h3>
+        <p class="text-sm whitespace-pre-wrap text-slate-700">
           {{ school.coaching_style }}
         </p>
       </div>
 
       <div
         v-if="school?.recruiting_approach"
-        class="pb-4 border-b border-slate-200"
+        class="border-b border-slate-200 pb-4"
       >
-        <h3 class="text-sm font-medium text-slate-700 mb-1">
+        <h3 class="mb-1 text-sm font-medium text-slate-700">
           Recruiting Approach
         </h3>
-        <p class="text-slate-700 text-sm whitespace-pre-wrap">
+        <p class="text-sm whitespace-pre-wrap text-slate-700">
           {{ school.recruiting_approach }}
         </p>
       </div>
 
       <div
         v-if="school?.communication_style"
-        class="pb-4 border-b border-slate-200"
+        class="border-b border-slate-200 pb-4"
       >
-        <h3 class="text-sm font-medium text-slate-700 mb-1">
+        <h3 class="mb-1 text-sm font-medium text-slate-700">
           Communication Style
         </h3>
-        <p class="text-slate-700 text-sm whitespace-pre-wrap">
+        <p class="text-sm whitespace-pre-wrap text-slate-700">
           {{ school.communication_style }}
         </p>
       </div>
 
       <div
         v-if="school?.success_metrics"
-        class="pb-4 border-b border-slate-200"
+        class="border-b border-slate-200 pb-4"
       >
-        <h3 class="text-sm font-medium text-slate-700 mb-1">Success Metrics</h3>
-        <p class="text-slate-700 text-sm whitespace-pre-wrap">
+        <h3 class="mb-1 text-sm font-medium text-slate-700">Success Metrics</h3>
+        <p class="text-sm whitespace-pre-wrap text-slate-700">
           {{ school.success_metrics }}
         </p>
       </div>
 
       <div v-if="school?.coaching_philosophy">
-        <h3 class="text-sm font-medium text-slate-700 mb-1">
+        <h3 class="mb-1 text-sm font-medium text-slate-700">
           Overall Philosophy
         </h3>
-        <p class="text-slate-700 text-sm whitespace-pre-wrap">
+        <p class="text-sm whitespace-pre-wrap text-slate-700">
           {{ school.coaching_philosophy }}
         </p>
       </div>
 
-      <div v-if="!hasAnyCoachingInfo" class="text-center py-6 text-slate-500">
+      <div v-if="!hasAnyCoachingInfo" class="py-6 text-center text-slate-500">
         <p class="text-sm">No coaching philosophy information added yet.</p>
       </div>
     </div>

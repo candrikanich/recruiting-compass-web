@@ -99,8 +99,7 @@ async function loadUserDetail(
   }
 
   const familyUnitId =
-    (membership as { family_unit_id?: string } | null)?.family_unit_id ??
-    null;
+    (membership as { family_unit_id?: string } | null)?.family_unit_id ?? null;
 
   if (!familyUnitId) {
     logAdminAction(event, {
@@ -216,17 +215,15 @@ async function loadUserDetail(
     }
   }
 
-  const members: AdminUserDetail["family"]["members"] = rawMembers.map(
-    (m) => {
-      const matched = memberUsersById.get(m.user_id);
-      return {
-        user_id: m.user_id,
-        role: m.role ?? null,
-        email: matched?.email ?? null,
-        full_name: matched?.full_name ?? null,
-      };
-    },
-  );
+  const members: AdminUserDetail["family"]["members"] = rawMembers.map((m) => {
+    const matched = memberUsersById.get(m.user_id);
+    return {
+      user_id: m.user_id,
+      role: m.role ?? null,
+      email: matched?.email ?? null,
+      full_name: matched?.full_name ?? null,
+    };
+  });
 
   return {
     account: typedAccount,
@@ -254,22 +251,20 @@ async function loadUserDetail(
   };
 }
 
-export default defineEventHandler(
-  async (event): Promise<AdminUserDetail> => {
-    const logger = useLogger(event, "admin/users/[id]");
+export default defineEventHandler(async (event): Promise<AdminUserDetail> => {
+  const logger = useLogger(event, "admin/users/[id]");
 
-    await requireAdmin(event);
-    const id = requireUuidParam(event, "id");
+  await requireAdmin(event);
+  const id = requireUuidParam(event, "id");
 
-    try {
-      return await loadUserDetail(event, id, logger);
-    } catch (error) {
-      if (error instanceof Error && "statusCode" in error) throw error;
-      logger.error("Admin user detail endpoint failed", error);
-      throw createError({
-        statusCode: 500,
-        statusMessage: "Failed to load user",
-      });
-    }
-  },
-);
+  try {
+    return await loadUserDetail(event, id, logger);
+  } catch (error) {
+    if (error instanceof Error && "statusCode" in error) throw error;
+    logger.error("Admin user detail endpoint failed", error);
+    throw createError({
+      statusCode: 500,
+      statusMessage: "Failed to load user",
+    });
+  }
+});

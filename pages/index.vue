@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen relative overflow-hidden bg-emerald-600">
+  <div class="relative min-h-screen overflow-hidden bg-emerald-600">
     <MultiSportFieldBackground />
 
     <!-- Decorative pattern overlay -->
@@ -19,13 +19,13 @@
 
     <!-- Content -->
     <main
-      class="relative z-10 min-h-screen flex flex-col items-center justify-center px-6"
+      class="relative z-10 flex min-h-screen flex-col items-center justify-center px-6"
     >
       <!-- Skip link target -->
       <SkipLink to="#cta-buttons" text="Skip to main content" />
 
       <!-- Hero Section -->
-      <div class="text-center max-w-4xl mx-auto mb-12">
+      <div class="mx-auto mb-12 max-w-4xl text-center">
         <!-- Logo -->
         <div class="mb-8 flex justify-center">
           <img
@@ -40,17 +40,17 @@
         <!-- CTA Buttons -->
         <div
           id="cta-buttons"
-          class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16"
+          class="mb-16 flex flex-col items-center justify-center gap-4 sm:flex-row"
         >
           <NuxtLink
             to="/login"
-            class="min-w-[200px] px-8 py-4 bg-blue-600 text-white font-semibold rounded-lg shadow-xl hover:shadow-2xl hover:bg-blue-700 focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-emerald-600 transition-all text-lg"
+            class="min-w-[200px] rounded-lg bg-blue-600 px-8 py-4 text-lg font-semibold text-white shadow-xl transition-all hover:bg-blue-700 hover:shadow-2xl focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-emerald-600"
           >
             Sign In
           </NuxtLink>
           <NuxtLink
             to="/signup"
-            class="min-w-[200px] px-8 py-4 bg-white text-slate-900 font-semibold rounded-lg shadow-xl hover:shadow-2xl hover:bg-slate-800 hover:text-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-emerald-600 transition-all text-lg"
+            class="min-w-[200px] rounded-lg bg-white px-8 py-4 text-lg font-semibold text-slate-900 shadow-xl transition-all hover:bg-slate-800 hover:text-white hover:shadow-2xl focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-emerald-600"
           >
             Create Account
           </NuxtLink>
@@ -58,14 +58,14 @@
 
         <!-- Features -->
         <h2 class="sr-only">Features</h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-16">
+        <div class="mt-16 grid grid-cols-1 gap-6 md:grid-cols-3">
           <div
-            class="bg-white/10 backdrop-blur-xs rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-colors"
+            class="rounded-2xl border border-white/20 bg-white/10 p-6 backdrop-blur-xs transition-colors hover:bg-white/20"
           >
-            <div class="w-12 h-12 mx-auto mb-3">
+            <div class="mx-auto mb-3 h-12 w-12">
               <svg
                 aria-hidden="true"
-                class="w-12 h-12 text-white"
+                class="h-12 w-12 text-white"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -78,19 +78,19 @@
                 />
               </svg>
             </div>
-            <h3 class="text-white text-lg font-medium mb-2">Track Schools</h3>
-            <p class="text-white text-sm">
+            <h3 class="mb-2 text-lg font-medium text-white">Track Schools</h3>
+            <p class="text-sm text-white">
               Organize and manage your target colleges in one place
             </p>
           </div>
 
           <div
-            class="bg-white/10 backdrop-blur-xs rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-colors"
+            class="rounded-2xl border border-white/20 bg-white/10 p-6 backdrop-blur-xs transition-colors hover:bg-white/20"
           >
-            <div class="w-12 h-12 mx-auto mb-3">
+            <div class="mx-auto mb-3 h-12 w-12">
               <svg
                 aria-hidden="true"
-                class="w-12 h-12 text-white"
+                class="h-12 w-12 text-white"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -103,21 +103,21 @@
                 />
               </svg>
             </div>
-            <h3 class="text-white text-lg font-medium mb-2">
+            <h3 class="mb-2 text-lg font-medium text-white">
               Log Interactions
             </h3>
-            <p class="text-white text-sm">
+            <p class="text-sm text-white">
               Keep track of every conversation with coaches
             </p>
           </div>
 
           <div
-            class="bg-white/10 backdrop-blur-xs rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-colors"
+            class="rounded-2xl border border-white/20 bg-white/10 p-6 backdrop-blur-xs transition-colors hover:bg-white/20"
           >
-            <div class="w-12 h-12 mx-auto mb-3">
+            <div class="mx-auto mb-3 h-12 w-12">
               <svg
                 aria-hidden="true"
-                class="w-12 h-12 text-white"
+                class="h-12 w-12 text-white"
                 fill="currentColor"
                 viewBox="0 0 24 24"
               >
@@ -126,10 +126,10 @@
                 <rect x="16" y="4" width="4" height="18" rx="1" />
               </svg>
             </div>
-            <h3 class="text-white text-lg font-medium mb-2">
+            <h3 class="mb-2 text-lg font-medium text-white">
               Monitor Progress
             </h3>
-            <p class="text-white text-sm">
+            <p class="text-sm text-white">
               Visualize your recruiting journey with insights
             </p>
           </div>
@@ -140,21 +140,21 @@
     <!-- Decorative elements -->
     <div
       aria-hidden="true"
-      class="absolute top-10 left-10 w-16 h-16 bg-white rounded-full opacity-10 animate-pulse motion-reduce:animate-none"
+      class="absolute top-10 left-10 h-16 w-16 animate-pulse rounded-full bg-white opacity-10 motion-reduce:animate-none"
     ></div>
     <div
       aria-hidden="true"
-      class="absolute top-32 right-20 w-12 h-12 bg-white rounded-full opacity-10 animate-pulse motion-reduce:animate-none"
+      class="absolute top-32 right-20 h-12 w-12 animate-pulse rounded-full bg-white opacity-10 motion-reduce:animate-none"
       style="animation-delay: 100ms"
     ></div>
     <div
       aria-hidden="true"
-      class="absolute bottom-20 left-1/4 w-20 h-20 bg-white rounded-full opacity-10 animate-pulse motion-reduce:animate-none"
+      class="absolute bottom-20 left-1/4 h-20 w-20 animate-pulse rounded-full bg-white opacity-10 motion-reduce:animate-none"
       style="animation-delay: 200ms"
     ></div>
     <div
       aria-hidden="true"
-      class="absolute bottom-32 right-1/3 w-14 h-14 bg-white rounded-full opacity-10 animate-pulse motion-reduce:animate-none"
+      class="absolute right-1/3 bottom-32 h-14 w-14 animate-pulse rounded-full bg-white opacity-10 motion-reduce:animate-none"
       style="animation-delay: 300ms"
     ></div>
   </div>

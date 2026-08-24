@@ -20,7 +20,7 @@ const sentimentColor = computed(() => getSentimentBadgeColor(props.sentiment));
 
 <template>
   <div
-    class="flex gap-2 flex-wrap"
+    class="flex flex-wrap gap-2"
     role="region"
     aria-label="Interaction status"
   >

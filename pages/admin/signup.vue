@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen relative overflow-hidden bg-emerald-600">
+  <div class="relative min-h-screen overflow-hidden bg-emerald-600">
     <!-- Multi-Sport Field Background -->
     <div class="absolute inset-0">
       <!-- Grass texture with gradient -->
@@ -24,38 +24,38 @@
 
     <!-- Content -->
     <div
-      class="relative z-10 min-h-screen flex items-center justify-center px-6 py-12"
+      class="relative z-10 flex min-h-screen items-center justify-center px-6 py-12"
     >
       <div class="w-full max-w-2xl">
         <!-- Back Link -->
         <div class="mb-6">
           <NuxtLink
             to="/"
-            class="text-white hover:text-white/80 transition-colors flex items-center gap-2"
+            class="flex items-center gap-2 text-white transition-colors hover:text-white/80"
           >
-            <UIcon name="i-heroicons-arrow-left" class="w-4 h-4" />
+            <UIcon name="i-heroicons-arrow-left" class="h-4 w-4" />
             Back to Welcome
           </NuxtLink>
         </div>
 
         <!-- Admin Signup Card -->
         <div
-          class="bg-white/95 backdrop-blur-xs rounded-2xl shadow-2xl p-8 border border-white/20"
+          class="rounded-2xl border border-white/20 bg-white/95 p-8 shadow-2xl backdrop-blur-xs"
         >
           <!-- Header -->
-          <div class="text-center mb-8">
+          <div class="mb-8 text-center">
             <div
-              class="w-20 h-20 bg-white rounded-full mx-auto mb-4 flex items-center justify-center shadow-lg"
+              class="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-white shadow-lg"
             >
               <UIcon
                 name="i-heroicons-check-solid"
-                class="w-11 h-11 text-red-600"
+                class="h-11 w-11 text-red-600"
               />
             </div>
-            <h1 class="text-slate-900 text-3xl font-bold mb-2">
+            <h1 class="mb-2 text-3xl font-bold text-slate-900">
               Admin Registration
             </h1>
-            <p class="text-slate-600 text-sm">
+            <p class="text-sm text-slate-600">
               Create an administrator account for Recruiting Compass
             </p>
           </div>
@@ -69,14 +69,14 @@
           />
 
           <!-- Admin Warning -->
-          <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+          <div class="mb-6 rounded-lg border border-red-200 bg-red-50 p-4">
             <div class="flex gap-3">
               <UIcon
                 name="i-heroicons-exclamation-circle-solid"
-                class="w-5 h-5 text-red-600 shrink-0 mt-0.5"
+                class="mt-0.5 h-5 w-5 shrink-0 text-red-600"
               />
               <div class="text-sm text-red-800">
-                <p class="font-medium mb-1">Administrator Account</p>
+                <p class="mb-1 font-medium">Administrator Account</p>
                 <p>
                   This account will have full access to system administration
                   features including user management and system settings. Keep
@@ -89,25 +89,25 @@
           <!-- Form -->
           <form @submit.prevent="handleSignup" class="space-y-6">
             <!-- Name Fields -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
                 <label
                   for="firstName"
-                  class="block text-sm font-medium text-slate-700 mb-2"
+                  class="mb-2 block text-sm font-medium text-slate-700"
                 >
                   First Name
                 </label>
                 <div class="relative">
                   <UIcon
                     name="i-heroicons-user"
-                    class="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"
+                    class="absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 text-slate-400"
                   />
                   <input
                     id="firstName"
                     v-model="firstName"
                     type="text"
                     required
-                    class="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    class="w-full rounded-lg border border-slate-300 py-3 pr-4 pl-10 focus:border-transparent focus:ring-2 focus:ring-blue-500"
                     placeholder="John"
                     :disabled="loading"
                   />
@@ -116,21 +116,21 @@
               <div>
                 <label
                   for="lastName"
-                  class="block text-sm font-medium text-slate-700 mb-2"
+                  class="mb-2 block text-sm font-medium text-slate-700"
                 >
                   Last Name
                 </label>
                 <div class="relative">
                   <UIcon
                     name="i-heroicons-user"
-                    class="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"
+                    class="absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 text-slate-400"
                   />
                   <input
                     id="lastName"
                     v-model="lastName"
                     type="text"
                     required
-                    class="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    class="w-full rounded-lg border border-slate-300 py-3 pr-4 pl-10 focus:border-transparent focus:ring-2 focus:ring-blue-500"
                     placeholder="Smith"
                     :disabled="loading"
                   />
@@ -142,14 +142,14 @@
             <div>
               <label
                 for="email"
-                class="block text-sm font-medium text-slate-700 mb-2"
+                class="mb-2 block text-sm font-medium text-slate-700"
               >
                 Email
               </label>
               <div class="relative">
                 <UIcon
                   name="i-heroicons-envelope"
-                  class="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"
+                  class="absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 text-slate-400"
                 />
                 <input
                   id="email"
@@ -157,7 +157,7 @@
                   type="email"
                   autocomplete="email"
                   required
-                  class="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:border-transparent"
+                  class="w-full rounded-lg border border-slate-300 py-3 pr-4 pl-10 focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-blue-500"
                   placeholder="your.email@example.com"
                   :disabled="loading"
                   @blur="validateEmail"
@@ -170,21 +170,21 @@
             <div>
               <label
                 for="adminToken"
-                class="block text-sm font-medium text-slate-700 mb-2"
+                class="mb-2 block text-sm font-medium text-slate-700"
               >
                 Admin Registration Token
               </label>
               <div class="relative">
                 <UIcon
                   name="i-heroicons-key"
-                  class="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"
+                  class="absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 text-slate-400"
                 />
                 <input
                   id="adminToken"
                   v-model="adminToken"
                   type="password"
                   required
-                  class="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  class="w-full rounded-lg border border-slate-300 py-3 pr-4 pl-10 focus:border-transparent focus:ring-2 focus:ring-blue-500"
                   placeholder="Enter admin registration token"
                   :disabled="loading"
                   @blur="validateAdminToken"
@@ -194,25 +194,25 @@
             </div>
 
             <!-- Password Fields -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
                 <label
                   for="password"
-                  class="block text-sm font-medium text-slate-700 mb-2"
+                  class="mb-2 block text-sm font-medium text-slate-700"
                 >
                   Password
                 </label>
                 <div class="relative">
                   <UIcon
                     name="i-heroicons-lock-closed"
-                    class="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"
+                    class="absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 text-slate-400"
                   />
                   <input
                     id="password"
                     v-model="password"
                     type="password"
                     required
-                    class="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    class="w-full rounded-lg border border-slate-300 py-3 pr-4 pl-10 focus:border-transparent focus:ring-2 focus:ring-blue-500"
                     placeholder="Create a password"
                     :disabled="loading"
                     @blur="validatePassword"
@@ -223,40 +223,40 @@
               <div>
                 <label
                   for="confirmPassword"
-                  class="block text-sm font-medium text-slate-700 mb-2"
+                  class="mb-2 block text-sm font-medium text-slate-700"
                 >
                   Confirm Password
                 </label>
                 <div class="relative">
                   <UIcon
                     name="i-heroicons-lock-closed"
-                    class="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"
+                    class="absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 text-slate-400"
                   />
                   <input
                     id="confirmPassword"
                     v-model="confirmPassword"
                     type="password"
                     required
-                    class="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    class="w-full rounded-lg border border-slate-300 py-3 pr-4 pl-10 focus:border-transparent focus:ring-2 focus:ring-blue-500"
                     placeholder="Confirm password"
                     :disabled="loading"
                   />
                 </div>
               </div>
             </div>
-            <p class="text-xs text-slate-500 -mt-4">
+            <p class="-mt-4 text-xs text-slate-500">
               Must be 8+ characters with uppercase, lowercase, and a number
             </p>
 
             <!-- Terms and Conditions -->
-            <div class="bg-slate-50 rounded-lg p-4 border border-slate-200">
-              <label class="flex items-start gap-3 cursor-pointer">
+            <div class="rounded-lg border border-slate-200 bg-slate-50 p-4">
+              <label class="flex cursor-pointer items-start gap-3">
                 <input
                   v-model="agreeToTerms"
                   type="checkbox"
                   class="mt-1 rounded-sm border-slate-300 text-blue-600 focus:ring-blue-500"
                 />
-                <span class="text-slate-700 text-sm">
+                <span class="text-sm text-slate-700">
                   I agree to the
                   <NuxtLink
                     to="/legal/terms"
@@ -278,7 +278,7 @@
               data-testid="admin-signup-button"
               type="submit"
               :disabled="loading || hasErrors"
-              class="w-full px-6 py-3 bg-linear-to-r from-red-500 to-red-600 text-white font-semibold rounded-lg hover:from-red-600 hover:to-red-700 transition disabled:opacity-50 shadow-lg"
+              class="w-full rounded-lg bg-linear-to-r from-red-500 to-red-600 px-6 py-3 font-semibold text-white shadow-lg transition hover:from-red-600 hover:to-red-700 disabled:opacity-50"
             >
               {{
                 loading ? "Creating admin account..." : "Create Admin Account"
@@ -298,10 +298,10 @@
 
           <!-- Sign Up Link -->
           <div class="text-center">
-            <p class="text-slate-600 text-sm">
+            <p class="text-sm text-slate-600">
               <NuxtLink
                 to="/signup"
-                class="text-blue-600 hover:text-blue-700 font-medium"
+                class="font-medium text-blue-600 hover:text-blue-700"
               >
                 Create a regular account instead
               </NuxtLink>

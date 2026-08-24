@@ -1,24 +1,24 @@
 <template>
   <div class="min-h-screen bg-gray-50">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
       <!-- Header -->
-      <div class="flex items-center justify-between mb-8">
+      <div class="mb-8 flex items-center justify-between">
         <div>
           <h1 class="text-3xl font-bold text-gray-900">Notifications</h1>
-          <p class="text-gray-600 mt-1">{{ unreadCount }} unread</p>
+          <p class="mt-1 text-gray-600">{{ unreadCount }} unread</p>
         </div>
         <div class="flex gap-2">
           <button
             v-if="unreadCount > 0"
             @click="markAllAsRead"
-            class="px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition"
+            class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
           >
             Mark all as read
           </button>
           <button
             v-if="hasReadNotifications"
             @click="deleteAllRead"
-            class="px-4 py-2 bg-red-600 text-white text-sm font-semibold rounded-lg hover:bg-red-700 transition"
+            class="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700"
           >
             Clear read
           </button>
@@ -31,12 +31,12 @@
           v-model="searchQuery"
           type="text"
           placeholder="Search notifications..."
-          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
         />
       </div>
 
       <!-- Type Filter -->
-      <div class="mb-6 flex gap-2 flex-wrap">
+      <div class="mb-6 flex flex-wrap gap-2">
         <button
           v-for="type in [
             'all',
@@ -51,10 +51,10 @@
           :key="type"
           @click="activeFilter = type"
           :class="[
-            'px-4 py-2 text-sm font-semibold rounded-lg transition',
+            'rounded-lg px-4 py-2 text-sm font-semibold transition',
             activeFilter === type
               ? 'bg-blue-600 text-white'
-              : 'bg-white text-gray-700 border border-gray-300 hover:border-gray-400',
+              : 'border border-gray-300 bg-white text-gray-700 hover:border-gray-400',
           ]"
         >
           {{ getTypeLabel(type) }}
@@ -62,16 +62,16 @@
       </div>
 
       <!-- Loading State -->
-      <div v-if="loading" class="text-center py-12">
+      <div v-if="loading" class="py-12 text-center">
         <p class="text-gray-600">Loading notifications...</p>
       </div>
 
       <!-- Empty State -->
       <div
         v-else-if="filteredNotifications.length === 0"
-        class="bg-white rounded-lg shadow-sm p-12 text-center"
+        class="rounded-lg bg-white p-12 text-center shadow-sm"
       >
-        <p class="text-gray-600 mb-2">No notifications</p>
+        <p class="mb-2 text-gray-600">No notifications</p>
         <p class="text-sm text-gray-500">You're all caught up!</p>
       </div>
 
@@ -83,7 +83,7 @@
           data-testid="notification-card"
           :data-read="!!notification.read_at"
           :class="[
-            'bg-white rounded-lg shadow-sm p-4 hover:shadow-lg transition cursor-pointer border-l-4 flex items-start justify-between',
+            'flex cursor-pointer items-start justify-between rounded-lg border-l-4 bg-white p-4 shadow-sm transition hover:shadow-lg',
             notification.read_at
               ? 'border-gray-300'
               : 'border-blue-500 bg-blue-50',
@@ -91,11 +91,11 @@
           @click="handleNotificationClick(notification)"
         >
           <div class="flex-1">
-            <div class="flex items-center gap-2 mb-1">
+            <div class="mb-1 flex items-center gap-2">
               <UIcon
                 name="i-heroicons-bell"
                 v-if="notification.type === 'follow_up_reminder'"
-                class="w-5 h-5 text-blue-600"
+                class="h-5 w-5 text-blue-600"
               />
               <span
                 v-else
@@ -112,19 +112,19 @@
               </h3>
               <span
                 v-if="notification.priority === 'high'"
-                class="px-2 py-1 text-xs font-bold bg-red-100 text-red-700 rounded-sm"
+                class="rounded-sm bg-red-100 px-2 py-1 text-xs font-bold text-red-700"
               >
                 HIGH
               </span>
               <span
                 v-else-if="notification.priority === 'normal'"
-                class="px-2 py-1 text-xs font-semibold bg-blue-100 text-blue-700 rounded-sm"
+                class="rounded-sm bg-blue-100 px-2 py-1 text-xs font-semibold text-blue-700"
               >
                 NORMAL
               </span>
               <span
                 v-else
-                class="px-2 py-1 text-xs font-semibold bg-gray-100 text-gray-700 rounded-sm"
+                class="rounded-sm bg-gray-100 px-2 py-1 text-xs font-semibold text-gray-700"
               >
                 LOW
               </span>
@@ -137,15 +137,15 @@
             >
               {{ notification.message }}
             </p>
-            <p class="text-xs text-gray-500 mt-2">
+            <p class="mt-2 text-xs text-gray-500">
               {{ formatDate(notification.scheduled_for) }}
             </p>
           </div>
           <button
             @click.stop="deleteNotification(notification.id)"
-            class="ml-4 text-gray-400 hover:text-red-600 transition"
+            class="ml-4 text-gray-400 transition hover:text-red-600"
           >
-            <UIcon name="i-heroicons-x-mark" class="w-5 h-5" />
+            <UIcon name="i-heroicons-x-mark" class="h-5 w-5" />
           </button>
         </div>
       </div>

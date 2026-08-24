@@ -10,15 +10,15 @@
       description="Manage your profile, preferences, and account settings"
     />
 
-    <main class="max-w-4xl mx-auto px-4 sm:px-6 py-8">
+    <main class="mx-auto max-w-4xl px-4 py-8 sm:px-6">
       <!-- Profile Section -->
       <div class="mb-8">
         <h2
-          class="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-3"
+          class="mb-3 text-sm font-semibold tracking-wide text-slate-500 uppercase"
         >
           Profile & Player Info
         </h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
           <SettingsCard
             to="/settings/location"
             icon="🏠"
@@ -41,11 +41,11 @@
       <!-- Preferences Section -->
       <div class="mb-8">
         <h2
-          class="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-3"
+          class="mb-3 text-sm font-semibold tracking-wide text-slate-500 uppercase"
         >
           School Preferences
         </h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
           <SettingsCard
             to="/settings/school-preferences"
             icon="🎯"
@@ -60,11 +60,11 @@
       <!-- Dashboard Section -->
       <div class="mb-8">
         <h2
-          class="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-3"
+          class="mb-3 text-sm font-semibold tracking-wide text-slate-500 uppercase"
         >
           Dashboard
         </h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
           <SettingsCard
             to="/settings/dashboard"
             icon="🎛️"
@@ -78,11 +78,11 @@
       <!-- Communication Section -->
       <div class="mb-8">
         <h2
-          class="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-3"
+          class="mb-3 text-sm font-semibold tracking-wide text-slate-500 uppercase"
         >
           Communication & Social
         </h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
           <SettingsCard
             to="/settings/notifications"
             icon="🔔"
@@ -103,11 +103,11 @@
       <!-- Family Section -->
       <div class="mb-8">
         <h2
-          class="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-3"
+          class="mb-3 text-sm font-semibold tracking-wide text-slate-500 uppercase"
         >
           Family
         </h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
           <SettingsCard
             to="/settings/family-management"
             icon="👨‍👩‍👧‍👦"
@@ -121,11 +121,11 @@
       <!-- Account Section -->
       <div class="mb-8">
         <h2
-          class="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-3"
+          class="mb-3 text-sm font-semibold tracking-wide text-slate-500 uppercase"
         >
           Account &amp; Profile
         </h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
           <SettingsCard
             to="/settings/profile"
             icon="👤"
@@ -139,11 +139,11 @@
       <!-- App Section -->
       <div class="mb-8">
         <h2
-          class="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-3"
+          class="mb-3 text-sm font-semibold tracking-wide text-slate-500 uppercase"
         >
           App
         </h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
           <SettingsCard
             to="/about"
             icon="💬"

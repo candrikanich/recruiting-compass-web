@@ -25,7 +25,11 @@ const tables: Record<string, unknown[]> = {};
 //   (used both for row-list awaits and for head:true count queries)
 function tableStub(name: string) {
   const rows = tables[name] ?? [];
-  const builder: PromiseLike<{ data: unknown[]; error: null; count: number }> & {
+  const builder: PromiseLike<{
+    data: unknown[];
+    error: null;
+    count: number;
+  }> & {
     select: (...args: unknown[]) => typeof builder;
     eq: (...args: unknown[]) => typeof builder;
     in: (...args: unknown[]) => typeof builder;
@@ -39,7 +43,9 @@ function tableStub(name: string) {
     order: () => builder,
     limit: () => builder,
     maybeSingle: () => Promise.resolve({ data: rows[0] ?? null, error: null }),
-    then: (resolve: (v: { data: unknown[]; error: null; count: number }) => unknown) =>
+    then: (
+      resolve: (v: { data: unknown[]; error: null; count: number }) => unknown,
+    ) =>
       Promise.resolve(resolve({ data: rows, error: null, count: rows.length })),
   } as never;
   return builder;
@@ -57,21 +63,19 @@ vi.mock("~/server/utils/auth", () => ({
 }));
 
 vi.mock("~/server/utils/validation", () => ({
-  requireUuidParam: vi.fn(
-    (event: { context: { params: { id: string } } }) => {
-      const id = event.context.params.id;
-      const UUID_RE =
-        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-      if (!UUID_RE.test(id)) {
-        const err = new Error("Invalid id: must be a valid UUID") as Error & {
-          statusCode: number;
-        };
-        err.statusCode = 400;
-        throw err;
-      }
-      return id;
-    },
-  ),
+  requireUuidParam: vi.fn((event: { context: { params: { id: string } } }) => {
+    const id = event.context.params.id;
+    const UUID_RE =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!UUID_RE.test(id)) {
+      const err = new Error("Invalid id: must be a valid UUID") as Error & {
+        statusCode: number;
+      };
+      err.statusCode = 400;
+      throw err;
+    }
+    return id;
+  }),
 }));
 
 vi.mock("~/server/utils/adminAudit", () => ({

@@ -5,13 +5,13 @@
     data-testid="invite-athlete-cta"
     role="region"
     aria-label="Athlete onboarding"
-    class="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-lg mb-6"
+    class="mb-6 rounded-r-lg border-l-4 border-amber-500 bg-amber-50 p-4"
   >
-    <div class="flex items-center justify-between gap-4 flex-wrap">
+    <div class="flex flex-wrap items-center justify-between gap-4">
       <div class="flex items-center gap-3">
         <UIcon
           name="i-heroicons-user-plus-solid"
-          class="w-5 h-5 text-amber-600 shrink-0"
+          class="h-5 w-5 shrink-0 text-amber-600"
           aria-hidden="true"
         />
         <p class="text-sm text-amber-800">
@@ -21,7 +21,7 @@
       </div>
       <NuxtLink
         to="/settings/family-management"
-        class="shrink-0 px-4 py-1.5 bg-amber-600 text-white text-sm font-semibold rounded-lg hover:bg-amber-700 transition focus:ring-2 focus:ring-offset-2 focus:ring-amber-600"
+        class="shrink-0 rounded-lg bg-amber-600 px-4 py-1.5 text-sm font-semibold text-white transition hover:bg-amber-700 focus:ring-2 focus:ring-amber-600 focus:ring-offset-2"
       >
         Invite Athlete <span aria-hidden="true">→</span>
       </NuxtLink>
@@ -34,12 +34,12 @@
     data-testid="connected-state"
     role="status"
     aria-live="polite"
-    class="bg-green-50 border-l-4 border-green-500 p-4 rounded-r-lg mb-6"
+    class="mb-6 rounded-r-lg border-l-4 border-green-500 bg-green-50 p-4"
   >
     <div class="flex items-center gap-3">
       <UIcon
         name="i-heroicons-check-circle-solid"
-        class="w-5 h-5 text-green-600 shrink-0"
+        class="h-5 w-5 shrink-0 text-green-600"
         aria-hidden="true"
       />
       <p class="text-sm text-green-800">

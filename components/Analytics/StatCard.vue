@@ -1,15 +1,15 @@
 <template>
   <div
-    class="rounded-lg p-6 bg-white shadow-md border-l-4"
+    class="rounded-lg border-l-4 bg-white p-6 shadow-md"
     :class="getBorderColorClass"
   >
     <div class="flex items-center justify-between">
       <div>
         <p class="text-sm font-medium text-slate-600">{{ label }}</p>
-        <p class="text-3xl font-bold mt-2 text-slate-900">
+        <p class="mt-2 text-3xl font-bold text-slate-900">
           {{ formattedValue }}
         </p>
-        <p v-if="subLabel" class="text-xs mt-1 text-slate-600">
+        <p v-if="subLabel" class="mt-1 text-xs text-slate-600">
           {{ subLabel }}
         </p>
       </div>
@@ -17,7 +17,7 @@
       <!-- Icon/Badge -->
       <div
         v-if="showIcon"
-        class="w-12 h-12 rounded-full flex items-center justify-center"
+        class="flex h-12 w-12 items-center justify-center rounded-full"
         :class="getIconClass"
       >
         <span class="text-xl">{{ icon }}</span>
@@ -25,7 +25,7 @@
     </div>
 
     <!-- Trend Indicator -->
-    <div v-if="trend !== undefined" class="mt-4 pt-4 border-t border-slate-200">
+    <div v-if="trend !== undefined" class="mt-4 border-t border-slate-200 pt-4">
       <div class="flex items-center gap-2">
         <span class="text-sm font-semibold" :class="getTrendClass">
           {{ trend > 0 ? "↑" : trend < 0 ? "↓" : "→" }}

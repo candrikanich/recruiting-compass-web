@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen relative overflow-hidden bg-emerald-600">
+  <div class="relative min-h-screen overflow-hidden bg-emerald-600">
     <!-- Multi-Sport Field Background -->
     <MultiSportFieldBackground />
 
@@ -8,18 +8,18 @@
 
     <!-- Content -->
     <div
-      class="relative z-10 min-h-screen flex items-center justify-center px-6 py-12"
+      class="relative z-10 flex min-h-screen items-center justify-center px-6 py-12"
     >
       <div class="w-full max-w-2xl">
         <!-- Back Link -->
         <div class="mb-6">
           <NuxtLink
             to="/"
-            class="text-white hover:text-white/80 transition-colors flex items-center gap-2 rounded-sm px-2 py-1 focus:outline-2 focus:outline-offset-2 focus:outline-white"
+            class="flex items-center gap-2 rounded-sm px-2 py-1 text-white transition-colors hover:text-white/80 focus:outline-2 focus:outline-offset-2 focus:outline-white"
           >
             <UIcon
               name="i-heroicons-arrow-left"
-              class="w-4 h-4"
+              class="h-4 w-4"
               aria-hidden="true"
             />
             Back to Welcome
@@ -28,17 +28,17 @@
 
         <!-- Signup Card -->
         <div
-          class="bg-white/95 backdrop-blur-xs rounded-2xl shadow-2xl p-8 border border-white/20"
+          class="rounded-2xl border border-white/20 bg-white/95 p-8 shadow-2xl backdrop-blur-xs"
         >
           <!-- Heading (hidden but available for screen readers) -->
           <h1 class="sr-only">Sign Up</h1>
 
           <!-- Header -->
-          <div class="text-center mb-8">
+          <div class="mb-8 text-center">
             <img
               src="~/assets/logos/recruiting-compass-stacked.svg"
               alt="The Recruiting Compass - Find your path, make your move"
-              class="w-96 mx-auto"
+              class="mx-auto w-96"
             />
           </div>
 
@@ -334,11 +334,11 @@ const handleSignup = async () => {
 
 /* Screen reader only content */
 .sr-only {
-  @apply absolute w-1 h-1 p-0 -m-1 overflow-hidden whitespace-nowrap border-0;
+  @apply absolute -m-1 h-1 w-1 overflow-hidden border-0 p-0 whitespace-nowrap;
 }
 
 .sr-only:focus,
 .focus\:not-sr-only:focus {
-  @apply relative w-auto h-auto p-2 m-0 overflow-visible whitespace-normal;
+  @apply relative m-0 h-auto w-auto overflow-visible p-2 whitespace-normal;
 }
 </style>

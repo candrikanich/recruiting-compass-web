@@ -1,13 +1,13 @@
 <template>
-  <section class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
-    <h2 class="text-lg font-semibold text-slate-900 mb-4">
+  <section class="rounded-xl border border-slate-200 bg-white p-6 shadow-xs">
+    <h2 class="mb-4 text-lg font-semibold text-slate-900">
       Data &amp; Privacy
     </h2>
 
     <!-- Export data -->
     <div class="space-y-4">
       <div>
-        <h3 class="text-base font-semibold text-slate-900 mb-1">
+        <h3 class="mb-1 text-base font-semibold text-slate-900">
           Export Your Data
         </h3>
         <p class="text-sm text-slate-600">
@@ -49,9 +49,9 @@
       <p v-if="exportError" class="text-sm text-red-600">{{ exportError }}</p>
     </div>
 
-    <div class="border-t border-slate-200 my-6" />
+    <div class="my-6 border-t border-slate-200" />
 
-    <h3 class="text-base font-semibold text-red-700 mb-4">Delete Account</h3>
+    <h3 class="mb-4 text-base font-semibold text-red-700">Delete Account</h3>
 
     <!-- Pending deletion state -->
     <div v-if="isDeletionPending" class="space-y-4">
@@ -62,7 +62,7 @@
             <strong>{{ deletionDate }}</strong
             >.
           </p>
-          <p class="text-sm mt-1">
+          <p class="mt-1 text-sm">
             All your data will be permanently removed on that date. You can
             cancel this request before then.
           </p>
@@ -87,7 +87,7 @@
           <p class="text-sm font-semibold">
             This action cannot be easily undone.
           </p>
-          <ul class="text-sm list-disc list-inside space-y-1 mt-2">
+          <ul class="mt-2 list-inside list-disc space-y-1 text-sm">
             <li>
               All your schools, coaches, interactions, and notes will be deleted
             </li>

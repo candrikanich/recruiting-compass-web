@@ -4,10 +4,10 @@
   >
     <PageHeader title="About" description="Our mission and how to reach us" />
 
-    <main class="max-w-2xl mx-auto px-4 sm:px-6 py-8 space-y-10">
+    <main class="mx-auto max-w-2xl space-y-10 px-4 py-8 sm:px-6">
       <!-- Mission Statement -->
       <section>
-        <p class="text-lg text-slate-700 leading-relaxed">
+        <p class="text-lg leading-relaxed text-slate-700">
           The Recruiting Compass helps high school student athletes and their
           families manage the college recruiting journey — tracking schools,
           coaches, interactions, and timelines in one place. We believe every
@@ -18,7 +18,7 @@
 
       <!-- Feedback Form -->
       <section>
-        <h2 class="text-lg font-semibold text-slate-800 mb-4">
+        <h2 class="mb-4 text-lg font-semibold text-slate-800">
           Send Us a Message
         </h2>
 
@@ -26,14 +26,14 @@
           <div>
             <label
               for="subject"
-              class="block text-sm font-medium text-slate-700 mb-1"
+              class="mb-1 block text-sm font-medium text-slate-700"
             >
               Subject
             </label>
             <select
               id="subject"
               v-model="form.subject"
-              class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-none"
               required
             >
               <option value="" disabled>Select a category</option>
@@ -47,7 +47,7 @@
           <div>
             <label
               for="message"
-              class="block text-sm font-medium text-slate-700 mb-1"
+              class="mb-1 block text-sm font-medium text-slate-700"
             >
               Message
             </label>
@@ -57,24 +57,24 @@
               rows="6"
               maxlength="5000"
               placeholder="Tell us what's on your mind..."
-              class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y"
+              class="w-full resize-y rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-none"
               required
             />
-            <p class="text-xs text-slate-400 mt-1 text-right">
+            <p class="mt-1 text-right text-xs text-slate-400">
               {{ form.message.length }} / 5000
             </p>
           </div>
 
           <div
             v-if="errorMessage"
-            class="rounded-lg bg-red-50 border border-red-200 px-4 py-3"
+            class="rounded-lg border border-red-200 bg-red-50 px-4 py-3"
           >
             <p class="text-sm text-red-700">{{ errorMessage }}</p>
           </div>
 
           <div
             v-if="submitted"
-            class="rounded-lg bg-green-50 border border-green-200 px-4 py-3"
+            class="rounded-lg border border-green-200 bg-green-50 px-4 py-3"
           >
             <p class="text-sm text-green-700">
               Thanks for your message — we'll be in touch soon.

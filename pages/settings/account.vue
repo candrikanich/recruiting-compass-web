@@ -2,13 +2,13 @@
   <div
     class="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-slate-100"
   >
-    <div class="bg-white border-b border-slate-200">
-      <div class="max-w-4xl mx-auto px-4 sm:px-6 py-4">
+    <div class="border-b border-slate-200 bg-white">
+      <div class="mx-auto max-w-4xl px-4 py-4 sm:px-6">
         <NuxtLink
           to="/settings"
-          class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition mb-3 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          class="mb-3 inline-flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium text-blue-600 transition hover:bg-blue-50 hover:text-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         >
-          <UIcon name="i-heroicons-arrow-left" class="w-4 h-4" />
+          <UIcon name="i-heroicons-arrow-left" class="h-4 w-4" />
           Back to Settings
         </NuxtLink>
         <h1 class="text-2xl font-semibold text-slate-900">Account</h1>
@@ -16,12 +16,12 @@
       </div>
     </div>
 
-    <main class="max-w-4xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+    <main class="mx-auto max-w-4xl space-y-6 px-4 py-8 sm:px-6">
       <!-- Account Info -->
       <section
-        class="bg-white rounded-xl border border-slate-200 shadow-xs p-6"
+        class="rounded-xl border border-slate-200 bg-white p-6 shadow-xs"
       >
-        <h2 class="text-lg font-semibold text-slate-900 mb-4">
+        <h2 class="mb-4 text-lg font-semibold text-slate-900">
           Account Information
         </h2>
         <div class="space-y-2 text-sm text-slate-600">
@@ -37,8 +37,8 @@
       </section>
 
       <!-- Delete Account -->
-      <section class="bg-white rounded-xl border border-red-200 shadow-xs p-6">
-        <h2 class="text-lg font-semibold text-red-700 mb-2">Delete Account</h2>
+      <section class="rounded-xl border border-red-200 bg-white p-6 shadow-xs">
+        <h2 class="mb-2 text-lg font-semibold text-red-700">Delete Account</h2>
 
         <!-- Pending deletion state -->
         <div v-if="isDeletionPending" class="space-y-4">
@@ -49,7 +49,7 @@
                 <strong>{{ deletionDate }}</strong
                 >.
               </p>
-              <p class="text-sm mt-1">
+              <p class="mt-1 text-sm">
                 All your data will be permanently removed on that date. You can
                 cancel this request before then.
               </p>
@@ -76,7 +76,7 @@
               <p class="text-sm font-semibold">
                 This action cannot be easily undone.
               </p>
-              <ul class="text-sm list-disc list-inside space-y-1 mt-2">
+              <ul class="mt-2 list-inside list-disc space-y-1 text-sm">
                 <li>
                   All your schools, coaches, interactions, and notes will be
                   deleted

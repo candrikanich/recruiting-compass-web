@@ -42,7 +42,7 @@ function handleInput(event: Event) {
       :disabled="disabled"
       :aria-invalid="error ? 'true' : undefined"
       :aria-describedby="error ? `${id}-error` : undefined"
-      class="w-full px-4 py-2.5 border-2 border-slate-300 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed transition-colors"
+      class="w-full rounded-xl border-2 border-slate-300 px-4 py-2.5 transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500"
       :class="{
         'border-red-500 focus:border-red-500 focus:ring-red-500': error,
       }"

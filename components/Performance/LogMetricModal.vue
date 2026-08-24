@@ -74,7 +74,9 @@ const metricGroupOptions = computed(() => {
   }));
 
   const groupedKeys = new Set(groups.flatMap((group) => group.keys));
-  const leftover = metricTypes.value.filter((type) => !groupedKeys.has(type.value));
+  const leftover = metricTypes.value.filter(
+    (type) => !groupedKeys.has(type.value),
+  );
   if (leftover.length > 0) {
     grouped.push({ category: "Other", options: leftover });
   }
@@ -276,12 +278,12 @@ watch(
 
           <form @submit.prevent="handleSubmit">
             <!-- Form Fields Grid -->
-            <div class="grid gap-4 md:grid-cols-2 mb-4">
+            <div class="mb-4 grid gap-4 md:grid-cols-2">
               <!-- Row 1: Metric Type and Value -->
               <div>
                 <label
                   for="metricType"
-                  class="block text-sm font-medium text-gray-700 mb-1"
+                  class="mb-1 block text-sm font-medium text-gray-700"
                 >
                   Metric Type <span class="text-red-500">*</span>
                 </label>
@@ -322,7 +324,7 @@ watch(
               <div>
                 <label
                   for="value"
-                  class="block text-sm font-medium text-gray-700 mb-1"
+                  class="mb-1 block text-sm font-medium text-gray-700"
                 >
                   Value <span class="text-red-500">*</span>
                 </label>
@@ -341,7 +343,7 @@ watch(
               <div>
                 <label
                   for="date"
-                  class="block text-sm font-medium text-gray-700 mb-1"
+                  class="mb-1 block text-sm font-medium text-gray-700"
                 >
                   Date <span class="text-red-500">*</span>
                 </label>
@@ -357,7 +359,7 @@ watch(
               <div>
                 <label
                   for="unit"
-                  class="block text-sm font-medium text-gray-700 mb-1"
+                  class="mb-1 block text-sm font-medium text-gray-700"
                 >
                   Unit
                 </label>
@@ -382,7 +384,7 @@ watch(
             <div v-if="metricType === OTHER_KEY" class="mb-4">
               <label
                 for="otherName"
-                class="block text-sm font-medium text-gray-700 mb-1"
+                class="mb-1 block text-sm font-medium text-gray-700"
               >
                 Metric Name <span class="text-red-500">*</span>
               </label>
@@ -400,7 +402,7 @@ watch(
             <div class="mb-4">
               <label
                 for="event"
-                class="block text-sm font-medium text-gray-700 mb-1"
+                class="mb-1 block text-sm font-medium text-gray-700"
               >
                 Event (Optional)
               </label>
@@ -444,7 +446,7 @@ watch(
             <div class="mb-6">
               <label
                 for="notes"
-                class="block text-sm font-medium text-gray-700 mb-1"
+                class="mb-1 block text-sm font-medium text-gray-700"
               >
                 Notes
               </label>
@@ -462,14 +464,14 @@ watch(
               <button
                 type="submit"
                 :disabled="!isFormValid || loading"
-                class="flex-1 px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition disabled:bg-gray-300 disabled:cursor-not-allowed"
+                class="flex-1 rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-300"
               >
                 {{ loading ? "Logging..." : "Log Metric" }}
               </button>
               <button
                 type="button"
                 @click="handleClose"
-                class="flex-1 px-4 py-2 bg-gray-200 text-gray-900 font-semibold rounded-lg hover:bg-gray-300 transition"
+                class="flex-1 rounded-lg bg-gray-200 px-4 py-2 font-semibold text-gray-900 transition hover:bg-gray-300"
               >
                 Cancel
               </button>

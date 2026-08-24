@@ -5,7 +5,10 @@
 
 export type SendProfileChannelOption = "email" | "text" | "both" | "none";
 
-function namePrefix(playerName: string, graduationYear?: number | null): string {
+function namePrefix(
+  playerName: string,
+  graduationYear?: number | null,
+): string {
   return graduationYear ? `${graduationYear} ${playerName}` : playerName;
 }
 

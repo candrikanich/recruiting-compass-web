@@ -2,27 +2,27 @@
   <div
     role="region"
     aria-label="Get started"
-    class="flex flex-col items-center justify-center py-16 px-4 text-center bg-white rounded-2xl border border-gray-100 shadow-xs mb-6"
+    class="mb-6 flex flex-col items-center justify-center rounded-2xl border border-gray-100 bg-white px-4 py-16 text-center shadow-xs"
   >
     <div
-      class="w-16 h-16 rounded-full bg-amber-50 flex items-center justify-center mb-4"
+      class="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-amber-50"
     >
       <UIcon
         name="i-heroicons-users-solid"
-        class="w-8 h-8 text-amber-500"
+        class="h-8 w-8 text-amber-500"
         aria-hidden="true"
       />
     </div>
-    <h2 class="text-xl font-semibold text-gray-900 mb-2">
+    <h2 class="mb-2 text-xl font-semibold text-gray-900">
       Your athlete isn't connected yet
     </h2>
-    <p class="text-gray-500 max-w-sm mb-6">
+    <p class="mb-6 max-w-sm text-gray-500">
       Once they accept your invite, you'll see their recruiting activity, school
       list, and progress here.
     </p>
     <NuxtLink
       to="/settings/family-management"
-      class="px-6 py-2.5 bg-amber-600 text-white font-semibold rounded-lg hover:bg-amber-700 transition focus:ring-2 focus:ring-offset-2 focus:ring-amber-600"
+      class="rounded-lg bg-amber-600 px-6 py-2.5 font-semibold text-white transition hover:bg-amber-700 focus:ring-2 focus:ring-amber-600 focus:ring-offset-2"
     >
       Invite Athlete
     </NuxtLink>

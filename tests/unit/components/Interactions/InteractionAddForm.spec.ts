@@ -122,7 +122,9 @@ describe("InteractionAddForm Component", () => {
 
       const directionRadios = wrapper
         .findAll('input[type="radio"]')
-        .filter((r) => ["outbound", "inbound"].includes(r.attributes("value")!));
+        .filter((r) =>
+          ["outbound", "inbound"].includes(r.attributes("value")!),
+        );
       expect(directionRadios.length).toBeGreaterThan(0);
       expect(
         directionRadios.every((r) => r.attributes("required") != null),

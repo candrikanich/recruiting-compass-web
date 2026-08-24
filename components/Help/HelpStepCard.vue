@@ -3,13 +3,13 @@
     <!-- Connector line to next step -->
     <div class="flex flex-col items-center">
       <div
-        class="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary-100 text-sm font-bold text-primary-700"
+        class="bg-primary-100 text-primary-700 flex size-8 shrink-0 items-center justify-center rounded-full text-sm font-bold"
       >
         {{ step }}
       </div>
       <div
         v-if="!last"
-        class="mt-1 w-px flex-1 bg-primary-100"
+        class="bg-primary-100 mt-1 w-px flex-1"
         style="min-height: 1.5rem"
       />
     </div>

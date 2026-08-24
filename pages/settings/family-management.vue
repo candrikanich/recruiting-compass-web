@@ -3,13 +3,13 @@
     class="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-slate-100"
   >
     <!-- Page Header -->
-    <div class="bg-white border-b border-slate-200">
-      <div class="max-w-4xl mx-auto px-4 sm:px-6 py-4">
+    <div class="border-b border-slate-200 bg-white">
+      <div class="mx-auto max-w-4xl px-4 py-4 sm:px-6">
         <NuxtLink
           to="/settings"
-          class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition mb-3 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          class="mb-3 inline-flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium text-blue-600 transition hover:bg-blue-50 hover:text-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         >
-          <UIcon name="i-heroicons-arrow-left" class="w-4 h-4" />
+          <UIcon name="i-heroicons-arrow-left" class="h-4 w-4" />
           Back to Settings
         </NuxtLink>
         <h1 class="text-2xl font-semibold text-slate-900">Family Management</h1>
@@ -19,11 +19,11 @@
       </div>
     </div>
 
-    <main class="max-w-4xl mx-auto px-4 sm:px-6 py-8">
+    <main class="mx-auto max-w-4xl px-4 py-8 sm:px-6">
       <!-- Error Alert -->
       <div
         v-if="error"
-        class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4"
+        class="mb-6 rounded-lg border border-red-200 bg-red-50 p-4"
       >
         <p class="text-sm text-red-700">{{ error }}</p>
       </div>
@@ -31,14 +31,14 @@
       <!-- Success Messages -->
       <div
         v-if="familyCodeSuccess"
-        class="mb-6 bg-green-50 border border-green-200 rounded-lg p-4"
+        class="mb-6 rounded-lg border border-green-200 bg-green-50 p-4"
       >
         <p class="text-sm text-green-700">{{ familyCodeSuccess }}</p>
       </div>
 
       <div
         v-if="familyCodeError"
-        class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4"
+        class="mb-6 rounded-lg border border-red-200 bg-red-50 p-4"
       >
         <p class="text-sm text-red-700">{{ familyCodeError }}</p>
       </div>
@@ -46,7 +46,7 @@
       <!-- Family Code Section for Students -->
       <section
         v-if="isPlayer && myFamilyCode"
-        class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 mb-6"
+        class="mb-6 rounded-xl border border-slate-200 bg-white p-6 shadow-xs"
       >
         <FamilyCodeDisplay
           :family-code="myFamilyCode"
@@ -59,16 +59,16 @@
       <!-- Family Members Section for Students -->
       <section
         v-if="isPlayer && myFamilyCode && familyMembers.length > 0"
-        class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 mb-6"
+        class="mb-6 rounded-xl border border-slate-200 bg-white p-6 shadow-xs"
       >
-        <h2 class="text-xl font-bold text-gray-900 mb-4">
+        <h2 class="mb-4 text-xl font-bold text-gray-900">
           Family Members
           <span class="text-sm text-gray-600"
             >({{ familyMembers.length }})</span
           >
         </h2>
 
-        <div v-if="loadingMembers" class="text-center py-4">
+        <div v-if="loadingMembers" class="py-4 text-center">
           <p class="text-gray-500">Loading members...</p>
         </div>
 
@@ -86,7 +86,7 @@
       <!-- Join Family Section for Parents -->
       <section
         v-if="isParent"
-        class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 mb-6"
+        class="mb-6 rounded-xl border border-slate-200 bg-white p-6 shadow-xs"
       >
         <FamilyCodeInput
           :loading="familyCodeLoading"
@@ -97,9 +97,9 @@
       <!-- Joined Families for Parents -->
       <section
         v-if="isParent && parentFamilies.length > 0"
-        class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 mb-6"
+        class="mb-6 rounded-xl border border-slate-200 bg-white p-6 shadow-xs"
       >
-        <h2 class="text-xl font-bold text-gray-900 mb-4">
+        <h2 class="mb-4 text-xl font-bold text-gray-900">
           My Families
           <span class="text-sm text-gray-600"
             >({{ parentFamilies.length }})</span
@@ -109,19 +109,19 @@
           <div
             v-for="family in parentFamilies"
             :key="family.familyId"
-            class="border border-green-200 bg-green-50 rounded-lg p-4"
+            class="rounded-lg border border-green-200 bg-green-50 p-4"
           >
             <div class="flex items-center justify-between">
               <div>
                 <h3 class="font-semibold text-green-900">
                   {{ family.familyName }}
                 </h3>
-                <p class="text-sm text-green-700 font-mono">
+                <p class="font-mono text-sm text-green-700">
                   {{ family.familyCode }}
                 </p>
               </div>
               <span
-                class="px-2 py-1 bg-green-200 text-green-800 rounded-sm text-xs"
+                class="rounded-sm bg-green-200 px-2 py-1 text-xs text-green-800"
               >
                 ✓ Joined
               </span>
@@ -132,17 +132,17 @@
 
       <!-- Invite a Family Member -->
       <section
-        class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 mb-6"
+        class="mb-6 rounded-xl border border-slate-200 bg-white p-6 shadow-xs"
         data-testid="invite-member-form"
       >
-        <h2 class="text-xl font-bold text-slate-900 mb-4">
+        <h2 class="mb-4 text-xl font-bold text-slate-900">
           Invite a Family Member
         </h2>
         <div class="space-y-4">
           <div>
             <label
               for="inviteMemberEmail"
-              class="block text-sm font-medium text-slate-700 mb-1"
+              class="mb-1 block text-sm font-medium text-slate-700"
             >
               Email address
             </label>
@@ -153,13 +153,13 @@
               type="email"
               autocomplete="email"
               placeholder="family@example.com"
-              class="w-full px-4 py-2 border border-slate-300 rounded-lg focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:border-transparent"
+              class="w-full rounded-lg border border-slate-300 px-4 py-2 focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-blue-500"
             />
           </div>
           <div>
             <label
               for="inviteMemberRole"
-              class="block text-sm font-medium text-slate-700 mb-1"
+              class="mb-1 block text-sm font-medium text-slate-700"
             >
               Role
             </label>
@@ -167,7 +167,7 @@
               id="inviteMemberRole"
               v-model="inviteRole"
               data-testid="invite-role-select"
-              class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              class="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
             >
               <option value="player">Player</option>
               <option value="parent">Parent</option>
@@ -177,7 +177,7 @@
             data-testid="send-invite-submit"
             type="button"
             :disabled="!inviteEmail || inviteLoading"
-            class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            class="w-full rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
             @click="handleSendInvite"
           >
             {{ inviteLoading ? "Sending\u2026" : "Send invite" }}
@@ -194,11 +194,11 @@
       <!-- Pending Invitations Section -->
       <section
         v-if="pendingInvitations.length > 0"
-        class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 mb-6"
+        class="mb-6 rounded-xl border border-slate-200 bg-white p-6 shadow-xs"
       >
-        <h2 class="text-xl font-bold text-slate-900 mb-4">
+        <h2 class="mb-4 text-xl font-bold text-slate-900">
           Pending Invitations
-          <span class="text-sm font-normal text-slate-500 ml-1">
+          <span class="ml-1 text-sm font-normal text-slate-500">
             ({{ pendingInvitations.length }})
           </span>
         </h2>
@@ -216,9 +216,9 @@
       <!-- Empty state if nothing present -->
       <div
         v-if="isParent && parentFamilies.length === 0 && !familyCodeLoading"
-        class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
+        class="rounded-xl border border-slate-200 bg-white p-12 text-center shadow-xs"
       >
-        <p class="text-gray-500 mb-2">No families joined yet</p>
+        <p class="mb-2 text-gray-500">No families joined yet</p>
         <p class="text-sm text-gray-400">
           Ask a player to share their family code above to join their family
         </p>

@@ -46,7 +46,7 @@ const handleAthleteChange = (athleteId: string) => {
   <div v-if="shouldShow" class="mb-4">
     <label
       for="athlete-select"
-      class="block text-sm font-medium text-gray-700 mb-2"
+      class="mb-2 block text-sm font-medium text-gray-700"
     >
       Viewing:
     </label>
@@ -54,7 +54,7 @@ const handleAthleteChange = (athleteId: string) => {
       id="athlete-select"
       :value="currentAthleteId"
       @change="handleAthleteChange(($event.target as HTMLSelectElement).value)"
-      class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
+      class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-xs focus:border-blue-500 focus:ring-blue-500"
       data-testid="athlete-select"
     >
       <option

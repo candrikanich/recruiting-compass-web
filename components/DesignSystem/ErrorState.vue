@@ -2,10 +2,10 @@
   <div class="flex flex-col items-center justify-center py-12">
     <!-- Error Icon -->
     <div
-      class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4"
+      class="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-100"
     >
       <svg
-        class="w-8 h-8 text-red-600"
+        class="h-8 w-8 text-red-600"
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
         viewBox="0 0 24 24"
@@ -21,12 +21,12 @@
     </div>
 
     <!-- Title -->
-    <h3 class="text-lg font-semibold text-slate-900 mb-2 text-center">
+    <h3 class="mb-2 text-center text-lg font-semibold text-slate-900">
       {{ title }}
     </h3>
 
     <!-- Error Message -->
-    <p class="text-slate-600 text-center max-w-md mb-6">
+    <p class="mb-6 max-w-md text-center text-slate-600">
       {{ getErrorMessage(error) }}
     </p>
 
@@ -34,7 +34,7 @@
     <button
       v-if="retryable"
       @click="$emit('retry')"
-      class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+      class="rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"
     >
       Try Again
     </button>

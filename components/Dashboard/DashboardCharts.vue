@@ -1,18 +1,18 @@
 <template>
-  <div class="lg:col-span-2 space-y-6">
+  <div class="space-y-6 lg:col-span-2">
     <!-- Schools by Size -->
     <div
       v-if="showSchoolsMetric && schoolCount > 0"
-      class="bg-white rounded-2xl border border-slate-200 shadow-xs hover:shadow-md transition-shadow p-6"
+      class="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs transition-shadow hover:shadow-md"
     >
-      <div class="flex items-center gap-3 mb-5">
-        <div class="p-2 bg-slate-100 rounded-lg">
+      <div class="mb-5 flex items-center gap-3">
+        <div class="rounded-lg bg-slate-100 p-2">
           <UIcon
             name="i-heroicons-building-library"
-            class="w-5 h-5 text-slate-700"
+            class="h-5 w-5 text-slate-700"
           />
         </div>
-        <h3 class="text-slate-900 font-semibold">Schools by Size</h3>
+        <h3 class="font-semibold text-slate-900">Schools by Size</h3>
       </div>
       <div class="space-y-3">
         <div
@@ -26,13 +26,13 @@
           :key="size"
         >
           <div v-if="schoolSizeBreakdown[size] > 0">
-            <div class="flex items-center justify-between mb-1.5">
+            <div class="mb-1.5 flex items-center justify-between">
               <span class="text-slate-700">{{ size }}</span>
-              <span class="text-slate-900 font-medium">{{
+              <span class="font-medium text-slate-900">{{
                 schoolSizeBreakdown[size]
               }}</span>
             </div>
-            <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+            <div class="h-2 overflow-hidden rounded-full bg-slate-100">
               <div
                 :class="getSizeBarColor(size)"
                 class="h-full transition-all duration-500"
@@ -49,58 +49,58 @@
     <!-- Quick Actions (Athlete Only) -->
     <div
       v-if="!isViewingAsParent && showQuickActions"
-      class="bg-white rounded-2xl border border-slate-200 shadow-xs hover:shadow-md transition-shadow p-6"
+      class="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs transition-shadow hover:shadow-md"
     >
-      <div class="flex items-center gap-3 mb-5">
-        <div class="p-2 bg-slate-100 rounded-lg">
-          <UIcon name="i-heroicons-bolt" class="w-5 h-5 text-slate-700" />
+      <div class="mb-5 flex items-center gap-3">
+        <div class="rounded-lg bg-slate-100 p-2">
+          <UIcon name="i-heroicons-bolt" class="h-5 w-5 text-slate-700" />
         </div>
-        <h3 class="text-slate-900 font-semibold">Quick Actions</h3>
+        <h3 class="font-semibold text-slate-900">Quick Actions</h3>
       </div>
       <div class="grid grid-cols-2 gap-3">
         <NuxtLink
           to="/coaches/new"
-          class="flex flex-col bg-brand-blue-500 hover:bg-brand-blue-600 text-white p-4 rounded-lg transition-all hover:scale-105 hover:shadow-lg text-left group"
+          class="group flex flex-col rounded-lg bg-brand-blue-500 p-4 text-left text-white transition-all hover:scale-105 hover:bg-brand-blue-600 hover:shadow-lg"
         >
           <UIcon
             name="i-heroicons-user-plus"
-            class="w-6 h-6 mb-2 group-hover:scale-110 transition-transform text-white"
+            class="mb-2 h-6 w-6 text-white transition-transform group-hover:scale-110"
           />
-          <div class="font-medium mb-1">Add Coach</div>
-          <div class="text-white/80 text-sm">Connect with a new coach</div>
+          <div class="mb-1 font-medium">Add Coach</div>
+          <div class="text-sm text-white/80">Connect with a new coach</div>
         </NuxtLink>
         <NuxtLink
           to="/interactions/new"
-          class="flex flex-col bg-brand-emerald-500 hover:bg-brand-emerald-600 text-white p-4 rounded-lg transition-all hover:scale-105 hover:shadow-lg text-left group"
+          class="group flex flex-col rounded-lg bg-brand-emerald-500 p-4 text-left text-white transition-all hover:scale-105 hover:bg-brand-emerald-600 hover:shadow-lg"
         >
           <UIcon
             name="i-heroicons-chat-bubble-left-right"
-            class="w-6 h-6 mb-2 group-hover:scale-110 transition-transform text-white"
+            class="mb-2 h-6 w-6 text-white transition-transform group-hover:scale-110"
           />
-          <div class="font-medium mb-1">Log Interaction</div>
-          <div class="text-white/80 text-sm">Record a conversation</div>
+          <div class="mb-1 font-medium">Log Interaction</div>
+          <div class="text-sm text-white/80">Record a conversation</div>
         </NuxtLink>
         <NuxtLink
           to="/schools/new"
-          class="flex flex-col bg-brand-purple-500 hover:bg-brand-purple-600 text-white p-4 rounded-lg transition-all hover:scale-105 hover:shadow-lg text-left group"
+          class="group flex flex-col rounded-lg bg-brand-purple-500 p-4 text-left text-white transition-all hover:scale-105 hover:bg-brand-purple-600 hover:shadow-lg"
         >
           <UIcon
             name="i-heroicons-building-library"
-            class="w-6 h-6 mb-2 group-hover:scale-110 transition-transform text-white"
+            class="mb-2 h-6 w-6 text-white transition-transform group-hover:scale-110"
           />
-          <div class="font-medium mb-1">Add School</div>
-          <div class="text-white/80 text-sm">Research a new school</div>
+          <div class="mb-1 font-medium">Add School</div>
+          <div class="text-sm text-white/80">Research a new school</div>
         </NuxtLink>
         <NuxtLink
           to="/events/new"
-          class="flex flex-col bg-brand-orange-500 hover:bg-brand-orange-600 text-white p-4 rounded-lg transition-all hover:scale-105 hover:shadow-lg text-left group"
+          class="group flex flex-col rounded-lg bg-brand-orange-500 p-4 text-left text-white transition-all hover:scale-105 hover:bg-brand-orange-600 hover:shadow-lg"
         >
           <UIcon
             name="i-heroicons-calendar-days"
-            class="w-6 h-6 mb-2 group-hover:scale-110 transition-transform text-white"
+            class="mb-2 h-6 w-6 text-white transition-transform group-hover:scale-110"
           />
-          <div class="font-medium mb-1">Schedule Event</div>
-          <div class="text-white/80 text-sm">Register for a camp</div>
+          <div class="mb-1 font-medium">Schedule Event</div>
+          <div class="text-sm text-white/80">Register for a camp</div>
         </NuxtLink>
       </div>
     </div>
@@ -111,13 +111,13 @@
     <!-- Performance Metrics -->
     <div
       v-if="showPerformance"
-      class="bg-white rounded-2xl border border-slate-200 shadow-xs hover:shadow-md transition-shadow p-6"
+      class="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs transition-shadow hover:shadow-md"
     >
-      <div class="flex items-center gap-3 mb-5">
-        <div class="p-2 bg-slate-100 rounded-lg">
-          <UIcon name="i-heroicons-chart-bar" class="w-5 h-5 text-slate-700" />
+      <div class="mb-5 flex items-center gap-3">
+        <div class="rounded-lg bg-slate-100 p-2">
+          <UIcon name="i-heroicons-chart-bar" class="h-5 w-5 text-slate-700" />
         </div>
-        <h3 class="text-slate-900 font-semibold">Performance Metrics</h3>
+        <h3 class="font-semibold text-slate-900">Performance Metrics</h3>
       </div>
 
       <!-- With Metrics -->
@@ -126,9 +126,9 @@
           <div
             v-for="metric in topMetrics"
             :key="metric.id"
-            class="text-center p-4 bg-slate-50 rounded-lg border border-slate-200"
+            class="rounded-lg border border-slate-200 bg-slate-50 p-4 text-center"
           >
-            <div class="text-slate-600 text-sm mb-1">
+            <div class="mb-1 text-sm text-slate-600">
               {{ metric.metric_type }}
             </div>
             <div
@@ -136,7 +136,7 @@
               :class="getMetricColor(metric.metric_type)"
             >
               {{ formatMetricValue(metric.metric_type, metric.value) }}
-              <span v-if="metric.unit" class="text-slate-500 text-sm ml-1">{{
+              <span v-if="metric.unit" class="ml-1 text-sm text-slate-500">{{
                 metric.unit
               }}</span>
             </div>
@@ -144,18 +144,18 @@
         </div>
         <NuxtLink
           to="/performance"
-          class="mt-4 block w-full py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-center font-medium"
+          class="mt-4 block w-full rounded-lg bg-blue-600 px-4 py-2 text-center font-medium text-white transition-colors hover:bg-blue-700"
         >
           View All Metrics →
         </NuxtLink>
       </div>
 
       <!-- Empty State -->
-      <div v-else class="text-center py-8">
-        <p class="text-slate-600 mb-4">No performance metrics logged yet</p>
+      <div v-else class="py-8 text-center">
+        <p class="mb-4 text-slate-600">No performance metrics logged yet</p>
         <NuxtLink
           to="/performance"
-          class="inline-block px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+          class="inline-block rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700"
         >
           Log Your First Metric →
         </NuxtLink>
@@ -166,7 +166,7 @@
     <RecruitingCalendar v-if="showCalendar" :graduation-year="graduationYear" />
 
     <!-- Charts -->
-    <div v-if="showCharts" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div v-if="showCharts" class="grid grid-cols-1 gap-6 md:grid-cols-2">
       <InteractionTrendChart :interactions="interactions" />
       <SchoolInterestChart :schools="schools" />
     </div>

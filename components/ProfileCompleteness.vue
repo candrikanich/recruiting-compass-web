@@ -43,7 +43,7 @@ const completenessLabel = computed(() => {
   <div class="flex items-center gap-4">
     <!-- Progress Bar and Text -->
     <div class="flex-1">
-      <div class="flex items-center justify-between mb-2">
+      <div class="mb-2 flex items-center justify-between">
         <span class="text-sm font-medium text-slate-900">
           Profile {{ effectiveCompleteness }}% complete
         </span>
@@ -54,7 +54,7 @@ const completenessLabel = computed(() => {
         :aria-valuenow="effectiveCompleteness"
         aria-valuemin="0"
         aria-valuemax="100"
-        class="w-full h-2 bg-slate-200 rounded-full overflow-hidden"
+        class="h-2 w-full overflow-hidden rounded-full bg-slate-200"
       >
         <div
           :class="progressBarColor"

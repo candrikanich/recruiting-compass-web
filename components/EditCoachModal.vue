@@ -3,7 +3,7 @@
     <Transition name="fade">
       <div
         v-if="isOpen"
-        class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
         @keydown.escape="handleClose"
       >
         <div
@@ -11,11 +11,11 @@
           role="dialog"
           aria-modal="true"
           aria-labelledby="edit-coach-title"
-          class="rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-auto bg-white border border-slate-200"
+          class="max-h-[90vh] w-full max-w-2xl overflow-auto rounded-xl border border-slate-200 bg-white shadow-xl"
         >
           <!-- Header -->
           <div
-            class="flex items-center justify-between p-6 border-b border-slate-200"
+            class="flex items-center justify-between border-b border-slate-200 p-6"
           >
             <h2 id="edit-coach-title" class="text-2xl font-bold text-slate-900">
               Edit Coach
@@ -30,13 +30,13 @@
           </div>
 
           <!-- Form -->
-          <form @submit.prevent="handleSubmit" class="p-6 space-y-6">
+          <form @submit.prevent="handleSubmit" class="space-y-6 p-6">
             <!-- Name Fields -->
             <div class="grid grid-cols-2 gap-4">
               <div>
                 <label
                   for="firstName"
-                  class="block text-sm font-medium mb-1 text-slate-500"
+                  class="mb-1 block text-sm font-medium text-slate-500"
                 >
                   First Name <span class="text-red-600">*</span>
                 </label>
@@ -45,13 +45,13 @@
                   v-model="form.first_name"
                   type="text"
                   required
-                  class="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:ring-2 focus:ring-blue-500/20"
+                  class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2 text-slate-900 focus:ring-2 focus:ring-blue-500/20"
                 />
               </div>
               <div>
                 <label
                   for="lastName"
-                  class="block text-sm font-medium mb-1 text-slate-500"
+                  class="mb-1 block text-sm font-medium text-slate-500"
                 >
                   Last Name <span class="text-red-600">*</span>
                 </label>
@@ -60,7 +60,7 @@
                   v-model="form.last_name"
                   type="text"
                   required
-                  class="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:ring-2 focus:ring-blue-500/20"
+                  class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2 text-slate-900 focus:ring-2 focus:ring-blue-500/20"
                 />
               </div>
             </div>
@@ -70,7 +70,7 @@
               <div>
                 <label
                   for="email"
-                  class="block text-sm font-medium mb-1 text-slate-500"
+                  class="mb-1 block text-sm font-medium text-slate-500"
                 >
                   Email
                 </label>
@@ -79,13 +79,13 @@
                   v-model="form.email"
                   type="email"
                   autocomplete="email"
-                  class="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus-visible:ring-2 focus-visible:ring-blue-500/20"
+                  class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2 text-slate-900 focus-visible:ring-2 focus-visible:ring-blue-500/20"
                 />
               </div>
               <div>
                 <label
                   for="phone"
-                  class="block text-sm font-medium mb-1 text-slate-500"
+                  class="mb-1 block text-sm font-medium text-slate-500"
                 >
                   Phone
                 </label>
@@ -96,7 +96,7 @@
                   autocomplete="tel"
                   inputmode="tel"
                   maxlength="14"
-                  class="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:ring-2 focus:ring-blue-500/20"
+                  class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2 text-slate-900 focus:ring-2 focus:ring-blue-500/20"
                   @input="
                     form.phone = formatPhoneNational(
                       ($event.target as HTMLInputElement).value,
@@ -111,7 +111,7 @@
               <div>
                 <label
                   for="twitter"
-                  class="block text-sm font-medium mb-1 text-slate-500"
+                  class="mb-1 block text-sm font-medium text-slate-500"
                 >
                   Twitter Handle
                 </label>
@@ -120,13 +120,13 @@
                   v-model="form.twitter_handle"
                   type="text"
                   placeholder="@username"
-                  class="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:ring-2 focus:ring-blue-500/20"
+                  class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2 text-slate-900 focus:ring-2 focus:ring-blue-500/20"
                 />
               </div>
               <div>
                 <label
                   for="instagram"
-                  class="block text-sm font-medium mb-1 text-slate-500"
+                  class="mb-1 block text-sm font-medium text-slate-500"
                 >
                   Instagram Handle
                 </label>
@@ -135,7 +135,7 @@
                   v-model="form.instagram_handle"
                   type="text"
                   placeholder="@username"
-                  class="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:ring-2 focus:ring-blue-500/20"
+                  class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2 text-slate-900 focus:ring-2 focus:ring-blue-500/20"
                 />
               </div>
             </div>
@@ -144,7 +144,7 @@
             <div>
               <label
                 for="role"
-                class="block text-sm font-medium mb-1 text-slate-500"
+                class="mb-1 block text-sm font-medium text-slate-500"
               >
                 Role <span class="text-red-600">*</span>
               </label>
@@ -152,7 +152,7 @@
                 id="role"
                 v-model="form.role"
                 required
-                class="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:ring-2 focus:ring-blue-500/20"
+                class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2 text-slate-900 focus:ring-2 focus:ring-blue-500/20"
               >
                 <option value="">Select Role</option>
                 <option value="head">Head Coach</option>
@@ -165,7 +165,7 @@
             <div>
               <label
                 for="notes"
-                class="block text-sm font-medium mb-1 text-slate-500"
+                class="mb-1 block text-sm font-medium text-slate-500"
               >
                 Notes
               </label>
@@ -174,23 +174,23 @@
                 v-model="form.notes"
                 rows="4"
                 placeholder="Additional notes about this coach..."
-                class="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:ring-2 focus:ring-blue-500/20"
+                class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2 text-slate-900 focus:ring-2 focus:ring-blue-500/20"
               />
             </div>
 
             <!-- Actions -->
-            <div class="flex gap-4 pt-4 border-t border-slate-200">
+            <div class="flex gap-4 border-t border-slate-200 pt-4">
               <button
                 type="submit"
                 :disabled="loading"
-                class="flex-1 px-4 py-2 text-white font-semibold rounded-lg transition bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
+                class="flex-1 rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white transition hover:bg-blue-700 disabled:opacity-50"
               >
                 {{ loading ? "Saving..." : "Save Changes" }}
               </button>
               <button
                 type="button"
                 @click="handleClose"
-                class="flex-1 px-4 py-2 font-semibold rounded-lg transition bg-slate-100 text-slate-900 hover:bg-slate-200"
+                class="flex-1 rounded-lg bg-slate-100 px-4 py-2 font-semibold text-slate-900 transition hover:bg-slate-200"
               >
                 Cancel
               </button>

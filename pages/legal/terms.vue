@@ -1,15 +1,15 @@
 <template>
   <div class="min-h-screen bg-slate-50">
     <!-- Header -->
-    <div class="bg-white border-b border-slate-200 sticky top-0 z-10">
+    <div class="sticky top-0 z-10 border-b border-slate-200 bg-white">
       <div
-        class="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between"
+        class="mx-auto flex max-w-4xl items-center justify-between px-6 py-4"
       >
         <NuxtLink
           to="/"
-          class="text-slate-600 hover:text-slate-900 flex items-center gap-2 transition-colors"
+          class="flex items-center gap-2 text-slate-600 transition-colors hover:text-slate-900"
         >
-          <UIcon name="i-heroicons-arrow-left" class="w-4 h-4" />
+          <UIcon name="i-heroicons-arrow-left" class="h-4 w-4" />
           Back
         </NuxtLink>
         <h1 class="text-2xl font-bold text-slate-900">Terms and Conditions</h1>
@@ -19,16 +19,16 @@
     </div>
 
     <!-- Content -->
-    <div class="max-w-4xl mx-auto px-6 py-12">
+    <div class="mx-auto max-w-4xl px-6 py-12">
       <div
-        class="bg-white rounded-lg shadow-xs p-8 prose prose-slate max-w-none"
+        class="prose prose-slate max-w-none rounded-lg bg-white p-8 shadow-xs"
       >
         <!-- UPDATE THIS DATE WHENEVER TERMS ARE MODIFIED -->
-        <p class="text-slate-600 mb-4">
+        <p class="mb-4 text-slate-600">
           <strong>Last Updated:</strong> August 16, 2026
         </p>
 
-        <p class="text-slate-600 mb-8">
+        <p class="mb-8 text-slate-600">
           Please also review our
           <NuxtLink to="/legal/privacy" class="text-blue-600 hover:underline"
             >Privacy Policy</NuxtLink
@@ -536,7 +536,7 @@
             If you have any questions about these Terms and Conditions, please
             contact us:
           </p>
-          <div class="bg-slate-50 p-4 rounded-sm mt-4">
+          <div class="mt-4 rounded-sm bg-slate-50 p-4">
             <p>
               <strong>Recruiting Compass</strong><br />
               <!-- TODO: Replace with registered agent address before public launch -->

@@ -1,12 +1,12 @@
 <template>
-  <div class="bg-white rounded-lg shadow-md p-6">
-    <h1 class="text-2xl font-bold text-slate-900 mb-6">System Health</h1>
-    <div v-if="healthLoading" class="text-center py-12 text-slate-600">
+  <div class="rounded-lg bg-white p-6 shadow-md">
+    <h1 class="mb-6 text-2xl font-bold text-slate-900">System Health</h1>
+    <div v-if="healthLoading" class="py-12 text-center text-slate-600">
       Checking...
     </div>
     <div
       v-else-if="healthError"
-      class="bg-red-50 border border-red-200 rounded-lg p-4"
+      class="rounded-lg border border-red-200 bg-red-50 p-4"
     >
       <p class="text-red-800">{{ healthError }}</p>
     </div>
@@ -17,17 +17,17 @@
         class="flex items-center gap-3 rounded-lg border border-slate-200 p-3"
         :class="
           check.status === 'ok'
-            ? 'bg-green-50/50 border-green-200'
-            : 'bg-red-50/50 border-red-200'
+            ? 'border-green-200 bg-green-50/50'
+            : 'border-red-200 bg-red-50/50'
         "
       >
         <span
-          class="inline-block w-3 h-3 rounded-full shrink-0"
+          class="inline-block h-3 w-3 shrink-0 rounded-full"
           :class="check.status === 'ok' ? 'bg-green-500' : 'bg-red-500'"
           aria-hidden="true"
         />
         <span class="font-medium text-slate-900">{{ check.name }}</span>
-        <span v-if="check.message" class="text-slate-600 text-sm">
+        <span v-if="check.message" class="text-sm text-slate-600">
           {{ check.message }}
         </span>
       </div>
@@ -38,16 +38,21 @@
     </div>
   </div>
 
-  <div class="mt-6 bg-white rounded-lg shadow-md p-6">
-    <h2 class="text-xl font-bold text-slate-900 mb-4">Database</h2>
+  <div class="mt-6 rounded-lg bg-white p-6 shadow-md">
+    <h2 class="mb-4 text-xl font-bold text-slate-900">Database</h2>
 
-    <div v-if="dbHealthError" class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+    <div
+      v-if="dbHealthError"
+      class="mb-4 rounded-lg border border-red-200 bg-red-50 p-4"
+    >
       <p class="text-red-800">{{ dbHealthError }}</p>
     </div>
 
     <div class="space-y-6">
       <section>
-        <h3 class="text-sm font-semibold text-brand-slate-700 mb-2">Row counts</h3>
+        <h3 class="mb-2 text-sm font-semibold text-brand-slate-700">
+          Row counts
+        </h3>
         <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
           <AdminStatTile
             v-for="row in dbHealth?.rowCounts ?? []"
@@ -59,7 +64,9 @@
       </section>
 
       <section>
-        <h3 class="text-sm font-semibold text-brand-slate-700 mb-2">Storage buckets</h3>
+        <h3 class="mb-2 text-sm font-semibold text-brand-slate-700">
+          Storage buckets
+        </h3>
         <AdminDataTable
           :columns="storageColumns"
           :rows="storageRows"
@@ -68,11 +75,22 @@
       </section>
 
       <section>
-        <h3 class="text-sm font-semibold text-brand-slate-700 mb-2">Orphaned storage (dry run preview)</h3>
+        <h3 class="mb-2 text-sm font-semibold text-brand-slate-700">
+          Orphaned storage (dry run preview)
+        </h3>
         <div v-if="dbHealth?.orphanedPreview" class="grid grid-cols-3 gap-3">
-          <AdminStatTile label="Dead users" :value="dbHealth.orphanedPreview.deadUsers" />
-          <AdminStatTile label="Orphaned objects" :value="dbHealth.orphanedPreview.objects" />
-          <AdminStatTile label="Expired exports" :value="dbHealth.orphanedPreview.expiredExports" />
+          <AdminStatTile
+            label="Dead users"
+            :value="dbHealth.orphanedPreview.deadUsers"
+          />
+          <AdminStatTile
+            label="Orphaned objects"
+            :value="dbHealth.orphanedPreview.objects"
+          />
+          <AdminStatTile
+            label="Expired exports"
+            :value="dbHealth.orphanedPreview.expiredExports"
+          />
         </div>
         <p v-else class="text-sm text-brand-slate-500">Preview unavailable.</p>
       </section>

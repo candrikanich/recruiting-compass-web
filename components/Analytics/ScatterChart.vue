@@ -1,31 +1,31 @@
 <template>
-  <div class="rounded-lg p-6 bg-white shadow-md">
+  <div class="rounded-lg bg-white p-6 shadow-md">
     <!-- Header -->
     <div
-      class="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 gap-4"
+      class="mb-6 flex flex-col items-start justify-between gap-4 md:flex-row md:items-center"
     >
       <div>
         <h3 class="text-lg font-bold text-slate-900">{{ title }}</h3>
-        <p class="text-sm mt-1 text-slate-600">{{ dataPoints }} data points</p>
+        <p class="mt-1 text-sm text-slate-600">{{ dataPoints }} data points</p>
       </div>
 
       <!-- Controls -->
       <div class="flex items-center gap-3">
-        <label class="flex items-center cursor-pointer">
+        <label class="flex cursor-pointer items-center">
           <input
             type="checkbox"
             v-model="showTrendLine"
-            class="w-4 h-4 rounded-sm accent-blue-600"
+            class="h-4 w-4 rounded-sm accent-blue-600"
           />
           <span class="ml-2 text-sm font-medium text-slate-900"
             >Trend Line</span
           >
         </label>
-        <label class="flex items-center cursor-pointer">
+        <label class="flex cursor-pointer items-center">
           <input
             type="checkbox"
             v-model="showQuadrants"
-            class="w-4 h-4 rounded-sm accent-blue-600"
+            class="h-4 w-4 rounded-sm accent-blue-600"
           />
           <span class="ml-2 text-sm font-medium text-slate-900">Quadrants</span>
         </label>
@@ -38,7 +38,7 @@
     </div>
 
     <!-- Empty State -->
-    <div v-else class="text-center py-12 text-slate-600">
+    <div v-else class="py-12 text-center text-slate-600">
       <p>{{ emptyStateMessage }}</p>
     </div>
 
@@ -46,26 +46,26 @@
     <div
       v-if="hasData && showStats"
       data-testid="stats-section"
-      class="mt-6 pt-6 border-t border-slate-200"
+      class="mt-6 border-t border-slate-200 pt-6"
     >
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div class="text-center p-3 bg-slate-50 rounded-lg">
+      <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
+        <div class="rounded-lg bg-slate-50 p-3 text-center">
           <p class="text-sm font-medium text-slate-600">Correlation</p>
           <p class="text-lg font-bold text-slate-900">{{ correlation }}</p>
         </div>
-        <div class="text-center p-3 bg-slate-50 rounded-lg">
+        <div class="rounded-lg bg-slate-50 p-3 text-center">
           <p class="text-sm font-medium text-slate-600">{{ xLabel }} Range</p>
           <p class="text-lg font-bold text-slate-900">
             {{ xRange.min }}-{{ xRange.max }}
           </p>
         </div>
-        <div class="text-center p-3 bg-slate-50 rounded-lg">
+        <div class="rounded-lg bg-slate-50 p-3 text-center">
           <p class="text-sm font-medium text-slate-600">{{ yLabel }} Range</p>
           <p class="text-lg font-bold text-slate-900">
             {{ yRange.min }}-{{ yRange.max }}
           </p>
         </div>
-        <div class="text-center p-3 bg-slate-50 rounded-lg">
+        <div class="rounded-lg bg-slate-50 p-3 text-center">
           <p class="text-sm font-medium text-slate-600">Trend</p>
           <p class="text-lg font-bold" :class="trendClass">
             {{ trendDirection }}

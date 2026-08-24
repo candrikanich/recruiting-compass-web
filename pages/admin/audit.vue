@@ -16,9 +16,18 @@ onMounted(() => fetchAuditLog({ limit: 100 }));
 
 <template>
   <section>
-    <h1 class="mb-4 text-xl font-semibold text-brand-slate-900">Admin Audit Log ({{ total }})</h1>
-    <AdminDataTable :columns="columns" :rows="rows" :loading="loading" :error="error">
-      <template #cell-created_at="{ value }">{{ new Date(String(value)).toLocaleString() }}</template>
+    <h1 class="mb-4 text-xl font-semibold text-brand-slate-900">
+      Admin Audit Log ({{ total }})
+    </h1>
+    <AdminDataTable
+      :columns="columns"
+      :rows="rows"
+      :loading="loading"
+      :error="error"
+    >
+      <template #cell-created_at="{ value }">{{
+        new Date(String(value)).toLocaleString()
+      }}</template>
     </AdminDataTable>
   </section>
 </template>

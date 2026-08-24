@@ -65,14 +65,20 @@ async function loadActivityRows(
         .select(`${a.user}, ${a.ts}`)
         .gte(a.ts, windowStart.toISOString());
       if (error) {
-        logger.warn("Activity read failed for table", { table: a.table, error });
+        logger.warn("Activity read failed for table", {
+          table: a.table,
+          error,
+        });
         continue;
       }
       for (const r of (data ?? []) as unknown as Record<string, string>[]) {
         if (r[a.user] && r[a.ts]) rows.push({ userId: r[a.user], ts: r[a.ts] });
       }
     } catch (err) {
-      logger.warn("Activity read threw for table", { table: a.table, err: String(err) });
+      logger.warn("Activity read threw for table", {
+        table: a.table,
+        err: String(err),
+      });
     }
   }
   return rows;
@@ -80,7 +86,10 @@ async function loadActivityRows(
 
 // Minimal shape `countOf` actually needs to filter a count-only query:
 // thenable (awaited directly) plus the two filter methods callers chain on.
-interface CountQuery extends PromiseLike<{ count: number | null; error: unknown }> {
+interface CountQuery extends PromiseLike<{
+  count: number | null;
+  error: unknown;
+}> {
   not: (column: string, operator: string, value: unknown) => CountQuery;
   eq: (column: string, value: unknown) => CountQuery;
 }
@@ -92,7 +101,9 @@ async function countOf(
   apply?: (q: CountQuery) => CountQuery,
 ): Promise<number> {
   try {
-    let q = db.from(table).select("id", { count: "exact", head: true }) as unknown as CountQuery;
+    let q = db
+      .from(table)
+      .select("id", { count: "exact", head: true }) as unknown as CountQuery;
     if (apply) q = apply(q);
     const { count, error } = await q;
     if (error) {
@@ -121,11 +132,16 @@ async function loadAdoptionUserIds(
           featureUserIds[table] = [];
           return;
         }
-        featureUserIds[table] = ((data ?? []) as unknown as Record<string, string>[])
+        featureUserIds[table] = (
+          (data ?? []) as unknown as Record<string, string>[]
+        )
           .map((r) => r[userCol])
           .filter(Boolean);
       } catch (err) {
-        logger.warn("Adoption read threw for table", { table, err: String(err) });
+        logger.warn("Adoption read threw for table", {
+          table,
+          err: String(err),
+        });
         featureUserIds[table] = [];
       }
     }),
@@ -139,7 +155,10 @@ export default defineEventHandler(async (event): Promise<AdminGrowth> => {
   const db = useSupabaseAdmin() as unknown as SupabaseClient;
 
   const rawDays = Number(getQuery(event).days);
-  const days = Math.min(Math.max(Number.isFinite(rawDays) && rawDays > 0 ? rawDays : 30, 1), 90);
+  const days = Math.min(
+    Math.max(Number.isFinite(rawDays) && rawDays > 0 ? rawDays : 30, 1),
+    90,
+  );
 
   const now = new Date();
   const windowStart = new Date(now.getTime() - days * 86400000);
@@ -152,7 +171,9 @@ export default defineEventHandler(async (event): Promise<AdminGrowth> => {
   // when the admin picks a shorter window (e.g. 7d/14d). The daily trend below
   // still scopes to the selected windowStart.
   const activityFloorDays = Math.max(days, 30);
-  const activityFloorStart = new Date(now.getTime() - activityFloorDays * 86400000);
+  const activityFloorStart = new Date(
+    now.getTime() - activityFloorDays * 86400000,
+  );
   const activityRows = await loadActivityRows(db, activityFloorStart, logger);
   const activity = {
     dau: windowActiveCount(activityRows, dayAgo, now),
@@ -161,12 +182,16 @@ export default defineEventHandler(async (event): Promise<AdminGrowth> => {
     dailyTrend: dailyActiveUsers(activityRows, windowStart, now),
   };
 
-  const [invitesSent, invitesAccepted, accounts, onboarded] = await Promise.all([
-    countOf(db, "family_invitations", logger),
-    countOf(db, "family_invitations", logger, (q) => q.not("accepted_at", "is", null)),
-    countOf(db, "users", logger),
-    countOf(db, "users", logger, (q) => q.eq("onboarding_completed", true)),
-  ]);
+  const [invitesSent, invitesAccepted, accounts, onboarded] = await Promise.all(
+    [
+      countOf(db, "family_invitations", logger),
+      countOf(db, "family_invitations", logger, (q) =>
+        q.not("accepted_at", "is", null),
+      ),
+      countOf(db, "users", logger),
+      countOf(db, "users", logger, (q) => q.eq("onboarding_completed", true)),
+    ],
+  );
 
   const funnel = funnelWithDropoff([
     { stage: "Invites sent", count: invitesSent },

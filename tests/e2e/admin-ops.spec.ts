@@ -50,10 +50,7 @@ test.describe("admin ops dashboard", () => {
         .update({ is_admin: true })
         .eq("id", adminId);
       if (grantErr) {
-        console.warn(
-          "⚠️  admin-ops: failed to grant admin:",
-          grantErr.message,
-        );
+        console.warn("⚠️  admin-ops: failed to grant admin:", grantErr.message);
         return;
       }
       adminGranted = true;
@@ -116,9 +113,7 @@ test.describe("admin ops dashboard", () => {
 
     await page.goto("/admin/health");
 
-    await expect(
-      page.getByRole("heading", { name: "Database" }),
-    ).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Database" })).toBeVisible();
     await expect(page.getByText("Row counts")).toBeVisible();
 
     // At least one row-count stat tile (e.g. "users") should render with a

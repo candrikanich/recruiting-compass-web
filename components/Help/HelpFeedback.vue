@@ -42,7 +42,7 @@
       Need more help?
       <a
         href="mailto:support@therecruitingcompass.com"
-        class="font-medium text-primary-600 hover:underline"
+        class="text-primary-600 font-medium hover:underline"
       >
         Contact support
       </a>

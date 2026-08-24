@@ -1,6 +1,6 @@
 <template>
   <div
-    class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
     @keydown.escape="handleClose"
   >
     <div
@@ -8,11 +8,11 @@
       role="dialog"
       aria-modal="true"
       aria-labelledby="export-modal-title"
-      class="rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto bg-white"
+      class="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-white shadow-xl"
     >
       <!-- Header -->
       <div
-        class="sticky top-0 p-6 flex items-center justify-between bg-white border-b border-slate-300"
+        class="sticky top-0 flex items-center justify-between border-b border-slate-300 bg-white p-6"
       >
         <h2 id="export-modal-title" class="text-2xl font-bold text-slate-900">
           Export Performance Report
@@ -20,45 +20,45 @@
         <button
           @click="handleClose"
           aria-label="Close export performance report dialog"
-          class="text-slate-600 hover:text-slate-900 transition"
+          class="text-slate-600 transition hover:text-slate-900"
         >
           <UIcon
             name="i-heroicons-x-mark-solid"
-            class="w-6 h-6"
+            class="h-6 w-6"
             aria-hidden="true"
           />
         </button>
       </div>
 
       <!-- Content -->
-      <div class="p-6 space-y-6">
+      <div class="space-y-6 p-6">
         <!-- Report Type Selection -->
         <div role="group" aria-labelledby="export-report-type-label">
           <p
             id="export-report-type-label"
-            class="block text-sm font-medium mb-3 text-slate-600"
+            class="mb-3 block text-sm font-medium text-slate-600"
           >
             Report Type
           </p>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
             <button
               v-for="type in reportTypes"
               :key="type.value"
               type="button"
               :aria-pressed="selectedType === type.value"
               @click="selectedType = type.value"
-              class="p-4 border-2 rounded-lg cursor-pointer transition text-left"
+              class="cursor-pointer rounded-lg border-2 p-4 text-left transition"
               :class="
                 selectedType === type.value
                   ? 'border-blue-600 bg-blue-50'
                   : 'border-slate-300 bg-white'
               "
             >
-              <div class="text-2xl mb-2" aria-hidden="true">
+              <div class="mb-2 text-2xl" aria-hidden="true">
                 {{ type.icon }}
               </div>
               <div class="font-semibold text-slate-900">{{ type.label }}</div>
-              <div class="text-xs mt-1 text-slate-600">
+              <div class="mt-1 text-xs text-slate-600">
                 {{ type.description }}
               </div>
             </button>
@@ -69,13 +69,13 @@
         <div v-if="selectedType === 'individual'">
           <label
             for="export-metric"
-            class="block text-sm font-medium mb-2 text-slate-600"
+            class="mb-2 block text-sm font-medium text-slate-600"
             >Select Metric</label
           >
           <select
             id="export-metric"
             v-model="selectedMetric"
-            class="w-full px-4 py-2 border border-slate-300 bg-white text-slate-900 rounded-lg focus:ring-2 focus:border-transparent"
+            class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2 text-slate-900 focus:border-transparent focus:ring-2"
           >
             <option value="">Choose metric type...</option>
             <option
@@ -92,26 +92,26 @@
         <div role="group" aria-labelledby="export-format-label">
           <p
             id="export-format-label"
-            class="block text-sm font-medium mb-2 text-slate-600"
+            class="mb-2 block text-sm font-medium text-slate-600"
           >
             Export Format
           </p>
           <div class="flex flex-wrap gap-4">
-            <label class="flex items-center cursor-pointer">
+            <label class="flex cursor-pointer items-center">
               <input
                 type="checkbox"
                 v-model="formatPDF"
-                class="w-4 h-4 rounded-sm accent-blue-600"
+                class="h-4 w-4 rounded-sm accent-blue-600"
               />
               <span class="ml-2 text-sm font-medium text-slate-600"
                 >PDF (Printable)</span
               >
             </label>
-            <label class="flex items-center cursor-pointer">
+            <label class="flex cursor-pointer items-center">
               <input
                 type="checkbox"
                 v-model="formatText"
-                class="w-4 h-4 rounded-sm accent-blue-600"
+                class="h-4 w-4 rounded-sm accent-blue-600"
               />
               <span class="ml-2 text-sm font-medium text-slate-600"
                 >Text Summary</span
@@ -124,7 +124,7 @@
         <div v-if="formatText">
           <label
             for="export-coach-name"
-            class="block text-sm font-medium mb-2 text-slate-600"
+            class="mb-2 block text-sm font-medium text-slate-600"
             >Coach Name (for email)</label
           >
           <input
@@ -132,7 +132,7 @@
             v-model="coachName"
             type="text"
             placeholder="e.g., Coach Smith"
-            class="w-full px-4 py-2 border border-slate-300 bg-white text-slate-900 rounded-lg focus:ring-2 focus:border-transparent"
+            class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2 text-slate-900 focus:border-transparent focus:ring-2"
           />
         </div>
 
@@ -140,13 +140,13 @@
         <div>
           <label
             for="export-date-range"
-            class="block text-sm font-medium mb-2 text-slate-600"
+            class="mb-2 block text-sm font-medium text-slate-600"
             >Date Range</label
           >
           <select
             id="export-date-range"
             v-model="dateRange"
-            class="w-full px-4 py-2 border border-slate-300 bg-white text-slate-900 rounded-lg focus:ring-2 focus:border-transparent"
+            class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2 text-slate-900 focus:border-transparent focus:ring-2"
           >
             <option value="all">All Time</option>
             <option value="30">Last 30 Days</option>
@@ -161,7 +161,7 @@
             id="export-verified-only"
             type="checkbox"
             v-model="verifiedOnly"
-            class="w-4 h-4 rounded-sm accent-blue-600"
+            class="h-4 w-4 rounded-sm accent-blue-600"
           />
           <label
             for="export-verified-only"
@@ -173,18 +173,18 @@
 
       <!-- Footer -->
       <div
-        class="sticky bottom-0 p-6 flex gap-4 justify-end bg-slate-50 border-t border-slate-300"
+        class="sticky bottom-0 flex justify-end gap-4 border-t border-slate-300 bg-slate-50 p-6"
       >
         <button
           @click="handleClose"
-          class="px-6 py-2 font-semibold rounded-lg transition bg-slate-200 text-slate-900 hover:bg-slate-300"
+          class="rounded-lg bg-slate-200 px-6 py-2 font-semibold text-slate-900 transition hover:bg-slate-300"
         >
           Cancel
         </button>
         <button
           @click="handleExport"
           :disabled="!canExport || isExporting"
-          class="px-6 py-2 text-white font-semibold rounded-lg transition bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          class="rounded-lg bg-blue-600 px-6 py-2 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {{ isExporting ? "Generating..." : "Export Report" }}
         </button>

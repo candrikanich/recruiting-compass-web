@@ -132,7 +132,7 @@ onMounted(async () => {
       placeholder="e.g., Spring 2025 Highlights"
     />
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
       <!-- School -->
       <DesignSystemFormSelect
         v-model="form.schoolId"
@@ -163,7 +163,7 @@ onMounted(async () => {
 
     <!-- File Upload -->
     <div>
-      <label for="file" class="block text-sm font-medium mb-2 text-slate-700">
+      <label for="file" class="mb-2 block text-sm font-medium text-slate-700">
         Select File <span class="text-red-500" aria-hidden="true">*</span>
         <span class="sr-only">(required)</span>
       </label>
@@ -180,15 +180,15 @@ onMounted(async () => {
           type="button"
           @click="fileInput?.click()"
           :disabled="!form.type || loading"
-          class="w-full px-4 py-2 border-2 border-dashed border-slate-300 rounded-lg text-slate-600 hover:border-blue-500 hover:text-blue-500 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          class="w-full rounded-lg border-2 border-dashed border-slate-300 px-4 py-2 text-slate-600 transition hover:border-blue-500 hover:text-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {{ selectedFileName || "Click to select file" }}
         </button>
       </div>
-      <p v-if="form.type" class="text-xs text-slate-500 mt-2">
+      <p v-if="form.type" class="mt-2 text-xs text-slate-500">
         Allowed formats: {{ allowedFileTypes }}
       </p>
-      <p v-if="fileError" class="text-xs text-red-600 mt-2">
+      <p v-if="fileError" class="mt-2 text-xs text-red-600">
         {{ fileError }}
       </p>
     </div>
@@ -199,7 +199,7 @@ onMounted(async () => {
         data-testid="upload-document-button"
         type="submit"
         :disabled="loading || !isFormValid"
-        class="flex-1 px-4 py-3 bg-linear-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-blue-700 transition disabled:opacity-50"
+        class="flex-1 rounded-xl bg-linear-to-r from-blue-500 to-blue-600 px-4 py-3 font-semibold text-white transition hover:from-blue-600 hover:to-blue-700 disabled:opacity-50"
       >
         {{ loading ? "Uploading..." : "Upload Document" }}
       </button>
@@ -208,7 +208,7 @@ onMounted(async () => {
         type="button"
         @click="$emit('cancel')"
         :disabled="loading"
-        class="flex-1 px-4 py-3 bg-white text-slate-700 font-semibold rounded-xl border-2 border-slate-300 hover:bg-slate-50 transition disabled:opacity-50"
+        class="flex-1 rounded-xl border-2 border-slate-300 bg-white px-4 py-3 font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"
       >
         Cancel
       </button>

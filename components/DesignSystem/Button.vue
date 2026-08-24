@@ -142,7 +142,7 @@ function handleClick(event: MouseEvent) {
   >
     <svg
       v-if="loading"
-      class="animate-spin -ml-1 mr-2 h-4 w-4"
+      class="mr-2 -ml-1 h-4 w-4 animate-spin"
       xmlns="http://www.w3.org/2000/svg"
       fill="none"
       viewBox="0 0 24 24"

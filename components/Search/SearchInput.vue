@@ -2,7 +2,7 @@
   <div class="relative">
     <div class="flex gap-2">
       <!-- Search Input -->
-      <div class="flex-1 relative">
+      <div class="relative flex-1">
         <input
           v-model="localQuery"
           type="text"
@@ -16,7 +16,7 @@
 
         <!-- Search Icon -->
         <svg
-          class="absolute left-3 top-3.5 h-5 w-5 text-slate-600"
+          class="absolute top-3.5 left-3 h-5 w-5 text-slate-600"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -34,13 +34,13 @@
           v-if="
             showSuggestions && localQuery.length >= 2 && suggestions.length > 0
           "
-          class="absolute top-full left-0 right-0 mt-1 rounded-lg z-10 bg-white border border-slate-300 shadow-lg"
+          class="absolute top-full right-0 left-0 z-10 mt-1 rounded-lg border border-slate-300 bg-white shadow-lg"
         >
           <ul class="py-2">
             <li
               v-for="suggestion in suggestions.slice(0, 8)"
               :key="suggestion"
-              class="px-4 py-2 cursor-pointer text-slate-900 hover:bg-slate-100"
+              class="cursor-pointer px-4 py-2 text-slate-900 hover:bg-slate-100"
               @click="selectSuggestion(suggestion)"
             >
               <p class="text-sm">{{ suggestion }}</p>
@@ -53,11 +53,11 @@
       <button
         @click="handleSearch"
         :disabled="isSearching || !localQuery.trim()"
-        class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+        class="rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
       >
         <span v-if="!isSearching">Search</span>
         <span v-else class="flex items-center gap-2">
-          <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+          <svg class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
             <circle
               class="opacity-25"
               cx="12"
@@ -78,8 +78,8 @@
     </div>
 
     <!-- Search Type Selector -->
-    <div class="mt-3 flex gap-2 flex-wrap">
-      <span class="text-xs font-medium text-gray-600 self-center"
+    <div class="mt-3 flex flex-wrap gap-2">
+      <span class="self-center text-xs font-medium text-gray-600"
         >Search in:</span
       >
       <div class="flex gap-2">
@@ -94,7 +94,7 @@
           :key="type"
           @click="$emit('update:searchType', type)"
           :class="[
-            'px-3 py-1 rounded-sm text-xs font-medium transition',
+            'rounded-sm px-3 py-1 text-xs font-medium transition',
             modelValue === type
               ? 'bg-blue-600 text-white'
               : 'bg-gray-200 text-gray-700 hover:bg-gray-300',

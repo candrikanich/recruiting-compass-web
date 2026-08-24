@@ -1,11 +1,11 @@
 <template>
   <div class="min-h-screen bg-slate-50">
-    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
       <!-- Back Link -->
       <div class="mb-6">
         <NuxtLink
           :to="`/schools/${id}`"
-          class="text-indigo-600 hover:text-indigo-700 font-semibold"
+          class="font-semibold text-indigo-600 hover:text-indigo-700"
         >
           ← Back to School
         </NuxtLink>
@@ -13,7 +13,7 @@
 
       <!-- Header with gradient -->
       <div
-        class="bg-linear-to-r from-slate-900 to-slate-800 text-white px-8 py-8 rounded-2xl shadow-lg mb-8"
+        class="mb-8 rounded-2xl bg-linear-to-r from-slate-900 to-slate-800 px-8 py-8 text-white shadow-lg"
       >
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-4">
@@ -25,12 +25,12 @@
             />
             <div>
               <h1 class="text-3xl font-bold">Coaches</h1>
-              <p class="text-slate-300 mt-2">{{ schoolName }}</p>
+              <p class="mt-2 text-slate-300">{{ schoolName }}</p>
             </div>
           </div>
           <button
             @click="showAddForm = !showAddForm"
-            class="px-6 py-3 bg-linear-to-r from-indigo-500 to-indigo-600 text-white font-semibold rounded-xl hover:from-indigo-600 hover:to-indigo-700 transition shadow-lg"
+            class="rounded-xl bg-linear-to-r from-indigo-500 to-indigo-600 px-6 py-3 font-semibold text-white shadow-lg transition hover:from-indigo-600 hover:to-indigo-700"
           >
             {{ showAddForm ? "Cancel" : "+ Add Coach" }}
           </button>
@@ -39,14 +39,14 @@
 
       <!-- Filter Section -->
       <div
-        class="bg-white rounded-2xl shadow-lg p-6 mb-8 border border-slate-200"
+        class="mb-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-lg"
       >
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
           <!-- Search Input -->
           <div>
             <label
               for="search"
-              class="block text-sm font-medium text-slate-700 mb-2"
+              class="mb-2 block text-sm font-medium text-slate-700"
             >
               Search
             </label>
@@ -55,7 +55,7 @@
               v-model="searchQuery"
               type="text"
               placeholder="Name, email, phone..."
-              class="w-full px-4 py-3 border-2 border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+              class="w-full rounded-xl border-2 border-slate-300 px-4 py-3 transition-all focus:border-transparent focus:ring-2 focus:ring-indigo-500"
             />
           </div>
 
@@ -63,14 +63,14 @@
           <div>
             <label
               for="roleFilter"
-              class="block text-sm font-medium text-slate-700 mb-2"
+              class="mb-2 block text-sm font-medium text-slate-700"
             >
               Role
             </label>
             <select
               id="roleFilter"
               v-model="filters.role"
-              class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all appearance-none cursor-pointer"
+              class="w-full cursor-pointer appearance-none rounded-xl border-2 border-slate-300 bg-white px-4 py-3 transition-all focus:border-transparent focus:ring-2 focus:ring-indigo-500"
               :style="selectDropdownStyle"
             >
               <option value="">All Roles</option>
@@ -84,14 +84,14 @@
           <div>
             <label
               for="sortFilter"
-              class="block text-sm font-medium text-slate-700 mb-2"
+              class="mb-2 block text-sm font-medium text-slate-700"
             >
               Sort by
             </label>
             <select
               id="sortFilter"
               v-model="sortBy"
-              class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all appearance-none cursor-pointer"
+              class="w-full cursor-pointer appearance-none rounded-xl border-2 border-slate-300 bg-white px-4 py-3 transition-all focus:border-transparent focus:ring-2 focus:ring-indigo-500"
               :style="selectDropdownStyle"
             >
               <option value="name">Name (A-Z)</option>
@@ -107,7 +107,7 @@
         >
           <button
             @click="clearFilters"
-            class="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition"
+            class="rounded-xl bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-200"
           >
             Clear Filters
           </button>
@@ -117,9 +117,9 @@
       <!-- Add Coach Form -->
       <div
         v-if="showAddForm"
-        class="bg-white rounded-2xl shadow-xl p-8 mb-8 border border-slate-200"
+        class="mb-8 rounded-2xl border border-slate-200 bg-white p-8 shadow-xl"
       >
-        <h2 class="text-2xl font-bold text-slate-900 mb-6">Add New Coach</h2>
+        <h2 class="mb-6 text-2xl font-bold text-slate-900">Add New Coach</h2>
 
         <CoachForm
           :loading="loading"
@@ -149,7 +149,7 @@
         <!-- No Results State (separate from empty) -->
         <div
           v-if="schoolCoaches.length > 0 && filteredCoaches.length === 0"
-          class="bg-white rounded-2xl shadow-lg p-8 text-center border border-slate-200"
+          class="rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-lg"
         >
           <p class="text-slate-600">No coaches match your filters</p>
         </div>
@@ -157,7 +157,7 @@
         <!-- Coaches Grid -->
         <div
           v-if="filteredCoaches.length > 0"
-          class="grid grid-cols-1 md:grid-cols-2 gap-6"
+          class="grid grid-cols-1 gap-6 md:grid-cols-2"
         >
           <CoachCard
             v-for="coach in filteredCoaches"
@@ -177,7 +177,7 @@
     <Teleport to="body">
       <div
         v-if="showPanel && selectedCoach"
-        class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+        class="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black p-4"
         @click="showPanel = false"
         @keydown.escape="showPanel = false"
       >
@@ -185,11 +185,11 @@
           role="dialog"
           aria-modal="true"
           aria-labelledby="school-communication-panel-title"
-          class="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+          class="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl bg-white shadow-xl"
           @click.stop
         >
           <div
-            class="sticky top-0 bg-white border-b border-slate-200 p-4 flex items-center justify-between rounded-t-xl"
+            class="sticky top-0 flex items-center justify-between rounded-t-xl border-b border-slate-200 bg-white p-4"
           >
             <h2
               id="school-communication-panel-title"
@@ -202,7 +202,7 @@
               aria-label="Close communication panel"
               class="text-slate-400 hover:text-slate-600"
             >
-              <UIcon name="i-heroicons-x-mark" class="w-6 h-6" />
+              <UIcon name="i-heroicons-x-mark" class="h-6 w-6" />
             </button>
           </div>
           <div class="p-6">

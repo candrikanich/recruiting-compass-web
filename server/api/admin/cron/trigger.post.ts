@@ -42,8 +42,12 @@ export default defineEventHandler(
       await readBody(event),
     );
 
-    const isTriggerable = (TRIGGERABLE_JOBS as readonly string[]).includes(jobName);
-    const isDryRunOnly = (DRYRUN_ONLY_JOBS as readonly string[]).includes(jobName);
+    const isTriggerable = (TRIGGERABLE_JOBS as readonly string[]).includes(
+      jobName,
+    );
+    const isDryRunOnly = (DRYRUN_ONLY_JOBS as readonly string[]).includes(
+      jobName,
+    );
 
     if (!isTriggerable && !isDryRunOnly) {
       logger.warn("Blocked cron trigger attempt", { jobName });
@@ -61,7 +65,9 @@ export default defineEventHandler(
 
     const secret = process.env.CRON_SECRET;
     if (!secret) {
-      logger.error("CRON_SECRET not configured; cannot trigger job", { jobName });
+      logger.error("CRON_SECRET not configured; cannot trigger job", {
+        jobName,
+      });
       throw createError({
         statusCode: 500,
         statusMessage: "Cron secret not configured",
@@ -100,7 +106,10 @@ export default defineEventHandler(
       });
     }
 
-    logAdminAction(event, { action: "cron.trigger", meta: { jobName, dryRun } });
+    logAdminAction(event, {
+      action: "cron.trigger",
+      meta: { jobName, dryRun },
+    });
 
     return { ok: true, jobName, dryRun, result };
   },

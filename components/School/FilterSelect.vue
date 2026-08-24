@@ -2,7 +2,7 @@
   <div class="group">
     <label
       :for="selectId"
-      class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2"
+      class="mb-2 block text-xs font-semibold tracking-wide text-slate-500 uppercase"
     >
       {{ label }}
     </label>
@@ -10,7 +10,7 @@
       :id="selectId"
       :value="value"
       @change="$emit('change', ($event.target as HTMLSelectElement).value)"
-      class="w-full px-3 py-2.5 text-sm text-slate-700 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all bg-white hover:border-slate-300 appearance-none cursor-pointer"
+      class="w-full cursor-pointer appearance-none rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 transition-all hover:border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
       :style="selectStyle"
     >
       <slot />

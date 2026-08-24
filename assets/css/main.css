@@ -114,7 +114,7 @@
 }
 
 @utility focus-visible-ring {
-  @apply focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-blue-500;
+  @apply focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-hidden;
 }
 
 @layer utilities {

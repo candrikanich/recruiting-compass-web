@@ -43,7 +43,7 @@ function handleChange(event: Event) {
       :multiple="multiple"
       :required="required"
       :disabled="disabled"
-      class="w-full px-3 py-2 border-2 border-slate-300 rounded-lg text-sm text-slate-700 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 disabled:opacity-50 disabled:cursor-not-allowed"
+      class="w-full rounded-lg border-2 border-slate-300 px-3 py-2 text-sm text-slate-700 file:mr-4 file:rounded-md file:border-0 file:bg-blue-50 file:px-4 file:py-2 file:text-sm file:font-medium file:text-blue-700 hover:file:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-50"
       @change="handleChange"
     />
     <p v-if="helperText" class="text-xs text-slate-500">

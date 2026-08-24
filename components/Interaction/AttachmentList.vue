@@ -39,8 +39,8 @@ const getFileTypeLabel = (url: string): string => {
 
 <template>
   <section aria-labelledby="attachments-heading">
-    <div class="bg-white rounded-lg shadow-sm p-6">
-      <h2 id="attachments-heading" class="text-xl font-bold mb-4">
+    <div class="rounded-lg bg-white p-6 shadow-sm">
+      <h2 id="attachments-heading" class="mb-4 text-xl font-bold">
         Attachments ({{ attachments.length }})
       </h2>
       <div class="grid grid-cols-2 gap-4">
@@ -51,21 +51,21 @@ const getFileTypeLabel = (url: string): string => {
           target="_blank"
           rel="noopener noreferrer"
           :aria-label="`Download ${extractFilename(url)} (${getFileTypeLabel(url)}). Opens in new window`"
-          class="p-4 border rounded-lg hover:bg-gray-50 transition focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          class="rounded-lg border p-4 transition hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         >
           <div class="flex items-start gap-2">
             <span aria-hidden="true" class="text-lg">📎</span>
-            <div class="flex-1 min-w-0">
-              <p class="text-sm font-medium text-blue-600 break-all">
+            <div class="min-w-0 flex-1">
+              <p class="text-sm font-medium break-all text-blue-600">
                 {{ extractFilename(url) }}
               </p>
-              <p class="text-xs text-gray-500 mt-1">
+              <p class="mt-1 text-xs text-gray-500">
                 {{ getFileTypeLabel(url) }}
               </p>
             </div>
             <svg
               aria-hidden="true"
-              class="w-4 h-4 text-gray-400 shrink-0"
+              class="h-4 w-4 shrink-0 text-gray-400"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"

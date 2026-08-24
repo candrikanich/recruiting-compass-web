@@ -3,7 +3,7 @@
     class="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-slate-100"
   >
     <!-- Athlete Selector (for parents) -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 pt-4" v-if="isParent">
+    <div class="mx-auto max-w-7xl px-4 pt-4 sm:px-6" v-if="isParent">
       <AthleteSelector />
     </div>
 
@@ -16,30 +16,30 @@
         <button
           v-if="filteredSchools.length > 0"
           @click="handleExportCSV"
-          class="px-3 py-2 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50 transition flex items-center gap-2 text-slate-700"
+          class="flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
         >
-          <UIcon name="i-heroicons-arrow-down-tray" class="w-4 h-4" />
+          <UIcon name="i-heroicons-arrow-down-tray" class="h-4 w-4" />
           CSV
         </button>
         <button
           v-if="filteredSchools.length > 0"
           @click="handleExportPDF"
-          class="px-3 py-2 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50 transition flex items-center gap-2 text-slate-700"
+          class="flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
         >
-          <UIcon name="i-heroicons-arrow-down-tray" class="w-4 h-4" />
+          <UIcon name="i-heroicons-arrow-down-tray" class="h-4 w-4" />
           PDF
         </button>
         <NuxtLink
           to="/schools/new"
-          class="px-4 py-2 text-sm font-medium text-white bg-linear-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition flex items-center gap-2"
+          class="flex items-center gap-2 rounded-lg bg-linear-to-r from-blue-500 to-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:from-blue-600 hover:to-blue-700"
         >
-          <UIcon name="i-heroicons-plus" class="w-4 h-4" />
+          <UIcon name="i-heroicons-plus" class="h-4 w-4" />
           Add School
         </NuxtLink>
       </template>
     </PageHeader>
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+    <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6">
       <!-- Summary Tiles -->
       <StatsTiles
         v-if="schools.length > 0"
@@ -75,12 +75,12 @@
       <!-- Loading State -->
       <div
         v-if="loading"
-        class="text-center py-12"
+        class="py-12 text-center"
         role="status"
         aria-live="polite"
       >
         <div
-          class="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"
+          class="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-4 border-blue-500 border-t-transparent"
           aria-hidden="true"
         ></div>
         <p class="text-slate-600">Loading schools...</p>
@@ -90,7 +90,7 @@
       <div
         v-if="error"
         role="alert"
-        class="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 text-red-700"
+        class="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-red-700"
       >
         {{ error }}
       </div>
@@ -98,10 +98,10 @@
       <!-- Empty State: No schools at all -->
       <div
         v-if="!loading && schools.length === 0"
-        class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
+        class="rounded-xl border border-slate-200 bg-white p-12 text-center shadow-xs"
       >
         <svg
-          class="w-16 h-16 text-slate-300 mx-auto mb-4"
+          class="mx-auto mb-4 h-16 w-16 text-slate-300"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -114,16 +114,16 @@
             d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75z"
           />
         </svg>
-        <h3 class="text-lg font-semibold text-slate-900 mb-2">
+        <h3 class="mb-2 text-lg font-semibold text-slate-900">
           No schools yet
         </h3>
-        <p class="text-slate-600 mb-6">
+        <p class="mb-6 text-slate-600">
           Start building your recruiting list by adding the schools you're
           interested in.
         </p>
         <NuxtLink
           to="/schools/new"
-          class="inline-block px-4 py-2 text-sm font-medium text-white bg-linear-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition"
+          class="inline-block rounded-lg bg-linear-to-r from-blue-500 to-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:from-blue-600 hover:to-blue-700"
         >
           Add Your First School
         </NuxtLink>
@@ -132,21 +132,21 @@
       <!-- Empty State: Filters returned no results -->
       <div
         v-else-if="!loading && filteredSchools.length === 0"
-        class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
+        class="rounded-xl border border-slate-200 bg-white p-12 text-center shadow-xs"
       >
         <UIcon
           name="i-heroicons-magnifying-glass"
-          class="w-16 h-16 text-slate-300 mx-auto mb-4"
+          class="mx-auto mb-4 h-16 w-16 text-slate-300"
         />
-        <h3 class="text-lg font-semibold text-slate-900 mb-2">
+        <h3 class="mb-2 text-lg font-semibold text-slate-900">
           No schools match your filters
         </h3>
-        <p class="text-slate-600 mb-6">
+        <p class="mb-6 text-slate-600">
           Try adjusting your filters or search terms
         </p>
         <button
           @click="clearFilters"
-          class="px-4 py-2 text-sm font-medium text-white bg-linear-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition"
+          class="rounded-lg bg-linear-to-r from-blue-500 to-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:from-blue-600 hover:to-blue-700"
         >
           Clear Filters
         </button>
@@ -155,7 +155,7 @@
       <!-- Schools Grid -->
       <div
         v-if="!loading && paginatedSchools.length > 0"
-        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+        class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
       >
         <SchoolListCard
           v-for="school in paginatedSchools"
@@ -171,12 +171,12 @@
       <!-- Pagination Controls -->
       <div
         v-if="!loading && filteredSchools.length > ITEMS_PER_PAGE"
-        class="flex items-center justify-center gap-4 mt-8"
+        class="mt-8 flex items-center justify-center gap-4"
       >
         <button
           @click="goToPage(currentPage - 1)"
           :disabled="!hasPrevPage"
-          class="px-4 py-2 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
         >
           Previous
         </button>
@@ -186,7 +186,7 @@
         <button
           @click="goToPage(currentPage + 1)"
           :disabled="!hasNextPage"
-          class="px-4 py-2 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
         >
           Next
         </button>

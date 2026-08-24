@@ -1,7 +1,7 @@
 <template>
-  <div v-if="hasActiveFilters" class="mt-4 pt-4 border-t border-slate-200">
+  <div v-if="hasActiveFilters" class="mt-4 border-t border-slate-200 pt-4">
     <div
-      class="flex items-center gap-2 flex-wrap"
+      class="flex flex-wrap items-center gap-2"
       role="group"
       aria-label="Active filters"
     >
@@ -14,10 +14,10 @@
         v-if="filterValues.get('search')"
         @click="emit('remove:filter', 'search')"
         :aria-label="`Remove search filter: ${filterValues.get('search')}`"
-        class="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-medium hover:bg-blue-100 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        class="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 hover:bg-blue-100 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
       >
         Search: {{ filterValues.get("search") }}
-        <UIcon name="i-heroicons-x-mark" class="w-3 h-3" aria-hidden="true" />
+        <UIcon name="i-heroicons-x-mark" class="h-3 w-3" aria-hidden="true" />
       </button>
 
       <!-- Role chip -->
@@ -25,10 +25,10 @@
         v-if="filterValues.get('role')"
         @click="emit('remove:filter', 'role')"
         :aria-label="`Remove role filter: ${getRoleLabel(filterValues.get('role') as string)}`"
-        class="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-medium hover:bg-blue-100 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        class="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 hover:bg-blue-100 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
       >
         Role: {{ getRoleLabel(filterValues.get("role") as string) }}
-        <UIcon name="i-heroicons-x-mark" class="w-3 h-3" aria-hidden="true" />
+        <UIcon name="i-heroicons-x-mark" class="h-3 w-3" aria-hidden="true" />
       </button>
 
       <!-- Last Contact chip -->
@@ -36,17 +36,17 @@
         v-if="filterValues.get('lastContact')"
         @click="emit('remove:filter', 'lastContact')"
         :aria-label="`Remove last contact filter: Last ${filterValues.get('lastContact')} days`"
-        class="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-medium hover:bg-blue-100 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        class="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 hover:bg-blue-100 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
       >
         Last {{ filterValues.get("lastContact") }} days
-        <UIcon name="i-heroicons-x-mark" class="w-3 h-3" aria-hidden="true" />
+        <UIcon name="i-heroicons-x-mark" class="h-3 w-3" aria-hidden="true" />
       </button>
 
       <!-- Clear all button -->
       <button
         @click="emit('clear:all')"
         aria-label="Clear all active filters"
-        class="text-xs text-slate-600 hover:text-slate-900 underline ml-2 focus:ring-2 focus:ring-offset-2 focus:ring-slate-500"
+        class="ml-2 text-xs text-slate-600 underline hover:text-slate-900 focus:ring-2 focus:ring-slate-500 focus:ring-offset-2"
       >
         Clear all
       </button>

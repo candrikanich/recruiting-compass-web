@@ -250,7 +250,7 @@ Small label for statuses, categories, and tags.
 </DSBadge>
 
 <!-- Multiple tags -->
-<div class="flex gap-2 flex-wrap">
+<div class="flex flex-wrap gap-2">
   <DSBadge v-for="tag in school.tags" :key="tag" color="slate">
     {{ tag }}
   </DSBadge>

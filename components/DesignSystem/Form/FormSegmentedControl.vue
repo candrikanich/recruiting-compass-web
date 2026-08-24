@@ -60,9 +60,7 @@ const select = (value: string) => {
   >
     <legend
       :class="
-        hideLabel
-          ? 'sr-only'
-          : 'block text-sm font-medium text-slate-700 mb-2'
+        hideLabel ? 'sr-only' : 'mb-2 block text-sm font-medium text-slate-700'
       "
     >
       {{ label }}

@@ -3,13 +3,13 @@
     class="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-slate-100"
   >
     <!-- Page Header -->
-    <div class="bg-white border-b border-slate-200">
-      <div class="max-w-4xl mx-auto px-4 sm:px-6 py-4">
+    <div class="border-b border-slate-200 bg-white">
+      <div class="mx-auto max-w-4xl px-4 py-4 sm:px-6">
         <NuxtLink
           to="/settings"
-          class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition mb-3 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          class="mb-3 inline-flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium text-blue-600 transition hover:bg-blue-50 hover:text-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         >
-          <UIcon name="i-heroicons-arrow-left" class="w-4 h-4" />
+          <UIcon name="i-heroicons-arrow-left" class="h-4 w-4" />
           Back to Settings
         </NuxtLink>
         <h1 class="text-2xl font-semibold text-slate-900">
@@ -21,41 +21,41 @@
       </div>
     </div>
 
-    <main class="max-w-4xl mx-auto px-4 sm:px-6 py-8">
+    <main class="mx-auto max-w-4xl px-4 py-8 sm:px-6">
       <!-- Loading State -->
       <div
         v-if="isLoading"
-        class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
+        class="rounded-xl border border-slate-200 bg-white p-12 text-center shadow-xs"
       >
         <div
-          class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"
+          class="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"
         ></div>
         <p class="text-slate-600">Loading preferences...</p>
       </div>
 
       <div v-else class="space-y-8">
         <!-- Templates -->
-        <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
-          <h2 class="text-xl font-bold text-gray-900 mb-4">
+        <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-xs">
+          <h2 class="mb-4 text-xl font-bold text-gray-900">
             Start from a Template
           </h2>
-          <p class="text-sm text-gray-600 mb-4">
+          <p class="mb-4 text-sm text-gray-600">
             Choose a template to quickly set up your preferences
           </p>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
             <button
               v-for="template in TEMPLATES"
               :key="template.id"
               @click="applyTemplate(template)"
               :class="[
-                'p-4 border-2 rounded-lg text-left transition',
+                'rounded-lg border-2 p-4 text-left transition',
                 appliedTemplate === template.id
                   ? 'border-blue-600 bg-blue-50'
                   : 'border-gray-200 hover:border-blue-400',
               ]"
             >
-              <div class="flex items-center gap-3 mb-2">
+              <div class="mb-2 flex items-center gap-3">
                 <span class="text-2xl">{{ template.icon }}</span>
                 <h3 class="font-semibold text-gray-900">{{ template.name }}</h3>
               </div>
@@ -65,8 +65,8 @@
         </div>
 
         <!-- Preferences List -->
-        <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
-          <div class="flex items-center justify-between mb-6">
+        <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-xs">
+          <div class="mb-6 flex items-center justify-between">
             <div>
               <h2 class="text-xl font-bold text-gray-900">Your Preferences</h2>
               <p class="text-sm text-gray-600">
@@ -75,7 +75,7 @@
             </div>
             <button
               @click="showAddPreference = true"
-              class="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700"
+              class="rounded-lg bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700"
             >
               + Add Preference
             </button>
@@ -84,10 +84,10 @@
           <!-- Empty State -->
           <div
             v-if="preferences.length === 0"
-            class="text-center py-12 text-gray-500"
+            class="py-12 text-center text-gray-500"
           >
             <p>No preferences set yet.</p>
-            <p class="text-sm mt-2">
+            <p class="mt-2 text-sm">
               Choose a template above or add preferences manually.
             </p>
           </div>
@@ -103,7 +103,7 @@
               @drop="handleDrop(index)"
               @dragenter.prevent
               :class="[
-                'flex items-center gap-4 p-4 rounded-lg border-2 transition cursor-move',
+                'flex cursor-move items-center gap-4 rounded-lg border-2 p-4 transition',
                 dragOverIndex === index
                   ? 'border-blue-400 bg-blue-50'
                   : 'border-gray-200 bg-gray-50',
@@ -112,7 +112,7 @@
               <!-- Drag Handle -->
               <div class="text-gray-400">
                 <svg
-                  class="w-5 h-5"
+                  class="h-5 w-5"
                   aria-hidden="true"
                   fill="none"
                   stroke="currentColor"
@@ -129,7 +129,7 @@
 
               <!-- Priority Number -->
               <div
-                class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm"
+                class="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white"
               >
                 {{ index + 1 }}
               </div>
@@ -142,7 +142,7 @@
                   }}</span>
                   <span
                     v-if="pref.is_dealbreaker"
-                    class="px-2 py-0.5 text-xs font-medium rounded-sm bg-red-100 text-red-800"
+                    class="rounded-sm bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800"
                   >
                     Dealbreaker
                   </span>
@@ -157,7 +157,7 @@
                 <button
                   @click="toggleDealbreaker(index)"
                   :class="[
-                    'px-3 py-1 text-xs font-medium rounded-sm transition',
+                    'rounded-sm px-3 py-1 text-xs font-medium transition',
                     pref.is_dealbreaker
                       ? 'bg-red-100 text-red-800 hover:bg-red-200'
                       : 'bg-gray-100 text-gray-600 hover:bg-gray-200',
@@ -168,10 +168,10 @@
                 <button
                   @click="removePreference(index)"
                   :aria-label="`Remove ${getPreferenceLabel(pref)} preference`"
-                  class="p-1 text-gray-400 hover:text-red-600 transition"
+                  class="p-1 text-gray-400 transition hover:text-red-600"
                 >
                   <svg
-                    class="w-5 h-5"
+                    class="h-5 w-5"
                     aria-hidden="true"
                     fill="none"
                     stroke="currentColor"
@@ -193,26 +193,26 @@
         <!-- Add Preference Modal -->
         <div
           v-if="showAddPreference"
-          class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+          class="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black"
           @click.self="showAddPreference = false"
         >
           <div
             role="dialog"
             aria-modal="true"
             aria-labelledby="add-preference-title"
-            class="bg-white rounded-lg shadow-xl max-w-lg w-full mx-4 max-h-[80vh] overflow-y-auto"
+            class="mx-4 max-h-[80vh] w-full max-w-lg overflow-y-auto rounded-lg bg-white shadow-xl"
           >
             <div class="p-6">
               <h3
                 id="add-preference-title"
-                class="text-xl font-bold text-gray-900 mb-4"
+                class="mb-4 text-xl font-bold text-gray-900"
               >
                 Add Preference
               </h3>
 
               <!-- Category Selection -->
               <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-2"
+                <label class="mb-2 block text-sm font-medium text-gray-700"
                   >Category</label
                 >
                 <div class="grid grid-cols-2 gap-2">
@@ -223,10 +223,10 @@
                       newPreference.category = cat.value as PreferenceCategory
                     "
                     :class="[
-                      'px-4 py-2 rounded-lg font-medium text-sm transition border',
+                      'rounded-lg border px-4 py-2 text-sm font-medium transition',
                       newPreference.category === cat.value
-                        ? 'bg-blue-600 text-white border-blue-600'
-                        : 'bg-white text-gray-700 border-gray-300 hover:border-blue-400',
+                        ? 'border-blue-600 bg-blue-600 text-white'
+                        : 'border-gray-300 bg-white text-gray-700 hover:border-blue-400',
                     ]"
                   >
                     {{ cat.label }}
@@ -236,12 +236,12 @@
 
               <!-- Type Selection -->
               <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-2"
+                <label class="mb-2 block text-sm font-medium text-gray-700"
                   >Preference Type</label
                 >
                 <select
                   v-model="newPreference.type"
-                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="">Select type...</option>
                   <option
@@ -256,7 +256,7 @@
 
               <!-- Value Input (Dynamic based on type) -->
               <div v-if="newPreference.type" class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-2"
+                <label class="mb-2 block text-sm font-medium text-gray-700"
                   >Value</label
                 >
 
@@ -271,7 +271,7 @@
                     min="50"
                     max="3000"
                     placeholder="e.g., 500"
-                    class="flex-1 px-4 py-2 border border-gray-300 rounded-lg"
+                    class="flex-1 rounded-lg border border-gray-300 px-4 py-2"
                   />
                   <span class="text-gray-600">miles</span>
                 </div>
@@ -286,10 +286,10 @@
                     :key="div"
                     @click="toggleArrayValue(div)"
                     :class="[
-                      'px-3 py-1 rounded-sm font-medium text-sm transition border',
+                      'rounded-sm border px-3 py-1 text-sm font-medium transition',
                       (newPreference.value || []).includes(div)
-                        ? 'bg-blue-600 text-white border-blue-600'
-                        : 'bg-white text-gray-700 border-gray-300',
+                        ? 'border-blue-600 bg-blue-600 text-white'
+                        : 'border-gray-300 bg-white text-gray-700',
                     ]"
                   >
                     {{ div }}
@@ -306,10 +306,10 @@
                     :key="conf"
                     @click="toggleArrayValue(conf)"
                     :class="[
-                      'px-3 py-1 rounded-sm font-medium text-sm transition border',
+                      'rounded-sm border px-3 py-1 text-sm font-medium transition',
                       (newPreference.value || []).includes(conf)
-                        ? 'bg-blue-600 text-white border-blue-600'
-                        : 'bg-white text-gray-700 border-gray-300',
+                        ? 'border-blue-600 bg-blue-600 text-white'
+                        : 'border-gray-300 bg-white text-gray-700',
                     ]"
                   >
                     {{ conf }}
@@ -320,7 +320,7 @@
                 <div v-else-if="newPreference.type === 'min_academic_rating'">
                   <select
                     v-model.number="newPreference.value"
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                    class="w-full rounded-lg border border-gray-300 px-4 py-2"
                   >
                     <option :value="1">1 - Basic</option>
                     <option :value="2">2 - Good</option>
@@ -334,7 +334,7 @@
                 <div v-else-if="newPreference.type === 'school_size'">
                   <select
                     v-model="newPreference.value"
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                    class="w-full rounded-lg border border-gray-300 px-4 py-2"
                   >
                     <option value="small">Small (&lt;5,000 students)</option>
                     <option value="medium">Medium (5,000-15,000)</option>
@@ -376,10 +376,10 @@
                     :key="region"
                     @click="toggleArrayValue(region)"
                     :class="[
-                      'px-3 py-1 rounded-sm font-medium text-sm transition border',
+                      'rounded-sm border px-3 py-1 text-sm font-medium transition',
                       (newPreference.value || []).includes(region)
-                        ? 'bg-blue-600 text-white border-blue-600'
-                        : 'bg-white text-gray-700 border-gray-300',
+                        ? 'border-blue-600 bg-blue-600 text-white'
+                        : 'border-gray-300 bg-white text-gray-700',
                     ]"
                   >
                     {{ region }}
@@ -392,17 +392,17 @@
                   v-model="newPreference.value"
                   type="text"
                   placeholder="Enter value..."
-                  class="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                  class="w-full rounded-lg border border-gray-300 px-4 py-2"
                 />
               </div>
 
               <!-- Dealbreaker Toggle -->
               <div class="mb-6">
-                <label class="flex items-center gap-3 cursor-pointer">
+                <label class="flex cursor-pointer items-center gap-3">
                   <input
                     type="checkbox"
                     v-model="newPreference.is_dealbreaker"
-                    class="w-4 h-4 rounded-sm border-gray-300"
+                    class="h-4 w-4 rounded-sm border-gray-300"
                   />
                   <span class="text-sm text-gray-700">
                     Mark as dealbreaker (schools without this will show a
@@ -415,7 +415,7 @@
               <div class="flex justify-end gap-3">
                 <button
                   @click="showAddPreference = false"
-                  class="px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50"
+                  class="rounded-lg border border-gray-300 px-4 py-2 font-medium text-gray-700 hover:bg-gray-50"
                 >
                   Cancel
                 </button>
@@ -424,7 +424,7 @@
                   :disabled="
                     !newPreference.type || newPreference.value === undefined
                   "
-                  class="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                  class="rounded-lg bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700 disabled:opacity-50"
                 >
                   Add Preference
                 </button>
@@ -436,7 +436,7 @@
         <!-- Error Message -->
         <div
           v-if="error"
-          class="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700"
+          class="rounded-lg border border-red-200 bg-red-50 p-4 text-red-700"
         >
           {{ error }}
         </div>
@@ -445,14 +445,14 @@
         <div class="flex justify-end gap-4">
           <NuxtLink
             to="/settings"
-            class="px-6 py-2 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition"
+            class="rounded-lg border border-gray-300 px-6 py-2 font-semibold text-gray-700 transition hover:bg-gray-50"
           >
             Cancel
           </NuxtLink>
           <button
             @click="handleSave"
             :disabled="saving"
-            class="px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50 transition"
+            class="rounded-lg bg-blue-600 px-6 py-2 font-semibold text-white transition hover:bg-blue-700 disabled:opacity-50"
           >
             {{ saving ? "Saving..." : "Save Preferences" }}
           </button>

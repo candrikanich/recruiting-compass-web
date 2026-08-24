@@ -8,7 +8,7 @@
 
     <!-- Multi-Sport Field markings -->
     <svg
-      class="absolute inset-0 w-full h-full opacity-20"
+      class="absolute inset-0 h-full w-full opacity-20"
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 1200 800"
       preserveAspectRatio="xMidYMid slice"

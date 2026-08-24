@@ -7,18 +7,18 @@
       description="Track recommendation letter requests and submissions"
     />
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+    <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6">
       <!-- Filters Section -->
-      <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+      <div class="mb-8 rounded-lg bg-white p-6 shadow-sm">
+        <div class="mb-4 grid grid-cols-1 gap-4 md:grid-cols-3">
           <!-- Status Filter -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2"
+            <label class="mb-2 block text-sm font-medium text-gray-700"
               >Status</label
             >
             <select
               v-model="filters.status"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500"
             >
               <option value="">All Statuses</option>
               <option value="not_requested">Not Requested</option>
@@ -30,12 +30,12 @@
 
           <!-- Deadline Status -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2"
+            <label class="mb-2 block text-sm font-medium text-gray-700"
               >Deadline</label
             >
             <select
               v-model="filters.deadlineStatus"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500"
             >
               <option value="">All</option>
               <option value="overdue">Overdue</option>
@@ -48,7 +48,7 @@
           <div class="flex items-end">
             <button
               @click="clearFilters"
-              class="w-full px-3 py-2 bg-gray-200 text-gray-900 font-semibold rounded-lg hover:bg-gray-300 transition text-sm"
+              class="w-full rounded-lg bg-gray-200 px-3 py-2 text-sm font-semibold text-gray-900 transition hover:bg-gray-300"
             >
               Clear Filters
             </button>
@@ -58,15 +58,15 @@
         <!-- Add Letter Button -->
         <button
           @click="showAddForm = !showAddForm"
-          class="w-full px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition"
+          class="w-full rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white transition hover:bg-blue-700"
         >
           {{ showAddForm ? "Hide Form" : "+ Request Letter" }}
         </button>
       </div>
 
       <!-- Add/Edit Form -->
-      <div v-if="showAddForm" class="bg-white rounded-lg shadow-sm p-6 mb-8">
-        <h2 class="text-2xl font-bold text-gray-900 mb-6">
+      <div v-if="showAddForm" class="mb-8 rounded-lg bg-white p-6 shadow-sm">
+        <h2 class="mb-6 text-2xl font-bold text-gray-900">
           {{
             editingId
               ? "Update Recommendation Letter"
@@ -74,12 +74,12 @@
           }}
         </h2>
         <form @submit.prevent="handleSave" class="space-y-6">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
             <!-- Writer Name -->
             <div>
               <label
                 for="writerName"
-                class="block text-sm font-medium text-gray-700 mb-1"
+                class="mb-1 block text-sm font-medium text-gray-700"
               >
                 Writer Name <span class="text-red-600">*</span>
               </label>
@@ -89,7 +89,7 @@
                 type="text"
                 required
                 placeholder="e.g., Coach Smith, Mr. Johnson"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
@@ -97,7 +97,7 @@
             <div>
               <label
                 for="writerTitle"
-                class="block text-sm font-medium text-gray-700 mb-1"
+                class="mb-1 block text-sm font-medium text-gray-700"
               >
                 Writer Title
               </label>
@@ -106,7 +106,7 @@
                 v-model="formData.writer_title"
                 type="text"
                 placeholder="e.g., Head Coach, Teacher"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
@@ -114,7 +114,7 @@
             <div>
               <label
                 for="status"
-                class="block text-sm font-medium text-gray-700 mb-1"
+                class="mb-1 block text-sm font-medium text-gray-700"
               >
                 Status <span class="text-red-600">*</span>
               </label>
@@ -122,7 +122,7 @@
                 id="status"
                 v-model="formData.status"
                 required
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Select Status</option>
                 <option value="not_requested">Not Requested</option>
@@ -136,7 +136,7 @@
             <div>
               <label
                 for="requestedDate"
-                class="block text-sm font-medium text-gray-700 mb-1"
+                class="mb-1 block text-sm font-medium text-gray-700"
               >
                 Requested Date
               </label>
@@ -144,7 +144,7 @@
                 id="requestedDate"
                 v-model="formData.requested_date"
                 type="date"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
@@ -152,7 +152,7 @@
             <div>
               <label
                 for="dueDate"
-                class="block text-sm font-medium text-gray-700 mb-1"
+                class="mb-1 block text-sm font-medium text-gray-700"
               >
                 Due Date
               </label>
@@ -160,7 +160,7 @@
                 id="dueDate"
                 v-model="formData.due_date"
                 type="date"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
@@ -168,7 +168,7 @@
             <div>
               <label
                 for="receivedDate"
-                class="block text-sm font-medium text-gray-700 mb-1"
+                class="mb-1 block text-sm font-medium text-gray-700"
               >
                 Received Date
               </label>
@@ -176,7 +176,7 @@
                 id="receivedDate"
                 v-model="formData.received_date"
                 type="date"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
@@ -184,7 +184,7 @@
             <div>
               <label
                 for="email"
-                class="block text-sm font-medium text-gray-700 mb-1"
+                class="mb-1 block text-sm font-medium text-gray-700"
               >
                 Email Address
               </label>
@@ -194,7 +194,7 @@
                 type="email"
                 autocomplete="email"
                 placeholder="writer@school.edu"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus-visible:ring-2 focus-visible:ring-blue-500"
+                class="w-full rounded-lg border border-gray-300 px-4 py-2 focus-visible:ring-2 focus-visible:ring-blue-500"
               />
             </div>
 
@@ -202,7 +202,7 @@
             <div>
               <label
                 for="relationship"
-                class="block text-sm font-medium text-gray-700 mb-1"
+                class="mb-1 block text-sm font-medium text-gray-700"
               >
                 Relationship
               </label>
@@ -211,7 +211,7 @@
                 v-model="formData.relationship"
                 type="text"
                 placeholder="e.g., Coach, Teacher, Mentor"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </div>
@@ -220,7 +220,7 @@
           <div>
             <label
               for="notes"
-              class="block text-sm font-medium text-gray-700 mb-1"
+              class="mb-1 block text-sm font-medium text-gray-700"
             >
               Notes
             </label>
@@ -229,7 +229,7 @@
               v-model="formData.notes"
               rows="3"
               placeholder="Any follow-up notes or special instructions..."
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
@@ -238,14 +238,14 @@
             <button
               type="submit"
               :disabled="loading || !formData.writer_name || !formData.status"
-              class="flex-1 px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
+              class="flex-1 rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white transition hover:bg-blue-700 disabled:opacity-50"
             >
               {{ loading ? "Saving..." : "Save Letter" }}
             </button>
             <button
               type="button"
               @click="cancelEdit"
-              class="flex-1 px-4 py-2 bg-gray-200 text-gray-900 font-semibold rounded-lg hover:bg-gray-300 transition"
+              class="flex-1 rounded-lg bg-gray-200 px-4 py-2 font-semibold text-gray-900 transition hover:bg-gray-300"
             >
               Cancel
             </button>
@@ -254,16 +254,16 @@
       </div>
 
       <!-- Loading State -->
-      <div v-if="loading && letters.length === 0" class="text-center py-12">
+      <div v-if="loading && letters.length === 0" class="py-12 text-center">
         <p class="text-gray-600">Loading recommendation letters...</p>
       </div>
 
       <!-- Empty State -->
       <div
         v-else-if="letters.length === 0"
-        class="bg-white rounded-lg shadow-sm p-12 text-center"
+        class="rounded-lg bg-white p-12 text-center shadow-sm"
       >
-        <p class="text-gray-600 mb-2">No recommendation letters tracked yet</p>
+        <p class="mb-2 text-gray-600">No recommendation letters tracked yet</p>
         <p class="text-sm text-gray-500">
           Start requesting letters from coaches and teachers
         </p>
@@ -272,9 +272,9 @@
       <!-- No Results -->
       <div
         v-else-if="filteredLetters.length === 0"
-        class="bg-white rounded-lg shadow-sm p-12 text-center"
+        class="rounded-lg bg-white p-12 text-center shadow-sm"
       >
-        <p class="text-gray-600 mb-2">No letters match your filters</p>
+        <p class="mb-2 text-gray-600">No letters match your filters</p>
         <p class="text-sm text-gray-500">
           Try adjusting your search or filters
         </p>
@@ -285,17 +285,17 @@
         <div
           v-for="letter in filteredLetters"
           :key="letter.id"
-          class="bg-white rounded-lg shadow-sm p-6 hover:shadow-lg transition"
+          class="rounded-lg bg-white p-6 shadow-sm transition hover:shadow-lg"
         >
-          <div class="flex items-start justify-between mb-4">
+          <div class="mb-4 flex items-start justify-between">
             <div class="flex-1">
-              <div class="flex items-center gap-3 mb-2">
+              <div class="mb-2 flex items-center gap-3">
                 <h3 class="text-lg font-bold text-gray-900">
                   {{ letter.writer_name }}
                 </h3>
                 <span
                   :class="[
-                    'inline-block px-3 py-1 text-xs font-semibold rounded-full',
+                    'inline-block rounded-full px-3 py-1 text-xs font-semibold',
                     getStatusColor(letter.status ?? ''),
                   ]"
                 >
@@ -303,7 +303,7 @@
                 </span>
                 <span
                   v-if="isDeadlineUrgent(letter)"
-                  class="inline-block px-3 py-1 text-xs font-semibold bg-red-100 text-red-800 rounded-full"
+                  class="inline-block rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-800"
                 >
                   ⚠️ {{ getDeadlineStatus(letter) }}
                 </span>
@@ -315,13 +315,13 @@
             <div class="flex gap-2">
               <button
                 @click="editLetter(letter)"
-                class="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded-sm hover:bg-blue-200 transition"
+                class="rounded-sm bg-blue-100 px-3 py-1 text-sm text-blue-700 transition hover:bg-blue-200"
               >
                 Edit
               </button>
               <button
                 @click="handleDelete(letter.id)"
-                class="px-3 py-1 text-sm bg-red-100 text-red-700 rounded-sm hover:bg-red-200 transition"
+                class="rounded-sm bg-red-100 px-3 py-1 text-sm text-red-700 transition hover:bg-red-200"
               >
                 Delete
               </button>
@@ -329,7 +329,7 @@
           </div>
 
           <!-- Details -->
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+          <div class="grid grid-cols-2 gap-4 text-sm md:grid-cols-4">
             <div v-if="letter.requested_date">
               <p class="text-gray-600">Requested</p>
               <p class="font-semibold text-gray-900">
@@ -350,15 +350,15 @@
             </div>
             <div v-if="letter.writer_email">
               <p class="text-gray-600">Email</p>
-              <p class="text-xs text-blue-600 hover:underline cursor-pointer">
+              <p class="cursor-pointer text-xs text-blue-600 hover:underline">
                 {{ letter.writer_email }}
               </p>
             </div>
           </div>
 
           <!-- Notes -->
-          <div v-if="letter.notes" class="border-t border-gray-200 pt-4 mt-4">
-            <p class="text-sm text-gray-600 mb-2">📝 Notes</p>
+          <div v-if="letter.notes" class="mt-4 border-t border-gray-200 pt-4">
+            <p class="mb-2 text-sm text-gray-600">📝 Notes</p>
             <p class="text-sm text-gray-700">{{ letter.notes }}</p>
           </div>
         </div>

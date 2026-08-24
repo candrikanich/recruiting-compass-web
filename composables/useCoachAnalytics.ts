@@ -58,8 +58,9 @@ export function calcCoachMetrics(
   }
   const averageResponseTime =
     responseCount > 0
-      ? Math.round((totalResponseTime / responseCount / (1000 * 60 * 60)) * 10) /
-        10
+      ? Math.round(
+          (totalResponseTime / responseCount / (1000 * 60 * 60)) * 10,
+        ) / 10
       : 0;
 
   const lastContact =
@@ -180,7 +181,12 @@ export const useCoachAnalytics = () => {
       coachId: string,
       schoolId: string | undefined,
     ): CoachComparison | null =>
-      compareCoachToSchool(interactions.value, coaches.value, coachId, schoolId),
+      compareCoachToSchool(
+        interactions.value,
+        coaches.value,
+        coachId,
+        schoolId,
+      ),
     generateInsights: (coachId: string): string[] =>
       coachInsights(interactions.value, coachId),
   };

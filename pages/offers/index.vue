@@ -14,33 +14,33 @@
           v-if="selectedOffers.length >= 2"
           data-testid="compare-offers-button"
           @click="showComparison = true"
-          class="px-3 py-2 text-sm font-medium border border-blue-300 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition flex items-center gap-2"
+          class="flex items-center gap-2 rounded-lg border border-blue-300 bg-blue-50 px-3 py-2 text-sm font-medium text-blue-700 transition hover:bg-blue-100"
         >
-          <UIcon name="i-heroicons-scale" class="w-4 h-4" />
+          <UIcon name="i-heroicons-scale" class="h-4 w-4" />
           Compare ({{ selectedOffers.length }})
         </button>
         <button
           data-testid="log-offer-button"
           @click="showAddForm = !showAddForm"
-          class="px-4 py-2 text-sm font-medium text-white bg-linear-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition flex items-center gap-2"
+          class="flex items-center gap-2 rounded-lg bg-linear-to-r from-blue-500 to-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:from-blue-600 hover:to-blue-700"
         >
-          <UIcon name="i-heroicons-plus" class="w-4 h-4" />
+          <UIcon name="i-heroicons-plus" class="h-4 w-4" />
           {{ showAddForm ? "Cancel" : "Log Offer" }}
         </button>
       </template>
     </PageHeader>
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+    <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6">
       <!-- Summary Cards -->
-      <div class="grid grid-cols-3 gap-4 mb-6">
-        <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-4">
+      <div class="mb-6 grid grid-cols-3 gap-4">
+        <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
           <div class="flex items-center gap-3">
             <div
-              class="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center"
+              class="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-100"
             >
               <UIcon
                 name="i-heroicons-check-circle"
-                class="w-5 h-5 text-emerald-600"
+                class="h-5 w-5 text-emerald-600"
               />
             </div>
             <div>
@@ -51,12 +51,12 @@
             </div>
           </div>
         </div>
-        <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-4">
+        <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
           <div class="flex items-center gap-3">
             <div
-              class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center"
+              class="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100"
             >
-              <UIcon name="i-heroicons-clock" class="w-5 h-5 text-blue-600" />
+              <UIcon name="i-heroicons-clock" class="h-5 w-5 text-blue-600" />
             </div>
             <div>
               <p class="text-2xl font-bold text-slate-900">
@@ -66,12 +66,12 @@
             </div>
           </div>
         </div>
-        <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-4">
+        <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
           <div class="flex items-center gap-3">
             <div
-              class="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center"
+              class="flex h-10 w-10 items-center justify-center rounded-lg bg-red-100"
             >
-              <UIcon name="i-heroicons-x-circle" class="w-5 h-5 text-red-600" />
+              <UIcon name="i-heroicons-x-circle" class="h-5 w-5 text-red-600" />
             </div>
             <div>
               <p class="text-2xl font-bold text-slate-900">
@@ -87,10 +87,10 @@
       <div
         v-if="softWarnVisible"
         data-testid="offers-soft-warn"
-        class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6"
+        class="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-4"
       >
         <div class="flex items-start gap-3">
-          <div class="shrink-0 mt-0.5">
+          <div class="mt-0.5 shrink-0">
             <svg
               class="h-5 w-5 text-amber-600"
               fill="currentColor"
@@ -108,7 +108,7 @@
             <h3 class="text-sm font-semibold text-amber-900">
               You have {{ totalCount }} offers logged
             </h3>
-            <p class="text-sm text-amber-800 mt-1">
+            <p class="mt-1 text-sm text-amber-800">
               If some are from prior cycles, consider tagging or removing them
               so this list stays focused on what's active.
             </p>
@@ -119,19 +119,19 @@
       <!-- Add Offer Form -->
       <div
         v-if="showAddForm"
-        class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 mb-6"
+        class="mb-6 rounded-xl border border-slate-200 bg-white p-6 shadow-xs"
       >
-        <h2 class="text-lg font-semibold text-slate-900 mb-4">Log New Offer</h2>
+        <h2 class="mb-4 text-lg font-semibold text-slate-900">Log New Offer</h2>
         <form @submit.prevent="handleAddOffer" class="space-y-4">
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
             <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1"
+              <label class="mb-1 block text-sm font-medium text-slate-700"
                 >School *</label
               >
               <select
                 v-model="newOffer.school_id"
                 required
-                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+                class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Select School</option>
                 <option
@@ -144,13 +144,13 @@
               </select>
             </div>
             <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1"
+              <label class="mb-1 block text-sm font-medium text-slate-700"
                 >Offer Type *</label
               >
               <select
                 v-model="newOffer.offer_type"
                 required
-                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+                class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Select Type</option>
                 <option value="full_ride">Full Ride</option>
@@ -161,13 +161,13 @@
               </select>
             </div>
             <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1"
+              <label class="mb-1 block text-sm font-medium text-slate-700"
                 >Status *</label
               >
               <select
                 v-model="newOffer.status"
                 required
-                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+                class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
               >
                 <option value="pending">Pending</option>
                 <option value="accepted">Accepted</option>
@@ -176,7 +176,7 @@
               </select>
             </div>
             <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1"
+              <label class="mb-1 block text-sm font-medium text-slate-700"
                 >Scholarship %</label
               >
               <input
@@ -185,11 +185,11 @@
                 min="0"
                 max="100"
                 placeholder="0-100"
-                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+                class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1"
+              <label class="mb-1 block text-sm font-medium text-slate-700"
                 >Amount ($)</label
               >
               <input
@@ -197,54 +197,54 @@
                 type="number"
                 min="0"
                 placeholder="0"
-                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+                class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1"
+              <label class="mb-1 block text-sm font-medium text-slate-700"
                 >Offer Date *</label
               >
               <input
                 v-model="newOffer.offer_date"
                 type="date"
                 required
-                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+                class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1"
+              <label class="mb-1 block text-sm font-medium text-slate-700"
                 >Deadline</label
               >
               <input
                 v-model="newOffer.deadline_date"
                 type="date"
-                class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+                class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </div>
           <div>
-            <label class="block text-sm font-medium text-slate-700 mb-1"
+            <label class="mb-1 block text-sm font-medium text-slate-700"
               >Notes</label
             >
             <textarea
               v-model="newOffer.notes"
               rows="2"
               placeholder="Additional notes..."
-              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+              class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
             />
           </div>
           <div class="flex gap-3">
             <button
               type="submit"
               :disabled="loading || !newOffer.school_id || !newOffer.offer_type"
-              class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
+              class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:opacity-50"
             >
               {{ loading ? "Saving..." : "Save Offer" }}
             </button>
             <button
               type="button"
               @click="showAddForm = false"
-              class="px-4 py-2 text-sm font-medium text-slate-700 border border-slate-300 rounded-lg hover:bg-slate-50 transition"
+              class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
             >
               Cancel
             </button>
@@ -254,33 +254,33 @@
 
       <!-- Filter Bar -->
       <div
-        class="bg-white rounded-xl border border-slate-200 shadow-xs p-4 mb-6"
+        class="mb-6 rounded-xl border border-slate-200 bg-white p-4 shadow-xs"
       >
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
           <div>
-            <label class="block text-sm font-medium text-slate-700 mb-1"
+            <label class="mb-1 block text-sm font-medium text-slate-700"
               >Search</label
             >
             <div class="relative">
               <UIcon
                 name="i-heroicons-magnifying-glass"
-                class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400"
               />
               <input
                 v-model="filters.schoolSearch"
                 type="text"
                 placeholder="School name..."
-                class="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+                class="w-full rounded-lg border border-slate-300 py-2 pr-3 pl-9 text-sm focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </div>
           <div>
-            <label class="block text-sm font-medium text-slate-700 mb-1"
+            <label class="mb-1 block text-sm font-medium text-slate-700"
               >Status</label
             >
             <select
               v-model="filters.status"
-              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+              class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
             >
               <option value="">-- All --</option>
               <option value="pending">Pending</option>
@@ -290,12 +290,12 @@
             </select>
           </div>
           <div>
-            <label class="block text-sm font-medium text-slate-700 mb-1"
+            <label class="mb-1 block text-sm font-medium text-slate-700"
               >Offer Type</label
             >
             <select
               v-model="filters.offerType"
-              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+              class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
             >
               <option value="">-- All --</option>
               <option value="full_ride">Full Ride</option>
@@ -306,12 +306,12 @@
             </select>
           </div>
           <div>
-            <label class="block text-sm font-medium text-slate-700 mb-1"
+            <label class="mb-1 block text-sm font-medium text-slate-700"
               >Sort By</label
             >
             <select
               v-model="filters.sortBy"
-              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+              class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
             >
               <option value="offer_date">Offer Date</option>
               <option value="deadline_date">Deadline</option>
@@ -334,10 +334,10 @@
       <!-- Loading State -->
       <div
         v-if="loading && offers.length === 0"
-        class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
+        class="rounded-xl border border-slate-200 bg-white p-12 text-center shadow-xs"
       >
         <div
-          class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"
+          class="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"
         ></div>
         <p class="text-slate-600">Loading offers...</p>
       </div>
@@ -345,13 +345,13 @@
       <!-- Empty State -->
       <div
         v-else-if="offers.length === 0"
-        class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
+        class="rounded-xl border border-slate-200 bg-white p-12 text-center shadow-xs"
       >
         <UIcon
           name="i-heroicons-gift"
-          class="w-12 h-12 text-slate-300 mx-auto mb-4"
+          class="mx-auto mb-4 h-12 w-12 text-slate-300"
         />
-        <p class="text-slate-900 font-medium mb-2">No offers logged yet</p>
+        <p class="mb-2 font-medium text-slate-900">No offers logged yet</p>
         <p class="text-sm text-slate-500">
           Log scholarship offers as you receive them
         </p>
@@ -360,13 +360,13 @@
       <!-- No Results State -->
       <div
         v-else-if="filteredOffers.length === 0"
-        class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
+        class="rounded-xl border border-slate-200 bg-white p-12 text-center shadow-xs"
       >
         <UIcon
           name="i-heroicons-magnifying-glass"
-          class="w-12 h-12 text-slate-300 mx-auto mb-4"
+          class="mx-auto mb-4 h-12 w-12 text-slate-300"
         />
-        <p class="text-slate-900 font-medium mb-2">
+        <p class="mb-2 font-medium text-slate-900">
           No offers match your filters
         </p>
         <p class="text-sm text-slate-500">Try adjusting your search criteria</p>
@@ -377,7 +377,7 @@
         <div
           v-for="offer in filteredOffers"
           :key="offer.id"
-          class="bg-white rounded-xl border shadow-xs hover:shadow-md transition overflow-hidden"
+          class="overflow-hidden rounded-xl border bg-white shadow-xs transition hover:shadow-md"
           :class="[
             isOfferSelected(offer.id)
               ? 'border-blue-400 ring-2 ring-blue-100'
@@ -393,20 +393,20 @@
                   type="checkbox"
                   :checked="isOfferSelected(offer.id)"
                   @change="toggleOfferSelection(offer.id)"
-                  class="w-4 h-4 text-blue-600 border-slate-300 rounded-sm focus:ring-blue-500 cursor-pointer"
+                  class="h-4 w-4 cursor-pointer rounded-sm border-slate-300 text-blue-600 focus:ring-blue-500"
                 />
               </div>
 
               <!-- Main Content -->
-              <div class="flex-1 min-w-0">
+              <div class="min-w-0 flex-1">
                 <div class="flex items-start justify-between gap-4">
                   <div>
-                    <div class="flex items-center gap-2 flex-wrap mb-1">
+                    <div class="mb-1 flex flex-wrap items-center gap-2">
                       <h3 class="font-semibold text-slate-900">
                         {{ getSchoolName(offer.school_id) }}
                       </h3>
                       <span
-                        class="px-2 py-0.5 text-xs font-medium rounded-full"
+                        class="rounded-full px-2 py-0.5 text-xs font-medium"
                         :class="getStatusBadgeClass(offer.status)"
                       >
                         {{ getStatusLabel(offer.status) }}
@@ -416,16 +416,16 @@
                       {{ getOfferTypeLabel(offer.offer_type) }}
                     </p>
                   </div>
-                  <div class="flex items-center gap-2 shrink-0">
+                  <div class="flex shrink-0 items-center gap-2">
                     <NuxtLink
                       :to="`/offers/${offer.id}`"
-                      class="px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition"
+                      class="rounded-lg px-3 py-1.5 text-sm font-medium text-blue-600 transition hover:bg-blue-50"
                     >
                       View
                     </NuxtLink>
                     <button
                       @click="deleteOffer(offer.id)"
-                      class="px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition"
+                      class="rounded-lg px-3 py-1.5 text-sm font-medium text-red-600 transition hover:bg-red-50"
                     >
                       Delete
                     </button>
@@ -433,7 +433,7 @@
                 </div>
 
                 <!-- Details Grid -->
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+                <div class="mt-4 grid grid-cols-2 gap-4 md:grid-cols-4">
                   <div v-if="offer.scholarship_percentage">
                     <p class="text-xs text-slate-500">Scholarship</p>
                     <p class="text-lg font-bold text-slate-900">
@@ -472,7 +472,7 @@
                 <!-- Notes -->
                 <p
                   v-if="offer.notes"
-                  class="text-sm text-slate-600 mt-3 line-clamp-2"
+                  class="mt-3 line-clamp-2 text-sm text-slate-600"
                 >
                   {{ offer.notes }}
                 </p>

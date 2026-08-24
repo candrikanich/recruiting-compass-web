@@ -3,7 +3,7 @@
     <Transition name="fade">
       <div
         v-if="isOpen"
-        class="fixed inset-0 bg-black bg-opacity-50 z-40 flex items-center justify-center p-4"
+        class="bg-opacity-50 fixed inset-0 z-40 flex items-center justify-center bg-black p-4"
         @keydown.escape="$emit('cancel')"
       >
         <div
@@ -11,10 +11,10 @@
           role="dialog"
           aria-modal="true"
           aria-labelledby="duplicate-dialog-title"
-          class="bg-white rounded-lg shadow-xl max-w-md w-full p-6 z-50"
+          class="z-50 w-full max-w-md rounded-lg bg-white p-6 shadow-xl"
         >
           <!-- Header -->
-          <div class="flex items-center justify-between mb-4">
+          <div class="mb-4 flex items-center justify-between">
             <div class="flex items-center gap-2">
               <svg
                 class="h-5 w-5 text-amber-600"
@@ -58,7 +58,7 @@
           </div>
 
           <!-- Warning Message -->
-          <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
+          <div class="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-3">
             <p class="text-sm text-amber-800">
               A school already exists that matches your entry. Proceed only if
               you're certain this is a different program.
@@ -66,14 +66,14 @@
           </div>
 
           <!-- Duplicate School Info -->
-          <div class="space-y-3 mb-4">
+          <div class="mb-4 space-y-3">
             <!-- Match Type Badge -->
             <div class="flex items-center gap-2">
               <span class="text-xs font-semibold text-gray-600 uppercase"
                 >Match Type</span
               >
               <span
-                class="inline-block px-2 py-1 rounded-sm text-xs font-medium"
+                class="inline-block rounded-sm px-2 py-1 text-xs font-medium"
                 :class="getMatchBadgeClass(matchType)"
               >
                 {{ getMatchTypeLabel(matchType) }}
@@ -81,10 +81,10 @@
             </div>
 
             <!-- Existing School Card -->
-            <div class="border border-gray-200 rounded-lg p-3 bg-gray-50">
+            <div class="rounded-lg border border-gray-200 bg-gray-50 p-3">
               <div class="space-y-2">
                 <div>
-                  <p class="text-xs text-gray-600 uppercase font-semibold">
+                  <p class="text-xs font-semibold text-gray-600 uppercase">
                     Existing School
                   </p>
                   <p class="text-sm font-medium text-gray-900">
@@ -138,18 +138,18 @@
           </div>
 
           <!-- Action Buttons -->
-          <div class="flex gap-3 justify-end pt-4 border-t">
+          <div class="flex justify-end gap-3 border-t pt-4">
             <button
               type="button"
               @click="$emit('cancel')"
-              class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition"
+              class="rounded-lg border border-gray-300 px-4 py-2 font-medium text-gray-700 transition hover:bg-gray-50"
             >
               Cancel
             </button>
             <button
               type="button"
               @click="$emit('confirm')"
-              class="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 font-medium transition"
+              class="rounded-lg bg-amber-600 px-4 py-2 font-medium text-white transition hover:bg-amber-700"
             >
               Proceed Anyway
             </button>

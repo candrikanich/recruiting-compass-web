@@ -5,8 +5,8 @@
     <!-- Global Navigation -->
 
     <!-- Page Header -->
-    <div class="bg-white border-b border-slate-200">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4">
+    <div class="border-b border-slate-200 bg-white">
+      <div class="mx-auto max-w-7xl px-4 py-4 sm:px-6">
         <div>
           <h1 class="text-2xl font-semibold text-slate-900">
             Reports & Analytics
@@ -18,30 +18,30 @@
       </div>
     </div>
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6">
+      <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <!-- Main Content -->
-        <div class="lg:col-span-2 space-y-6">
+        <div class="space-y-6 lg:col-span-2">
           <!-- Generate Report Card -->
           <div
-            class="bg-white rounded-xl border border-slate-200 shadow-xs p-6"
+            class="rounded-xl border border-slate-200 bg-white p-6 shadow-xs"
           >
-            <h2 class="text-lg font-semibold text-slate-900 mb-4">
+            <h2 class="mb-4 text-lg font-semibold text-slate-900">
               Generate Report
             </h2>
 
             <div class="space-y-4">
               <!-- Quick Presets -->
               <div>
-                <label class="block text-sm font-medium text-slate-700 mb-2"
+                <label class="mb-2 block text-sm font-medium text-slate-700"
                   >Quick Presets</label
                 >
-                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                <div class="grid grid-cols-2 gap-2 sm:grid-cols-3">
                   <button
                     v-for="preset in datePresets"
                     :key="preset.label"
                     @click="applyPreset(preset)"
-                    class="px-3 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 hover:border-blue-300 transition"
+                    class="rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 transition hover:border-blue-300 hover:bg-slate-50"
                   >
                     {{ preset.label }}
                   </button>
@@ -51,23 +51,23 @@
               <!-- Date Range -->
               <div class="grid grid-cols-2 gap-4">
                 <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-1"
+                  <label class="mb-1 block text-sm font-medium text-slate-700"
                     >From</label
                   >
                   <input
                     v-model="fromDate"
                     type="date"
-                    class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-1"
+                  <label class="mb-1 block text-sm font-medium text-slate-700"
                     >To</label
                   >
                   <input
                     v-model="toDate"
                     type="date"
-                    class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
               </div>
@@ -76,20 +76,20 @@
               <button
                 @click="handleGenerateReport"
                 :disabled="isGenerating || !fromDate || !toDate"
-                class="w-full px-4 py-2.5 bg-linear-to-r from-blue-500 to-blue-600 text-white font-medium rounded-lg hover:from-blue-600 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center justify-center gap-2"
+                class="flex w-full items-center justify-center gap-2 rounded-lg bg-linear-to-r from-blue-500 to-blue-600 px-4 py-2.5 font-medium text-white transition hover:from-blue-600 hover:to-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <div
                   v-if="isGenerating"
-                  class="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"
+                  class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"
                 ></div>
-                <UIcon name="i-heroicons-chart-bar" v-else class="w-5 h-5" />
+                <UIcon name="i-heroicons-chart-bar" v-else class="h-5 w-5" />
                 {{ isGenerating ? "Generating..." : "Generate Report" }}
               </button>
 
               <!-- Error Message -->
               <div
                 v-if="error"
-                class="bg-red-50 border border-red-200 rounded-lg p-3"
+                class="rounded-lg border border-red-200 bg-red-50 p-3"
               >
                 <p class="text-sm text-red-700">{{ error }}</p>
               </div>
@@ -99,31 +99,31 @@
           <!-- Report Results -->
           <div
             v-if="currentReport"
-            class="bg-white rounded-xl border border-slate-200 shadow-xs p-6"
+            class="rounded-xl border border-slate-200 bg-white p-6 shadow-xs"
           >
-            <div class="flex items-center justify-between mb-6">
+            <div class="mb-6 flex items-center justify-between">
               <h2 class="text-lg font-semibold text-slate-900">
                 Report Summary
               </h2>
               <button
                 @click="() => exportToCSV()"
-                class="px-4 py-2 text-sm font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 transition flex items-center gap-2"
+                class="flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-emerald-700"
               >
-                <UIcon name="i-heroicons-arrow-down-tray" class="w-4 h-4" />
+                <UIcon name="i-heroicons-arrow-down-tray" class="h-4 w-4" />
                 Export CSV
               </button>
             </div>
 
             <!-- Stats Grid -->
-            <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
-              <div class="bg-slate-50 rounded-xl p-4">
+            <div class="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-3">
+              <div class="rounded-xl bg-slate-50 p-4">
                 <div class="flex items-center gap-3">
                   <div
-                    class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center"
+                    class="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100"
                   >
                     <UIcon
                       name="i-heroicons-building-library"
-                      class="w-5 h-5 text-blue-600"
+                      class="h-5 w-5 text-blue-600"
                     />
                   </div>
                   <div>
@@ -134,14 +134,14 @@
                   </div>
                 </div>
               </div>
-              <div class="bg-slate-50 rounded-xl p-4">
+              <div class="rounded-xl bg-slate-50 p-4">
                 <div class="flex items-center gap-3">
                   <div
-                    class="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center"
+                    class="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-100"
                   >
                     <UIcon
                       name="i-heroicons-user-group"
-                      class="w-5 h-5 text-purple-600"
+                      class="h-5 w-5 text-purple-600"
                     />
                   </div>
                   <div>
@@ -152,14 +152,14 @@
                   </div>
                 </div>
               </div>
-              <div class="bg-slate-50 rounded-xl p-4">
+              <div class="rounded-xl bg-slate-50 p-4">
                 <div class="flex items-center gap-3">
                   <div
-                    class="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center"
+                    class="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-100"
                   >
                     <UIcon
                       name="i-heroicons-chat-bubble-left-right"
-                      class="w-5 h-5 text-emerald-600"
+                      class="h-5 w-5 text-emerald-600"
                     />
                   </div>
                   <div>
@@ -170,14 +170,14 @@
                   </div>
                 </div>
               </div>
-              <div class="bg-slate-50 rounded-xl p-4">
+              <div class="rounded-xl bg-slate-50 p-4">
                 <div class="flex items-center gap-3">
                   <div
-                    class="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center"
+                    class="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-100"
                   >
                     <UIcon
                       name="i-heroicons-chart-bar"
-                      class="w-5 h-5 text-amber-600"
+                      class="h-5 w-5 text-amber-600"
                     />
                   </div>
                   <div>
@@ -193,16 +193,16 @@
             <!-- Schools by Status -->
             <div
               v-if="currentReport.schools?.byStatus"
-              class="pt-6 border-t border-slate-200"
+              class="border-t border-slate-200 pt-6"
             >
-              <h3 class="font-semibold text-slate-900 mb-3">
+              <h3 class="mb-3 font-semibold text-slate-900">
                 Schools by Status
               </h3>
               <div class="space-y-2">
                 <div
                   v-for="(count, status) in currentReport.schools.byStatus"
                   :key="status"
-                  class="flex items-center justify-between p-3 bg-slate-50 rounded-lg"
+                  class="flex items-center justify-between rounded-lg bg-slate-50 p-3"
                 >
                   <span class="text-sm text-slate-700 capitalize">{{
                     status
@@ -216,38 +216,38 @@
 
         <!-- Sidebar -->
         <div class="space-y-4">
-          <div class="bg-blue-50 border border-blue-200 rounded-xl p-5">
+          <div class="rounded-xl border border-blue-200 bg-blue-50 p-5">
             <h3
-              class="font-semibold text-blue-900 mb-3 flex items-center gap-2"
+              class="mb-3 flex items-center gap-2 font-semibold text-blue-900"
             >
-              <UIcon name="i-heroicons-document-text" class="w-5 h-5" />
+              <UIcon name="i-heroicons-document-text" class="h-5 w-5" />
               Report Includes
             </h3>
-            <ul class="text-sm text-blue-800 space-y-2">
+            <ul class="space-y-2 text-sm text-blue-800">
               <li class="flex items-center gap-2">
-                <UIcon name="i-heroicons-check" class="w-4 h-4 text-blue-600" />
+                <UIcon name="i-heroicons-check" class="h-4 w-4 text-blue-600" />
                 Schools by status and division
               </li>
               <li class="flex items-center gap-2">
-                <UIcon name="i-heroicons-check" class="w-4 h-4 text-blue-600" />
+                <UIcon name="i-heroicons-check" class="h-4 w-4 text-blue-600" />
                 Coach statistics
               </li>
               <li class="flex items-center gap-2">
-                <UIcon name="i-heroicons-check" class="w-4 h-4 text-blue-600" />
+                <UIcon name="i-heroicons-check" class="h-4 w-4 text-blue-600" />
                 Interaction metrics
               </li>
               <li class="flex items-center gap-2">
-                <UIcon name="i-heroicons-check" class="w-4 h-4 text-blue-600" />
+                <UIcon name="i-heroicons-check" class="h-4 w-4 text-blue-600" />
                 Performance summaries
               </li>
             </ul>
           </div>
 
           <div
-            class="bg-white rounded-xl border border-slate-200 shadow-xs p-5"
+            class="rounded-xl border border-slate-200 bg-white p-5 shadow-xs"
           >
-            <h3 class="font-semibold text-slate-900 mb-3">Export Options</h3>
-            <p class="text-sm text-slate-600 mb-4">
+            <h3 class="mb-3 font-semibold text-slate-900">Export Options</h3>
+            <p class="mb-4 text-sm text-slate-600">
               Generate reports and export data in various formats for sharing
               with coaches, advisors, or for your records.
             </p>
@@ -255,14 +255,14 @@
               <div class="flex items-center gap-2 text-sm text-slate-600">
                 <UIcon
                   name="i-heroicons-document-text"
-                  class="w-4 h-4 text-slate-400"
+                  class="h-4 w-4 text-slate-400"
                 />
                 <span>CSV for spreadsheets</span>
               </div>
               <div class="flex items-center gap-2 text-sm text-slate-600">
                 <UIcon
                   name="i-heroicons-document-text"
-                  class="w-4 h-4 text-slate-400"
+                  class="h-4 w-4 text-slate-400"
                 />
                 <span>PDF for printing</span>
               </div>

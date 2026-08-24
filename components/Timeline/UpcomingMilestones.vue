@@ -1,18 +1,18 @@
 <template>
-  <div class="bg-white rounded-2xl border border-slate-200 shadow-xs p-6">
+  <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
     <button
       type="button"
       data-testid="guidance-header"
       :aria-expanded="!collapsed"
-      class="w-full flex items-center gap-2 mb-4 text-left"
+      class="mb-4 flex w-full items-center gap-2 text-left"
       @click="$emit('toggle')"
     >
       <span class="text-2xl">📅</span>
-      <h3 class="text-lg font-bold text-slate-900 flex-1">
+      <h3 class="flex-1 text-lg font-bold text-slate-900">
         Upcoming Milestones
       </h3>
       <svg
-        class="w-5 h-5 text-slate-400 transition-transform duration-200"
+        class="h-5 w-5 text-slate-400 transition-transform duration-200"
         :class="{ 'rotate-180': !collapsed }"
         fill="none"
         viewBox="0 0 24 24"
@@ -28,14 +28,14 @@
     </button>
 
     <div v-if="!collapsed">
-      <p class="text-sm text-slate-600 mb-4">
+      <p class="mb-4 text-sm text-slate-600">
         Important dates to have on your calendar
       </p>
 
       <div class="space-y-2">
         <div
           v-if="milestones.length === 0"
-          class="text-sm text-slate-500 py-4 text-center"
+          class="py-4 text-center text-sm text-slate-500"
         >
           No upcoming milestones in the next 6 months.
         </div>
@@ -46,28 +46,28 @@
           :href="milestone.url"
           target="_blank"
           rel="noopener"
-          class="flex items-start gap-3 p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition group cursor-pointer border border-slate-200 hover:border-slate-300"
+          class="group flex cursor-pointer items-start gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3 transition hover:border-slate-300 hover:bg-slate-100"
         >
           <div class="shrink-0">
             <div class="text-2xl">{{ getMilestoneIcon(milestone.type) }}</div>
           </div>
-          <div class="flex-1 min-w-0">
+          <div class="min-w-0 flex-1">
             <div class="font-medium text-slate-900 group-hover:text-slate-950">
               {{ milestone.title }}
             </div>
-            <div class="text-xs text-slate-500 mt-0.5">
+            <div class="mt-0.5 text-xs text-slate-500">
               {{ formatDate(milestone.date) }}
             </div>
             <div
               v-if="milestone.description"
-              class="text-xs text-slate-600 mt-1"
+              class="mt-1 text-xs text-slate-600"
             >
               {{ milestone.description }}
             </div>
           </div>
           <div
             v-if="milestone.url"
-            class="shrink-0 text-slate-400 group-hover:text-slate-600 transition"
+            class="shrink-0 text-slate-400 transition group-hover:text-slate-600"
           >
             ↗
           </div>

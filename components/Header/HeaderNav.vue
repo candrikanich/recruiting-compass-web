@@ -7,14 +7,14 @@
       :aria-current="isActive(item.to) ? 'page' : undefined"
       :data-testid="`nav-${item.to.replace('/', '')}`"
       :class="[
-        'flex items-center gap-2 px-3 lg:px-4 py-2 rounded-lg text-sm font-medium transition-colors',
-        'focus:ring-2 focus:ring-offset-2 focus:ring-brand-blue-600',
+        'flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors lg:px-4',
+        'focus:ring-2 focus:ring-brand-blue-600 focus:ring-offset-2',
         isActive(item.to)
           ? 'bg-brand-blue-100 text-brand-blue-700'
-          : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100',
+          : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900',
       ]"
     >
-      <UIcon :name="item.icon" class="w-5 h-5 shrink-0" aria-hidden="true" />
+      <UIcon :name="item.icon" class="h-5 w-5 shrink-0" aria-hidden="true" />
       <span>{{ item.label }}</span>
     </NuxtLink>
     <HeaderNavMore />

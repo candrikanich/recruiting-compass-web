@@ -1,11 +1,11 @@
 <template>
-  <section class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
-    <h2 class="text-lg font-semibold text-slate-900 mb-4">Password</h2>
+  <section class="rounded-xl border border-slate-200 bg-white p-6 shadow-xs">
+    <h2 class="mb-4 text-lg font-semibold text-slate-900">Password</h2>
 
     <form class="space-y-4" @submit.prevent="handleSubmit">
       <div>
         <label
-          class="block text-sm font-medium text-slate-700 mb-1"
+          class="mb-1 block text-sm font-medium text-slate-700"
           for="current-password"
         >
           Current Password
@@ -17,11 +17,11 @@
           autocomplete="current-password"
           :disabled="loading"
         />
-        <p v-if="error" class="text-sm text-red-600 mt-1">{{ error }}</p>
+        <p v-if="error" class="mt-1 text-sm text-red-600">{{ error }}</p>
       </div>
       <div>
         <label
-          class="block text-sm font-medium text-slate-700 mb-1"
+          class="mb-1 block text-sm font-medium text-slate-700"
           for="new-password"
         >
           New Password
@@ -36,7 +36,7 @@
       </div>
       <div>
         <label
-          class="block text-sm font-medium text-slate-700 mb-1"
+          class="mb-1 block text-sm font-medium text-slate-700"
           for="confirm-password"
         >
           Confirm New Password
@@ -48,7 +48,7 @@
           autocomplete="new-password"
           :disabled="loading"
         />
-        <p v-if="mismatchError" class="text-sm text-red-600 mt-1">
+        <p v-if="mismatchError" class="mt-1 text-sm text-red-600">
           Passwords do not match.
         </p>
       </div>

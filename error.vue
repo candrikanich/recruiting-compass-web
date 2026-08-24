@@ -1,17 +1,17 @@
 <template>
-  <div class="min-h-screen relative overflow-hidden bg-emerald-600">
+  <div class="relative min-h-screen overflow-hidden bg-emerald-600">
     <AuthMultiSportFieldBackground />
 
     <main
       role="main"
-      class="relative z-10 min-h-screen flex items-center justify-center px-6 py-12"
+      class="relative z-10 flex min-h-screen items-center justify-center px-6 py-12"
     >
       <div class="w-full max-w-md text-center">
         <!-- Logo -->
         <div class="mb-8 flex justify-center">
           <NuxtLink
             to="/"
-            class="inline-block focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-emerald-600 rounded-sm"
+            class="inline-block rounded-sm focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-emerald-600"
             aria-label="The Recruiting Compass — home"
           >
             <img
@@ -24,47 +24,47 @@
 
         <!-- Card -->
         <div
-          class="bg-white/95 backdrop-blur-xs rounded-2xl shadow-2xl p-8 border border-white/20"
+          class="rounded-2xl border border-white/20 bg-white/95 p-8 shadow-2xl backdrop-blur-xs"
         >
           <!-- Icon -->
           <div
-            class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5"
+            class="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full"
             :class="iconBg"
             aria-hidden="true"
           >
-            <UIcon :name="icon" class="w-8 h-8" :class="iconColor" />
+            <UIcon :name="icon" class="h-8 w-8" :class="iconColor" />
           </div>
 
           <!-- Headline -->
-          <h1 class="text-2xl font-bold text-slate-900 mb-3 leading-snug">
+          <h1 class="mb-3 text-2xl leading-snug font-bold text-slate-900">
             {{ headline }}
           </h1>
 
           <!-- Body -->
-          <p class="text-slate-600 mb-6 leading-relaxed">
+          <p class="mb-6 leading-relaxed text-slate-600">
             {{ body }}
           </p>
 
           <!-- Status code (subtle) -->
           <p
             v-if="error.statusCode"
-            class="text-xs text-slate-400 font-mono mb-6"
+            class="mb-6 font-mono text-xs text-slate-400"
           >
             Error {{ error.statusCode }}
           </p>
 
           <!-- Actions -->
-          <div class="flex flex-col sm:flex-row gap-3 justify-center">
+          <div class="flex flex-col justify-center gap-3 sm:flex-row">
             <button
               v-if="primaryAction"
-              class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+              class="rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white transition-colors hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               @click="handlePrimary"
             >
               {{ primaryAction.label }}
             </button>
             <button
               v-if="secondaryAction"
-              class="px-6 py-3 bg-slate-100 text-slate-700 font-semibold rounded-lg hover:bg-slate-200 focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 transition-colors"
+              class="rounded-lg bg-slate-100 px-6 py-3 font-semibold text-slate-700 transition-colors hover:bg-slate-200 focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
               @click="handleSecondary"
             >
               {{ secondaryAction.label }}
@@ -73,11 +73,11 @@
         </div>
 
         <!-- Support link -->
-        <p class="mt-6 text-white/70 text-sm">
+        <p class="mt-6 text-sm text-white/70">
           Need help?
           <a
             href="mailto:support@therecruitingcompass.com"
-            class="text-white underline hover:text-white/80 focus:ring-2 focus:ring-white rounded-sm"
+            class="rounded-sm text-white underline hover:text-white/80 focus:ring-2 focus:ring-white"
           >
             Contact support
           </a>

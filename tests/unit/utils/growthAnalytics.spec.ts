@@ -1,5 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { dailyActiveUsers, windowActiveCount, funnelWithDropoff, adoption } from "~/utils/growthAnalytics";
+import {
+  dailyActiveUsers,
+  windowActiveCount,
+  funnelWithDropoff,
+  adoption,
+} from "~/utils/growthAnalytics";
 
 const rows = [
   { userId: "a", ts: "2026-08-16T10:00:00Z" },
@@ -10,7 +15,11 @@ const rows = [
 
 describe("growthAnalytics", () => {
   it("dailyActiveUsers distinct-counts users per day, zero-filled", () => {
-    const r = dailyActiveUsers(rows, new Date("2026-08-15T00:00:00Z"), new Date("2026-08-17T00:00:00Z"));
+    const r = dailyActiveUsers(
+      rows,
+      new Date("2026-08-15T00:00:00Z"),
+      new Date("2026-08-17T00:00:00Z"),
+    );
     expect(r).toEqual([
       { day: "2026-08-15", count: 0 },
       { day: "2026-08-16", count: 2 }, // a + b
@@ -18,8 +27,20 @@ describe("growthAnalytics", () => {
     ]);
   });
   it("windowActiveCount distinct users since a cutoff", () => {
-    expect(windowActiveCount(rows, new Date("2026-08-17T00:00:00Z"), new Date("2026-08-17T23:59:59Z"))).toBe(1);
-    expect(windowActiveCount(rows, new Date("2026-08-16T00:00:00Z"), new Date("2026-08-17T23:59:59Z"))).toBe(2);
+    expect(
+      windowActiveCount(
+        rows,
+        new Date("2026-08-17T00:00:00Z"),
+        new Date("2026-08-17T23:59:59Z"),
+      ),
+    ).toBe(1);
+    expect(
+      windowActiveCount(
+        rows,
+        new Date("2026-08-16T00:00:00Z"),
+        new Date("2026-08-17T23:59:59Z"),
+      ),
+    ).toBe(2);
   });
   it("funnelWithDropoff computes % vs previous stage", () => {
     const f = funnelWithDropoff([

@@ -1,12 +1,12 @@
 <template>
-  <div class="rounded-lg shadow-sm p-6 bg-white">
+  <div class="rounded-lg bg-white p-6 shadow-sm">
     <!-- Header -->
     <div
-      class="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 gap-4"
+      class="mb-6 flex flex-col items-start justify-between gap-4 md:flex-row md:items-center"
     >
       <div>
         <h2 class="text-2xl font-bold text-slate-900">{{ title }}</h2>
-        <p class="text-sm mt-1 text-slate-600">
+        <p class="mt-1 text-sm text-slate-600">
           {{ metrics.length }} metrics recorded
         </p>
       </div>
@@ -16,13 +16,13 @@
         <label
           v-for="type in metricTypes"
           :key="type"
-          class="flex items-center cursor-pointer"
+          class="flex cursor-pointer items-center"
         >
           <input
             type="checkbox"
             :checked="visibleMetrics.includes(type)"
             @change="toggleMetric(type)"
-            class="w-4 h-4 rounded-sm accent-blue-600"
+            class="h-4 w-4 rounded-sm accent-blue-600"
           />
           <span class="ml-2 text-sm font-medium text-slate-600">{{
             getMetricLabel(type)
@@ -32,7 +32,7 @@
     </div>
 
     <!-- Statistics Cards -->
-    <div v-if="hasData" class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+    <div v-if="hasData" class="mb-6 grid grid-cols-2 gap-4 md:grid-cols-5">
       <StatCard label="Average" :value="stats.average" :unit="getUnit()" />
       <StatCard label="Maximum" :value="stats.maximum" :unit="getUnit()" />
       <StatCard label="Minimum" :value="stats.minimum" :unit="getUnit()" />
@@ -46,7 +46,7 @@
     </div>
 
     <!-- Empty State -->
-    <div v-else class="text-center py-12">
+    <div v-else class="py-12 text-center">
       <p class="text-slate-600">
         No metrics recorded for the selected criteria
       </p>
@@ -55,12 +55,12 @@
     <!-- Period Comparison (if enabled) -->
     <div
       v-if="hasData && showComparison"
-      class="mt-6 pt-6 border-t border-slate-300"
+      class="mt-6 border-t border-slate-300 pt-6"
     >
-      <h3 class="text-lg font-semibold mb-4 text-slate-900">
+      <h3 class="mb-4 text-lg font-semibold text-slate-900">
         Period Comparison (30 days)
       </h3>
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
         <ComparisonCard
           label="Current Period"
           :value="comparison.currentPeriod"

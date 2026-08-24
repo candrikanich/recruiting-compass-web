@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white rounded-lg shadow-sm p-6 space-y-4">
+  <div class="space-y-4 rounded-lg bg-white p-6 shadow-sm">
     <div class="space-y-2">
       <LoadingSkeleton className="h-6 w-2/3" />
       <LoadingSkeleton className="h-4 w-1/2" />

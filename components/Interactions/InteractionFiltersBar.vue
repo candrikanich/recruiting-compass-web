@@ -1,11 +1,11 @@
 <template>
-  <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 mb-6">
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+  <div class="mb-6 rounded-xl border border-slate-200 bg-white p-6 shadow-xs">
+    <div class="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
       <!-- Type Filter -->
       <div>
         <label
           for="type-filter"
-          class="block text-sm font-medium text-slate-700 mb-2"
+          class="mb-2 block text-sm font-medium text-slate-700"
         >
           Type
         </label>
@@ -18,7 +18,7 @@
               ($event.target as HTMLSelectElement).value,
             )
           "
-          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
         >
           <option value="">All Types</option>
           <option value="email">Email</option>
@@ -48,7 +48,7 @@
       <div>
         <label
           for="date-filter"
-          class="block text-sm font-medium text-slate-700 mb-2"
+          class="mb-2 block text-sm font-medium text-slate-700"
         >
           Date Range
         </label>
@@ -61,7 +61,7 @@
               ($event.target as HTMLSelectElement).value,
             )
           "
-          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
         >
           <option value="">All Time</option>
           <option value="7">Last 7 Days</option>
@@ -75,7 +75,7 @@
       <div>
         <label
           for="sentiment-filter"
-          class="block text-sm font-medium text-slate-700 mb-2"
+          class="mb-2 block text-sm font-medium text-slate-700"
         >
           Sentiment
         </label>
@@ -88,7 +88,7 @@
               ($event.target as HTMLSelectElement).value,
             )
           "
-          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
         >
           <option value="">All Sentiments</option>
           <option value="very_positive">Very Positive</option>
@@ -103,7 +103,7 @@
     <div>
       <button
         @click="$emit('clear')"
-        class="px-3 py-1 text-sm text-slate-600 hover:text-slate-900 font-medium"
+        class="px-3 py-1 text-sm font-medium text-slate-600 hover:text-slate-900"
       >
         Clear Filters
       </button>

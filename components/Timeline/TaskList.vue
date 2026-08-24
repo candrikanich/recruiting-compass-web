@@ -2,7 +2,7 @@
   <!-- Empty state -->
   <div
     v-if="tasks.length === 0 && showEmpty"
-    class="text-center py-8 text-slate-500"
+    class="py-8 text-center text-slate-500"
   >
     <p class="text-sm">No tasks available for this phase</p>
   </div>

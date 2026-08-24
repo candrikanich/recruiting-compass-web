@@ -7,7 +7,7 @@
       description="Comprehensive recruiting metrics and performance insights"
     />
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+    <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6">
       <!-- Date Range Controls -->
       <DateRangeToolbar
         :date-range="dateRange"
@@ -15,7 +15,7 @@
       />
 
       <!-- Summary Stats Row -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div class="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
           label="Total Schools"
           :value="stats.totalSchools"
@@ -47,7 +47,7 @@
       </div>
 
       <!-- Charts Grid -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+      <div class="mb-8 grid grid-cols-1 gap-8 lg:grid-cols-2">
         <!-- Interaction Type Distribution (Pie Chart) -->
         <div>
           <PieChart
@@ -103,30 +103,30 @@
       </div>
 
       <!-- Export Actions -->
-      <div class="bg-white rounded-lg shadow-sm p-6">
+      <div class="rounded-lg bg-white p-6 shadow-sm">
         <div
-          class="flex flex-col md:flex-row items-center justify-between gap-4"
+          class="flex flex-col items-center justify-between gap-4 md:flex-row"
         >
           <h3 class="text-lg font-semibold text-gray-900">Export Analytics</h3>
           <div class="flex gap-3">
             <button
               data-testid="export-csv-button"
               @click="handleExport('csv')"
-              class="px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition"
+              class="rounded-lg border border-gray-300 px-4 py-2 font-medium text-gray-700 transition hover:bg-gray-50"
             >
               Export as CSV
             </button>
             <button
               data-testid="export-excel-button"
               @click="handleExport('excel')"
-              class="px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition"
+              class="rounded-lg border border-gray-300 px-4 py-2 font-medium text-gray-700 transition hover:bg-gray-50"
             >
               Export as Excel
             </button>
             <button
               data-testid="export-pdf-button"
               @click="handleExport('pdf')"
-              class="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition"
+              class="rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition hover:bg-blue-700"
             >
               Export as PDF
             </button>

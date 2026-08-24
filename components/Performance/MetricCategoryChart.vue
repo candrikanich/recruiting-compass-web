@@ -1,7 +1,7 @@
 <template>
-  <div class="rounded-lg shadow-sm p-6 bg-white">
+  <div class="rounded-lg bg-white p-6 shadow-sm">
     <div
-      class="flex flex-col md:flex-row items-start md:items-center justify-between mb-4 gap-4"
+      class="mb-4 flex flex-col items-start justify-between gap-4 md:flex-row md:items-center"
     >
       <h2 class="text-2xl font-bold text-slate-900">{{ title }}</h2>
 
@@ -10,13 +10,13 @@
         <label
           v-for="type in metricTypes"
           :key="type"
-          class="flex items-center cursor-pointer"
+          class="flex cursor-pointer items-center"
         >
           <input
             type="checkbox"
             :checked="visibleMetrics.includes(type)"
             @change="toggleMetric(type)"
-            class="w-4 h-4 rounded-sm accent-blue-600"
+            class="h-4 w-4 rounded-sm accent-blue-600"
           />
           <span class="ml-2 text-sm font-medium text-slate-600">{{
             getMetricLabel(type)
@@ -31,7 +31,7 @@
     </div>
 
     <!-- Empty State -->
-    <div v-else class="text-center py-12">
+    <div v-else class="py-12 text-center">
       <p class="text-slate-600">
         No metrics recorded in this category for the selected date range
       </p>

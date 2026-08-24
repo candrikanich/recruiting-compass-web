@@ -12,12 +12,12 @@
     </h2>
 
     <!-- Required field indicator -->
-    <p class="text-sm text-slate-600 mb-6">
+    <p class="mb-6 text-sm text-slate-600">
       <span class="text-red-600">*</span> Indicates a required field
     </p>
 
     <!-- Name Fields -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
       <LoginInputField
         id="firstName"
         label="First Name"
@@ -50,15 +50,15 @@
     <div v-if="userType === 'player'">
       <label
         for="dateOfBirth"
-        class="block text-sm font-medium text-slate-700 mb-2"
+        class="mb-2 block text-sm font-medium text-slate-700"
       >
         Player Date of Birth
-        <span class="text-red-600 ml-1" aria-label="required">*</span>
+        <span class="ml-1 text-red-600" aria-label="required">*</span>
       </label>
       <div class="relative">
         <UIcon
           name="i-heroicons-calendar"
-          class="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+          class="pointer-events-none absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 text-slate-400"
           aria-hidden="true"
         />
         <input
@@ -73,7 +73,7 @@
           "
           :max="maxDateOfBirth"
           :class="[
-            'w-full pl-10 pr-4 py-3 border rounded-lg transition-all focus:ring-2 focus:ring-offset-2 focus:outline-2 focus:border-transparent',
+            'w-full rounded-lg border py-3 pr-4 pl-10 transition-all focus:border-transparent focus:ring-2 focus:ring-offset-2 focus:outline-2',
             fieldErrors.dateOfBirth
               ? 'border-red-600 focus:ring-red-500 focus:outline-red-600'
               : 'border-slate-300 focus:ring-blue-500 focus:outline-blue-600',
@@ -87,7 +87,7 @@
           "
         />
       </div>
-      <p id="dateOfBirth-hint" class="text-xs text-slate-500 mt-1">
+      <p id="dateOfBirth-hint" class="mt-1 text-xs text-slate-500">
         Recruiting Compass is for ages 13 and up. By entering a date of birth,
         you confirm you are 13 or older.
       </p>
@@ -129,7 +129,7 @@
     />
 
     <!-- Password Fields -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
       <LoginInputField
         id="password"
         label="Password"
@@ -148,15 +148,15 @@
       <div>
         <label
           for="confirmPassword"
-          class="block text-sm font-medium text-slate-700 mb-2"
+          class="mb-2 block text-sm font-medium text-slate-700"
         >
           Confirm Password
-          <span class="text-red-600 ml-1" aria-label="required">*</span>
+          <span class="ml-1 text-red-600" aria-label="required">*</span>
         </label>
         <div class="relative">
           <UIcon
             name="i-heroicons-lock-closed"
-            class="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+            class="pointer-events-none absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 text-slate-400"
             aria-hidden="true"
           />
           <input
@@ -168,7 +168,7 @@
             autocomplete="new-password"
             :aria-invalid="fieldErrors.confirmPassword ? 'true' : 'false'"
             :class="[
-              'w-full pl-10 pr-4 py-3 border rounded-lg transition-all focus:ring-2 focus:ring-offset-2 focus:outline-2 focus:border-transparent',
+              'w-full rounded-lg border py-3 pr-4 pl-10 transition-all focus:border-transparent focus:ring-2 focus:ring-offset-2 focus:outline-2',
               fieldErrors.confirmPassword
                 ? 'border-red-600 focus:ring-red-500 focus:outline-red-600'
                 : 'border-slate-300 focus:ring-blue-500 focus:outline-blue-600',
@@ -207,7 +207,7 @@
     </div>
 
     <!-- Terms and Conditions -->
-    <div class="bg-slate-50 rounded-lg p-4 border border-slate-200">
+    <div class="rounded-lg border border-slate-200 bg-slate-50 p-4">
       <div class="flex items-start gap-3">
         <input
           id="agreeToTerms"
@@ -228,18 +228,18 @@
             )
           "
         />
-        <label for="agreeToTerms" class="text-slate-700 text-sm flex-1">
+        <label for="agreeToTerms" class="flex-1 text-sm text-slate-700">
           I agree to the
           <NuxtLink
             to="/legal/terms"
-            class="text-blue-600 hover:text-blue-700 underline rounded-sm px-1 focus:outline-2 focus:outline-offset-2 focus:outline-blue-600"
+            class="rounded-sm px-1 text-blue-600 underline hover:text-blue-700 focus:outline-2 focus:outline-offset-2 focus:outline-blue-600"
           >
             Terms and Conditions
           </NuxtLink>
           and
           <NuxtLink
             to="/legal/privacy"
-            class="text-blue-600 hover:text-blue-700 underline rounded-sm px-1 focus:outline-2 focus:outline-offset-2 focus:outline-blue-600"
+            class="rounded-sm px-1 text-blue-600 underline hover:text-blue-700 focus:outline-2 focus:outline-offset-2 focus:outline-blue-600"
           >
             Privacy Policy
           </NuxtLink>
@@ -259,7 +259,7 @@
       :disabled="!isFormValid || disabled"
       :aria-busy="loading"
       :aria-label="loading ? 'Creating account, please wait' : 'Create Account'"
-      class="w-full px-6 py-3 bg-linear-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-lg hover:from-blue-600 hover:to-blue-700 transition shadow-lg disabled:from-slate-400 disabled:to-slate-400 disabled:cursor-not-allowed focus:ring-2 focus:ring-offset-2 focus:ring-blue-600"
+      class="w-full rounded-lg bg-linear-to-r from-blue-500 to-blue-600 px-6 py-3 font-semibold text-white shadow-lg transition hover:from-blue-600 hover:to-blue-700 focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 disabled:cursor-not-allowed disabled:from-slate-400 disabled:to-slate-400"
     >
       {{ loading ? "Creating account..." : "Create Account" }}
     </button>
@@ -277,10 +277,10 @@
 
   <!-- Sign In Link -->
   <div class="text-center">
-    <p class="text-slate-600 text-sm">
+    <p class="text-sm text-slate-600">
       <NuxtLink
         to="/login"
-        class="text-blue-600 hover:text-blue-700 font-medium underline hover:no-underline focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 rounded-sm px-1 transition-colors"
+        class="rounded-sm px-1 font-medium text-blue-600 underline transition-colors hover:text-blue-700 hover:no-underline focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
       >
         Sign in instead
       </NuxtLink>
@@ -353,11 +353,11 @@ const isFormValid = computed(() => {
 @reference "tailwindcss";
 
 .sr-only {
-  @apply absolute w-1 h-1 p-0 -m-1 overflow-hidden whitespace-nowrap border-0;
+  @apply absolute -m-1 h-1 w-1 overflow-hidden border-0 p-0 whitespace-nowrap;
 }
 
 .sr-only:focus,
 .focus\:not-sr-only:focus {
-  @apply relative w-auto h-auto p-2 m-0 overflow-visible whitespace-normal;
+  @apply relative m-0 h-auto w-auto overflow-visible p-2 whitespace-normal;
 }
 </style>

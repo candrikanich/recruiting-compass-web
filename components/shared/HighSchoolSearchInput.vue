@@ -91,14 +91,14 @@ function formatSchoolLocation(school: NcesSchool): string {
       <input
         v-model="inputValue"
         type="text"
-        class="flex-1 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition disabled:opacity-50"
+        class="flex-1 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 transition focus:border-transparent focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
         :disabled="disabled"
         placeholder="Enter school name manually"
         @blur="onManualBlur"
       />
       <button
         type="button"
-        class="px-3 py-2 text-sm text-slate-500 hover:text-slate-700 border border-slate-200 rounded-xl"
+        class="rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-500 hover:text-slate-700"
         @click="disableManualMode"
       >
         ✕
@@ -109,7 +109,7 @@ function formatSchoolLocation(school: NcesSchool): string {
       <input
         :value="inputValue"
         type="text"
-        class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition disabled:opacity-50"
+        class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 transition focus:border-transparent focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
         :disabled="disabled"
         :placeholder="placeholder"
         @input="onInput"
@@ -122,19 +122,19 @@ function formatSchoolLocation(school: NcesSchool): string {
           showDropdown &&
           (results.length > 0 || (!loading && inputValue.length >= 2))
         "
-        class="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden"
+        class="absolute z-50 mt-1 w-full overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg"
       >
         <button
           v-for="school in results"
           :key="school.nces_id"
           type="button"
-          class="w-full px-4 py-3 text-left hover:bg-slate-50 border-b border-slate-100 last:border-0 flex justify-between items-center"
+          class="flex w-full items-center justify-between border-b border-slate-100 px-4 py-3 text-left last:border-0 hover:bg-slate-50"
           @mousedown.prevent="onSelect(school)"
         >
           <span class="text-sm font-medium text-slate-800">{{
             school.name
           }}</span>
-          <span class="text-xs text-slate-400 ml-2">{{
+          <span class="ml-2 text-xs text-slate-400">{{
             formatSchoolLocation(school)
           }}</span>
         </button>
@@ -143,10 +143,10 @@ function formatSchoolLocation(school: NcesSchool): string {
           v-if="!loading && results.length === 0 && inputValue.length >= 2"
           class="px-4 py-3"
         >
-          <p class="text-sm text-slate-500 mb-2">No schools found.</p>
+          <p class="mb-2 text-sm text-slate-500">No schools found.</p>
           <button
             type="button"
-            class="text-sm text-blue-600 hover:text-blue-800 font-medium"
+            class="text-sm font-medium text-blue-600 hover:text-blue-800"
             @mousedown.prevent="enableManualMode"
           >
             Can't find it? Enter manually →
@@ -154,7 +154,7 @@ function formatSchoolLocation(school: NcesSchool): string {
         </div>
       </div>
 
-      <p v-if="loading" class="text-xs text-slate-400 mt-1">Searching...</p>
+      <p v-if="loading" class="mt-1 text-xs text-slate-400">Searching...</p>
     </div>
   </div>
 </template>

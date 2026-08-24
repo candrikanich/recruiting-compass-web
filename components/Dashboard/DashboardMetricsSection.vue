@@ -1,6 +1,6 @@
 <template>
   <!-- Row 2: Performance Metrics (2 cols) + Upcoming Events (1 col) -->
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
     <PerformanceMetricsWidget
       :metrics="metrics"
       :top-metrics="topMetrics"

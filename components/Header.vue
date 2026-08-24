@@ -1,11 +1,11 @@
 <template>
-  <header class="bg-white border-b border-slate-200 sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6">
-      <div class="flex items-center justify-between h-16">
+  <header class="sticky top-0 z-50 border-b border-slate-200 bg-white">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6">
+      <div class="flex h-16 items-center justify-between">
         <!-- Logo -->
         <NuxtLink
           to="/dashboard"
-          class="flex items-center hover:opacity-80 transition-opacity"
+          class="flex items-center transition-opacity hover:opacity-80"
         >
           <img
             src="@/assets/logos/recruiting-compass-horizontal.svg"
@@ -23,12 +23,12 @@
             to="/search"
             aria-label="Search coaches and schools"
             title="Search"
-            class="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition focus:ring-2 focus:ring-brand-blue-500 focus:ring-offset-2"
+            class="rounded-lg p-2 text-slate-600 transition hover:bg-slate-50 hover:text-slate-900 focus:ring-2 focus:ring-brand-blue-500 focus:ring-offset-2"
             data-testid="nav-search-button"
           >
             <UIcon
               name="i-heroicons-magnifying-glass"
-              class="w-5 h-5"
+              class="h-5 w-5"
               aria-hidden="true"
             />
           </NuxtLink>
@@ -42,18 +42,18 @@
             :aria-expanded="isMobileMenuOpen"
             aria-haspopup="menu"
             aria-controls="mobile-nav-menu"
-            class="md:hidden p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition focus:ring-2 focus:ring-brand-blue-500 focus:ring-offset-2"
+            class="rounded-lg p-2 text-slate-600 transition hover:bg-slate-50 hover:text-slate-900 focus:ring-2 focus:ring-brand-blue-500 focus:ring-offset-2 md:hidden"
           >
             <UIcon
               name="i-heroicons-bars-3"
               v-if="!isMobileMenuOpen"
-              class="w-6 h-6"
+              class="h-6 w-6"
               aria-hidden="true"
             />
             <UIcon
               name="i-heroicons-x-mark"
               v-else
-              class="w-6 h-6"
+              class="h-6 w-6"
               aria-hidden="true"
             />
           </button>
@@ -72,17 +72,17 @@
         <div
           v-if="isMobileMenuOpen"
           id="mobile-nav-menu"
-          class="md:hidden py-4 border-t border-slate-200"
+          class="border-t border-slate-200 py-4 md:hidden"
         >
           <!-- Navigation -->
-          <nav class="space-y-1 mb-4">
+          <nav class="mb-4 space-y-1">
             <NuxtLink
               v-for="item in navItems"
               :key="item.to"
               :to="item.to"
               :aria-current="isActive(item.to) ? 'page' : undefined"
               :data-testid="`mobile-nav-${item.to.replace('/', '')}`"
-              class="flex items-center gap-3 px-3 py-3 text-sm font-medium rounded-lg transition focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              class="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               :class="
                 isActive(item.to)
                   ? 'bg-blue-50 text-blue-600'
@@ -90,29 +90,29 @@
               "
               @click="closeMobileMenu"
             >
-              <UIcon :name="item.icon" class="w-5 h-5" aria-hidden="true" />
+              <UIcon :name="item.icon" class="h-5 w-5" aria-hidden="true" />
               <span>{{ item.label }}</span>
             </NuxtLink>
           </nav>
 
           <!-- Divider -->
-          <div class="border-t border-slate-200 my-3" />
+          <div class="my-3 border-t border-slate-200" />
 
           <!-- User Info -->
-          <div class="px-3 py-2 mb-2">
+          <div class="mb-2 px-3 py-2">
             <div class="flex items-center gap-3">
               <div
-                class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center"
+                class="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100"
               >
                 <span class="font-semibold text-blue-600">{{
                   userInitials
                 }}</span>
               </div>
-              <div class="flex-1 min-w-0">
-                <p class="font-medium text-slate-900 truncate">
+              <div class="min-w-0 flex-1">
+                <p class="truncate font-medium text-slate-900">
                   {{ user?.full_name || "User" }}
                 </p>
-                <p class="text-sm text-slate-500 truncate">{{ user?.email }}</p>
+                <p class="truncate text-sm text-slate-500">{{ user?.email }}</p>
               </div>
             </div>
           </div>
@@ -124,24 +124,24 @@
               :key="item.to"
               :to="item.to"
               :aria-current="isActive(item.to) ? 'page' : undefined"
-              class="flex items-center gap-3 px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 rounded-lg transition focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-slate-600 transition hover:bg-slate-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               @click="closeMobileMenu"
             >
-              <UIcon :name="item.icon" class="w-5 h-5" aria-hidden="true" />
+              <UIcon :name="item.icon" class="h-5 w-5" aria-hidden="true" />
               <span>{{ item.label }}</span>
             </NuxtLink>
           </nav>
 
           <!-- Logout -->
-          <div class="mt-3 pt-3 border-t border-slate-200">
+          <div class="mt-3 border-t border-slate-200 pt-3">
             <button
               data-testid="mobile-logout-button"
               @click="handleLogout"
-              class="flex items-center gap-3 w-full px-3 py-3 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+              class="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-red-600 transition hover:bg-red-50 focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
             >
               <UIcon
                 name="i-heroicons-arrow-right-on-rectangle"
-                class="w-5 h-5"
+                class="h-5 w-5"
                 aria-hidden="true"
               />
               <span>Log Out</span>

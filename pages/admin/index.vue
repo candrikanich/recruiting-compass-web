@@ -1,17 +1,17 @@
 <template>
   <div class="space-y-6">
-    <div class="bg-white rounded-lg shadow-md p-6">
-      <h1 class="text-2xl font-bold text-slate-900 mb-6">Overview</h1>
-      <div v-if="statsLoading" class="text-center py-12 text-slate-600">
+    <div class="rounded-lg bg-white p-6 shadow-md">
+      <h1 class="mb-6 text-2xl font-bold text-slate-900">Overview</h1>
+      <div v-if="statsLoading" class="py-12 text-center text-slate-600">
         Loading stats...
       </div>
       <div
         v-else-if="statsError"
-        class="bg-red-50 border border-red-200 rounded-lg p-4"
+        class="rounded-lg border border-red-200 bg-red-50 p-4"
       >
         <p class="text-red-800">{{ statsError }}</p>
       </div>
-      <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div v-else class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <div
           v-for="stat in statsCards"
           :key="stat.key"
@@ -25,10 +25,15 @@
       </div>
     </div>
 
-    <div v-if="stats && !statsError" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <section class="bg-white rounded-lg shadow-md p-6">
-        <h2 class="text-lg font-semibold text-slate-900">Schools by division</h2>
-        <p class="text-sm text-slate-500 mb-4">
+    <div
+      v-if="stats && !statsError"
+      class="grid grid-cols-1 gap-6 lg:grid-cols-2"
+    >
+      <section class="rounded-lg bg-white p-6 shadow-md">
+        <h2 class="text-lg font-semibold text-slate-900">
+          Schools by division
+        </h2>
+        <p class="mb-4 text-sm text-slate-500">
           Where {{ stats.schools }} schools sit across NCAA / NAIA / JUCO.
         </p>
         <div class="h-64">
@@ -36,41 +41,50 @@
         </div>
       </section>
 
-      <section class="bg-white rounded-lg shadow-md p-6">
+      <section class="rounded-lg bg-white p-6 shadow-md">
         <h2 class="text-lg font-semibold text-slate-900">Types of users</h2>
-        <p class="text-sm text-slate-500 mb-4">
+        <p class="mb-4 text-sm text-slate-500">
           Role split across {{ stats.users }} users.
         </p>
         <div class="h-64">
-          <AdminChart type="doughnut" :data="userRoleData" :options="donutOptions" />
+          <AdminChart
+            type="doughnut"
+            :data="userRoleData"
+            :options="donutOptions"
+          />
         </div>
       </section>
 
-      <section class="bg-white rounded-lg shadow-md p-6 lg:col-span-2">
+      <section class="rounded-lg bg-white p-6 shadow-md lg:col-span-2">
         <div class="flex items-baseline justify-between gap-4">
           <div>
             <h2 class="text-lg font-semibold text-slate-900">
               New users over time
             </h2>
-            <p class="text-sm text-slate-500 mb-4">
-              Signups per week, last {{ stats.newUsersWeekly?.length ?? 0 }} weeks.
+            <p class="mb-4 text-sm text-slate-500">
+              Signups per week, last
+              {{ stats.newUsersWeekly?.length ?? 0 }} weeks.
             </p>
           </div>
           <NuxtLink
             to="/admin/growth"
-            class="text-sm font-medium text-brand-blue-600 hover:underline whitespace-nowrap"
+            class="text-sm font-medium whitespace-nowrap text-brand-blue-600 hover:underline"
           >
             Full growth →
           </NuxtLink>
         </div>
         <div class="h-64">
-          <AdminChart type="line" :data="signupTrendData" :options="lineOptions" />
+          <AdminChart
+            type="line"
+            :data="signupTrendData"
+            :options="lineOptions"
+          />
         </div>
       </section>
 
-      <section class="bg-white rounded-lg shadow-md p-6">
+      <section class="rounded-lg bg-white p-6 shadow-md">
         <h2 class="text-lg font-semibold text-slate-900">Types of coaches</h2>
-        <p class="text-sm text-slate-500 mb-4">
+        <p class="mb-4 text-sm text-slate-500">
           Role split across {{ stats.coaches }} coaches.
         </p>
         <div class="h-64">
@@ -78,9 +92,9 @@
         </div>
       </section>
 
-      <section class="bg-white rounded-lg shadow-md p-6">
+      <section class="rounded-lg bg-white p-6 shadow-md">
         <h2 class="text-lg font-semibold text-slate-900">Interactions</h2>
-        <p class="text-sm text-slate-500 mb-4">
+        <p class="mb-4 text-sm text-slate-500">
           Kept as a stat — too few logged to chart meaningfully yet.
         </p>
         <div class="flex items-baseline gap-3">
@@ -128,7 +142,11 @@ function barData(slices: BreakdownSlice[], color: string): ChartData {
   return {
     labels: slices.map((s) => s.value),
     datasets: [
-      { label: "Count", data: slices.map((s) => s.count), backgroundColor: color },
+      {
+        label: "Count",
+        data: slices.map((s) => s.count),
+        backgroundColor: color,
+      },
     ],
   };
 }
@@ -144,9 +162,7 @@ const userRoleData = computed<ChartData>(() => {
   const slices = stats.value?.byUserRole ?? [];
   return {
     labels: slices.map((s) => s.value),
-    datasets: [
-      { data: slices.map((s) => s.count), backgroundColor: SERIES },
-    ],
+    datasets: [{ data: slices.map((s) => s.count), backgroundColor: SERIES }],
   };
 });
 

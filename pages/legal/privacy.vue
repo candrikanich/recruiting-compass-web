@@ -1,15 +1,15 @@
 <template>
   <div class="min-h-screen bg-slate-50">
     <!-- Header -->
-    <div class="bg-white border-b border-slate-200 sticky top-0 z-10">
+    <div class="sticky top-0 z-10 border-b border-slate-200 bg-white">
       <div
-        class="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between"
+        class="mx-auto flex max-w-4xl items-center justify-between px-6 py-4"
       >
         <NuxtLink
           to="/"
-          class="text-slate-600 hover:text-slate-900 flex items-center gap-2 transition-colors"
+          class="flex items-center gap-2 text-slate-600 transition-colors hover:text-slate-900"
         >
-          <UIcon name="i-heroicons-arrow-left" class="w-4 h-4" />
+          <UIcon name="i-heroicons-arrow-left" class="h-4 w-4" />
           Back
         </NuxtLink>
         <h1 class="text-2xl font-bold text-slate-900">Privacy Policy</h1>
@@ -19,12 +19,12 @@
     </div>
 
     <!-- Content -->
-    <div class="max-w-4xl mx-auto px-6 py-12">
+    <div class="mx-auto max-w-4xl px-6 py-12">
       <div
-        class="bg-white rounded-lg shadow-xs p-8 prose prose-slate max-w-none"
+        class="prose prose-slate max-w-none rounded-lg bg-white p-8 shadow-xs"
       >
         <!-- UPDATE THIS DATE WHENEVER THE PRIVACY POLICY IS MODIFIED -->
-        <p class="text-slate-600 mb-8">
+        <p class="mb-8 text-slate-600">
           <strong>Last Updated:</strong> August 16, 2026
         </p>
 
@@ -50,7 +50,7 @@
           <h2>2. Information We Collect</h2>
           <p>We may collect information about you in a variety of ways:</p>
 
-          <h3 class="text-lg font-semibold mt-6 mb-3">
+          <h3 class="mt-6 mb-3 text-lg font-semibold">
             Information You Provide
           </h3>
           <ul>
@@ -81,7 +81,7 @@
             </li>
           </ul>
 
-          <h3 class="text-lg font-semibold mt-6 mb-3">Sensitive Information</h3>
+          <h3 class="mt-6 mb-3 text-lg font-semibold">Sensitive Information</h3>
           <p>
             Some of the profile information we collect — such as a minor's date
             of birth, academic records (GPA, standardized test scores), and
@@ -94,7 +94,7 @@
             provide and control.
           </p>
 
-          <h3 class="text-lg font-semibold mt-6 mb-3">
+          <h3 class="mt-6 mb-3 text-lg font-semibold">
             Data We Do Not Collect
           </h3>
           <ul>
@@ -109,7 +109,7 @@
             </li>
           </ul>
 
-          <h3 class="text-lg font-semibold mt-6 mb-3">
+          <h3 class="mt-6 mb-3 text-lg font-semibold">
             Automatically Collected Information
           </h3>
           <ul>
@@ -269,7 +269,7 @@
             <li>Withdraw consent at any time</li>
           </ul>
 
-          <h3 class="text-lg font-semibold mt-6 mb-3">
+          <h3 class="mt-6 mb-3 text-lg font-semibold">
             California Residents (CCPA)
           </h3>
           <p>
@@ -296,7 +296,7 @@
             </li>
           </ul>
 
-          <h3 class="text-lg font-semibold mt-6 mb-3">
+          <h3 class="mt-6 mb-3 text-lg font-semibold">
             Residents of Other States
           </h3>
           <p>
@@ -310,7 +310,7 @@
             of decisions that produce legal or similarly significant effects.
           </p>
 
-          <h3 class="text-lg font-semibold mt-6 mb-3">Minors</h3>
+          <h3 class="mt-6 mb-3 text-lg font-semibold">Minors</h3>
           <p>
             For any user we know to be a minor (under 18), we do not sell their
             personal data, share it for cross-context behavioral advertising, or
@@ -319,7 +319,7 @@
             to provide the Service.
           </p>
 
-          <h3 class="text-lg font-semibold mt-6 mb-3">
+          <h3 class="mt-6 mb-3 text-lg font-semibold">
             Global Privacy Control (GPC)
           </h3>
           <p>
@@ -411,7 +411,7 @@
             If you have questions about this Privacy Policy or our privacy
             practices, please contact us at:
           </p>
-          <div class="bg-slate-50 p-4 rounded-sm mt-4">
+          <div class="mt-4 rounded-sm bg-slate-50 p-4">
             <p>
               <strong>Recruiting Compass</strong><br />
               <!-- TODO: Replace with registered agent address before public launch -->

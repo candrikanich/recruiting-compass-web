@@ -9,7 +9,7 @@
 
     <!-- Name -->
     <div v-if="useAutocomplete">
-      <label class="block text-sm font-medium mb-2 text-slate-700">
+      <label class="mb-2 block text-sm font-medium text-slate-700">
         School Name
         <span class="text-red-500" aria-hidden="true">*</span>
         <span class="sr-only">(required)</span>
@@ -44,7 +44,7 @@
       @blur="validateLocation"
     />
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
       <!-- Division -->
       <div>
         <DesignSystemFormSelect
@@ -83,7 +83,7 @@
     />
 
     <!-- Social Media -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
       <DesignSystemFormInput
         v-model="formData.twitter_handle"
         label="Twitter Handle"
@@ -126,11 +126,11 @@
 
     <!-- College Scorecard Data (Display Only) -->
     <div v-if="collegeScorecardData" class="border-t border-slate-200 pt-6">
-      <h3 class="text-sm font-semibold text-slate-900 mb-4">
+      <h3 class="mb-4 text-sm font-semibold text-slate-900">
         College Scorecard Data
       </h3>
       <div
-        class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-blue-50 rounded-xl text-sm"
+        class="grid grid-cols-1 gap-4 rounded-xl bg-blue-50 p-4 text-sm md:grid-cols-2"
       >
         <div v-if="collegeScorecardData.studentSize">
           <p class="text-slate-600">Student Size</p>
@@ -190,7 +190,7 @@
         type="submit"
         :aria-busy="loading"
         :disabled="loading || hasErrors || !formData.name"
-        class="flex-1 px-4 py-3 bg-linear-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-blue-700 transition disabled:opacity-50"
+        class="flex-1 rounded-xl bg-linear-to-r from-blue-500 to-blue-600 px-4 py-3 font-semibold text-white transition hover:from-blue-600 hover:to-blue-700 disabled:opacity-50"
       >
         {{ loading ? "Adding..." : "Add School" }}
       </button>
@@ -198,7 +198,7 @@
         data-testid="cancel-school-button"
         type="button"
         @click="$emit('cancel')"
-        class="flex-1 px-4 py-3 bg-white text-slate-700 font-semibold rounded-xl border-2 border-slate-300 hover:bg-slate-50 transition"
+        class="flex-1 rounded-xl border-2 border-slate-300 bg-white px-4 py-3 font-semibold text-slate-700 transition hover:bg-slate-50"
       >
         Cancel
       </button>

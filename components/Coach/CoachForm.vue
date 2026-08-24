@@ -18,7 +18,7 @@
       @blur="validateRole"
     />
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
       <!-- First Name -->
       <DesignSystemFormInput
         v-model="formData.first_name"
@@ -65,7 +65,7 @@
     />
 
     <!-- Social Media -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
       <DesignSystemFormInput
         v-model="formData.twitter_handle"
         label="Twitter Handle"
@@ -109,14 +109,14 @@
           !formData.first_name ||
           !formData.last_name
         "
-        class="flex-1 px-4 py-3 bg-linear-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-blue-700 transition disabled:opacity-50"
+        class="flex-1 rounded-xl bg-linear-to-r from-blue-500 to-blue-600 px-4 py-3 font-semibold text-white transition hover:from-blue-600 hover:to-blue-700 disabled:opacity-50"
       >
         {{ loading ? "Adding..." : "Add Coach" }}
       </button>
       <button
         type="button"
         @click="$emit('cancel')"
-        class="flex-1 px-4 py-3 bg-white text-slate-700 font-semibold rounded-xl border-2 border-slate-300 hover:bg-slate-50 transition"
+        class="flex-1 rounded-xl border-2 border-slate-300 bg-white px-4 py-3 font-semibold text-slate-700 transition hover:bg-slate-50"
       >
         Cancel
       </button>

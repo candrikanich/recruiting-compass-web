@@ -1,18 +1,18 @@
 <template>
   <div
-    class="bg-white rounded-2xl border border-slate-200 shadow-xs hover:shadow-md transition-shadow p-6"
+    class="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs transition-shadow hover:shadow-md"
   >
     <!-- Header -->
-    <div class="flex items-center justify-between mb-6">
+    <div class="mb-6 flex items-center justify-between">
       <div class="flex items-center gap-3">
         <div
-          class="w-10 h-10 bg-linear-to-br from-purple-500 to-violet-600 rounded-xl flex items-center justify-center shadow-md"
+          class="flex h-10 w-10 items-center justify-center rounded-xl bg-linear-to-br from-purple-500 to-violet-600 shadow-md"
         >
           <span class="text-lg" aria-hidden="true">🎯</span>
         </div>
         <h3
           id="school-pipeline-chart-title"
-          class="text-slate-900 font-semibold"
+          class="font-semibold text-slate-900"
         >
           School Pipeline
         </h3>
@@ -64,20 +64,20 @@
 
     <div
       v-else
-      class="h-64 flex flex-col items-center justify-center rounded-lg bg-slate-50 text-slate-600"
+      class="flex h-64 flex-col items-center justify-center rounded-lg bg-slate-50 text-slate-600"
     >
       <UIcon
         name="i-heroicons-building-library"
-        class="w-12 h-12 mb-3 text-slate-400"
+        class="mb-3 h-12 w-12 text-slate-400"
         data-testid="empty-icon"
       />
       <p class="text-sm font-medium">No schools added yet</p>
-      <p class="text-xs text-slate-500 mt-1">
+      <p class="mt-1 text-xs text-slate-500">
         Add schools to track your recruiting pipeline
       </p>
       <NuxtLink
         to="/schools/new"
-        class="mt-4 px-4 py-2 bg-brand-blue-500 text-white text-sm rounded-lg hover:bg-brand-blue-600 transition-colors"
+        class="mt-4 rounded-lg bg-brand-blue-500 px-4 py-2 text-sm text-white transition-colors hover:bg-brand-blue-600"
       >
         Add School
       </NuxtLink>

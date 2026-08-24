@@ -1,8 +1,8 @@
 <template>
   <div
-    class="bg-white rounded-2xl border border-slate-200 shadow-xs hover:shadow-md transition-shadow p-6"
+    class="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs transition-shadow hover:shadow-md"
   >
-    <div class="flex items-center justify-between mb-6">
+    <div class="mb-6 flex items-center justify-between">
       <h3 class="text-lg font-bold text-slate-900">🗺️ School Locations</h3>
       <div class="text-sm text-slate-600">
         {{ schools.length }} schools mapped
@@ -11,23 +11,23 @@
 
     <div
       v-if="schools.length > 0"
-      class="relative h-96 rounded-lg overflow-hidden border border-slate-200"
+      class="relative h-96 overflow-hidden rounded-lg border border-slate-200"
     >
-      <div ref="mapContainer" class="w-full h-full"></div>
+      <div ref="mapContainer" class="h-full w-full"></div>
     </div>
 
     <div
       v-else
-      class="h-96 flex flex-col items-center justify-center rounded-lg bg-slate-50 text-slate-600"
+      class="flex h-96 flex-col items-center justify-center rounded-lg bg-slate-50 text-slate-600"
     >
-      <UIcon name="i-heroicons-map-pin" class="w-12 h-12 mb-3 text-slate-400" />
+      <UIcon name="i-heroicons-map-pin" class="mb-3 h-12 w-12 text-slate-400" />
       <p class="text-sm font-medium">No school locations to display</p>
-      <p class="text-xs text-slate-500 mt-1">
+      <p class="mt-1 text-xs text-slate-500">
         Schools will appear on the map once you add them
       </p>
       <NuxtLink
         to="/schools/new"
-        class="mt-4 px-4 py-2 bg-brand-blue-500 text-white text-sm rounded-lg hover:bg-brand-blue-600 transition-colors"
+        class="mt-4 rounded-lg bg-brand-blue-500 px-4 py-2 text-sm text-white transition-colors hover:bg-brand-blue-600"
       >
         Add School
       </NuxtLink>
@@ -36,24 +36,24 @@
     <!-- Legend -->
     <div
       v-if="schools.length > 0"
-      class="mt-4 grid grid-cols-2 md:grid-cols-5 gap-3 text-sm"
+      class="mt-4 grid grid-cols-2 gap-3 text-sm md:grid-cols-5"
       role="list"
       aria-label="School status legend"
     >
       <div class="flex items-center gap-2 text-slate-600" role="listitem">
         <div
-          class="w-5 h-5 rounded-full bg-slate-400 border-2 border-slate-600 flex items-center justify-center"
+          class="flex h-5 w-5 items-center justify-center rounded-full border-2 border-slate-600 bg-slate-400"
         >
-          <span class="text-white text-xs font-bold" aria-hidden="true">?</span>
+          <span class="text-xs font-bold text-white" aria-hidden="true">?</span>
         </div>
         <span>Researching</span>
       </div>
       <div class="flex items-center gap-2 text-slate-900" role="listitem">
         <div
-          class="w-5 h-5 rounded-full bg-blue-500 border-2 border-slate-600 flex items-center justify-center"
+          class="flex h-5 w-5 items-center justify-center rounded-full border-2 border-slate-600 bg-blue-500"
         >
           <svg
-            class="w-3 h-3 text-white"
+            class="h-3 w-3 text-white"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -71,10 +71,10 @@
       </div>
       <div class="flex items-center gap-2 text-slate-900" role="listitem">
         <div
-          class="w-5 h-5 rounded-full bg-emerald-500 border-2 border-slate-600 flex items-center justify-center"
+          class="flex h-5 w-5 items-center justify-center rounded-full border-2 border-slate-600 bg-emerald-500"
         >
           <svg
-            class="w-3 h-3 text-white"
+            class="h-3 w-3 text-white"
             fill="currentColor"
             viewBox="0 0 24 24"
             aria-hidden="true"
@@ -88,10 +88,10 @@
       </div>
       <div class="flex items-center gap-2 text-slate-900" role="listitem">
         <div
-          class="w-5 h-5 rounded-full bg-orange-500 border-2 border-slate-600 flex items-center justify-center"
+          class="flex h-5 w-5 items-center justify-center rounded-full border-2 border-slate-600 bg-orange-500"
         >
           <svg
-            class="w-3 h-3 text-white"
+            class="h-3 w-3 text-white"
             fill="currentColor"
             viewBox="0 0 24 24"
             aria-hidden="true"
@@ -105,10 +105,10 @@
       </div>
       <div class="flex items-center gap-2 text-slate-900" role="listitem">
         <div
-          class="w-5 h-5 rounded-full bg-red-500 border-2 border-slate-600 flex items-center justify-center"
+          class="flex h-5 w-5 items-center justify-center rounded-full border-2 border-slate-600 bg-red-500"
         >
           <svg
-            class="w-3 h-3 text-white"
+            class="h-3 w-3 text-white"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"

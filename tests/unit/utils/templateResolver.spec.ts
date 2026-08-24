@@ -79,7 +79,9 @@ describe("resolveSourcePath", () => {
   });
 
   it("resolves pref:location.<key> from the location jsonb, not player prefs", () => {
-    expect(resolveSourcePath("pref:location.city", ctx)).toBe("Olmsted Township");
+    expect(resolveSourcePath("pref:location.city", ctx)).toBe(
+      "Olmsted Township",
+    );
     expect(resolveSourcePath("pref:location.state", ctx)).toBe("OH");
     // player prefs also carry a `city`; the location prefix must not read it
     expect(resolveSourcePath("pref:player.city", ctx)).toBe("PLAYER_CITY");
@@ -307,7 +309,9 @@ describe("questionnaireNote (optional completion sentence)", () => {
 
   it("renders the completion sentence when the school flag is true", () => {
     const out = resolveVariables(reg, {
-      tables: { schools: { name: "Ohio State", questionnaire_completed: true } },
+      tables: {
+        schools: { name: "Ohio State", questionnaire_completed: true },
+      },
     });
     expect(out.questionnaireNote).toBe(
       "I've completed your recruiting questionnaire. ",
@@ -316,7 +320,9 @@ describe("questionnaireNote (optional completion sentence)", () => {
 
   it("resolves to an empty string (not omitted) when the flag is false", () => {
     const out = resolveVariables(reg, {
-      tables: { schools: { name: "Ohio State", questionnaire_completed: false } },
+      tables: {
+        schools: { name: "Ohio State", questionnaire_completed: false },
+      },
     });
     // Present-but-empty is the key contract: the literal is replaced with
     // nothing rather than left intact, so findUnresolved does NOT block send.
@@ -335,7 +341,10 @@ describe("questionnaireNote (optional completion sentence)", () => {
     const out = resolveVariables(reg, {
       tables: { schools: { questionnaire_completed: false } },
     });
-    const body = renderTemplate("{{questionnaireNote}}I'd welcome feedback.", out);
+    const body = renderTemplate(
+      "{{questionnaireNote}}I'd welcome feedback.",
+      out,
+    );
     expect(body).toBe("I'd welcome feedback.");
     expect(findUnresolved(body)).toEqual([]);
   });
@@ -353,7 +362,11 @@ describe("renderClean", () => {
 
   it("keeps the line when the optional resolves", () => {
     expect(
-      renderClean("Film: {{videoLink}}\nThanks", { videoLink: "https://film/1" }, required),
+      renderClean(
+        "Film: {{videoLink}}\nThanks",
+        { videoLink: "https://film/1" },
+        required,
+      ),
     ).toBe("Film: https://film/1\nThanks");
   });
 
@@ -371,18 +384,28 @@ describe("renderClean", () => {
 
   it("tidies a footer with some resolved", () => {
     expect(
-      renderClean("{{gradYear}} | {{position}} | {{highSchool}}", { gradYear: "2028" }, required),
+      renderClean(
+        "{{gradYear}} | {{position}} | {{highSchool}}",
+        { gradYear: "2028" },
+        required,
+      ),
     ).toBe("2028");
   });
 
   it("drops the footer when all optional are empty", () => {
     expect(
-      renderClean("Signed,\n{{gradYear}} | {{position}} | {{highSchool}}", {}, required),
+      renderClean(
+        "Signed,\n{{gradYear}} | {{position}} | {{highSchool}}",
+        {},
+        required,
+      ),
     ).toBe("Signed,");
   });
 
   it("collapses blank lines left by a drop", () => {
-    expect(renderClean("A\n\nFilm: {{videoLink}}\n\nB", {}, required)).toBe("A\n\nB");
+    expect(renderClean("A\n\nFilm: {{videoLink}}\n\nB", {}, required)).toBe(
+      "A\n\nB",
+    );
   });
 
   it("keeps required when mixed with optional on one line", () => {
@@ -396,15 +419,21 @@ describe("renderClean", () => {
 describe("applyOptionalSegments", () => {
   it("keeps the inner text when the gate key resolves non-empty", () => {
     expect(
-      applyOptionalSegments("Hi[[intendedMajor|, planning to study {{intendedMajor}}]].", {
-        intendedMajor: "Engineering",
-      }),
+      applyOptionalSegments(
+        "Hi[[intendedMajor|, planning to study {{intendedMajor}}]].",
+        {
+          intendedMajor: "Engineering",
+        },
+      ),
     ).toBe("Hi, planning to study {{intendedMajor}}.");
   });
 
   it("drops the whole span when the gate key is missing", () => {
     expect(
-      applyOptionalSegments("Hi[[intendedMajor|, planning to study {{intendedMajor}}]].", {}),
+      applyOptionalSegments(
+        "Hi[[intendedMajor|, planning to study {{intendedMajor}}]].",
+        {},
+      ),
     ).toBe("Hi.");
   });
 
@@ -420,13 +449,20 @@ describe("applyOptionalSegments", () => {
     const body =
       "[[videoLink|I'd welcome any feedback on my film {{videoLink}} to fit at {{schoolName}}.]]";
     expect(
-      applyOptionalSegments(body, { videoLink: "https://film/1", schoolName: "OSU" }),
-    ).toBe("I'd welcome any feedback on my film {{videoLink}} to fit at {{schoolName}}.");
+      applyOptionalSegments(body, {
+        videoLink: "https://film/1",
+        schoolName: "OSU",
+      }),
+    ).toBe(
+      "I'd welcome any feedback on my film {{videoLink}} to fit at {{schoolName}}.",
+    );
     expect(applyOptionalSegments(body, { schoolName: "OSU" })).toBe("");
   });
 
   it("never prints the gate key itself", () => {
-    expect(applyOptionalSegments("[[videoLink|film]]", { videoLink: "x" })).toBe("film");
+    expect(
+      applyOptionalSegments("[[videoLink|film]]", { videoLink: "x" }),
+    ).toBe("film");
   });
 });
 
@@ -434,14 +470,20 @@ describe("renderClean — optional [[gate|text]] segments", () => {
   const required = new Set<string>();
 
   it("keeps the major clause and substitutes its inner token when resolved", () => {
-    const body = "I'm a {{position}}[[intendedMajor|, planning to study {{intendedMajor}}]].";
+    const body =
+      "I'm a {{position}}[[intendedMajor|, planning to study {{intendedMajor}}]].";
     expect(
-      renderClean(body, { position: "SS", intendedMajor: "Engineering" }, required),
+      renderClean(
+        body,
+        { position: "SS", intendedMajor: "Engineering" },
+        required,
+      ),
     ).toBe("I'm a SS, planning to study Engineering.");
   });
 
   it("removes the major clause entirely when the gate is unresolved", () => {
-    const body = "I'm a {{position}}[[intendedMajor|, planning to study {{intendedMajor}}]].";
+    const body =
+      "I'm a {{position}}[[intendedMajor|, planning to study {{intendedMajor}}]].";
     expect(renderClean(body, { position: "SS" }, required)).toBe("I'm a SS.");
   });
 
@@ -449,8 +491,14 @@ describe("renderClean — optional [[gate|text]] segments", () => {
     const body =
       "Thanks.\n[[videoLink|I'd welcome any feedback on my film {{videoLink}} to fit at {{schoolName}}.]]";
     expect(
-      renderClean(body, { videoLink: "https://film/1", schoolName: "OSU" }, required),
-    ).toBe("Thanks.\nI'd welcome any feedback on my film https://film/1 to fit at OSU.");
+      renderClean(
+        body,
+        { videoLink: "https://film/1", schoolName: "OSU" },
+        required,
+      ),
+    ).toBe(
+      "Thanks.\nI'd welcome any feedback on my film https://film/1 to fit at OSU.",
+    );
   });
 
   it("drops the film line when videoLink is missing", () => {
@@ -463,19 +511,43 @@ describe("renderClean — optional [[gate|text]] segments", () => {
 describe("dedupeMostRecentPerType", () => {
   it("keeps only the most recent row per metric_type", () => {
     const rows: MetricRow[] = [
-      { metric_type: "exit_velo", display_value: "90", recorded_date: "2026-05-01" },
-      { metric_type: "exit_velo", display_value: "94", recorded_date: "2026-06-10" },
-      { metric_type: "sixty_yard", display_value: "6.9", recorded_date: "2026-04-01" },
+      {
+        metric_type: "exit_velo",
+        display_value: "90",
+        recorded_date: "2026-05-01",
+      },
+      {
+        metric_type: "exit_velo",
+        display_value: "94",
+        recorded_date: "2026-06-10",
+      },
+      {
+        metric_type: "sixty_yard",
+        display_value: "6.9",
+        recorded_date: "2026-04-01",
+      },
     ];
     const out = dedupeMostRecentPerType(rows);
     expect(out).toHaveLength(2);
-    expect(out.find((m) => m.metric_type === "exit_velo")?.display_value).toBe("94");
+    expect(out.find((m) => m.metric_type === "exit_velo")?.display_value).toBe(
+      "94",
+    );
   });
 
   it("breaks a same-date tie toward the verified row", () => {
     const rows: MetricRow[] = [
-      { metric_type: "exit_velo", display_value: "90", recorded_date: "2026-06-10", verified: false },
-      { metric_type: "exit_velo", display_value: "94", recorded_date: "2026-06-10", verified: true },
+      {
+        metric_type: "exit_velo",
+        display_value: "90",
+        recorded_date: "2026-06-10",
+        verified: false,
+      },
+      {
+        metric_type: "exit_velo",
+        display_value: "94",
+        recorded_date: "2026-06-10",
+        verified: true,
+      },
     ];
     const out = dedupeMostRecentPerType(rows);
     expect(out).toHaveLength(1);
@@ -504,8 +576,16 @@ describe("dedupeMostRecentPerType", () => {
 
   it("preserves original input order of the surviving rows", () => {
     const rows: MetricRow[] = [
-      { metric_type: "sixty_yard", display_value: "6.9", recorded_date: "2026-04-01" },
-      { metric_type: "exit_velo", display_value: "94", recorded_date: "2026-06-10" },
+      {
+        metric_type: "sixty_yard",
+        display_value: "6.9",
+        recorded_date: "2026-04-01",
+      },
+      {
+        metric_type: "exit_velo",
+        display_value: "94",
+        recorded_date: "2026-06-10",
+      },
     ];
     const out = dedupeMostRecentPerType(rows);
     expect(out.map((m) => m.metric_type)).toEqual(["sixty_yard", "exit_velo"]);
@@ -513,8 +593,16 @@ describe("dedupeMostRecentPerType", () => {
 
   it("renderMetrics collapses duplicate types before capping", () => {
     const rows: MetricRow[] = [
-      { metric_type: "exit_velo", display_value: "90", recorded_date: "2026-05-01" },
-      { metric_type: "exit_velo", display_value: "94", recorded_date: "2026-06-10" },
+      {
+        metric_type: "exit_velo",
+        display_value: "90",
+        recorded_date: "2026-05-01",
+      },
+      {
+        metric_type: "exit_velo",
+        display_value: "94",
+        recorded_date: "2026-06-10",
+      },
     ];
     const lines = renderMetrics(rows).split("\n").filter(Boolean);
     expect(lines).toHaveLength(1);

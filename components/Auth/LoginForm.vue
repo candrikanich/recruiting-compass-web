@@ -40,14 +40,14 @@
     <div class="flex items-center justify-between pt-1">
       <label
         for="rememberMe"
-        class="flex items-center gap-2 cursor-pointer group"
+        class="group flex cursor-pointer items-center gap-2"
       >
         <input
           id="rememberMe"
           :checked="rememberMe"
           data-testid="remember-me-checkbox"
           type="checkbox"
-          class="w-4 h-4 text-blue-600 rounded-sm border-slate-300 focus:outline-2 focus:outline-offset-2 focus:outline-blue-600 transition-all cursor-pointer"
+          class="h-4 w-4 cursor-pointer rounded-sm border-slate-300 text-blue-600 transition-all focus:outline-2 focus:outline-offset-2 focus:outline-blue-600"
           @change="
             $emit(
               'update:rememberMe',
@@ -61,7 +61,7 @@
       </label>
       <NuxtLink
         to="/forgot-password"
-        class="text-sm text-slate-700 hover:text-blue-600 font-medium underline hover:no-underline focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 rounded-sm px-2 py-1 transition-colors"
+        class="rounded-sm px-2 py-1 text-sm font-medium text-slate-700 underline transition-colors hover:text-blue-600 hover:no-underline focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
       >
         Forgot password?
       </NuxtLink>
@@ -80,7 +80,7 @@
             ? 'Validating your information'
             : 'Sign in to your account'
       "
-      class="w-full px-6 py-3 bg-linear-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-lg hover:from-blue-600 hover:to-blue-700 transition disabled:opacity-50 shadow-lg focus:ring-2 focus:ring-offset-2 focus:ring-blue-600"
+      class="w-full rounded-lg bg-linear-to-r from-blue-500 to-blue-600 px-6 py-3 font-semibold text-white shadow-lg transition hover:from-blue-600 hover:to-blue-700 focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 disabled:opacity-50"
     >
       {{ loading ? "Signing in..." : validating ? "Validating..." : "Sign In" }}
     </button>
@@ -100,11 +100,11 @@
 
   <!-- Create Account Link -->
   <div class="text-center">
-    <p class="text-slate-600 text-sm">
+    <p class="text-sm text-slate-600">
       Don't have an account?
       <NuxtLink
         to="/signup"
-        class="text-blue-600 hover:text-blue-700 font-medium underline hover:no-underline focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 rounded-sm px-1 transition-colors"
+        class="rounded-sm px-1 font-medium text-blue-600 underline transition-colors hover:text-blue-700 hover:no-underline focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
       >
         Create one now
       </NuxtLink>

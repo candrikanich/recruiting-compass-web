@@ -1,6 +1,6 @@
 <template>
   <div
-    class="w-20 h-20 rounded-full mx-auto mb-4 flex items-center justify-center shadow-lg"
+    class="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full shadow-lg"
     :class="iconBgClass"
     role="img"
     :aria-label="ariaLabel"
@@ -8,7 +8,7 @@
     <!-- Validating state -->
     <svg
       v-if="status === 'validating'"
-      class="w-11 h-11 text-blue-600 animate-spin motion-reduce:animate-none"
+      class="h-11 w-11 animate-spin text-blue-600 motion-reduce:animate-none"
       fill="none"
       viewBox="0 0 24 24"
       aria-hidden="true"
@@ -31,7 +31,7 @@
     <!-- Success state -->
     <svg
       v-else-if="status === 'success'"
-      class="w-11 h-11 text-emerald-600"
+      class="h-11 w-11 text-emerald-600"
       fill="none"
       stroke="currentColor"
       viewBox="0 0 24 24"
@@ -48,7 +48,7 @@
     <!-- Error state -->
     <svg
       v-else-if="status === 'error'"
-      class="w-11 h-11 text-red-600"
+      class="h-11 w-11 text-red-600"
       fill="none"
       stroke="currentColor"
       viewBox="0 0 24 24"
@@ -65,7 +65,7 @@
     <!-- Default state (email/lock icon) -->
     <svg
       v-else
-      class="w-11 h-11"
+      class="h-11 w-11"
       :class="iconColor"
       fill="none"
       stroke="currentColor"

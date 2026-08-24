@@ -1,12 +1,12 @@
 <template>
-  <div class="rounded-lg p-6 bg-white shadow-md">
+  <div class="rounded-lg bg-white p-6 shadow-md">
     <!-- Header -->
     <div
-      class="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 gap-4"
+      class="mb-6 flex flex-col items-start justify-between gap-4 md:flex-row md:items-center"
     >
       <div>
         <h3 class="text-lg font-bold text-slate-900">{{ title }}</h3>
-        <p class="text-sm mt-1 text-slate-600">
+        <p class="mt-1 text-sm text-slate-600">
           {{ totalItems }} {{ itemsLabel }}
         </p>
       </div>
@@ -15,7 +15,7 @@
       <div v-if="showLegendToggle" class="flex items-center gap-2">
         <button
           @click="chartType = chartType === 'pie' ? 'doughnut' : 'pie'"
-          class="px-3 py-1 text-sm font-medium rounded-md transition border border-slate-300 text-slate-900 hover:bg-slate-50"
+          class="rounded-md border border-slate-300 px-3 py-1 text-sm font-medium text-slate-900 transition hover:bg-slate-50"
         >
           {{ chartType === "pie" ? "Pie" : "Doughnut" }}
         </button>
@@ -28,24 +28,24 @@
     </div>
 
     <!-- Empty State -->
-    <div v-else class="text-center py-12 text-slate-600">
+    <div v-else class="py-12 text-center text-slate-600">
       <p>{{ emptyStateMessage }}</p>
     </div>
 
     <!-- Data Summary (Optional) -->
     <div
       v-if="hasData && showSummary"
-      class="mt-6 pt-6 border-t border-slate-200"
+      class="mt-6 border-t border-slate-200 pt-6"
     >
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
         <div
           v-for="(item, index) in summaryItems"
           :key="index"
-          class="text-center p-3 rounded-lg bg-slate-50"
+          class="rounded-lg bg-slate-50 p-3 text-center"
           data-testid="summary-card"
         >
           <div
-            class="inline-block w-3 h-3 rounded-full mb-2"
+            class="mb-2 inline-block h-3 w-3 rounded-full"
             :style="{
               backgroundColor: chartColors[index % chartColors.length],
             }"

@@ -1,7 +1,7 @@
 <template>
   <div
     :class="[
-      'p-3 rounded-lg transition-colors group',
+      'group rounded-lg p-3 transition-colors',
       event.clickable
         ? 'cursor-pointer bg-slate-50 hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500'
         : 'bg-slate-50',
@@ -14,16 +14,16 @@
     @keydown.space.prevent="event.clickable && handleClick()"
   >
     <div class="flex items-start gap-3">
-      <div class="text-2xl shrink-0 mt-0.5">{{ event.icon }}</div>
+      <div class="mt-0.5 shrink-0 text-2xl">{{ event.icon }}</div>
 
-      <div class="flex-1 min-w-0">
-        <div class="text-slate-900 font-medium text-sm truncate">
+      <div class="min-w-0 flex-1">
+        <div class="truncate text-sm font-medium text-slate-900">
           {{ event.title }}
         </div>
-        <div v-if="event.description" class="text-slate-600 text-sm mt-1">
+        <div v-if="event.description" class="mt-1 text-sm text-slate-600">
           {{ event.description }}
         </div>
-        <div class="text-slate-400 text-xs mt-1">
+        <div class="mt-1 text-xs text-slate-400">
           {{ event.metadata?.relativeTime || "Recently" }}
         </div>
       </div>

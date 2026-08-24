@@ -1,9 +1,9 @@
 <template>
   <div
     v-if="attachments && attachments.length > 0"
-    class="mt-3 pt-3 border-t border-slate-300"
+    class="mt-3 border-t border-slate-300 pt-3"
   >
-    <p class="text-xs font-semibold mb-2 text-slate-600">
+    <p class="mb-2 text-xs font-semibold text-slate-600">
       📎 Attachments ({{ attachments.length }})
     </p>
     <div class="flex flex-wrap gap-2">
@@ -11,7 +11,7 @@
         v-for="(filepath, idx) in attachments"
         :key="idx"
         @click="handleDownload(filepath)"
-        class="inline-flex items-center gap-1 px-3 py-1 text-xs rounded-full transition bg-blue-100 text-blue-700 hover:bg-blue-200"
+        class="inline-flex items-center gap-1 rounded-full bg-blue-100 px-3 py-1 text-xs text-blue-700 transition hover:bg-blue-200"
       >
         {{ getFileIcon(filepath) }} {{ getFileName(filepath) }}
       </button>

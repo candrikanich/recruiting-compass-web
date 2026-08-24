@@ -2,12 +2,12 @@
   <div
     class="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-slate-100"
   >
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
       <!-- Back Link -->
       <div class="mb-6">
         <NuxtLink
           :to="`/schools/${id}`"
-          class="text-blue-600 hover:text-blue-700 font-semibold text-sm"
+          class="text-sm font-semibold text-blue-600 hover:text-blue-700"
         >
           ← Back to School
         </NuxtLink>
@@ -15,9 +15,9 @@
 
       <!-- Header -->
       <div
-        class="bg-white border-b border-slate-200 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-4 mb-8"
+        class="-mx-4 mb-8 border-b border-slate-200 bg-white px-4 py-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8"
       >
-        <div class="flex items-center justify-between gap-4 max-w-4xl mx-auto">
+        <div class="mx-auto flex max-w-4xl items-center justify-between gap-4">
           <div class="flex items-center gap-4">
             <SchoolLogo
               v-if="schoolData"
@@ -26,8 +26,10 @@
               :transition-name="`school-logo-${id}`"
             />
             <div>
-              <h1 class="text-2xl font-semibold text-slate-900">Interactions</h1>
-              <p class="text-slate-600 text-sm">
+              <h1 class="text-2xl font-semibold text-slate-900">
+                Interactions
+              </h1>
+              <p class="text-sm text-slate-600">
                 {{ interactions.length }} interaction{{
                   interactions.length !== 1 ? "s" : ""
                 }}
@@ -36,7 +38,7 @@
           </div>
           <button
             @click="showAddForm = !showAddForm"
-            class="px-4 py-2 text-sm font-medium text-white bg-linear-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition flex items-center gap-2"
+            class="flex items-center gap-2 rounded-lg bg-linear-to-r from-blue-500 to-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:from-blue-600 hover:to-blue-700"
           >
             <span v-if="!showAddForm">+</span>
             {{ showAddForm ? "Cancel" : "Log Interaction" }}
@@ -54,32 +56,32 @@
       />
 
       <!-- Summary Metrics -->
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-        <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-4">
-          <p class="text-slate-600 text-xs sm:text-sm font-medium">
+      <div class="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
+          <p class="text-xs font-medium text-slate-600 sm:text-sm">
             Total Interactions
           </p>
-          <p class="text-2xl sm:text-3xl font-bold text-slate-900 mt-1">
+          <p class="mt-1 text-2xl font-bold text-slate-900 sm:text-3xl">
             {{ filteredInteractions.length }}
           </p>
         </div>
-        <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-4">
-          <p class="text-slate-600 text-xs sm:text-sm font-medium">Sent</p>
-          <p class="text-2xl sm:text-3xl font-bold text-blue-600 mt-1">
+        <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
+          <p class="text-xs font-medium text-slate-600 sm:text-sm">Sent</p>
+          <p class="mt-1 text-2xl font-bold text-blue-600 sm:text-3xl">
             {{ outboundCount }}
           </p>
         </div>
-        <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-4">
-          <p class="text-slate-600 text-xs sm:text-sm font-medium">Received</p>
-          <p class="text-2xl sm:text-3xl font-bold text-emerald-600 mt-1">
+        <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
+          <p class="text-xs font-medium text-slate-600 sm:text-sm">Received</p>
+          <p class="mt-1 text-2xl font-bold text-emerald-600 sm:text-3xl">
             {{ inboundCount }}
           </p>
         </div>
-        <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-4">
-          <p class="text-slate-600 text-xs sm:text-sm font-medium">
+        <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
+          <p class="text-xs font-medium text-slate-600 sm:text-sm">
             Last Contact
           </p>
-          <p class="text-xl sm:text-2xl font-bold text-purple-600 mt-1">
+          <p class="mt-1 text-xl font-bold text-purple-600 sm:text-2xl">
             {{ lastContactDisplay }}
           </p>
         </div>
@@ -97,12 +99,12 @@
       <!-- Loading State -->
       <div
         v-if="loading && interactions.length === 0"
-        class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
+        class="rounded-xl border border-slate-200 bg-white p-12 text-center shadow-xs"
         role="status"
         aria-live="polite"
       >
         <div
-          class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"
+          class="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"
           aria-hidden="true"
         ></div>
         <p class="text-slate-600">Loading interactions...</p>
@@ -111,18 +113,18 @@
       <!-- Empty State (No Interactions at All) -->
       <div
         v-if="!loading && interactions.length === 0"
-        class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
+        class="rounded-xl border border-slate-200 bg-white p-12 text-center shadow-xs"
       >
         <UIcon
           name="i-heroicons-chat-bubble-left-right"
-          class="w-12 h-12 text-slate-300 mx-auto mb-4"
+          class="mx-auto mb-4 h-12 w-12 text-slate-300"
         />
-        <p class="text-slate-900 font-medium mb-2">
+        <p class="mb-2 font-medium text-slate-900">
           No interactions logged yet
         </p>
         <button
           @click="showAddForm = true"
-          class="text-blue-600 hover:text-blue-700 font-medium text-sm"
+          class="text-sm font-medium text-blue-600 hover:text-blue-700"
         >
           Log your first interaction
         </button>
@@ -135,18 +137,18 @@
           interactions.length > 0 &&
           filteredInteractions.length === 0
         "
-        class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
+        class="rounded-xl border border-slate-200 bg-white p-12 text-center shadow-xs"
       >
         <UIcon
           name="i-heroicons-chat-bubble-left-right"
-          class="w-12 h-12 text-slate-300 mx-auto mb-4"
+          class="mx-auto mb-4 h-12 w-12 text-slate-300"
         />
-        <p class="text-slate-900 font-medium mb-2">
+        <p class="mb-2 font-medium text-slate-900">
           No interactions match your filters
         </p>
         <button
           @click="clearFilters"
-          class="text-blue-600 hover:text-blue-700 font-medium text-sm"
+          class="text-sm font-medium text-blue-600 hover:text-blue-700"
         >
           Clear Filters
         </button>

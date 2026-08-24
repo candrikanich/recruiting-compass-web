@@ -1,22 +1,22 @@
 <template>
   <div
     v-if="isOpen"
-    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+    class="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black p-4"
   >
     <div
-      class="rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col bg-white"
+      class="flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-lg bg-white shadow-xl"
     >
       <!-- Header -->
       <div
-        class="flex items-center justify-between p-6 border-b border-slate-300"
+        class="flex items-center justify-between border-b border-slate-300 p-6"
       >
         <h2 class="text-2xl font-bold text-slate-900">Select Template</h2>
         <button
           @click="emit('close')"
-          class="transition text-slate-600 hover:text-slate-900"
+          class="text-slate-600 transition hover:text-slate-900"
           aria-label="Close"
         >
-          <UIcon name="i-heroicons-x-mark" class="w-6 h-6" />
+          <UIcon name="i-heroicons-x-mark" class="h-6 w-6" />
         </button>
       </div>
 
@@ -24,16 +24,16 @@
       <div class="flex-1 overflow-y-auto p-6">
         <!-- Type Filter -->
         <div class="mb-6">
-          <label class="block text-sm font-medium mb-3 text-slate-600"
+          <label class="mb-3 block text-sm font-medium text-slate-600"
             >Message Type</label
           >
-          <div class="flex gap-2 flex-wrap">
+          <div class="flex flex-wrap gap-2">
             <button
               v-for="t in templateTypes"
               :key="t"
               @click="selectedType = t"
               :class="[
-                'px-4 py-2 rounded-lg text-sm font-medium transition',
+                'rounded-lg px-4 py-2 text-sm font-medium transition',
                 selectedType === t
                   ? 'bg-blue-600 text-white'
                   : 'bg-slate-50 text-slate-900 hover:bg-slate-100',
@@ -45,9 +45,9 @@
         </div>
 
         <!-- Loading State -->
-        <div v-if="loadingUnlockStatus" class="text-center py-8">
+        <div v-if="loadingUnlockStatus" class="py-8 text-center">
           <div
-            class="animate-spin rounded-full h-8 w-8 border border-blue-300 border-t-blue-600 mx-auto"
+            class="mx-auto h-8 w-8 animate-spin rounded-full border border-blue-300 border-t-blue-600"
           />
         </div>
 
@@ -55,7 +55,7 @@
         <div v-else class="space-y-3">
           <div
             v-if="filteredTemplates.length === 0"
-            class="text-center py-8 text-slate-600"
+            class="py-8 text-center text-slate-600"
           >
             No templates found
           </div>
@@ -66,10 +66,10 @@
             @click="selectTemplate(item.template)"
             :disabled="!item.unlocked"
             :class="[
-              'w-full text-left p-4 rounded-lg transition',
+              'w-full rounded-lg p-4 text-left transition',
               item.unlocked
-                ? 'border border-slate-300 hover:border-blue-500 hover:bg-blue-50 cursor-pointer'
-                : 'border border-slate-200 bg-slate-50 opacity-60 cursor-not-allowed',
+                ? 'cursor-pointer border border-slate-300 hover:border-blue-500 hover:bg-blue-50'
+                : 'cursor-not-allowed border border-slate-200 bg-slate-50 opacity-60',
             ]"
           >
             <div class="flex items-start justify-between">
@@ -80,18 +80,18 @@
                   </h3>
                   <span
                     v-if="item.template.is_predefined"
-                    class="px-2 py-0.5 text-xs rounded-sm bg-blue-100 text-blue-700 font-medium"
+                    class="rounded-sm bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700"
                   >
                     Suggested
                   </span>
                   <span
                     v-if="!item.unlocked"
-                    class="px-2 py-0.5 text-xs rounded-sm bg-slate-200 text-slate-600"
+                    class="rounded-sm bg-slate-200 px-2 py-0.5 text-xs text-slate-600"
                   >
                     Locked
                   </span>
                 </div>
-                <p class="text-sm mt-1 text-slate-600">
+                <p class="mt-1 text-sm text-slate-600">
                   {{ item.template.description }}
                 </p>
 
@@ -100,16 +100,16 @@
                   v-if="!item.unlocked && item.missingConditions.length > 0"
                   class="mt-2"
                 >
-                  <p class="text-xs text-slate-500 font-medium">Required:</p>
+                  <p class="text-xs font-medium text-slate-500">Required:</p>
                   <ul class="mt-1 space-y-0.5">
                     <li
                       v-for="(condition, idx) in item.missingConditions"
                       :key="idx"
-                      class="text-xs text-slate-500 flex items-center gap-1"
+                      class="flex items-center gap-1 text-xs text-slate-500"
                     >
                       <UIcon
                         name="i-heroicons-x-mark"
-                        class="w-3 h-3 text-red-500"
+                        class="h-3 w-3 text-red-500"
                       />
                       {{ condition.description }}
                     </li>
@@ -123,10 +123,10 @@
                   "
                   class="mt-2"
                 >
-                  <div class="text-xs text-slate-600 mb-1">
+                  <div class="mb-1 text-xs text-slate-600">
                     Progress: {{ item.progressPercent }}%
                   </div>
-                  <div class="h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                  <div class="h-1.5 overflow-hidden rounded-full bg-slate-200">
                     <div
                       class="h-full bg-blue-500"
                       :style="{ width: `${item.progressPercent}%` }"
@@ -138,7 +138,7 @@
               <UIcon
                 name="i-heroicons-check-circle"
                 v-if="item.unlocked"
-                class="w-5 h-5 text-green-500 shrink-0 mt-1"
+                class="mt-1 h-5 w-5 shrink-0 text-green-500"
               />
             </div>
           </button>
@@ -146,10 +146,10 @@
       </div>
 
       <!-- Footer -->
-      <div class="flex gap-3 p-6 border-t border-slate-300 bg-slate-50">
+      <div class="flex gap-3 border-t border-slate-300 bg-slate-50 p-6">
         <button
           @click="emit('close')"
-          class="flex-1 px-4 py-2 font-medium rounded-lg transition border border-slate-300 text-slate-900 hover:bg-slate-100"
+          class="flex-1 rounded-lg border border-slate-300 px-4 py-2 font-medium text-slate-900 transition hover:bg-slate-100"
         >
           Cancel
         </button>

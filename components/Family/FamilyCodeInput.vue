@@ -1,7 +1,7 @@
 <template>
-  <div class="border border-gray-200 bg-gray-50 rounded-lg p-4">
-    <h3 class="text-lg font-semibold text-gray-900 mb-2">Join a Family</h3>
-    <p class="text-sm text-gray-700 mb-4">
+  <div class="rounded-lg border border-gray-200 bg-gray-50 p-4">
+    <h3 class="mb-2 text-lg font-semibold text-gray-900">Join a Family</h3>
+    <p class="mb-4 text-sm text-gray-700">
       Enter the family code provided by the student to join their recruiting
       family.
     </p>
@@ -10,7 +10,7 @@
       <div class="mb-4">
         <label
           for="family-code-input"
-          class="block text-sm font-medium text-gray-700 mb-2"
+          class="mb-2 block text-sm font-medium text-gray-700"
         >
           Family Code
         </label>
@@ -20,7 +20,7 @@
           type="text"
           placeholder="FAM-XXXXXX"
           maxlength="10"
-          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 font-mono text-lg uppercase"
+          class="w-full rounded-lg border border-gray-300 px-4 py-2 font-mono text-lg uppercase focus:ring-2 focus:ring-blue-500"
           @input="handleInput"
         />
         <p v-if="validationError" class="mt-1 text-sm text-red-600">
@@ -34,7 +34,7 @@
       <button
         type="submit"
         :disabled="!isValid || loading"
-        class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+        class="w-full rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-400"
       >
         {{ loading ? "Joining..." : "Join Family" }}
       </button>

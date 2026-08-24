@@ -56,9 +56,12 @@ export default defineEventHandler(
 
       let auditQuery = supabaseAdmin
         .from("admin_audit_log")
-        .select("id, actor_admin_id, action, target_user_id, meta, created_at", {
-          count: "exact",
-        })
+        .select(
+          "id, actor_admin_id, action, target_user_id, meta, created_at",
+          {
+            count: "exact",
+          },
+        )
         .order("created_at", { ascending: false });
 
       if (typeof query.action === "string" && query.action) {

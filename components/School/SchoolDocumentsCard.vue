@@ -1,17 +1,17 @@
 <template>
-  <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
-    <div class="flex items-center justify-between mb-4">
+  <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-xs">
+    <div class="mb-4 flex items-center justify-between">
       <div class="flex items-center gap-2">
         <UIcon
           name="i-heroicons-document-text"
-          class="w-5 h-5 text-slate-400"
+          class="h-5 w-5 text-slate-400"
         />
         <h2 class="text-lg font-semibold text-slate-900">Shared Documents</h2>
       </div>
       <button
         @click="showUploadModal = true"
         aria-label="Upload document"
-        class="px-3 py-1.5 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+        class="rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-blue-700"
       >
         Upload
       </button>
@@ -21,10 +21,10 @@
       <div
         v-for="doc in documents"
         :key="doc.id"
-        class="flex items-center justify-between p-3 border border-slate-200 rounded-lg hover:bg-slate-50 transition"
+        class="flex items-center justify-between rounded-lg border border-slate-200 p-3 transition hover:bg-slate-50"
       >
         <div>
-          <p class="font-medium text-slate-900 text-sm">
+          <p class="text-sm font-medium text-slate-900">
             {{ doc.title }}
           </p>
           <p class="text-xs text-slate-500 capitalize">
@@ -33,14 +33,14 @@
         </div>
         <NuxtLink
           :to="`/documents/${doc.id}`"
-          class="px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          class="rounded-lg px-3 py-1.5 text-sm font-medium text-blue-600 transition hover:bg-blue-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         >
           View
         </NuxtLink>
       </div>
     </div>
 
-    <div v-else class="text-center py-8 text-slate-500 text-sm">
+    <div v-else class="py-8 text-center text-sm text-slate-500">
       No documents shared with this school yet
     </div>
 

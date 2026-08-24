@@ -5,7 +5,7 @@
     role="button"
     tabindex="0"
     aria-label="Enter family code to exit preview mode"
-    class="fixed top-0 left-0 right-0 w-full bg-red-600 text-white py-3 px-4 cursor-pointer hover:bg-red-700 transition-colors z-50"
+    class="fixed top-0 right-0 left-0 z-50 w-full cursor-pointer bg-red-600 px-4 py-3 text-white transition-colors hover:bg-red-700"
     @click="handleBannerClick"
     @keydown.enter="handleBannerClick"
   >

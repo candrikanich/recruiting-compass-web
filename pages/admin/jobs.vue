@@ -1,6 +1,6 @@
 <template>
-  <div class="bg-white rounded-lg shadow-md p-6">
-    <div class="flex items-center justify-between mb-6">
+  <div class="rounded-lg bg-white p-6 shadow-md">
+    <div class="mb-6 flex items-center justify-between">
       <h1 class="text-2xl font-bold text-slate-900">Scheduled Jobs</h1>
       <button
         @click="loadCronRuns"
@@ -10,18 +10,18 @@
       </button>
     </div>
 
-    <div v-if="cronLoading" class="text-center py-12 text-slate-600">
+    <div v-if="cronLoading" class="py-12 text-center text-slate-600">
       Loading job history...
     </div>
     <div
       v-else-if="cronError"
-      class="bg-red-50 border border-red-200 rounded-lg p-4"
+      class="rounded-lg border border-red-200 bg-red-50 p-4"
     >
       <p class="text-red-800">{{ cronError }}</p>
     </div>
     <div v-else class="space-y-6">
       <!-- Per-job status cards -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
         <div
           v-for="job in jobs"
           :key="job.jobName"
@@ -30,28 +30,26 @@
         >
           <div class="flex items-center gap-2">
             <span
-              class="inline-block w-3 h-3 rounded-full shrink-0"
+              class="inline-block h-3 w-3 shrink-0 rounded-full"
               :class="cronDotClass(job)"
               aria-hidden="true"
             />
-            <span class="font-semibold text-slate-900">{{
-              job.jobName
-            }}</span>
+            <span class="font-semibold text-slate-900">{{ job.jobName }}</span>
             <span
               v-if="job.stale"
-              class="ml-auto text-xs font-medium text-red-700 bg-red-100 rounded px-2 py-0.5"
+              class="ml-auto rounded bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700"
             >
               STALE
             </span>
             <span
               v-else-if="job.neverRun"
-              class="ml-auto text-xs font-medium text-slate-500 bg-slate-100 rounded px-2 py-0.5"
+              class="ml-auto rounded bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-500"
             >
               PENDING
             </span>
             <span
               v-if="!job.stale && consecutiveFailures(recent, job.jobName) >= 2"
-              class="ml-auto text-xs font-medium text-red-700 bg-red-100 rounded px-2 py-0.5"
+              class="ml-auto rounded bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700"
             >
               {{ consecutiveFailures(recent, job.jobName) }} failures in a row
             </span>
@@ -64,7 +62,7 @@
             />
           </div>
 
-          <dl class="mt-3 text-sm space-y-1 text-slate-600">
+          <dl class="mt-3 space-y-1 text-sm text-slate-600">
             <div class="flex justify-between gap-4">
               <dt>Schedule</dt>
               <dd class="font-mono text-slate-500">{{ job.schedule }}</dd>
@@ -107,51 +105,58 @@
             </div>
             <p
               v-if="job.lastRun?.error"
-              class="text-red-700 bg-red-50 rounded p-2 mt-2 break-words"
+              class="mt-2 rounded bg-red-50 p-2 break-words text-red-700"
             >
               {{ job.lastRun.error }}
             </p>
           </dl>
 
-          <div class="mt-3 pt-3 border-t border-slate-200/70">
+          <div class="mt-3 border-t border-slate-200/70 pt-3">
             <button
-              v-if="TRIGGERABLE_JOBS.includes(job.jobName as (typeof TRIGGERABLE_JOBS)[number])"
+              v-if="
+                TRIGGERABLE_JOBS.includes(
+                  job.jobName as (typeof TRIGGERABLE_JOBS)[number],
+                )
+              "
               type="button"
               :disabled="triggering === job.jobName"
-              class="text-sm font-medium text-blue-600 hover:text-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              class="text-sm font-medium text-blue-600 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
               @click="runJob(job.jobName)"
             >
               {{ triggering === job.jobName ? "Running..." : "Run now" }}
             </button>
             <button
-              v-else-if="DRYRUN_ONLY_JOBS.includes(job.jobName as (typeof DRYRUN_ONLY_JOBS)[number])"
+              v-else-if="
+                DRYRUN_ONLY_JOBS.includes(
+                  job.jobName as (typeof DRYRUN_ONLY_JOBS)[number],
+                )
+              "
               type="button"
               :disabled="triggering === job.jobName"
-              class="text-sm font-medium text-blue-600 hover:text-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              class="text-sm font-medium text-blue-600 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
               @click="runJob(job.jobName, true)"
             >
-              {{ triggering === job.jobName ? "Running..." : "Preview (dry run)" }}
+              {{
+                triggering === job.jobName ? "Running..." : "Preview (dry run)"
+              }}
             </button>
             <span v-else class="text-xs text-slate-400">Scheduled only</span>
 
             <pre
               v-if="dryRunPreview[job.jobName]"
-              class="mt-2 text-xs bg-slate-50 border border-slate-200 rounded p-2 overflow-x-auto"
-              >{{ JSON.stringify(dryRunPreview[job.jobName], null, 2) }}</pre
-            >
+              class="mt-2 overflow-x-auto rounded border border-slate-200 bg-slate-50 p-2 text-xs"
+              >{{ JSON.stringify(dryRunPreview[job.jobName], null, 2) }}</pre>
           </div>
         </div>
       </div>
 
       <!-- Recent runs -->
       <div>
-        <h3 class="text-lg font-semibold text-slate-900 mb-3">
-          Recent runs
-        </h3>
+        <h3 class="mb-3 text-lg font-semibold text-slate-900">Recent runs</h3>
         <div class="overflow-x-auto">
           <table class="min-w-full text-sm">
             <thead>
-              <tr class="text-left text-slate-500 border-b border-slate-200">
+              <tr class="border-b border-slate-200 text-left text-slate-500">
                 <th class="py-2 pr-4 font-medium">Job</th>
                 <th class="py-2 pr-4 font-medium">Status</th>
                 <th class="py-2 pr-4 font-medium">Started</th>

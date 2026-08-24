@@ -1,14 +1,14 @@
 <template>
-  <div class="max-w-2xl mx-auto py-8 px-4">
+  <div class="mx-auto max-w-2xl px-4 py-8">
     <NuxtLink
       to="/settings"
-      class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition mb-3 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+      class="mb-3 inline-flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium text-blue-600 transition hover:bg-blue-50 hover:text-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
     >
-      <UIcon name="i-heroicons-arrow-left" class="w-4 h-4" />
+      <UIcon name="i-heroicons-arrow-left" class="h-4 w-4" />
       Back to Settings
     </NuxtLink>
-    <h1 class="text-2xl font-bold mb-2">Notification Preferences</h1>
-    <p class="text-gray-500 mb-8">
+    <h1 class="mb-2 text-2xl font-bold">Notification Preferences</h1>
+    <p class="mb-8 text-gray-500">
       Control which notifications you receive and how.
     </p>
 
@@ -18,7 +18,7 @@
       <div
         v-for="type in NOTIFICATION_TYPES"
         :key="type.value"
-        class="p-4 bg-white rounded-lg border border-gray-200 space-y-3"
+        class="space-y-3 rounded-lg border border-gray-200 bg-white p-4"
       >
         <div class="flex items-center justify-between">
           <div>
@@ -43,7 +43,7 @@
         <!-- Email toggle only for deadline_alert and weekly_digest -->
         <div
           v-if="EMAIL_TYPES.has(type.value)"
-          class="flex items-center justify-between pt-2 border-t border-gray-100"
+          class="flex items-center justify-between border-t border-gray-100 pt-2"
         >
           <p class="text-sm text-gray-600">Also send email</p>
           <button

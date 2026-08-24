@@ -1,17 +1,17 @@
 <template>
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
     <!-- Search -->
     <div>
       <label
         for="coaches-search"
-        class="block text-sm font-medium text-slate-700 mb-1"
+        class="mb-1 block text-sm font-medium text-slate-700"
       >
         Search coaches
       </label>
       <div class="relative">
         <UIcon
           name="i-heroicons-magnifying-glass"
-          class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+          class="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400"
           aria-hidden="true"
         />
         <input
@@ -23,7 +23,7 @@
           "
           aria-describedby="coaches-search-hint"
           placeholder="Name, email, phone..."
-          class="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          class="w-full rounded-lg border border-slate-300 py-2 pr-3 pl-9 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
         />
       </div>
       <p id="coaches-search-hint" class="mt-1 text-xs text-slate-500">
@@ -34,7 +34,7 @@
 
     <!-- Role -->
     <div>
-      <label class="block text-sm font-medium text-slate-700 mb-1">Role</label>
+      <label class="mb-1 block text-sm font-medium text-slate-700">Role</label>
       <select
         :value="filterValues.get('role') || ''"
         @change="
@@ -43,7 +43,7 @@
             ($event.target as HTMLSelectElement).value || null,
           )
         "
-        class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
       >
         <option value="">-- All --</option>
         <option value="head">Head Coach</option>
@@ -54,7 +54,7 @@
 
     <!-- Last Contact -->
     <div>
-      <label class="block text-sm font-medium text-slate-700 mb-1">
+      <label class="mb-1 block text-sm font-medium text-slate-700">
         Last Contact
       </label>
       <select
@@ -65,7 +65,7 @@
             ($event.target as HTMLSelectElement).value || null,
           )
         "
-        class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
       >
         <option value="">-- All --</option>
         <option value="7">Last 7 days</option>
@@ -78,7 +78,7 @@
 
     <!-- Sort -->
     <div>
-      <label class="block text-sm font-medium text-slate-700 mb-1"
+      <label class="mb-1 block text-sm font-medium text-slate-700"
         >Sort By</label
       >
       <select
@@ -86,7 +86,7 @@
         @change="
           emit('update:sort', ($event.target as HTMLSelectElement).value)
         "
-        class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
       >
         <option value="name">Last Name (A-Z)</option>
         <option value="school">School (A-Z)</option>

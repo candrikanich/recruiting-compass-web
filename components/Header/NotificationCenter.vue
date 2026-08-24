@@ -11,10 +11,10 @@
       :aria-expanded="isOpen"
       aria-controls="notifications-dropdown"
       aria-haspopup="menu"
-      class="relative p-2 rounded-lg hover:bg-slate-100 transition-colors focus:ring-2 focus:ring-brand-blue-500 focus:ring-offset-2"
+      class="relative rounded-lg p-2 transition-colors hover:bg-slate-100 focus:ring-2 focus:ring-brand-blue-500 focus:ring-offset-2"
     >
       <svg
-        class="w-6 h-6 text-slate-600"
+        class="h-6 w-6 text-slate-600"
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
         viewBox="0 0 24 24"
@@ -32,7 +32,7 @@
       <span
         v-if="unreadCount > 0"
         aria-hidden="true"
-        class="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center"
+        class="absolute top-1 right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white"
       >
         {{ Math.min(unreadCount, 9) }}
       </span>
@@ -51,31 +51,31 @@
         v-if="isOpen"
         id="notifications-dropdown"
         role="menu"
-        class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-slate-200 z-50 max-h-96 flex flex-col"
+        class="absolute right-0 z-50 mt-2 flex max-h-96 w-80 flex-col rounded-lg border border-slate-200 bg-white shadow-lg"
       >
         <!-- Header -->
         <div
-          class="px-4 py-3 border-b border-slate-200 flex items-center justify-between"
+          class="flex items-center justify-between border-b border-slate-200 px-4 py-3"
         >
           <h3 class="font-semibold text-slate-900">Notifications</h3>
           <button
             v-if="notifications.length > 0"
             @click="markAllAsRead"
-            class="text-xs text-blue-600 hover:text-blue-700 font-medium focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 rounded-sm"
+            class="rounded-sm text-xs font-medium text-blue-600 hover:text-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
           >
             Mark all read
           </button>
         </div>
 
         <!-- Notifications List -->
-        <div v-if="notifications.length > 0" class="overflow-y-auto flex-1">
+        <div v-if="notifications.length > 0" class="flex-1 overflow-y-auto">
           <button
             v-for="notification in notifications"
             :key="notification.id"
             role="menuitem"
             @click="handleNotificationClick(notification)"
             :class="[
-              'w-full text-left px-4 py-3 border-b border-slate-100 hover:bg-slate-50 transition-colors focus:bg-slate-50',
+              'w-full border-b border-slate-100 px-4 py-3 text-left transition-colors hover:bg-slate-50 focus:bg-slate-50',
               !notification.read_at ? 'bg-blue-50' : '',
             ]"
           >
@@ -83,16 +83,16 @@
               <div
                 v-if="!notification.read_at"
                 aria-hidden="true"
-                class="w-2 h-2 rounded-full bg-blue-500 mt-1.5 shrink-0"
+                class="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-blue-500"
               />
-              <div class="flex-1 min-w-0">
+              <div class="min-w-0 flex-1">
                 <p class="text-sm font-medium text-slate-900">
                   {{ notification.title }}
                 </p>
-                <p class="text-sm text-slate-600 mt-0.5 line-clamp-2">
+                <p class="mt-0.5 line-clamp-2 text-sm text-slate-600">
                   {{ notification.message }}
                 </p>
-                <p class="text-xs text-slate-400 mt-1">
+                <p class="mt-1 text-xs text-slate-400">
                   {{ formatDate(notification.scheduled_for) }}
                 </p>
               </div>
@@ -102,7 +102,7 @@
 
         <!-- Empty State -->
         <div v-else class="flex items-center justify-center py-8">
-          <p class="text-slate-500 text-sm">No notifications</p>
+          <p class="text-sm text-slate-500">No notifications</p>
         </div>
 
         <!-- Footer -->
@@ -110,7 +110,7 @@
           <NuxtLink
             to="/notifications"
             @click="isOpen = false"
-            class="block text-center text-sm text-blue-600 hover:text-blue-700 font-medium"
+            class="block text-center text-sm font-medium text-blue-600 hover:text-blue-700"
           >
             View All Notifications
           </NuxtLink>

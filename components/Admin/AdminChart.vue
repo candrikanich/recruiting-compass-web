@@ -25,7 +25,12 @@ function render(): void {
   chart = new Chart(canvas.value, {
     type: isSpark ? "line" : props.type,
     data: props.data,
-    options: { responsive: true, maintainAspectRatio: false, ...(isSpark ? sparklineOptions : {}), ...props.options },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      ...(isSpark ? sparklineOptions : {}),
+      ...props.options,
+    },
   });
 }
 

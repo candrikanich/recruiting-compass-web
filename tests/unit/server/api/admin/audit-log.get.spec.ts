@@ -64,9 +64,8 @@ describe("GET /api/admin/audit-log", () => {
 
   it("uses default limit=50 and offset=0 when no query params provided", async () => {
     vi.mocked(getQuery).mockReturnValue({});
-    const { default: handler } = await import(
-      "~/server/api/admin/audit-log.get"
-    );
+    const { default: handler } =
+      await import("~/server/api/admin/audit-log.get");
     await handler({} as any);
 
     expect(mockSelect).toHaveBeenCalledWith(
@@ -78,9 +77,8 @@ describe("GET /api/admin/audit-log", () => {
 
   it("uses provided limit and offset from query params", async () => {
     vi.mocked(getQuery).mockReturnValue({ limit: "10", offset: "20" });
-    const { default: handler } = await import(
-      "~/server/api/admin/audit-log.get"
-    );
+    const { default: handler } =
+      await import("~/server/api/admin/audit-log.get");
     await handler({} as any);
 
     expect(mockRange).toHaveBeenCalledWith(20, 29);
@@ -88,9 +86,8 @@ describe("GET /api/admin/audit-log", () => {
 
   it("caps limit at 200 regardless of query param value", async () => {
     vi.mocked(getQuery).mockReturnValue({ limit: "9999" });
-    const { default: handler } = await import(
-      "~/server/api/admin/audit-log.get"
-    );
+    const { default: handler } =
+      await import("~/server/api/admin/audit-log.get");
     await handler({} as any);
 
     expect(mockRange).toHaveBeenCalledWith(0, 199);
@@ -101,9 +98,8 @@ describe("GET /api/admin/audit-log", () => {
       action: "user.delete",
       actor: "admin-2",
     });
-    const { default: handler } = await import(
-      "~/server/api/admin/audit-log.get"
-    );
+    const { default: handler } =
+      await import("~/server/api/admin/audit-log.get");
     await handler({} as any);
 
     expect(mockEq).toHaveBeenCalledWith("action", "user.delete");
@@ -112,9 +108,8 @@ describe("GET /api/admin/audit-log", () => {
 
   it("returns rows and total count", async () => {
     vi.mocked(getQuery).mockReturnValue({});
-    const { default: handler } = await import(
-      "~/server/api/admin/audit-log.get"
-    );
+    const { default: handler } =
+      await import("~/server/api/admin/audit-log.get");
     const result = await handler({} as any);
 
     expect(result).toEqual({ rows: SAMPLE_ROWS, total: 1 });
@@ -127,9 +122,8 @@ describe("GET /api/admin/audit-log", () => {
       error: { message: "db error" },
     });
     vi.mocked(getQuery).mockReturnValue({});
-    const { default: handler } = await import(
-      "~/server/api/admin/audit-log.get"
-    );
+    const { default: handler } =
+      await import("~/server/api/admin/audit-log.get");
 
     await expect(handler({} as any)).rejects.toMatchObject({
       statusCode: 500,

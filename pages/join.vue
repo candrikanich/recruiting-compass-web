@@ -224,7 +224,7 @@ async function decline() {
 </script>
 
 <template>
-  <div class="max-w-md mx-auto py-16 px-4">
+  <div class="mx-auto max-w-md px-4 py-16">
     <!-- Loading -->
     <div v-if="fetchStatus === 'pending'" data-testid="loading">
       Loading invite...
@@ -232,7 +232,7 @@ async function decline() {
 
     <!-- Declined -->
     <div v-else-if="fetchStatus === 'declined'" data-testid="invite-declined">
-      <h1 class="text-xl font-semibold mb-2">Invitation declined</h1>
+      <h1 class="mb-2 text-xl font-semibold">Invitation declined</h1>
       <p class="text-gray-600">
         You've declined this invitation. No action is needed.
       </p>
@@ -240,7 +240,7 @@ async function decline() {
 
     <!-- Error: expired -->
     <div v-else-if="fetchError?.statusCode === 410" data-testid="error-expired">
-      <h1 class="text-xl font-semibold mb-2">This invite has expired</h1>
+      <h1 class="mb-2 text-xl font-semibold">This invite has expired</h1>
       <p class="text-gray-600">Ask a family member to send a new invite.</p>
     </div>
 
@@ -249,7 +249,7 @@ async function decline() {
       v-else-if="fetchError?.statusCode === 409"
       data-testid="error-accepted"
     >
-      <h1 class="text-xl font-semibold mb-2">Already connected</h1>
+      <h1 class="mb-2 text-xl font-semibold">Already connected</h1>
       <p class="text-gray-600">You're already a member of this family.</p>
       <DesignSystemButton to="/dashboard" class="mt-4"
         >Go to dashboard</DesignSystemButton
@@ -258,28 +258,28 @@ async function decline() {
 
     <!-- Error: not found or other -->
     <div v-else-if="fetchStatus === 'error'" data-testid="error-not-found">
-      <h1 class="text-xl font-semibold mb-2">Invite not found</h1>
+      <h1 class="mb-2 text-xl font-semibold">Invite not found</h1>
       <p class="text-gray-600">This link may be invalid or already used.</p>
     </div>
 
     <!-- Valid invite -->
     <div v-else-if="invite">
-      <h1 class="text-2xl font-semibold mb-1">
+      <h1 class="mb-1 text-2xl font-semibold">
         You're invited to join {{ invite.familyName }}'s recruiting journey
       </h1>
-      <p class="text-gray-600 mb-6">
+      <p class="mb-6 text-gray-600">
         A family member has invited you as a {{ invite.role }}.
       </p>
 
       <!-- Already authenticated: just confirm -->
       <div v-if="userStore.isAuthenticated">
-        <p class="text-sm text-gray-500 mb-4">
+        <p class="mb-4 text-sm text-gray-500">
           Connecting as {{ userStore.user?.email }}
         </p>
         <p
           v-if="loginError"
           data-testid="accept-error"
-          class="text-sm text-red-600 mb-3"
+          class="mb-3 text-sm text-red-600"
           role="alert"
         >
           {{ loginError }}
@@ -308,10 +308,10 @@ async function decline() {
       <div v-else>
         <!-- Login form -->
         <div data-testid="login-section">
-          <p class="text-sm text-gray-500 mb-4">
+          <p class="mb-4 text-sm text-gray-500">
             Log in to connect your account.
           </p>
-          <p v-if="loginError" class="text-sm text-red-600 mb-3" role="alert">
+          <p v-if="loginError" class="mb-3 text-sm text-red-600" role="alert">
             {{ loginError }}
           </p>
           <DesignSystemInput
@@ -350,13 +350,13 @@ async function decline() {
 
         <!-- Signup option -->
         <div class="mt-8" data-testid="signup-section">
-          <p class="text-sm text-gray-500 mb-4">
+          <p class="mb-4 text-sm text-gray-500">
             Don't have an account?
             <NuxtLink to="/signup" class="text-blue-600 hover:underline"
               >Create one instead</NuxtLink
             >.
           </p>
-          <p v-if="signupError" class="text-sm text-red-600 mb-3" role="alert">
+          <p v-if="signupError" class="mb-3 text-sm text-red-600" role="alert">
             {{ signupError }}
           </p>
           <AuthInviteSignupForm

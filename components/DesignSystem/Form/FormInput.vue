@@ -1,10 +1,10 @@
 <template>
   <div>
-    <label :for="inputId" class="block text-sm font-medium text-slate-700 mb-2">
+    <label :for="inputId" class="mb-2 block text-sm font-medium text-slate-700">
       {{ label }}
       <span v-if="required" class="text-red-500" aria-hidden="true">*</span>
       <span v-if="required" class="sr-only">(required)</span>
-      <span v-if="autoFilled" class="text-xs font-normal text-blue-700 ml-1"
+      <span v-if="autoFilled" class="ml-1 text-xs font-normal text-blue-700"
         >(auto-filled)</span
       >
     </label>
@@ -21,12 +21,12 @@
       :aria-required="required || undefined"
       :aria-invalid="error ? 'true' : undefined"
       :aria-describedby="error ? `${inputId}-error` : undefined"
-      class="px-4 py-3 bg-white border-2 rounded-xl"
+      class="rounded-xl border-2 bg-white px-4 py-3"
       :class="[
         error ? 'border-red-500' : 'border-slate-300',
-        'focus:ring-2 focus:ring-blue-500 focus:border-transparent',
+        'focus:border-transparent focus:ring-2 focus:ring-blue-500',
         'transition-all placeholder:text-slate-600',
-        'disabled:opacity-50 disabled:cursor-not-allowed',
+        'disabled:cursor-not-allowed disabled:opacity-50',
       ]"
       @input="onInput"
       @blur="$emit('blur')"
