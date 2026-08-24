@@ -50,16 +50,6 @@ test.describe("Profile Edit Restrictions (User Story 2.2)", () => {
     });
 
     test("parent sees position buttons ENABLED", async ({ page }) => {
-      // TEMP DIAGNOSTIC: capture what the server returns for the player-owned
-      // "player" prefs so we can see which athlete the parent resolves to.
-      const prefResponses: string[] = [];
-      page.on("response", async (r) => {
-        if (/\/api\/user\/preferences\/player(\?|$)/.test(r.url())) {
-          const body = await r.text().catch(() => "");
-          prefResponses.push(`${r.status()} ${body}`.slice(0, 400));
-        }
-      });
-
       await page.goto("/settings/player-details");
       await page.waitForLoadState("domcontentloaded");
 
@@ -86,21 +76,6 @@ test.describe("Profile Edit Restrictions (User Story 2.2)", () => {
         hasText:
           /^(Pitcher|Catcher|First Base|Second Base|Third Base|Shortstop|Left Field|Center Field|Right Field|Designated Hitter|Utility)$/,
       });
-      const selectValues = await page
-        .locator("select")
-        .evaluateAll((els) =>
-          (els as HTMLSelectElement[]).map((e) => `${e.id || e.name}=${e.value}`),
-        );
-      // eslint-disable-next-line no-console
-      console.log(
-        "[pe-diag] positions=" +
-          (await positionButtons.count()) +
-          " prefResponses=" +
-          JSON.stringify(prefResponses) +
-          " selects=" +
-          JSON.stringify(selectValues),
-      );
-
       expect(await positionButtons.count()).toBeGreaterThan(0);
       const disabledPositions = positionButtons.and(page.locator("[disabled]"));
       expect(await disabledPositions.count()).toBe(0);

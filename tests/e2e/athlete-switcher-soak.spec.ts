@@ -124,37 +124,6 @@ test.describe("Athlete switcher — memory soak", () => {
     // Soak loops + a cold-server first compile exceed the default 30s test cap.
     test.setTimeout(180000);
 
-    // TEMP DIAGNOSTIC (SOAK_LC=1): net-count JS event listeners by
-    // constructor|type so the soak log reveals WHICH listeners grow per switch.
-    if (process.env.SOAK_LC === "1") {
-      await page.addInitScript(() => {
-        const w = window as unknown as { __lc: Record<string, number> };
-        w.__lc = {};
-        const proto = EventTarget.prototype;
-        const add = proto.addEventListener;
-        const rm = proto.removeEventListener;
-        const bump = (self: EventTarget, type: string, d: number) => {
-          try {
-            const name =
-              (self as { constructor?: { name?: string } })?.constructor
-                ?.name || "Unknown";
-            const k = name + "|" + type;
-            w.__lc[k] = (w.__lc[k] || 0) + d;
-          } catch {
-            /* ignore */
-          }
-        };
-        proto.addEventListener = function (this: EventTarget, type, ...rest) {
-          bump(this, type as string, 1);
-          return add.call(this, type, ...(rest as [EventListener]));
-        };
-        proto.removeEventListener = function (this: EventTarget, type, ...rest) {
-          bump(this, type as string, -1);
-          return rm.call(this, type, ...(rest as [EventListener]));
-        };
-      });
-    }
-
     // The switcher is parent-only and renders only after useActiveFamily
     // fetches the parent's families (profile load → isParent →
     // /api/family/accessible returns ≥2 athletes). On a cold dev/preview server
@@ -194,18 +163,6 @@ test.describe("Athlete switcher — memory soak", () => {
     console.log(
       "[soak] athlete-switcher " + JSON.stringify({ baseline, after }),
     );
-
-    if (process.env.SOAK_LC === "1") {
-      const lc = await page.evaluate(
-        () => (window as unknown as { __lc: Record<string, number> }).__lc,
-      );
-      const top = Object.entries(lc)
-        .filter(([, v]) => v > 0)
-        .sort((a2, b2) => b2[1] - a2[1])
-        .slice(0, 20);
-      // eslint-disable-next-line no-console
-      console.log("[soak-lc] net-listeners-by-type " + JSON.stringify(top));
-    }
 
     expect(after.listeners).toBeLessThanOrEqual(baseline.listeners);
     expect(after.nodes).toBeLessThan(baseline.nodes + NODE_ALLOWANCE);
