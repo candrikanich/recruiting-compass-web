@@ -102,7 +102,8 @@ export function useQuickCommunication(params: QuickCommunicationParams) {
   const { buildAthleteContext, resolveTemplate, loadRegistry } =
     useTemplateResolver();
   const { updateSchool } = useSchools();
-  const { loadAllPreferences, setPlayerDetails } = usePreferenceManager();
+  const { loadAllPreferences, setPlayerDetails, getPlayerDetails } =
+    usePreferenceManager();
   const { writeField } = useProfileFieldWrite();
   const { checkSend, logSend } = useAthleteMessages();
   const { evaluate: evaluateContactWindow, filterTemplatesByWindow } =
@@ -145,10 +146,6 @@ export function useQuickCommunication(params: QuickCommunicationParams) {
   const invalidateAthleteContext = (): void => {
     athleteCtxId.value = null;
   };
-
-  const showAddMetricCta = computed(
-    () => (athleteCtx.value?.metrics?.length ?? 0) === 0,
-  );
 
   // --- questionnaire completion prompt (ask once, skippable) ----------------
   const questionnaireOverride = ref<boolean | null>(null);
@@ -385,12 +382,18 @@ export function useQuickCommunication(params: QuickCommunicationParams) {
       const major = intendedMajorDraft.value.trim();
       if (major) {
         try {
-          // Load current prefs into the store FIRST so setPlayerDetails merges
-          // against the full object — otherwise it would replace prefs with just
-          // { intended_major } and wipe the athlete's other player details.
+          // Load current prefs into the store so setPlayerDetails merges against
+          // the full object. loadAllPreferences SWALLOWS fetch failures (it falls
+          // back to an empty store), so a failed load would leave the store empty
+          // and setPlayerDetails would replace ALL player prefs with just
+          // { intended_major } — wiping GPA/positions/etc. Guard on
+          // getPlayerDetails(): it returns null for an empty store, so we only
+          // persist when current prefs actually loaded (non-empty).
           await loadAllPreferences();
-          await setPlayerDetails({ intended_major: major });
-          invalidateAthleteContext();
+          if (getPlayerDetails()) {
+            await setPlayerDetails({ intended_major: major });
+            invalidateAthleteContext();
+          }
         } catch {
           // Best-effort — a persist failure must never block the send.
         }
@@ -603,7 +606,6 @@ export function useQuickCommunication(params: QuickCommunicationParams) {
     email,
     text,
     shouldLogInteraction,
-    showAddMetricCta,
     showQuestionnairePrompt,
     answerQuestionnaire,
     canEditProfile,
