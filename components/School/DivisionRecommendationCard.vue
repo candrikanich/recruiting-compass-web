@@ -1,7 +1,7 @@
 <template>
-  <div class="bg-blue-50 rounded-xl border border-blue-200 shadow-xs p-6">
+  <div class="rounded-xl border border-blue-200 bg-blue-50 p-6 shadow-xs">
     <div class="flex items-start gap-3">
-      <div class="shrink-0 mt-0.5">
+      <div class="mt-0.5 shrink-0">
         <svg
           class="h-6 w-6 text-blue-600"
           fill="none"
@@ -17,17 +17,17 @@
         </svg>
       </div>
       <div class="flex-1">
-        <h3 class="text-lg font-semibold text-blue-900 mb-2">
+        <h3 class="mb-2 text-lg font-semibold text-blue-900">
           Consider Other Divisions
         </h3>
-        <p class="text-blue-800 mb-3">
+        <p class="mb-3 text-blue-800">
           {{ recommendation.message }}
         </p>
         <div class="flex flex-wrap gap-2">
           <span
             v-for="division in recommendation.recommendedDivisions"
             :key="division"
-            class="px-3 py-1 text-sm font-medium bg-blue-100 text-blue-700 rounded-full"
+            class="rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-700"
           >
             {{ division }}
           </span>

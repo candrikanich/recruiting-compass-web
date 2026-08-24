@@ -23,29 +23,38 @@ interface AdminAuditEntry {
   meta?: Record<string, unknown>;
 }
 
-export async function logAdminAction(event: H3Event, entry: AdminAuditEntry): Promise<void> {
+export async function logAdminAction(
+  event: H3Event,
+  entry: AdminAuditEntry,
+): Promise<void> {
   const logger = useLogger(event, "adminAudit");
   try {
     const actorId = event.context.adminUserId as string | undefined;
     if (!actorId) {
-      logger.error("logAdminAction: missing actor id in context", { action: entry.action });
+      logger.error("logAdminAction: missing actor id in context", {
+        action: entry.action,
+      });
       return;
     }
     // admin_audit_log is not yet in the generated Database schema (migration
     // pending live application), so use an untyped client for this insert only.
     const untypedSupabase = useSupabaseAdmin() as unknown as SupabaseClient;
-    const { error } = await untypedSupabase
-      .from("admin_audit_log")
-      .insert({
-        actor_admin_id: actorId,
-        action: entry.action,
-        target_user_id: entry.targetUserId ?? null,
-        meta: entry.meta ?? {},
-      });
+    const { error } = await untypedSupabase.from("admin_audit_log").insert({
+      actor_admin_id: actorId,
+      action: entry.action,
+      target_user_id: entry.targetUserId ?? null,
+      meta: entry.meta ?? {},
+    });
     if (error) {
-      logger.error("logAdminAction insert failed", { action: entry.action, error: error.message });
+      logger.error("logAdminAction insert failed", {
+        action: entry.action,
+        error: error.message,
+      });
     }
   } catch (err) {
-    logger.error("logAdminAction threw", { action: entry.action, err: String(err) });
+    logger.error("logAdminAction threw", {
+      action: entry.action,
+      err: String(err),
+    });
   }
 }

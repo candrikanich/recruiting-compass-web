@@ -1,21 +1,21 @@
 <template>
   <div
     v-if="showEvents"
-    class="bg-white rounded-2xl border border-slate-200 shadow-xs hover:shadow-md transition-shadow p-6"
+    class="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs transition-shadow hover:shadow-md"
   >
-    <div class="flex items-center justify-between mb-5">
+    <div class="mb-5 flex items-center justify-between">
       <div class="flex items-center gap-3">
-        <div class="p-2 bg-slate-100 rounded-lg">
+        <div class="rounded-lg bg-slate-100 p-2">
           <UIcon
             name="i-heroicons-calendar-days"
-            class="w-5 h-5 text-slate-700"
+            class="h-5 w-5 text-slate-700"
           />
         </div>
-        <h3 class="text-slate-900 font-semibold">Upcoming Events</h3>
+        <h3 class="font-semibold text-slate-900">Upcoming Events</h3>
       </div>
       <div
         v-if="events.length > 0"
-        class="px-3 py-1 bg-brand-blue-100 text-brand-blue-700 rounded-full text-sm font-medium"
+        class="rounded-full bg-brand-blue-100 px-3 py-1 text-sm font-medium text-brand-blue-700"
       >
         {{ events.length }}
       </div>
@@ -24,28 +24,28 @@
       <div
         v-for="(event, index) in events.slice(0, 3)"
         :key="event.id"
-        class="flex items-start gap-3 p-3 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors"
+        class="flex items-start gap-3 rounded-lg bg-slate-50 p-3 transition-colors hover:bg-slate-100"
       >
-        <div :class="['w-2 h-2 rounded-full mt-2', getEventDotColor(index)]" />
-        <div class="flex-1 min-w-0">
-          <div class="text-slate-900 font-medium truncate">
+        <div :class="['mt-2 h-2 w-2 rounded-full', getEventDotColor(index)]" />
+        <div class="min-w-0 flex-1">
+          <div class="truncate font-medium text-slate-900">
             {{ event.name }}
           </div>
-          <div class="text-slate-600 text-sm mt-0.5">
+          <div class="mt-0.5 text-sm text-slate-600">
             {{ formatEventDate(event.start_date) }}
           </div>
-          <div v-if="event.location" class="text-slate-500 text-sm truncate">
+          <div v-if="event.location" class="truncate text-sm text-slate-500">
             {{ event.location }}
           </div>
         </div>
       </div>
     </div>
-    <div v-else class="text-center py-6 text-slate-500">
+    <div v-else class="py-6 text-center text-slate-500">
       <p>No upcoming events</p>
     </div>
     <NuxtLink
       to="/events"
-      class="mt-4 block w-full py-2 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors text-slate-700 text-center"
+      class="mt-4 block w-full rounded-lg border border-slate-300 py-2 text-center text-slate-700 transition-colors hover:bg-slate-50"
     >
       View All Events
     </NuxtLink>

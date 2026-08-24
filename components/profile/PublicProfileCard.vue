@@ -26,7 +26,11 @@ const socialLinks = computed(() => {
   }
   if (s.instagram_handle) {
     const h = s.instagram_handle;
-    links.push({ label: "Instagram", display: h, open: () => openInstagram(h) });
+    links.push({
+      label: "Instagram",
+      display: h,
+      open: () => openInstagram(h),
+    });
   }
   if (s.tiktok_handle) {
     const h = s.tiktok_handle;
@@ -104,7 +108,7 @@ function formatGPA(gpa: number | undefined): string {
 
 <template>
   <article
-    class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden"
+    class="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm"
   >
     <!-- Header -->
     <header
@@ -116,7 +120,7 @@ function formatGPA(gpa: number | undefined): string {
           v-if="profile.photoUrl"
           :src="profile.photoUrl"
           :alt="`${profile.playerName} profile photo`"
-          class="w-20 h-20 rounded-full object-cover ring-2 ring-white/20 shrink-0"
+          class="h-20 w-20 shrink-0 rounded-full object-cover ring-2 ring-white/20"
         />
         <div>
           <h1 class="text-3xl font-bold tracking-tight">
@@ -124,7 +128,7 @@ function formatGPA(gpa: number | undefined): string {
           </h1>
           <p
             v-if="profile.athletic?.primary_sport"
-            class="mt-1 text-slate-300 text-sm"
+            class="mt-1 text-sm text-slate-300"
           >
             {{ profile.athletic.primary_sport }}
             <span v-if="primaryPositionLabel">
@@ -133,7 +137,7 @@ function formatGPA(gpa: number | undefined): string {
           </p>
           <p
             v-if="profile.bio"
-            class="mt-3 text-slate-200 text-sm leading-relaxed"
+            class="mt-3 text-sm leading-relaxed text-slate-200"
           >
             {{ profile.bio }}
           </p>
@@ -154,17 +158,17 @@ function formatGPA(gpa: number | undefined): string {
         class="px-6 py-5"
       >
         <h2
-          class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3"
+          class="mb-3 text-xs font-semibold tracking-wide text-gray-400 uppercase"
         >
           Athletic Profile
         </h2>
         <div v-if="profile.athletic.positions?.length" class="mb-3">
-          <p class="text-xs text-gray-400 mb-1.5">Positions</p>
+          <p class="mb-1.5 text-xs text-gray-400">Positions</p>
           <div class="flex flex-wrap gap-1.5">
             <span
               v-for="pos in profile.athletic.positions"
               :key="pos"
-              class="inline-block px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 text-xs font-medium"
+              class="inline-block rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-700"
               >{{ pos }}</span
             >
           </div>
@@ -191,7 +195,7 @@ function formatGPA(gpa: number | undefined): string {
       <!-- Film Links -->
       <section v-if="profile.film?.length" class="px-6 py-5">
         <h2
-          class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3"
+          class="mb-3 text-xs font-semibold tracking-wide text-gray-400 uppercase"
         >
           Film
         </h2>
@@ -225,7 +229,7 @@ function formatGPA(gpa: number | undefined): string {
         class="px-6 py-5"
       >
         <h2
-          class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3"
+          class="mb-3 text-xs font-semibold tracking-wide text-gray-400 uppercase"
         >
           Academics
         </h2>
@@ -268,7 +272,7 @@ function formatGPA(gpa: number | undefined): string {
           </div>
         </dl>
         <div v-if="profile.academics.core_courses?.length" class="mt-3">
-          <p class="text-xs text-gray-400 mb-1">Core Courses</p>
+          <p class="mb-1 text-xs text-gray-400">Core Courses</p>
           <p class="text-sm text-gray-700">
             {{ profile.academics.core_courses.join(", ") }}
           </p>
@@ -278,7 +282,7 @@ function formatGPA(gpa: number | undefined): string {
       <!-- Social -->
       <section v-if="socialLinks.length" class="px-6 py-5">
         <h2
-          class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3"
+          class="mb-3 text-xs font-semibold tracking-wide text-gray-400 uppercase"
         >
           Social
         </h2>
@@ -298,7 +302,7 @@ function formatGPA(gpa: number | undefined): string {
               >
                 {{ item.display }}
                 <svg
-                  class="w-3 h-3"
+                  class="h-3 w-3"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -326,7 +330,7 @@ function formatGPA(gpa: number | undefined): string {
         class="px-6 py-5"
       >
         <h2
-          class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3"
+          class="mb-3 text-xs font-semibold tracking-wide text-gray-400 uppercase"
         >
           Recruiting IDs
         </h2>
@@ -349,7 +353,7 @@ function formatGPA(gpa: number | undefined): string {
                 :href="svc.url"
                 target="_blank"
                 rel="noopener noreferrer"
-                class="text-blue-600 hover:text-blue-800 hover:underline font-mono"
+                class="font-mono text-blue-600 hover:text-blue-800 hover:underline"
                 >{{ svc.value }}</a
               >
               <span v-else class="font-mono text-gray-900">{{
@@ -362,7 +366,7 @@ function formatGPA(gpa: number | undefined): string {
     </div>
 
     <!-- Footer -->
-    <footer class="px-6 py-4 bg-gray-50 text-center">
+    <footer class="bg-gray-50 px-6 py-4 text-center">
       <p class="text-xs text-gray-400">
         Recruiting profile powered by
         <a href="/" class="text-gray-500 hover:text-gray-700"

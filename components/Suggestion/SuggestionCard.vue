@@ -1,12 +1,12 @@
 <template>
-  <div class="bg-white border rounded-xl p-4 shadow-xs" :class="urgencyClasses">
+  <div class="rounded-xl border bg-white p-4 shadow-xs" :class="urgencyClasses">
     <div class="flex items-start gap-3">
       <!-- Urgency icon -->
       <div
-        class="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
+        class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
         :class="iconClasses"
       >
-        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+        <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
           <path
             fill-rule="evenodd"
             d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
@@ -16,14 +16,14 @@
       </div>
 
       <!-- Content -->
-      <div class="flex-1 min-w-0">
-        <div class="flex items-center gap-2 mb-2">
+      <div class="min-w-0 flex-1">
+        <div class="mb-2 flex items-center gap-2">
           <p class="text-sm font-medium text-slate-900">
             {{ suggestion.message }}
           </p>
           <span
             v-if="suggestion.reappeared"
-            class="inline-flex px-2 py-1 text-xs font-medium bg-orange-100 text-orange-700 rounded-sm whitespace-nowrap"
+            class="inline-flex rounded-sm bg-orange-100 px-2 py-1 text-xs font-medium whitespace-nowrap text-orange-700"
             title="This suggestion has returned because conditions have worsened"
           >
             Returned
@@ -31,11 +31,11 @@
         </div>
 
         <!-- Action buttons -->
-        <div class="flex items-center gap-2 flex-wrap">
+        <div class="flex flex-wrap items-center gap-2">
           <button
             v-if="showAction"
             @click="handleAction"
-            class="px-3 py-1.5 text-sm font-medium rounded-lg transition"
+            class="rounded-lg px-3 py-1.5 text-sm font-medium transition"
             :class="actionClasses"
           >
             {{ actionLabel }}
@@ -43,7 +43,7 @@
 
           <button
             @click="showHelpModal = true"
-            class="px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition"
+            class="rounded-lg px-3 py-1.5 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-700"
             title="Learn more about this suggestion"
           >
             Learn More
@@ -51,7 +51,7 @@
 
           <button
             @click="$emit('dismiss', suggestion.id)"
-            class="px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition"
+            class="rounded-lg px-3 py-1.5 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-700"
           >
             Dismiss
           </button>

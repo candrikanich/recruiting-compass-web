@@ -1,10 +1,10 @@
 <template>
   <NuxtLink
     :to="`/help/${slug}`"
-    class="group flex flex-col gap-3 rounded-xl border border-gray-200 p-5 transition-all hover:border-primary-300 hover:shadow-xs"
+    class="group hover:border-primary-300 flex flex-col gap-3 rounded-xl border border-gray-200 p-5 transition-all hover:shadow-xs"
   >
     <div
-      class="flex size-10 items-center justify-center rounded-lg bg-primary-50 text-primary-600 transition-colors group-hover:bg-primary-100"
+      class="bg-primary-50 text-primary-600 group-hover:bg-primary-100 flex size-10 items-center justify-center rounded-lg transition-colors"
     >
       <UIcon :name="icon" class="size-5" />
     </div>
@@ -12,7 +12,7 @@
       <p class="font-semibold text-gray-900">{{ title }}</p>
       <p class="mt-0.5 text-sm text-gray-500">{{ description }}</p>
     </div>
-    <div class="flex items-center gap-1 text-xs font-medium text-primary-600">
+    <div class="text-primary-600 flex items-center gap-1 text-xs font-medium">
       Read guide
       <UIcon
         name="i-heroicons-arrow-right"

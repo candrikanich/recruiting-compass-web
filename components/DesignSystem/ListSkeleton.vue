@@ -1,6 +1,6 @@
 <template>
-  <div class="bg-white rounded-lg shadow-sm divide-y divide-gray-200">
-    <div v-for="i in lines" :key="i" class="p-4 space-y-2">
+  <div class="divide-y divide-gray-200 rounded-lg bg-white shadow-sm">
+    <div v-for="i in lines" :key="i" class="space-y-2 p-4">
       <div class="flex items-center justify-between">
         <LoadingSkeleton className="h-5 w-1/3" />
         <LoadingSkeleton className="h-4 w-16" />

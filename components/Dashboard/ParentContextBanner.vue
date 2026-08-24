@@ -4,13 +4,13 @@
     role="alert"
     aria-live="polite"
     aria-atomic="true"
-    class="bg-indigo-50 border-l-4 border-indigo-500 p-4 rounded-r-lg mb-6 focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+    class="mb-6 rounded-r-lg border-l-4 border-indigo-500 bg-indigo-50 p-4 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
     tabindex="0"
   >
     <div class="flex items-center">
       <UIcon
         name="i-heroicons-eye-solid"
-        class="w-5 h-5 text-indigo-600 mr-3"
+        class="mr-3 h-5 w-5 text-indigo-600"
         aria-hidden="true"
       />
       <p class="text-sm text-indigo-800">

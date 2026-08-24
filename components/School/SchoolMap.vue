@@ -3,13 +3,13 @@
     <div
       v-if="hasCoordinates"
       ref="mapContainer"
-      class="h-48 w-full rounded-lg overflow-hidden border border-slate-300"
+      class="h-48 w-full overflow-hidden rounded-lg border border-slate-300"
     ></div>
     <div
       v-else
-      class="h-48 w-full rounded-lg flex items-center justify-center bg-slate-50 border border-slate-300"
+      class="flex h-48 w-full items-center justify-center rounded-lg border border-slate-300 bg-slate-50"
     >
-      <p class="text-sm text-center px-4 text-slate-600">
+      <p class="px-4 text-center text-sm text-slate-600">
         No location data available.<br />
         <span class="text-xs">Use "Lookup" to fetch coordinates.</span>
       </p>

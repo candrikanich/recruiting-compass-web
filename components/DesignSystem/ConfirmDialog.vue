@@ -3,7 +3,7 @@
     <dialog
       v-if="isOpen"
       ref="dialogRef"
-      class="bg-white rounded-lg shadow-2xl max-w-md w-full p-6 backdrop:bg-black/50"
+      class="w-full max-w-md rounded-lg bg-white p-6 shadow-2xl backdrop:bg-black/50"
       :class="borderClass"
       role="dialog"
       :aria-labelledby="titleId"
@@ -14,23 +14,23 @@
         <h2 :id="titleId" class="text-lg font-semibold text-slate-900">
           {{ title }}
         </h2>
-        <p :id="messageId" class="text-sm text-slate-600 mt-1">
+        <p :id="messageId" class="mt-1 text-sm text-slate-600">
           {{ message }}
         </p>
       </div>
 
-      <div class="flex gap-3 justify-end pt-4 border-t border-slate-200">
+      <div class="flex justify-end gap-3 border-t border-slate-200 pt-4">
         <button
           type="button"
           @click="handleCancel"
-          class="px-4 py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-50 font-medium transition focus:ring-2 focus:ring-slate-500 focus:ring-offset-2"
+          class="rounded-lg border border-slate-300 px-4 py-2 font-medium text-slate-700 transition hover:bg-slate-50 focus:ring-2 focus:ring-slate-500 focus:ring-offset-2"
         >
           {{ cancelText }}
         </button>
         <button
           type="button"
           @click="handleConfirm"
-          class="px-4 py-2 rounded-lg font-medium transition focus:ring-2 focus:ring-offset-2"
+          class="rounded-lg px-4 py-2 font-medium transition focus:ring-2 focus:ring-offset-2"
           :class="confirmButtonClass"
         >
           {{ confirmText }}

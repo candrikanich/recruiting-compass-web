@@ -1,18 +1,18 @@
 <template>
   <div
-    class="bg-white rounded-2xl border border-slate-200 shadow-xs hover:shadow-md transition-shadow p-6"
+    class="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs transition-shadow hover:shadow-md"
   >
-    <h2 class="text-xl font-bold mb-6 text-slate-900">📅 Upcoming Events</h2>
+    <h2 class="mb-6 text-xl font-bold text-slate-900">📅 Upcoming Events</h2>
 
     <!-- Empty State -->
     <div
       v-if="upcomingEvents.length === 0"
-      class="text-center py-8 text-slate-600"
+      class="py-8 text-center text-slate-600"
     >
       <p>No upcoming events scheduled</p>
       <NuxtLink
         to="/events"
-        class="text-sm mt-2 inline-block text-blue-600 hover:text-blue-700"
+        class="mt-2 inline-block text-sm text-blue-600 hover:text-blue-700"
       >
         View all events →
       </NuxtLink>
@@ -21,51 +21,51 @@
     <!-- Events Summary -->
     <div v-else class="space-y-6">
       <!-- Event Types Breakdown -->
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div class="rounded-lg p-3 text-center bg-blue-50">
+      <div class="grid grid-cols-2 gap-3 md:grid-cols-4">
+        <div class="rounded-lg bg-blue-50 p-3 text-center">
           <p class="text-2xl font-bold text-blue-600">
             {{ typeCount("showcase") }}
           </p>
-          <p class="text-xs mt-1 text-slate-600">Showcases</p>
+          <p class="mt-1 text-xs text-slate-600">Showcases</p>
         </div>
-        <div class="rounded-lg p-3 text-center bg-emerald-50">
+        <div class="rounded-lg bg-emerald-50 p-3 text-center">
           <p class="text-2xl font-bold text-emerald-600">
             {{ typeCount("camp") }}
           </p>
-          <p class="text-xs mt-1 text-slate-600">Camps</p>
+          <p class="mt-1 text-xs text-slate-600">Camps</p>
         </div>
-        <div class="rounded-lg p-3 text-center bg-purple-50">
+        <div class="rounded-lg bg-purple-50 p-3 text-center">
           <p class="text-2xl font-bold text-purple-600">
             {{ typeCount("official_visit") + typeCount("unofficial_visit") }}
           </p>
-          <p class="text-xs mt-1 text-slate-600">Visits</p>
+          <p class="mt-1 text-xs text-slate-600">Visits</p>
         </div>
-        <div class="rounded-lg p-3 text-center bg-orange-50">
+        <div class="rounded-lg bg-orange-50 p-3 text-center">
           <p class="text-2xl font-bold text-orange-600">
             {{ typeCount("game") }}
           </p>
-          <p class="text-xs mt-1 text-slate-600">Games</p>
+          <p class="mt-1 text-xs text-slate-600">Games</p>
         </div>
       </div>
 
       <!-- Next Events List -->
-      <div class="pt-4 border-t border-slate-200">
-        <h3 class="text-sm font-semibold mb-3 text-slate-900">Next Events</h3>
+      <div class="border-t border-slate-200 pt-4">
+        <h3 class="mb-3 text-sm font-semibold text-slate-900">Next Events</h3>
         <div class="space-y-2">
           <div
             v-for="event in upcomingEvents.slice(0, 5)"
             :key="event.id"
-            class="flex items-start gap-3 p-3 rounded-lg transition bg-slate-100 hover:bg-slate-200 cursor-pointer"
+            class="flex cursor-pointer items-start gap-3 rounded-lg bg-slate-100 p-3 transition hover:bg-slate-200"
           >
-            <div class="text-lg mt-0.5">{{ getEventEmoji(event.type) }}</div>
-            <div class="flex-1 min-w-0">
-              <p class="font-semibold truncate text-slate-900">
+            <div class="mt-0.5 text-lg">{{ getEventEmoji(event.type) }}</div>
+            <div class="min-w-0 flex-1">
+              <p class="truncate font-semibold text-slate-900">
                 {{ event.name }}
               </p>
               <p class="text-xs text-slate-600">
                 {{ getEventTypeLabel(event.type) }}
               </p>
-              <p class="text-xs mt-1 text-slate-600">
+              <p class="mt-1 text-xs text-slate-600">
                 {{ formatDate(event.start_date) }}
               </p>
               <p v-if="event.location" class="text-xs text-slate-600">
@@ -73,7 +73,7 @@
               </p>
             </div>
             <span
-              class="text-xs font-bold px-2 py-1 rounded-sm whitespace-nowrap mt-0.5 bg-blue-100 text-blue-700"
+              class="mt-0.5 rounded-sm bg-blue-100 px-2 py-1 text-xs font-bold whitespace-nowrap text-blue-700"
             >
               {{ daysUntilDate(event.start_date) }}d
             </span>
@@ -82,10 +82,10 @@
       </div>
 
       <!-- View All Link -->
-      <div class="text-center pt-2">
+      <div class="pt-2 text-center">
         <NuxtLink
           to="/events"
-          class="text-blue-600 hover:text-blue-700 text-sm font-medium"
+          class="text-sm font-medium text-blue-600 hover:text-blue-700"
         >
           View all events →
         </NuxtLink>

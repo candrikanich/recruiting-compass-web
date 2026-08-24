@@ -1,6 +1,6 @@
 <template>
   <div
-    class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
     @keydown.escape="handleClose"
   >
     <div
@@ -8,11 +8,11 @@
       role="dialog"
       aria-modal="true"
       aria-labelledby="document-upload-title"
-      class="rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-auto bg-white border border-slate-200"
+      class="max-h-[90vh] w-full max-w-2xl overflow-auto rounded-xl border border-slate-200 bg-white shadow-xl"
     >
       <!-- Header -->
       <div
-        class="flex items-center justify-between p-6 border-b border-slate-200"
+        class="flex items-center justify-between border-b border-slate-200 p-6"
       >
         <h2
           id="document-upload-title"
@@ -30,12 +30,12 @@
       </div>
 
       <!-- Form -->
-      <form @submit.prevent="handleUpload" class="p-6 space-y-6">
+      <form @submit.prevent="handleUpload" class="space-y-6 p-6">
         <!-- Document Type -->
         <div>
           <label
             for="type"
-            class="block text-sm font-medium mb-1 text-slate-700"
+            class="mb-1 block text-sm font-medium text-slate-700"
           >
             Document Type <span class="text-red-600">*</span>
           </label>
@@ -43,7 +43,7 @@
             id="type"
             v-model="form.type"
             required
-            class="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:ring-2 focus:ring-blue-500/20"
+            class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2 text-slate-900 focus:ring-2 focus:ring-blue-500/20"
           >
             <option value="">Select Type</option>
             <option value="highlight_video">Highlight Video</option>
@@ -59,7 +59,7 @@
         <div>
           <label
             for="title"
-            class="block text-sm font-medium mb-1 text-slate-700"
+            class="mb-1 block text-sm font-medium text-slate-700"
           >
             Title <span class="text-red-600">*</span>
           </label>
@@ -69,7 +69,7 @@
             type="text"
             required
             placeholder="e.g., Spring 2025 Highlights"
-            class="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:ring-2 focus:ring-blue-500/20"
+            class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2 text-slate-900 focus:ring-2 focus:ring-blue-500/20"
           />
         </div>
 
@@ -77,7 +77,7 @@
         <div>
           <label
             for="description"
-            class="block text-sm font-medium mb-1 text-slate-700"
+            class="mb-1 block text-sm font-medium text-slate-700"
           >
             Description
           </label>
@@ -86,7 +86,7 @@
             v-model="form.description"
             rows="3"
             placeholder="Additional details about this document..."
-            class="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:ring-2 focus:ring-blue-500/20"
+            class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2 text-slate-900 focus:ring-2 focus:ring-blue-500/20"
           />
         </div>
 
@@ -94,7 +94,7 @@
         <div>
           <label
             for="file"
-            class="block text-sm font-medium mb-1 text-slate-700"
+            class="mb-1 block text-sm font-medium text-slate-700"
           >
             Select File <span class="text-red-600">*</span>
           </label>
@@ -110,15 +110,15 @@
               type="button"
               @click="fileInput?.click()"
               :disabled="!form.type"
-              class="w-full px-4 py-2 border-2 border-dashed border-slate-300 rounded-lg text-slate-600 hover:border-blue-500 hover:text-blue-500 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              class="w-full rounded-lg border-2 border-dashed border-slate-300 px-4 py-2 text-slate-600 transition hover:border-blue-500 hover:text-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {{ selectedFileName || "Click to select file" }}
             </button>
           </div>
-          <p v-if="form.type" class="text-xs text-slate-500 mt-2">
+          <p v-if="form.type" class="mt-2 text-xs text-slate-500">
             Allowed formats: {{ allowedFileTypes }}
           </p>
-          <p v-if="fileError" class="text-xs text-red-600 mt-2">
+          <p v-if="fileError" class="mt-2 text-xs text-red-600">
             {{ fileError }}
           </p>
         </div>
@@ -126,20 +126,20 @@
         <!-- Error Message -->
         <div
           v-if="uploadError"
-          class="p-4 bg-red-50 border border-red-200 rounded-lg"
+          class="rounded-lg border border-red-200 bg-red-50 p-4"
         >
           <p class="text-sm text-red-700">{{ uploadError }}</p>
         </div>
 
         <!-- Upload Progress -->
         <div v-if="isUploading" class="space-y-2">
-          <div class="w-full bg-slate-200 rounded-full h-2">
+          <div class="h-2 w-full rounded-full bg-slate-200">
             <div
-              class="bg-blue-600 h-2 rounded-full transition-all duration-300"
+              class="h-2 rounded-full bg-blue-600 transition-all duration-300"
               :style="{ width: `${uploadProgress}%` }"
             />
           </div>
-          <p class="text-sm text-slate-600 text-center">
+          <p class="text-center text-sm text-slate-600">
             Uploading... {{ uploadProgress }}%
           </p>
         </div>
@@ -151,7 +151,7 @@
             :disabled="
               isUploading || !form.type || !form.title || !selectedFile
             "
-            class="flex-1 px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            class="flex-1 rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {{ isUploading ? "Uploading..." : "Upload" }}
           </button>
@@ -159,7 +159,7 @@
             type="button"
             @click="handleClose"
             :disabled="isUploading"
-            class="flex-1 px-4 py-2 bg-slate-200 text-slate-900 font-semibold rounded-lg hover:bg-slate-300 transition disabled:opacity-50"
+            class="flex-1 rounded-lg bg-slate-200 px-4 py-2 font-semibold text-slate-900 transition hover:bg-slate-300 disabled:opacity-50"
           >
             Cancel
           </button>

@@ -1,23 +1,23 @@
 <template>
   <div
     data-testid="school-card"
-    class="bg-white rounded-xl border border-slate-200 shadow-xs hover:shadow-md transition-shadow overflow-hidden group flex flex-col h-full"
+    class="group flex h-full flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xs transition-shadow hover:shadow-md"
   >
-    <div class="p-5 flex-1 flex flex-col">
-      <div class="flex items-start gap-4 mb-4">
+    <div class="flex flex-1 flex-col p-5">
+      <div class="mb-4 flex items-start gap-4">
         <SchoolLogo
           :school="school"
           size="lg"
           fetch-on-mount
-          class="shadow-md rounded-lg"
+          class="rounded-lg shadow-md"
           :transition-name="`school-logo-${school.id}`"
         />
 
-        <div class="flex-1 min-w-0">
-          <h3 class="text-slate-900 font-semibold line-clamp-2 mb-1">
+        <div class="min-w-0 flex-1">
+          <h3 class="mb-1 line-clamp-2 font-semibold text-slate-900">
             {{ school.name }}
           </h3>
-          <p class="text-slate-600 text-sm">{{ school.location }}</p>
+          <p class="text-sm text-slate-600">{{ school.location }}</p>
         </div>
 
         <button
@@ -37,29 +37,29 @@
         >
           <UIcon
             name="i-heroicons-star"
-            :class="['w-5 h-5', school.is_favorite ? 'fill-yellow-500' : '']"
+            :class="['h-5 w-5', school.is_favorite ? 'fill-yellow-500' : '']"
             aria-hidden="true"
           />
         </button>
       </div>
 
-      <div class="flex flex-wrap gap-2 mb-4">
+      <div class="mb-4 flex flex-wrap gap-2">
         <span
           v-if="school.division"
-          class="px-2 py-0.5 text-xs font-medium rounded-full bg-blue-100 text-blue-700"
+          class="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700"
         >
           {{ school.division }}
         </span>
         <span
           :class="getSchoolStatusBadgeClass(school.status)"
-          class="px-2 py-0.5 text-xs font-medium rounded-full"
+          class="rounded-full px-2 py-0.5 text-xs font-medium"
         >
           {{ getSchoolStatusLabel(school.status) }}
         </span>
         <span
           v-if="overall"
           :class="fitPillClass"
-          class="px-2 py-0.5 text-xs font-medium rounded-full"
+          class="rounded-full px-2 py-0.5 text-xs font-medium"
           :aria-label="`Personal fit: ${fitPillLabel}`"
         >
           {{ fitPillLabel }}
@@ -67,37 +67,37 @@
         <span
           v-if="carnegieSize"
           :class="getSizeBadgeClass(carnegieSize)"
-          class="px-2 py-0.5 text-xs font-medium rounded-full"
+          class="rounded-full px-2 py-0.5 text-xs font-medium"
         >
           {{ carnegieSize }}
         </span>
       </div>
 
       <div class="flex-1">
-        <p v-if="school.conference" class="text-slate-600 text-sm mb-2">
+        <p v-if="school.conference" class="mb-2 text-sm text-slate-600">
           {{ school.conference }}
         </p>
-        <p v-if="school.notes" class="text-slate-600 text-sm line-clamp-2">
+        <p v-if="school.notes" class="line-clamp-2 text-sm text-slate-600">
           {{ school.notes }}
         </p>
       </div>
     </div>
 
-    <div class="px-5 pb-5 flex gap-2 mt-auto">
+    <div class="mt-auto flex gap-2 px-5 pb-5">
       <NuxtLink
         :to="`/schools/${school.id}`"
         :aria-label="`View ${school.name}`"
-        class="flex-1 px-4 py-2 text-sm font-medium text-white bg-linear-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition text-center flex items-center justify-center gap-2"
+        class="flex flex-1 items-center justify-center gap-2 rounded-lg bg-linear-to-r from-blue-500 to-blue-600 px-4 py-2 text-center text-sm font-medium text-white transition hover:from-blue-600 hover:to-blue-700"
       >
-        <UIcon name="i-heroicons-eye" class="w-4 h-4" aria-hidden="true" />
+        <UIcon name="i-heroicons-eye" class="h-4 w-4" aria-hidden="true" />
         View
       </NuxtLink>
       <button
         @click.stop="$emit('delete', school.id)"
         :aria-label="`Delete ${school.name}`"
-        class="px-3 py-2 text-sm font-medium text-red-600 border border-red-300 rounded-lg hover:bg-red-50 transition"
+        class="rounded-lg border border-red-300 px-3 py-2 text-sm font-medium text-red-600 transition hover:bg-red-50"
       >
-        <UIcon name="i-heroicons-trash" class="w-4 h-4" aria-hidden="true" />
+        <UIcon name="i-heroicons-trash" class="h-4 w-4" aria-hidden="true" />
       </button>
     </div>
   </div>

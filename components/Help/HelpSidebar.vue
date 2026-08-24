@@ -18,7 +18,7 @@
     </div>
     <div
       v-if="drawerOpen"
-      class="border-b border-gray-200 bg-white px-4 pb-3 pt-1"
+      class="border-b border-gray-200 bg-white px-4 pt-1 pb-3"
     >
       <nav class="flex flex-col gap-0.5">
         <HelpSidebarLink
@@ -37,7 +37,7 @@
   <aside class="hidden w-56 shrink-0 lg:block">
     <div class="sticky top-14 pt-6">
       <p
-        class="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-gray-400"
+        class="mb-2 px-3 text-xs font-semibold tracking-wider text-gray-400 uppercase"
       >
         Help Center
       </p>

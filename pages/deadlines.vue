@@ -1,30 +1,30 @@
 <template>
-  <div class="max-w-4xl mx-auto py-8 px-4">
-    <div class="flex items-center justify-between mb-6">
+  <div class="mx-auto max-w-4xl px-4 py-8">
+    <div class="mb-6 flex items-center justify-between">
       <div>
         <h1 class="text-2xl font-bold text-gray-900">Deadlines</h1>
-        <p class="text-gray-500 text-sm mt-1">
+        <p class="mt-1 text-sm text-gray-500">
           Track application, offer, and recruiting deadlines
         </p>
       </div>
       <button
         @click="showAdd = true"
-        class="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition"
+        class="rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition hover:bg-blue-700"
       >
         + Add Deadline
       </button>
     </div>
 
-    <div v-if="loading" class="text-gray-400 py-12 text-center">Loading...</div>
-    <div v-else-if="error" class="text-red-600 py-8 text-center">
+    <div v-if="loading" class="py-12 text-center text-gray-400">Loading...</div>
+    <div v-else-if="error" class="py-8 text-center text-red-600">
       {{ error }}
     </div>
     <div
       v-else-if="sortedDeadlines.length === 0"
-      class="text-gray-400 text-center py-16"
+      class="py-16 text-center text-gray-400"
     >
       <p class="text-lg">No deadlines yet.</p>
-      <p class="text-sm mt-2">
+      <p class="mt-2 text-sm">
         Add application deadlines, offer decisions, and other key dates.
       </p>
     </div>
@@ -32,11 +32,11 @@
       <li
         v-for="d in sortedDeadlines"
         :key="d.id"
-        class="flex items-center justify-between p-4 bg-white rounded-lg border border-gray-200"
+        class="flex items-center justify-between rounded-lg border border-gray-200 bg-white p-4"
       >
         <div>
           <p class="font-medium text-gray-900">{{ d.label }}</p>
-          <p class="text-sm text-gray-500 mt-0.5">
+          <p class="mt-0.5 text-sm text-gray-500">
             {{ d.deadline_date }} ·
             <span class="capitalize">{{
               d.category.replaceAll("_", " ")
@@ -45,7 +45,7 @@
         </div>
         <button
           @click="removeDeadline(d.id)"
-          class="text-red-500 hover:text-red-700 text-sm font-medium"
+          class="text-sm font-medium text-red-500 hover:text-red-700"
           :aria-label="`Remove ${d.label}`"
         >
           Remove
@@ -56,17 +56,17 @@
     <!-- Add deadline modal -->
     <div
       v-if="showAdd"
-      class="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
       @click.self="showAdd = false"
     >
       <form
         @submit.prevent="submitAdd"
-        class="bg-white rounded-xl p-6 w-full max-w-md shadow-xl space-y-4 mx-4"
+        class="mx-4 w-full max-w-md space-y-4 rounded-xl bg-white p-6 shadow-xl"
       >
         <h2 class="text-lg font-bold">Add Deadline</h2>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1"
+          <label class="mb-1 block text-sm font-medium text-gray-700"
             >Label</label
           >
           <input
@@ -75,29 +75,29 @@
             required
             maxlength="200"
             placeholder="e.g. Application Deadline — Stanford"
-            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
           />
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1"
+          <label class="mb-1 block text-sm font-medium text-gray-700"
             >Date</label
           >
           <input
             v-model="newDeadline.deadline_date"
             type="date"
             required
-            class="w-full border border-gray-300 rounded-lg px-3 py-2"
+            class="w-full rounded-lg border border-gray-300 px-3 py-2"
           />
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1"
+          <label class="mb-1 block text-sm font-medium text-gray-700"
             >Category</label
           >
           <select
             v-model="newDeadline.category"
-            class="w-full border border-gray-300 rounded-lg px-3 py-2"
+            class="w-full rounded-lg border border-gray-300 px-3 py-2"
           >
             <option value="application">Application</option>
             <option value="decision">Decision</option>
@@ -107,18 +107,18 @@
           </select>
         </div>
 
-        <div class="flex gap-3 justify-end pt-2">
+        <div class="flex justify-end gap-3 pt-2">
           <button
             type="button"
             @click="showAdd = false"
-            class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+            class="rounded-lg border border-gray-300 px-4 py-2 text-gray-700 hover:bg-gray-50"
           >
             Cancel
           </button>
           <button
             type="submit"
             :disabled="addingDeadline"
-            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+            class="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:opacity-50"
           >
             {{ addingDeadline ? "Adding…" : "Add Deadline" }}
           </button>

@@ -1,12 +1,12 @@
 <template>
-  <div class="rounded-lg p-6 bg-white shadow-md">
+  <div class="rounded-lg bg-white p-6 shadow-md">
     <!-- Header -->
     <div
-      class="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 gap-4"
+      class="mb-6 flex flex-col items-start justify-between gap-4 md:flex-row md:items-center"
     >
       <div>
         <h3 class="text-lg font-bold text-slate-900">{{ title }}</h3>
-        <p class="text-sm mt-1 text-slate-600">{{ totalItems }} total items</p>
+        <p class="mt-1 text-sm text-slate-600">{{ totalItems }} total items</p>
       </div>
     </div>
 
@@ -34,7 +34,7 @@
           <polygon
             :points="getStagePolygonPoints(index)"
             :fill="stage.color || defaultColors[index % defaultColors.length]"
-            class="hover:opacity-80 transition-opacity cursor-pointer"
+            class="cursor-pointer transition-opacity hover:opacity-80"
             :class="{ 'opacity-50': hoveredStage === index }"
             @click="handleStageClick(index)"
             @mouseenter="hoveredStage = index"
@@ -82,13 +82,13 @@
 
       <!-- Stage Details -->
       <div
-        class="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full"
+        class="mt-8 grid w-full grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4"
       >
         <div
           v-for="(stage, index) in stages"
           :key="`detail-${index}`"
           data-testid="stage-card"
-          class="p-4 rounded-lg border-l-4 bg-slate-50"
+          class="rounded-lg border-l-4 bg-slate-50 p-4"
           :style="{
             borderColor:
               stage.color || defaultColors[index % defaultColors.length],
@@ -99,10 +99,10 @@
           :class="{ 'ring-2 ring-offset-2': hoveredStage === index }"
         >
           <p class="text-sm font-medium text-slate-600">{{ stage.label }}</p>
-          <p class="text-2xl font-bold mt-1 text-slate-900">
+          <p class="mt-1 text-2xl font-bold text-slate-900">
             {{ stage.value }}
           </p>
-          <p class="text-xs mt-2 text-slate-600">
+          <p class="mt-2 text-xs text-slate-600">
             {{ getStagePercentage(index) }}% of total
           </p>
           <p v-if="index > 0" class="text-xs text-slate-600">
@@ -113,7 +113,7 @@
     </div>
 
     <!-- Empty State -->
-    <div v-else class="text-center py-12 text-slate-600">
+    <div v-else class="py-12 text-center text-slate-600">
       <p>{{ emptyStateMessage }}</p>
     </div>
   </div>

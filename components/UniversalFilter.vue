@@ -10,7 +10,7 @@
       >
         <label
           :for="`filter-${config.field}`"
-          class="text-sm font-medium text-gray-700 mb-2"
+          class="mb-2 text-sm font-medium text-gray-700"
         >
           {{ config.label }}
         </label>
@@ -28,7 +28,7 @@
               ($event.target as HTMLInputElement).value,
             )
           "
-          class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+          class="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
         />
 
         <!-- Select filter -->
@@ -42,7 +42,7 @@
               ($event.target as HTMLSelectElement).value || null,
             )
           "
-          class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+          class="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
         >
           <option value="">-- All --</option>
           <option
@@ -57,7 +57,7 @@
         <!-- Multiselect filter -->
         <div
           v-else-if="config.type === 'multiselect'"
-          class="space-y-2 p-3 border border-gray-300 rounded-lg bg-white max-h-32 overflow-y-auto"
+          class="max-h-32 space-y-2 overflow-y-auto rounded-lg border border-gray-300 bg-white p-3"
         >
           <label
             v-for="option in config.options"
@@ -68,7 +68,7 @@
               type="checkbox"
               :checked="isMultiSelectChecked(config.field, option.value)"
               @change="toggleMultiSelectValue(config.field, option.value)"
-              class="w-4 h-4 text-blue-600 rounded-sm"
+              class="h-4 w-4 rounded-sm text-blue-600"
             />
             <span class="ml-2 text-sm">{{ option.label }}</span>
           </label>
@@ -89,7 +89,7 @@
                   : null,
             )
           "
-          class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+          class="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
         >
           <option value="">-- All --</option>
           <option value="true">Yes</option>
@@ -112,7 +112,7 @@
                 ($event.target as HTMLInputElement).value,
               )
             "
-            class="px-3 py-2 border border-gray-300 rounded-lg flex-1 text-sm focus:ring-2 focus:ring-blue-500"
+            class="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
           />
           <input
             type="number"
@@ -128,7 +128,7 @@
                 ($event.target as HTMLInputElement).value,
               )
             "
-            class="px-3 py-2 border border-gray-300 rounded-lg flex-1 text-sm focus:ring-2 focus:ring-blue-500"
+            class="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
           />
         </div>
 
@@ -145,7 +145,7 @@
                   ($event.target as HTMLInputElement).value,
                 )
               "
-              class="px-3 py-2 border border-gray-300 rounded-lg flex-1 text-sm focus:ring-2 focus:ring-blue-500"
+              class="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
             />
             <input
               type="date"
@@ -157,7 +157,7 @@
                   ($event.target as HTMLInputElement).value,
                 )
               "
-              class="px-3 py-2 border border-gray-300 rounded-lg flex-1 text-sm focus:ring-2 focus:ring-blue-500"
+              class="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
@@ -167,7 +167,7 @@
               v-for="preset in config.presets"
               :key="preset.label"
               @click="applyDatePreset(config.field, preset)"
-              class="text-xs px-2 py-1 bg-gray-200 hover:bg-gray-300 rounded-sm transition-colors"
+              class="rounded-sm bg-gray-200 px-2 py-1 text-xs transition-colors hover:bg-gray-300"
             >
               {{ preset.label }}
             </button>
@@ -175,7 +175,7 @@
         </div>
 
         <!-- Help text -->
-        <p v-if="config.helpText" class="text-xs text-gray-500 mt-1">
+        <p v-if="config.helpText" class="mt-1 text-xs text-gray-500">
           {{ config.helpText }}
         </p>
       </div>
@@ -183,12 +183,12 @@
 
     <!-- Filter actions -->
     <div
-      class="flex flex-col sm:flex-row gap-2 mt-6 pt-4 border-t border-gray-200"
+      class="mt-6 flex flex-col gap-2 border-t border-gray-200 pt-4 sm:flex-row"
     >
       <button
         v-if="hasActiveFilters"
         @click="clearFilters"
-        class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+        class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
       >
         Clear Filters
       </button>
@@ -197,11 +197,11 @@
       <div v-if="presets.length > 0" class="relative">
         <button
           @click="showPresetMenu = !showPresetMenu"
-          class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2"
+          class="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
         >
           <span>Load Preset</span>
           <svg
-            class="w-4 h-4"
+            class="h-4 w-4"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -218,14 +218,14 @@
         <!-- Preset menu -->
         <div
           v-if="showPresetMenu"
-          class="absolute top-full left-0 mt-1 w-48 bg-white border border-gray-300 rounded-lg shadow-lg z-10"
+          class="absolute top-full left-0 z-10 mt-1 w-48 rounded-lg border border-gray-300 bg-white shadow-lg"
           @click.outside="showPresetMenu = false"
         >
           <button
             v-for="preset in presets"
             :key="preset.id"
             @click="loadPreset(preset.id)"
-            class="w-full text-left px-4 py-2 text-sm hover:bg-blue-50 transition-colors first:rounded-t-lg last:rounded-b-lg border-b last:border-b-0"
+            class="w-full border-b px-4 py-2 text-left text-sm transition-colors first:rounded-t-lg last:rounded-b-lg last:border-b-0 hover:bg-blue-50"
           >
             <div class="font-medium">{{ preset.name }}</div>
             <div v-if="preset.description" class="text-xs text-gray-500">
@@ -239,10 +239,10 @@
       <button
         v-if="hasActiveFilters"
         @click="showSavePresetDialog = true"
-        class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+        class="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
       >
         <svg
-          class="w-4 h-4"
+          class="h-4 w-4"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -260,7 +260,7 @@
       <div class="flex-1" />
 
       <!-- Result count -->
-      <div class="text-sm text-gray-600 py-2">
+      <div class="py-2 text-sm text-gray-600">
         {{ filteredCount }} result<span v-if="filteredCount !== 1">s</span>
       </div>
     </div>
@@ -268,40 +268,40 @@
     <!-- Save preset dialog -->
     <div
       v-if="showSavePresetDialog"
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      class="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black"
       @click="showSavePresetDialog = false"
     >
       <div
-        class="bg-white rounded-lg p-6 w-full max-w-sm shadow-xl"
+        class="w-full max-w-sm rounded-lg bg-white p-6 shadow-xl"
         @click.stop
       >
-        <h3 class="text-lg font-semibold mb-4">Save Filter Preset</h3>
+        <h3 class="mb-4 text-lg font-semibold">Save Filter Preset</h3>
 
         <input
           v-model="newPresetName"
           type="text"
           placeholder="Preset name (e.g., 'My Favorites')"
-          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 mb-3"
+          class="mb-3 w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500"
           @keyup.enter="doSavePreset"
         />
 
         <textarea
           v-model="newPresetDescription"
           placeholder="Optional description"
-          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 mb-4 text-sm h-20 resize-none"
+          class="mb-4 h-20 w-full resize-none rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
         />
 
-        <div class="flex gap-2 justify-end">
+        <div class="flex justify-end gap-2">
           <button
             @click="showSavePresetDialog = false"
-            class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+            class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
           >
             Cancel
           </button>
           <button
             @click="doSavePreset"
             :disabled="!newPresetName.trim()"
-            class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
             Save Preset
           </button>

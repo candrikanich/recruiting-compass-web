@@ -57,7 +57,7 @@ beforeEach(() => {
 
 const NuxtLinkStub = {
   name: "NuxtLink",
-  template: "<a :href=\"to\"><slot /></a>",
+  template: '<a :href="to"><slot /></a>',
   props: ["to"],
 };
 

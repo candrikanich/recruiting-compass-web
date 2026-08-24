@@ -194,10 +194,17 @@ describe("LogMetricModal - Form Fields", () => {
 
     const unitField = wrapper.find("#unit");
     expect(unitField.element.tagName).toBe("SELECT");
-    const unitValues = unitField
-      .findAll("option")
-      .map((o) => o.element.value);
-    expect(unitValues).toEqual(["", "mph", "sec", "in", "ft", "lbs", "count", "%"]);
+    const unitValues = unitField.findAll("option").map((o) => o.element.value);
+    expect(unitValues).toEqual([
+      "",
+      "mph",
+      "sec",
+      "in",
+      "ft",
+      "lbs",
+      "count",
+      "%",
+    ]);
   });
 
   it("auto-sets and locks the unit for a fixed metric type", async () => {

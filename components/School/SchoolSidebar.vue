@@ -8,54 +8,54 @@
     />
 
     <!-- Quick Actions -->
-    <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
-      <h3 class="font-semibold text-slate-900 mb-4">Quick Actions</h3>
+    <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-xs">
+      <h3 class="mb-4 font-semibold text-slate-900">Quick Actions</h3>
       <div class="space-y-3">
         <NuxtLink
           :to="`/schools/${schoolId}/interactions`"
-          class="block w-full px-4 py-2.5 bg-linear-to-r from-blue-500 to-blue-600 text-white text-sm font-medium rounded-lg hover:from-blue-600 hover:to-blue-700 transition text-center flex items-center justify-center gap-2 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          class="block flex w-full items-center justify-center gap-2 rounded-lg bg-linear-to-r from-blue-500 to-blue-600 px-4 py-2.5 text-center text-sm font-medium text-white transition hover:from-blue-600 hover:to-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         >
           <UIcon
             name="i-heroicons-chat-bubble-left-right"
-            class="w-4 h-4"
+            class="h-4 w-4"
             aria-hidden="true"
           />
           Log Interaction
         </NuxtLink>
         <button
           @click="emit('open-email-modal')"
-          class="block w-full px-4 py-2.5 bg-linear-to-r from-purple-500 to-purple-600 text-white text-sm font-medium rounded-lg hover:from-purple-600 hover:to-purple-700 transition text-center flex items-center justify-center gap-2 focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+          class="block flex w-full items-center justify-center gap-2 rounded-lg bg-linear-to-r from-purple-500 to-purple-600 px-4 py-2.5 text-center text-sm font-medium text-white transition hover:from-purple-600 hover:to-purple-700 focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
         >
           <UIcon
             name="i-heroicons-envelope"
-            class="w-4 h-4"
+            class="h-4 w-4"
             aria-hidden="true"
           />
           Send Email
         </button>
         <NuxtLink
           :to="`/schools/${schoolId}/coaches`"
-          class="block w-full px-4 py-2.5 bg-slate-600 text-white text-sm font-medium rounded-lg hover:bg-slate-700 transition text-center flex items-center justify-center gap-2 focus:ring-2 focus:ring-slate-500 focus:ring-offset-2"
+          class="block flex w-full items-center justify-center gap-2 rounded-lg bg-slate-600 px-4 py-2.5 text-center text-sm font-medium text-white transition hover:bg-slate-700 focus:ring-2 focus:ring-slate-500 focus:ring-offset-2"
         >
-          <UIcon name="i-heroicons-users" class="w-4 h-4" aria-hidden="true" />
+          <UIcon name="i-heroicons-users" class="h-4 w-4" aria-hidden="true" />
           Manage Coaches
         </NuxtLink>
       </div>
     </div>
 
     <!-- Coaches -->
-    <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
-      <div class="flex items-center justify-between mb-4">
+    <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-xs">
+      <div class="mb-4 flex items-center justify-between">
         <div class="flex items-center gap-2">
           <UIcon
             name="i-heroicons-user-circle"
-            class="w-5 h-5 text-slate-400"
+            class="h-5 w-5 text-slate-400"
           />
           <h3 class="font-semibold text-slate-900">Coaches</h3>
         </div>
         <NuxtLink
           :to="`/schools/${schoolId}/coaches`"
-          class="text-sm text-blue-600 hover:text-blue-700 font-medium focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-sm"
+          class="rounded-sm text-sm font-medium text-blue-600 hover:text-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         >
           Manage Coaches <span aria-hidden="true">&rarr;</span>
         </NuxtLink>
@@ -70,7 +70,7 @@
           :back-label="school?.name ?? 'School'"
         />
       </div>
-      <div v-else class="text-center py-4 text-slate-500 text-sm">
+      <div v-else class="py-4 text-center text-sm text-slate-500">
         No coaches added yet
       </div>
     </div>
@@ -78,9 +78,9 @@
     <!-- Fit Signals Card -->
     <div
       v-if="personalFit || academicFit"
-      class="bg-white rounded-xl border border-slate-200 shadow-xs p-6"
+      class="rounded-xl border border-slate-200 bg-white p-6 shadow-xs"
     >
-      <h3 class="font-semibold text-slate-900 mb-4">School Fit</h3>
+      <h3 class="mb-4 font-semibold text-slate-900">School Fit</h3>
       <SchoolFitSignals
         v-if="personalFit && academicFit"
         :personal-fit="personalFit"
@@ -93,8 +93,8 @@
     <SchoolStatusHistory :school-id="schoolId" />
 
     <!-- Attribution -->
-    <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-5">
-      <h4 class="font-semibold text-slate-900 mb-3">Attribution</h4>
+    <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-xs">
+      <h4 class="mb-3 font-semibold text-slate-900">Attribution</h4>
       <div class="space-y-2 text-sm">
         <div class="flex justify-between">
           <span class="text-slate-600">Created by:</span>
@@ -104,7 +104,7 @@
           <span class="text-slate-600">Last updated:</span>
           <span class="text-slate-900">Parent</span>
         </div>
-        <div v-if="school.updated_at" class="text-slate-500 text-xs">
+        <div v-if="school.updated_at" class="text-xs text-slate-500">
           {{ new Date(school.updated_at).toLocaleDateString() }}
         </div>
       </div>
@@ -113,9 +113,9 @@
     <!-- Delete School -->
     <button
       @click="emit('delete')"
-      class="w-full px-4 py-2.5 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition flex items-center justify-center gap-2 focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+      class="flex w-full items-center justify-center gap-2 rounded-lg bg-red-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-red-700 focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
     >
-      <UIcon name="i-heroicons-trash" class="w-4 h-4" aria-hidden="true" />
+      <UIcon name="i-heroicons-trash" class="h-4 w-4" aria-hidden="true" />
       Delete School
     </button>
   </div>

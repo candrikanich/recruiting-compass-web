@@ -1,13 +1,13 @@
 <template>
-  <section class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
-    <h2 class="text-lg font-semibold text-slate-900 mb-4">
+  <section class="rounded-xl border border-slate-200 bg-white p-6 shadow-xs">
+    <h2 class="mb-4 text-lg font-semibold text-slate-900">
       Personal Information
     </h2>
 
     <form class="space-y-4" @submit.prevent="handleSave">
       <div>
         <label
-          class="block text-sm font-medium text-slate-700 mb-1"
+          class="mb-1 block text-sm font-medium text-slate-700"
           for="full-name"
         >
           Full Name <span class="text-red-500">*</span>
@@ -18,15 +18,15 @@
           placeholder="Your full name"
           :disabled="loading"
         />
-        <p v-if="nameError" class="text-sm text-red-600 mt-1">
+        <p v-if="nameError" class="mt-1 text-sm text-red-600">
           {{ nameError }}
         </p>
       </div>
 
       <div v-if="isAthlete">
-        <label class="block text-sm font-medium text-slate-700 mb-1" for="dob">
+        <label class="mb-1 block text-sm font-medium text-slate-700" for="dob">
           Date of Birth
-          <span class="text-slate-600 font-normal">(optional)</span>
+          <span class="font-normal text-slate-600">(optional)</span>
         </label>
         <UInput
           id="dob"
@@ -34,11 +34,11 @@
           type="date"
           :disabled="loading"
         />
-        <p class="text-xs text-slate-500 mt-1">
+        <p class="mt-1 text-xs text-slate-500">
           Recruiting Compass is for ages 13 and up. By entering a date of birth,
           you confirm you are 13 or older.
         </p>
-        <p v-if="dobError" class="text-sm text-red-600 mt-1">{{ dobError }}</p>
+        <p v-if="dobError" class="mt-1 text-sm text-red-600">{{ dobError }}</p>
       </div>
 
       <div class="flex items-center gap-3 pt-2">

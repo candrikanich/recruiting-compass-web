@@ -18,7 +18,8 @@ export function useAdminGrowth() {
     try {
       const headers = await getAuthHeaders();
       const res = await fetch(`/api/admin/growth?days=${days}`, { headers });
-      if (!res.ok) throw new Error(`Failed to load growth analytics: ${res.status}`);
+      if (!res.ok)
+        throw new Error(`Failed to load growth analytics: ${res.status}`);
       data.value = (await res.json()) as AdminGrowth;
     } catch (err) {
       error.value =

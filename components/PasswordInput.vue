@@ -1,15 +1,15 @@
 <template>
   <div>
-    <label :for="id" class="block text-sm font-medium text-slate-700 mb-2">
+    <label :for="id" class="mb-2 block text-sm font-medium text-slate-700">
       {{ label }}
-      <span v-if="required" aria-label="required" class="text-red-600 ml-1"
+      <span v-if="required" aria-label="required" class="ml-1 text-red-600"
         >*</span
       >
     </label>
     <div class="relative">
       <UIcon
         name="i-heroicons-lock-closed"
-        class="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+        class="pointer-events-none absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 text-slate-400"
         aria-hidden="true"
       />
       <input
@@ -26,7 +26,7 @@
         "
         :aria-invalid="error ? 'true' : 'false'"
         :class="[
-          'w-full pl-10 pr-12 py-3 border rounded-lg focus:ring-2 focus:ring-offset-2 focus:border-transparent transition-all disabled:bg-slate-100 disabled:text-slate-500 disabled:cursor-not-allowed',
+          'w-full rounded-lg border py-3 pr-12 pl-10 transition-all focus:border-transparent focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500',
           error
             ? 'border-red-600 focus:ring-red-500 focus:outline-red-600'
             : 'border-slate-300 focus:ring-blue-500 focus:outline-blue-600',
@@ -41,11 +41,11 @@
         type="button"
         @click="showPassword = !showPassword"
         :aria-label="showPassword ? 'Hide password' : 'Show password'"
-        class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-sm"
+        class="absolute top-1/2 right-3 -translate-y-1/2 rounded-sm text-slate-400 hover:text-slate-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
       >
         <UIcon
           :name="showPassword ? 'i-heroicons-eye-slash' : 'i-heroicons-eye'"
-          class="w-5 h-5"
+          class="h-5 w-5"
           aria-hidden="true"
         />
       </button>

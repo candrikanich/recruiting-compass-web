@@ -15,12 +15,20 @@ import { SPORT_POSITIONS } from "~/utils/positions/canonical";
 // Parity with iOS MetricFormatTests / MetricRegistryTests — keep in lockstep.
 describe("applyFormat", () => {
   it("decimal drops the leading zero", () => {
-    expect(applyFormat({ kind: "decimal", digits: 3, dropLeadingZero: true }, 0.41)).toBe(".410");
-    expect(applyFormat({ kind: "decimal", digits: 3, dropLeadingZero: true }, 1.0)).toBe("1.000");
+    expect(
+      applyFormat({ kind: "decimal", digits: 3, dropLeadingZero: true }, 0.41),
+    ).toBe(".410");
+    expect(
+      applyFormat({ kind: "decimal", digits: 3, dropLeadingZero: true }, 1.0),
+    ).toBe("1.000");
   });
   it("decimal keeps the leading zero", () => {
-    expect(applyFormat({ kind: "decimal", digits: 2, dropLeadingZero: false }, 3.45)).toBe("3.45");
-    expect(applyFormat({ kind: "decimal", digits: 1, dropLeadingZero: false }, 82.3)).toBe("82.3");
+    expect(
+      applyFormat({ kind: "decimal", digits: 2, dropLeadingZero: false }, 3.45),
+    ).toBe("3.45");
+    expect(
+      applyFormat({ kind: "decimal", digits: 1, dropLeadingZero: false }, 82.3),
+    ).toBe("82.3");
   });
   it("integer rounds", () => {
     expect(applyFormat({ kind: "integer" }, 12)).toBe("12");
@@ -45,7 +53,11 @@ describe("registry lookups", () => {
   it("getMetricDef is total — unknown key humanizes", () => {
     const d = getMetricDef("wingspan_reach");
     expect(d.label).toBe("wingspan reach");
-    expect(d.format).toEqual({ kind: "decimal", digits: 2, dropLeadingZero: false });
+    expect(d.format).toEqual({
+      kind: "decimal",
+      digits: 2,
+      dropLeadingZero: false,
+    });
   });
   it("shared keys have a single def", () => {
     expect(getMetricDef("goals").label).toBe("Goals");
@@ -86,7 +98,9 @@ describe("sport orderings", () => {
   });
   it("baseball grew to 11 keys, fielding_pct last", () => {
     expect(SPORT_METRICS.Baseball).toHaveLength(11);
-    expect(SPORT_METRICS.Baseball[SPORT_METRICS.Baseball.length - 1]).toBe("fielding_pct");
+    expect(SPORT_METRICS.Baseball[SPORT_METRICS.Baseball.length - 1]).toBe(
+      "fielding_pct",
+    );
   });
   it("all 17 sports present", () => {
     expect(Object.keys(SPORT_METRICS)).toHaveLength(17);
@@ -95,13 +109,19 @@ describe("sport orderings", () => {
     for (const [sport, keys] of Object.entries(SPORT_METRICS)) {
       expect(keys).not.toContain(OTHER_KEY);
       for (const key of keys) {
-        expect(getKnownMetricDef(key), `${sport}:${key} missing def`).toBeDefined();
+        expect(
+          getKnownMetricDef(key),
+          `${sport}:${key} missing def`,
+        ).toBeDefined();
       }
     }
   });
   it("sport keys match the positions registry exactly", () => {
     for (const sport of Object.keys(SPORT_METRICS)) {
-      expect(SPORT_POSITIONS[sport], `${sport} not in SPORT_POSITIONS`).toBeDefined();
+      expect(
+        SPORT_POSITIONS[sport],
+        `${sport} not in SPORT_POSITIONS`,
+      ).toBeDefined();
     }
   });
 });

@@ -7,14 +7,14 @@ defineProps<{
 
 <template>
   <header
-    class="bg-linear-to-r from-slate-50 to-blue-50 border-b border-slate-200"
+    class="border-b border-slate-200 bg-linear-to-r from-slate-50 to-blue-50"
     role="banner"
   >
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+    <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6">
       <div class="flex items-start justify-between">
         <div>
           <h1 class="text-3xl font-bold text-slate-900">{{ title }}</h1>
-          <p v-if="description" class="text-slate-600 mt-1">
+          <p v-if="description" class="mt-1 text-slate-600">
             {{ description }}
           </p>
         </div>

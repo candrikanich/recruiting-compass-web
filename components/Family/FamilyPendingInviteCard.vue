@@ -60,10 +60,10 @@ function formatExpiry(dateStr: string): string {
         data-testid="resend-invite-button"
         :disabled="resent"
         :class="[
-          'text-sm font-medium px-3 py-1 rounded-lg transition-all',
+          'rounded-lg px-3 py-1 text-sm font-medium transition-all',
           resent
-            ? 'text-emerald-600 bg-emerald-50 sent-flash cursor-not-allowed'
-            : 'text-blue-600 hover:text-blue-700 hover:bg-blue-50',
+            ? 'sent-flash cursor-not-allowed bg-emerald-50 text-emerald-600'
+            : 'text-blue-600 hover:bg-blue-50 hover:text-blue-700',
         ]"
         @click="handleResend"
       >
@@ -71,7 +71,7 @@ function formatExpiry(dateStr: string): string {
       </button>
       <button
         data-testid="revoke-invite-button"
-        class="text-sm font-medium text-red-600 hover:text-red-700 px-3 py-1 rounded-lg hover:bg-red-50 transition-colors"
+        class="rounded-lg px-3 py-1 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 hover:text-red-700"
         @click="emit('revoke', invitation.id)"
       >
         Revoke

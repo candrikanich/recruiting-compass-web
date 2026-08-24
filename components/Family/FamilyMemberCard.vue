@@ -1,7 +1,7 @@
 <template>
   <div
     :class="[
-      'border rounded-lg p-4',
+      'rounded-lg border p-4',
       member.role === 'player'
         ? 'border-blue-200 bg-blue-50'
         : 'border-green-200 bg-green-50',
@@ -20,7 +20,7 @@
           </h3>
           <span
             :class="[
-              'px-2 py-1 rounded-sm text-xs font-medium',
+              'rounded-sm px-2 py-1 text-xs font-medium',
               member.role === 'player'
                 ? 'bg-blue-200 text-blue-800'
                 : 'bg-green-200 text-green-800',
@@ -39,7 +39,7 @@
         </p>
         <p
           v-if="member.added_at"
-          class="text-xs mt-1"
+          class="mt-1 text-xs"
           :class="[
             member.role === 'player' ? 'text-blue-600' : 'text-green-600',
           ]"
@@ -52,7 +52,7 @@
       <button
         v-if="isPlayer && member.role === 'parent'"
         @click="$emit('remove', member.id)"
-        class="ml-4 px-3 py-2 text-sm text-red-600 hover:text-red-700 hover:bg-red-100 rounded-sm transition-colors"
+        class="ml-4 rounded-sm px-3 py-2 text-sm text-red-600 transition-colors hover:bg-red-100 hover:text-red-700"
         title="Remove this parent from your family"
       >
         ✕ Remove

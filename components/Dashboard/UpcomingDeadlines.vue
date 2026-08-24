@@ -1,8 +1,8 @@
 <template>
   <div
-    class="bg-white rounded-2xl border border-slate-200 shadow-xs hover:shadow-md transition-shadow p-6"
+    class="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs transition-shadow hover:shadow-md"
   >
-    <h2 class="text-xl font-bold mb-6 text-slate-900">
+    <h2 class="mb-6 text-xl font-bold text-slate-900">
       ⏰ Upcoming Events & Deadlines
     </h2>
 
@@ -10,9 +10,9 @@
       <!-- Offer Deadlines -->
       <div
         v-if="upcomingOfferDeadlines.length > 0"
-        class="pl-4 border-l-4 border-orange-400"
+        class="border-l-4 border-orange-400 pl-4"
       >
-        <h3 class="font-semibold mb-3 flex items-center gap-2 text-slate-900">
+        <h3 class="mb-3 flex items-center gap-2 font-semibold text-slate-900">
           <span>🎯 Offer Deadlines</span>
           <span class="text-xs font-normal text-slate-600"
             >({{ upcomingOfferDeadlines.length }})</span
@@ -22,9 +22,9 @@
           <div
             v-for="offer in upcomingOfferDeadlines.slice(0, 5)"
             :key="offer.id"
-            class="p-3 rounded-lg bg-orange-50"
+            class="rounded-lg bg-orange-50 p-3"
           >
-            <div class="flex items-start justify-between mb-2">
+            <div class="mb-2 flex items-start justify-between">
               <div>
                 <p class="font-semibold text-slate-900">
                   {{ getSchoolName(offer.school_id) }}
@@ -34,7 +34,7 @@
                 </p>
               </div>
               <span
-                class="text-xs font-bold px-2 py-1 rounded-sm"
+                class="rounded-sm px-2 py-1 text-xs font-bold"
                 :class="
                   daysUntilDeadline(offer.deadline_date) <= 7
                     ? 'bg-red-100 text-red-600'
@@ -54,9 +54,9 @@
       <!-- Upcoming Events -->
       <div
         v-if="upcomingEvents.length > 0"
-        class="pl-4 pt-4 border-l-4 border-emerald-400 border-t border-slate-200"
+        class="border-t border-l-4 border-emerald-400 border-slate-200 pt-4 pl-4"
       >
-        <h3 class="font-semibold mb-3 flex items-center gap-2 text-slate-900">
+        <h3 class="mb-3 flex items-center gap-2 font-semibold text-slate-900">
           <span>📅 Upcoming Events</span>
           <span class="text-xs font-normal text-slate-600"
             >({{ upcomingEvents.length }})</span
@@ -66,9 +66,9 @@
           <div
             v-for="event in upcomingEvents.slice(0, 5)"
             :key="event.id"
-            class="p-3 rounded-lg bg-emerald-50"
+            class="rounded-lg bg-emerald-50 p-3"
           >
-            <div class="flex items-start justify-between mb-2">
+            <div class="mb-2 flex items-start justify-between">
               <div>
                 <p class="font-semibold text-slate-900">{{ event.name }}</p>
                 <p class="text-sm text-slate-600">
@@ -76,13 +76,13 @@
                 </p>
               </div>
               <span
-                class="text-xs font-bold px-2 py-1 rounded-sm bg-emerald-100 text-emerald-700"
+                class="rounded-sm bg-emerald-100 px-2 py-1 text-xs font-bold text-emerald-700"
               >
                 {{ daysUntilDate(event.start_date) }}d
               </span>
             </div>
             <p class="text-xs text-slate-600">{{ event.location }}</p>
-            <p class="text-xs mt-1 text-slate-600">
+            <p class="mt-1 text-xs text-slate-600">
               {{ formatDate(event.start_date) }}
             </p>
           </div>
@@ -94,7 +94,7 @@
         v-if="
           upcomingOfferDeadlines.length === 0 && upcomingEvents.length === 0
         "
-        class="text-center py-8 text-slate-600"
+        class="py-8 text-center text-slate-600"
       >
         <p>No upcoming deadlines or events</p>
       </div>

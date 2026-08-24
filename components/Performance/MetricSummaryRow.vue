@@ -1,6 +1,6 @@
 <template>
   <div
-    class="flex items-center justify-between p-3 rounded-lg transition bg-slate-50 hover:bg-slate-100"
+    class="flex items-center justify-between rounded-lg bg-slate-50 p-3 transition hover:bg-slate-100"
   >
     <p class="text-sm font-medium text-slate-900">{{ label }}</p>
     <div class="flex items-baseline gap-1">

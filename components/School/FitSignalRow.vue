@@ -1,21 +1,21 @@
 <template>
   <div class="flex items-start gap-3">
-    <div class="flex-1 min-w-0">
-      <div class="flex items-center gap-2 flex-wrap">
+    <div class="min-w-0 flex-1">
+      <div class="flex flex-wrap items-center gap-2">
         <span class="text-sm font-medium text-slate-700">{{
           signal.label
         }}</span>
         <span
-          class="px-1.5 py-0.5 rounded text-xs font-semibold"
+          class="rounded px-1.5 py-0.5 text-xs font-semibold"
           :class="chipClass"
         >
           {{ chipLabel }}
         </span>
       </div>
-      <p v-if="signal.value" class="text-xs text-slate-500 mt-0.5">
+      <p v-if="signal.value" class="mt-0.5 text-xs text-slate-500">
         {{ signal.value }}
       </p>
-      <p class="text-xs text-slate-400 mt-0.5 leading-relaxed">
+      <p class="mt-0.5 text-xs leading-relaxed text-slate-400">
         {{ signal.explanation }}
       </p>
     </div>

@@ -37,10 +37,10 @@ const computedSubmitLabel = computed(() => {
 </script>
 
 <template>
-  <div class="flex gap-3 justify-end">
+  <div class="flex justify-end gap-3">
     <button
       type="button"
-      class="px-4 py-2 bg-white border-2 border-slate-300 text-slate-700 rounded-lg font-medium hover:bg-slate-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      class="rounded-lg border-2 border-slate-300 bg-white px-4 py-2 font-medium text-slate-700 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
       :disabled="loading"
       @click="emit('cancel')"
     >
@@ -48,7 +48,7 @@ const computedSubmitLabel = computed(() => {
     </button>
     <button
       type="submit"
-      class="px-4 py-2 bg-linear-to-r from-blue-500 to-blue-600 text-white rounded-lg font-medium hover:from-blue-600 hover:to-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+      class="rounded-lg bg-linear-to-r from-blue-500 to-blue-600 px-4 py-2 font-medium text-white transition-all hover:from-blue-600 hover:to-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
       :disabled="submitDisabled || loading"
       @click.prevent="emit('submit')"
     >

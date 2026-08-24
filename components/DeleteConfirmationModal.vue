@@ -3,7 +3,7 @@
     <dialog
       v-if="isOpen"
       ref="dialogRef"
-      class="rounded-lg shadow-lg p-6 max-w-sm mx-auto border border-red-200 bg-white backdrop:bg-black/50"
+      class="mx-auto max-w-sm rounded-lg border border-red-200 bg-white p-6 shadow-lg backdrop:bg-black/50"
       role="alertdialog"
       aria-labelledby="delete-title"
       aria-describedby="delete-message"
@@ -21,7 +21,7 @@
         </p>
 
         <div
-          class="flex gap-3 justify-end"
+          class="flex justify-end gap-3"
           role="group"
           aria-label="Delete confirmation actions"
         >
@@ -30,7 +30,7 @@
             :disabled="isLoading"
             aria-label="Cancel deletion"
             data-test="cancel-delete-btn"
-            class="px-4 py-2 rounded-sm border border-gray-300 hover:bg-gray-50 disabled:opacity-50 focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+            class="rounded-sm border border-gray-300 px-4 py-2 hover:bg-gray-50 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:opacity-50"
           >
             Cancel
           </button>
@@ -39,7 +39,7 @@
             :disabled="isLoading"
             aria-label="Confirm permanent deletion"
             data-test="confirm-delete-btn"
-            class="px-4 py-2 rounded-sm bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 flex items-center gap-2 focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+            class="flex items-center gap-2 rounded-sm bg-red-600 px-4 py-2 text-white hover:bg-red-700 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50"
           >
             <span v-if="isLoading" aria-live="polite">Deleting...</span>
             <span v-else>Delete</span>

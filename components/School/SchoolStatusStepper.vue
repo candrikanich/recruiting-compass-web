@@ -16,13 +16,16 @@
           aria-hidden="true"
         />
 
-        <div class="flex flex-col items-center gap-1.5" :class="index > 0 ? 'px-1' : 'pr-1'">
+        <div
+          class="flex flex-col items-center gap-1.5"
+          :class="index > 0 ? 'px-1' : 'pr-1'"
+        >
           <button
             type="button"
             :disabled="updating || isNotPursuing"
             :aria-label="node.ariaLabel"
             :aria-current="node.state === 'current' ? 'step' : undefined"
-            class="flex h-8 w-8 items-center justify-center rounded-full border-2 text-xs font-semibold transition focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-1 disabled:cursor-not-allowed"
+            class="flex h-8 w-8 items-center justify-center rounded-full border-2 text-xs font-semibold transition focus:ring-2 focus:ring-blue-600 focus:ring-offset-1 focus:outline-none disabled:cursor-not-allowed"
             :class="nodeCircleClass(node.state)"
             @click="emit('select', node.value)"
           >
@@ -36,7 +39,11 @@
           </button>
           <span
             class="text-center text-xs leading-tight"
-            :class="node.state === 'current' ? 'font-semibold text-slate-900' : 'text-slate-500'"
+            :class="
+              node.state === 'current'
+                ? 'font-semibold text-slate-900'
+                : 'text-slate-500'
+            "
           >
             {{ node.label }}
           </span>
@@ -54,7 +61,7 @@
         type="button"
         data-testid="reactivate-status"
         :disabled="updating"
-        class="rounded-md bg-white px-3 py-1.5 text-xs font-semibold text-red-700 shadow-xs ring-1 ring-red-200 transition hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50"
+        class="rounded-md bg-white px-3 py-1.5 text-xs font-semibold text-red-700 shadow-xs ring-1 ring-red-200 transition hover:bg-red-100 focus:ring-2 focus:ring-red-500 focus:outline-none disabled:opacity-50"
         @click="emit('select', 'researching')"
       >
         Reactivate
@@ -67,7 +74,7 @@
         type="button"
         data-testid="mark-not-pursuing"
         :disabled="updating"
-        class="text-xs font-medium text-slate-400 underline-offset-2 transition hover:text-red-600 hover:underline focus:outline-none focus:text-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
+        class="text-xs font-medium text-slate-400 underline-offset-2 transition hover:text-red-600 hover:underline focus:text-red-600 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
         @click="emit('select', 'not_pursuing')"
       >
         Mark not pursuing
@@ -122,8 +129,7 @@ const nodes = computed(() =>
           ? "current"
           : "upcoming";
     const label = nodeLabel(stage.value);
-    const stateWord =
-      state === "current" ? "current stage" : `${state}`;
+    const stateWord = state === "current" ? "current stage" : `${state}`;
     return {
       value: stage.value,
       label,

@@ -1,13 +1,13 @@
 <template>
   <div class="min-h-screen bg-gray-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <!-- Header -->
       <div class="mb-6">
         <div class="flex items-center justify-between">
           <div>
             <NuxtLink
               to="/reports"
-              class="text-blue-600 hover:text-blue-700 text-sm mb-2 inline-block"
+              class="mb-2 inline-block text-sm text-blue-600 hover:text-blue-700"
             >
               &larr; Back to Reports
             </NuxtLink>
@@ -21,7 +21,7 @@
           <div class="flex items-center gap-2">
             <button
               @click="printTimeline"
-              class="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition"
+              class="rounded-lg bg-blue-100 px-4 py-2 text-blue-700 transition hover:bg-blue-200"
             >
               Print
             </button>
@@ -30,15 +30,15 @@
       </div>
 
       <!-- Controls -->
-      <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
+      <div class="mb-6 rounded-lg bg-white p-4 shadow-sm">
         <div class="flex flex-wrap items-center gap-4">
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1"
+            <label class="mb-1 block text-sm font-medium text-gray-700"
               >View Range</label
             >
             <select
               v-model="viewRange"
-              class="px-3 py-2 border border-gray-300 rounded-lg"
+              class="rounded-lg border border-gray-300 px-3 py-2"
             >
               <option value="3">3 Months</option>
               <option value="6">6 Months</option>
@@ -47,12 +47,12 @@
             </select>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1"
+            <label class="mb-1 block text-sm font-medium text-gray-700"
               >Filter School</label
             >
             <select
               v-model="selectedSchool"
-              class="px-3 py-2 border border-gray-300 rounded-lg min-w-48"
+              class="min-w-48 rounded-lg border border-gray-300 px-3 py-2"
             >
               <option value="">All Schools</option>
               <option
@@ -65,11 +65,11 @@
             </select>
           </div>
           <div class="flex items-end gap-2">
-            <label class="flex items-center gap-2 cursor-pointer">
+            <label class="flex cursor-pointer items-center gap-2">
               <input v-model="showEvents" type="checkbox" class="rounded-sm" />
               <span class="text-sm text-gray-700">Events</span>
             </label>
-            <label class="flex items-center gap-2 cursor-pointer">
+            <label class="flex cursor-pointer items-center gap-2">
               <input
                 v-model="showInteractions"
                 type="checkbox"
@@ -77,11 +77,11 @@
               />
               <span class="text-sm text-gray-700">Interactions</span>
             </label>
-            <label class="flex items-center gap-2 cursor-pointer">
+            <label class="flex cursor-pointer items-center gap-2">
               <input v-model="showOffers" type="checkbox" class="rounded-sm" />
               <span class="text-sm text-gray-700">Offers</span>
             </label>
-            <label class="flex items-center gap-2 cursor-pointer">
+            <label class="flex cursor-pointer items-center gap-2">
               <input
                 v-model="showStatusChanges"
                 type="checkbox"
@@ -94,30 +94,30 @@
       </div>
 
       <!-- Loading State -->
-      <div v-if="loading" class="text-center py-12">
+      <div v-if="loading" class="py-12 text-center">
         <p class="text-gray-600">Loading timeline data...</p>
       </div>
 
       <!-- Empty State -->
       <div
         v-else-if="timelineItems.length === 0"
-        class="bg-white rounded-lg shadow-sm p-12 text-center"
+        class="rounded-lg bg-white p-12 text-center shadow-sm"
       >
-        <p class="text-gray-600 mb-2">No timeline data available</p>
+        <p class="mb-2 text-gray-600">No timeline data available</p>
         <p class="text-sm text-gray-500">
           Add events, interactions, or offers to see them on the timeline
         </p>
       </div>
 
       <!-- Timeline View -->
-      <div v-else class="bg-white rounded-lg shadow-sm">
+      <div v-else class="rounded-lg bg-white shadow-sm">
         <!-- Month Headers -->
         <div class="border-b border-gray-200 px-4 py-3">
           <div class="flex items-center gap-4 overflow-x-auto">
             <div
               v-for="month in visibleMonths"
               :key="month.key"
-              class="shrink-0 text-center min-w-32"
+              class="min-w-32 shrink-0 text-center"
             >
               <div class="font-semibold text-gray-900">{{ month.label }}</div>
               <div class="text-xs text-gray-500">{{ month.year }}</div>
@@ -133,7 +133,7 @@
             class="p-4"
           >
             <!-- School Header -->
-            <div class="flex items-center gap-3 mb-3">
+            <div class="mb-3 flex items-center gap-3">
               <NuxtLink
                 v-if="swimlane.schoolId"
                 :to="`/schools/${swimlane.schoolId}`"
@@ -148,7 +148,7 @@
             </div>
 
             <!-- Timeline Bar -->
-            <div class="relative h-16 bg-gray-100 rounded-lg overflow-hidden">
+            <div class="relative h-16 overflow-hidden rounded-lg bg-gray-100">
               <!-- Grid Lines -->
               <div class="absolute inset-0 flex">
                 <div
@@ -161,11 +161,11 @@
               <!-- Today Marker -->
               <div
                 v-if="todayPosition >= 0 && todayPosition <= 100"
-                class="absolute top-0 bottom-0 w-0.5 bg-red-500 z-10"
+                class="absolute top-0 bottom-0 z-10 w-0.5 bg-red-500"
                 :style="{ left: `${todayPosition}%` }"
               >
                 <div
-                  class="absolute -top-1 left-1/2 -translate-x-1/2 text-xs text-red-500 font-semibold whitespace-nowrap"
+                  class="absolute -top-1 left-1/2 -translate-x-1/2 text-xs font-semibold whitespace-nowrap text-red-500"
                 >
                   Today
                 </div>
@@ -176,7 +176,7 @@
                 v-for="item in swimlane.items"
                 :key="item.id"
                 :class="[
-                  'absolute h-8 rounded-sm px-2 flex items-center text-xs font-medium cursor-pointer transition-all hover:ring-2 hover:shadow-lg hover:scale-110',
+                  'absolute flex h-8 cursor-pointer items-center rounded-sm px-2 text-xs font-medium transition-all hover:scale-110 hover:shadow-lg hover:ring-2',
                   getItemClass(item.type),
                 ]"
                 :style="getItemStyle(item)"
@@ -193,19 +193,19 @@
         <div class="border-t border-gray-200 px-4 py-3">
           <div class="flex items-center gap-6 text-sm">
             <div class="flex items-center gap-2">
-              <div class="w-4 h-4 bg-blue-500 rounded-sm" />
+              <div class="h-4 w-4 rounded-sm bg-blue-500" />
               <span class="text-gray-600">Events</span>
             </div>
             <div class="flex items-center gap-2">
-              <div class="w-4 h-4 bg-green-500 rounded-sm" />
+              <div class="h-4 w-4 rounded-sm bg-green-500" />
               <span class="text-gray-600">Interactions</span>
             </div>
             <div class="flex items-center gap-2">
-              <div class="w-4 h-4 bg-yellow-500 rounded-sm" />
+              <div class="h-4 w-4 rounded-sm bg-yellow-500" />
               <span class="text-gray-600">Offers</span>
             </div>
             <div class="flex items-center gap-2">
-              <div class="w-1 h-4 bg-red-500" />
+              <div class="h-4 w-1 bg-red-500" />
               <span class="text-gray-600">Today</span>
             </div>
           </div>
@@ -213,28 +213,28 @@
       </div>
 
       <!-- Timeline List View -->
-      <div class="mt-8 bg-white rounded-lg shadow-sm">
+      <div class="mt-8 rounded-lg bg-white shadow-sm">
         <div class="border-b border-gray-200 px-4 py-3">
           <h2 class="font-semibold text-gray-900">Timeline List</h2>
         </div>
-        <div class="divide-y divide-gray-200 max-h-96 overflow-y-auto">
+        <div class="max-h-96 divide-y divide-gray-200 overflow-y-auto">
           <div
             v-for="item in sortedTimelineItems"
             :key="item.id"
-            class="p-4 hover:bg-blue-50 cursor-pointer flex items-center gap-4 transition-colors"
+            class="flex cursor-pointer items-center gap-4 p-4 transition-colors hover:bg-blue-50"
             @click="viewItem(item)"
           >
             <div
               :class="[
-                'w-10 h-10 rounded-full flex items-center justify-center text-lg transition-transform hover:scale-110',
+                'flex h-10 w-10 items-center justify-center rounded-full text-lg transition-transform hover:scale-110',
                 getItemBgClass(item.type),
               ]"
             >
               {{ item.emoji }}
             </div>
-            <div class="flex-1 min-w-0">
+            <div class="min-w-0 flex-1">
               <div
-                class="font-medium text-gray-900 truncate hover:text-blue-600 transition-colors"
+                class="truncate font-medium text-gray-900 transition-colors hover:text-blue-600"
               >
                 {{ item.label }}
               </div>
@@ -245,7 +245,7 @@
             </div>
             <div
               :class="[
-                'px-2 py-1 rounded-sm text-xs font-medium transition-all hover:shadow-md',
+                'rounded-sm px-2 py-1 text-xs font-medium transition-all hover:shadow-md',
                 getItemBadgeClass(item.type),
               ]"
             >

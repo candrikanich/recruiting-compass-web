@@ -1,25 +1,25 @@
 <template>
   <div class="min-h-screen bg-brand-slate-50">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
       <!-- Back Button -->
       <div class="mb-6">
         <NuxtLink
           to="/documents"
-          class="text-blue-600 hover:text-blue-700 font-semibold"
+          class="font-semibold text-blue-600 hover:text-blue-700"
         >
           ← Back to Documents
         </NuxtLink>
       </div>
 
       <!-- Loading State -->
-      <div v-if="loading && !document" class="text-center py-12">
+      <div v-if="loading && !document" class="py-12 text-center">
         <p class="text-brand-slate-600">Loading document...</p>
       </div>
 
       <!-- Error State -->
       <div
         v-else-if="error"
-        class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6"
+        class="mb-6 rounded-lg border border-red-200 bg-red-50 p-4"
       >
         <p class="text-red-700">{{ error }}</p>
       </div>
@@ -27,12 +27,12 @@
       <!-- Document Not Found -->
       <div
         v-else-if="!document"
-        class="bg-white rounded-lg shadow-sm p-12 text-center"
+        class="rounded-lg bg-white p-12 text-center shadow-sm"
       >
-        <p class="text-brand-slate-600 mb-2">Document not found</p>
+        <p class="mb-2 text-brand-slate-600">Document not found</p>
         <NuxtLink
           to="/documents"
-          class="text-blue-600 hover:text-blue-700 font-semibold"
+          class="font-semibold text-blue-600 hover:text-blue-700"
         >
           Return to Documents →
         </NuxtLink>
@@ -41,12 +41,12 @@
       <!-- Document Detail -->
       <div v-else class="space-y-8">
         <!-- Document Header -->
-        <div class="bg-white rounded-lg shadow-sm p-6">
-          <div class="flex items-start justify-between mb-6">
+        <div class="rounded-lg bg-white p-6 shadow-sm">
+          <div class="mb-6 flex items-start justify-between">
             <div class="flex-1">
-              <div class="flex items-center gap-3 mb-2">
+              <div class="mb-2 flex items-center gap-3">
                 <span
-                  class="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800"
+                  class="inline-block rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-800"
                 >
                   {{ getTypeLabel(document.type) }}
                 </span>
@@ -62,26 +62,26 @@
               <button
                 v-if="!isEditing"
                 @click="isEditing = true"
-                class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition"
+                class="rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white transition hover:bg-blue-700"
               >
                 Edit
               </button>
               <button
                 v-else
                 @click="isEditing = false"
-                class="px-4 py-2 bg-brand-slate-300 text-brand-slate-900 font-semibold rounded-lg hover:bg-brand-slate-400 transition"
+                class="rounded-lg bg-brand-slate-300 px-4 py-2 font-semibold text-brand-slate-900 transition hover:bg-brand-slate-400"
               >
                 Cancel
               </button>
               <button
                 @click="showShareModal = true"
-                class="px-4 py-2 bg-brand-emerald-600 text-white font-semibold rounded-lg hover:bg-brand-emerald-700 transition"
+                class="rounded-lg bg-brand-emerald-600 px-4 py-2 font-semibold text-white transition hover:bg-brand-emerald-700"
               >
                 Share
               </button>
               <button
                 @click="handleDeleteDocument"
-                class="px-4 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition"
+                class="rounded-lg bg-red-600 px-4 py-2 font-semibold text-white transition hover:bg-red-700"
               >
                 Delete
               </button>
@@ -90,26 +90,26 @@
 
           <!-- Metadata Grid -->
           <div
-            class="grid grid-cols-2 md:grid-cols-4 gap-4 pt-6 border-t border-brand-slate-200"
+            class="grid grid-cols-2 gap-4 border-t border-brand-slate-200 pt-6 md:grid-cols-4"
           >
             <div>
-              <p class="text-brand-slate-600 text-sm mb-1">Version</p>
+              <p class="mb-1 text-sm text-brand-slate-600">Version</p>
               <p class="font-semibold text-brand-slate-900">
                 {{ document.version }}
               </p>
             </div>
             <div>
-              <p class="text-brand-slate-600 text-sm mb-1">School</p>
+              <p class="mb-1 text-sm text-brand-slate-600">School</p>
               <p class="font-semibold text-brand-slate-900">{{ schoolName }}</p>
             </div>
             <div>
-              <p class="text-brand-slate-600 text-sm mb-1">Uploaded</p>
+              <p class="mb-1 text-sm text-brand-slate-600">Uploaded</p>
               <p class="font-semibold text-brand-slate-900">
                 {{ formatDate(document.created_at) }}
               </p>
             </div>
             <div>
-              <p class="text-brand-slate-600 text-sm mb-1">File Type</p>
+              <p class="mb-1 text-sm text-brand-slate-600">File Type</p>
               <p class="font-semibold text-brand-slate-900">
                 {{ document.file_type || "Unknown" }}
               </p>
@@ -118,8 +118,8 @@
         </div>
 
         <!-- Document Preview -->
-        <div class="bg-white rounded-lg shadow-sm p-6">
-          <h2 class="text-xl font-bold text-brand-slate-900 mb-4">Preview</h2>
+        <div class="rounded-lg bg-white p-6 shadow-sm">
+          <h2 class="mb-4 text-xl font-bold text-brand-slate-900">Preview</h2>
 
           <!-- Video -->
           <VideoPlayer v-if="isVideo" :src="document.file_url" />
@@ -138,19 +138,19 @@
             v-else-if="isPDF"
             :src="document.file_url"
             :title="`PDF preview of ${document.title}`"
-            class="w-full h-96 rounded-lg border border-brand-slate-300"
+            class="h-96 w-full rounded-lg border border-brand-slate-300"
           />
 
           <!-- Download for other types -->
-          <div v-else class="text-center py-12">
-            <p class="text-brand-slate-600 mb-4">
+          <div v-else class="py-12 text-center">
+            <p class="mb-4 text-brand-slate-600">
               File preview not available for this file type
             </p>
             <a
               :href="document.file_url"
               target="_blank"
               download
-              class="inline-block px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition"
+              class="inline-block rounded-lg bg-blue-600 px-6 py-2 font-semibold text-white transition hover:bg-blue-700"
             >
               Download {{ document.title }}
             </a>
@@ -158,8 +158,8 @@
         </div>
 
         <!-- Version History -->
-        <div class="bg-white rounded-lg shadow-sm p-6">
-          <h2 class="text-xl font-bold text-brand-slate-900 mb-4">
+        <div class="rounded-lg bg-white p-6 shadow-sm">
+          <h2 class="mb-4 text-xl font-bold text-brand-slate-900">
             Version History
           </h2>
 
@@ -167,7 +167,7 @@
             <div
               v-for="version in documentVersions"
               :key="version.id"
-              class="flex items-center justify-between py-3 border-b border-brand-slate-200"
+              class="flex items-center justify-between border-b border-brand-slate-200 py-3"
             >
               <div class="flex-1">
                 <div class="flex items-center gap-3">
@@ -176,12 +176,12 @@
                   >
                   <span
                     v-if="version.is_current"
-                    class="inline-block px-2 py-1 text-xs font-semibold bg-blue-100 text-blue-800 rounded-sm"
+                    class="inline-block rounded-sm bg-blue-100 px-2 py-1 text-xs font-semibold text-blue-800"
                   >
                     Current
                   </span>
                 </div>
-                <p class="text-sm text-brand-slate-500 mt-1">
+                <p class="mt-1 text-sm text-brand-slate-500">
                   {{ formatDate(version.created_at) }}
                 </p>
               </div>
@@ -190,14 +190,14 @@
                   :href="version.file_url"
                   target="_blank"
                   rel="noopener"
-                  class="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded-sm hover:bg-blue-200 transition"
+                  class="rounded-sm bg-blue-100 px-3 py-1 text-sm text-blue-700 transition hover:bg-blue-200"
                 >
                   View
                 </a>
                 <button
                   v-if="!version.is_current"
                   @click="restoreVersion(version.id)"
-                  class="px-3 py-1 text-sm bg-brand-slate-100 text-brand-slate-700 rounded-sm hover:bg-brand-slate-200 transition"
+                  class="rounded-sm bg-brand-slate-100 px-3 py-1 text-sm text-brand-slate-700 transition hover:bg-brand-slate-200"
                 >
                   Restore
                 </button>
@@ -211,24 +211,24 @@
 
           <button
             @click="showUploadNewVersion = true"
-            class="mt-4 px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition"
+            class="mt-4 rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white transition hover:bg-blue-700"
           >
             + Upload New Version
           </button>
         </div>
 
         <!-- Edit Form -->
-        <div v-if="isEditing" class="bg-white rounded-lg shadow-sm p-6">
-          <h2 class="text-xl font-bold text-brand-slate-900 mb-6">
+        <div v-if="isEditing" class="rounded-lg bg-white p-6 shadow-sm">
+          <h2 class="mb-6 text-xl font-bold text-brand-slate-900">
             Edit Document
           </h2>
           <form @submit.prevent="saveDocument" class="space-y-6">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
               <!-- Title -->
               <div>
                 <label
                   for="title"
-                  class="block text-sm font-medium text-brand-slate-700 mb-1"
+                  class="mb-1 block text-sm font-medium text-brand-slate-700"
                 >
                   Title
                 </label>
@@ -237,7 +237,7 @@
                   v-model="editForm.title"
                   type="text"
                   required
-                  class="w-full px-4 py-2 border border-brand-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  class="w-full rounded-lg border border-brand-slate-300 px-4 py-2 focus:ring-2 focus:ring-blue-500"
                 />
               </div>
 
@@ -245,14 +245,14 @@
               <div>
                 <label
                   for="school"
-                  class="block text-sm font-medium text-brand-slate-700 mb-1"
+                  class="mb-1 block text-sm font-medium text-brand-slate-700"
                 >
                   School
                 </label>
                 <select
                   id="school"
                   v-model="editForm.school_id"
-                  class="w-full px-4 py-2 border border-brand-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  class="w-full rounded-lg border border-brand-slate-300 px-4 py-2 focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="">Select School (Optional)</option>
                   <option
@@ -269,7 +269,7 @@
               <div class="md:col-span-2">
                 <label
                   for="description"
-                  class="block text-sm font-medium text-brand-slate-700 mb-1"
+                  class="mb-1 block text-sm font-medium text-brand-slate-700"
                 >
                   Description
                 </label>
@@ -278,7 +278,7 @@
                   v-model="editForm.description"
                   rows="3"
                   placeholder="Add a description..."
-                  class="w-full px-4 py-2 border border-brand-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  class="w-full rounded-lg border border-brand-slate-300 px-4 py-2 focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             </div>
@@ -288,14 +288,14 @@
               <button
                 type="submit"
                 :disabled="loading"
-                class="flex-1 px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
+                class="flex-1 rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white transition hover:bg-blue-700 disabled:opacity-50"
               >
                 {{ loading ? "Saving..." : "Save Changes" }}
               </button>
               <button
                 type="button"
                 @click="isEditing = false"
-                class="flex-1 px-4 py-2 bg-brand-slate-200 text-brand-slate-900 font-semibold rounded-lg hover:bg-brand-slate-300 transition"
+                class="flex-1 rounded-lg bg-brand-slate-200 px-4 py-2 font-semibold text-brand-slate-900 transition hover:bg-brand-slate-300"
               >
                 Cancel
               </button>
@@ -307,12 +307,12 @@
       <!-- Share Modal -->
       <div
         v-if="showShareModal"
-        class="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
       >
         <div
-          class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md mx-4 max-h-96 overflow-y-auto"
+          class="mx-4 max-h-96 w-full max-w-md overflow-y-auto rounded-lg bg-white p-6 shadow-lg"
         >
-          <h3 class="text-lg font-bold text-brand-slate-900 mb-4">
+          <h3 class="mb-4 text-lg font-bold text-brand-slate-900">
             Share Document
           </h3>
 
@@ -321,21 +321,21 @@
             v-if="(document?.shared_with_schools || []).length > 0"
             class="mb-6"
           >
-            <h4 class="text-sm font-semibold text-brand-slate-700 mb-3">
+            <h4 class="mb-3 text-sm font-semibold text-brand-slate-700">
               Shared With
             </h4>
             <div class="space-y-2">
               <div
                 v-for="schoolId in document?.shared_with_schools || []"
                 :key="schoolId"
-                class="flex items-center justify-between p-2 bg-blue-50 rounded-sm"
+                class="flex items-center justify-between rounded-sm bg-blue-50 p-2"
               >
                 <span class="text-sm text-brand-slate-900">{{
                   getSchoolNameById(schoolId)
                 }}</span>
                 <button
                   @click="removeShare(schoolId)"
-                  class="text-xs text-red-600 hover:text-red-700 font-medium"
+                  class="text-xs font-medium text-red-600 hover:text-red-700"
                 >
                   Remove
                 </button>
@@ -345,20 +345,20 @@
 
           <!-- School Selector -->
           <div class="mb-6">
-            <h4 class="text-sm font-semibold text-brand-slate-700 mb-3">
+            <h4 class="mb-3 text-sm font-semibold text-brand-slate-700">
               Add Schools
             </h4>
-            <div class="space-y-2 max-h-40 overflow-y-auto">
+            <div class="max-h-40 space-y-2 overflow-y-auto">
               <label
                 v-for="school in availableSchools"
                 :key="school.id"
-                class="flex items-center gap-3 p-2 hover:bg-brand-slate-50 rounded-sm cursor-pointer"
+                class="flex cursor-pointer items-center gap-3 rounded-sm p-2 hover:bg-brand-slate-50"
               >
                 <input
                   :checked="selectedSchools.includes(school.id)"
                   @change="toggleSchoolSelection(school.id)"
                   type="checkbox"
-                  class="w-4 h-4 rounded-sm"
+                  class="h-4 w-4 rounded-sm"
                 />
                 <span class="text-sm text-brand-slate-900">{{
                   school.name
@@ -372,13 +372,13 @@
             <button
               @click="saveSharing"
               :disabled="loading"
-              class="flex-1 bg-brand-emerald-600 text-white py-2 rounded-lg hover:bg-brand-emerald-700 transition font-medium disabled:opacity-50"
+              class="flex-1 rounded-lg bg-brand-emerald-600 py-2 font-medium text-white transition hover:bg-brand-emerald-700 disabled:opacity-50"
             >
               {{ loading ? "Saving..." : "Save" }}
             </button>
             <button
               @click="showShareModal = false"
-              class="flex-1 bg-brand-slate-200 text-brand-slate-900 py-2 rounded-lg hover:bg-brand-slate-300 transition font-medium"
+              class="flex-1 rounded-lg bg-brand-slate-200 py-2 font-medium text-brand-slate-900 transition hover:bg-brand-slate-300"
             >
               Close
             </button>

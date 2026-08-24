@@ -3,13 +3,13 @@
     class="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-slate-100"
   >
     <!-- Page Header -->
-    <div class="bg-white border-b border-slate-200">
-      <div class="max-w-5xl mx-auto px-4 sm:px-6 py-4">
+    <div class="border-b border-slate-200 bg-white">
+      <div class="mx-auto max-w-5xl px-4 py-4 sm:px-6">
         <NuxtLink
           to="/settings"
-          class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition mb-3 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          class="mb-3 inline-flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium text-blue-600 transition hover:bg-blue-50 hover:text-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         >
-          <UIcon name="i-heroicons-arrow-left" class="w-4 h-4" />
+          <UIcon name="i-heroicons-arrow-left" class="h-4 w-4" />
           Back to Settings
         </NuxtLink>
         <h1 class="text-2xl font-semibold text-slate-900">
@@ -22,11 +22,11 @@
       </div>
     </div>
 
-    <main class="max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+    <main class="mx-auto max-w-5xl space-y-6 px-4 py-8 sm:px-6">
       <!-- Stats Bar toggles -->
-      <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
+      <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-xs">
         <h2
-          class="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-4"
+          class="mb-4 text-sm font-semibold tracking-wide text-slate-500 uppercase"
         >
           Summary Statistics
         </h2>
@@ -34,7 +34,7 @@
           <label
             v-for="card in STAT_CARDS"
             :key="card.key"
-            class="flex items-center gap-2 px-3 py-2 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50 transition select-none"
+            class="flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 transition select-none hover:bg-slate-50"
             :class="
               layout.statsCards[card.key]
                 ? 'bg-white'
@@ -44,7 +44,7 @@
             <input
               v-model="layout.statsCards[card.key]"
               type="checkbox"
-              class="w-4 h-4 text-blue-600 rounded-sm"
+              class="h-4 w-4 rounded-sm text-blue-600"
               @change="scheduleSave"
             />
             <span class="text-sm font-medium text-slate-800">{{
@@ -55,17 +55,17 @@
       </div>
 
       <!-- Column editor -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <!-- Left column (4/6 wide on dashboard) -->
         <div
-          class="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-xs p-6"
+          class="rounded-xl border border-slate-200 bg-white p-6 shadow-xs lg:col-span-2"
         >
           <h2
-            class="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-1"
+            class="mb-1 text-sm font-semibold tracking-wide text-slate-500 uppercase"
           >
             Main Column
           </h2>
-          <p class="text-xs text-slate-400 mb-4">
+          <p class="mb-4 text-xs text-slate-400">
             Accepts wide (4/6) and narrow (2/6) widgets. Narrow widgets pair
             side-by-side.
           </p>
@@ -85,20 +85,20 @@
 
           <p
             v-if="layout.leftColumn.length === 0"
-            class="text-sm text-slate-400 text-center py-6"
+            class="py-6 text-center text-sm text-slate-400"
           >
             Drag widgets here
           </p>
         </div>
 
         <!-- Right column (2/6 wide on dashboard — sidebar) -->
-        <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
+        <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-xs">
           <h2
-            class="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-1"
+            class="mb-1 text-sm font-semibold tracking-wide text-slate-500 uppercase"
           >
             Sidebar
           </h2>
-          <p class="text-xs text-slate-400 mb-4">Narrow (2/6) widgets only.</p>
+          <p class="mb-4 text-xs text-slate-400">Narrow (2/6) widgets only.</p>
 
           <div ref="rightColumnEl" class="min-h-24 space-y-2">
             <DashboardWidgetCard
@@ -115,7 +115,7 @@
 
           <p
             v-if="layout.rightColumn.length === 0"
-            class="text-sm text-slate-400 text-center py-6"
+            class="py-6 text-center text-sm text-slate-400"
           >
             Drag widgets here
           </p>
@@ -123,24 +123,24 @@
       </div>
 
       <!-- Coming Soon section -->
-      <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
+      <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-xs">
         <h2
-          class="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-4"
+          class="mb-4 text-sm font-semibold tracking-wide text-slate-500 uppercase"
         >
           Coming Soon
         </h2>
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
           <div
             v-for="(label, id) in COMING_SOON_LABELS"
             :key="id"
-            class="flex items-center gap-3 p-3 rounded-lg border border-slate-200 bg-slate-50 opacity-60 cursor-not-allowed"
+            class="flex cursor-not-allowed items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3 opacity-60"
           >
-            <div class="w-4 h-4 shrink-0" />
-            <span class="flex-1 text-sm font-medium text-slate-800 truncate">{{
+            <div class="h-4 w-4 shrink-0" />
+            <span class="flex-1 truncate text-sm font-medium text-slate-800">{{
               label
             }}</span>
             <span
-              class="text-xs font-medium bg-amber-100 text-amber-600 px-2 py-0.5 rounded-full shrink-0"
+              class="shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-600"
             >
               Coming soon
             </span>
@@ -149,23 +149,23 @@
       </div>
 
       <!-- Reset + save status -->
-      <div class="flex justify-between items-center">
+      <div class="flex items-center justify-between">
         <button
           type="button"
-          class="px-4 py-2 text-sm font-medium text-slate-600 border border-slate-300 rounded-lg hover:bg-slate-50 transition"
+          class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50"
           @click="resetToDefaults"
         >
           Reset to Defaults
         </button>
         <p
           v-if="saveStatus === 'saved'"
-          class="text-sm text-green-600 font-medium"
+          class="text-sm font-medium text-green-600"
         >
           ✓ Saved
         </p>
         <p
           v-if="saveStatus === 'error'"
-          class="text-sm text-red-600 font-medium"
+          class="text-sm font-medium text-red-600"
         >
           Failed to save
         </p>

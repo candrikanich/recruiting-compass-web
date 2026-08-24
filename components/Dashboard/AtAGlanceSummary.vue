@@ -1,28 +1,28 @@
 <template>
   <div
-    class="bg-white rounded-2xl border border-slate-200 shadow-xs hover:shadow-md transition-shadow p-6"
+    class="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs transition-shadow hover:shadow-md"
   >
-    <h2 class="text-xl font-bold mb-6 text-slate-900">👁️ At a Glance</h2>
+    <h2 class="mb-6 text-xl font-bold text-slate-900">👁️ At a Glance</h2>
 
     <!-- Summary Metrics Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
       <!-- Schools with Offers -->
-      <div class="rounded-lg p-4 bg-linear-to-br from-emerald-50 to-white">
-        <div class="flex items-start justify-between mb-2">
+      <div class="rounded-lg bg-linear-to-br from-emerald-50 to-white p-4">
+        <div class="mb-2 flex items-start justify-between">
           <span class="text-2xl">🎯</span>
           <span class="text-xs font-bold text-emerald-700"
             >{{ offersPercentage }}%</span
           >
         </div>
         <p class="text-sm font-semibold text-slate-900">Schools with Offers</p>
-        <p class="text-xs mt-1 text-slate-600">
+        <p class="mt-1 text-xs text-slate-600">
           {{ acceptedOffers }} of {{ totalSchools }}
         </p>
       </div>
 
       <!-- Interactions This Month -->
-      <div class="rounded-lg p-4 bg-linear-to-br from-purple-50 to-white">
-        <div class="flex items-start justify-between mb-2">
+      <div class="rounded-lg bg-linear-to-br from-purple-50 to-white p-4">
+        <div class="mb-2 flex items-start justify-between">
           <span class="text-2xl">📧</span>
           <span class="text-xs font-bold text-purple-700">{{
             interactionsThisMonth
@@ -31,14 +31,14 @@
         <p class="text-sm font-semibold text-slate-900">
           Interactions This Month
         </p>
-        <p class="text-xs mt-1 text-slate-600">
+        <p class="mt-1 text-xs text-slate-600">
           {{ monthName }} {{ currentYear }}
         </p>
       </div>
 
       <!-- Days Until Graduation -->
-      <div class="rounded-lg p-4 bg-linear-to-br from-orange-50 to-white">
-        <div class="flex items-start justify-between mb-2">
+      <div class="rounded-lg bg-linear-to-br from-orange-50 to-white p-4">
+        <div class="mb-2 flex items-start justify-between">
           <span class="text-2xl">🎓</span>
           <span class="text-xs font-bold text-orange-700"
             >{{ daysUntilGraduation }}d</span
@@ -47,7 +47,7 @@
         <p class="text-sm font-semibold text-slate-900">
           Days Until Graduation
         </p>
-        <p class="text-xs mt-1 text-slate-600">May 31, 2028</p>
+        <p class="mt-1 text-xs text-slate-600">May 31, 2028</p>
       </div>
     </div>
   </div>

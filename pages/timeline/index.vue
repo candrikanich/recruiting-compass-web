@@ -13,9 +13,9 @@
         <!-- Current Phase Badge -->
         <div
           v-if="!phaseLoading"
-          class="bg-white border border-slate-200 rounded-xl px-4 py-3 shadow-xs"
+          class="rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-xs"
         >
-          <div class="text-sm text-slate-600 mb-1">Current Phase</div>
+          <div class="mb-1 text-sm text-slate-600">Current Phase</div>
           <div class="text-lg font-bold text-slate-900">
             {{ getPhaseDisplayName(currentPhase) }}
           </div>
@@ -24,12 +24,12 @@
         <!-- Status Indicator -->
         <div
           v-if="!statusLoading"
-          class="bg-white border border-slate-200 rounded-xl px-4 py-3 shadow-xs"
+          class="rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-xs"
         >
-          <div class="text-sm text-slate-600 mb-1">Status</div>
+          <div class="mb-1 text-sm text-slate-600">Status</div>
           <div class="flex items-center gap-2">
             <div
-              class="w-3 h-3 rounded-full"
+              class="h-3 w-3 rounded-full"
               :class="getStatusColorClass(statusLabel)"
             />
             <div class="text-lg font-bold text-slate-900">
@@ -47,25 +47,25 @@
     </PageHeader>
 
     <!-- Main Content -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+    <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6">
       <!-- Loading State -->
       <div v-if="loading" class="space-y-6">
         <div
           v-for="i in 4"
           :key="i"
-          class="h-32 bg-white rounded-2xl border border-slate-200 animate-pulse"
+          class="h-32 animate-pulse rounded-2xl border border-slate-200 bg-white"
         />
       </div>
 
       <!-- Error State -->
       <div
         v-else-if="error"
-        class="bg-red-50 border border-red-200 rounded-lg p-6"
+        class="rounded-lg border border-red-200 bg-red-50 p-6"
       >
-        <p class="text-red-700 mb-4">{{ error }}</p>
+        <p class="mb-4 text-red-700">{{ error }}</p>
         <button
           @click="retryFetch"
-          class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+          class="rounded-lg bg-red-600 px-4 py-2 text-white transition hover:bg-red-700"
         >
           Retry
         </button>
@@ -74,9 +74,9 @@
       <!-- Content Section -->
       <div v-else>
         <!-- Main Grid: Tasks (2/3) + Guidance Sidebar (1/3) -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
           <!-- Left Column: Stat Pills + Phase Cards -->
-          <div class="lg:col-span-2 space-y-6">
+          <div class="space-y-6 lg:col-span-2">
             <!-- Stat Pills -->
             <TimelineStatPills
               :status-score="statusScore"

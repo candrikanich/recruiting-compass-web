@@ -1,23 +1,23 @@
 <template>
   <div
-    class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-8"
+    class="mb-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6"
   >
     <!-- Schools Card -->
     <NuxtLink
       v-if="showSchools"
       to="/schools"
-      class="relative group rounded-xl overflow-hidden transition-all focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+      class="group relative overflow-hidden rounded-xl transition-all focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
       :aria-label="`Schools section: ${schoolCount} total schools. Navigate to manage schools.`"
     >
       <div
-        class="absolute inset-0 bg-linear-to-br from-purple-500 to-purple-600 opacity-90 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity"
+        class="absolute inset-0 bg-linear-to-br from-purple-500 to-purple-600 opacity-90 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100"
       />
       <div class="relative p-6 text-white">
-        <div class="flex items-center gap-3 mb-2">
-          <div class="p-3 bg-white/20 rounded-lg backdrop-blur-xs">
+        <div class="mb-2 flex items-center gap-3">
+          <div class="rounded-lg bg-white/20 p-3 backdrop-blur-xs">
             <UIcon
               name="i-heroicons-building-library"
-              class="w-6 h-6"
+              class="h-6 w-6"
               aria-hidden="true"
             />
           </div>
@@ -25,11 +25,11 @@
             {{ schoolCount }}
           </div>
         </div>
-        <div class="text-white/90 font-medium">Schools</div>
-        <div class="text-white/70 text-sm mt-1">Manage schools</div>
+        <div class="font-medium text-white/90">Schools</div>
+        <div class="mt-1 text-sm text-white/70">Manage schools</div>
       </div>
       <div
-        class="absolute inset-0 rounded-xl ring-2 ring-white/20 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity pointer-events-none"
+        class="pointer-events-none absolute inset-0 rounded-xl opacity-0 ring-2 ring-white/20 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100"
       />
     </NuxtLink>
 
@@ -37,18 +37,18 @@
     <NuxtLink
       v-if="showCoaches"
       to="/coaches"
-      class="relative group rounded-xl overflow-hidden transition-all focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+      class="group relative overflow-hidden rounded-xl transition-all focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
       :aria-label="`Coaches section: ${coachCount} total coaches. Navigate to manage all coaches.`"
     >
       <div
-        class="absolute inset-0 bg-linear-to-br from-blue-500 to-blue-600 opacity-90 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity"
+        class="absolute inset-0 bg-linear-to-br from-blue-500 to-blue-600 opacity-90 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100"
       />
       <div class="relative p-6 text-white">
-        <div class="flex items-center gap-3 mb-2">
-          <div class="p-3 bg-white/20 rounded-lg backdrop-blur-xs">
+        <div class="mb-2 flex items-center gap-3">
+          <div class="rounded-lg bg-white/20 p-3 backdrop-blur-xs">
             <UIcon
               name="i-heroicons-user-group"
-              class="w-6 h-6"
+              class="h-6 w-6"
               aria-hidden="true"
             />
           </div>
@@ -56,11 +56,11 @@
             {{ coachCount }}
           </div>
         </div>
-        <div class="text-white/90 font-medium">Coaches</div>
-        <div class="text-white/70 text-sm mt-1">View all coaches</div>
+        <div class="font-medium text-white/90">Coaches</div>
+        <div class="mt-1 text-sm text-white/70">View all coaches</div>
       </div>
       <div
-        class="absolute inset-0 rounded-xl ring-2 ring-white/20 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity pointer-events-none"
+        class="pointer-events-none absolute inset-0 rounded-xl opacity-0 ring-2 ring-white/20 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100"
       />
     </NuxtLink>
 
@@ -68,18 +68,18 @@
     <NuxtLink
       v-if="showInteractions"
       to="/interactions"
-      class="relative group rounded-xl overflow-hidden transition-all focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
+      class="group relative overflow-hidden rounded-xl transition-all focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
       :aria-label="`Interactions section: ${interactionCount} logged interactions. Navigate to track interactions.`"
     >
       <div
-        class="absolute inset-0 bg-linear-to-br from-emerald-500 to-emerald-600 opacity-90 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity"
+        class="absolute inset-0 bg-linear-to-br from-emerald-500 to-emerald-600 opacity-90 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100"
       />
       <div class="relative p-6 text-white">
-        <div class="flex items-center gap-3 mb-2">
-          <div class="p-3 bg-white/20 rounded-lg backdrop-blur-xs">
+        <div class="mb-2 flex items-center gap-3">
+          <div class="rounded-lg bg-white/20 p-3 backdrop-blur-xs">
             <UIcon
               name="i-heroicons-chat-bubble-left-right"
-              class="w-6 h-6"
+              class="h-6 w-6"
               aria-hidden="true"
             />
           </div>
@@ -87,11 +87,11 @@
             {{ interactionCount }}
           </div>
         </div>
-        <div class="text-white/90 font-medium">Interactions</div>
-        <div class="text-white/70 text-sm mt-1">Track interactions</div>
+        <div class="font-medium text-white/90">Interactions</div>
+        <div class="mt-1 text-sm text-white/70">Track interactions</div>
       </div>
       <div
-        class="absolute inset-0 rounded-xl ring-2 ring-white/20 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity pointer-events-none"
+        class="pointer-events-none absolute inset-0 rounded-xl opacity-0 ring-2 ring-white/20 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100"
       />
     </NuxtLink>
 
@@ -100,18 +100,18 @@
       v-if="showEvents"
       data-testid="stat-card-events"
       to="/events"
-      class="relative group rounded-xl overflow-hidden transition-all focus:ring-2 focus:ring-offset-2 focus:ring-amber-500"
+      class="group relative overflow-hidden rounded-xl transition-all focus:ring-2 focus:ring-amber-500 focus:ring-offset-2"
       :aria-label="`Events section: ${eventCount} entered events. Navigate to view all events.`"
     >
       <div
-        class="absolute inset-0 bg-linear-to-br from-amber-500 to-amber-600 opacity-90 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity"
+        class="absolute inset-0 bg-linear-to-br from-amber-500 to-amber-600 opacity-90 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100"
       />
       <div class="relative p-6 text-white">
-        <div class="flex items-center gap-3 mb-2">
-          <div class="p-3 bg-white/20 rounded-lg backdrop-blur-xs">
+        <div class="mb-2 flex items-center gap-3">
+          <div class="rounded-lg bg-white/20 p-3 backdrop-blur-xs">
             <UIcon
               name="i-heroicons-trophy"
-              class="w-6 h-6"
+              class="h-6 w-6"
               aria-hidden="true"
             />
           </div>
@@ -119,11 +119,11 @@
             {{ eventCount }}
           </div>
         </div>
-        <div class="text-white/90 font-medium">Events</div>
-        <div class="text-white/70 text-sm mt-1">Entered events</div>
+        <div class="font-medium text-white/90">Events</div>
+        <div class="mt-1 text-sm text-white/70">Entered events</div>
       </div>
       <div
-        class="absolute inset-0 rounded-xl ring-2 ring-white/20 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity pointer-events-none"
+        class="pointer-events-none absolute inset-0 rounded-xl opacity-0 ring-2 ring-white/20 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100"
       />
     </NuxtLink>
 
@@ -131,19 +131,19 @@
     <NuxtLink
       v-if="showOffers"
       to="/offers"
-      class="relative group rounded-xl overflow-hidden transition-all focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+      class="group relative overflow-hidden rounded-xl transition-all focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
       :aria-label="`Offers section: ${acceptedOffers} accepted out of ${totalOffers} total offers. Navigate to view all offers.`"
     >
       <div
-        class="absolute inset-0 bg-linear-to-br from-orange-500 to-orange-600 opacity-90 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity"
+        class="absolute inset-0 bg-linear-to-br from-orange-500 to-orange-600 opacity-90 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100"
       />
       <div class="relative p-6 text-white">
-        <div class="flex items-center justify-between mb-2">
+        <div class="mb-2 flex items-center justify-between">
           <div class="flex items-center gap-3">
-            <div class="p-3 bg-white/20 rounded-lg backdrop-blur-xs">
+            <div class="rounded-lg bg-white/20 p-3 backdrop-blur-xs">
               <UIcon
                 name="i-heroicons-gift"
-                class="w-6 h-6"
+                class="h-6 w-6"
                 aria-hidden="true"
               />
             </div>
@@ -153,17 +153,17 @@
           </div>
           <div
             v-if="totalOffers > 0"
-            class="px-3 py-1 bg-white/20 rounded-full text-sm backdrop-blur-xs"
+            class="rounded-full bg-white/20 px-3 py-1 text-sm backdrop-blur-xs"
             aria-hidden="true"
           >
             {{ totalOffers - acceptedOffers }} pending
           </div>
         </div>
-        <div class="text-white/90 font-medium">Offers</div>
-        <div class="text-white/70 text-sm mt-1">Accepted / Total</div>
+        <div class="font-medium text-white/90">Offers</div>
+        <div class="mt-1 text-sm text-white/70">Accepted / Total</div>
       </div>
       <div
-        class="absolute inset-0 rounded-xl ring-2 ring-white/20 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity pointer-events-none"
+        class="pointer-events-none absolute inset-0 rounded-xl opacity-0 ring-2 ring-white/20 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100"
       />
     </NuxtLink>
 
@@ -172,18 +172,18 @@
       v-if="showLastContact"
       data-testid="stat-card-last-contact"
       to="/interactions"
-      class="relative group rounded-xl overflow-hidden transition-all focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
+      class="group relative overflow-hidden rounded-xl transition-all focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
       :aria-label="lastContactAriaLabel"
     >
       <div
-        class="absolute inset-0 bg-linear-to-br from-teal-500 to-teal-600 opacity-90 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity"
+        class="absolute inset-0 bg-linear-to-br from-teal-500 to-teal-600 opacity-90 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100"
       />
       <div class="relative p-6 text-white">
-        <div class="flex items-center gap-3 mb-2">
-          <div class="p-3 bg-white/20 rounded-lg backdrop-blur-xs">
+        <div class="mb-2 flex items-center gap-3">
+          <div class="rounded-lg bg-white/20 p-3 backdrop-blur-xs">
             <UIcon
               name="i-heroicons-clock"
-              class="w-6 h-6"
+              class="h-6 w-6"
               aria-hidden="true"
             />
           </div>
@@ -191,11 +191,11 @@
             {{ lastContactValue }}
           </div>
         </div>
-        <div class="text-white/90 font-medium">Last Contact</div>
-        <div class="text-white/70 text-sm mt-1">{{ lastContactCaption }}</div>
+        <div class="font-medium text-white/90">Last Contact</div>
+        <div class="mt-1 text-sm text-white/70">{{ lastContactCaption }}</div>
       </div>
       <div
-        class="absolute inset-0 rounded-xl ring-2 ring-white/20 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity pointer-events-none"
+        class="pointer-events-none absolute inset-0 rounded-xl opacity-0 ring-2 ring-white/20 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100"
       />
     </NuxtLink>
   </div>

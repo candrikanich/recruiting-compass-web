@@ -1,56 +1,56 @@
 <template>
   <div
-    class="bg-white rounded-2xl border border-slate-200 shadow-xs hover:shadow-md transition-shadow p-6"
+    class="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs transition-shadow hover:shadow-md"
   >
-    <h2 class="text-xl font-bold mb-6 text-slate-900">📊 Interaction Stats</h2>
+    <h2 class="mb-6 text-xl font-bold text-slate-900">📊 Interaction Stats</h2>
 
     <!-- Summary Row -->
-    <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+    <div class="mb-8 grid grid-cols-2 gap-4 md:grid-cols-5">
       <div class="text-center">
         <p class="text-sm text-slate-600">Total</p>
-        <p class="text-3xl font-bold mt-2 text-slate-900">
+        <p class="mt-2 text-3xl font-bold text-slate-900">
           {{ totalInteractions }}
         </p>
       </div>
       <div class="text-center">
         <p class="text-sm text-slate-600">This Month</p>
-        <p class="text-3xl font-bold mt-2 text-blue-600">
+        <p class="mt-2 text-3xl font-bold text-blue-600">
           {{ thisMonthInteractions }}
         </p>
       </div>
       <div class="text-center">
         <p class="text-sm text-slate-600">Outbound</p>
-        <p class="text-3xl font-bold mt-2 text-emerald-600">
+        <p class="mt-2 text-3xl font-bold text-emerald-600">
           {{ outboundCount }}
         </p>
       </div>
       <div class="text-center">
         <p class="text-sm text-slate-600">Inbound</p>
-        <p class="text-3xl font-bold mt-2 text-purple-600">
+        <p class="mt-2 text-3xl font-bold text-purple-600">
           {{ inboundCount }}
         </p>
       </div>
       <div class="text-center">
         <p class="text-sm text-slate-600">Avg/Day</p>
-        <p class="text-3xl font-bold mt-2 text-orange-600">{{ avgPerDay }}</p>
+        <p class="mt-2 text-3xl font-bold text-orange-600">{{ avgPerDay }}</p>
       </div>
     </div>
 
     <!-- Interaction Type Breakdown -->
-    <div class="pt-6 border-t border-slate-200">
-      <h3 class="font-semibold mb-4 text-slate-900">By Type</h3>
+    <div class="border-t border-slate-200 pt-6">
+      <h3 class="mb-4 font-semibold text-slate-900">By Type</h3>
       <div class="space-y-3">
         <div
           v-for="type in interactionTypes"
           :key="type.type"
           class="flex items-center justify-between"
         >
-          <div class="flex items-center gap-2 flex-1">
+          <div class="flex flex-1 items-center gap-2">
             <span>{{ getTypeEmoji(type.type) }}</span>
             <span class="text-sm text-slate-900">{{
               getTypeLabel(type.type)
             }}</span>
-            <div class="flex-1 rounded-full h-2 ml-2 bg-slate-200">
+            <div class="ml-2 h-2 flex-1 rounded-full bg-slate-200">
               <div
                 class="h-2 rounded-full bg-blue-600"
                 :style="{ width: getPercentage(type.count) + '%' }"
@@ -65,19 +65,19 @@
     </div>
 
     <!-- Sentiment Breakdown -->
-    <div class="pt-6 mt-6 border-t border-slate-200">
-      <h3 class="font-semibold mb-4 text-slate-900">Sentiment Analysis</h3>
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+    <div class="mt-6 border-t border-slate-200 pt-6">
+      <h3 class="mb-4 font-semibold text-slate-900">Sentiment Analysis</h3>
+      <div class="grid grid-cols-2 gap-3 md:grid-cols-4">
         <div
           v-for="sentiment in sentiments"
           :key="sentiment.type"
-          class="text-center p-3 rounded-lg border border-slate-200"
+          class="rounded-lg border border-slate-200 p-3 text-center"
         >
-          <p class="text-2xl mb-1">{{ getSentimentEmoji(sentiment.type) }}</p>
+          <p class="mb-1 text-2xl">{{ getSentimentEmoji(sentiment.type) }}</p>
           <p class="text-xs text-slate-600">
             {{ getSentimentLabel(sentiment.type) }}
           </p>
-          <p class="text-lg font-bold mt-1 text-slate-900">
+          <p class="mt-1 text-lg font-bold text-slate-900">
             {{ sentiment.count }}
           </p>
         </div>

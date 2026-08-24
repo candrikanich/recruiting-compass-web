@@ -1,13 +1,13 @@
 <template>
   <div
     v-if="isParent"
-    class="flex items-center gap-3 px-4 py-3 bg-blue-50 border-b border-blue-200 rounded-lg"
+    class="flex items-center gap-3 rounded-lg border-b border-blue-200 bg-blue-50 px-4 py-3"
   >
     <label class="text-sm font-medium text-gray-700">Viewing:</label>
     <select
       v-model="selectedAthleteId"
       @change="handleSwitch"
-      class="px-3 py-2 border border-gray-300 rounded-md text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+      class="rounded-md border border-gray-300 px-3 py-2 text-sm font-medium transition focus:border-transparent focus:ring-2 focus:ring-blue-500"
     >
       <option
         v-for="athlete in accessibleAthletes"

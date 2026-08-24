@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
+  <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-xs">
     <div class="flex items-start gap-4">
       <SchoolLogo
         :school="school"
@@ -7,17 +7,17 @@
         fetch-on-mount
         :transition-name="`school-logo-${school.id}`"
       />
-      <div class="flex-1 min-w-0">
-        <h1 class="text-2xl font-bold text-slate-900 mb-1">
+      <div class="min-w-0 flex-1">
+        <h1 class="mb-1 text-2xl font-bold text-slate-900">
           {{ school.name }}
         </h1>
         <div
           v-if="displayLocation"
-          class="flex items-center gap-2 text-slate-600 mb-3"
+          class="mb-3 flex items-center gap-2 text-slate-600"
         >
           <UIcon
             name="i-heroicons-map-pin"
-            class="w-4 h-4"
+            class="h-4 w-4"
             aria-hidden="true"
           />
           {{ displayLocation }}
@@ -25,26 +25,26 @@
         <div class="flex flex-wrap gap-2">
           <span
             v-if="school.division"
-            class="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700"
+            class="rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700"
           >
             {{ school.division }}
           </span>
           <span
-            class="px-2 py-1 text-xs font-medium rounded-full"
+            class="rounded-full px-2 py-1 text-xs font-medium"
             :class="getSchoolStatusBadgeClass(school.status)"
           >
             {{ getSchoolStatusLabel(school.status) }}
           </span>
           <span
             v-if="calculatedSize"
-            class="px-2 py-1 text-xs font-medium rounded-full"
+            class="rounded-full px-2 py-1 text-xs font-medium"
             :class="getSizeColorClass(calculatedSize)"
           >
             {{ calculatedSize }}
           </span>
           <span
             v-if="school.conference"
-            class="px-2 py-1 text-xs font-medium rounded-full bg-slate-100 text-slate-700"
+            class="rounded-full bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700"
           >
             {{ school.conference }}
           </span>
@@ -56,7 +56,7 @@
           school.is_favorite ? 'Remove from favorites' : 'Add to favorites'
         "
         :aria-pressed="school.is_favorite"
-        class="shrink-0 transition-all rounded-sm focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        class="shrink-0 rounded-sm transition-all focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         :class="
           school.is_favorite
             ? 'text-yellow-500'
@@ -65,7 +65,7 @@
       >
         <UIcon
           name="i-heroicons-star"
-          class="w-6 h-6"
+          class="h-6 w-6"
           :class="school.is_favorite ? 'fill-yellow-500' : ''"
           aria-hidden="true"
         />

@@ -37,7 +37,10 @@ export function useAdminAuditLog() {
       });
       if (!res.ok) throw new Error(`Failed to load audit log: ${res.status}`);
 
-      const data = (await res.json()) as { rows: AdminAuditRow[]; total: number };
+      const data = (await res.json()) as {
+        rows: AdminAuditRow[];
+        total: number;
+      };
       rows.value = data.rows;
       total.value = data.total;
     } catch (err) {

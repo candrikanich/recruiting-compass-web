@@ -66,11 +66,11 @@ onUnmounted(() => {
           role="dialog"
           aria-modal="true"
           aria-labelledby="help-modal-title"
-          class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 max-h-96 overflow-y-auto"
+          class="mx-4 max-h-96 w-full max-w-md overflow-y-auto rounded-lg bg-white shadow-xl"
         >
           <!-- Header -->
           <div
-            class="sticky top-0 bg-blue-50 border-b border-blue-200 px-6 py-4 flex items-start justify-between"
+            class="sticky top-0 flex items-start justify-between border-b border-blue-200 bg-blue-50 px-6 py-4"
           >
             <h2 id="help-modal-title" class="text-xl font-bold text-slate-900">
               {{ helpDefinition.title }}
@@ -78,7 +78,7 @@ onUnmounted(() => {
             <button
               type="button"
               aria-label="Close help dialog"
-              class="text-slate-500 hover:text-slate-700 text-2xl leading-none"
+              class="text-2xl leading-none text-slate-500 hover:text-slate-700"
               @click="handleClose"
             >
               ×
@@ -87,26 +87,26 @@ onUnmounted(() => {
 
           <!-- Content -->
           <div class="px-6 py-4">
-            <p class="text-slate-700 mb-3">
+            <p class="mb-3 text-slate-700">
               {{ helpDefinition.shortDescription }}
             </p>
-            <p class="text-slate-600 text-sm leading-relaxed mb-4">
+            <p class="mb-4 text-sm leading-relaxed text-slate-600">
               {{ helpDefinition.fullDescription }}
             </p>
 
             <!-- Related links -->
             <div
               v-if="helpDefinition.relatedLinks?.length"
-              class="mt-4 pt-4 border-t border-slate-200"
+              class="mt-4 border-t border-slate-200 pt-4"
             >
-              <p class="text-sm font-semibold text-slate-700 mb-2">
+              <p class="mb-2 text-sm font-semibold text-slate-700">
                 Learn More:
               </p>
               <ul class="space-y-1">
                 <li v-for="link in helpDefinition.relatedLinks" :key="link.url">
                   <a
                     :href="link.url"
-                    class="text-sm text-blue-600 hover:text-blue-800 underline"
+                    class="text-sm text-blue-600 underline hover:text-blue-800"
                   >
                     {{ link.label }}
                   </a>
@@ -117,11 +117,11 @@ onUnmounted(() => {
 
           <!-- Footer -->
           <div
-            class="sticky bottom-0 bg-slate-50 border-t border-slate-200 px-6 py-3 flex justify-end"
+            class="sticky bottom-0 flex justify-end border-t border-slate-200 bg-slate-50 px-6 py-3"
           >
             <button
               type="button"
-              class="px-4 py-2 bg-blue-600 text-white rounded-sm hover:bg-blue-700 transition-colors text-sm font-medium"
+              class="rounded-sm bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
               @click="handleClose"
             >
               Got it

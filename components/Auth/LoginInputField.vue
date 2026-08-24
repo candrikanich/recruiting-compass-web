@@ -1,15 +1,15 @@
 <template>
   <div>
-    <label :for="id" class="block text-sm font-medium text-slate-700 mb-2">
+    <label :for="id" class="mb-2 block text-sm font-medium text-slate-700">
       {{ label }}
-      <span v-if="required" aria-label="required" class="text-red-600 ml-1"
+      <span v-if="required" aria-label="required" class="ml-1 text-red-600"
         >*</span
       >
     </label>
     <div class="relative">
       <UIcon
         :name="icon"
-        class="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"
+        class="absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 text-slate-400"
         aria-hidden="true"
       />
       <input
@@ -26,7 +26,7 @@
             .filter(Boolean)
             .join(' ') || undefined
         "
-        class="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-offset-2 focus:ring-blue-600 focus:border-transparent transition-all disabled:bg-slate-100 disabled:text-slate-500 disabled:cursor-not-allowed"
+        class="w-full rounded-lg border border-slate-300 py-3 pr-4 pl-10 transition-all focus:border-transparent focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500"
         @input="
           $emit('update:modelValue', ($event.target as HTMLInputElement).value)
         "

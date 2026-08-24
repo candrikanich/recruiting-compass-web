@@ -55,9 +55,7 @@ describe("DashboardStatsCards", () => {
       props: defaultProps,
     });
 
-    const contactsCard = wrapper.find(
-      '[data-testid="stat-card-last-contact"]',
-    );
+    const contactsCard = wrapper.find('[data-testid="stat-card-last-contact"]');
     expect(contactsCard.exists()).toBe(true);
     expect(contactsCard.text()).toContain("Last Contact");
     expect(contactsCard.text()).toContain("days ago");
@@ -68,9 +66,7 @@ describe("DashboardStatsCards", () => {
       props: { ...defaultProps, daysSinceLastContact: 0 },
     });
 
-    const contactsCard = wrapper.find(
-      '[data-testid="stat-card-last-contact"]',
-    );
+    const contactsCard = wrapper.find('[data-testid="stat-card-last-contact"]');
     expect(contactsCard.text()).toContain("Today");
   });
 
@@ -79,9 +75,7 @@ describe("DashboardStatsCards", () => {
       props: { ...defaultProps, daysSinceLastContact: null },
     });
 
-    const contactsCard = wrapper.find(
-      '[data-testid="stat-card-last-contact"]',
-    );
+    const contactsCard = wrapper.find('[data-testid="stat-card-last-contact"]');
     expect(contactsCard.text()).toContain("—");
     expect(contactsCard.text()).toContain("No contact yet");
   });

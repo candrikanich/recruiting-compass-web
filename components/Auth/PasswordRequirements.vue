@@ -1,11 +1,11 @@
 <template>
   <div
     :id="id"
-    class="p-4 bg-slate-50 rounded-lg border border-slate-200"
+    class="rounded-lg border border-slate-200 bg-slate-50 p-4"
     role="list"
     aria-label="Password requirements"
   >
-    <p class="text-sm font-medium text-slate-700 mb-3">
+    <p class="mb-3 text-sm font-medium text-slate-700">
       Password must contain:
     </p>
     <ul class="space-y-2">
@@ -18,12 +18,12 @@
         <UIcon
           name="i-heroicons-check-circle"
           v-if="rule.isValid"
-          class="w-5 h-5 text-emerald-600 shrink-0"
+          class="h-5 w-5 shrink-0 text-emerald-600"
           aria-hidden="true"
         />
         <svg
           v-else
-          class="w-5 h-5 text-slate-300 shrink-0"
+          class="h-5 w-5 shrink-0 text-slate-300"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"

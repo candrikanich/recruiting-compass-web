@@ -19,7 +19,9 @@ export function useAdminUserDetail() {
       data.value = (await res.json()) as AdminUserDetail;
     } catch (err) {
       error.value =
-        err instanceof Error ? err.message : "Could not load this user's details.";
+        err instanceof Error
+          ? err.message
+          : "Could not load this user's details.";
     } finally {
       loading.value = false;
     }

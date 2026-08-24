@@ -50,7 +50,9 @@ export const openFacebook = (url: string | null | undefined): void => {
 
   const trimmed = url.trim();
   if (!trimmed) return;
-  const normalized = trimmed.startsWith("http") ? trimmed : `https://${trimmed}`;
+  const normalized = trimmed.startsWith("http")
+    ? trimmed
+    : `https://${trimmed}`;
   window.open(normalized, "_blank");
 };
 

@@ -1,29 +1,29 @@
 <template>
-  <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
+  <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-xs">
     <!-- Screen reader announcements -->
     <div role="status" aria-live="polite" aria-atomic="true" class="sr-only">
       {{ announcement }}
     </div>
 
-    <div class="flex items-center justify-between mb-4">
+    <div class="mb-4 flex items-center justify-between">
       <div>
-        <h3 class="text-lg font-semibold text-slate-900 mb-1">
+        <h3 class="mb-1 text-lg font-semibold text-slate-900">
           {{ title }}
         </h3>
-        <p v-if="subtitle" class="text-slate-600 text-sm">{{ subtitle }}</p>
+        <p v-if="subtitle" class="text-sm text-slate-600">{{ subtitle }}</p>
       </div>
       <button
         @click="toggleEdit"
         :aria-label="isEditing ? 'Cancel editing notes' : 'Edit notes'"
         class="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900"
       >
-        <UIcon name="i-heroicons-pencil" class="w-4 h-4" aria-hidden="true" />
+        <UIcon name="i-heroicons-pencil" class="h-4 w-4" aria-hidden="true" />
         {{ isEditing ? "Cancel" : "Edit" }}
       </button>
     </div>
 
     <!-- Display Mode -->
-    <div v-if="!isEditing" class="text-slate-700 whitespace-pre-wrap">
+    <div v-if="!isEditing" class="whitespace-pre-wrap text-slate-700">
       {{ displayValue || emptyText }}
     </div>
 
@@ -33,7 +33,7 @@
         v-model="editedValue"
         :rows="rows"
         :aria-busy="isSaving"
-        class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        class="w-full rounded-lg border border-slate-300 px-4 py-3 focus:border-transparent focus:ring-2 focus:ring-blue-500"
         :placeholder="placeholder"
       />
       <div class="flex gap-3">
@@ -41,14 +41,14 @@
           @click="handleSave"
           :disabled="isSaving"
           :aria-busy="isSaving"
-          class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
+          class="rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white transition hover:bg-blue-700 disabled:opacity-50"
         >
           {{ isSaving ? "Saving..." : "Save Notes" }}
         </button>
         <button
           @click="cancelEdit"
           aria-label="Cancel editing"
-          class="px-4 py-2 bg-slate-100 text-slate-700 font-semibold rounded-lg hover:bg-slate-200 transition"
+          class="rounded-lg bg-slate-100 px-4 py-2 font-semibold text-slate-700 transition hover:bg-slate-200"
         >
           Cancel
         </button>

@@ -1,13 +1,13 @@
 <template>
-  <div class="rounded-xl border border-slate-200 shadow-xs p-6 bg-white">
+  <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-xs">
     <!-- Header -->
-    <div class="flex items-center justify-between mb-6">
+    <div class="mb-6 flex items-center justify-between">
       <h2 class="text-lg font-semibold text-slate-900">
         💬 Quick Communication
       </h2>
       <button
         @click="showTemplateManager = !showTemplateManager"
-        class="px-3 py-1.5 text-xs font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition"
+        class="rounded-lg px-3 py-1.5 text-xs font-medium text-blue-600 transition hover:bg-blue-50"
       >
         Manage Templates
       </button>
@@ -16,9 +16,9 @@
     <!-- Coach/School Context -->
     <div
       v-if="coach"
-      class="mb-6 p-4 rounded-lg border border-blue-200 bg-blue-50"
+      class="mb-6 rounded-lg border border-blue-200 bg-blue-50 p-4"
     >
-      <p class="text-sm mb-1 text-slate-900">
+      <p class="mb-1 text-sm text-slate-900">
         <span class="font-semibold"
           >{{ coach.first_name }} {{ coach.last_name }}</span
         >
@@ -31,16 +31,16 @@
          are collected in the composer's unified "Complete your info" step. -->
 
     <!-- Communication Buttons -->
-    <div class="space-y-3 mb-6">
+    <div class="mb-6 space-y-3">
       <!-- Email -->
       <div v-if="coach.email">
         <button
           @click="showEmailComposer = true"
-          class="w-full flex items-center justify-between p-4 rounded-lg border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition"
+          class="flex w-full items-center justify-between rounded-lg border border-slate-200 p-4 transition hover:border-slate-300 hover:bg-slate-50"
         >
           <div class="flex items-center gap-3">
             <div
-              class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center"
+              class="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100"
             >
               <span class="text-lg">📧</span>
             </div>
@@ -57,11 +57,11 @@
       <div v-if="coach.phone">
         <button
           @click="showTextComposer = true"
-          class="w-full flex items-center justify-between p-4 rounded-lg border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition"
+          class="flex w-full items-center justify-between rounded-lg border border-slate-200 p-4 transition hover:border-slate-300 hover:bg-slate-50"
         >
           <div class="flex items-center gap-3">
             <div
-              class="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center"
+              class="flex h-10 w-10 items-center justify-center rounded-lg bg-green-100"
             >
               <span class="text-lg">💬</span>
             </div>
@@ -80,11 +80,11 @@
       <div v-if="coach.instagram_handle">
         <button
           @click="openInstagram"
-          class="w-full flex items-center justify-between p-4 rounded-lg border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition"
+          class="flex w-full items-center justify-between rounded-lg border border-slate-200 p-4 transition hover:border-slate-300 hover:bg-slate-50"
         >
           <div class="flex items-center gap-3">
             <div
-              class="w-10 h-10 rounded-lg bg-pink-100 flex items-center justify-center"
+              class="flex h-10 w-10 items-center justify-center rounded-lg bg-pink-100"
             >
               <span class="text-lg">📸</span>
             </div>
@@ -121,7 +121,7 @@
       <Transition name="fade">
         <div
           v-if="showTemplateManager"
-          class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+          class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
           @keydown.escape="handleCloseTemplate"
         >
           <div
@@ -129,10 +129,10 @@
             role="dialog"
             aria-modal="true"
             aria-labelledby="template-modal-title"
-            class="bg-white rounded-xl shadow-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-slate-200"
+            class="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-lg"
           >
             <div
-              class="p-6 border-b border-slate-200 flex items-center justify-between"
+              class="flex items-center justify-between border-b border-slate-200 p-6"
             >
               <h3
                 id="template-modal-title"
@@ -150,7 +150,7 @@
             </div>
 
             <div class="p-6">
-              <p class="text-sm text-slate-600 mb-4">
+              <p class="mb-4 text-sm text-slate-600">
                 Manage your custom communication templates
               </p>
               <p class="text-center text-slate-500 py-8 text-sm">
@@ -158,10 +158,10 @@
               </p>
             </div>
 
-            <div class="p-6 border-t border-slate-200">
+            <div class="border-t border-slate-200 p-6">
               <button
                 @click="handleCloseTemplate"
-                class="w-full px-4 py-2 border border-slate-300 text-slate-700 font-medium rounded-lg hover:bg-slate-50 transition text-sm"
+                class="w-full rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
               >
                 Close
               </button>

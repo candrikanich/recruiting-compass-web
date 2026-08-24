@@ -3,7 +3,7 @@
     <Transition name="fade">
       <div
         v-if="isOpen"
-        class="fixed inset-0 bg-black/50 z-40 flex items-center justify-center p-4"
+        class="fixed inset-0 z-40 flex items-center justify-center bg-black/50 p-4"
         @keydown.escape="closeDialog"
       >
         <div
@@ -11,10 +11,10 @@
           role="dialog"
           aria-modal="true"
           aria-labelledby="save-search-title"
-          class="bg-white rounded-lg shadow-xl max-w-md w-full p-6 z-50"
+          class="z-50 w-full max-w-md rounded-lg bg-white p-6 shadow-xl"
         >
           <!-- Header -->
-          <div class="flex items-center justify-between mb-4">
+          <div class="mb-4 flex items-center justify-between">
             <h2
               id="save-search-title"
               class="text-lg font-semibold text-brand-slate-900"
@@ -49,7 +49,7 @@
             <div>
               <label
                 for="save-search-name"
-                class="block text-sm font-medium text-brand-slate-700 mb-1"
+                class="mb-1 block text-sm font-medium text-brand-slate-700"
                 >Search Name</label
               >
               <input
@@ -57,7 +57,7 @@
                 v-model="formData.name"
                 type="text"
                 placeholder="e.g., D1 Schools in California"
-                class="w-full px-3 py-2 border border-brand-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                class="w-full rounded-lg border border-brand-slate-300 px-3 py-2 focus:ring-2 focus:ring-blue-500"
                 required
               />
             </div>
@@ -66,7 +66,7 @@
             <div>
               <label
                 for="save-search-description"
-                class="block text-sm font-medium text-brand-slate-700 mb-1"
+                class="mb-1 block text-sm font-medium text-brand-slate-700"
                 >Description (optional)</label
               >
               <textarea
@@ -74,12 +74,12 @@
                 v-model="formData.description"
                 placeholder="What is this search for?"
                 rows="3"
-                class="w-full px-3 py-2 border border-brand-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 resize-none"
+                class="w-full resize-none rounded-lg border border-brand-slate-300 px-3 py-2 focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
             <!-- Search Info -->
-            <div class="bg-brand-slate-50 rounded-lg p-3 space-y-2">
+            <div class="space-y-2 rounded-lg bg-brand-slate-50 p-3">
               <p class="text-xs font-semibold text-brand-slate-600 uppercase">
                 Search Details
               </p>
@@ -96,22 +96,22 @@
             </div>
 
             <!-- Buttons -->
-            <div class="flex gap-3 justify-end pt-4 border-t">
+            <div class="flex justify-end gap-3 border-t pt-4">
               <button
                 type="button"
                 @click="closeDialog"
-                class="px-4 py-2 border border-brand-slate-300 rounded-lg text-brand-slate-700 hover:bg-brand-slate-50 font-medium transition"
+                class="rounded-lg border border-brand-slate-300 px-4 py-2 font-medium text-brand-slate-700 transition hover:bg-brand-slate-50"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 :disabled="isSaving || !formData.name"
-                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition"
+                class="rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <span v-if="isSaving" class="flex items-center gap-2">
                   <svg
-                    class="animate-spin h-4 w-4"
+                    class="h-4 w-4 animate-spin"
                     aria-hidden="true"
                     fill="none"
                     viewBox="0 0 24 24"

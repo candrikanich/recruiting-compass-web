@@ -1,7 +1,7 @@
 <template>
   <div
     :data-task-id="task.id"
-    class="flex items-start gap-3 p-3 rounded-xl border border-slate-200 bg-white hover:border-slate-300 transition"
+    class="flex items-start gap-3 rounded-xl border border-slate-200 bg-white p-3 transition hover:border-slate-300"
   >
     <!-- Checkbox -->
     <input
@@ -10,9 +10,9 @@
       :disabled="isViewingAsParent || isLocked"
       @change="$emit('toggle-complete', task.id)"
       :class="[
-        'mt-1 w-4 h-4 rounded-sm border-slate-300 text-blue-600 shrink-0 transition',
+        'mt-1 h-4 w-4 shrink-0 rounded-sm border-slate-300 text-blue-600 transition',
         isViewingAsParent || isLocked
-          ? 'opacity-50 cursor-not-allowed'
+          ? 'cursor-not-allowed opacity-50'
           : 'cursor-pointer',
       ]"
       :title="
@@ -26,14 +26,14 @@
 
     <!-- Task content -->
     <div
-      class="flex-1 min-w-0"
+      class="min-w-0 flex-1"
       :class="{ 'cursor-pointer': hasDetail }"
       @click="toggleExpand"
     >
       <!-- Title and status indicator -->
       <div class="flex items-start gap-2">
         <div
-          class="text-sm font-medium transition-colors flex-1"
+          class="flex-1 text-sm font-medium transition-colors"
           :class="{
             'text-slate-500 line-through': isCompleted,
             'text-slate-400': isLocked && !isCompleted,
@@ -46,7 +46,7 @@
         <!-- Lock badge -->
         <span
           v-if="isLocked"
-          class="inline-block px-2 py-0.5 text-xs rounded-full bg-red-100 text-red-700 shrink-0"
+          class="inline-block shrink-0 rounded-full bg-red-100 px-2 py-0.5 text-xs text-red-700"
         >
           🔒 Locked
         </span>
@@ -60,7 +60,7 @@
         <!-- Recovery task indicator -->
         <span
           v-if="task.athlete_task?.is_recovery_task"
-          class="inline-block px-2 py-0.5 text-xs rounded-full bg-orange-100 text-orange-700 shrink-0"
+          class="inline-block shrink-0 rounded-full bg-orange-100 px-2 py-0.5 text-xs text-orange-700"
         >
           Recovery
         </span>
@@ -68,7 +68,7 @@
         <!-- Category badge -->
         <span
           v-if="showCategory"
-          class="inline-block px-2 py-0.5 text-xs rounded-full shrink-0"
+          class="inline-block shrink-0 rounded-full px-2 py-0.5 text-xs"
           :class="getCategoryColor(task.category)"
         >
           {{ formatCategory(task.category) }}
@@ -77,7 +77,7 @@
         <!-- Required indicator -->
         <span
           v-if="task.required"
-          class="inline-block px-2 py-0.5 text-xs rounded-full bg-red-100 text-red-700 shrink-0"
+          class="inline-block shrink-0 rounded-full bg-red-100 px-2 py-0.5 text-xs text-red-700"
         >
           Required
         </span>
@@ -85,7 +85,7 @@
         <!-- Completed badge -->
         <span
           v-if="isCompleted"
-          class="inline-block px-2 py-0.5 text-xs rounded-full bg-emerald-100 text-emerald-700 shrink-0"
+          class="inline-block shrink-0 rounded-full bg-emerald-100 px-2 py-0.5 text-xs text-emerald-700"
         >
           ✓ Done
         </span>
@@ -94,12 +94,12 @@
         <button
           v-if="showChevron"
           @click.stop="expanded = !expanded"
-          class="p-1 hover:bg-slate-200 rounded-sm transition shrink-0"
+          class="shrink-0 rounded-sm p-1 transition hover:bg-slate-200"
           :title="expanded ? 'Collapse details' : 'Expand details'"
         >
           <svg
             :class="{ 'rotate-180': expanded }"
-            class="w-4 h-4 text-slate-400 transition-transform"
+            class="h-4 w-4 text-slate-400 transition-transform"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -118,7 +118,7 @@
       <!-- Description (revealed on expand) -->
       <div
         v-if="task.description && expanded"
-        class="text-slate-600 text-sm mt-1"
+        class="mt-1 text-sm text-slate-600"
       >
         {{ task.description }}
       </div>
@@ -140,7 +140,7 @@
 
         <span
           v-if="task.has_incomplete_prerequisites"
-          class="inline-block px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-700"
+          class="inline-block rounded-full bg-yellow-100 px-2 py-1 text-xs text-yellow-700"
         >
           ⚠ Prerequisites pending
         </span>
@@ -149,9 +149,9 @@
       <!-- Guidance (revealed on expand) -->
       <div
         v-if="task.why_it_matters && !isCompleted && expanded"
-        class="mt-2 bg-blue-50 border-l-2 border-blue-200 pl-3 py-2 rounded-r"
+        class="mt-2 rounded-r border-l-2 border-blue-200 bg-blue-50 py-2 pl-3"
       >
-        <div class="text-xs font-semibold text-blue-900 mb-0.5">
+        <div class="mb-0.5 text-xs font-semibold text-blue-900">
           Why It Matters
         </div>
         <div class="text-xs text-blue-800">{{ task.why_it_matters }}</div>
@@ -160,9 +160,9 @@
       <!-- Late-phase nudge for incomplete tasks (revealed on expand) -->
       <div
         v-if="showFailureRisk && task.failure_risk && expanded"
-        class="mt-2 bg-amber-50 border-l-2 border-amber-300 pl-3 py-2 rounded-r"
+        class="mt-2 rounded-r border-l-2 border-amber-300 bg-amber-50 py-2 pl-3"
       >
-        <div class="text-xs font-semibold text-amber-900 mb-0.5">
+        <div class="mb-0.5 text-xs font-semibold text-amber-900">
           Don't Miss This
         </div>
         <div class="text-xs text-amber-800">{{ task.failure_risk }}</div>
@@ -172,7 +172,7 @@
       <Transition name="slide-fade">
         <div
           v-if="expanded && task.has_incomplete_prerequisites"
-          class="mt-3 pt-3 border-t border-slate-100"
+          class="mt-3 border-t border-slate-100 pt-3"
         >
           <DependencyWarning
             :task="task"

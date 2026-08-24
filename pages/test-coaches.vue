@@ -1,24 +1,24 @@
 <template>
   <div class="min-h-screen bg-gray-50 p-8">
-    <div class="max-w-2xl mx-auto">
-      <h1 class="text-3xl font-bold mb-8">Test Coaches</h1>
+    <div class="mx-auto max-w-2xl">
+      <h1 class="mb-8 text-3xl font-bold">Test Coaches</h1>
 
       <button
         @click="toggleForm"
-        class="mb-6 px-4 py-2 bg-blue-600 text-white rounded-sm hover:bg-blue-700"
+        class="mb-6 rounded-sm bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
       >
         Toggle Form
       </button>
 
-      <div v-show="showForm" class="bg-white p-6 rounded-sm shadow-sm mb-8">
-        <h2 class="text-xl font-bold mb-4">Add Coach</h2>
+      <div v-show="showForm" class="mb-8 rounded-sm bg-white p-6 shadow-sm">
+        <h2 class="mb-4 text-xl font-bold">Add Coach</h2>
         <div class="space-y-4">
           <div>
-            <label class="block text-sm font-medium mb-1">Role</label>
+            <label class="mb-1 block text-sm font-medium">Role</label>
             <select
               v-model="form.role"
               @change="onFormChange"
-              class="w-full px-3 py-2 border rounded-sm"
+              class="w-full rounded-sm border px-3 py-2"
             >
               <option value="">Select Role</option>
               <option value="head">Head Coach</option>
@@ -26,26 +26,26 @@
             </select>
           </div>
           <div>
-            <label class="block text-sm font-medium mb-1">First Name</label>
+            <label class="mb-1 block text-sm font-medium">First Name</label>
             <input
               v-model="form.firstName"
               @input="onFormChange"
               type="text"
-              class="w-full px-3 py-2 border rounded-sm"
+              class="w-full rounded-sm border px-3 py-2"
             />
           </div>
           <div>
-            <label class="block text-sm font-medium mb-1">Last Name</label>
+            <label class="mb-1 block text-sm font-medium">Last Name</label>
             <input
               v-model="form.lastName"
               @input="onFormChange"
               type="text"
-              class="w-full px-3 py-2 border rounded-sm"
+              class="w-full rounded-sm border px-3 py-2"
             />
           </div>
           <button
             @click="addCoach"
-            class="w-full px-4 py-2 bg-green-600 text-white rounded-sm hover:bg-green-700"
+            class="w-full rounded-sm bg-green-600 px-4 py-2 text-white hover:bg-green-700"
           >
             Add Coach
           </button>
@@ -57,13 +57,13 @@
         <div
           v-for="coach in coaches"
           :key="coach.id"
-          class="bg-white p-4 rounded-sm shadow-sm"
+          class="rounded-sm bg-white p-4 shadow-sm"
         >
           <h3 class="font-bold">{{ coach.firstName }} {{ coach.lastName }}</h3>
           <p class="text-sm text-gray-600">{{ coach.role }}</p>
           <button
             @click="deleteCoach(coach.id)"
-            class="mt-2 px-3 py-1 bg-red-600 text-white text-sm rounded-sm hover:bg-red-700"
+            class="mt-2 rounded-sm bg-red-600 px-3 py-1 text-sm text-white hover:bg-red-700"
           >
             Delete
           </button>

@@ -116,8 +116,8 @@ const previewSocial = computed<PublicProfileData["social"]>(() => {
 </script>
 
 <template>
-  <div class="bg-gray-50 rounded-xl p-4">
-    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">
+  <div class="rounded-xl bg-gray-50 p-4">
+    <p class="mb-3 text-xs font-semibold tracking-wide text-gray-400 uppercase">
       Preview — What coaches see
     </p>
     <ProfilePublicProfileCard :profile="previewData" />

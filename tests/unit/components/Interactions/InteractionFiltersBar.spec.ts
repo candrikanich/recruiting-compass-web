@@ -6,7 +6,9 @@ import InteractionFiltersBar from "~/components/Interactions/InteractionFiltersB
 const directionRadios = (wrapper: VueWrapper) =>
   wrapper
     .findAll('input[type="radio"]')
-    .filter((r) => ["", "outbound", "inbound"].includes(r.attributes("value")!));
+    .filter((r) =>
+      ["", "outbound", "inbound"].includes(r.attributes("value")!),
+    );
 
 const checkedDirection = (wrapper: VueWrapper) =>
   (

@@ -3,10 +3,10 @@
     <label
       v-if="label"
       :for="inputId"
-      class="block text-sm font-medium text-gray-700 mb-1"
+      class="mb-1 block text-sm font-medium text-gray-700"
     >
       {{ label }}
-      <span v-if="required" class="text-red-600 ml-1">*</span>
+      <span v-if="required" class="ml-1 text-red-600">*</span>
     </label>
 
     <input
@@ -19,12 +19,12 @@
       :disabled="disabled"
       :required="required"
       :class="[
-        'w-full px-3 py-2 border rounded-lg',
-        'focus:ring-2 focus:ring-blue-500 transition',
+        'w-full rounded-lg border px-3 py-2',
+        'transition focus:ring-2 focus:ring-blue-500',
         error
           ? 'border-red-500 focus:border-red-500'
           : 'border-gray-300 focus:border-blue-500',
-        disabled ? 'bg-gray-100 cursor-not-allowed text-gray-500' : 'bg-white',
+        disabled ? 'cursor-not-allowed bg-gray-100 text-gray-500' : 'bg-white',
       ]"
     />
 

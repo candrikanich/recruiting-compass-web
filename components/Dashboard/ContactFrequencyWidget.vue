@@ -1,18 +1,18 @@
 <template>
   <div
     data-testid="contact-frequency-widget"
-    class="bg-white rounded-2xl border border-slate-200 shadow-xs hover:shadow-md transition-shadow p-6"
+    class="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs transition-shadow hover:shadow-md"
   >
-    <div class="flex items-center justify-between mb-5">
+    <div class="mb-5 flex items-center justify-between">
       <div class="flex items-center gap-3">
-        <div class="p-2 bg-slate-100 rounded-lg">
-          <UIcon name="i-heroicons-phone" class="w-5 h-5 text-slate-700" />
+        <div class="rounded-lg bg-slate-100 p-2">
+          <UIcon name="i-heroicons-phone" class="h-5 w-5 text-slate-700" />
         </div>
-        <h3 class="text-slate-900 font-semibold">Contact Frequency</h3>
+        <h3 class="font-semibold text-slate-900">Contact Frequency</h3>
       </div>
       <div
         v-if="recentContacts.length > 0"
-        class="px-3 py-1 bg-brand-blue-100 text-brand-blue-700 rounded-full text-sm font-medium"
+        class="rounded-full bg-brand-blue-100 px-3 py-1 text-sm font-medium text-brand-blue-700"
         data-testid="contact-frequency-count"
       >
         {{ recentContacts.length }}
@@ -25,7 +25,7 @@
     >
       <!-- Summary Metrics -->
       <div
-        class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4 p-3 bg-slate-50 rounded-lg"
+        class="mb-4 grid grid-cols-2 gap-3 rounded-lg bg-slate-50 p-3 md:grid-cols-4"
       >
         <div class="text-center" data-testid="metric-total-schools">
           <div class="text-lg font-bold text-slate-900">
@@ -46,7 +46,7 @@
           <div class="text-xs text-slate-600">Avg/Month</div>
         </div>
         <div
-          class="text-center cursor-pointer hover:bg-slate-100 rounded-sm transition-colors p-1"
+          class="cursor-pointer rounded-sm p-1 text-center transition-colors hover:bg-slate-100"
           data-testid="metric-need-attention"
         >
           <div class="text-lg font-bold text-slate-900">
@@ -56,35 +56,35 @@
         </div>
       </div>
 
-      <p v-if="recentContacts.length > 0" class="text-sm text-slate-600 mb-3">
+      <p v-if="recentContacts.length > 0" class="mb-3 text-sm text-slate-600">
         Schools contacted in the last 7 days
       </p>
       <div
         v-if="recentContacts.length > 0"
-        class="space-y-2 max-h-64 overflow-y-auto"
+        class="max-h-64 space-y-2 overflow-y-auto"
       >
         <NuxtLink
           v-for="contact in recentContacts.slice(0, 5)"
           :key="contact.schoolId"
           :to="`/schools/${contact.schoolId}`"
           :data-testid="`contacted-school-${contact.schoolId}`"
-          class="flex items-start justify-between p-3 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer border-l-4"
+          class="flex cursor-pointer items-start justify-between rounded-lg border-l-4 bg-slate-50 p-3 transition-colors hover:bg-slate-100"
           :class="[
             contact.contactRecency === 'green' && 'border-green-500',
             contact.contactRecency === 'yellow' && 'border-yellow-500',
             contact.contactRecency === 'red' && 'border-red-500',
           ]"
         >
-          <div class="flex-1 min-w-0">
-            <div class="text-slate-900 font-medium truncate">
+          <div class="min-w-0 flex-1">
+            <div class="truncate font-medium text-slate-900">
               {{ contact.schoolName }}
             </div>
-            <div class="text-slate-600 text-sm mt-0.5">
+            <div class="mt-0.5 text-sm text-slate-600">
               {{ formatLastContactDate(contact.lastContactDate) }}
             </div>
           </div>
           <div
-            class="ml-2 px-2 py-1 bg-brand-blue-100 text-brand-blue-700 rounded-sm text-xs font-medium whitespace-nowrap"
+            class="ml-2 rounded-sm bg-brand-blue-100 px-2 py-1 text-xs font-medium whitespace-nowrap text-brand-blue-700"
           >
             {{ contact.contactCount }}
           </div>
@@ -92,9 +92,9 @@
       </div>
     </div>
 
-    <div v-else class="text-center py-6 text-slate-500">
+    <div v-else class="py-6 text-center text-slate-500">
       <p>No schools tracked yet</p>
-      <p class="text-sm text-slate-400 mt-1">
+      <p class="mt-1 text-sm text-slate-400">
         Add schools to start tracking contact frequency
       </p>
     </div>

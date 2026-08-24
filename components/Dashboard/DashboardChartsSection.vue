@@ -1,5 +1,5 @@
 <template>
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+  <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
     <InteractionTrendChart :interactions="interactions" />
     <SchoolInterestChart :schools="schools" />
   </div>

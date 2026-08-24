@@ -96,9 +96,7 @@ describe("FormSegmentedControl", () => {
 
   it("renders an error message when error is set", () => {
     const wrapper = mountControl({ error: "Pick a direction" });
-    expect(wrapper.find('[role="alert"]').text()).toContain(
-      "Pick a direction",
-    );
+    expect(wrapper.find('[role="alert"]').text()).toContain("Pick a direction");
   });
 
   it("fills width with equal segments by default (block)", () => {

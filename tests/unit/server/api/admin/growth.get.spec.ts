@@ -13,7 +13,13 @@ function stub(table: string) {
   };
   const b: any = {
     select: (_c?: string, opts?: any) => {
-      if (opts?.head) return { gte: () => b, not: () => b, eq: () => b, then: (r: any) => r({ count: counts[table] ?? 0, error: null }) };
+      if (opts?.head)
+        return {
+          gte: () => b,
+          not: () => b,
+          eq: () => b,
+          then: (r: any) => r({ count: counts[table] ?? 0, error: null }),
+        };
       return b;
     },
     gte: (col: string, val: string) => {
@@ -23,12 +29,17 @@ function stub(table: string) {
     },
     not: () => b,
     eq: () => b,
-    then: (r: any) => r({ data: filtered(), error: null, count: counts[table] ?? 0 }),
+    then: (r: any) =>
+      r({ data: filtered(), error: null, count: counts[table] ?? 0 }),
   };
   return b;
 }
-vi.mock("../../../../../server/utils/supabase", () => ({ useSupabaseAdmin: () => ({ from: (t: string) => stub(t) }) }));
-const { requireAdmin } = vi.hoisted(() => ({ requireAdmin: vi.fn(async () => {}) }));
+vi.mock("../../../../../server/utils/supabase", () => ({
+  useSupabaseAdmin: () => ({ from: (t: string) => stub(t) }),
+}));
+const { requireAdmin } = vi.hoisted(() => ({
+  requireAdmin: vi.fn(async () => {}),
+}));
 vi.mock("../../../../../server/utils/auth", () => ({ requireAdmin }));
 
 import handler from "../../../../../server/api/admin/growth.get";
@@ -40,9 +51,14 @@ const ev = (days?: string) => {
 beforeEach(() => {
   for (const k of Object.keys(data)) delete data[k];
   for (const k of Object.keys(counts)) delete counts[k];
-  counts["users"] = 10; counts["family_invitations"] = 8;
-  data["interactions"] = [{ logged_by: "u1", occurred_at: new Date().toISOString() }];
-  data["athlete_messages"] = [{ user_id: "u2", sent_at: new Date().toISOString() }];
+  counts["users"] = 10;
+  counts["family_invitations"] = 8;
+  data["interactions"] = [
+    { logged_by: "u1", occurred_at: new Date().toISOString() },
+  ];
+  data["athlete_messages"] = [
+    { user_id: "u2", sent_at: new Date().toISOString() },
+  ];
   requireAdmin.mockClear();
 });
 
@@ -75,7 +91,10 @@ describe("GET /api/admin/growth", () => {
     // The daily trend stays scoped to the selected 7d window: it must only
     // reflect today's 2 rows (u1 via interactions, u2 via athlete_messages),
     // never the 20-day-old u3 row.
-    const trendTotal = res.activity.dailyTrend.reduce((sum, d) => sum + d.count, 0);
+    const trendTotal = res.activity.dailyTrend.reduce(
+      (sum, d) => sum + d.count,
+      0,
+    );
     expect(trendTotal).toBe(2);
   });
 });

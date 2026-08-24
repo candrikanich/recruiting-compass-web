@@ -319,7 +319,10 @@ const playerServiceShapes = Object.fromEntries(
 export const playerDetailsSchema = z.object({
   graduation_year: graduationYearSchema,
   positions: z.array(z.string()).default([]),
-  gender: z.enum(["male", "female", "other", "prefer_not_to_say"]).nullable().optional(),
+  gender: z
+    .enum(["male", "female", "other", "prefer_not_to_say"])
+    .nullable()
+    .optional(),
   // Per-sport athlete attributes (registry: utils/attributes/canonical.ts).
   ...playerAttributeShapes,
   height_inches: heightSchema,

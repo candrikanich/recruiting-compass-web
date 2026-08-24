@@ -1,10 +1,10 @@
 <template>
-  <div class="bg-white rounded-2xl border border-slate-200 shadow-xs p-6">
+  <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
     <!-- Header -->
-    <div class="flex items-center gap-3 mb-5">
-      <div class="p-2 bg-slate-100 rounded-lg">
+    <div class="mb-5 flex items-center gap-3">
+      <div class="rounded-lg bg-slate-100 p-2">
         <svg
-          class="w-5 h-5 text-slate-700"
+          class="h-5 w-5 text-slate-700"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -17,7 +17,7 @@
           />
         </svg>
       </div>
-      <h3 class="text-slate-900 font-semibold">Portfolio Health</h3>
+      <h3 class="font-semibold text-slate-900">Portfolio Health</h3>
     </div>
 
     <!-- Loading state -->
@@ -25,7 +25,7 @@
       <div
         v-for="i in 3"
         :key="i"
-        class="h-6 bg-slate-100 rounded-sm animate-pulse"
+        class="h-6 animate-pulse rounded-sm bg-slate-100"
       />
     </div>
 
@@ -38,7 +38,7 @@
           >{{ reaches ?? "—" }} schools</span
         >
       </div>
-      <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+      <div class="h-2 overflow-hidden rounded-full bg-slate-100">
         <div
           v-if="reaches"
           class="h-full bg-blue-500"
@@ -53,7 +53,7 @@
           >{{ matches ?? "—" }} schools</span
         >
       </div>
-      <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+      <div class="h-2 overflow-hidden rounded-full bg-slate-100">
         <div
           v-if="matches"
           class="h-full bg-emerald-500"
@@ -68,7 +68,7 @@
           >{{ safeties ?? "—" }} schools</span
         >
       </div>
-      <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+      <div class="h-2 overflow-hidden rounded-full bg-slate-100">
         <div
           v-if="safeties"
           class="h-full bg-purple-500"
@@ -77,7 +77,7 @@
       </div>
 
       <!-- Info message -->
-      <div class="mt-4 pt-3 border-t border-slate-100">
+      <div class="mt-4 border-t border-slate-100 pt-3">
         <p class="text-xs text-slate-500">
           ℹ️ Comprehensive portfolio analysis with personalized recommendations
           coming in Phase 6

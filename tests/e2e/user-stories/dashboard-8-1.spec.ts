@@ -157,9 +157,7 @@ test.describe("User Story 8.1: Dashboard Overview", () => {
     await dashboardPage.goto();
     await dashboardPage.waitForDashboardLoad();
 
-    const contactsCard = page.locator(
-      '[data-testid="stat-card-last-contact"]',
-    );
+    const contactsCard = page.locator('[data-testid="stat-card-last-contact"]');
     await expect(contactsCard).toBeVisible();
 
     await expect(contactsCard).toContainText("Last Contact");

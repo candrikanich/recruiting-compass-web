@@ -1,7 +1,7 @@
 <template>
   <div
     v-if="isOpen"
-    class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
     @keydown.escape="handleClose"
   >
     <div
@@ -9,39 +9,39 @@
       role="dialog"
       aria-modal="true"
       aria-labelledby="template-send-title"
-      class="rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col bg-white"
+      class="flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-lg bg-white shadow-xl"
     >
       <!-- Header -->
       <div
-        class="flex items-center justify-between p-6 border-b border-slate-300"
+        class="flex items-center justify-between border-b border-slate-300 p-6"
       >
         <h2 id="template-send-title" class="text-2xl font-bold text-slate-900">
           Send {{ messageType }}
         </h2>
         <button
           @click="handleClose"
-          class="transition text-slate-600 hover:text-slate-900"
+          class="text-slate-600 transition hover:text-slate-900"
           aria-label="Close send message dialog"
         >
-          <UIcon name="i-heroicons-x-mark-solid" class="w-6 h-6" />
+          <UIcon name="i-heroicons-x-mark-solid" class="h-6 w-6" />
         </button>
       </div>
 
       <!-- Content -->
-      <div class="flex-1 overflow-y-auto p-6 space-y-6">
+      <div class="flex-1 space-y-6 overflow-y-auto p-6">
         <!-- Template Selection Step -->
         <div v-if="step === 'select'" class="space-y-4">
-          <p class="text-sm mb-4 text-slate-600">
+          <p class="mb-4 text-sm text-slate-600">
             Choose a template or start from scratch
           </p>
           <button
             v-for="template in availableTemplates"
             :key="template.id"
             @click="selectTemplate(template)"
-            class="w-full text-left p-4 rounded-lg transition border border-slate-300 hover:border-blue-500 hover:bg-blue-50"
+            class="w-full rounded-lg border border-slate-300 p-4 text-left transition hover:border-blue-500 hover:bg-blue-50"
           >
             <h3 class="font-semibold text-slate-900">{{ template.name }}</h3>
-            <p class="text-sm mt-1 line-clamp-2 text-slate-600">
+            <p class="mt-1 line-clamp-2 text-sm text-slate-600">
               {{ template.body }}
             </p>
           </button>
@@ -53,14 +53,14 @@
           <div v-if="messageType === 'Email'">
             <label
               for="template-send-subject"
-              class="block text-sm font-medium mb-2 text-slate-600"
+              class="mb-2 block text-sm font-medium text-slate-600"
               >Subject</label
             >
             <input
               id="template-send-subject"
               v-model="composedMessage.subject"
               type="text"
-              class="w-full px-4 py-2 rounded-lg border border-slate-300 text-slate-900 bg-white"
+              class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2 text-slate-900"
             />
           </div>
 
@@ -68,16 +68,16 @@
           <div>
             <label
               for="template-send-body"
-              class="block text-sm font-medium mb-2 text-slate-600"
+              class="mb-2 block text-sm font-medium text-slate-600"
               >Message</label
             >
             <textarea
               id="template-send-body"
               v-model="composedMessage.body"
               rows="10"
-              class="w-full px-4 py-2 rounded-lg font-mono text-sm border border-slate-300 text-slate-900 bg-white"
+              class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2 font-mono text-sm text-slate-900"
             />
-            <p class="text-xs mt-1 text-slate-600">
+            <p class="mt-1 text-xs text-slate-600">
               You can edit the message before sending
             </p>
           </div>
@@ -85,24 +85,24 @@
       </div>
 
       <!-- Footer -->
-      <div class="flex gap-3 p-6 border-t border-slate-300 bg-slate-50">
+      <div class="flex gap-3 border-t border-slate-300 bg-slate-50 p-6">
         <button
           v-if="step === 'customize'"
           @click="step = 'select'"
-          class="px-4 py-2 font-medium rounded-lg transition border border-slate-300 text-slate-900 hover:bg-slate-100"
+          class="rounded-lg border border-slate-300 px-4 py-2 font-medium text-slate-900 transition hover:bg-slate-100"
         >
           Back
         </button>
         <button
           @click="handleClose"
-          class="flex-1 px-4 py-2 font-medium rounded-lg transition border border-slate-300 text-slate-900 hover:bg-slate-100"
+          class="flex-1 rounded-lg border border-slate-300 px-4 py-2 font-medium text-slate-900 transition hover:bg-slate-100"
         >
           Cancel
         </button>
         <button
           v-if="step === 'select'"
           @click="handleClose"
-          class="px-4 py-2 font-medium rounded-lg transition bg-slate-50 text-slate-900 hover:bg-slate-100"
+          class="rounded-lg bg-slate-50 px-4 py-2 font-medium text-slate-900 transition hover:bg-slate-100"
         >
           Close
         </button>
@@ -111,9 +111,9 @@
           @click="sendMessage"
           :disabled="!composedMessage.body"
           :class="[
-            'px-6 py-2 text-white font-medium rounded-lg transition',
+            'rounded-lg px-6 py-2 font-medium text-white transition',
             !composedMessage.body
-              ? 'bg-blue-600 opacity-50 cursor-not-allowed'
+              ? 'cursor-not-allowed bg-blue-600 opacity-50'
               : 'bg-blue-600 hover:bg-blue-700',
           ]"
         >

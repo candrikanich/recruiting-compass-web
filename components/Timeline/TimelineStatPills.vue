@@ -1,10 +1,12 @@
 <template>
-  <div class="grid grid-cols-3 gap-3 mb-6">
+  <div class="mb-6 grid grid-cols-3 gap-3">
     <!-- Overall Score -->
-    <div class="bg-white rounded-xl border border-slate-200 shadow-xs px-4 py-3">
-      <div class="flex items-center gap-1.5 mb-1.5">
+    <div
+      class="rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-xs"
+    >
+      <div class="mb-1.5 flex items-center gap-1.5">
         <svg
-          class="w-4 h-4 shrink-0"
+          class="h-4 w-4 shrink-0"
           :class="statusTextClass"
           fill="none"
           stroke="currentColor"
@@ -20,12 +22,11 @@
         </svg>
         <span class="text-xs text-slate-500">Status</span>
       </div>
-      <div class="text-lg font-bold text-slate-900 mb-1.5">
-        {{ statusScore }}<span class="text-sm font-semibold text-slate-400"
-          >/100</span
-        >
+      <div class="mb-1.5 text-lg font-bold text-slate-900">
+        {{ statusScore
+        }}<span class="text-sm font-semibold text-slate-400">/100</span>
       </div>
-      <div class="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+      <div class="h-1.5 overflow-hidden rounded-full bg-slate-100">
         <div
           data-testid="status-dot"
           class="h-full transition-all duration-300"
@@ -36,10 +37,12 @@
     </div>
 
     <!-- Task Progress -->
-    <div class="bg-white rounded-xl border border-slate-200 shadow-xs px-4 py-3">
-      <div class="flex items-center gap-1.5 mb-1.5">
+    <div
+      class="rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-xs"
+    >
+      <div class="mb-1.5 flex items-center gap-1.5">
         <svg
-          class="w-4 h-4 shrink-0 text-blue-500"
+          class="h-4 w-4 shrink-0 text-blue-500"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -54,10 +57,10 @@
         </svg>
         <span class="text-xs text-slate-500">Tasks</span>
       </div>
-      <div class="text-lg font-bold text-slate-900 mb-1.5">
+      <div class="mb-1.5 text-lg font-bold text-slate-900">
         {{ taskCompleted }}/{{ taskTotal }}
       </div>
-      <div class="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+      <div class="h-1.5 overflow-hidden rounded-full bg-slate-100">
         <div
           data-testid="task-bar"
           class="h-full bg-blue-500 transition-all duration-300"
@@ -67,10 +70,12 @@
     </div>
 
     <!-- Milestone Progress -->
-    <div class="bg-white rounded-xl border border-slate-200 shadow-xs px-4 py-3">
-      <div class="flex items-center gap-1.5 mb-1.5">
+    <div
+      class="rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-xs"
+    >
+      <div class="mb-1.5 flex items-center gap-1.5">
         <svg
-          class="w-4 h-4 shrink-0 text-amber-500"
+          class="h-4 w-4 shrink-0 text-amber-500"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -85,10 +90,10 @@
         </svg>
         <span class="text-xs text-slate-500">Milestones</span>
       </div>
-      <div class="text-lg font-bold text-slate-900 mb-1.5">
+      <div class="mb-1.5 text-lg font-bold text-slate-900">
         {{ milestonesCompleted }}/{{ milestonesTotal }}
       </div>
-      <div class="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+      <div class="h-1.5 overflow-hidden rounded-full bg-slate-100">
         <div
           class="h-full bg-amber-500 transition-all duration-300"
           :style="{ width: `${milestonePercent}%` }"

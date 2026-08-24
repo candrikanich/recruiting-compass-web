@@ -1,33 +1,33 @@
 <template>
   <div
-    class="bg-linear-to-br from-indigo-50 to-purple-50 border border-indigo-200 rounded-2xl p-6"
+    class="rounded-2xl border border-indigo-200 bg-linear-to-br from-indigo-50 to-purple-50 p-6"
   >
     <div v-if="loading" class="flex items-center justify-center py-8">
       <div
-        class="animate-spin rounded-full h-8 w-8 border border-indigo-300 border-t-indigo-600"
+        class="h-8 w-8 animate-spin rounded-full border border-indigo-300 border-t-indigo-600"
       />
     </div>
 
-    <div v-else-if="error" class="text-center py-6">
+    <div v-else-if="error" class="py-6 text-center">
       <p class="text-sm text-red-600">Unable to load guidance message</p>
     </div>
 
     <div v-else class="flex items-start gap-4">
-      <div class="shrink-0 mt-1">
-        <UIcon name="i-heroicons-light-bulb" class="w-6 h-6 text-indigo-600" />
+      <div class="mt-1 shrink-0">
+        <UIcon name="i-heroicons-light-bulb" class="h-6 w-6 text-indigo-600" />
       </div>
       <div class="flex-1">
-        <h3 class="font-semibold text-lg text-slate-800 mb-2">
+        <h3 class="mb-2 text-lg font-semibold text-slate-800">
           Parent Guidance
         </h3>
-        <p class="text-slate-700 text-sm leading-relaxed mb-4">{{ message }}</p>
+        <p class="mb-4 text-sm leading-relaxed text-slate-700">{{ message }}</p>
 
         <button
           @click="showLearnMore = true"
-          class="text-sm text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1"
+          class="flex items-center gap-1 text-sm font-medium text-indigo-600 hover:text-indigo-700"
         >
           Learn more about this phase
-          <UIcon name="i-heroicons-arrow-right" class="w-4 h-4" />
+          <UIcon name="i-heroicons-arrow-right" class="h-4 w-4" />
         </button>
       </div>
     </div>
@@ -37,21 +37,21 @@
       <Transition name="fade">
         <div
           v-if="showLearnMore"
-          class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+          class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
         >
-          <div class="bg-white rounded-xl shadow-lg max-w-lg w-full">
+          <div class="w-full max-w-lg rounded-xl bg-white shadow-lg">
             <div
-              class="p-6 border-b border-slate-200 flex items-center justify-between"
+              class="flex items-center justify-between border-b border-slate-200 p-6"
             >
               <h2 class="text-xl font-bold text-slate-900">{{ phaseTitle }}</h2>
               <button
                 @click="showLearnMore = false"
                 :aria-label="`Close ${phaseTitle} details`"
-                class="p-1 hover:bg-slate-100 rounded-lg transition"
+                class="rounded-lg p-1 transition hover:bg-slate-100"
               >
                 <UIcon
                   name="i-heroicons-x-mark"
-                  class="w-5 h-5 text-slate-500"
+                  class="h-5 w-5 text-slate-500"
                   aria-hidden="true"
                 />
               </button>
@@ -60,21 +60,21 @@
             <div class="p-6">
               <div class="space-y-4">
                 <div>
-                  <h3 class="font-semibold text-slate-900 mb-2">
+                  <h3 class="mb-2 font-semibold text-slate-900">
                     What to expect:
                   </h3>
-                  <p class="text-slate-700 text-sm">
+                  <p class="text-sm text-slate-700">
                     {{ expectationsMessage }}
                   </p>
                 </div>
 
                 <div>
-                  <h3 class="font-semibold text-slate-900 mb-2">
+                  <h3 class="mb-2 font-semibold text-slate-900">
                     Current status:
                   </h3>
                   <div class="flex items-center gap-2">
                     <div
-                      class="w-3 h-3 rounded-full"
+                      class="h-3 w-3 rounded-full"
                       :class="{
                         'bg-brand-emerald-500':
                           athleteData?.status_label === 'on_track',
@@ -94,10 +94,10 @@
               </div>
             </div>
 
-            <div class="p-6 bg-slate-50 rounded-b-xl">
+            <div class="rounded-b-xl bg-slate-50 p-6">
               <button
                 @click="showLearnMore = false"
-                class="w-full px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition font-medium"
+                class="w-full rounded-lg bg-indigo-600 px-4 py-2 font-medium text-white transition hover:bg-indigo-700"
               >
                 Got it
               </button>

@@ -3,15 +3,15 @@
     class="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-slate-100"
   >
     <!-- Page Header -->
-    <div class="bg-white border-b border-slate-200">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4">
+    <div class="border-b border-slate-200 bg-white">
+      <div class="mx-auto max-w-7xl px-4 py-4 sm:px-6">
         <NuxtLink
           to="/schools"
-          class="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-sm"
+          class="flex items-center gap-1 rounded-sm text-sm text-blue-600 hover:text-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         >
           <UIcon
             name="i-heroicons-arrow-left"
-            class="w-4 h-4"
+            class="h-4 w-4"
             aria-hidden="true"
           />
           Back to Schools
@@ -19,25 +19,25 @@
       </div>
     </div>
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+    <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6">
       <!-- Loading State -->
       <div
         v-if="isInitializing || loading"
-        class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
+        class="rounded-xl border border-slate-200 bg-white p-12 text-center shadow-xs"
         role="status"
         aria-live="polite"
       >
         <div
-          class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"
+          class="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"
           aria-hidden="true"
         ></div>
         <p class="text-slate-600">Loading school...</p>
       </div>
 
       <!-- School Detail -->
-      <div v-else-if="school" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div v-else-if="school" class="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <!-- Main Content - Left Column -->
-        <div class="lg:col-span-2 space-y-6">
+        <div class="space-y-6 lg:col-span-2">
           <!-- School Header Card -->
           <SchoolDetailHeader
             :school="school"
@@ -133,12 +133,12 @@
           <!-- Enrich Match Chooser -->
           <div
             v-if="showEnrichModal && enrichMatches.length > 1"
-            class="bg-white rounded-xl border border-amber-200 shadow-xs p-6"
+            class="rounded-xl border border-amber-200 bg-white p-6 shadow-xs"
           >
-            <h3 class="font-semibold text-slate-900 mb-2">
+            <h3 class="mb-2 font-semibold text-slate-900">
               Select the Correct School
             </h3>
-            <p class="text-sm text-slate-600 mb-4">
+            <p class="mb-4 text-sm text-slate-600">
               Multiple schools matched. Choose the correct one to import
               academic data.
             </p>
@@ -146,11 +146,11 @@
               <button
                 v-for="match in enrichMatches"
                 :key="match.scorecardId"
-                class="w-full text-left px-4 py-3 border border-slate-200 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition text-sm"
+                class="w-full rounded-lg border border-slate-200 px-4 py-3 text-left text-sm transition hover:border-blue-400 hover:bg-blue-50"
                 @click="confirmEnrich(match.scorecardId)"
               >
                 <span class="font-medium text-slate-900">{{ match.name }}</span>
-                <span class="text-slate-500 ml-2">
+                <span class="ml-2 text-slate-500">
                   {{ match.city }}, {{ match.state }}
                 </span>
               </button>
@@ -183,12 +183,12 @@
       <!-- Not Found -->
       <div
         v-else
-        class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
+        class="rounded-xl border border-slate-200 bg-white p-12 text-center shadow-xs"
       >
-        <p class="text-slate-600 mb-4">School not found</p>
+        <p class="mb-4 text-slate-600">School not found</p>
         <NuxtLink
           to="/schools"
-          class="text-blue-600 hover:text-blue-700 font-medium"
+          class="font-medium text-blue-600 hover:text-blue-700"
         >
           Back to Schools
         </NuxtLink>

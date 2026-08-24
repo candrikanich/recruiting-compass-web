@@ -151,7 +151,9 @@ test.describe("Athlete switcher — memory soak", () => {
     const { baseline, after } = await soak(page, runFlow, 60, 5);
 
     // eslint-disable-next-line no-console
-    console.log("[soak] athlete-switcher " + JSON.stringify({ baseline, after }));
+    console.log(
+      "[soak] athlete-switcher " + JSON.stringify({ baseline, after }),
+    );
 
     expect(after.listeners).toBeLessThanOrEqual(baseline.listeners);
     expect(after.nodes).toBeLessThan(baseline.nodes + NODE_ALLOWANCE);

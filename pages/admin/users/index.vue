@@ -1,18 +1,15 @@
 <template>
-  <div class="bg-white rounded-lg shadow-md p-6">
-    <div class="flex items-center justify-between mb-6">
+  <div class="rounded-lg bg-white p-6 shadow-md">
+    <div class="mb-6 flex items-center justify-between">
       <h1 class="text-2xl font-bold text-slate-900">Users</h1>
 
       <!-- Action Toolbar (moved to top) -->
-      <div
-        v-if="!loading && users.length > 0"
-        class="flex items-center gap-4"
-      >
+      <div v-if="!loading && users.length > 0" class="flex items-center gap-4">
         <!-- Select mode toggle -->
         <button
           @click="toggleSelectMode"
           :class="[
-            'px-4 py-2 rounded-lg font-medium transition',
+            'rounded-lg px-4 py-2 font-medium transition',
             isSelectMode
               ? 'bg-blue-600 text-white hover:bg-blue-700'
               : 'bg-slate-200 text-slate-700 hover:bg-slate-300',
@@ -27,14 +24,14 @@
           v-if="selectedCount > 0"
           @click="showBulkDeleteModal = true"
           :disabled="bulkDeleting"
-          class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-slate-400 disabled:cursor-not-allowed font-medium transition"
+          class="rounded-lg bg-red-600 px-4 py-2 font-medium text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-slate-400"
           data-testid="bulk-delete-btn"
         >
           {{ bulkDeleting ? "Deleting..." : `Delete ${selectedCount}` }}
         </button>
 
         <!-- Selected count -->
-        <span v-if="selectedCount > 0" class="text-slate-700 font-medium">
+        <span v-if="selectedCount > 0" class="font-medium text-slate-700">
           {{ selectedCount }} user{{ selectedCount !== 1 ? "s" : "" }}
           selected
         </span>
@@ -44,13 +41,13 @@
     <!-- Search / Filter Bar -->
     <div
       v-if="!loading && !error"
-      class="flex flex-wrap items-center gap-3 mb-5"
+      class="mb-5 flex flex-wrap items-center gap-3"
     >
       <input
         v-model="searchQuery"
         type="search"
         placeholder="Search by email, name, or role…"
-        class="flex-1 min-w-48 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+        class="min-w-48 flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
         data-testid="user-search-input"
       />
       <select
@@ -65,7 +62,7 @@
       <button
         v-if="searchQuery || filterAdmin !== 'all'"
         type="button"
-        class="text-sm text-slate-500 hover:text-slate-700 underline"
+        class="text-sm text-slate-500 underline hover:text-slate-700"
         @click="clearFilters"
       >
         Clear filters
@@ -81,14 +78,14 @@
     </div>
 
     <!-- Loading State -->
-    <div v-if="loading" class="text-center py-12">
+    <div v-if="loading" class="py-12 text-center">
       <p class="text-slate-600">Loading users...</p>
     </div>
 
     <!-- Error State -->
     <div
       v-else-if="error"
-      class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6"
+      class="mb-6 rounded-lg border border-red-200 bg-red-50 p-4"
     >
       <p class="text-red-800">{{ error }}</p>
     </div>
@@ -98,28 +95,28 @@
       <table class="w-full">
         <thead>
           <tr class="border-b border-slate-200">
-            <th v-if="isSelectMode" class="py-3 px-4 w-14">
+            <th v-if="isSelectMode" class="w-14 px-4 py-3">
               <input
                 type="checkbox"
                 :checked="allSelected"
                 @change="toggleSelectAll"
                 data-testid="select-all-checkbox"
-                class="h-5 w-5 rounded-sm border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                class="h-5 w-5 cursor-pointer rounded-sm border-slate-300 text-blue-600 focus:ring-blue-500"
               />
             </th>
-            <th class="text-left py-3 px-4 font-semibold text-slate-900">
+            <th class="px-4 py-3 text-left font-semibold text-slate-900">
               Email
             </th>
-            <th class="text-left py-3 px-4 font-semibold text-slate-900">
+            <th class="px-4 py-3 text-left font-semibold text-slate-900">
               Name
             </th>
-            <th class="text-left py-3 px-4 font-semibold text-slate-900">
+            <th class="px-4 py-3 text-left font-semibold text-slate-900">
               Role
             </th>
-            <th class="text-left py-3 px-4 font-semibold text-slate-900">
+            <th class="px-4 py-3 text-left font-semibold text-slate-900">
               Admin
             </th>
-            <th class="text-left py-3 px-4 font-semibold text-slate-900">
+            <th class="px-4 py-3 text-left font-semibold text-slate-900">
               Actions
             </th>
           </tr>
@@ -133,50 +130,47 @@
               selectedUserEmails.has(user.email) ? 'bg-blue-50' : '',
             ]"
           >
-            <td v-if="isSelectMode" class="py-3 px-4">
+            <td v-if="isSelectMode" class="px-4 py-3">
               <input
                 v-if="user.email !== currentUserEmailComputed"
                 type="checkbox"
                 :checked="selectedUserEmails.has(user.email)"
                 @change="toggleUserSelection(user.email)"
                 data-testid="user-checkbox"
-                class="h-5 w-5 rounded-sm border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                class="h-5 w-5 cursor-pointer rounded-sm border-slate-300 text-blue-600 focus:ring-blue-500"
               />
-              <span v-else class="text-slate-400 text-xs font-medium"
+              <span v-else class="text-xs font-medium text-slate-400"
                 >Current</span
               >
             </td>
-            <td class="py-3 px-4">
-              <NuxtLink
-                :to="`/admin/users/${user.id}`"
-                class="hover:underline"
-              >
-                <code class="text-sm bg-slate-100 px-2 py-1 rounded-sm">{{
+            <td class="px-4 py-3">
+              <NuxtLink :to="`/admin/users/${user.id}`" class="hover:underline">
+                <code class="rounded-sm bg-slate-100 px-2 py-1 text-sm">{{
                   user.email
                 }}</code>
               </NuxtLink>
             </td>
-            <td class="py-3 px-4 text-slate-700">
+            <td class="px-4 py-3 text-slate-700">
               {{ user.full_name || "—" }}
             </td>
-            <td class="py-3 px-4 text-slate-700">{{ user.role }}</td>
-            <td class="py-3 px-4">
+            <td class="px-4 py-3 text-slate-700">{{ user.role }}</td>
+            <td class="px-4 py-3">
               <span
                 v-if="user.is_admin"
-                class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium"
+                class="rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-800"
               >
                 Yes
               </span>
               <span v-else class="text-slate-500">No</span>
             </td>
-            <td class="py-3 px-4">
+            <td class="px-4 py-3">
               <button
                 @click="deleteUser(user.email)"
                 :disabled="
                   user.email === currentUserEmailComputed ||
                   deleting === user.email
                 "
-                class="text-red-600 hover:text-red-800 disabled:text-slate-400 disabled:cursor-not-allowed font-medium transition"
+                class="font-medium text-red-600 transition hover:text-red-800 disabled:cursor-not-allowed disabled:text-slate-400"
               >
                 {{ deleting === user.email ? "Deleting..." : "Delete" }}
               </button>
@@ -187,7 +181,7 @@
 
       <div
         v-if="filteredUsers.length === 0"
-        class="text-center py-12 text-slate-500"
+        class="py-12 text-center text-slate-500"
       >
         {{
           users.length === 0 ? "No users found" : "No users match your search"
@@ -262,10 +256,10 @@
       v-if="!loading"
       class="mt-8 rounded-lg border border-red-200 bg-red-50 p-4"
     >
-      <h3 class="text-sm font-semibold text-red-900 mb-1">
+      <h3 class="mb-1 text-sm font-semibold text-red-900">
         Delete account by email
       </h3>
-      <p class="text-xs text-red-700 mb-3">
+      <p class="mb-3 text-xs text-red-700">
         Use this to delete accounts that don't appear in the list above (e.g.
         orphaned auth records where signup didn't complete).
       </p>

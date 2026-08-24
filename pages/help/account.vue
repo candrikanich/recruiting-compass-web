@@ -14,7 +14,7 @@
         Navigate to
         <NuxtLink
           to="/settings"
-          class="font-medium text-primary-600 hover:underline"
+          class="text-primary-600 font-medium hover:underline"
           >Settings</NuxtLink
         >
         and select <strong>Athlete Profile</strong>.

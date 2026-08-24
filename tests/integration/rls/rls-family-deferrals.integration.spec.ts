@@ -1160,13 +1160,11 @@ describe.skipIf(!hasLiveSupabase)(
           `seed public.users(alpha) failed: ${alphaProfileErr.message}`,
         );
       }
-      const { error: legacyProfileErr } = await admin
-        .from("users")
-        .insert({
-          id: legacyLinkedPlayerId,
-          email: legacyEmail,
-          role: "parent",
-        });
+      const { error: legacyProfileErr } = await admin.from("users").insert({
+        id: legacyLinkedPlayerId,
+        email: legacyEmail,
+        role: "parent",
+      });
       if (legacyProfileErr) {
         throw new Error(
           `seed public.users(legacy) failed: ${legacyProfileErr.message}`,

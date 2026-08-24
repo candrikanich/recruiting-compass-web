@@ -4,32 +4,32 @@
   >
     <!-- Page Header -->
     <div
-      class="bg-linear-to-r from-slate-50 to-blue-50 border-b border-slate-200"
+      class="border-b border-slate-200 bg-linear-to-r from-slate-50 to-blue-50"
     >
-      <div class="max-w-4xl mx-auto px-4 sm:px-6 py-6">
+      <div class="mx-auto max-w-4xl px-4 py-6 sm:px-6">
         <div class="flex items-center gap-3">
-          <UIcon name="i-heroicons-sparkles" class="w-8 h-8 text-slate-700" />
+          <UIcon name="i-heroicons-sparkles" class="h-8 w-8 text-slate-700" />
           <h1 class="text-3xl font-bold text-slate-900">Activity History</h1>
         </div>
-        <p class="text-slate-600 mt-2">
+        <p class="mt-2 text-slate-600">
           Track all your recruiting interactions and updates in one place
         </p>
       </div>
     </div>
 
     <!-- Main Content -->
-    <main class="max-w-4xl mx-auto px-4 sm:px-6 py-8">
+    <main class="mx-auto max-w-4xl px-4 py-8 sm:px-6">
       <!-- Filters -->
-      <div class="bg-white rounded-2xl border border-slate-200 p-4 mb-6">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="mb-6 rounded-2xl border border-slate-200 bg-white p-4">
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
           <!-- Type Filter -->
           <div>
-            <label class="block text-sm font-medium text-slate-700 mb-2"
+            <label class="mb-2 block text-sm font-medium text-slate-700"
               >Activity Type</label
             >
             <select
               v-model="selectedType"
-              class="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white text-slate-700 text-sm focus:ring-2 focus:ring-brand-blue-500"
+              class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 focus:ring-2 focus:ring-brand-blue-500"
             >
               <option value="">All Types</option>
               <option value="interaction">Interactions</option>
@@ -42,12 +42,12 @@
 
           <!-- Date Range Filter -->
           <div>
-            <label class="block text-sm font-medium text-slate-700 mb-2"
+            <label class="mb-2 block text-sm font-medium text-slate-700"
               >Date Range</label
             >
             <select
               v-model="selectedDateRange"
-              class="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white text-slate-700 text-sm focus:ring-2 focus:ring-brand-blue-500"
+              class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 focus:ring-2 focus:ring-brand-blue-500"
             >
               <option value="all">All Time</option>
               <option value="week">Last 7 Days</option>
@@ -58,14 +58,14 @@
 
           <!-- Search -->
           <div>
-            <label class="block text-sm font-medium text-slate-700 mb-2"
+            <label class="mb-2 block text-sm font-medium text-slate-700"
               >Search</label
             >
             <input
               v-model="searchQuery"
               type="text"
               placeholder="Search activities..."
-              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-blue-500"
+              class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-blue-500"
             />
           </div>
         </div>
@@ -74,19 +74,19 @@
       <!-- Loading State -->
       <div v-if="loading" class="flex items-center justify-center py-12">
         <div
-          class="animate-spin rounded-full h-8 w-8 border border-brand-blue-300 border-t-brand-blue-600"
+          class="h-8 w-8 animate-spin rounded-full border border-brand-blue-300 border-t-brand-blue-600"
         />
       </div>
 
       <!-- Error State -->
       <div
         v-else-if="error"
-        class="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700"
+        class="rounded-lg border border-red-200 bg-red-50 p-4 text-red-700"
       >
         <p class="font-medium">{{ error }}</p>
         <button
           @click="fetchAll"
-          class="mt-2 text-red-600 hover:text-red-700 font-medium text-sm"
+          class="mt-2 text-sm font-medium text-red-600 hover:text-red-700"
         >
           Try Again
         </button>
@@ -108,19 +108,19 @@
           <button
             @click="previousPage"
             :disabled="currentPage === 1"
-            class="px-4 py-2 border border-slate-300 rounded-lg text-slate-700 text-sm font-medium hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
           >
             Previous
           </button>
 
-          <div class="text-slate-600 text-sm">
+          <div class="text-sm text-slate-600">
             Page {{ currentPage }} of {{ totalPages }}
           </div>
 
           <button
             @click="nextPage"
             :disabled="currentPage === totalPages"
-            class="px-4 py-2 border border-slate-300 rounded-lg text-slate-700 text-sm font-medium hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
           >
             Next
           </button>
@@ -128,13 +128,13 @@
       </div>
 
       <!-- Empty State -->
-      <div v-else class="text-center py-12">
+      <div v-else class="py-12 text-center">
         <UIcon
           name="i-heroicons-sparkles"
-          class="w-12 h-12 text-slate-300 mx-auto mb-3"
+          class="mx-auto mb-3 h-12 w-12 text-slate-300"
         />
-        <p class="text-slate-600 font-medium">No activities found</p>
-        <p class="text-slate-400 text-sm mt-1">
+        <p class="font-medium text-slate-600">No activities found</p>
+        <p class="mt-1 text-sm text-slate-400">
           Try adjusting your filters or search query
         </p>
       </div>

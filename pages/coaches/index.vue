@@ -5,7 +5,7 @@
     <!-- Skip Link -->
     <a
       href="#main-content"
-      class="sr-only focus:not-sr-only focus:absolute focus:top-0 focus:left-0 focus:z-50 focus:p-4 focus:bg-blue-600 focus:text-white focus:font-medium focus:rounded-br-lg"
+      class="sr-only focus:not-sr-only focus:absolute focus:top-0 focus:left-0 focus:z-50 focus:rounded-br-lg focus:bg-blue-600 focus:p-4 focus:font-medium focus:text-white"
     >
       Skip to main content
     </a>
@@ -18,9 +18,9 @@
       <template #actions>
         <NuxtLink
           to="/coaches/new"
-          class="px-4 py-2 text-sm font-medium text-white bg-linear-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition flex items-center gap-2 shadow-xs"
+          class="flex items-center gap-2 rounded-lg bg-linear-to-r from-blue-500 to-blue-600 px-4 py-2 text-sm font-medium text-white shadow-xs transition hover:from-blue-600 hover:to-blue-700"
         >
-          <UIcon name="i-heroicons-plus" class="w-4 h-4" />
+          <UIcon name="i-heroicons-plus" class="h-4 w-4" />
           Add Coach
         </NuxtLink>
         <button
@@ -29,11 +29,11 @@
           :disabled="exportLoading"
           :aria-busy="exportLoading"
           aria-label="Export coaches to CSV"
-          class="px-3 py-2 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50 transition flex items-center gap-2 text-slate-700 disabled:opacity-50 focus:ring-2 focus:ring-offset-2 focus:ring-slate-500"
+          class="flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 disabled:opacity-50"
         >
           <UIcon
             name="i-heroicons-arrow-down-tray"
-            class="w-4 h-4"
+            class="h-4 w-4"
             aria-hidden="true"
           />
           {{ exportLoading ? "Exporting..." : "CSV" }}
@@ -44,11 +44,11 @@
           :disabled="exportLoading"
           :aria-busy="exportLoading"
           aria-label="Export coaches to PDF"
-          class="px-3 py-2 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50 transition flex items-center gap-2 text-slate-700 disabled:opacity-50 focus:ring-2 focus:ring-offset-2 focus:ring-slate-500"
+          class="flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 disabled:opacity-50"
         >
           <UIcon
             name="i-heroicons-arrow-down-tray"
-            class="w-4 h-4"
+            class="h-4 w-4"
             aria-hidden="true"
           />
           {{ exportLoading ? "Exporting..." : "PDF" }}
@@ -57,7 +57,7 @@
           v-if="exportMessage"
           role="status"
           aria-live="polite"
-          class="text-sm mt-2 text-green-700"
+          class="mt-2 text-sm text-green-700"
         >
           {{ exportMessage }}
         </div>
@@ -66,7 +66,7 @@
 
     <main
       id="main-content"
-      class="max-w-7xl mx-auto px-4 sm:px-6 py-8"
+      class="mx-auto max-w-7xl px-4 py-8 sm:px-6"
       :aria-busy="loading"
     >
       <!-- Summary Tiles -->
@@ -79,7 +79,7 @@
       <!-- Filter Bar -->
       <div
         v-if="allCoaches.length > 0"
-        class="bg-white rounded-xl border border-slate-200 shadow-xs p-4 mb-6"
+        class="mb-6 rounded-xl border border-slate-200 bg-white p-4 shadow-xs"
       >
         <CoachFilters
           :filter-values="filterValues"
@@ -101,13 +101,13 @@
       <!-- Loading State -->
       <div
         v-if="loading && allCoaches.length === 0"
-        class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
+        class="rounded-xl border border-slate-200 bg-white p-12 text-center shadow-xs"
         role="status"
         aria-live="polite"
         aria-busy="true"
       >
         <div
-          class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"
+          class="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"
           aria-hidden="true"
         ></div>
         <p class="text-slate-600">Loading coaches...</p>
@@ -116,13 +116,13 @@
       <!-- Error State -->
       <div
         v-else-if="error"
-        class="bg-red-50 border-l-4 border-red-600 p-4 mb-6"
+        class="mb-6 border-l-4 border-red-600 bg-red-50 p-4"
         role="alert"
         aria-live="assertive"
       >
         <div class="flex items-start gap-3">
           <svg
-            class="w-5 h-5 text-red-600 shrink-0 mt-0.5"
+            class="mt-0.5 h-5 w-5 shrink-0 text-red-600"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -136,7 +136,7 @@
             />
           </svg>
           <div>
-            <h3 class="font-semibold text-red-800 mb-1">
+            <h3 class="mb-1 font-semibold text-red-800">
               Error loading coaches
             </h3>
             <p class="text-red-700">{{ error }}</p>
@@ -147,11 +147,11 @@
       <!-- Empty State: No schools followed yet -->
       <div
         v-else-if="schools.length === 0"
-        class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
+        class="rounded-xl border border-slate-200 bg-white p-12 text-center shadow-xs"
         role="status"
       >
         <svg
-          class="w-12 h-12 text-slate-400 mx-auto mb-4"
+          class="mx-auto mb-4 h-12 w-12 text-slate-400"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -164,14 +164,14 @@
             d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75z"
           />
         </svg>
-        <h2 class="text-slate-900 font-semibold mb-2">Add schools first</h2>
-        <p class="text-slate-600 mb-6">
+        <h2 class="mb-2 font-semibold text-slate-900">Add schools first</h2>
+        <p class="mb-6 text-slate-600">
           Coaches are added through school pages. Follow a school to start
           tracking coaches there.
         </p>
         <NuxtLink
           to="/schools/new"
-          class="inline-block px-4 py-2 text-sm font-medium text-white bg-linear-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition"
+          class="inline-block rounded-lg bg-linear-to-r from-blue-500 to-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:from-blue-600 hover:to-blue-700"
         >
           Add a School
         </NuxtLink>
@@ -180,21 +180,21 @@
       <!-- Empty State: Has schools but no coaches -->
       <div
         v-else-if="allCoaches.length === 0"
-        class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
+        class="rounded-xl border border-slate-200 bg-white p-12 text-center shadow-xs"
         role="status"
       >
         <UIcon
           name="i-heroicons-user-group"
-          class="w-12 h-12 text-slate-400 mx-auto mb-4"
+          class="mx-auto mb-4 h-12 w-12 text-slate-400"
           aria-hidden="true"
         />
-        <h2 class="text-slate-900 font-semibold mb-2">No coaches yet</h2>
-        <p class="text-slate-600 mb-6">
+        <h2 class="mb-2 font-semibold text-slate-900">No coaches yet</h2>
+        <p class="mb-6 text-slate-600">
           Visit a school's page to add coaches from their staff.
         </p>
         <NuxtLink
           to="/schools"
-          class="inline-block px-4 py-2 text-sm font-medium text-white bg-linear-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition"
+          class="inline-block rounded-lg bg-linear-to-r from-blue-500 to-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:from-blue-600 hover:to-blue-700"
         >
           Go to Schools
         </NuxtLink>
@@ -203,15 +203,15 @@
       <!-- No Results State -->
       <div
         v-else-if="filteredCoaches.length === 0"
-        class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
+        class="rounded-xl border border-slate-200 bg-white p-12 text-center shadow-xs"
         role="status"
       >
         <UIcon
           name="i-heroicons-magnifying-glass"
-          class="w-12 h-12 text-slate-400 mx-auto mb-4"
+          class="mx-auto mb-4 h-12 w-12 text-slate-400"
           aria-hidden="true"
         />
-        <h2 class="text-slate-900 font-semibold mb-2">
+        <h2 class="mb-2 font-semibold text-slate-900">
           No coaches match your filters
         </h2>
         <p class="text-slate-700">Try adjusting your search or filters</p>
@@ -220,7 +220,7 @@
       <!-- Result Count Announcement -->
       <div
         v-if="filteredCoaches.length > 0"
-        class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg"
+        class="mb-4 rounded-lg border border-blue-200 bg-blue-50 p-3"
         role="status"
         aria-live="polite"
         aria-atomic="true"
@@ -236,7 +236,7 @@
       <!-- Coaches Grid -->
       <ul
         v-if="paginatedCoaches.length > 0"
-        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+        class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
       >
         <li
           v-for="coach in paginatedCoaches"
@@ -259,12 +259,12 @@
       <!-- Pagination Controls -->
       <div
         v-if="filteredCoaches.length > ITEMS_PER_PAGE"
-        class="flex items-center justify-center gap-4 mt-8"
+        class="mt-8 flex items-center justify-center gap-4"
       >
         <button
           @click="goToPage(currentPage - 1)"
           :disabled="!hasPrevPage"
-          class="px-4 py-2 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
         >
           Previous
         </button>
@@ -274,7 +274,7 @@
         <button
           @click="goToPage(currentPage + 1)"
           :disabled="!hasNextPage"
-          class="px-4 py-2 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
         >
           Next
         </button>
@@ -286,13 +286,13 @@
       <Transition name="fade">
         <div
           v-if="showPanel && selectedCoach"
-          class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+          class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
           @click="showPanel = false"
           aria-hidden="true"
           role="presentation"
         >
           <div
-            class="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+            class="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl bg-white shadow-xl"
             @click.stop
             role="dialog"
             aria-modal="true"
@@ -300,7 +300,7 @@
             @keydown.escape="showPanel = false"
           >
             <div
-              class="sticky top-0 bg-white border-b border-slate-200 p-4 flex items-center justify-between rounded-t-xl"
+              class="sticky top-0 flex items-center justify-between rounded-t-xl border-b border-slate-200 bg-white p-4"
             >
               <h2
                 id="communication-panel-title"
@@ -311,11 +311,11 @@
               <button
                 @click="showPanel = false"
                 aria-label="Close Quick Communication dialog"
-                class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                class="rounded-lg p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               >
                 <UIcon
                   name="i-heroicons-x-mark"
-                  class="w-5 h-5"
+                  class="h-5 w-5"
                   aria-hidden="true"
                 />
               </button>

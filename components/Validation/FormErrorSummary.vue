@@ -9,25 +9,25 @@
       aria-live="assertive"
       aria-atomic="true"
       tabindex="-1"
-      class="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-r-lg focus:outline-2 focus:outline-offset-2 focus:outline-red-600"
+      class="mb-6 rounded-r-lg border-l-4 border-red-500 bg-red-50 p-4 focus:outline-2 focus:outline-offset-2 focus:outline-red-600"
     >
       <div class="flex items-start gap-3">
         <UIcon
           name="i-heroicons-exclamation-triangle-solid"
-          class="w-5 h-5 text-red-600 shrink-0 mt-0.5"
+          class="mt-0.5 h-5 w-5 shrink-0 text-red-600"
           aria-hidden="true"
         />
         <div class="flex-1">
-          <h3 class="text-sm font-semibold text-red-800 mb-2">
+          <h3 class="mb-2 text-sm font-semibold text-red-800">
             Please correct the following errors:
           </h3>
-          <ul class="text-sm text-red-700 space-y-1">
+          <ul class="space-y-1 text-sm text-red-700">
             <li
               v-for="error in errors"
               :key="error.field"
               class="flex items-start gap-2"
             >
-              <span class="text-red-700 mt-1">•</span>
+              <span class="mt-1 text-red-700">•</span>
               <div>
                 <button
                   type="button"
@@ -44,12 +44,12 @@
         <button
           type="button"
           @click="$emit('dismiss')"
-          class="text-red-600 hover:text-red-800 transition shrink-0 mt-0.5 focus:outline-2 focus:outline-offset-2 focus:outline-red-600"
+          class="mt-0.5 shrink-0 text-red-600 transition hover:text-red-800 focus:outline-2 focus:outline-offset-2 focus:outline-red-600"
           aria-label="Dismiss error summary"
         >
           <UIcon
             name="i-heroicons-x-mark-solid"
-            class="w-5 h-5"
+            class="h-5 w-5"
             aria-hidden="true"
           />
         </button>

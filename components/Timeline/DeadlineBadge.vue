@@ -74,7 +74,7 @@ const tooltipText = computed<string>(() => {
     <svg
       v-if="showAlertIcon"
       data-testid="alert-icon"
-      class="w-3 h-3"
+      class="h-3 w-3"
       fill="currentColor"
       viewBox="0 0 20 20"
     >

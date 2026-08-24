@@ -4,8 +4,12 @@ function dayKey(d: Date): string {
 
 export function dayBuckets(from: Date, to: Date): string[] {
   const out: string[] = [];
-  const cur = new Date(Date.UTC(from.getUTCFullYear(), from.getUTCMonth(), from.getUTCDate()));
-  const end = new Date(Date.UTC(to.getUTCFullYear(), to.getUTCMonth(), to.getUTCDate()));
+  const cur = new Date(
+    Date.UTC(from.getUTCFullYear(), from.getUTCMonth(), from.getUTCDate()),
+  );
+  const end = new Date(
+    Date.UTC(to.getUTCFullYear(), to.getUTCMonth(), to.getUTCDate()),
+  );
   while (cur <= end) {
     out.push(dayKey(cur));
     cur.setUTCDate(cur.getUTCDate() + 1);

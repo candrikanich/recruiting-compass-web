@@ -9,14 +9,14 @@ defineProps<Props>();
 </script>
 
 <template>
-  <div class="bg-white rounded-lg shadow-sm p-4">
-    <strong class="font-semibold text-gray-900 mb-2 block">{{ label }}</strong>
+  <div class="rounded-lg bg-white p-4 shadow-sm">
+    <strong class="mb-2 block font-semibold text-gray-900">{{ label }}</strong>
     <p v-if="value" class="text-gray-700">
       <NuxtLink
         v-if="linkTo"
         :to="linkTo"
         :aria-label="`View details for ${label}: ${value}`"
-        class="text-blue-600 hover:underline focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-sm px-1"
+        class="rounded-sm px-1 text-blue-600 hover:underline focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
       >
         {{ value }}
       </NuxtLink>

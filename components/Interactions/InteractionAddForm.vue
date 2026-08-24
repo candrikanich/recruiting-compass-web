@@ -1,20 +1,20 @@
 <template>
-  <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 mb-8">
-    <h2 class="text-xl font-semibold text-slate-900 mb-6">
+  <div class="mb-8 rounded-xl border border-slate-200 bg-white p-6 shadow-xs">
+    <h2 class="mb-6 text-xl font-semibold text-slate-900">
       Log New Interaction
     </h2>
 
     <form @submit.prevent="handleSubmit" class="space-y-5">
       <!-- Type -->
       <div>
-        <label for="type" class="block text-sm font-medium text-slate-700 mb-2">
+        <label for="type" class="mb-2 block text-sm font-medium text-slate-700">
           Type <span class="text-red-600">*</span>
         </label>
         <select
           id="type"
           v-model="newInteraction.type"
           required
-          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
           :disabled="loading"
         >
           <option value="">Select Type</option>
@@ -50,14 +50,14 @@
       <div v-if="coaches.length > 0">
         <label
           for="coach"
-          class="block text-sm font-medium text-slate-700 mb-2"
+          class="mb-2 block text-sm font-medium text-slate-700"
         >
           Coach (Optional)
         </label>
         <select
           id="coach"
           v-model="newInteraction.coach_id"
-          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
           :disabled="loading"
         >
           <option value="">Select Coach</option>
@@ -73,7 +73,7 @@
       <div>
         <label
           for="subject"
-          class="block text-sm font-medium text-slate-700 mb-2"
+          class="mb-2 block text-sm font-medium text-slate-700"
         >
           Subject
         </label>
@@ -82,11 +82,11 @@
           v-model="newInteraction.subject"
           type="text"
           :maxlength="MAX_SUBJECT_LENGTH"
-          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
           placeholder="e.g., Initial contact, Recruitment conversation"
           :disabled="loading"
         />
-        <p class="text-xs text-slate-500 mt-1">
+        <p class="mt-1 text-xs text-slate-500">
           {{ newInteraction.subject.length }}/{{ MAX_SUBJECT_LENGTH }}
           characters
         </p>
@@ -96,7 +96,7 @@
       <div>
         <label
           for="content"
-          class="block text-sm font-medium text-slate-700 mb-2"
+          class="mb-2 block text-sm font-medium text-slate-700"
         >
           Content <span class="text-red-600">*</span>
         </label>
@@ -106,13 +106,13 @@
           required
           rows="5"
           :maxlength="MAX_CONTENT_LENGTH"
-          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
           placeholder="Details about the interaction..."
           :disabled="loading"
         />
         <p
           :class="[
-            'text-xs mt-1',
+            'mt-1 text-xs',
             newInteraction.content.length > MAX_CONTENT_LENGTH * 0.9
               ? 'text-red-600'
               : 'text-slate-500',
@@ -127,10 +127,10 @@
       <div>
         <label
           for="attachments"
-          class="block text-sm font-medium text-slate-700 mb-2"
+          class="mb-2 block text-sm font-medium text-slate-700"
         >
           Attachments (Optional)
-          <span class="text-xs text-slate-500 font-normal">
+          <span class="text-xs font-normal text-slate-500">
             PDF, images, documents up to 10MB
           </span>
         </label>
@@ -142,7 +142,7 @@
             multiple
             accept=".pdf,.jpg,.jpeg,.png,.gif,.doc,.docx,.xls,.xlsx,.txt"
             @change="handleFileSelect"
-            class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
             :disabled="loading"
           />
         </div>
@@ -155,12 +155,12 @@
           <div
             v-for="(file, idx) in selectedFiles"
             :key="file.name + file.size"
-            class="flex items-center justify-between bg-slate-50 p-2 rounded-sm border border-slate-200"
+            class="flex items-center justify-between rounded-sm border border-slate-200 bg-slate-50 p-2"
           >
-            <div class="flex items-center gap-2 min-w-0">
-              <span class="text-lg shrink-0">📎</span>
+            <div class="flex min-w-0 items-center gap-2">
+              <span class="shrink-0 text-lg">📎</span>
               <div class="min-w-0">
-                <p class="text-sm text-slate-700 truncate">
+                <p class="truncate text-sm text-slate-700">
                   {{ file.name }}
                 </p>
                 <p class="text-xs text-slate-500">
@@ -171,7 +171,7 @@
             <button
               type="button"
               @click="removeFile(idx)"
-              class="text-red-600 hover:text-red-700 text-sm font-medium shrink-0 ml-2"
+              class="ml-2 shrink-0 text-sm font-medium text-red-600 hover:text-red-700"
             >
               Remove
             </button>
@@ -183,14 +183,14 @@
       <div>
         <label
           for="sentiment"
-          class="block text-sm font-medium text-slate-700 mb-2"
+          class="mb-2 block text-sm font-medium text-slate-700"
         >
           Sentiment
         </label>
         <select
           id="sentiment"
           v-model="newInteraction.sentiment"
-          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
           :disabled="loading"
         >
           <option value="">Not specified</option>
@@ -205,7 +205,7 @@
       <div>
         <label
           for="occurred_at"
-          class="block text-sm font-medium text-slate-700 mb-2"
+          class="mb-2 block text-sm font-medium text-slate-700"
         >
           Date & Time <span class="text-red-600">*</span>
         </label>
@@ -214,19 +214,19 @@
           v-model="newInteraction.occurred_at"
           type="datetime-local"
           required
-          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
           :disabled="loading"
         />
       </div>
 
       <!-- Follow-up Reminder (Optional) -->
       <div class="border-t border-slate-200 pt-5">
-        <div class="flex items-center gap-2 mb-3">
+        <div class="mb-3 flex items-center gap-2">
           <input
             id="reminder-enabled"
             v-model="reminderEnabled"
             type="checkbox"
-            class="w-4 h-4 border border-slate-300 rounded-sm text-blue-600 focus:ring-2 focus:ring-blue-500"
+            class="h-4 w-4 rounded-sm border border-slate-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
             :disabled="loading"
           />
           <label
@@ -239,13 +239,13 @@
 
         <div
           v-if="reminderEnabled"
-          class="space-y-4 ml-6 bg-slate-50 p-4 rounded-lg"
+          class="ml-6 space-y-4 rounded-lg bg-slate-50 p-4"
         >
           <!-- Reminder Date -->
           <div>
             <label
               for="reminder-date"
-              class="block text-sm font-medium text-slate-700 mb-2"
+              class="mb-2 block text-sm font-medium text-slate-700"
             >
               Reminder Date
             </label>
@@ -255,7 +255,7 @@
               type="date"
               :min="getTodayDate()"
               required
-              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
               :disabled="loading"
             />
           </div>
@@ -264,14 +264,14 @@
           <div>
             <label
               for="reminder-type"
-              class="block text-sm font-medium text-slate-700 mb-2"
+              class="mb-2 block text-sm font-medium text-slate-700"
             >
               Reminder Type
             </label>
             <select
               id="reminder-type"
               v-model="reminderType"
-              class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
               :disabled="loading"
             >
               <option value="email">Email Reminder</option>
@@ -287,14 +287,14 @@
         <button
           type="submit"
           :disabled="!isFormValid"
-          class="flex-1 px-4 py-2 bg-linear-to-r from-blue-500 to-blue-600 text-white text-sm font-medium rounded-lg hover:from-blue-600 hover:to-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          class="flex-1 rounded-lg bg-linear-to-r from-blue-500 to-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:from-blue-600 hover:to-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {{ loading ? "Logging..." : "Log Interaction" }}
         </button>
         <button
           type="button"
           @click="$emit('cancel')"
-          class="flex-1 px-4 py-2 border border-slate-300 text-slate-700 text-sm font-medium rounded-lg hover:bg-slate-50 transition"
+          class="flex-1 rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
         >
           Cancel
         </button>

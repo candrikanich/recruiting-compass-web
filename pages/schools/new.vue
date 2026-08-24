@@ -7,15 +7,15 @@
     header-color="blue"
   >
     <!-- Toggle: Autocomplete vs Manual -->
-    <div class="mb-6 bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
-      <label class="flex items-center gap-3 cursor-pointer group">
+    <div class="mb-6 rounded-xl border-2 border-blue-200 bg-blue-50 p-4">
+      <label class="group flex cursor-pointer items-center gap-3">
         <input
           v-model="useAutocomplete"
           type="checkbox"
-          class="w-5 h-5 text-blue-600 border-2 border-blue-300 rounded-sm focus:ring-2 focus:ring-blue-500"
+          class="h-5 w-5 rounded-sm border-2 border-blue-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
         />
         <span
-          class="text-slate-700 font-medium group-hover:text-blue-600 transition-colors"
+          class="font-medium text-slate-700 transition-colors group-hover:text-blue-600"
           >Search college database</span
         >
       </label>
@@ -24,14 +24,14 @@
     <!-- Selected College Confirmation -->
     <div
       v-if="selectedCollege"
-      class="mb-6 p-4 bg-green-50 border-2 border-green-200 rounded-xl"
+      class="mb-6 rounded-xl border-2 border-green-200 bg-green-50 p-4"
     >
-      <div class="flex justify-between items-start gap-4">
+      <div class="flex items-start justify-between gap-4">
         <div class="flex-1">
           <p class="text-sm text-green-800">
             <strong>Selected:</strong> {{ selectedCollege.name }}
           </p>
-          <p class="text-xs text-green-700 mt-1">
+          <p class="mt-1 text-xs text-green-700">
             {{ selectedCollege.location }}
           </p>
           <div v-if="collegeDataLoading" class="mt-2 text-xs text-blue-600">
@@ -39,9 +39,9 @@
           </div>
           <div
             v-else-if="collegeScorecardFetched"
-            class="mt-2 text-xs text-green-700 flex items-center gap-1"
+            class="mt-2 flex items-center gap-1 text-xs text-green-700"
           >
-            <UIcon name="i-heroicons-check-solid" class="w-3 h-3" />
+            <UIcon name="i-heroicons-check-solid" class="h-3 w-3" />
             <span>College data and map coordinates loaded</span>
           </div>
         </div>
@@ -56,7 +56,7 @@
         <button
           type="button"
           @click="clearSelection"
-          class="shrink-0 text-xs text-green-600 hover:text-green-700 font-medium hover:underline"
+          class="shrink-0 text-xs font-medium text-green-600 hover:text-green-700 hover:underline"
         >
           Clear
         </button>

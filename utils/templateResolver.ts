@@ -478,5 +478,8 @@ export function renderClean(
     if (isLabelOnly(cleaned)) continue;
     kept.push(tidyLine(cleaned));
   }
-  return kept.join("\n").replace(/\n{3,}/g, "\n\n").trim();
+  return kept
+    .join("\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
 }

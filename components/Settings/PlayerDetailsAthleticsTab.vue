@@ -1,20 +1,20 @@
 <template>
   <div class="space-y-6">
     <!-- Physical Stats -->
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+    <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
       <h2
-        class="text-base font-bold text-slate-900 mb-6 flex items-center gap-2"
+        class="mb-6 flex items-center gap-2 text-base font-bold text-slate-900"
       >
-        <UIcon name="i-heroicons-bolt" class="w-5 h-5 text-blue-600" />
+        <UIcon name="i-heroicons-bolt" class="h-5 w-5 text-blue-600" />
         Physical Profile
       </h2>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
         <!-- Height/Weight Row -->
         <div class="grid grid-cols-2 gap-4">
           <div>
             <label
-              class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1"
+              class="mb-1.5 ml-1 block text-[10px] font-bold tracking-widest text-slate-400 uppercase"
               >Height</label
             >
             <div class="flex gap-2">
@@ -22,7 +22,7 @@
                 v-model="heightFeet"
                 :disabled="isParentRole"
                 @change="triggerSave"
-                class="flex-1 px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl focus-visible:ring-2 focus-visible:ring-blue-500 font-medium text-slate-700"
+                class="flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 font-medium text-slate-700 focus-visible:ring-2 focus-visible:ring-blue-500"
               >
                 <option v-for="ft in [4, 5, 6, 7]" :key="ft" :value="ft">
                   {{ ft }}'
@@ -32,7 +32,7 @@
                 v-model="heightInches"
                 :disabled="isParentRole"
                 @change="triggerSave"
-                class="flex-1 px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl focus-visible:ring-2 focus-visible:ring-blue-500 font-medium text-slate-700"
+                class="flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 font-medium text-slate-700 focus-visible:ring-2 focus-visible:ring-blue-500"
               >
                 <option v-for="i in 12" :key="i - 1" :value="i - 1">
                   {{ i - 1 }}"
@@ -42,7 +42,7 @@
           </div>
           <div>
             <label
-              class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1"
+              class="mb-1.5 ml-1 block text-[10px] font-bold tracking-widest text-slate-400 uppercase"
               >Weight (lbs)</label
             >
             <input
@@ -51,7 +51,7 @@
               type="number"
               @blur="triggerSave"
               placeholder="185"
-              class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 transition font-medium text-slate-700"
+              class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 font-medium text-slate-700 transition focus:ring-2 focus:ring-blue-500"
             />
           </div>
         </div>
@@ -59,20 +59,23 @@
     </div>
 
     <!-- Sport-Specific Details -->
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+    <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
       <h2
-        class="text-base font-bold text-slate-900 mb-6 flex items-center gap-2"
+        class="mb-6 flex items-center gap-2 text-base font-bold text-slate-900"
       >
-        <UIcon name="i-heroicons-trophy" class="w-5 h-5 text-blue-600" />
+        <UIcon name="i-heroicons-trophy" class="h-5 w-5 text-blue-600" />
         {{ sportLabel }}
       </h2>
 
       <!-- Sport attributes (registry-driven: bats/throws for baseball, shooting
            hand for basketball, etc. — gated by sport and, where set, position). -->
-      <div v-if="attributes.length" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div
+        v-if="attributes.length"
+        class="grid grid-cols-1 gap-4 md:grid-cols-2"
+      >
         <div v-for="a in attributes" :key="a.key">
           <label
-            class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1"
+            class="mb-1.5 ml-1 block text-[10px] font-bold tracking-widest text-slate-400 uppercase"
             >{{ a.label }}</label
           >
           <select
@@ -82,7 +85,7 @@
               setAttrValue(a.key, ($event.target as HTMLSelectElement).value)
             "
             :aria-label="a.label"
-            class="w-full px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl focus-visible:ring-2 focus-visible:ring-blue-500 font-medium text-slate-700"
+            class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 font-medium text-slate-700 focus-visible:ring-2 focus-visible:ring-blue-500"
           >
             <option value="">—</option>
             <option v-for="opt in a.options" :key="opt" :value="opt">
@@ -94,10 +97,10 @@
 
       <!-- Positions -->
       <div
-        :class="attributes.length ? 'mt-8 pt-8 border-t border-slate-100' : ''"
+        :class="attributes.length ? 'mt-8 border-t border-slate-100 pt-8' : ''"
       >
         <label
-          class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 ml-1"
+          class="mb-4 ml-1 block text-[10px] font-bold tracking-widest text-slate-400 uppercase"
           >Positions You Play</label
         >
         <div v-if="availablePositions.length > 0" class="flex flex-wrap gap-2">
@@ -111,10 +114,10 @@
               triggerSave();
             "
             :class="[
-              'px-4 py-2.5 rounded-xl text-xs font-bold transition-all border-2',
+              'rounded-xl border-2 px-4 py-2.5 text-xs font-bold transition-all',
               isPositionSelected(pos)
-                ? 'bg-blue-600 text-white border-blue-600 shadow-md scale-105 z-10'
-                : 'bg-white text-slate-600 border-slate-200 hover:border-blue-300',
+                ? 'z-10 scale-105 border-blue-600 bg-blue-600 text-white shadow-md'
+                : 'border-slate-200 bg-white text-slate-600 hover:border-blue-300',
             ]"
           >
             {{ pos }}
@@ -128,10 +131,10 @@
              outreach, the recruiting packet, and your public profile show. -->
         <div v-if="orderedSelected.length" class="mt-6">
           <label
-            class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 ml-1"
+            class="mb-1 ml-1 block text-[10px] font-bold tracking-widest text-slate-400 uppercase"
             >Position Priority</label
           >
-          <p class="text-xs text-slate-500 mb-3 ml-1">
+          <p class="mb-3 ml-1 text-xs text-slate-500">
             Order matters — your first pick is what coaches see (they recruit
             for specific positions).
           </p>
@@ -139,12 +142,12 @@
             <li
               v-for="(pos, i) in orderedSelected"
               :key="pos"
-              class="flex items-center gap-3 px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+              class="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5"
             >
               <span
                 v-if="i < 2"
                 :class="[
-                  'px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wide',
+                  'rounded-md px-2 py-0.5 text-[10px] font-bold tracking-wide uppercase',
                   i === 0
                     ? 'bg-blue-600 text-white'
                     : 'bg-slate-200 text-slate-600',
@@ -156,10 +159,10 @@
                 class="w-5 text-center text-xs font-bold text-slate-400"
                 >{{ i + 1 }}</span
               >
-              <span class="font-semibold text-slate-700 text-sm">{{
+              <span class="text-sm font-semibold text-slate-700">{{
                 pos
               }}</span>
-              <span class="text-xs font-mono text-slate-400">{{
+              <span class="font-mono text-xs text-slate-400">{{
                 abbrev(pos)
               }}</span>
               <div class="ml-auto flex items-center gap-1">
@@ -167,19 +170,19 @@
                   type="button"
                   :disabled="i === 0 || isParentRole"
                   @click="reorder(i, 'up')"
-                  class="p-1.5 text-slate-400 hover:text-blue-600 disabled:opacity-30 disabled:cursor-not-allowed rounded-lg hover:bg-white transition"
+                  class="rounded-lg p-1.5 text-slate-400 transition hover:bg-white hover:text-blue-600 disabled:cursor-not-allowed disabled:opacity-30"
                   :aria-label="`Move ${pos} up`"
                 >
-                  <UIcon name="i-heroicons-chevron-up" class="w-4 h-4" />
+                  <UIcon name="i-heroicons-chevron-up" class="h-4 w-4" />
                 </button>
                 <button
                   type="button"
                   :disabled="i === orderedSelected.length - 1 || isParentRole"
                   @click="reorder(i, 'down')"
-                  class="p-1.5 text-slate-400 hover:text-blue-600 disabled:opacity-30 disabled:cursor-not-allowed rounded-lg hover:bg-white transition"
+                  class="rounded-lg p-1.5 text-slate-400 transition hover:bg-white hover:text-blue-600 disabled:cursor-not-allowed disabled:opacity-30"
                   :aria-label="`Move ${pos} down`"
                 >
-                  <UIcon name="i-heroicons-chevron-down" class="w-4 h-4" />
+                  <UIcon name="i-heroicons-chevron-down" class="h-4 w-4" />
                 </button>
               </div>
             </li>
@@ -189,39 +192,39 @@
     </div>
 
     <!-- External IDs -->
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-      <h2 class="text-base font-bold text-slate-900 mb-6">
+    <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <h2 class="mb-6 text-base font-bold text-slate-900">
         Recruiting Database IDs
       </h2>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
         <div>
           <label
-            class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1"
+            class="mb-1.5 ml-1 block text-[10px] font-bold tracking-widest text-slate-400 uppercase"
             >NCAA ID</label
           >
           <input
             v-model="form.ncaa_id"
             @blur="triggerSave"
             placeholder="ID Number"
-            class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium"
+            class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 font-medium"
           />
           <a
             href="https://web3.ncaa.org/ecwr3/"
             target="_blank"
             rel="noopener noreferrer"
-            class="inline-flex items-center gap-1 mt-1.5 ml-1 text-xs font-medium text-blue-600 hover:text-blue-700"
+            class="mt-1.5 ml-1 inline-flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-700"
           >
             Register at NCAA Eligibility Center
             <UIcon
               name="i-heroicons-arrow-top-right-on-square"
-              class="w-3 h-3"
+              class="h-3 w-3"
             />
           </a>
         </div>
         <!-- Recruiting services (registry-driven, gated by primary sport). -->
         <div v-for="svc in services" :key="svc.key">
           <label
-            class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1"
+            class="mb-1.5 ml-1 block text-[10px] font-bold tracking-widest text-slate-400 uppercase"
             >{{ svc.label }}</label
           >
           <!-- Prep Baseball Report: pick the filing state; the profile slug is
@@ -234,7 +237,7 @@
                 setPrepBaseballState(($event.target as HTMLSelectElement).value)
               "
               aria-label="Prep Baseball Report state"
-              class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-700"
+              class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 font-medium text-slate-700"
             >
               <option value="">State</option>
               <option
@@ -251,7 +254,7 @@
                 :href="prepBaseballPreviewUrl"
                 target="_blank"
                 rel="noopener noreferrer"
-                class="text-blue-600 hover:text-blue-700 break-all"
+                class="break-all text-blue-600 hover:text-blue-700"
                 >{{ prepBaseballPreviewUrl }}</a
               >
             </p>
@@ -263,22 +266,25 @@
             :type="svc.valueKind === 'url' ? 'url' : 'text'"
             :placeholder="svc.placeholder"
             @input="
-              setServiceValue(svc.key, ($event.target as HTMLInputElement).value)
+              setServiceValue(
+                svc.key,
+                ($event.target as HTMLInputElement).value,
+              )
             "
             @blur="triggerSave"
             :aria-label="svc.label"
-            class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium"
+            class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 font-medium"
           />
           <a
             :href="svc.signupUrl"
             target="_blank"
             rel="noopener noreferrer"
-            class="inline-flex items-center gap-1 mt-1.5 ml-1 text-xs font-medium text-blue-600 hover:text-blue-700"
+            class="mt-1.5 ml-1 inline-flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-700"
           >
             Get your profile
             <UIcon
               name="i-heroicons-arrow-top-right-on-square"
-              class="w-3 h-3"
+              class="h-3 w-3"
             />
           </a>
         </div>
@@ -287,15 +293,15 @@
 
     <!-- Video Links -->
     <div
-      class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden"
+      class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
     >
-      <div class="p-5 border-b border-slate-100 bg-slate-50/50">
+      <div class="border-b border-slate-100 bg-slate-50/50 p-5">
         <h2 class="text-base font-bold text-slate-900">Video Links</h2>
-        <p class="text-xs text-slate-500 font-medium">
+        <p class="text-xs font-medium text-slate-500">
           Hudl, YouTube, or Vimeo highlight reels for recruiters.
         </p>
       </div>
-      <div class="p-6 space-y-4">
+      <div class="space-y-4 p-6">
         <div
           v-for="link in videoLinks.links.value"
           :key="link.id"
@@ -332,7 +338,7 @@
                   url: (e.target as HTMLInputElement).value,
                 })
             "
-            class="flex-1 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 transition disabled:opacity-50"
+            class="flex-1 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm transition focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
           />
           <input
             :value="link.title"
@@ -345,16 +351,16 @@
                   title: (e.target as HTMLInputElement).value,
                 })
             "
-            class="w-32 px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 transition disabled:opacity-50"
+            class="w-32 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm transition focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
           />
           <button
             v-if="!isParentRole"
             @click="handleRemove(link.id)"
             type="button"
-            class="p-2 text-slate-400 hover:text-red-500 transition rounded-lg hover:bg-red-50"
+            class="rounded-lg p-2 text-slate-400 transition hover:bg-red-50 hover:text-red-500"
             title="Remove"
           >
-            <UIcon name="i-heroicons-x-mark" class="w-4 h-4" />
+            <UIcon name="i-heroicons-x-mark" class="h-4 w-4" />
           </button>
         </div>
 
@@ -377,28 +383,29 @@
               { value: 'other', label: 'Other' },
             ]"
             @update:model-value="
-              (v) => (newLinkPlatform = v as 'hudl' | 'youtube' | 'vimeo' | 'other')
+              (v) =>
+                (newLinkPlatform = v as 'hudl' | 'youtube' | 'vimeo' | 'other')
             "
           />
           <input
             v-model="newLinkUrl"
             type="url"
             placeholder="https://..."
-            class="flex-1 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 transition"
+            class="flex-1 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm transition focus:ring-2 focus:ring-blue-500"
           />
           <input
             v-model="newLinkTitle"
             type="text"
             placeholder="Title (optional)"
-            class="w-32 px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 transition"
+            class="w-32 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm transition focus:ring-2 focus:ring-blue-500"
           />
           <button
             @click="handleAdd"
             type="button"
             :disabled="!isNewLinkUrlValid"
-            class="inline-flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-700 py-2 px-3 disabled:opacity-40 disabled:cursor-not-allowed"
+            class="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-40"
           >
-            <UIcon name="i-heroicons-plus" class="w-4 h-4" />
+            <UIcon name="i-heroicons-plus" class="h-4 w-4" />
             Add
           </button>
         </div>
@@ -519,11 +526,7 @@ onMounted(() => {
   const offersPrepBaseball = services.value.some(
     (s) => s.linkKind === "prepBaseball",
   );
-  if (
-    offersPrepBaseball &&
-    !props.isParentRole &&
-    !prepBaseballState.value
-  ) {
+  if (offersPrepBaseball && !props.isParentRole && !prepBaseballState.value) {
     const code = normalizeStateCode(props.homeState);
     if (code) formRecord.value.prep_baseball_state = code;
   }

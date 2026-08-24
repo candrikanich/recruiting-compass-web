@@ -1,6 +1,6 @@
 <template>
-  <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
-    <div class="flex items-center justify-between mb-4">
+  <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-xs">
+    <div class="mb-4 flex items-center justify-between">
       <h3 class="font-semibold text-slate-900">Recruiting Status</h3>
       <span
         v-if="statusUpdating"
@@ -11,7 +11,7 @@
     </div>
 
     <SchoolStatusStepper
-      :status="(status as SchoolStatusValue)"
+      :status="status as SchoolStatusValue"
       :updating="statusUpdating"
       @select="emit('update:status', $event)"
     />

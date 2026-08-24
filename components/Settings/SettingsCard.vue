@@ -1,36 +1,36 @@
 <template>
   <NuxtLink
     :to="to"
-    class="block bg-white rounded-xl border border-slate-200 shadow-xs hover:shadow-md hover:border-blue-200 transition p-5"
+    class="block rounded-xl border border-slate-200 bg-white p-5 shadow-xs transition hover:border-blue-200 hover:shadow-md"
   >
     <div class="flex items-start gap-4">
       <div
-        class="shrink-0 w-11 h-11 rounded-lg flex items-center justify-center"
+        class="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg"
         :class="getIconBgClass()"
       >
         <UIcon
           v-if="iconName"
           :name="iconName"
-          class="w-5 h-5"
+          class="h-5 w-5"
           :class="getIconColorClass()"
         />
         <span v-else class="text-xl">{{ icon }}</span>
       </div>
-      <div class="flex-1 min-w-0">
+      <div class="min-w-0 flex-1">
         <div class="flex items-center gap-2">
           <h3 class="text-base font-semibold text-slate-900">{{ title }}</h3>
           <span
             v-if="status"
-            class="px-2 py-0.5 text-xs font-medium rounded-full"
+            class="rounded-full px-2 py-0.5 text-xs font-medium"
             :class="getStatusClass()"
           >
             {{ status }}
           </span>
         </div>
-        <p class="text-sm text-slate-500 mt-1">{{ description }}</p>
+        <p class="mt-1 text-sm text-slate-500">{{ description }}</p>
       </div>
       <div class="shrink-0 text-slate-400">
-        <UIcon name="i-heroicons-chevron-right" class="w-5 h-5" />
+        <UIcon name="i-heroicons-chevron-right" class="h-5 w-5" />
       </div>
     </div>
   </NuxtLink>

@@ -39,14 +39,62 @@ const PLAYER_PREFERENCES = {
 // Test-only high schools (e2e-* ids). Multiple "Lincoln High School" rows are
 // intentional — smart-inputs search must disambiguate by city/state.
 const NCES_SAMPLE_SCHOOLS = [
-  { nces_id: "e2e-nces-001", name: "Lincoln High School", city: "Portland", state: "OR", zip: "97203" },
-  { nces_id: "e2e-nces-002", name: "Abraham Lincoln High School", city: "San Francisco", state: "CA", zip: "94132" },
-  { nces_id: "e2e-nces-003", name: "Lincoln High School", city: "Seattle", state: "WA", zip: "98103" },
-  { nces_id: "e2e-nces-004", name: "Lincoln High School", city: "Denver", state: "CO", zip: "80210" },
-  { nces_id: "e2e-nces-005", name: "Lincolnway High School", city: "Frankfort", state: "IL", zip: "60423" },
-  { nces_id: "e2e-nces-006", name: "Washington High School", city: "Portland", state: "OR", zip: "97205" },
-  { nces_id: "e2e-nces-007", name: "Roosevelt High School", city: "Seattle", state: "WA", zip: "98105" },
-  { nces_id: "e2e-nces-008", name: "Jefferson High School", city: "Portland", state: "OR", zip: "97217" },
+  {
+    nces_id: "e2e-nces-001",
+    name: "Lincoln High School",
+    city: "Portland",
+    state: "OR",
+    zip: "97203",
+  },
+  {
+    nces_id: "e2e-nces-002",
+    name: "Abraham Lincoln High School",
+    city: "San Francisco",
+    state: "CA",
+    zip: "94132",
+  },
+  {
+    nces_id: "e2e-nces-003",
+    name: "Lincoln High School",
+    city: "Seattle",
+    state: "WA",
+    zip: "98103",
+  },
+  {
+    nces_id: "e2e-nces-004",
+    name: "Lincoln High School",
+    city: "Denver",
+    state: "CO",
+    zip: "80210",
+  },
+  {
+    nces_id: "e2e-nces-005",
+    name: "Lincolnway High School",
+    city: "Frankfort",
+    state: "IL",
+    zip: "60423",
+  },
+  {
+    nces_id: "e2e-nces-006",
+    name: "Washington High School",
+    city: "Portland",
+    state: "OR",
+    zip: "97205",
+  },
+  {
+    nces_id: "e2e-nces-007",
+    name: "Roosevelt High School",
+    city: "Seattle",
+    state: "WA",
+    zip: "98105",
+  },
+  {
+    nces_id: "e2e-nces-008",
+    name: "Jefferson High School",
+    city: "Portland",
+    state: "OR",
+    zip: "97217",
+  },
 ] as const;
 
 // Deadline offsets (months from the plan anchor) keyed by task slug — the

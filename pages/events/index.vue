@@ -11,50 +11,50 @@
         <NuxtLink
           to="/events/create"
           data-testid="add-event-button"
-          class="px-4 py-2 text-sm font-medium text-white bg-linear-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition flex items-center gap-2 shadow-xs"
+          class="flex items-center gap-2 rounded-lg bg-linear-to-r from-blue-500 to-blue-600 px-4 py-2 text-sm font-medium text-white shadow-xs transition hover:from-blue-600 hover:to-blue-700"
         >
-          <UIcon name="i-heroicons-plus" class="w-4 h-4" />
+          <UIcon name="i-heroicons-plus" class="h-4 w-4" />
           Add Event
         </NuxtLink>
       </template>
     </PageHeader>
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+    <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6">
       <!-- Summary Tiles -->
       <StatsTiles :stats="eventStats" aria-label="Events Statistics" />
 
       <!-- Filters Card -->
       <div
-        class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 mb-6"
+        class="mb-6 rounded-xl border border-slate-200 bg-white p-6 shadow-xs"
       >
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-5">
           <!-- Search -->
           <div>
-            <label class="block text-sm font-medium text-slate-700 mb-2"
+            <label class="mb-2 block text-sm font-medium text-slate-700"
               >Search</label
             >
             <div class="relative">
               <UIcon
                 name="i-heroicons-magnifying-glass"
-                class="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"
+                class="absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 text-slate-400"
               />
               <input
                 v-model="searchQuery"
                 type="text"
                 placeholder="Event name, location..."
-                class="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                class="w-full rounded-lg border border-slate-300 py-2 pr-4 pl-10 focus:border-transparent focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </div>
 
           <!-- Type Filter -->
           <div>
-            <label class="block text-sm font-medium text-slate-700 mb-2"
+            <label class="mb-2 block text-sm font-medium text-slate-700"
               >Type</label
             >
             <select
               v-model="typeFilter"
-              class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              class="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
             >
               <option value="">-- All --</option>
               <option value="camp">Camp</option>
@@ -67,12 +67,12 @@
 
           <!-- Status Filter -->
           <div>
-            <label class="block text-sm font-medium text-slate-700 mb-2"
+            <label class="mb-2 block text-sm font-medium text-slate-700"
               >Status</label
             >
             <select
               v-model="statusFilter"
-              class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              class="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
             >
               <option value="">-- All --</option>
               <option value="registered">Registered</option>
@@ -83,12 +83,12 @@
 
           <!-- Date Range Filter -->
           <div>
-            <label class="block text-sm font-medium text-slate-700 mb-2"
+            <label class="mb-2 block text-sm font-medium text-slate-700"
               >Date Range</label
             >
             <select
               v-model="dateRangeFilter"
-              class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              class="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
             >
               <option value="">-- All --</option>
               <option value="upcoming">Upcoming</option>
@@ -100,12 +100,12 @@
 
           <!-- Sort By -->
           <div>
-            <label class="block text-sm font-medium text-slate-700 mb-2"
+            <label class="mb-2 block text-sm font-medium text-slate-700"
               >Sort By</label
             >
             <select
               v-model="sortBy"
-              class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+              class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
             >
               <option value="date_desc">Date (Newest First)</option>
               <option value="date_asc">Date (Oldest First)</option>
@@ -117,20 +117,20 @@
       </div>
 
       <!-- Loading State -->
-      <div v-if="loading && events.length === 0" class="text-center py-12">
+      <div v-if="loading && events.length === 0" class="py-12 text-center">
         <p class="text-slate-600">Loading events...</p>
       </div>
 
       <!-- Empty State -->
       <div
         v-else-if="events.length === 0"
-        class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
+        class="rounded-xl border border-slate-200 bg-white p-12 text-center shadow-xs"
       >
         <UIcon
           name="i-heroicons-calendar"
-          class="w-12 h-12 text-slate-400 mx-auto mb-4"
+          class="mx-auto mb-4 h-12 w-12 text-slate-400"
         />
-        <p class="text-slate-600 mb-2">No events yet</p>
+        <p class="mb-2 text-slate-600">No events yet</p>
         <p class="text-sm text-slate-500">
           Create your first event to start tracking camps and showcases
         </p>
@@ -139,27 +139,27 @@
       <div v-else>
         <!-- Calendar View -->
         <div
-          class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 mb-6"
+          class="mb-6 rounded-xl border border-slate-200 bg-white p-6 shadow-xs"
         >
-          <div class="flex items-center justify-between mb-6">
+          <div class="mb-6 flex items-center justify-between">
             <h2 class="text-lg font-semibold text-slate-900">Calendar</h2>
             <div class="flex items-center gap-2">
               <button
                 @click="previousMonth"
-                class="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition"
+                class="rounded-lg p-2 text-slate-600 transition hover:bg-slate-100"
               >
-                <UIcon name="i-heroicons-chevron-left" class="w-5 h-5" />
+                <UIcon name="i-heroicons-chevron-left" class="h-5 w-5" />
               </button>
               <span
-                class="px-4 py-1 font-semibold text-slate-900 min-w-[160px] text-center"
+                class="min-w-[160px] px-4 py-1 text-center font-semibold text-slate-900"
               >
                 {{ monthDisplay }}
               </span>
               <button
                 @click="nextMonth"
-                class="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition"
+                class="rounded-lg p-2 text-slate-600 transition hover:bg-slate-100"
               >
-                <UIcon name="i-heroicons-chevron-right" class="w-5 h-5" />
+                <UIcon name="i-heroicons-chevron-right" class="h-5 w-5" />
               </button>
             </div>
           </div>
@@ -170,7 +170,7 @@
             <div
               v-for="day in ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']"
               :key="day"
-              class="text-center font-medium text-slate-500 text-sm py-2"
+              class="py-2 text-center text-sm font-medium text-slate-500"
             >
               {{ day }}
             </div>
@@ -180,12 +180,12 @@
               v-for="date of calendarDays"
               :key="date.toISOString()"
               :class="[
-                'p-2 rounded-lg text-sm font-medium transition min-h-[48px] flex flex-col items-center justify-center',
+                'flex min-h-[48px] flex-col items-center justify-center rounded-lg p-2 text-sm font-medium transition',
                 {
                   'text-slate-300': !isCurrentMonth(date),
                   'text-slate-700 hover:bg-slate-50':
                     isCurrentMonth(date) && !hasEvent(date) && !isToday(date),
-                  'bg-blue-50 text-blue-700 cursor-pointer hover:bg-blue-100':
+                  'cursor-pointer bg-blue-50 text-blue-700 hover:bg-blue-100':
                     isCurrentMonth(date) && hasEvent(date) && !isToday(date),
                   'bg-blue-600 text-white': isToday(date),
                 },
@@ -195,7 +195,7 @@
               <span>{{ date.getDate() }}</span>
               <span
                 v-if="hasEvent(date) && isCurrentMonth(date)"
-                class="w-1.5 h-1.5 rounded-full mt-1"
+                class="mt-1 h-1.5 w-1.5 rounded-full"
                 :class="isToday(date) ? 'bg-white' : 'bg-blue-500'"
               />
             </div>
@@ -209,25 +209,25 @@
             :key="event.id"
             v-memo="[event.updated_at ?? event.start_date]"
             :id="`event-${event.start_date}`"
-            class="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden hover:shadow-md transition"
+            class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xs transition hover:shadow-md"
           >
             <!-- Event Header -->
             <div class="p-6">
-              <div class="flex items-start justify-between mb-4">
+              <div class="mb-4 flex items-start justify-between">
                 <div class="flex-1">
-                  <div class="flex items-center gap-3 mb-2">
+                  <div class="mb-2 flex items-center gap-3">
                     <span
-                      class="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full"
+                      class="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold"
                       :class="getEventTypeBadgeColor(event.type)"
                     >
                       <UIcon
                         :name="getEventTypeIcon(event.type)"
-                        class="w-3.5 h-3.5"
+                        class="h-3.5 w-3.5"
                       />
                       {{ getEventTypeLabel(event.type) }}
                     </span>
                     <span
-                      class="px-2 py-1 text-xs font-semibold rounded-full"
+                      class="rounded-full px-2 py-1 text-xs font-semibold"
                       :class="getStatusBadgeColor(event)"
                     >
                       {{ getStatusLabel(event) }}
@@ -236,24 +236,24 @@
                   <h3 class="text-xl font-bold text-slate-900">
                     {{ event.name }}
                   </h3>
-                  <p class="text-slate-600 mt-1">
+                  <p class="mt-1 text-slate-600">
                     {{ formatDateRange(event.start_date, event.end_date) }}
                   </p>
                 </div>
                 <button
                   @click="deleteEvent(event.id)"
-                  class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
+                  class="rounded-lg p-2 text-slate-400 transition hover:bg-red-50 hover:text-red-600"
                 >
-                  <UIcon name="i-heroicons-trash" class="w-5 h-5" />
+                  <UIcon name="i-heroicons-trash" class="h-5 w-5" />
                 </button>
               </div>
 
               <!-- Event Details Grid -->
-              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
                 <div v-if="event.start_time" class="flex items-center gap-2">
                   <UIcon
                     name="i-heroicons-clock"
-                    class="w-4 h-4 text-slate-400"
+                    class="h-4 w-4 text-slate-400"
                   />
                   <div>
                     <p class="text-xs text-slate-500">Start Time</p>
@@ -265,7 +265,7 @@
                 <div v-if="event.cost" class="flex items-center gap-2">
                   <UIcon
                     name="i-heroicons-currency-dollar"
-                    class="w-4 h-4 text-slate-400"
+                    class="h-4 w-4 text-slate-400"
                   />
                   <div>
                     <p class="text-xs text-slate-500">Cost</p>
@@ -280,7 +280,7 @@
                 >
                   <UIcon
                     name="i-heroicons-map-pin"
-                    class="w-4 h-4 text-slate-400"
+                    class="h-4 w-4 text-slate-400"
                   />
                   <div>
                     <p class="text-xs text-slate-500">Location</p>
@@ -296,9 +296,9 @@
             <!-- Performance Notes (if any) -->
             <div
               v-if="event.performance_notes || event.description"
-              class="border-t border-slate-200 px-6 py-4 bg-slate-50"
+              class="border-t border-slate-200 bg-slate-50 px-6 py-4"
             >
-              <p class="text-sm text-slate-700 line-clamp-2">
+              <p class="line-clamp-2 text-sm text-slate-700">
                 {{ event.performance_notes || event.description }}
               </p>
             </div>
@@ -308,16 +308,16 @@
         <!-- Empty Filtered State -->
         <div
           v-if="filteredEvents.length === 0 && events.length > 0"
-          class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
+          class="rounded-xl border border-slate-200 bg-white p-12 text-center shadow-xs"
         >
           <UIcon
             name="i-heroicons-funnel"
-            class="w-12 h-12 text-slate-400 mx-auto mb-4"
+            class="mx-auto mb-4 h-12 w-12 text-slate-400"
           />
-          <p class="text-slate-600 mb-2">No events match your filters</p>
+          <p class="mb-2 text-slate-600">No events match your filters</p>
           <button
             @click="clearFilters"
-            class="text-blue-600 hover:text-blue-700 font-semibold"
+            class="font-semibold text-blue-600 hover:text-blue-700"
           >
             Clear filters
           </button>

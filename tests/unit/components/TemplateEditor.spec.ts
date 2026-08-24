@@ -154,7 +154,9 @@ describe("components/TemplateEditor.vue predefined copy flow", () => {
 
     expect(updateTemplateMock).not.toHaveBeenCalled();
     expect(createTemplateMock).toHaveBeenCalledTimes(1);
-    expect(createTemplateMock.mock.calls[0][0]).toBe("Copy of Recruiting Intro");
+    expect(createTemplateMock.mock.calls[0][0]).toBe(
+      "Copy of Recruiting Intro",
+    );
     expect(wrapper.emitted("save")).toBeTruthy();
   });
 
@@ -175,7 +177,10 @@ describe("components/TemplateEditor.vue predefined copy flow", () => {
     await vm.saveTemplate();
     await wrapper.vm.$nextTick();
 
-    expect(updateTemplateMock).toHaveBeenCalledWith("owned-1", expect.any(Object));
+    expect(updateTemplateMock).toHaveBeenCalledWith(
+      "owned-1",
+      expect.any(Object),
+    );
     expect(createTemplateMock).not.toHaveBeenCalled();
     expect(wrapper.emitted("save")).toBeFalsy();
     expect(showToastMock).toHaveBeenCalledTimes(1);

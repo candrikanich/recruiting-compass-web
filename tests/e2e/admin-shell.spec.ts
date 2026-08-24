@@ -24,9 +24,7 @@ test.describe("non-admin redirect", () => {
     // unauthenticated visitors to a "/login?redirect=/admin" URL whose full
     // string still ends in "/admin", which a naive /\/admin$/ regex on
     // page.url() would wrongly treat as "still on /admin".
-    await expect
-      .poll(() => new URL(page.url()).pathname)
-      .not.toBe("/admin");
+    await expect.poll(() => new URL(page.url()).pathname).not.toBe("/admin");
   });
 });
 

@@ -9,33 +9,33 @@
       <template #actions>
         <NuxtLink
           to="/documents/add"
-          class="px-4 py-2 text-sm font-medium text-white bg-linear-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition flex items-center gap-2"
+          class="flex items-center gap-2 rounded-lg bg-linear-to-r from-blue-500 to-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:from-blue-600 hover:to-blue-700"
         >
-          <UIcon name="i-heroicons-plus" class="w-4 h-4" />
+          <UIcon name="i-heroicons-plus" class="h-4 w-4" />
           + Add Document
         </NuxtLink>
       </template>
     </PageHeader>
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+    <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6">
       <!-- Statistics Row -->
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        <div class="bg-white rounded-lg shadow-sm p-4">
-          <p class="text-sm text-gray-600 mb-1">Total Documents</p>
+      <div class="mb-8 grid grid-cols-2 gap-4 md:grid-cols-4">
+        <div class="rounded-lg bg-white p-4 shadow-sm">
+          <p class="mb-1 text-sm text-gray-600">Total Documents</p>
           <p class="text-2xl font-bold text-blue-600">{{ documents.length }}</p>
         </div>
-        <div class="bg-white rounded-lg shadow-sm p-4">
-          <p class="text-sm text-gray-600 mb-1">Shared Documents</p>
+        <div class="rounded-lg bg-white p-4 shadow-sm">
+          <p class="mb-1 text-sm text-gray-600">Shared Documents</p>
           <p class="text-2xl font-bold text-green-600">
             {{ sharedDocumentsCount }}
           </p>
         </div>
-        <div class="bg-white rounded-lg shadow-sm p-4">
-          <p class="text-sm text-gray-600 mb-1">Most Common Type</p>
+        <div class="rounded-lg bg-white p-4 shadow-sm">
+          <p class="mb-1 text-sm text-gray-600">Most Common Type</p>
           <p class="text-2xl font-bold text-purple-600">{{ mostCommonType }}</p>
         </div>
-        <div class="bg-white rounded-lg shadow-sm p-4">
-          <p class="text-sm text-gray-600 mb-1">Total Storage</p>
+        <div class="rounded-lg bg-white p-4 shadow-sm">
+          <p class="mb-1 text-sm text-gray-600">Total Storage</p>
           <p class="text-lg font-bold text-orange-600">Phase 5</p>
         </div>
       </div>
@@ -57,13 +57,13 @@
         </template>
 
         <template #filter>
-          <div class="bg-white p-4 rounded-lg shadow-sm">
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div class="rounded-lg bg-white p-4 shadow-sm">
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
               <!-- Search -->
               <div>
                 <label
                   for="search"
-                  class="block text-sm font-medium text-gray-700 mb-2"
+                  class="mb-2 block text-sm font-medium text-gray-700"
                   >Search</label
                 >
                 <input
@@ -77,7 +77,7 @@
                   "
                   type="text"
                   placeholder="Title or description..."
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+                  class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
                 />
               </div>
 
@@ -85,7 +85,7 @@
               <div>
                 <label
                   for="type"
-                  class="block text-sm font-medium text-gray-700 mb-2"
+                  class="mb-2 block text-sm font-medium text-gray-700"
                   >Type</label
                 >
                 <select
@@ -97,7 +97,7 @@
                       ($event.target as HTMLSelectElement).value || null,
                     )
                   "
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+                  class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="">-- All --</option>
                   <option value="highlight_video">🎥 Highlight Video</option>
@@ -113,7 +113,7 @@
               <div>
                 <label
                   for="schoolId"
-                  class="block text-sm font-medium text-gray-700 mb-2"
+                  class="mb-2 block text-sm font-medium text-gray-700"
                   >School</label
                 >
                 <select
@@ -125,7 +125,7 @@
                       ($event.target as HTMLSelectElement).value || null,
                     )
                   "
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+                  class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="">-- All --</option>
                   <option value="general">General (No School)</option>
@@ -143,7 +143,7 @@
               <div>
                 <label
                   for="shared"
-                  class="block text-sm font-medium text-gray-700 mb-2"
+                  class="mb-2 block text-sm font-medium text-gray-700"
                   >Status</label
                 >
                 <select
@@ -155,7 +155,7 @@
                       ($event.target as HTMLSelectElement).value || null,
                     )
                   "
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+                  class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="">-- All --</option>
                   <option value="true">Shared</option>
@@ -167,13 +167,13 @@
               <div>
                 <label
                   for="sort"
-                  class="block text-sm font-medium text-gray-700 mb-2"
+                  class="mb-2 block text-sm font-medium text-gray-700"
                   >Sort By</label
                 >
                 <select
                   v-model="sortBy"
                   id="sort"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+                  class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="newest">Newest First</option>
                   <option value="oldest">Oldest First</option>
@@ -188,11 +188,11 @@
       </FilterPanel>
 
       <!-- View Toggle -->
-      <div class="flex gap-2 mb-8">
+      <div class="mb-8 flex gap-2">
         <button
           @click="viewMode = 'grid'"
           :class="[
-            'px-3 py-2 rounded-lg text-sm font-medium transition',
+            'rounded-lg px-3 py-2 text-sm font-medium transition',
             viewMode === 'grid'
               ? 'bg-blue-600 text-white'
               : 'bg-gray-200 text-gray-900 hover:bg-gray-300',
@@ -203,7 +203,7 @@
         <button
           @click="viewMode = 'list'"
           :class="[
-            'px-3 py-2 rounded-lg text-sm font-medium transition',
+            'rounded-lg px-3 py-2 text-sm font-medium transition',
             viewMode === 'list'
               ? 'bg-blue-600 text-white'
               : 'bg-gray-200 text-gray-900 hover:bg-gray-300',
@@ -214,16 +214,16 @@
       </div>
 
       <!-- Loading State -->
-      <div v-if="loading && documents.length === 0" class="text-center py-12">
+      <div v-if="loading && documents.length === 0" class="py-12 text-center">
         <p class="text-gray-600">Loading documents...</p>
       </div>
 
       <!-- Empty State -->
       <div
         v-else-if="documents.length === 0"
-        class="bg-white rounded-lg shadow-sm p-12 text-center"
+        class="rounded-lg bg-white p-12 text-center shadow-sm"
       >
-        <p class="text-gray-600 mb-2">No documents yet</p>
+        <p class="mb-2 text-gray-600">No documents yet</p>
         <p class="text-sm text-gray-500">
           Upload videos, transcripts, and other documents to share with coaches
         </p>
@@ -234,7 +234,7 @@
         <!-- Grid View -->
         <div
           v-if="viewMode === 'grid'"
-          class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
         >
           <DocumentCard
             v-for="doc in sortedAndFilteredDocuments"
@@ -252,7 +252,7 @@
             v-for="doc in sortedAndFilteredDocuments"
             :key="doc.id"
             v-memo="[doc.updated_at]"
-            class="bg-white rounded-lg shadow-sm p-4 hover:shadow-md transition flex items-center justify-between"
+            class="flex items-center justify-between rounded-lg bg-white p-4 shadow-sm transition hover:shadow-md"
           >
             <div class="flex-1">
               <div class="flex items-center gap-3">
@@ -273,7 +273,7 @@
             <div class="flex items-center gap-3">
               <span
                 v-if="(doc.shared_with_schools || []).length > 0"
-                class="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-sm"
+                class="rounded-sm bg-green-100 px-2 py-1 text-xs text-green-700"
               >
                 Shared: {{ (doc.shared_with_schools || []).length }}
               </span>

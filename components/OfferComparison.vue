@@ -1,6 +1,6 @@
 <template>
   <div
-    class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
     @keydown.escape="handleClose"
   >
     <div
@@ -8,11 +8,11 @@
       role="dialog"
       aria-modal="true"
       aria-labelledby="offer-comparison-title"
-      class="rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] flex flex-col bg-white"
+      class="flex max-h-[90vh] w-full max-w-6xl flex-col rounded-lg bg-white shadow-xl"
     >
       <!-- Header -->
       <div
-        class="flex items-center justify-between p-6 border-b border-slate-300"
+        class="flex items-center justify-between border-b border-slate-300 p-6"
       >
         <h2
           id="offer-comparison-title"
@@ -23,7 +23,7 @@
         <button
           @click="handleClose"
           aria-label="Close compare offers dialog"
-          class="text-2xl transition text-slate-600 hover:text-slate-900"
+          class="text-2xl text-slate-600 transition hover:text-slate-900"
         >
           ×
         </button>
@@ -37,26 +37,26 @@
             <thead>
               <tr class="border-b-2 border-slate-300">
                 <th
-                  class="text-left px-4 py-3 font-semibold sticky left-0 bg-white text-slate-900"
+                  class="sticky left-0 bg-white px-4 py-3 text-left font-semibold text-slate-900"
                 >
                   School
                 </th>
-                <th class="text-left px-4 py-3 font-semibold text-slate-900">
+                <th class="px-4 py-3 text-left font-semibold text-slate-900">
                   Offer Type
                 </th>
-                <th class="text-right px-4 py-3 font-semibold text-slate-900">
+                <th class="px-4 py-3 text-right font-semibold text-slate-900">
                   Amount
                 </th>
-                <th class="text-right px-4 py-3 font-semibold text-slate-900">
+                <th class="px-4 py-3 text-right font-semibold text-slate-900">
                   Percentage
                 </th>
-                <th class="text-left px-4 py-3 font-semibold text-slate-900">
+                <th class="px-4 py-3 text-left font-semibold text-slate-900">
                   Deadline
                 </th>
-                <th class="text-left px-4 py-3 font-semibold text-slate-900">
+                <th class="px-4 py-3 text-left font-semibold text-slate-900">
                   Status
                 </th>
-                <th class="text-left px-4 py-3 font-semibold text-slate-900">
+                <th class="px-4 py-3 text-left font-semibold text-slate-900">
                   Conditions
                 </th>
               </tr>
@@ -68,7 +68,7 @@
                 class="border-b border-slate-300 hover:bg-slate-50"
               >
                 <td
-                  class="px-4 py-4 font-semibold sticky left-0 bg-white text-slate-900"
+                  class="sticky left-0 bg-white px-4 py-4 font-semibold text-slate-900"
                 >
                   {{ getSchoolName(offer.school_id) }}
                 </td>
@@ -79,7 +79,7 @@
                   class="px-4 py-4 text-right font-semibold"
                   :class="
                     isHighestAmount(offer)
-                      ? 'text-brand-emerald-700 bg-brand-emerald-50'
+                      ? 'bg-brand-emerald-50 text-brand-emerald-700'
                       : 'text-slate-900'
                   "
                 >
@@ -100,7 +100,7 @@
                   class="px-4 py-4 text-right font-semibold"
                   :class="
                     isHighestPercentage(offer)
-                      ? 'text-brand-emerald-700 bg-brand-emerald-50'
+                      ? 'bg-brand-emerald-50 text-brand-emerald-700'
                       : 'text-slate-900'
                   "
                 >
@@ -126,7 +126,7 @@
                 >
                   <div v-if="offer.deadline_date">
                     <div>{{ formatDate(offer.deadline_date) }}</div>
-                    <div class="text-xs mt-0.5 text-slate-600">
+                    <div class="mt-0.5 text-xs text-slate-600">
                       {{ daysUntil(offer) }}d
                     </div>
                     <span
@@ -141,16 +141,16 @@
                 </td>
                 <td class="px-4 py-4">
                   <span
-                    class="inline-block px-3 py-1 rounded-full text-xs font-semibold"
+                    class="inline-block rounded-full px-3 py-1 text-xs font-semibold"
                     :class="getStatusBadgeClass(offer.status)"
                   >
                     {{ getStatusLabel(offer.status) }}
                   </span>
                 </td>
-                <td class="px-4 py-4 max-w-xs text-slate-600">
+                <td class="max-w-xs px-4 py-4 text-slate-600">
                   <div
                     v-if="offer.conditions"
-                    class="text-xs truncate"
+                    class="truncate text-xs"
                     :title="offer.conditions"
                   >
                     {{ offer.conditions }}
@@ -163,11 +163,11 @@
         </div>
 
         <!-- Summary Stats -->
-        <div class="mt-8 grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="mt-8 grid grid-cols-1 gap-4 md:grid-cols-4">
           <div
-            class="rounded-lg p-4 bg-brand-blue-100 border border-brand-blue-200"
+            class="rounded-lg border border-brand-blue-200 bg-brand-blue-100 p-4"
           >
-            <p class="text-sm font-medium mb-1 text-brand-blue-700">
+            <p class="mb-1 text-sm font-medium text-brand-blue-700">
               Total Offers
             </p>
             <p class="text-2xl font-bold text-brand-blue-900">
@@ -176,9 +176,9 @@
           </div>
 
           <div
-            class="rounded-lg p-4 bg-brand-emerald-100 border border-brand-emerald-200"
+            class="rounded-lg border border-brand-emerald-200 bg-brand-emerald-100 p-4"
           >
-            <p class="text-sm font-medium mb-1 text-brand-emerald-700">
+            <p class="mb-1 text-sm font-medium text-brand-emerald-700">
               Highest Amount
             </p>
             <p class="text-2xl font-bold text-brand-emerald-900">
@@ -187,9 +187,9 @@
           </div>
 
           <div
-            class="rounded-lg p-4 bg-brand-purple-100 border border-brand-purple-200"
+            class="rounded-lg border border-brand-purple-200 bg-brand-purple-100 p-4"
           >
-            <p class="text-sm font-medium mb-1 text-brand-purple-700">
+            <p class="mb-1 text-sm font-medium text-brand-purple-700">
               Highest %
             </p>
             <p class="text-2xl font-bold text-brand-purple-900">
@@ -198,9 +198,9 @@
           </div>
 
           <div
-            class="rounded-lg p-4 bg-brand-orange-100 border border-brand-orange-200"
+            class="rounded-lg border border-brand-orange-200 bg-brand-orange-100 p-4"
           >
-            <p class="text-sm font-medium mb-1 text-brand-orange-700">
+            <p class="mb-1 text-sm font-medium text-brand-orange-700">
               Most Urgent
             </p>
             <p class="text-2xl font-bold text-brand-orange-900">
@@ -211,10 +211,10 @@
       </div>
 
       <!-- Footer -->
-      <div class="flex justify-end gap-4 p-6 border-t border-slate-300">
+      <div class="flex justify-end gap-4 border-t border-slate-300 p-6">
         <button
           @click="handleClose"
-          class="px-6 py-2 font-semibold rounded-lg transition bg-slate-100 text-slate-900 hover:bg-slate-200"
+          class="rounded-lg bg-slate-100 px-6 py-2 font-semibold text-slate-900 transition hover:bg-slate-200"
         >
           Close
         </button>

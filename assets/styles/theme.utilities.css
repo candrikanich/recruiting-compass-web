@@ -14,7 +14,7 @@
 
 @utility input-field {
   /* Form Inputs */
-  @apply w-full px-3 py-2 rounded-lg;
+  @apply w-full rounded-lg px-3 py-2;
   border: 1px solid var(--border);
   background-color: var(--input-background);
   color: var(--foreground);
@@ -29,7 +29,7 @@
 
 @utility btn {
   /* Buttons */
-  @apply px-4 py-2 rounded-lg font-medium transition;
+  @apply rounded-lg px-4 py-2 font-medium transition;
   cursor: pointer;
 }
 
@@ -42,7 +42,7 @@
   }
 
   &:disabled {
-    @apply opacity-50 cursor-not-allowed;
+    @apply cursor-not-allowed opacity-50;
   }
 }
 
@@ -58,7 +58,7 @@
 
 @utility badge {
   /* Badges */
-  @apply inline-block px-2 py-0.5 rounded-full text-xs font-medium;
+  @apply inline-block rounded-full px-2 py-0.5 text-xs font-medium;
 }
 
 @utility badge-primary {
@@ -87,7 +87,7 @@
 
 @utility search-btn {
   /* Search/Filter Buttons */
-  @apply px-6 py-3 font-semibold rounded-lg transition;
+  @apply rounded-lg px-6 py-3 font-semibold transition;
   background-color: var(--brand-blue-600);
   color: white;
 
@@ -96,12 +96,12 @@
   }
 
   &:disabled {
-    @apply opacity-50 cursor-not-allowed;
+    @apply cursor-not-allowed opacity-50;
   }
 }
 
 @utility filter-type-btn {
-  @apply px-3 py-1 rounded-sm text-xs font-medium transition;
+  @apply rounded-sm px-3 py-1 text-xs font-medium transition;
 }
 
 @utility filter-type-btn-active {

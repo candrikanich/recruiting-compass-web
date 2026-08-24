@@ -1,25 +1,25 @@
 <template>
   <div class="min-h-screen bg-gray-50">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
       <!-- Back Button -->
       <div class="mb-6">
         <NuxtLink
           to="/offers"
-          class="text-blue-600 hover:text-blue-700 font-semibold"
+          class="font-semibold text-blue-600 hover:text-blue-700"
         >
           ← Back to Offers
         </NuxtLink>
       </div>
 
       <!-- Loading State -->
-      <div v-if="loading && !offer" class="text-center py-12">
+      <div v-if="loading && !offer" class="py-12 text-center">
         <p class="text-gray-600">Loading offer...</p>
       </div>
 
       <!-- Error State -->
       <div
         v-else-if="error"
-        class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6"
+        class="mb-6 rounded-lg border border-red-200 bg-red-50 p-4"
       >
         <p class="text-red-700">{{ error }}</p>
       </div>
@@ -27,12 +27,12 @@
       <!-- Offer Not Found -->
       <div
         v-else-if="!offer"
-        class="bg-white rounded-lg shadow-sm p-12 text-center"
+        class="rounded-lg bg-white p-12 text-center shadow-sm"
       >
-        <p class="text-gray-600 mb-2">Offer not found</p>
+        <p class="mb-2 text-gray-600">Offer not found</p>
         <NuxtLink
           to="/offers"
-          class="text-blue-600 hover:text-blue-700 font-semibold"
+          class="font-semibold text-blue-600 hover:text-blue-700"
         >
           Return to Offers →
         </NuxtLink>
@@ -41,13 +41,13 @@
       <!-- Offer Detail -->
       <div v-else class="space-y-8">
         <!-- Offer Header -->
-        <div class="bg-white rounded-lg shadow-sm p-6">
-          <div class="flex items-start justify-between mb-6">
+        <div class="rounded-lg bg-white p-6 shadow-sm">
+          <div class="mb-6 flex items-start justify-between">
             <div class="flex-1">
-              <div class="flex items-center gap-3 mb-2">
+              <div class="mb-2 flex items-center gap-3">
                 <span
                   :class="[
-                    'inline-block px-3 py-1 text-xs font-semibold rounded-full',
+                    'inline-block rounded-full px-3 py-1 text-xs font-semibold',
                     getStatusBadgeClasses(offer.status),
                   ]"
                 >
@@ -65,20 +65,20 @@
               <button
                 v-if="!isEditing"
                 @click="isEditing = true"
-                class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition"
+                class="rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white transition hover:bg-blue-700"
               >
                 Edit
               </button>
               <button
                 v-else
                 @click="isEditing = false"
-                class="px-4 py-2 bg-gray-300 text-gray-900 font-semibold rounded-lg hover:bg-gray-400 transition"
+                class="rounded-lg bg-gray-300 px-4 py-2 font-semibold text-gray-900 transition hover:bg-gray-400"
               >
                 Cancel
               </button>
               <button
                 @click="deleteOffer"
-                class="px-4 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition"
+                class="rounded-lg bg-red-600 px-4 py-2 font-semibold text-white transition hover:bg-red-700"
               >
                 Delete
               </button>
@@ -87,10 +87,10 @@
 
           <!-- Financial Summary -->
           <div
-            class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6 pb-6 border-b border-gray-200"
+            class="mb-6 grid grid-cols-1 gap-6 border-b border-gray-200 pb-6 md:grid-cols-3"
           >
             <div>
-              <p class="text-gray-600 text-sm mb-1">Scholarship Amount</p>
+              <p class="mb-1 text-sm text-gray-600">Scholarship Amount</p>
               <p class="text-2xl font-bold text-gray-900">
                 {{
                   offer.scholarship_amount
@@ -100,7 +100,7 @@
               </p>
             </div>
             <div>
-              <p class="text-gray-600 text-sm mb-1">Scholarship %</p>
+              <p class="mb-1 text-sm text-gray-600">Scholarship %</p>
               <p class="text-2xl font-bold text-gray-900">
                 {{
                   offer.scholarship_percentage
@@ -110,7 +110,7 @@
               </p>
             </div>
             <div>
-              <p class="text-gray-600 text-sm mb-1">Deadline</p>
+              <p class="mb-1 text-sm text-gray-600">Deadline</p>
               <p
                 :class="[
                   'text-2xl font-bold',
@@ -125,20 +125,20 @@
               >
                 {{ offer.deadline_date ? `${daysUntilDeadline}d` : "—" }}
               </p>
-              <p class="text-xs text-gray-600 mt-1">{{ formatDeadline }}</p>
+              <p class="mt-1 text-xs text-gray-600">{{ formatDeadline }}</p>
             </div>
           </div>
 
           <!-- Offer Details Grid -->
-          <div v-if="!isEditing" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div v-if="!isEditing" class="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div class="text-sm">
-              <p class="text-gray-600 mb-1">Offer Date</p>
+              <p class="mb-1 text-gray-600">Offer Date</p>
               <p class="font-semibold text-gray-900">
                 {{ formatDate(offer.offer_date) }}
               </p>
             </div>
             <div class="text-sm">
-              <p class="text-gray-600 mb-1">Deadline Date</p>
+              <p class="mb-1 text-gray-600">Deadline Date</p>
               <p class="font-semibold text-gray-900">
                 {{
                   offer.deadline_date
@@ -149,19 +149,19 @@
             </div>
 
             <div v-if="offer.conditions" class="text-sm md:col-span-2">
-              <p class="text-gray-600 mb-1">Conditions</p>
+              <p class="mb-1 text-gray-600">Conditions</p>
               <p class="font-semibold text-gray-900">{{ offer.conditions }}</p>
             </div>
 
             <div v-if="offer.notes" class="text-sm md:col-span-2">
-              <p class="text-gray-600 mb-1">Notes</p>
+              <p class="mb-1 text-gray-600">Notes</p>
               <p class="font-semibold text-gray-900">{{ offer.notes }}</p>
             </div>
           </div>
         </div>
 
         <!-- Scholarship Calculator -->
-        <div class="bg-white rounded-lg shadow-sm p-6">
+        <div class="rounded-lg bg-white p-6 shadow-sm">
           <ScholarshipCalculator
             :initial-amount="offer.scholarship_amount || undefined"
             :initial-percentage="offer.scholarship_percentage || undefined"
@@ -175,22 +175,22 @@
         </div>
 
         <!-- Edit Form -->
-        <div v-if="isEditing" class="bg-white rounded-lg shadow-sm p-6">
-          <h2 class="text-2xl font-bold text-gray-900 mb-6">Edit Offer</h2>
+        <div v-if="isEditing" class="rounded-lg bg-white p-6 shadow-sm">
+          <h2 class="mb-6 text-2xl font-bold text-gray-900">Edit Offer</h2>
           <form @submit.prevent="saveOffer" class="space-y-6">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
               <!-- Offer Type -->
               <div>
                 <label
                   for="offerType"
-                  class="block text-sm font-medium text-gray-700 mb-1"
+                  class="mb-1 block text-sm font-medium text-gray-700"
                 >
                   Offer Type
                 </label>
                 <select
                   id="offerType"
                   v-model="editForm.offer_type"
-                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="full_ride">Full Ride Scholarship</option>
                   <option value="partial">Partial Scholarship</option>
@@ -204,14 +204,14 @@
               <div>
                 <label
                   for="status"
-                  class="block text-sm font-medium text-gray-700 mb-1"
+                  class="mb-1 block text-sm font-medium text-gray-700"
                 >
                   Status
                 </label>
                 <select
                   id="status"
                   v-model="editForm.status"
-                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="pending">Pending</option>
                   <option value="accepted">Accepted</option>
@@ -224,7 +224,7 @@
               <div>
                 <label
                   for="amount"
-                  class="block text-sm font-medium text-gray-700 mb-1"
+                  class="mb-1 block text-sm font-medium text-gray-700"
                 >
                   Scholarship Amount ($)
                 </label>
@@ -235,7 +235,7 @@
                   min="0"
                   step="100"
                   placeholder="0"
-                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500"
                 />
               </div>
 
@@ -243,7 +243,7 @@
               <div>
                 <label
                   for="percentage"
-                  class="block text-sm font-medium text-gray-700 mb-1"
+                  class="mb-1 block text-sm font-medium text-gray-700"
                 >
                   Scholarship Percentage (%)
                 </label>
@@ -255,7 +255,7 @@
                   max="100"
                   step="5"
                   placeholder="0"
-                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500"
                 />
               </div>
 
@@ -263,7 +263,7 @@
               <div>
                 <label
                   for="offerDate"
-                  class="block text-sm font-medium text-gray-700 mb-1"
+                  class="mb-1 block text-sm font-medium text-gray-700"
                 >
                   Offer Date
                 </label>
@@ -271,7 +271,7 @@
                   id="offerDate"
                   v-model="editForm.offer_date"
                   type="date"
-                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500"
                 />
               </div>
 
@@ -279,7 +279,7 @@
               <div>
                 <label
                   for="deadline"
-                  class="block text-sm font-medium text-gray-700 mb-1"
+                  class="mb-1 block text-sm font-medium text-gray-700"
                 >
                   Deadline Date
                 </label>
@@ -287,7 +287,7 @@
                   id="deadline"
                   v-model="editForm.deadline_date"
                   type="date"
-                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500"
                 />
               </div>
 
@@ -295,7 +295,7 @@
               <div class="md:col-span-2">
                 <label
                   for="conditions"
-                  class="block text-sm font-medium text-gray-700 mb-1"
+                  class="mb-1 block text-sm font-medium text-gray-700"
                 >
                   Conditions or Requirements
                 </label>
@@ -304,7 +304,7 @@
                   v-model="editForm.conditions"
                   rows="3"
                   placeholder="Any conditions attached to the offer..."
-                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500"
                 />
               </div>
 
@@ -312,7 +312,7 @@
               <div class="md:col-span-2">
                 <label
                   for="notes"
-                  class="block text-sm font-medium text-gray-700 mb-1"
+                  class="mb-1 block text-sm font-medium text-gray-700"
                 >
                   Notes
                 </label>
@@ -321,7 +321,7 @@
                   v-model="editForm.notes"
                   rows="3"
                   placeholder="Additional notes about this offer..."
-                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             </div>
@@ -331,14 +331,14 @@
               <button
                 type="submit"
                 :disabled="loading"
-                class="flex-1 px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
+                class="flex-1 rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white transition hover:bg-blue-700 disabled:opacity-50"
               >
                 {{ loading ? "Saving..." : "Save Changes" }}
               </button>
               <button
                 type="button"
                 @click="isEditing = false"
-                class="flex-1 px-4 py-2 bg-gray-200 text-gray-900 font-semibold rounded-lg hover:bg-gray-300 transition"
+                class="flex-1 rounded-lg bg-gray-200 px-4 py-2 font-semibold text-gray-900 transition hover:bg-gray-300"
               >
                 Cancel
               </button>

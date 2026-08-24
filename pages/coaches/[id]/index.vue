@@ -5,34 +5,34 @@
     <!-- Skip Link -->
     <a
       href="#main-content"
-      class="sr-only focus:not-sr-only focus:absolute focus:top-0 focus:left-0 focus:z-50 focus:p-4 focus:bg-blue-600 focus:text-white focus:font-medium focus:rounded-br-lg"
+      class="sr-only focus:not-sr-only focus:absolute focus:top-0 focus:left-0 focus:z-50 focus:rounded-br-lg focus:bg-blue-600 focus:p-4 focus:font-medium focus:text-white"
     >
       Skip to main content
     </a>
 
     <!-- Page Header -->
-    <div class="bg-white border-b border-slate-200">
-      <div class="max-w-5xl mx-auto px-4 sm:px-6 py-4">
+    <div class="border-b border-slate-200 bg-white">
+      <div class="mx-auto max-w-5xl px-4 py-4 sm:px-6">
         <NuxtLink
           :to="backLink.to"
-          class="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
+          class="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700"
         >
-          <UIcon name="i-heroicons-arrow-left" class="w-4 h-4" />
+          <UIcon name="i-heroicons-arrow-left" class="h-4 w-4" />
           {{ backLink.text }}
         </NuxtLink>
       </div>
     </div>
 
-    <main id="main-content" class="max-w-5xl mx-auto px-4 sm:px-6 py-8">
+    <main id="main-content" class="mx-auto max-w-5xl px-4 py-8 sm:px-6">
       <!-- Loading State -->
-      <div v-if="loading" class="text-center py-12">
+      <div v-if="loading" class="py-12 text-center">
         <p class="text-slate-600">Loading coach profile...</p>
       </div>
 
       <!-- Error State -->
       <div
         v-if="error"
-        class="bg-red-50 border border-red-200 rounded-xl p-4 mb-6"
+        class="mb-6 rounded-xl border border-red-200 bg-red-50 p-4"
       >
         <p class="text-red-700">{{ error }}</p>
       </div>
@@ -40,7 +40,7 @@
       <!-- Coach Not Found -->
       <div
         v-if="!loading && !coach"
-        class="bg-white rounded-xl border border-slate-200 shadow-xs p-8 text-center"
+        class="rounded-xl border border-slate-200 bg-white p-8 text-center shadow-xs"
       >
         <p class="text-slate-600">Coach not found</p>
       </div>
@@ -100,7 +100,7 @@
       <Transition name="fade">
         <div
           v-if="showPanel && coach"
-          class="fixed inset-0 bg-black/40 z-50"
+          class="fixed inset-0 z-50 bg-black/40"
           @click.self="handleCloseCommunicationPanel"
           @keydown.escape="handleCloseCommunicationPanel"
         >
@@ -111,36 +111,36 @@
               role="dialog"
               aria-modal="true"
               aria-labelledby="communication-panel-title"
-              class="absolute right-0 top-0 h-full w-full max-w-lg overflow-y-auto border-l border-slate-200 bg-white shadow-2xl"
+              class="absolute top-0 right-0 h-full w-full max-w-lg overflow-y-auto border-l border-slate-200 bg-white shadow-2xl"
               @click.stop
             >
-            <div
-              class="sticky top-0 bg-white border-b border-slate-200 p-4 flex items-center justify-between"
-            >
-              <h2
-                id="communication-panel-title"
-                class="text-xl font-bold text-slate-900"
+              <div
+                class="sticky top-0 flex items-center justify-between border-b border-slate-200 bg-white p-4"
               >
-                Quick Communication
-              </h2>
-              <button
-                @click="handleCloseCommunicationPanel"
-                aria-label="Close communication panel"
-                class="text-slate-400 hover:text-slate-600"
-              >
-                <UIcon name="i-heroicons-x-mark" class="w-6 h-6" />
-              </button>
-            </div>
-            <div class="p-6">
-              <CommunicationPanel
-                :coach="coach"
-                :school="school"
-                :school-name="schoolName"
-                :initial-type="communicationType"
-                @close="handleCloseCommunicationPanel"
-                @interaction-logged="handleCoachInteractionLogged"
-              />
-            </div>
+                <h2
+                  id="communication-panel-title"
+                  class="text-xl font-bold text-slate-900"
+                >
+                  Quick Communication
+                </h2>
+                <button
+                  @click="handleCloseCommunicationPanel"
+                  aria-label="Close communication panel"
+                  class="text-slate-400 hover:text-slate-600"
+                >
+                  <UIcon name="i-heroicons-x-mark" class="h-6 w-6" />
+                </button>
+              </div>
+              <div class="p-6">
+                <CommunicationPanel
+                  :coach="coach"
+                  :school="school"
+                  :school-name="schoolName"
+                  :initial-type="communicationType"
+                  @close="handleCloseCommunicationPanel"
+                  @interaction-logged="handleCoachInteractionLogged"
+                />
+              </div>
             </div>
           </Transition>
         </div>
@@ -211,7 +211,8 @@ const backLink = computed(() => deriveBackLink(route.query));
 const { getCoach, updateCoach, smartDelete, coaches, fetchCoaches } =
   useCoaches();
 const { getSchool } = useSchools();
-const { interactions, fetchInteractions, createInteraction } = useInteractions();
+const { interactions, fetchInteractions, createInteraction } =
+  useInteractions();
 const userStore = useUserStore();
 
 // Coach data and loading state

@@ -180,7 +180,7 @@ const handleCancel = () => {
 
     <!-- Direction -->
     <fieldset>
-      <legend class="block text-sm font-medium text-slate-700 mb-3">
+      <legend class="mb-3 block text-sm font-medium text-slate-700">
         Direction
         <span class="text-red-500" aria-hidden="true">*</span>
         <span class="sr-only">(required)</span>
@@ -224,7 +224,7 @@ const handleCancel = () => {
 
     <!-- Date/Time -->
     <div>
-      <label class="block text-sm font-medium text-slate-700 mb-2">
+      <label class="mb-2 block text-sm font-medium text-slate-700">
         Date & Time
         <span class="text-red-500" aria-hidden="true">*</span>
         <span class="sr-only">(required)</span>
@@ -234,7 +234,7 @@ const handleCancel = () => {
         type="datetime-local"
         required
         :disabled="loading"
-        class="w-full px-4 py-3 bg-white border-2 border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all disabled:opacity-50"
+        class="w-full rounded-xl border-2 border-slate-300 bg-white px-4 py-3 transition-all focus:border-transparent focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
       />
       <p class="mt-1 text-xs text-slate-600">
         Select a date and time using the picker, or enter: YYYY-MM-DD HH:MM

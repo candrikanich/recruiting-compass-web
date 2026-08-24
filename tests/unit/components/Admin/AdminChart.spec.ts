@@ -13,13 +13,18 @@ import AdminChart from "~/components/Admin/AdminChart.vue";
 describe("AdminChart", () => {
   it("renders a canvas and constructs a chart", () => {
     const wrapper = mount(AdminChart, {
-      props: { type: "line", data: { labels: ["a"], datasets: [{ data: [1] }] } },
+      props: {
+        type: "line",
+        data: { labels: ["a"], datasets: [{ data: [1] }] },
+      },
     });
     expect(wrapper.find("canvas").exists()).toBe(true);
   });
 
   it("destroys the chart on unmount", () => {
-    const wrapper = mount(AdminChart, { props: { type: "bar", data: { labels: [], datasets: [] } } });
+    const wrapper = mount(AdminChart, {
+      props: { type: "bar", data: { labels: [], datasets: [] } },
+    });
     wrapper.unmount();
     expect(destroy).toHaveBeenCalled();
   });

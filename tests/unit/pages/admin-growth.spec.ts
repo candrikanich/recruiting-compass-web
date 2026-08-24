@@ -7,17 +7,33 @@ const growth = {
     { stage: "Accepted", count: 6, dropoffPct: 40 },
     { stage: "Accounts", count: 100, dropoffPct: -1567 },
   ],
-  activity: { dau: 2, wau: 5, mau: 8, dailyTrend: [{ day: "2026-08-16", count: 2 }] },
-  adoption: { totalUsers: 10, features: [{ feature: "events", users: 4, pct: 40 }] },
+  activity: {
+    dau: 2,
+    wau: 5,
+    mau: 8,
+    dailyTrend: [{ day: "2026-08-16", count: 2 }],
+  },
+  adoption: {
+    totalUsers: 10,
+    features: [{ feature: "events", users: 4, pct: 40 }],
+  },
   windowDays: 30,
 };
 vi.mock("~/composables/useAdminGrowth", () => ({
-  useAdminGrowth: () => ({ data: { value: growth }, loading: { value: false }, error: { value: null }, fetchGrowth: vi.fn() }),
+  useAdminGrowth: () => ({
+    data: { value: growth },
+    loading: { value: false },
+    error: { value: null },
+    fetchGrowth: vi.fn(),
+  }),
 }));
 
 import AdminGrowth from "~/pages/admin/growth.vue";
 const stubs = {
-  AdminStatTile: { props: ["label", "value"], template: "<div class='tile'>{{label}}:{{value}}</div>" },
+  AdminStatTile: {
+    props: ["label", "value"],
+    template: "<div class='tile'>{{label}}:{{value}}</div>",
+  },
   AdminChart: true,
   AdminDataTable: true,
   AdminTimeRange: true,

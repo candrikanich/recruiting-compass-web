@@ -49,7 +49,14 @@ const def = (
   unit: string,
   format: MetricFormat,
   lowerIsBetter = false,
-): MetricDef => ({ key, label, unit, format, lowerIsBetter, icon: DEFAULT_ICON });
+): MetricDef => ({
+  key,
+  label,
+  unit,
+  format,
+  lowerIsBetter,
+  icon: DEFAULT_ICON,
+});
 
 /**
  * Central emoji per metric key across all 17 sports. Keeps every icon surface
@@ -401,7 +408,10 @@ export interface MetricGroup {
  * (identical vocabularies), mirroring their shared `SPORT_METRICS` ordering.
  */
 const baseballGroups: readonly MetricGroup[] = [
-  { category: "Hitting", keys: ["exit_velo", "batting_avg", "on_base_pct", "slugging_pct"] },
+  {
+    category: "Hitting",
+    keys: ["exit_velo", "batting_avg", "on_base_pct", "slugging_pct"],
+  },
   { category: "Pitching", keys: ["velocity", "era", "whip", "strikeouts"] },
   { category: "Fielding", keys: ["pop_time", "fielding_pct"] },
   { category: "Speed", keys: ["sixty_time"] },
@@ -413,20 +423,43 @@ export const SPORT_METRIC_GROUPS: Record<string, readonly MetricGroup[]> = {
   Basketball: [
     {
       category: "Scoring",
-      keys: ["points_per_game", "field_goal_pct", "three_point_pct", "free_throw_pct"],
+      keys: [
+        "points_per_game",
+        "field_goal_pct",
+        "three_point_pct",
+        "free_throw_pct",
+      ],
     },
     { category: "Playmaking", keys: ["assists_per_game"] },
-    { category: "Defense", keys: ["rebounds_per_game", "steals_per_game", "blocks_per_game"] },
+    {
+      category: "Defense",
+      keys: ["rebounds_per_game", "steals_per_game", "blocks_per_game"],
+    },
     { category: "Athleticism", keys: ["vertical_jump"] },
   ],
   Football: [
-    { category: "Combine", keys: ["forty_time", "vertical_jump", "broad_jump", "shuttle", "three_cone"] },
+    {
+      category: "Combine",
+      keys: [
+        "forty_time",
+        "vertical_jump",
+        "broad_jump",
+        "shuttle",
+        "three_cone",
+      ],
+    },
     { category: "Strength", keys: ["bench_press", "squat"] },
-    { category: "Offense", keys: ["passing_yards", "rushing_yards", "receiving_yards"] },
+    {
+      category: "Offense",
+      keys: ["passing_yards", "rushing_yards", "receiving_yards"],
+    },
     { category: "Defense", keys: ["tackles"] },
   ],
   "Track & Field": [
-    { category: "Running", keys: ["sprint_time", "distance_time", "relay_split"] },
+    {
+      category: "Running",
+      keys: ["sprint_time", "distance_time", "relay_split"],
+    },
     { category: "Jumps", keys: ["long_jump", "high_jump"] },
     { category: "Throws", keys: ["shot_put", "discus"] },
   ],
@@ -442,13 +475,17 @@ export const SPORT_METRIC_GROUPS: Record<string, readonly MetricGroup[]> = {
  * or ungrouped sport (the 11 non-dense sports) — those render flat. Mirrors iOS
  * `MetricRegistry.sportMetricGroups[sport]`.
  */
-export function metricGroupsForSport(sport?: string | null): readonly MetricGroup[] {
+export function metricGroupsForSport(
+  sport?: string | null,
+): readonly MetricGroup[] {
   const groups = sport ? SPORT_METRIC_GROUPS[sport] : undefined;
   return groups ?? [];
 }
 
 /** The def for a known key, or undefined when the key is unregistered. */
-export function getKnownMetricDef(key: string | null | undefined): MetricDef | undefined {
+export function getKnownMetricDef(
+  key: string | null | undefined,
+): MetricDef | undefined {
   if (!key) return undefined;
   return METRIC_DEFS[key];
 }
@@ -470,7 +507,9 @@ export function getMetricDef(key: string | null | undefined): MetricDef {
  * `primary_sport` is required going forward, so an unknown sport must not
  * silently yield the baseball metric vocabulary. Mirrors iOS `types(forSport:)`.
  */
-export function metricTypesForSport(sport: string | null | undefined): string[] {
+export function metricTypesForSport(
+  sport: string | null | undefined,
+): string[] {
   const base = sport ? SPORT_METRICS[sport] : undefined;
   if (!base) return [];
   return [...base, OTHER_KEY];

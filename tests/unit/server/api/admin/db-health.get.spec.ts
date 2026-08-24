@@ -2,11 +2,19 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 const counts: Record<string, number | null> = { users: 10, schools: 5 };
 function tableStub(name: string) {
-  return { select: () => ({ then: (res: any) => res({ count: counts[name] ?? 0, error: null }) }) };
+  return {
+    select: () => ({
+      then: (res: any) => res({ count: counts[name] ?? 0, error: null }),
+    }),
+  };
 }
 const { listBuckets, listObjects, requireAdmin } = vi.hoisted(() => ({
-  listBuckets: vi.fn().mockResolvedValue({ data: [{ name: "avatars" }], error: null }),
-  listObjects: vi.fn().mockResolvedValue({ data: [{ name: "a" }, { name: "b" }], error: null }),
+  listBuckets: vi
+    .fn()
+    .mockResolvedValue({ data: [{ name: "avatars" }], error: null }),
+  listObjects: vi
+    .fn()
+    .mockResolvedValue({ data: [{ name: "a" }, { name: "b" }], error: null }),
   requireAdmin: vi.fn(async () => {}),
 }));
 vi.mock("../../../../../server/utils/supabase", () => ({
@@ -16,11 +24,24 @@ vi.mock("../../../../../server/utils/supabase", () => ({
   }),
 }));
 vi.mock("../../../../../server/utils/auth", () => ({ requireAdmin }));
-vi.stubGlobal("$fetch", vi.fn().mockResolvedValue({ dryRun: true, perBucket: {}, expiredExports: 0, totalObjects: 0 }));
+vi.stubGlobal(
+  "$fetch",
+  vi
+    .fn()
+    .mockResolvedValue({
+      dryRun: true,
+      perBucket: {},
+      expiredExports: 0,
+      totalObjects: 0,
+    }),
+);
 
 import handler from "../../../../../server/api/admin/ops/db-health.get";
 const ev = () => ({ context: {}, node: { req: {} } }) as any;
-beforeEach(() => { process.env.CRON_SECRET = "s"; requireAdmin.mockClear(); });
+beforeEach(() => {
+  process.env.CRON_SECRET = "s";
+  requireAdmin.mockClear();
+});
 
 describe("GET /api/admin/ops/db-health", () => {
   it("returns row counts and storage buckets", async () => {

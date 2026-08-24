@@ -15,7 +15,7 @@
         />
         <button
           @click="showLogMetricModal = true"
-          class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition"
+          class="rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white transition hover:bg-blue-700"
         >
           + Log Metric
         </button>
@@ -23,18 +23,18 @@
     </PageHeader>
 
     <!-- Sub-navigation tabs -->
-    <div class="bg-white border-b border-slate-200">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6">
+    <div class="border-b border-slate-200 bg-white">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6">
         <nav class="flex gap-6">
           <NuxtLink
             to="/performance"
-            class="pb-3 px-1 border-b-2 border-blue-600 text-blue-600 font-semibold"
+            class="border-b-2 border-blue-600 px-1 pb-3 font-semibold text-blue-600"
           >
             Performance Overview
           </NuxtLink>
           <NuxtLink
             to="/performance/timeline"
-            class="pb-3 px-1 border-b-2 border-transparent text-gray-600 hover:text-gray-900 font-semibold"
+            class="border-b-2 border-transparent px-1 pb-3 font-semibold text-gray-600 hover:text-gray-900"
           >
             Timeline & Analytics
           </NuxtLink>
@@ -42,29 +42,32 @@
       </div>
     </div>
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <!-- Performance Dashboard (Analytics Overview) -->
       <div v-if="metrics.length > 0" class="mb-8">
-        <PerformanceDashboard :metrics="metrics" :primary-sport="primarySport" />
+        <PerformanceDashboard
+          :metrics="metrics"
+          :primary-sport="primarySport"
+        />
       </div>
 
       <!-- Metric Charts -->
       <div
         v-if="metrics.length > 0"
-        class="bg-white rounded-lg shadow-sm p-6 mb-8"
+        class="mb-8 rounded-lg bg-white p-6 shadow-sm"
       >
-        <div class="flex items-center justify-between mb-6">
+        <div class="mb-6 flex items-center justify-between">
           <h2 class="text-2xl font-bold text-gray-900">Performance Trends</h2>
           <div
             v-if="availableMetricTypes.length > 1"
-            class="flex gap-2 flex-wrap justify-end"
+            class="flex flex-wrap justify-end gap-2"
           >
             <button
               v-for="type in availableMetricTypes"
               :key="type"
               @click="selectedMetricType = type"
               :class="[
-                'px-3 py-1 rounded-sm text-sm font-semibold transition',
+                'rounded-sm px-3 py-1 text-sm font-semibold transition',
                 selectedMetricType === type
                   ? 'bg-blue-600 text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200',
@@ -82,7 +85,7 @@
         >
           <Line :data="chartData" :options="chartOptions" />
         </div>
-        <div v-else class="text-center py-12 text-gray-500">
+        <div v-else class="py-12 text-center text-gray-500">
           <p>Not enough data to display chart (need at least 2 records)</p>
         </div>
       </div>
@@ -90,22 +93,22 @@
       <!-- Metric Trends -->
       <div
         v-if="metrics.length > 1"
-        class="bg-white rounded-lg shadow-sm p-6 mb-8"
+        class="mb-8 rounded-lg bg-white p-6 shadow-sm"
       >
-        <h2 class="text-2xl font-bold text-gray-900 mb-6">Metric Trends</h2>
+        <h2 class="mb-6 text-2xl font-bold text-gray-900">Metric Trends</h2>
         <div v-if="metricTrends.length > 0" class="space-y-6">
           <div
             v-for="trend in metricTrends"
             :key="trend.type"
             class="border-b border-gray-200 pb-6 last:border-b-0"
           >
-            <div class="flex items-center justify-between mb-3">
+            <div class="mb-3 flex items-center justify-between">
               <h3 class="font-semibold text-gray-900">
                 {{ getMetricLabel(trend.type) }}
               </h3>
               <span
                 :class="[
-                  'text-sm font-semibold px-2 py-1 rounded-sm',
+                  'rounded-sm px-2 py-1 text-sm font-semibold',
                   trend.trend === 'improving'
                     ? 'bg-green-100 text-green-800'
                     : trend.trend === 'declining'
@@ -122,19 +125,21 @@
                 }}
               </span>
             </div>
-            <p class="text-sm text-gray-600 mb-3">
-              Last {{ trend.count }} records: {{ formatMetricValue(trend.type, trend.min) }} to {{ formatMetricValue(trend.type, trend.max) }}
+            <p class="mb-3 text-sm text-gray-600">
+              Last {{ trend.count }} records:
+              {{ formatMetricValue(trend.type, trend.min) }} to
+              {{ formatMetricValue(trend.type, trend.max) }}
               {{ trend.unit }}
               <span v-if="trend.average" class="text-gray-700">
                 (avg: {{ formatMetricValue(trend.type, trend.average) }})</span
               >
             </p>
             <!-- Simple bar chart -->
-            <div class="flex items-end gap-1 h-24">
+            <div class="flex h-24 items-end gap-1">
               <div
                 v-for="(value, idx) in trend.values"
                 :key="idx"
-                class="flex-1 bg-blue-500 rounded-t hover:bg-blue-600 transition"
+                class="flex-1 rounded-t bg-blue-500 transition hover:bg-blue-600"
                 :style="{ height: `${(value / trend.max) * 100}%` }"
                 :title="formatMetricValue(trend.type, value)"
               />
@@ -146,28 +151,30 @@
       <!-- Latest Metrics Summary -->
       <div
         v-if="metrics.length > 0"
-        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8"
+        class="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"
       >
         <div
           v-for="(metric, key) in latestMetricsByType"
           :key="key"
-          class="bg-white rounded-lg shadow-sm p-6"
+          class="rounded-lg bg-white p-6 shadow-sm"
         >
-          <p class="text-sm font-medium text-gray-600 mb-2">
+          <p class="mb-2 text-sm font-medium text-gray-600">
             {{ getMetricLabel(key) }}
           </p>
           <div class="flex items-baseline gap-2">
-            <p class="text-3xl font-bold text-blue-600">{{ formatMetricValue(metric.metric_type, metric.value) }}</p>
+            <p class="text-3xl font-bold text-blue-600">
+              {{ formatMetricValue(metric.metric_type, metric.value) }}
+            </p>
             <p class="text-gray-500">{{ metric.unit }}</p>
           </div>
-          <p class="text-xs text-gray-500 mt-2">
+          <p class="mt-2 text-xs text-gray-500">
             {{ formatDate(metric.recorded_date) }}
           </p>
           <div v-if="metric.verified" class="mt-2">
             <span
-              class="inline-flex items-center gap-1 px-2 py-1 text-xs bg-green-100 text-green-800 rounded-sm"
+              class="inline-flex items-center gap-1 rounded-sm bg-green-100 px-2 py-1 text-xs text-green-800"
             >
-              <UIcon name="i-heroicons-check-solid" class="w-3 h-3" />
+              <UIcon name="i-heroicons-check-solid" class="h-3 w-3" />
               <span>Verified</span>
             </span>
           </div>
@@ -175,16 +182,16 @@
       </div>
 
       <!-- Loading State -->
-      <div v-if="loading && metrics.length === 0" class="text-center py-12">
+      <div v-if="loading && metrics.length === 0" class="py-12 text-center">
         <p class="text-gray-600">Loading metrics...</p>
       </div>
 
       <!-- Empty State -->
       <div
         v-else-if="metrics.length === 0"
-        class="bg-white rounded-lg shadow-sm p-12 text-center"
+        class="rounded-lg bg-white p-12 text-center shadow-sm"
       >
-        <p class="text-gray-600 mb-2">No metrics logged yet</p>
+        <p class="mb-2 text-gray-600">No metrics logged yet</p>
         <p class="text-sm text-gray-500">
           Start tracking your performance to build a historical record
         </p>
@@ -192,15 +199,15 @@
 
       <!-- Metrics Timeline -->
       <div v-else class="space-y-4">
-        <h2 class="text-2xl font-bold text-gray-900 mt-8 mb-6">
+        <h2 class="mt-8 mb-6 text-2xl font-bold text-gray-900">
           Metric History
         </h2>
         <div
           v-for="metric in sortedMetrics"
           :key="metric.id"
-          class="bg-white rounded-lg shadow-sm p-6 hover:shadow-lg transition"
+          class="rounded-lg bg-white p-6 shadow-sm transition hover:shadow-lg"
         >
-          <div class="flex items-start justify-between mb-3">
+          <div class="mb-3 flex items-start justify-between">
             <div>
               <h3 class="text-lg font-bold text-gray-900">
                 {{ getMetricLabel(metric.metric_type) }}
@@ -209,7 +216,7 @@
                 {{ formatDate(metric.recorded_date) }}
               </p>
             </div>
-            <div class="flex gap-2 items-center">
+            <div class="flex items-center gap-2">
               <button
                 @click="togglePrimary(metric)"
                 :disabled="primaryUpdatingId === metric.id"
@@ -224,7 +231,7 @@
                     ? 'Headline stat — tap to clear'
                     : 'Set as headline stat'
                 "
-                class="p-1.5 rounded-sm hover:bg-amber-50 transition disabled:opacity-50"
+                class="rounded-sm p-1.5 transition hover:bg-amber-50 disabled:opacity-50"
               >
                 <UIcon
                   :name="
@@ -232,36 +239,39 @@
                       ? 'i-heroicons-star-solid'
                       : 'i-heroicons-star'
                   "
-                  class="w-5 h-5"
-                  :class="metric.is_primary ? 'text-amber-500' : 'text-gray-400'"
+                  class="h-5 w-5"
+                  :class="
+                    metric.is_primary ? 'text-amber-500' : 'text-gray-400'
+                  "
                 />
               </button>
               <button
                 @click="openEditForm(metric)"
-                class="px-3 py-1 bg-blue-100 text-blue-700 rounded-sm hover:bg-blue-200 transition text-sm font-semibold"
+                class="rounded-sm bg-blue-100 px-3 py-1 text-sm font-semibold text-blue-700 transition hover:bg-blue-200"
               >
                 Edit
               </button>
               <button
                 @click="deleteMetric(metric.id)"
-                class="px-3 py-1 bg-red-100 text-red-700 rounded-sm hover:bg-red-200 transition text-sm font-semibold"
+                class="rounded-sm bg-red-100 px-3 py-1 text-sm font-semibold text-red-700 transition hover:bg-red-200"
               >
                 Delete
               </button>
             </div>
           </div>
 
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-3">
+          <div class="mb-3 grid grid-cols-2 gap-4 md:grid-cols-4">
             <div>
               <p class="text-xs text-gray-600">Value</p>
               <p class="font-bold text-gray-900">
-                {{ formatMetricValue(metric.metric_type, metric.value) }} {{ metric.unit }}
+                {{ formatMetricValue(metric.metric_type, metric.value) }}
+                {{ metric.unit }}
               </p>
             </div>
             <div v-if="metric.verified">
               <p class="text-xs text-gray-600">Status</p>
-              <p class="font-semibold text-green-600 flex items-center gap-1">
-                <UIcon name="i-heroicons-check-solid" class="w-4 h-4" />
+              <p class="flex items-center gap-1 font-semibold text-green-600">
+                <UIcon name="i-heroicons-check-solid" class="h-4 w-4" />
                 <span>Verified</span>
               </p>
             </div>

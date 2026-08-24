@@ -1,14 +1,14 @@
 <template>
-  <div class="rounded-lg shadow-sm p-6 bg-white">
+  <div class="rounded-lg bg-white p-6 shadow-sm">
     <!-- Header -->
-    <h2 class="text-2xl font-bold mb-6 text-slate-900">
+    <h2 class="mb-6 text-2xl font-bold text-slate-900">
       {{ headerTitle }}
     </h2>
 
     <!-- Predefined copy note -->
     <div
       v-if="isCustomizingPredefined"
-      class="flex items-start gap-2 mb-6 p-3 rounded-lg text-sm bg-blue-50 border border-blue-200 text-blue-800"
+      class="mb-6 flex items-start gap-2 rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-800"
     >
       <span aria-hidden="true">📄</span>
       <span>
@@ -20,26 +20,26 @@
     <form @submit.prevent="saveTemplate" class="space-y-6">
       <!-- Template Name -->
       <div>
-        <label class="block text-sm font-medium mb-2 text-slate-600"
+        <label class="mb-2 block text-sm font-medium text-slate-600"
           >Template Name</label
         >
         <input
           v-model="formData.name"
           type="text"
           placeholder="e.g., Initial Outreach"
-          class="w-full px-4 py-2 rounded-lg border border-slate-300 text-slate-900 bg-white"
+          class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2 text-slate-900"
           required
         />
       </div>
 
       <!-- Type -->
       <div>
-        <label class="block text-sm font-medium mb-2 text-slate-600"
+        <label class="mb-2 block text-sm font-medium text-slate-600"
           >Message Type</label
         >
         <select
           v-model="formData.type"
-          class="w-full px-4 py-2 rounded-lg border border-slate-300 text-slate-900 bg-white"
+          class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2 text-slate-900"
           required
         >
           <option value="email">Email</option>
@@ -50,16 +50,16 @@
 
       <!-- Subject (Email only) -->
       <div v-if="formData.type === 'email'">
-        <label class="block text-sm font-medium mb-2 text-slate-600"
+        <label class="mb-2 block text-sm font-medium text-slate-600"
           >Subject</label
         >
         <input
           v-model="formData.subject"
           type="text"
           placeholder="e.g., Recruiting Inquiry - {{playerName}}"
-          class="w-full px-4 py-2 rounded-lg border border-slate-300 text-slate-900 bg-white"
+          class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2 text-slate-900"
         />
-        <p class="text-xs mt-1 text-slate-600">
+        <p class="mt-1 text-xs text-slate-600">
           Optional. Use {{ "{" }}{{ "{" }}variable{{ "}" }}{{ "}" }} syntax for
           dynamic content.
         </p>
@@ -67,17 +67,17 @@
 
       <!-- Body -->
       <div>
-        <label class="block text-sm font-medium mb-2 text-slate-600"
+        <label class="mb-2 block text-sm font-medium text-slate-600"
           >Message</label
         >
         <textarea
           v-model="formData.body"
           :placeholder="`Enter template body. Use ${'{{'}}variable${'}'}} syntax for dynamic content.`"
           rows="8"
-          class="w-full px-4 py-2 rounded-lg font-mono text-sm border border-slate-300 text-slate-900 bg-white"
+          class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2 font-mono text-sm text-slate-900"
           required
         />
-        <p class="text-xs mt-1 text-slate-600">
+        <p class="mt-1 text-xs text-slate-600">
           Use {{ "{" }}{{ "{" }}variable{{ "}" }}{{ "}" }} syntax for dynamic
           content.
         </p>
@@ -86,14 +86,14 @@
       <!-- Available Variables -->
       <div>
         <details class="text-sm">
-          <summary class="cursor-pointer font-medium transition text-blue-600">
+          <summary class="cursor-pointer font-medium text-blue-600 transition">
             Available Variables
           </summary>
-          <div class="mt-3 p-3 rounded-sm border bg-slate-50 border-slate-300">
+          <div class="mt-3 rounded-sm border border-slate-300 bg-slate-50 p-3">
             <div
               v-for="variable in availableVariables"
               :key="variable.key"
-              class="flex justify-between text-xs space-y-2"
+              class="flex justify-between space-y-2 text-xs"
             >
               <code class="font-semibold text-blue-600">{{
                 formatVariableDisplay(variable.key)
@@ -106,36 +106,36 @@
 
       <!-- Preview -->
       <div v-if="preview">
-        <label class="block text-sm font-medium mb-2 text-slate-600"
+        <label class="mb-2 block text-sm font-medium text-slate-600"
           >Preview</label
         >
         <div
-          class="p-4 rounded-sm border text-sm whitespace-pre-wrap wrap-break-word max-h-40 overflow-y-auto bg-slate-50 border-slate-300 text-slate-900"
+          class="max-h-40 overflow-y-auto rounded-sm border border-slate-300 bg-slate-50 p-4 text-sm wrap-break-word whitespace-pre-wrap text-slate-900"
         >
           {{ preview }}
         </div>
       </div>
 
       <!-- Actions -->
-      <div class="flex gap-3 justify-end pt-4 border-t border-slate-300">
+      <div class="flex justify-end gap-3 border-t border-slate-300 pt-4">
         <button
           v-if="isEditing"
           type="button"
           @click="deleteTemplate"
-          class="px-4 py-2 font-medium rounded-lg transition text-red-600 hover:bg-red-50 hover:opacity-20"
+          class="rounded-lg px-4 py-2 font-medium text-red-600 transition hover:bg-red-50 hover:opacity-20"
         >
           Delete
         </button>
         <button
           type="button"
           @click="emit('cancel')"
-          class="px-4 py-2 font-medium rounded-lg transition border border-slate-300 text-slate-900 bg-slate-50 hover:bg-slate-100"
+          class="rounded-lg border border-slate-300 bg-slate-50 px-4 py-2 font-medium text-slate-900 transition hover:bg-slate-100"
         >
           Cancel
         </button>
         <button
           type="submit"
-          class="px-6 py-2 text-white font-medium rounded-lg transition bg-blue-600 hover:bg-blue-700"
+          class="rounded-lg bg-blue-600 px-6 py-2 font-medium text-white transition hover:bg-blue-700"
         >
           Save Template
         </button>

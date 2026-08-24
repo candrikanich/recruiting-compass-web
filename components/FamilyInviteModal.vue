@@ -51,12 +51,12 @@ const handleContinue = () => {
 </script>
 
 <template>
-  <div class="flex flex-col min-h-screen bg-white px-4 py-8">
-    <div class="max-w-2xl mx-auto w-full space-y-6">
+  <div class="flex min-h-screen flex-col bg-white px-4 py-8">
+    <div class="mx-auto w-full max-w-2xl space-y-6">
       <!-- Header -->
       <div>
         <h2 class="text-2xl font-bold text-slate-900">Invite a Parent</h2>
-        <p class="text-slate-600 mt-2">
+        <p class="mt-2 text-slate-600">
           Share your recruiting journey with a parent or guardian
         </p>
       </div>
@@ -64,10 +64,10 @@ const handleContinue = () => {
       <!-- Success State -->
       <div v-if="inviteSent" class="space-y-6">
         <div
-          class="p-6 bg-brand-emerald-50 border border-brand-emerald-200 rounded-lg text-center"
+          class="rounded-lg border border-brand-emerald-200 bg-brand-emerald-50 p-6 text-center"
         >
           <svg
-            class="w-12 h-12 text-brand-emerald-600 mx-auto mb-4"
+            class="mx-auto mb-4 h-12 w-12 text-brand-emerald-600"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -79,7 +79,7 @@ const handleContinue = () => {
               d="M5 13l4 4L19 7"
             />
           </svg>
-          <h3 class="text-lg font-semibold text-brand-emerald-900 mb-2">
+          <h3 class="mb-2 text-lg font-semibold text-brand-emerald-900">
             Invite sent!
           </h3>
           <p class="text-brand-emerald-700">
@@ -91,14 +91,14 @@ const handleContinue = () => {
         <div class="flex flex-col gap-3">
           <button
             type="button"
-            class="w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors"
+            class="w-full rounded-lg bg-blue-600 px-4 py-3 font-semibold text-white transition-colors hover:bg-blue-700"
             @click="handleInviteAnother"
           >
             Invite Another
           </button>
           <button
             type="button"
-            class="w-full px-4 py-3 text-blue-600 border border-blue-600 font-semibold rounded-lg hover:bg-blue-50 transition-colors"
+            class="w-full rounded-lg border border-blue-600 px-4 py-3 font-semibold text-blue-600 transition-colors hover:bg-blue-50"
             @click="handleContinue"
           >
             Continue to Dashboard
@@ -112,7 +112,7 @@ const handleContinue = () => {
         <div>
           <label
             for="family-invite-email"
-            class="block text-sm font-medium text-slate-900 mb-2"
+            class="mb-2 block text-sm font-medium text-slate-900"
           >
             Parent or Guardian Email <span class="text-red-500">*</span>
           </label>
@@ -123,10 +123,10 @@ const handleContinue = () => {
             autocomplete="email"
             placeholder="parent@example.com"
             aria-describedby="family-invite-email-hint"
-            class="w-full px-3 py-2 border border-slate-300 rounded-lg focus-visible:ring-2 focus-visible:ring-blue-500"
+            class="w-full rounded-lg border border-slate-300 px-3 py-2 focus-visible:ring-2 focus-visible:ring-blue-500"
             required
           />
-          <p id="family-invite-email-hint" class="text-sm text-slate-500 mt-2">
+          <p id="family-invite-email-hint" class="mt-2 text-sm text-slate-500">
             They'll receive an email with a link to download the app and view
             your profile
           </p>
@@ -135,31 +135,31 @@ const handleContinue = () => {
         <!-- Error -->
         <div
           v-if="validationError"
-          class="p-4 bg-red-50 border border-red-200 rounded-lg"
+          class="rounded-lg border border-red-200 bg-red-50 p-4"
         >
-          <p class="text-red-700 text-sm">{{ validationError }}</p>
+          <p class="text-sm text-red-700">{{ validationError }}</p>
         </div>
 
         <!-- Server Error -->
         <div
           v-if="error"
-          class="p-4 bg-red-50 border border-red-200 rounded-lg"
+          class="rounded-lg border border-red-200 bg-red-50 p-4"
         >
-          <p class="text-red-700 text-sm">{{ error }}</p>
+          <p class="text-sm text-red-700">{{ error }}</p>
         </div>
 
         <!-- Actions -->
         <div class="flex gap-3">
           <button
             type="button"
-            class="flex-1 px-4 py-2 text-slate-600 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
+            class="flex-1 rounded-lg border border-slate-300 px-4 py-2 text-slate-600 transition-colors hover:bg-slate-50"
             @click="handleContinue"
           >
             Skip for Now
           </button>
           <button
             type="button"
-            class="flex-1 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            class="flex-1 rounded-lg bg-blue-600 px-4 py-3 font-semibold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
             :disabled="loading"
             @click="handleSendInvite"
           >

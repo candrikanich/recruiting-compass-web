@@ -172,9 +172,9 @@ describe("serviceProfileUrl", () => {
     expect(serviceProfileUrl(on3, "https://www.on3.com/db/jane-doe/")).toBe(
       "https://www.on3.com/db/jane-doe/",
     );
-    expect(serviceProfileUrl(s247, "https://247sports.com/player/jane-doe/")).toBe(
-      "https://247sports.com/player/jane-doe/",
-    );
+    expect(
+      serviceProfileUrl(s247, "https://247sports.com/player/jane-doe/"),
+    ).toBe("https://247sports.com/player/jane-doe/");
   });
 
   it("builds template links for id-kind v2 services", () => {
