@@ -27,36 +27,8 @@
       <p v-if="schoolName" class="text-sm text-slate-600">{{ schoolName }}</p>
     </div>
 
-    <!-- Questionnaire completion prompt: this template mentions completing the
-         school's recruiting questionnaire. Confirm before it goes to the coach. -->
-    <div
-      v-if="qc.showQuestionnairePrompt.value"
-      class="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-4"
-    >
-      <p class="text-sm font-medium text-amber-900">
-        Did you complete a recruiting questionnaire for
-        {{ schoolName || "this school" }}?
-      </p>
-      <p class="mt-1 text-sm text-amber-800">
-        This template says you did. We'll only include that line if you confirm.
-      </p>
-      <div class="mt-3 flex gap-2">
-        <button
-          type="button"
-          class="rounded-lg bg-amber-600 px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-amber-700"
-          @click="qc.answerQuestionnaire(true)"
-        >
-          Yes, I completed it
-        </button>
-        <button
-          type="button"
-          class="rounded-lg bg-white px-3 py-1.5 text-sm font-medium text-amber-900 ring-1 ring-amber-300 transition hover:bg-amber-100"
-          @click="qc.answerQuestionnaire(false)"
-        >
-          Skip
-        </button>
-      </div>
-    </div>
+    <!-- Questionnaire, intended major, why-program/why-fit, and the metric nudge
+         are collected in the composer's unified "Complete your info" step. -->
 
     <!-- Communication Buttons -->
     <div class="space-y-3 mb-6">
@@ -132,14 +104,16 @@
       v-model:log-interaction="qc.shouldLogInteraction.value"
       :channel="qc.email"
       :coach="coach"
-      :show-add-metric-cta="qc.showAddMetricCta.value"
+      :can-edit-profile="qc.canEditProfile.value"
+      :athlete-name="qc.athleteName.value"
     />
     <CommunicationMessageComposer
       v-model:open="showTextComposer"
       v-model:log-interaction="qc.shouldLogInteraction.value"
       :channel="qc.text"
       :coach="coach"
-      :show-add-metric-cta="qc.showAddMetricCta.value"
+      :can-edit-profile="qc.canEditProfile.value"
+      :athlete-name="qc.athleteName.value"
     />
 
     <!-- Template Manager Modal -->

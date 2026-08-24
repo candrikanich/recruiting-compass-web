@@ -6,6 +6,21 @@ Active session notes only. See [COMPLETED_WORK.md](./COMPLETED_WORK.md) for full
 
 - **Output format by reader, not by default**: For artifacts Chris will read once on a phone or share with someone non-technical — session recaps, status overviews, weekly summaries, "where are we on X" snapshots — invoke the `visual-explainer` skill to produce self-contained HTML. For artifacts that future-Claude or Chris will edit (handoff docs, `planning/*.md`, `COMPLETED_WORK.md`, lesson files, plans) — stay markdown. When unsure: read = HTML, edit = markdown.
 
+## Current Session (2026-08-24 — Unified missing-info step MERGED to develop)
+
+**Status:** ✅ DONE + MERGED. #2 feature (unified missing-info compose step) shipped to develop.
+**PR #459** MERGED @ `272fde6e` (fast-forward, branch `feat/unified-missing-info-step` deleted). All CI green (lint/types, unit, GitGuardian, Vercel). Now **live on QA only — NOT promoted to main.** Chris testing on QA, will promote to main himself.
+**Tests (pre-merge):** full suite **7998 pass**. Lint/type-check/audit:tokens PASS. E2E staged flow PASS live (chromium).
+**Handoff:** `planning/handoff-2026-08-24-unified-missing-info-step.md`
+
+**Gated migration — APPLIED LIVE this session** via Supabase MCP to prod DB `xpxzhqghxecsjhvklsqg` (serves prod+QA): `20260905000000_intended_major_template_var.sql` — `intendedMajor` template var registered (source `pref:player.intended_major`, sort 34) + `intro-standard` body "planning to study" clause. **Live-confirmed:** demo player1 (no intended_major) → composer "Complete your info" step renders the "Intended major — What do you plan to study?" row. Migration file rode in on #459, so prod sees the var immediately on promote.
+
+**Refactor PRs shipped to develop earlier this arc (Chris merged):** #439 CommunicationPanel split (1318→275), #440 registry-derived player schema + drift guard, #441 performance page split (847→612), #445 recovered stranded trend fix + a live lint error someone `--no-verify`'d onto develop, #446 SMS cap 160→480 (iOS parity), #448 template resolver decompose (173→40), #449 player-details form split (450→310), #450 ALL_SPORTS derive + coach refresh dedup, #451 registryCache→Pinia.
+
+**SDD workspace deleted** (`.superpowers/sdd/2026-08-23-unified-missing-info-step-plan/`) post-merge — git is the record.
+
+**Open on develop base (Chris updating in GitHub):** dependabot #454–#458, refactor/docs #449–#452.
+
 ## Current Session (2026-08-22 — E2E suite GREEN + shipped to develop)
 
 **Status:** ✅ DONE. E2E suite **177 → 0**. PR #419 (debug/e2e-green → develop) MERGED @ `f186dad0`. Branch deleted. develop in sync.
