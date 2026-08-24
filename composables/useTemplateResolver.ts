@@ -15,10 +15,10 @@ import {
   type EventLite,
 } from "~/utils/templateResolver";
 import {
-  formatPositionsShort,
-  primaryAndSecondary,
-  abbreviatePosition,
-} from "~/utils/positions/canonical";
+  pickHsCoach,
+  derivePositions,
+} from "~/utils/templateResolver/athleteDerived";
+import { useTemplateRegistryStore } from "~/stores/templateRegistry";
 import { buildPrepBaseballUrl } from "~/utils/recruitingLinks";
 import type { CommunicationTemplate } from "~/types/models";
 
@@ -27,27 +27,6 @@ const logger = createClientLogger("useTemplateResolver");
 /** Public base for athlete profile links shared with coaches; absolute so the URL is
  *  clickable in the sent email/SMS (parity with iOS publicProfileBase). */
 const PUBLIC_PROFILE_BASE = "https://myrecruitingcompass.com";
-
-/** PostgREST-ish error shape (avoids `any` while matching the house PGRST205 check). */
-interface FetchError {
-  code?: string;
-  message?: string;
-}
-
-/** template_variables is global reference data — cache it once per page load. */
-let registryCache: RegistryVar[] | null = null;
-
-/** Test-only: clear the module-level registry cache between cases. */
-export const __resetTemplateRegistryCache = (): void => {
-  registryCache = null;
-};
-
-const GRADE_WORDS: Record<number, string> = {
-  12: "twelfth",
-  11: "eleventh",
-  10: "tenth",
-  9: "ninth",
-};
 
 export interface ResolveResult {
   subject: string;
@@ -58,66 +37,164 @@ export interface ResolveResult {
   values: Record<string, string>;
 }
 
-/** Current HS grade (9–12) from graduation year, accounting for fall vs spring semester. */
-const currentGrade = (
-  gradYear: number | null | undefined,
-  now = new Date(),
-): number | null => {
-  if (!gradYear) return null;
-  const schoolYearEnd =
-    now.getMonth() >= 7 ? now.getFullYear() + 1 : now.getFullYear();
-  return 12 - (gradYear - schoolYearEnd);
-};
-
-/** Grade-appropriate HS coach from the player jsonb, else most-recent (12th→9th). */
-const pickHsCoach = (
-  prefs: Record<string, unknown>,
-  gradYear: number | null | undefined,
-): string | null => {
-  const grade = currentGrade(gradYear);
-  const clamped = grade != null ? Math.min(12, Math.max(9, grade)) : null;
-  const fallback = [12, 11, 10, 9];
-  const order =
-    clamped != null
-      ? [clamped, ...fallback.filter((g) => g !== clamped)]
-      : fallback;
-  for (const g of order) {
-    const v = prefs[`${GRADE_WORDS[g]}_grade_coach`];
-    if (typeof v === "string" && v.trim()) return v.trim();
-  }
-  return null;
-};
-
 export const useTemplateResolver = () => {
   const supabase = useSupabase();
+  const registryStore = useTemplateRegistryStore();
 
-  const loadRegistry = async (force = false): Promise<RegistryVar[]> => {
-    if (registryCache && !force) return registryCache;
-    try {
-      const { data, error } = (await supabase
-        .from("template_variables")
-        .select(
-          "key, source_type, source_path, category, is_required_default",
-        )) as {
-        data: RegistryVar[] | null;
-        error: FetchError | null;
-      };
+  /** Delegates to the registry store (session-cached global reference data). */
+  const loadRegistry = (force = false): Promise<RegistryVar[]> =>
+    registryStore.load(force);
 
-      if (error) {
-        if (
-          error.code === "PGRST205" ||
-          error.message?.includes("template_variables")
-        ) {
-          return registryCache ?? [];
-        }
-        throw error;
-      }
-      registryCache = data ?? [];
-      return registryCache;
-    } catch (err) {
-      logger.error("Load registry error:", err);
-      return registryCache ?? [];
+  // --- buildAthleteContext steps ---------------------------------------------
+  // Each fetches + shapes one slice of the athlete context. The orchestrator
+  // below wraps them in a single fail-open try/catch, so a failure in any step
+  // returns whatever partial context was assembled (matches the loadTemplates
+  // ethos). Kept as inner closures over `supabase` to stay query-local.
+
+  /** users row, player + location prefs (phone formatted), performance metrics. */
+  const fetchCoreTables = async (
+    athleteUserId: string,
+  ): Promise<{
+    users: Row | null;
+    prefs: Record<string, unknown>;
+    locationPrefs: Record<string, unknown>;
+    metrics: MetricRow[];
+  }> => {
+    const { data: userRow } = (await supabase
+      .from("users")
+      .select("*")
+      .eq("id", athleteUserId)
+      .maybeSingle()) as { data: Row | null };
+
+    const { data: prefRow } = (await supabase
+      .from("user_preferences")
+      .select("data")
+      .eq("user_id", athleteUserId)
+      .eq("category", "player")
+      .maybeSingle()) as {
+      data: { data: Record<string, unknown> | null } | null;
+    };
+    const prefs = prefRow?.data ?? {};
+    if (typeof prefs.phone === "string") {
+      const formatted = formatUsPhone(prefs.phone);
+      if (formatted) prefs.phone = formatted;
     }
+
+    const { data: locationRow } = (await supabase
+      .from("user_preferences")
+      .select("data")
+      .eq("user_id", athleteUserId)
+      .eq("category", "location")
+      .maybeSingle()) as {
+      data: { data: Record<string, unknown> | null } | null;
+    };
+
+    const { data: metricRows } = (await supabase
+      .from("performance_metrics")
+      .select("*")
+      .eq("user_id", athleteUserId)) as { data: MetricRow[] | null };
+
+    return {
+      users: userRow,
+      prefs,
+      locationPrefs: locationRow?.data ?? {},
+      metrics: metricRows ?? [],
+    };
+  };
+
+  /** Sport name from the users.primary_sport_id FK, falling back to the entered
+   *  prefs.primary_sport string (real accounts populate the jsonb, not the FK). */
+  const deriveSport = async (
+    userRow: Row | null,
+    prefs: Record<string, unknown>,
+  ): Promise<string | undefined> => {
+    const sportId = userRow?.primary_sport_id as string | null | undefined;
+    if (sportId) {
+      const { data: sportRow } = (await supabase
+        .from("sports")
+        .select("name")
+        .eq("id", sportId)
+        .maybeSingle()) as { data: { name: string } | null };
+      if (sportRow?.name) return sportRow.name;
+    }
+    if (typeof prefs.primary_sport === "string" && prefs.primary_sport.trim()) {
+      return prefs.primary_sport.trim();
+    }
+    return undefined;
+  };
+
+  /** Public/profile links: player profile, Prep Baseball Report, transcript, film. */
+  const deriveLinks = async (
+    athleteUserId: string,
+    prefs: Record<string, unknown>,
+  ): Promise<Record<string, string>> => {
+    const derived: Record<string, string> = {};
+
+    const { data: profileRow } = (await supabase
+      .from("player_profiles")
+      .select("vanity_slug, hash_slug")
+      .eq("user_id", athleteUserId)
+      .maybeSingle()) as {
+      data: { vanity_slug: string | null; hash_slug: string | null } | null;
+    };
+    const slug = profileRow?.vanity_slug || profileRow?.hash_slug;
+    // Absolute so the link is clickable in the email/SMS sent to a coach
+    // (parity with iOS TemplateContextBuilder.publicProfileBase).
+    if (slug) derived.profileLink = `${PUBLIC_PROFILE_BASE}/p/${slug}`;
+
+    // Prep Baseball Report profile URL, built from the athlete's stored state +
+    // name-slug; omitted when either is missing so it renders as nothing.
+    const prepBaseballLink = buildPrepBaseballUrl(
+      prefs.prep_baseball_state as string | undefined,
+      prefs.prep_baseball_id as string | undefined,
+    );
+    if (prepBaseballLink) derived.prepBaseballLink = prepBaseballLink;
+
+    const { data: transcriptRow } = (await supabase
+      .from("documents")
+      .select("file_url")
+      .eq("user_id", athleteUserId)
+      .eq("type", "transcript")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle()) as { data: { file_url: string | null } | null };
+    if (transcriptRow?.file_url) derived.transcriptLink = transcriptRow.file_url;
+
+    // Primary film link from the canonical video_links table (prefer a healthy
+    // link, else the first), mirroring iOS.
+    const { data: videoRows } = (await supabase
+      .from("video_links")
+      .select("url, health_status, created_at")
+      .eq("user_id", athleteUserId)
+      .order("created_at", { ascending: true })) as {
+      data: { url: string; health_status: string | null }[] | null;
+    };
+    if (videoRows?.length) {
+      const primary =
+        videoRows.find((v) => v.health_status === "healthy") ?? videoRows[0];
+      if (primary?.url) derived.videoLink = primary.url;
+    }
+
+    return derived;
+  };
+
+  /** Multi-row schedule + next-event vars from the athlete's own events. */
+  const deriveSchedule = async (
+    athleteUserId: string,
+  ): Promise<Record<string, string>> => {
+    const derived: Record<string, string> = {};
+    const { data: eventRows } = (await supabase
+      .from("events")
+      .select("name, start_date, end_date, location, city, state, url")
+      .eq("user_id", athleteUserId)) as { data: EventLite[] | null };
+    if (eventRows?.length) {
+      const schedule = renderEventSchedule(eventRows);
+      if (schedule) derived.eventSchedule = schedule;
+      const next = nextEvent(eventRows);
+      if (next?.name) derived.nextEventName = next.name;
+      if (next?.dates) derived.nextEventDates = next.dates;
+    }
+    return derived;
   };
 
   const buildAthleteContext = async (
@@ -132,161 +209,27 @@ export const useTemplateResolver = () => {
     const derived: Record<string, string> = {};
 
     try {
-      const { data: userRow } = (await supabase
-        .from("users")
-        .select("*")
-        .eq("id", athleteUserId)
-        .maybeSingle()) as { data: Row | null };
-      if (userRow) ctx.tables!.users = userRow;
+      const core = await fetchCoreTables(athleteUserId);
+      if (core.users) ctx.tables!.users = core.users;
+      ctx.prefs = core.prefs;
+      ctx.locationPrefs = core.locationPrefs;
+      ctx.metrics = core.metrics;
 
-      const { data: prefRow } = (await supabase
-        .from("user_preferences")
-        .select("data")
-        .eq("user_id", athleteUserId)
-        .eq("category", "player")
-        .maybeSingle()) as {
-        data: { data: Record<string, unknown> | null } | null;
-      };
-      ctx.prefs = prefRow?.data ?? {};
-      if (typeof ctx.prefs.phone === "string") {
-        const formatted = formatUsPhone(ctx.prefs.phone);
-        if (formatted) ctx.prefs.phone = formatted;
-      }
+      const sport = await deriveSport(core.users, core.prefs);
+      if (sport) derived.sport = sport;
 
-      const { data: locationRow } = (await supabase
-        .from("user_preferences")
-        .select("data")
-        .eq("user_id", athleteUserId)
-        .eq("category", "location")
-        .maybeSingle()) as {
-        data: { data: Record<string, unknown> | null } | null;
-      };
-      ctx.locationPrefs = locationRow?.data ?? {};
-
-      const { data: metricRows } = (await supabase
-        .from("performance_metrics")
-        .select("*")
-        .eq("user_id", athleteUserId)) as { data: MetricRow[] | null };
-      ctx.metrics = metricRows ?? [];
-
-      // --- derived (DB-join) values; each key omitted when its source is absent ---
-      const sportId = userRow?.primary_sport_id as string | null | undefined;
-      if (sportId) {
-        const { data: sportRow } = (await supabase
-          .from("sports")
-          .select("name")
-          .eq("id", sportId)
-          .maybeSingle()) as { data: { name: string } | null };
-        if (sportRow?.name) derived.sport = sportRow.name;
-      }
-      // Fallback to the entered prefs.primary_sport string — real accounts
-      // populate the player-prefs jsonb, not the users.primary_sport_id FK, so
-      // without this the FK store is usually empty and position abbreviation
-      // (which is sport-scoped) silently degrades to full names.
-      if (
-        !derived.sport &&
-        typeof ctx.prefs.primary_sport === "string" &&
-        ctx.prefs.primary_sport.trim()
-      ) {
-        derived.sport = ctx.prefs.primary_sport.trim();
-      }
-
-      // Position for coach-facing output comes from the athlete's ENTERED,
-      // ordered positions[] (positions[0] = primary, next distinct = secondary),
-      // abbreviated to "3B/SS" — coaches recruit for specific positions. The
-      // legacy primary_position string is only a last-resort fallback for
-      // accounts that predate ordered positions.
-      const positionList = Array.isArray(ctx.prefs.positions)
-        ? (ctx.prefs.positions as unknown[]).filter(
-            (p): p is string => typeof p === "string" && p.trim().length > 0,
-          )
-        : [];
-      const primaryFallback =
-        typeof ctx.prefs.primary_position === "string"
-          ? ctx.prefs.primary_position
-          : null;
-      const combined = formatPositionsShort(
-        derived.sport,
-        positionList,
-        primaryFallback,
-      );
-      if (combined) derived.position = combined;
-      const { secondary } = primaryAndSecondary(positionList, primaryFallback);
-      if (secondary) {
-        derived.positionSecondary = abbreviatePosition(
-          derived.sport,
-          secondary,
-        );
-      }
+      Object.assign(derived, derivePositions(sport, core.prefs));
 
       const hsCoach = pickHsCoach(
-        ctx.prefs,
-        userRow?.graduation_year as number | null | undefined,
+        core.prefs,
+        core.users?.graduation_year as number | null | undefined,
       );
       if (hsCoach) derived.hsCoachName = hsCoach;
 
-      const { data: profileRow } = (await supabase
-        .from("player_profiles")
-        .select("vanity_slug, hash_slug")
-        .eq("user_id", athleteUserId)
-        .maybeSingle()) as {
-        data: { vanity_slug: string | null; hash_slug: string | null } | null;
-      };
-      const slug = profileRow?.vanity_slug || profileRow?.hash_slug;
-      // Absolute so the link is clickable in the email/SMS sent to a coach
-      // (parity with iOS TemplateContextBuilder.publicProfileBase).
-      if (slug) derived.profileLink = `${PUBLIC_PROFILE_BASE}/p/${slug}`;
-
-      // Prep Baseball Report profile URL, built from the athlete's stored
-      // state + name-slug; omitted when either is missing so the variable
-      // renders as nothing rather than a broken link.
-      const prepBaseballLink = buildPrepBaseballUrl(
-        ctx.prefs.prep_baseball_state as string | undefined,
-        ctx.prefs.prep_baseball_id as string | undefined,
-      );
-      if (prepBaseballLink) derived.prepBaseballLink = prepBaseballLink;
-
-      const { data: transcriptRow } = (await supabase
-        .from("documents")
-        .select("file_url")
-        .eq("user_id", athleteUserId)
-        .eq("type", "transcript")
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle()) as { data: { file_url: string | null } | null };
-      if (transcriptRow?.file_url)
-        derived.transcriptLink = transcriptRow.file_url;
-
-      // Primary film link comes from the canonical video_links TABLE (prefer a
-      // healthy link, else the first), mirroring iOS. The registry maps
-      // videoLink to this derived value once its source_type is 'computed'.
-      const { data: videoRows } = (await supabase
-        .from("video_links")
-        .select("url, health_status, created_at")
-        .eq("user_id", athleteUserId)
-        .order("created_at", { ascending: true })) as {
-        data: { url: string; health_status: string | null }[] | null;
-      };
-      if (videoRows?.length) {
-        const primary =
-          videoRows.find((v) => v.health_status === "healthy") ?? videoRows[0];
-        if (primary?.url) derived.videoLink = primary.url;
-      }
-
-      // Multi-row schedule + next-event vars from the athlete's own events.
-      const { data: eventRows } = (await supabase
-        .from("events")
-        .select("name, start_date, end_date, location, city, state, url")
-        .eq("user_id", athleteUserId)) as { data: EventLite[] | null };
-      if (eventRows?.length) {
-        const schedule = renderEventSchedule(eventRows);
-        if (schedule) derived.eventSchedule = schedule;
-        const next = nextEvent(eventRows);
-        if (next?.name) derived.nextEventName = next.name;
-        if (next?.dates) derived.nextEventDates = next.dates;
-      }
+      Object.assign(derived, await deriveLinks(athleteUserId, core.prefs));
+      Object.assign(derived, await deriveSchedule(athleteUserId));
     } catch (err) {
-      // Fail-open: return whatever partial context was assembled (matches loadTemplates ethos).
+      // Fail-open: return whatever partial context was assembled.
       logger.error("Build athlete context error:", err);
     }
 

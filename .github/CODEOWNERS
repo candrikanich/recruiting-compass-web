@@ -1,0 +1,4 @@
+# The NCAA recruiting-calendar dataset is hand-transcribed from official NCAA
+# PDFs and gates compliance-facing dead/quiet/contact-period logic — changes
+# require the repo owner's review.
+/utils/recruitingCalendar/ @candrikanich

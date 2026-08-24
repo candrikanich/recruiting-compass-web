@@ -283,155 +283,14 @@
         </div>
 
         <!-- Edit Metric Modal -->
-        <div
-          v-if="showEditForm && editingMetric"
-          class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-        >
-          <div
-            class="max-h-screen w-full max-w-2xl overflow-y-auto rounded-lg bg-white shadow-lg"
-          >
-            <div
-              class="sticky top-0 flex items-center justify-between border-b border-gray-200 bg-white p-6"
-            >
-              <h2 class="text-2xl font-bold text-gray-900">
-                Edit Performance Metric
-              </h2>
-              <button
-                @click="showEditForm = false"
-                class="text-gray-600 hover:text-gray-900"
-              >
-                <UIcon name="i-heroicons-x-mark-solid" class="h-6 w-6" />
-              </button>
-            </div>
-
-            <form @submit.prevent="handleUpdateMetric" class="space-y-6 p-6">
-              <!-- Metric Type -->
-              <div>
-                <label
-                  for="editMetricType"
-                  class="mb-1 block text-sm font-medium text-gray-700"
-                >
-                  Metric Type <span class="text-red-600">*</span>
-                </label>
-                <select
-                  id="editMetricType"
-                  v-model="editingMetric.metric_type"
-                  required
-                  class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="">Select Metric</option>
-                  <option
-                    v-for="opt in metricTypeOptions"
-                    :key="opt.value"
-                    :value="opt.value"
-                  >
-                    {{ opt.label }}
-                  </option>
-                </select>
-              </div>
-
-              <!-- Value -->
-              <div>
-                <label
-                  for="editValue"
-                  class="mb-1 block text-sm font-medium text-gray-700"
-                >
-                  Value <span class="text-red-600">*</span>
-                </label>
-                <input
-                  id="editValue"
-                  v-model.number="editingMetric.value"
-                  type="number"
-                  required
-                  step="0.01"
-                  placeholder="0.00"
-                  class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <!-- Recorded Date -->
-              <div>
-                <label
-                  for="editRecordedDate"
-                  class="mb-1 block text-sm font-medium text-gray-700"
-                >
-                  Date <span class="text-red-600">*</span>
-                </label>
-                <input
-                  id="editRecordedDate"
-                  v-model="editingMetric.recorded_date"
-                  type="date"
-                  required
-                  class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <!-- Unit -->
-              <div>
-                <label
-                  for="editUnit"
-                  class="mb-1 block text-sm font-medium text-gray-700"
-                >
-                  Unit
-                </label>
-                <input
-                  id="editUnit"
-                  v-model="editingMetric.unit"
-                  type="text"
-                  placeholder="e.g., mph, sec, avg"
-                  class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <!-- Verified Checkbox -->
-              <div class="flex items-center">
-                <input
-                  v-model="editingMetric.verified"
-                  type="checkbox"
-                  class="h-4 w-4 rounded-sm"
-                />
-                <label class="ml-2 text-sm text-gray-700"
-                  >Verified by third party</label
-                >
-              </div>
-
-              <!-- Notes -->
-              <div>
-                <label
-                  for="editNotes"
-                  class="mb-1 block text-sm font-medium text-gray-700"
-                >
-                  Notes
-                </label>
-                <textarea
-                  id="editNotes"
-                  v-model="editingMetric.notes"
-                  rows="3"
-                  placeholder="Additional context or observations..."
-                  class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <!-- Buttons -->
-              <div class="flex justify-end gap-4">
-                <button
-                  type="button"
-                  @click="showEditForm = false"
-                  class="rounded-lg bg-gray-200 px-6 py-2 font-semibold text-gray-900 transition hover:bg-gray-300"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  :disabled="isUpdating"
-                  class="rounded-lg bg-blue-600 px-6 py-2 font-semibold text-white transition hover:bg-blue-700 disabled:opacity-50"
-                >
-                  {{ isUpdating ? "Saving..." : "Save Changes" }}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+        <PerformanceEditMetricModal
+          v-model:metric="editingMetric"
+          :show="showEditForm"
+          :metric-type-options="metricTypeOptions"
+          :is-updating="isUpdating"
+          @save="handleUpdateMetric"
+          @close="showEditForm = false"
+        />
       </div>
 
       <!-- Export Modal -->
@@ -466,9 +325,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, reactive, computed, defineAsyncComponent } from "vue";
+import { ref, onMounted, computed, defineAsyncComponent } from "vue";
 import { formatMetricValue } from "~/utils/metricFormat";
-import { metricTypesForSport, getMetricDef } from "~/utils/metrics/canonical";
+import {
+  metricTypesForSport,
+  getMetricDef,
+} from "~/utils/metrics/canonical";
+import { computeMetricTrends } from "~/utils/metricTrends";
 import { usePerformance } from "~/composables/usePerformance";
 import { usePreferenceManager } from "~/composables/usePreferenceManager";
 import { useAppToast } from "~/composables/useAppToast";
@@ -511,10 +374,8 @@ definePageMeta({
 
 const {
   metrics,
-  latestMetrics,
   loading,
   fetchMetrics,
-  createMetric,
   deleteMetric: deleteMetricAPI,
   updateMetric,
   setPrimaryMetric,
@@ -523,7 +384,6 @@ const {
 const { showToast } = useAppToast();
 const { playerPrefs, getPlayerDetails } = usePreferenceManager();
 
-const showAddForm = ref(false);
 const showEditForm = ref(false);
 const showExportModal = ref(false);
 const showLogMetricModal = ref(false);
@@ -531,15 +391,6 @@ const isUpdating = ref(false);
 const editingMetric = ref<PerformanceMetric | null>(null);
 const selectedMetricType = ref("");
 const primarySport = ref<string | null>(null);
-
-const newMetric = reactive({
-  metric_type: "",
-  value: null as number | null,
-  recorded_date: new Date().toISOString().split("T")[0],
-  unit: "",
-  notes: "",
-  verified: false,
-});
 
 const sortedMetrics = computed(() => {
   return [...metrics.value].sort(
@@ -562,63 +413,7 @@ const latestMetricsByType = computed(() => {
   return result;
 });
 
-const metricTrends = computed(() => {
-  const typeGroups: Record<string, PerformanceMetric[]> = {};
-
-  // Group metrics by type
-  metrics.value.forEach((m) => {
-    if (!typeGroups[m.metric_type]) {
-      typeGroups[m.metric_type] = [];
-    }
-    typeGroups[m.metric_type].push(m);
-  });
-
-  // Calculate trends for each type
-  return Object.entries(typeGroups)
-    .filter(([_, records]) => records.length >= 2)
-    .map(([type, records]) => {
-      const sorted = [...records].sort(
-        (a, b) =>
-          new Date(a.recorded_date).getTime() -
-          new Date(b.recorded_date).getTime(),
-      );
-      const values = sorted.map((m) => m.value).slice(-10); // Last 10 records
-      const min = Math.min(...values);
-      const max = Math.max(...values);
-      const avg = values.reduce((a, b) => a + b, 0) / values.length;
-
-      // Determine trend (comparing first 3 to last 3)
-      const first3 = values.slice(0, 3);
-      const last3 = values.slice(-3);
-      const firstAvg = first3.reduce((a, b) => a + b, 0) / first3.length;
-      const lastAvg = last3.reduce((a, b) => a + b, 0) / last3.length;
-
-      // Direction ("lower is better") comes from the metric registry, per sport.
-      const lowerIsBetter = getMetricDef(type).lowerIsBetter;
-      let trend: "improving" | "declining" | "stable";
-
-      if (lowerIsBetter) {
-        if (lastAvg < firstAvg * 0.99) trend = "improving";
-        else if (lastAvg > firstAvg * 1.01) trend = "declining";
-        else trend = "stable";
-      } else {
-        if (lastAvg > firstAvg * 1.01) trend = "improving";
-        else if (lastAvg < firstAvg * 0.99) trend = "declining";
-        else trend = "stable";
-      }
-
-      return {
-        type,
-        values,
-        min: parseFloat(min.toFixed(2)),
-        max: parseFloat(max.toFixed(2)),
-        average: avg,
-        unit: sorted[0].unit || "unit",
-        count: values.length,
-        trend,
-      };
-    });
-});
+const metricTrends = computed(() => computeMetricTrends(metrics.value));
 
 const availableMetricTypes = computed(() => {
   const types = new Set(metrics.value.map((m) => m.metric_type));
@@ -726,33 +521,6 @@ const formatDate = (dateStr: string): string => {
     day: "numeric",
     year: "numeric",
   });
-};
-
-const handleAddMetric = async () => {
-  try {
-    await createMetric({
-      // metric_type is a registry key (any of 17 sports), not a baseball union.
-      metric_type: newMetric.metric_type,
-      value: newMetric.value!,
-      recorded_date: newMetric.recorded_date,
-      unit: newMetric.unit || "unit",
-      notes: newMetric.notes || null,
-      verified: newMetric.verified,
-    });
-
-    // Reset form
-    newMetric.metric_type = "";
-    newMetric.value = null;
-    newMetric.recorded_date = new Date().toISOString().split("T")[0];
-    newMetric.unit = "";
-    newMetric.notes = "";
-    newMetric.verified = false;
-    showAddForm.value = false;
-
-    await fetchMetrics();
-  } catch (err) {
-    logger.error("Failed to log metric", err);
-  }
 };
 
 const handleMetricCreated = async () => {

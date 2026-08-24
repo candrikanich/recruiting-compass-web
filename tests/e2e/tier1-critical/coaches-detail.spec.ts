@@ -101,6 +101,49 @@ test.describe("Coach detail page", () => {
     await expect(dialog).toBeHidden();
   });
 
+  test("email composer stages compose → (info) → preview + send", async ({
+    page,
+  }) => {
+    // Open the Quick Communication panel, then the email composer drawer.
+    await page.locator('button:has-text("Email")').first().click();
+    await expect(
+      page.getByRole("dialog", { name: "Quick Communication" }),
+    ).toBeVisible();
+
+    const composer = page.getByRole("dialog", { name: /Send Email to/ });
+    await page.getByRole("button", { name: "Send Email" }).first().click();
+    await expect(composer).toBeVisible();
+
+    // Compose stage: pick the first real template (skip "Custom message").
+    const select = composer.locator("select");
+    const optionValues = await select
+      .locator("option")
+      .evaluateAll((opts) =>
+        opts
+          .map((o) => (o as HTMLOptionElement).value)
+          .filter((v) => v !== ""),
+      );
+    if (optionValues.length > 0) {
+      await select.selectOption(optionValues[0]);
+    }
+
+    // Continue advances the flow. If the template needs info, the unified step
+    // shows first — advance through it — then the preview must appear.
+    await composer.getByRole("button", { name: "Continue" }).click();
+    const infoHeading = composer.getByText("Complete your info");
+    if (await infoHeading.isVisible().catch(() => false)) {
+      await composer.getByRole("button", { name: "Continue" }).click();
+    }
+
+    // Preview stage: the coach-preview and a Send button are present.
+    await expect(
+      composer.getByText("Preview — what the coach sees"),
+    ).toBeVisible();
+    await expect(
+      composer.getByRole("button", { name: "Send Email" }),
+    ).toBeVisible();
+  });
+
   test("notes editor opens, accepts input, and saves without error", async ({
     page,
   }) => {

@@ -12,6 +12,7 @@ import { surfacePendingSuggestions } from "./suggestionStaggering";
 import { calculateCurrentGrade } from "~/utils/gradeHelpers";
 import { createLogger } from "~/server/utils/logger";
 import type { RuleContext } from "./rules/index";
+import type { AppSport } from "~/utils/recruitingCalendar";
 import { interactionGapRule } from "./rules/interactionGap";
 import { missingVideoRule } from "./rules/missingVideo";
 import { eventFollowUpRule } from "./rules/eventFollowUp";
@@ -114,6 +115,14 @@ export async function triggerSuggestionUpdate(
     const gradeLevel = graduationYear
       ? calculateCurrentGrade(graduationYear)
       : 9;
+    const sport =
+      typeof playerData?.primary_sport === "string"
+        ? (playerData.primary_sport as AppSport)
+        : undefined;
+    const gender =
+      typeof playerData?.gender === "string"
+        ? (playerData.gender as string)
+        : null;
 
     const context: RuleContext = {
       athleteId,
@@ -124,6 +133,8 @@ export async function triggerSuggestionUpdate(
       athleteTasks: athleteTasks.data || [],
       videos: videos.data || [],
       events: events.data || [],
+      sport,
+      gender,
     };
 
     // Initialize rule engine with all rules

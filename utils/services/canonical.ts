@@ -13,6 +13,7 @@
  */
 
 import { buildPrepBaseballUrl } from "~/utils/recruitingLinks";
+import { SPORT_POSITIONS } from "~/utils/positions/canonical";
 
 /**
  * How a service's public-profile link is derived from its stored value:
@@ -37,6 +38,9 @@ export interface ServiceDef {
   /** "Get your profile" sign-up destination. */
   signupUrl: string;
   placeholder: string;
+  /** Max stored length for an `id`-kind value (drives the validation schema).
+   *  Defaults to 50; PBR ids run longer. Ignored for `url`-kind services. */
+  maxLength?: number;
 }
 
 /** Context for `serviceProfileUrl`; a bare string is treated as `{ value }`. */
@@ -48,26 +52,10 @@ export interface ServiceUrlContext {
   name?: string | null;
 }
 
-/** All 17 sports (keys match `SPORT_POSITIONS`). */
-const ALL_SPORTS: readonly string[] = [
-  "Baseball",
-  "Softball",
-  "Basketball",
-  "Football",
-  "Soccer",
-  "Volleyball",
-  "Track & Field",
-  "Swimming",
-  "Cross Country",
-  "Tennis",
-  "Golf",
-  "Lacrosse",
-  "Field Hockey",
-  "Ice Hockey",
-  "Wrestling",
-  "Rowing",
-  "Water Polo",
-];
+/** Every sport, derived from the canonical position registry — the single source
+ *  of the sport vocabulary — so the "offered for all sports" set (NCSA) can never
+ *  drift from it. Guarded by tests/unit/utils/services/canonical.spec.ts. */
+const ALL_SPORTS: readonly string[] = Object.keys(SPORT_POSITIONS);
 
 const HUDL_SPORTS: readonly string[] = [
   "Football",
@@ -131,6 +119,7 @@ const PREP_BASEBALL: ServiceDef = {
   linkKind: "prepBaseball",
   signupUrl: "https://www.prepbaseballreport.com/",
   placeholder: "ID Number",
+  maxLength: 100,
 };
 
 // ── Services v2 ──────────────────────────────────────────────────────────

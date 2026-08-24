@@ -51,6 +51,32 @@ vi.mock("~/composables/useStatusScore", () => ({
   }),
 }));
 
+const playerDetailsRef = ref<{
+  primary_sport?: string;
+  gender?: string | null;
+  graduation_year?: number;
+} | null>(null);
+const loadPlayerPreferencesMock = vi.fn().mockResolvedValue(undefined);
+
+vi.mock("~/composables/usePreferenceManager", () => ({
+  usePreferenceManager: () => ({
+    getPlayerDetails: () => playerDetailsRef.value,
+    playerPrefs: { loadPreferences: loadPlayerPreferencesMock },
+  }),
+}));
+
+const getUpcomingMilestonesSpy = vi.fn();
+vi.mock("~/utils/recruitingCalendar", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("~/utils/recruitingCalendar")>();
+  return {
+    ...actual,
+    getUpcomingMilestones: (params: Parameters<typeof actual.getUpcomingMilestones>[0]) => {
+      getUpcomingMilestonesSpy(params);
+      return actual.getUpcomingMilestones(params);
+    },
+  };
+});
+
 import TimelineIndexPage from "~/pages/timeline/index.vue";
 
 describe("pages/timeline/index.vue", () => {
@@ -58,6 +84,9 @@ describe("pages/timeline/index.vue", () => {
     vi.clearAllMocks();
     fetchPhaseMock.mockResolvedValue(undefined);
     statusLabelRef.value = null;
+    playerDetailsRef.value = null;
+    loadPlayerPreferencesMock.mockResolvedValue(undefined);
+    getUpcomingMilestonesSpy.mockClear();
   });
 
   const mountPage = () =>
@@ -121,5 +150,42 @@ describe("pages/timeline/index.vue", () => {
     expect(wrapper.find("[data-testid='status-label-text']").text()).toBe(
       "At Risk",
     );
+  });
+
+  describe("sport-aware upcoming milestones", () => {
+    it("resolves milestones through the sport-aware resolver with the athlete's real sport/gender/graduation year — not the legacy baseball/D1-only helper", async () => {
+      playerDetailsRef.value = {
+        primary_sport: "Softball",
+        gender: "female",
+        graduation_year: 2027,
+      };
+      const wrapper = mountPage();
+      await wrapper.vm.$nextTick();
+
+      expect(getUpcomingMilestonesSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          sport: "Softball",
+          division: "D1",
+          graduationYear: 2027,
+          opts: { gender: "female" },
+        }),
+      );
+    });
+
+    it("falls back to a neutral sport (no NCAA calendar) when the profile has no primary_sport", async () => {
+      playerDetailsRef.value = { graduation_year: 2027 };
+      const wrapper = mountPage();
+      await wrapper.vm.$nextTick();
+      const vm = wrapper.vm as any;
+
+      expect(vm.athleteSport).toBe("Tennis");
+    });
+
+    it("loads player preferences on mount so sport/gender are available", async () => {
+      mountPage();
+      await Promise.resolve();
+
+      expect(loadPlayerPreferencesMock).toHaveBeenCalled();
+    });
   });
 });
