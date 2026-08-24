@@ -35,9 +35,7 @@ export function toE164US(input: string): string | null {
  * Persist a phone value. Complete US numbers become E.164; empty becomes
  * null; incomplete typed values are kept so mid-edit autosave does not wipe.
  */
-export function toStoredPhone(
-  input: string | null | undefined,
-): string | null {
+export function toStoredPhone(input: string | null | undefined): string | null {
   if (input == null) return null;
   const trimmed = input.trim();
   if (!trimmed) return null;

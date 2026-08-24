@@ -1,11 +1,11 @@
 <template>
-  <main id="main-content" class="max-w-4xl mx-auto">
+  <main id="main-content" class="mx-auto max-w-4xl">
     <div v-if="interaction" class="space-y-6">
       <!-- Header -->
       <div class="flex items-start justify-between">
         <div>
           <h1 class="text-3xl font-bold">{{ interaction.subject }}</h1>
-          <p class="text-gray-600 mt-2">
+          <p class="mt-2 text-gray-600">
             {{ formatDateTime(interaction.occurred_at) }}
           </p>
         </div>
@@ -21,9 +21,9 @@
 
       <!-- Main Content -->
       <section aria-labelledby="content-heading">
-        <div class="bg-white rounded-lg shadow-sm p-6">
-          <h2 id="content-heading" class="text-xl font-bold mb-4">Content</h2>
-          <p class="text-gray-700 whitespace-pre-wrap">
+        <div class="rounded-lg bg-white p-6 shadow-sm">
+          <h2 id="content-heading" class="mb-4 text-xl font-bold">Content</h2>
+          <p class="whitespace-pre-wrap text-gray-700">
             {{ interaction.content }}
           </p>
         </div>
@@ -64,7 +64,7 @@
       <!-- Metadata -->
       <section aria-labelledby="metadata-heading">
         <h2 id="metadata-heading" class="sr-only">Metadata</h2>
-        <div class="bg-gray-50 rounded-lg p-4 text-sm text-gray-600 space-y-2">
+        <div class="space-y-2 rounded-lg bg-gray-50 p-4 text-sm text-gray-600">
           <p>
             <span class="font-semibold">Created:</span>
             {{ formatDateTime(interaction.created_at) }}
@@ -79,7 +79,7 @@
       role="status"
       aria-live="polite"
       aria-atomic="true"
-      class="text-center py-12"
+      class="py-12 text-center"
     >
       <p class="text-gray-600">Loading interaction details...</p>
       <div class="sr-only">Please wait while the page loads.</div>

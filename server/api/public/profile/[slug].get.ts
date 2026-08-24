@@ -178,8 +178,7 @@ export default defineEventHandler(async (event) => {
                 (details.tennis_recruiting_id as string | undefined) ||
                 undefined,
               elite_prospects_id:
-                (details.elite_prospects_id as string | undefined) ||
-                undefined,
+                (details.elite_prospects_id as string | undefined) || undefined,
               sportsrecruits_id:
                 (details.sportsrecruits_id as string | undefined) || undefined,
               concept2_id:

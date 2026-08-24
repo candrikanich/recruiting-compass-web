@@ -3,7 +3,7 @@
     <!-- Spinner -->
     <div v-if="variant === 'spinner'" class="animate-spin">
       <svg
-        class="w-12 h-12 text-blue-500"
+        class="h-12 w-12 text-blue-500"
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
         viewBox="0 0 24 24"
@@ -25,22 +25,22 @@
     </div>
 
     <!-- Skeleton -->
-    <div v-else-if="variant === 'skeleton'" class="space-y-3 w-full max-w-md">
-      <div class="h-4 bg-slate-200 rounded-sm animate-pulse" />
-      <div class="h-4 bg-slate-200 rounded-sm animate-pulse" />
-      <div class="h-4 bg-slate-200 rounded-sm w-2/3 animate-pulse" />
+    <div v-else-if="variant === 'skeleton'" class="w-full max-w-md space-y-3">
+      <div class="h-4 animate-pulse rounded-sm bg-slate-200" />
+      <div class="h-4 animate-pulse rounded-sm bg-slate-200" />
+      <div class="h-4 w-2/3 animate-pulse rounded-sm bg-slate-200" />
     </div>
 
     <!-- Shimmer -->
     <div v-else-if="variant === 'shimmer'" class="w-full max-w-md">
       <div
-        class="h-20 bg-linear-to-r from-slate-200 via-slate-100 to-slate-200 rounded-sm"
+        class="h-20 rounded-sm bg-linear-to-r from-slate-200 via-slate-100 to-slate-200"
         style="background-size: 200% 100%; animation: shimmer 2s infinite"
       />
     </div>
 
     <!-- Message -->
-    <p class="text-slate-600 text-center mt-4">{{ message }}</p>
+    <p class="mt-4 text-center text-slate-600">{{ message }}</p>
   </div>
 </template>
 

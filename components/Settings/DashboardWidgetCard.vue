@@ -1,7 +1,7 @@
 <template>
   <div
     :class="[
-      'flex items-center gap-3 p-3 rounded-lg border bg-white select-none',
+      'flex items-center gap-3 rounded-lg border bg-white p-3 select-none',
       visible ? 'border-slate-200' : 'border-slate-200 opacity-50',
       disabled ? 'cursor-default' : 'cursor-grab active:cursor-grabbing',
     ]"
@@ -10,13 +10,13 @@
     <UIcon
       name="i-heroicons-bars-3-solid"
       v-if="!disabled"
-      class="w-4 h-4 text-slate-400 shrink-0 drag-handle"
+      class="drag-handle h-4 w-4 shrink-0 text-slate-400"
       aria-hidden="true"
     />
-    <div v-else class="w-4 h-4 shrink-0" />
+    <div v-else class="h-4 w-4 shrink-0" />
 
     <!-- Label -->
-    <span class="flex-1 text-sm font-medium text-slate-800 truncate">
+    <span class="flex-1 truncate text-sm font-medium text-slate-800">
       {{ WIDGET_LABELS[id] }}
     </span>
 
@@ -25,12 +25,12 @@
       v-if="!disabled"
       type="button"
       :aria-label="`Move ${WIDGET_LABELS[id]} up`"
-      class="shrink-0 p-1 text-slate-400 hover:text-slate-700 transition-colors rounded"
+      class="shrink-0 rounded p-1 text-slate-400 transition-colors hover:text-slate-700"
       @click.stop="$emit('move-up')"
     >
       <UIcon
         name="i-heroicons-chevron-up"
-        class="w-3.5 h-3.5"
+        class="h-3.5 w-3.5"
         aria-hidden="true"
       />
     </button>
@@ -38,19 +38,19 @@
       v-if="!disabled"
       type="button"
       :aria-label="`Move ${WIDGET_LABELS[id]} down`"
-      class="shrink-0 p-1 text-slate-400 hover:text-slate-700 transition-colors rounded"
+      class="shrink-0 rounded p-1 text-slate-400 transition-colors hover:text-slate-700"
       @click.stop="$emit('move-down')"
     >
       <UIcon
         name="i-heroicons-chevron-down"
-        class="w-3.5 h-3.5"
+        class="h-3.5 w-3.5"
         aria-hidden="true"
       />
     </button>
 
     <!-- Size badge -->
     <span
-      class="text-xs font-medium bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full shrink-0"
+      class="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-500"
     >
       {{ WIDGET_SIZES[id] }}
     </span>
@@ -58,7 +58,7 @@
     <!-- Coming soon badge -->
     <span
       v-if="disabled"
-      class="text-xs font-medium bg-amber-100 text-amber-600 px-2 py-0.5 rounded-full shrink-0"
+      class="shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-600"
     >
       Coming soon
     </span>
@@ -69,11 +69,11 @@
       data-testid="toggle-visibility"
       type="button"
       :aria-label="visible ? 'Hide widget' : 'Show widget'"
-      class="shrink-0 text-slate-400 hover:text-slate-700 transition-colors"
+      class="shrink-0 text-slate-400 transition-colors hover:text-slate-700"
       @click.stop="$emit('toggle')"
     >
-      <UIcon name="i-heroicons-eye" v-if="visible" class="w-4 h-4" />
-      <UIcon name="i-heroicons-eye-slash" v-else class="w-4 h-4" />
+      <UIcon name="i-heroicons-eye" v-if="visible" class="h-4 w-4" />
+      <UIcon name="i-heroicons-eye-slash" v-else class="h-4 w-4" />
     </button>
   </div>
 </template>

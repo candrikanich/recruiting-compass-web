@@ -1,6 +1,6 @@
 <template>
-  <section class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
-    <h2 class="text-lg font-semibold text-slate-900 mb-4">Profile Photo</h2>
+  <section class="rounded-xl border border-slate-200 bg-white p-6 shadow-xs">
+    <h2 class="mb-4 text-lg font-semibold text-slate-900">Profile Photo</h2>
     <SettingsProfilePhotoUpload />
   </section>
 </template>

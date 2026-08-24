@@ -301,18 +301,16 @@ describe("onboarding middleware", () => {
 
   describe("needsSportSelection", () => {
     it("gates a player whose primary_sport is null", async () => {
-      const { needsSportSelection } = await import(
-        "~/middleware/onboarding.global"
+      const { needsSportSelection } =
+        await import("~/middleware/onboarding.global");
+      expect(needsSportSelection({ role: "player", primary_sport: null })).toBe(
+        true,
       );
-      expect(
-        needsSportSelection({ role: "player", primary_sport: null }),
-      ).toBe(true);
     });
 
     it("treats an empty/whitespace string as unset", async () => {
-      const { needsSportSelection } = await import(
-        "~/middleware/onboarding.global"
-      );
+      const { needsSportSelection } =
+        await import("~/middleware/onboarding.global");
       expect(needsSportSelection({ role: "player", primary_sport: "" })).toBe(
         true,
       );
@@ -322,30 +320,27 @@ describe("onboarding middleware", () => {
     });
 
     it("does not gate a player who has a sport", async () => {
-      const { needsSportSelection } = await import(
-        "~/middleware/onboarding.global"
-      );
+      const { needsSportSelection } =
+        await import("~/middleware/onboarding.global");
       expect(
         needsSportSelection({ role: "player", primary_sport: "Baseball" }),
       ).toBe(false);
     });
 
     it("never gates an admin, even with no sport", async () => {
-      const { needsSportSelection } = await import(
-        "~/middleware/onboarding.global"
+      const { needsSportSelection } =
+        await import("~/middleware/onboarding.global");
+      expect(needsSportSelection({ is_admin: true, primary_sport: null })).toBe(
+        false,
       );
-      expect(
-        needsSportSelection({ is_admin: true, primary_sport: null }),
-      ).toBe(false);
     });
 
     it("never gates a parent (their sport lives on the athlete's row)", async () => {
-      const { needsSportSelection } = await import(
-        "~/middleware/onboarding.global"
+      const { needsSportSelection } =
+        await import("~/middleware/onboarding.global");
+      expect(needsSportSelection({ role: "parent", primary_sport: null })).toBe(
+        false,
       );
-      expect(
-        needsSportSelection({ role: "parent", primary_sport: null }),
-      ).toBe(false);
     });
   });
 

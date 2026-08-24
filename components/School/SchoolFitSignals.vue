@@ -1,15 +1,15 @@
 <template>
   <div class="space-y-4">
     <!-- Personal Fit Card -->
-    <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-5">
-      <div class="flex items-center justify-between mb-3">
-        <h4 class="font-semibold text-slate-900 text-sm">Personal Fit</h4>
+    <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-xs">
+      <div class="mb-3 flex items-center justify-between">
+        <h4 class="text-sm font-semibold text-slate-900">Personal Fit</h4>
         <span class="text-xs text-slate-400">Based on your preferences</span>
       </div>
 
       <div
         v-if="personalFit.availableSignals === 0"
-        class="text-sm text-slate-500 py-2"
+        class="py-2 text-sm text-slate-500"
       >
         <p>
           Add your home state, campus size preference, and cost sensitivity in
@@ -34,15 +34,15 @@
     </div>
 
     <!-- Academic Fit Card -->
-    <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-5">
-      <div class="flex items-center justify-between mb-3">
-        <h4 class="font-semibold text-slate-900 text-sm">Academic Fit</h4>
+    <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-xs">
+      <div class="mb-3 flex items-center justify-between">
+        <h4 class="text-sm font-semibold text-slate-900">Academic Fit</h4>
         <span class="text-xs text-slate-400">Test score comparison</span>
       </div>
 
       <div
         v-if="!academicFit.hasSchoolData"
-        class="text-sm text-slate-500 py-2"
+        class="py-2 text-sm text-slate-500"
       >
         <p>No academic data for this school yet.</p>
         <button
@@ -62,7 +62,7 @@
 
         <div
           v-if="academicFit.admissionRate !== null"
-          class="pt-3 border-t border-slate-100 text-xs text-slate-500"
+          class="border-t border-slate-100 pt-3 text-xs text-slate-500"
         >
           Acceptance rate:
           <span class="font-medium text-slate-700">
@@ -73,7 +73,7 @@
     </div>
 
     <!-- Data source note -->
-    <p class="text-xs text-slate-400 px-1">
+    <p class="px-1 text-xs text-slate-400">
       Academic data from the
       <a
         href="https://collegescorecard.ed.gov"

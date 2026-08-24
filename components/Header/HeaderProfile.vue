@@ -10,26 +10,26 @@
       :aria-expanded="isOpen"
       aria-haspopup="menu"
       aria-controls="profile-dropdown-menu"
-      class="flex items-center gap-2 px-3 py-2 rounded-lg border border-slate-200 bg-white shadow-xs hover:bg-slate-50 hover:border-slate-300 transition-all focus:ring-2 focus:ring-brand-blue-500 focus:ring-offset-2"
+      class="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 shadow-xs transition-all hover:border-slate-300 hover:bg-slate-50 focus:ring-2 focus:ring-brand-blue-500 focus:ring-offset-2"
     >
       <!-- Avatar -->
       <div
-        class="w-8 h-8 rounded-full overflow-hidden shrink-0 bg-linear-to-br from-brand-blue-500 to-brand-blue-600 flex items-center justify-center"
+        class="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-linear-to-br from-brand-blue-500 to-brand-blue-600"
       >
         <img
           v-if="profilePhotoUrl"
           :src="profilePhotoUrl"
           :alt="`${userName}'s profile photo`"
-          class="w-full h-full object-cover"
+          class="h-full w-full object-cover"
           @error="handleImageError"
         />
-        <span v-else class="text-white text-sm font-semibold">
+        <span v-else class="text-sm font-semibold text-white">
           {{ userInitials }}
         </span>
       </div>
       <!-- Chevron -->
       <svg
-        class="w-4 h-4 text-slate-600 transition-transform"
+        class="h-4 w-4 text-slate-600 transition-transform"
         :class="{ 'rotate-180': isOpen }"
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
@@ -61,34 +61,34 @@
         ref="menuRef"
         role="menu"
         @keydown="handleMenuKeydown"
-        class="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-slate-200 z-50"
+        class="absolute right-0 z-50 mt-2 w-56 rounded-lg border border-slate-200 bg-white shadow-lg"
       >
         <!-- User Info -->
-        <div class="px-4 py-3 border-b border-slate-200" aria-hidden="true">
+        <div class="border-b border-slate-200 px-4 py-3" aria-hidden="true">
           <p class="text-sm font-medium text-slate-900">{{ userName }}</p>
           <p class="text-xs text-slate-500">{{ userEmail }}</p>
         </div>
 
         <!-- Family Code -->
-        <div v-if="myFamilyCode" class="px-4 py-2 border-b border-slate-200">
-          <p class="text-xs text-slate-600 mb-1">Family code</p>
+        <div v-if="myFamilyCode" class="border-b border-slate-200 px-4 py-2">
+          <p class="mb-1 text-xs text-slate-600">Family code</p>
           <div class="flex items-center gap-2">
             <span
               data-testid="family-code"
-              class="font-mono text-xs font-semibold text-slate-700 tracking-widest"
+              class="font-mono text-xs font-semibold tracking-widest text-slate-700"
               >{{ myFamilyCode }}</span
             >
             <button
               type="button"
               :aria-label="codeCopied ? 'Copied!' : 'Copy family code'"
               :title="codeCopied ? 'Copied!' : 'Copy'"
-              class="text-slate-400 hover:text-slate-600 transition-colors"
+              class="text-slate-400 transition-colors hover:text-slate-600"
               @click.stop="copyFamilyCode"
             >
               <svg
                 v-if="!codeCopied"
                 xmlns="http://www.w3.org/2000/svg"
-                class="w-3.5 h-3.5"
+                class="h-3.5 w-3.5"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -103,7 +103,7 @@
               <svg
                 v-else
                 xmlns="http://www.w3.org/2000/svg"
-                class="w-3.5 h-3.5 text-green-500"
+                class="h-3.5 w-3.5 text-green-500"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -121,7 +121,7 @@
           <NuxtLink
             to="/settings"
             role="menuitem"
-            class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors focus:bg-slate-50"
+            class="block px-4 py-2 text-sm text-slate-700 transition-colors hover:bg-slate-50 focus:bg-slate-50"
             @click="isOpen = false"
           >
             Settings
@@ -129,7 +129,7 @@
           <NuxtLink
             to="/help"
             role="menuitem"
-            class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors focus:bg-slate-50"
+            class="block px-4 py-2 text-sm text-slate-700 transition-colors hover:bg-slate-50 focus:bg-slate-50"
             @click="isOpen = false"
           >
             Help Center
@@ -138,7 +138,7 @@
             v-if="isAdmin"
             to="/admin"
             role="menuitem"
-            class="block px-4 py-2 text-sm text-brand-blue-600 hover:bg-blue-50 transition-colors font-medium focus:bg-blue-50"
+            class="block px-4 py-2 text-sm font-medium text-brand-blue-600 transition-colors hover:bg-blue-50 focus:bg-blue-50"
             @click="isOpen = false"
           >
             Admin Dashboard
@@ -147,7 +147,7 @@
             data-testid="logout-button"
             role="menuitem"
             @click="handleLogout"
-            class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors focus:bg-red-50"
+            class="w-full px-4 py-2 text-left text-sm text-red-600 transition-colors hover:bg-red-50 focus:bg-red-50"
           >
             Logout
           </button>

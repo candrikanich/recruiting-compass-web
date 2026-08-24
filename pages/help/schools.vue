@@ -15,7 +15,7 @@
         Navigate to
         <NuxtLink
           to="/search"
-          class="font-medium text-primary-600 hover:underline"
+          class="text-primary-600 font-medium hover:underline"
           >Search</NuxtLink
         >
         and use the filters to find schools by division, sport, state, or
@@ -29,7 +29,7 @@
         Tap <strong>Add to list</strong>. The school now appears on your
         <NuxtLink
           to="/schools"
-          class="font-medium text-primary-600 hover:underline"
+          class="text-primary-600 font-medium hover:underline"
           >Schools</NuxtLink
         >
         page with fit signals based on your profile.
@@ -105,7 +105,7 @@
         Go to your
         <NuxtLink
           to="/schools"
-          class="font-medium text-primary-600 hover:underline"
+          class="text-primary-600 font-medium hover:underline"
           >Schools</NuxtLink
         >
         page and tap the school you interacted with.

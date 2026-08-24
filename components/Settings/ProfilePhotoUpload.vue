@@ -5,19 +5,19 @@
       <div class="shrink-0">
         <div
           v-if="hasProfilePhoto && profilePhotoUrl"
-          class="relative w-24 h-24 rounded-full overflow-hidden bg-slate-200"
+          class="relative h-24 w-24 overflow-hidden rounded-full bg-slate-200"
         >
           <img
             :src="profilePhotoUrl"
             :alt="`${userName}'s profile photo`"
-            class="w-full h-full object-cover"
+            class="h-full w-full object-cover"
             loading="lazy"
             @error="handleImageError"
           />
         </div>
         <div
           v-else
-          class="w-24 h-24 rounded-full bg-linear-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold text-2xl"
+          class="flex h-24 w-24 items-center justify-center rounded-full bg-linear-to-br from-blue-500 to-blue-600 text-2xl font-semibold text-white"
         >
           {{ userInitials }}
         </div>
@@ -25,17 +25,17 @@
 
       <div class="flex-1">
         <p class="text-sm font-medium text-slate-900">Profile Photo</p>
-        <p class="text-sm text-slate-600 mt-1">
+        <p class="mt-1 text-sm text-slate-600">
           JPG, PNG, WebP, or GIF up to 5MB (automatically compressed)
         </p>
 
-        <div class="flex items-center gap-2 mt-4">
+        <div class="mt-4 flex items-center gap-2">
           <button
             type="button"
             data-testid="upload-photo-btn"
             @click="triggerFileInput"
             :disabled="uploading"
-            class="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+            class="rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {{ uploading ? "Uploading..." : "Upload Photo" }}
           </button>
@@ -46,7 +46,7 @@
             data-testid="remove-photo-btn"
             @click="confirmDelete"
             :disabled="uploading"
-            class="px-4 py-2 border border-red-300 text-red-600 font-medium rounded-lg hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
+            class="rounded-lg border border-red-300 px-4 py-2 font-medium text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
           >
             Remove
           </button>
@@ -72,7 +72,7 @@
       </div>
       <div
         data-testid="upload-progress"
-        class="w-full h-2 bg-slate-200 rounded-full overflow-hidden"
+        class="h-2 w-full overflow-hidden rounded-full bg-slate-200"
       >
         <div
           class="h-full bg-blue-600 transition-all duration-300"
@@ -85,7 +85,7 @@
     <div
       v-if="error"
       data-testid="upload-error"
-      class="bg-red-50 border border-red-200 rounded-lg p-3 text-red-700 text-sm"
+      class="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700"
     >
       <p class="font-medium">Upload failed</p>
       <p>{{ error }}</p>
@@ -94,31 +94,31 @@
     <!-- Confirmation Dialog -->
     <div
       v-if="showDeleteConfirm"
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      class="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black"
       @click="cancelDelete"
     >
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="remove-photo-title"
-        class="bg-white rounded-lg shadow-lg p-6 max-w-sm mx-4"
+        class="mx-4 max-w-sm rounded-lg bg-white p-6 shadow-lg"
         @click.stop
       >
         <h3
           id="remove-photo-title"
-          class="text-lg font-semibold text-slate-900 mb-4"
+          class="mb-4 text-lg font-semibold text-slate-900"
         >
           Remove Profile Photo?
         </h3>
-        <p class="text-slate-600 mb-6">
+        <p class="mb-6 text-slate-600">
           Are you sure you want to remove your profile photo? You can upload a
           new one anytime.
         </p>
-        <div class="flex gap-3 justify-end">
+        <div class="flex justify-end gap-3">
           <button
             type="button"
             @click="cancelDelete"
-            class="px-4 py-2 border border-slate-300 text-slate-700 font-medium rounded-lg hover:bg-slate-50 transition"
+            class="rounded-lg border border-slate-300 px-4 py-2 font-medium text-slate-700 transition hover:bg-slate-50"
           >
             Cancel
           </button>
@@ -126,7 +126,7 @@
             type="button"
             @click="confirmDeleteAction"
             :disabled="uploading"
-            class="px-4 py-2 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+            class="rounded-lg bg-red-600 px-4 py-2 font-medium text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
             Remove Photo
           </button>

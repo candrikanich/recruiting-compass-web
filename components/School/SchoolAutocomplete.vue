@@ -12,7 +12,7 @@
       :aria-activedescendant="
         selectedIndex >= 0 ? `autocomplete-option-${selectedIndex}` : undefined
       "
-      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-hidden transition"
+      class="w-full rounded-lg border border-gray-300 px-4 py-2 outline-hidden transition focus:border-transparent focus:ring-2 focus:ring-blue-500"
       @input="handleInput"
       @keydown="handleKeydown"
       @blur="handleBlur"
@@ -24,7 +24,7 @@
       v-if="showDropdown"
       id="autocomplete-listbox"
       role="listbox"
-      class="absolute top-full left-0 right-0 mt-1 rounded-lg z-50 max-h-64 overflow-y-auto bg-white border border-slate-300 shadow-lg"
+      class="absolute top-full right-0 left-0 z-50 mt-1 max-h-64 overflow-y-auto rounded-lg border border-slate-300 bg-white shadow-lg"
     >
       <!-- Loading State -->
       <div
@@ -34,7 +34,7 @@
       >
         <div class="inline-block animate-spin">
           <svg
-            class="w-4 h-4"
+            class="h-4 w-4"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -59,7 +59,7 @@
       </div>
 
       <!-- Error State -->
-      <div v-else-if="error" class="px-4 py-3 text-sm text-red-600 bg-red-50">
+      <div v-else-if="error" class="bg-red-50 px-4 py-3 text-sm text-red-600">
         {{ error }}
       </div>
 
@@ -81,7 +81,7 @@
           role="option"
           :aria-selected="index === selectedIndex"
           :class="[
-            'w-full text-left px-4 py-3 transition cursor-pointer last:border-b-0 border-b border-slate-300',
+            'w-full cursor-pointer border-b border-slate-300 px-4 py-3 text-left transition last:border-b-0',
             index === selectedIndex ? 'bg-blue-100' : 'hover:bg-blue-50',
           ]"
           @click="selectCollege(college)"

@@ -1,17 +1,19 @@
 <template>
-  <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
-    <h3 class="text-lg font-semibold text-slate-900 mb-4">
+  <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-xs">
+    <h3 class="mb-4 text-lg font-semibold text-slate-900">
       Communication Analytics
     </h3>
 
     <!-- Empty State -->
-    <div v-if="metrics.totalInteractions === 0" class="text-center py-6">
-      <p class="text-slate-600">No analytics yet — log an interaction to start.</p>
+    <div v-if="metrics.totalInteractions === 0" class="py-6 text-center">
+      <p class="text-slate-600">
+        No analytics yet — log an interaction to start.
+      </p>
     </div>
 
     <template v-else>
       <!-- Metrics table -->
-      <dl class="divide-y divide-slate-100 border border-slate-200 rounded-lg">
+      <dl class="divide-y divide-slate-100 rounded-lg border border-slate-200">
         <div
           v-for="row in rows"
           :key="row.label"
@@ -36,7 +38,7 @@
         </span>
         <span
           :class="[
-            'px-2 py-0.5 rounded-sm text-xs font-medium',
+            'rounded-sm px-2 py-0.5 text-xs font-medium',
             comparison.coach.responseRate >=
             comparison.schoolAverage.responseRate
               ? 'bg-green-100 text-green-800'
@@ -58,7 +60,7 @@
         <li
           v-for="(insight, idx) in insights"
           :key="idx"
-          class="flex items-start gap-2 p-2.5 bg-blue-50 rounded-sm text-sm text-blue-900"
+          class="flex items-start gap-2 rounded-sm bg-blue-50 p-2.5 text-sm text-blue-900"
         >
           <span aria-hidden="true">💡</span>
           <span>{{ insight }}</span>
@@ -70,7 +72,10 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
-import type { CoachMetrics, CoachComparison } from "~/composables/useCoachAnalytics";
+import type {
+  CoachMetrics,
+  CoachComparison,
+} from "~/composables/useCoachAnalytics";
 
 const props = defineProps<{
   metrics: CoachMetrics;

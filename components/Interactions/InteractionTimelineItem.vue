@@ -1,30 +1,30 @@
 <template>
   <div
-    class="bg-white rounded-xl border border-slate-200 shadow-xs hover:shadow-md transition overflow-hidden"
+    class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xs transition hover:shadow-md"
   >
     <div class="p-5">
       <div class="flex items-start justify-between gap-4">
-        <div class="flex items-start gap-4 flex-1 min-w-0">
+        <div class="flex min-w-0 flex-1 items-start gap-4">
           <!-- Type Icon -->
           <div
-            class="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
+            class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
             :class="getTypeIconBg(interaction.type)"
           >
             <UIcon
               :name="getTypeIcon(interaction.type)"
-              class="w-5 h-5"
+              class="h-5 w-5"
               :class="getTypeIconColor(interaction.type)"
             />
           </div>
 
-          <div class="flex-1 min-w-0">
+          <div class="min-w-0 flex-1">
             <!-- Header -->
-            <div class="flex items-center gap-2 flex-wrap mb-1">
+            <div class="mb-1 flex flex-wrap items-center gap-2">
               <span class="font-semibold text-slate-900">{{
                 formatType(interaction.type)
               }}</span>
               <span
-                class="px-2 py-0.5 text-xs font-medium rounded-full"
+                class="rounded-full px-2 py-0.5 text-xs font-medium"
                 :class="
                   interaction.direction === 'outbound'
                     ? 'bg-blue-100 text-blue-900'
@@ -37,7 +37,7 @@
               </span>
               <span
                 v-if="interaction.sentiment"
-                class="px-2 py-0.5 text-xs font-medium rounded-full"
+                class="rounded-full px-2 py-0.5 text-xs font-medium"
                 :class="getSentimentBadgeClass(interaction.sentiment)"
               >
                 {{ formatSentiment(interaction.sentiment) }}
@@ -47,13 +47,13 @@
             <!-- Subject -->
             <p
               v-if="interaction.subject"
-              class="text-slate-900 font-medium truncate"
+              class="truncate font-medium text-slate-900"
             >
               {{ interaction.subject }}
             </p>
 
             <!-- Coach -->
-            <p class="text-sm text-slate-500 mt-1">
+            <p class="mt-1 text-sm text-slate-500">
               <span v-if="interaction.coach_id">{{ coachDisplay }}</span>
               <span v-if="interaction.coach_id"> &bull; </span>
               <span
@@ -64,15 +64,15 @@
             <!-- Content Preview -->
             <p
               v-if="interaction.content"
-              class="text-sm text-slate-600 mt-2 line-clamp-2"
+              class="mt-2 line-clamp-2 text-sm text-slate-600"
             >
               {{ interaction.content }}
             </p>
 
             <!-- Meta -->
-            <div class="flex items-center gap-4 mt-3 text-xs text-slate-400">
+            <div class="mt-3 flex items-center gap-4 text-xs text-slate-400">
               <span class="flex items-center gap-1">
-                <UIcon name="i-heroicons-calendar" class="w-3.5 h-3.5" />
+                <UIcon name="i-heroicons-calendar" class="h-3.5 w-3.5" />
                 {{ formatDate(interaction.occurred_at) }}
               </span>
             </div>
@@ -82,7 +82,7 @@
         <!-- Delete Button -->
         <button
           @click="$emit('delete', interaction.id)"
-          class="px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition shrink-0"
+          class="shrink-0 rounded-lg px-3 py-1.5 text-sm font-medium text-red-600 transition hover:bg-red-50"
         >
           Delete
         </button>

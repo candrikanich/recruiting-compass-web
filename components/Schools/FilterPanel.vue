@@ -1,19 +1,19 @@
 <template>
-  <div class="space-y-6 mb-8">
+  <div class="mb-8 space-y-6">
     <!-- Filter Header with Search + Sliders -->
-    <div class="flex flex-col lg:flex-row lg:items-center gap-4">
+    <div class="flex flex-col gap-4 lg:flex-row lg:items-center">
       <!-- Search (left) -->
       <div class="flex-1">
         <label
           for="school-search"
-          class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3"
+          class="mb-3 block text-xs font-semibold tracking-wide text-slate-500 uppercase"
         >
           Find Schools
         </label>
-        <div class="relative group">
+        <div class="group relative">
           <UIcon
             name="i-heroicons-magnifying-glass"
-            class="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors"
+            class="absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-blue-500"
             aria-hidden="true"
           />
           <input
@@ -28,16 +28,16 @@
               )
             "
             placeholder="Search by name or location..."
-            class="w-full pl-12 pr-4 py-3 text-slate-700 placeholder-slate-400 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all bg-white hover:border-slate-300"
+            class="w-full rounded-xl border border-slate-200 bg-white py-3 pr-4 pl-12 text-slate-700 placeholder-slate-400 transition-all hover:border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
           />
         </div>
       </div>
 
       <!-- Distance Slider -->
       <div class="w-full lg:w-1/4">
-        <div class="flex items-center justify-between mb-2">
+        <div class="mb-2 flex items-center justify-between">
           <label
-            class="block text-xs font-semibold text-slate-500 uppercase tracking-wide"
+            class="block text-xs font-semibold tracking-wide text-slate-500 uppercase"
           >
             Distance
           </label>
@@ -64,11 +64,11 @@
           :disabled="
             !userHomeLocation?.latitude || !userHomeLocation?.longitude
           "
-          class="w-full h-2.5 bg-linear-to-r from-slate-300 to-slate-400 rounded-full appearance-none cursor-pointer accent-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
+          class="h-2.5 w-full cursor-pointer appearance-none rounded-full bg-linear-to-r from-slate-300 to-slate-400 accent-blue-500 transition-opacity disabled:cursor-not-allowed disabled:opacity-50"
         />
         <p
           v-if="!userHomeLocation?.latitude || !userHomeLocation?.longitude"
-          class="text-xs text-amber-700 mt-1 px-2 py-0.5 bg-amber-50 rounded-sm border border-amber-200"
+          class="mt-1 rounded-sm border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs text-amber-700"
         >
           Set home location
         </p>
@@ -76,9 +76,9 @@
     </div>
 
     <!-- Filter Sections Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+    <div class="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-4">
       <div
-        class="lg:col-span-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4"
+        class="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-6 lg:col-span-4"
       >
         <!-- Division -->
         <SchoolFilterSelect
@@ -154,10 +154,10 @@
     <!-- Active Filters Chips -->
     <div
       v-if="hasActiveFilters"
-      class="flex flex-wrap items-center gap-3 pt-4 border-t border-slate-100"
+      class="flex flex-wrap items-center gap-3 border-t border-slate-100 pt-4"
     >
       <span
-        class="text-xs font-semibold text-slate-500 uppercase tracking-wide"
+        class="text-xs font-semibold tracking-wide text-slate-500 uppercase"
       >
         Filters:
       </span>
@@ -165,18 +165,18 @@
         <span
           v-for="(value, key) in activeFiltersDisplay"
           :key="key"
-          class="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-700 rounded-full text-xs font-medium border border-blue-200 hover:bg-blue-100 transition-colors group"
+          class="group inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 transition-colors hover:bg-blue-100"
         >
           <span class="text-blue-500">&#x25CF;</span>
           {{ value }}
           <button
             @click="$emit('remove-filter', key as string)"
             :aria-label="`Remove ${value} filter`"
-            class="ml-1 text-blue-400 hover:text-blue-600 transition-colors group-hover:opacity-100"
+            class="ml-1 text-blue-400 transition-colors group-hover:opacity-100 hover:text-blue-600"
           >
             <UIcon
               name="i-heroicons-x-mark"
-              class="w-3.5 h-3.5"
+              class="h-3.5 w-3.5"
               aria-hidden="true"
             />
           </button>
@@ -185,7 +185,7 @@
       <button
         @click="$emit('clear-filters')"
         aria-label="Clear all filters"
-        class="ml-auto text-xs font-medium text-slate-500 hover:text-slate-700 hover:bg-slate-100 px-3 py-1.5 rounded-lg transition-colors"
+        class="ml-auto rounded-lg px-3 py-1.5 text-xs font-medium text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700"
       >
         Clear all
       </button>

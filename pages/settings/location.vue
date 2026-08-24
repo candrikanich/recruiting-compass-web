@@ -5,13 +5,13 @@
     <!-- Global Navigation -->
 
     <!-- Page Header -->
-    <div class="bg-white border-b border-slate-200">
-      <div class="max-w-4xl mx-auto px-4 sm:px-6 py-4">
+    <div class="border-b border-slate-200 bg-white">
+      <div class="mx-auto max-w-4xl px-4 py-4 sm:px-6">
         <NuxtLink
           to="/settings"
-          class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition mb-3 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          class="mb-3 inline-flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium text-blue-600 transition hover:bg-blue-50 hover:text-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         >
-          <UIcon name="i-heroicons-arrow-left" class="w-4 h-4" />
+          <UIcon name="i-heroicons-arrow-left" class="h-4 w-4" />
           Back to Settings
         </NuxtLink>
         <h1 class="text-2xl font-semibold text-slate-900">Home Location</h1>
@@ -21,21 +21,21 @@
       </div>
     </div>
 
-    <main class="max-w-4xl mx-auto px-4 sm:px-6 py-8">
+    <main class="mx-auto max-w-4xl px-4 py-8 sm:px-6">
       <div
         v-if="isLoading"
-        class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
+        class="rounded-xl border border-slate-200 bg-white p-12 text-center shadow-xs"
       >
         <div
-          class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"
+          class="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"
         ></div>
         <p class="text-slate-600">Loading preferences...</p>
       </div>
 
       <div v-else class="space-y-6">
         <!-- Address Section -->
-        <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
-          <h2 class="text-lg font-semibold text-slate-900 mb-4">Address</h2>
+        <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-xs">
+          <h2 class="mb-4 text-lg font-semibold text-slate-900">Address</h2>
           <SharedAddressAutocompleteInput
             :model-value="localLocation"
             @update:model-value="
@@ -46,14 +46,14 @@
             "
           />
           <!-- Geocode status -->
-          <p v-if="localLocation.latitude" class="text-xs text-green-600 mt-3">
+          <p v-if="localLocation.latitude" class="mt-3 text-xs text-green-600">
             ✓ Coordinates set ({{ localLocation.latitude.toFixed(4) }},
             {{ localLocation.longitude?.toFixed(4) }}) — distance calculations
             enabled
           </p>
           <p
             v-else-if="localLocation.address"
-            class="text-xs text-amber-600 mt-3"
+            class="mt-3 text-xs text-amber-600"
           >
             Coordinates not set — click Save Location to auto-geocode and enable
             distance calculations
@@ -64,14 +64,14 @@
         <div class="flex justify-end gap-3">
           <button
             @click="handleClear"
-            class="px-4 py-2 text-sm font-medium text-slate-700 border border-slate-300 rounded-lg hover:bg-slate-50 transition"
+            class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
           >
             Clear
           </button>
           <button
             @click="handleSave"
             :disabled="saving"
-            class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 transition"
+            class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:opacity-50"
           >
             {{ saving ? "Saving..." : "Save Location" }}
           </button>
@@ -82,12 +82,12 @@
           v-if="saveSuccess"
           role="status"
           aria-live="polite"
-          class="bg-emerald-50 border border-emerald-200 rounded-lg p-4"
+          class="rounded-lg border border-emerald-200 bg-emerald-50 p-4"
         >
-          <p class="text-emerald-700 flex items-center gap-2">
+          <p class="flex items-center gap-2 text-emerald-700">
             <UIcon
               name="i-heroicons-check-circle"
-              class="w-5 h-5"
+              class="h-5 w-5"
               aria-hidden="true"
             />
             Home location saved successfully
@@ -96,7 +96,7 @@
         <div
           v-if="error"
           role="alert"
-          class="bg-red-50 border border-red-200 rounded-lg p-4"
+          class="rounded-lg border border-red-200 bg-red-50 p-4"
         >
           <p class="text-red-700">Error: {{ error }}</p>
         </div>

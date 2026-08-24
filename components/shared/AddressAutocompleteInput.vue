@@ -82,14 +82,14 @@ function onBlur() {
   <div class="space-y-3">
     <!-- Address line with autocomplete -->
     <div class="relative">
-      <label class="block text-sm font-medium text-slate-700 mb-1"
+      <label class="mb-1 block text-sm font-medium text-slate-700"
         >Street Address</label
       >
       <div class="flex gap-2">
         <input
           :value="addressInput"
           type="text"
-          class="flex-1 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition disabled:opacity-50"
+          class="flex-1 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 transition focus:border-transparent focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
           :disabled="disabled"
           placeholder="Start typing your address..."
           @input="onAddressInput"
@@ -98,7 +98,7 @@ function onBlur() {
         <button
           v-if="isSelected"
           type="button"
-          class="px-3 py-2 text-sm text-slate-500 hover:text-slate-700 border border-slate-200 rounded-xl"
+          class="rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-500 hover:text-slate-700"
           title="Clear and re-enter address"
           @click="clearSelection"
         >
@@ -109,20 +109,20 @@ function onBlur() {
       <!-- Suggestions dropdown -->
       <div
         v-if="showDropdown && suggestions.length > 0"
-        class="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden"
+        class="absolute z-50 mt-1 w-full overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg"
       >
         <button
           v-for="(s, i) in suggestions"
           :key="i"
           type="button"
-          class="w-full px-4 py-3 text-left hover:bg-slate-50 border-b border-slate-100 last:border-0 text-sm text-slate-800"
+          class="w-full border-b border-slate-100 px-4 py-3 text-left text-sm text-slate-800 last:border-0 hover:bg-slate-50"
           @mousedown.prevent="onSelect(s)"
         >
           {{ s.label }}
         </button>
       </div>
 
-      <p v-if="loading" class="text-xs text-slate-400 mt-1">
+      <p v-if="loading" class="mt-1 text-xs text-slate-400">
         Looking up address...
       </p>
     </div>
@@ -130,16 +130,16 @@ function onBlur() {
     <!-- City / State / Zip — readonly after selection -->
     <div class="grid grid-cols-2 gap-3">
       <div>
-        <label class="block text-sm font-medium text-slate-700 mb-1"
+        <label class="mb-1 block text-sm font-medium text-slate-700"
           >City</label
         >
         <input
           :value="modelValue.city"
           type="text"
           :readonly="isSelected"
-          class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 transition disabled:opacity-50"
+          class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 transition focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
           :class="
-            isSelected ? 'bg-slate-100 text-slate-500 cursor-default' : ''
+            isSelected ? 'cursor-default bg-slate-100 text-slate-500' : ''
           "
           placeholder="City"
           :disabled="disabled"
@@ -152,7 +152,7 @@ function onBlur() {
         />
       </div>
       <div>
-        <label class="block text-sm font-medium text-slate-700 mb-1"
+        <label class="mb-1 block text-sm font-medium text-slate-700"
           >State</label
         >
         <input
@@ -160,9 +160,9 @@ function onBlur() {
           type="text"
           maxlength="2"
           :readonly="isSelected"
-          class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 transition disabled:opacity-50"
+          class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 transition focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
           :class="
-            isSelected ? 'bg-slate-100 text-slate-500 cursor-default' : ''
+            isSelected ? 'cursor-default bg-slate-100 text-slate-500' : ''
           "
           placeholder="IL"
           :disabled="disabled"
@@ -176,7 +176,7 @@ function onBlur() {
       </div>
     </div>
     <div>
-      <label class="block text-sm font-medium text-slate-700 mb-1"
+      <label class="mb-1 block text-sm font-medium text-slate-700"
         >Zip Code</label
       >
       <input
@@ -184,8 +184,8 @@ function onBlur() {
         type="text"
         maxlength="10"
         :readonly="isSelected"
-        class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 transition disabled:opacity-50"
-        :class="isSelected ? 'bg-slate-100 text-slate-500 cursor-default' : ''"
+        class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 transition focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+        :class="isSelected ? 'cursor-default bg-slate-100 text-slate-500' : ''"
         placeholder="62701"
         :disabled="disabled"
         @input="

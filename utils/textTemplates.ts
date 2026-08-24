@@ -93,4 +93,5 @@ Generated: ${new Date().toLocaleDateString()}
  * Get metric label for display, sourced from the sport-agnostic registry so
  * non-baseball metrics render their real label (never a raw key).
  */
-export const getMetricLabel = (type: string): string => getMetricDef(type).label;
+export const getMetricLabel = (type: string): string =>
+  getMetricDef(type).label;

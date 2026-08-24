@@ -3,7 +3,7 @@
     :role="role"
     :aria-live="ariaLive"
     aria-atomic="true"
-    class="p-4 rounded-lg border"
+    class="rounded-lg border p-4"
     :class="variantClasses"
   >
     <slot />

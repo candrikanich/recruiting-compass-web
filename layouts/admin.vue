@@ -23,7 +23,7 @@ function isActive(link: { to: string; exact?: boolean }) {
           v-for="link in links"
           :key="link.to"
           :to="link.to"
-          class="whitespace-nowrap border-b-2 px-3 py-3 text-sm font-medium"
+          class="border-b-2 px-3 py-3 text-sm font-medium whitespace-nowrap"
           :class="
             isActive(link)
               ? 'border-brand-blue-600 text-brand-blue-700'

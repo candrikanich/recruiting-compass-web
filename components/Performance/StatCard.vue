@@ -1,12 +1,12 @@
 <template>
   <div
-    class="rounded-lg p-4 bg-linear-to-br from-blue-100 to-blue-50 border border-blue-200"
+    class="rounded-lg border border-blue-200 bg-linear-to-br from-blue-100 to-blue-50 p-4"
   >
-    <p class="text-xs font-semibold uppercase tracking-wider text-slate-600">
+    <p class="text-xs font-semibold tracking-wider text-slate-600 uppercase">
       {{ label }}
     </p>
     <div class="mt-2 flex items-baseline gap-1">
-      <p v-if="trend" class="text-2xl font-bold capitalize text-slate-900">
+      <p v-if="trend" class="text-2xl font-bold text-slate-900 capitalize">
         {{ value }}
       </p>
       <p

@@ -70,7 +70,9 @@ describe("resolveHostRedirect", () => {
   });
 
   it("serves non-admin pages in place on a loopback host (no /admin redirect)", () => {
-    expect(resolveHostRedirect("localhost:3003", "/dashboard", admin)).toBeNull();
+    expect(
+      resolveHostRedirect("localhost:3003", "/dashboard", admin),
+    ).toBeNull();
     expect(resolveHostRedirect("127.0.0.1:3003", "/schools", admin)).toBeNull();
   });
 

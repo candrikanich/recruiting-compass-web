@@ -1,16 +1,16 @@
 <template>
-  <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+  <div class="mb-8 grid grid-cols-1 gap-4 md:grid-cols-4">
     <!-- Total -->
-    <div class="rounded-lg shadow-sm p-6 bg-white">
-      <h3 class="text-sm font-medium mb-2 text-slate-600">
+    <div class="rounded-lg bg-white p-6 shadow-sm">
+      <h3 class="mb-2 text-sm font-medium text-slate-600">
         Total Interactions
       </h3>
       <p class="text-3xl font-bold text-slate-900">{{ interactions.length }}</p>
     </div>
 
     <!-- By Direction -->
-    <div class="rounded-lg shadow-sm p-6 bg-white">
-      <h3 class="text-sm font-medium mb-2 text-slate-600">Direction</h3>
+    <div class="rounded-lg bg-white p-6 shadow-sm">
+      <h3 class="mb-2 text-sm font-medium text-slate-600">Direction</h3>
       <div class="space-y-2">
         <p class="text-sm">
           <span class="font-medium text-slate-900">Outbound:</span>
@@ -24,17 +24,17 @@
     </div>
 
     <!-- Most Common Type -->
-    <div class="rounded-lg shadow-sm p-6 bg-white">
-      <h3 class="text-sm font-medium mb-2 text-slate-600">Most Used Type</h3>
+    <div class="rounded-lg bg-white p-6 shadow-sm">
+      <h3 class="mb-2 text-sm font-medium text-slate-600">Most Used Type</h3>
       <p class="text-2xl font-bold text-slate-900">{{ getMostCommonType() }}</p>
-      <p class="text-xs mt-1 text-slate-600">
+      <p class="mt-1 text-xs text-slate-600">
         {{ getMostCommonTypeCount() }} interactions
       </p>
     </div>
 
     <!-- Sentiment Distribution -->
-    <div class="rounded-lg shadow-sm p-6 bg-white">
-      <h3 class="text-sm font-medium mb-2 text-slate-600">Sentiment</h3>
+    <div class="rounded-lg bg-white p-6 shadow-sm">
+      <h3 class="mb-2 text-sm font-medium text-slate-600">Sentiment</h3>
       <div class="space-y-1 text-xs">
         <p>
           <span class="font-medium text-emerald-600">Very Positive:</span>
@@ -53,24 +53,24 @@
   </div>
 
   <!-- Type Distribution Chart -->
-  <div class="rounded-lg shadow-sm p-6 mb-8 bg-white">
-    <h3 class="font-bold text-lg mb-4 text-slate-900">Interactions by Type</h3>
+  <div class="mb-8 rounded-lg bg-white p-6 shadow-sm">
+    <h3 class="mb-4 text-lg font-bold text-slate-900">Interactions by Type</h3>
     <div class="space-y-2">
       <div
         v-for="(count, type) in typeDistribution"
         :key="type"
         class="flex items-center gap-4"
       >
-        <span class="w-32 text-sm font-medium truncate text-slate-900">{{
+        <span class="w-32 truncate text-sm font-medium text-slate-900">{{
           formatType(type)
         }}</span>
-        <div class="flex-1 h-6 rounded-full overflow-hidden bg-slate-50">
+        <div class="h-6 flex-1 overflow-hidden rounded-full bg-slate-50">
           <div
             :style="{
               width: (count / interactions.length) * 100 + '%',
               backgroundColor: getTypeColorVar(type),
             }"
-            class="h-full flex items-center justify-end pr-2"
+            class="flex h-full items-center justify-end pr-2"
           >
             <span
               v-if="(count / interactions.length) * 100 > 10"
@@ -80,7 +80,7 @@
             </span>
           </div>
         </div>
-        <span class="w-12 text-sm text-right text-slate-600">{{ count }}</span>
+        <span class="w-12 text-right text-sm text-slate-600">{{ count }}</span>
       </div>
     </div>
   </div>

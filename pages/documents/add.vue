@@ -58,7 +58,7 @@ const handleCancel = () => {
     <!-- Error Message -->
     <div
       v-if="uploadError"
-      class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg"
+      class="mb-6 rounded-lg border border-red-200 bg-red-50 p-4"
     >
       <p class="text-sm text-red-700">{{ uploadError }}</p>
     </div>

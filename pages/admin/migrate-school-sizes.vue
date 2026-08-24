@@ -1,11 +1,11 @@
 <template>
   <div class="min-h-screen bg-slate-50 py-8">
-    <div class="max-w-4xl mx-auto px-4">
-      <div class="bg-white rounded-lg shadow-xs border border-slate-200 p-6">
-        <h1 class="text-2xl font-bold text-slate-900 mb-4">
+    <div class="mx-auto max-w-4xl px-4">
+      <div class="rounded-lg border border-slate-200 bg-white p-6 shadow-xs">
+        <h1 class="mb-4 text-2xl font-bold text-slate-900">
           Migrate School Sizes
         </h1>
-        <p class="text-slate-600 mb-6">
+        <p class="mb-6 text-slate-600">
           This migration will convert all string
           <code>student_size</code> values to numeric values in the schools
           table.
@@ -15,7 +15,7 @@
           <button
             @click="runMigration"
             :disabled="loading"
-            class="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
+            class="rounded-lg bg-blue-600 px-6 py-3 font-medium text-white transition hover:bg-blue-700 disabled:opacity-50"
           >
             {{ loading ? "Running Migration..." : "Run Migration" }}
           </button>
@@ -24,13 +24,13 @@
         <div v-if="result" class="mt-6 space-y-4">
           <div
             :class="[
-              'p-4 rounded-lg',
+              'rounded-lg p-4',
               result.success
                 ? 'bg-green-50 text-green-800'
                 : 'bg-red-50 text-red-800',
             ]"
           >
-            <h3 class="font-semibold mb-2">
+            <h3 class="mb-2 font-semibold">
               {{
                 result.success ? "✓ Migration Completed" : "⚠ Migration Failed"
               }}
@@ -41,7 +41,7 @@
               <p><strong>Skipped:</strong> {{ result.skippedCount }}</p>
               <p
                 v-if="result.errorCount > 0"
-                class="text-red-700 font-semibold"
+                class="font-semibold text-red-700"
               >
                 <strong>Errors:</strong> {{ result.errorCount }}
               </p>
@@ -49,12 +49,12 @@
           </div>
 
           <div v-if="result.errors.length > 0" class="mt-4">
-            <h4 class="font-semibold text-slate-900 mb-2">Error Details:</h4>
+            <h4 class="mb-2 font-semibold text-slate-900">Error Details:</h4>
             <div class="space-y-2">
               <div
                 v-for="(error, index) in result.errors"
                 :key="index"
-                class="p-3 bg-red-50 text-red-800 rounded-sm text-sm"
+                class="rounded-sm bg-red-50 p-3 text-sm text-red-800"
               >
                 <p><strong>School ID:</strong> {{ error.schoolId }}</p>
                 <p><strong>Error:</strong> {{ error.error }}</p>
@@ -64,14 +64,14 @@
 
           <button
             @click="resetMigration"
-            class="px-4 py-2 bg-slate-600 text-white font-medium rounded-lg hover:bg-slate-700 transition"
+            class="rounded-lg bg-slate-600 px-4 py-2 font-medium text-white transition hover:bg-slate-700"
           >
             Run Again
           </button>
         </div>
 
-        <div v-if="error" class="mt-6 p-4 bg-red-50 text-red-800 rounded-lg">
-          <h3 class="font-semibold mb-2">Error</h3>
+        <div v-if="error" class="mt-6 rounded-lg bg-red-50 p-4 text-red-800">
+          <h3 class="mb-2 font-semibold">Error</h3>
           <p class="text-sm">{{ error }}</p>
         </div>
       </div>

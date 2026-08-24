@@ -1,8 +1,8 @@
 <template>
   <div
-    class="bg-white rounded-2xl border border-slate-200 shadow-xs hover:shadow-md transition-shadow p-6"
+    class="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs transition-shadow hover:shadow-md"
   >
-    <div class="flex items-center justify-between mb-6">
+    <div class="mb-6 flex items-center justify-between">
       <h2 class="text-xl font-bold text-slate-900">📄 Recent Documents</h2>
       <NuxtLink
         to="/documents"
@@ -14,12 +14,12 @@
 
     <div
       v-if="recentDocuments.length === 0"
-      class="text-center py-8 text-slate-600"
+      class="py-8 text-center text-slate-600"
     >
       <p>No documents uploaded yet</p>
       <NuxtLink
         to="/documents"
-        class="font-semibold text-sm mt-2 inline-block text-blue-600 hover:text-blue-700"
+        class="mt-2 inline-block text-sm font-semibold text-blue-600 hover:text-blue-700"
       >
         Upload a document
       </NuxtLink>
@@ -29,12 +29,12 @@
       <div
         v-for="doc in recentDocuments"
         :key="doc.id"
-        class="rounded-lg p-4 transition border border-slate-200 hover:shadow-md"
+        class="rounded-lg border border-slate-200 p-4 transition hover:shadow-md"
       >
-        <div class="flex items-start justify-between mb-2">
+        <div class="mb-2 flex items-start justify-between">
           <div class="flex-1">
-            <p class="font-semibold truncate text-slate-900">{{ doc.title }}</p>
-            <p class="text-xs capitalize text-slate-600">{{ doc.type }}</p>
+            <p class="truncate font-semibold text-slate-900">{{ doc.title }}</p>
+            <p class="text-xs text-slate-600 capitalize">{{ doc.type }}</p>
           </div>
         </div>
         <div class="flex items-center justify-between">
@@ -44,13 +44,13 @@
           <div class="flex gap-2">
             <span
               v-if="(doc.shared_with_schools || []).length > 0"
-              class="text-xs px-2 py-1 rounded-sm bg-emerald-100 text-emerald-700"
+              class="rounded-sm bg-emerald-100 px-2 py-1 text-xs text-emerald-700"
             >
               Shared: {{ (doc.shared_with_schools || []).length }}
             </span>
             <NuxtLink
               :to="`/documents/${doc.id}`"
-              class="text-xs px-3 py-1 rounded-sm transition bg-blue-100 text-blue-700 hover:bg-blue-200"
+              class="rounded-sm bg-blue-100 px-3 py-1 text-xs text-blue-700 transition hover:bg-blue-200"
             >
               View
             </NuxtLink>

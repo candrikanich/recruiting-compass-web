@@ -3,7 +3,7 @@
     <Transition name="fade">
       <div
         v-if="isOpen"
-        class="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs"
         @keydown.escape="handleClose"
       >
         <div
@@ -11,30 +11,30 @@
           role="dialog"
           aria-modal="true"
           aria-labelledby="recovery-modal-title"
-          class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-slide-up"
+          class="animate-slide-up w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl"
         >
           <!-- Header with gradient -->
           <div
-            class="bg-linear-to-r from-brand-orange-500 to-brand-red-500 text-white px-6 py-8"
+            class="bg-linear-to-r from-brand-orange-500 to-brand-red-500 px-6 py-8 text-white"
           >
-            <h2 id="recovery-modal-title" class="text-2xl font-bold mb-2">
+            <h2 id="recovery-modal-title" class="mb-2 text-2xl font-bold">
               Let's Get Back on Track 🎯
             </h2>
-            <p class="text-brand-orange-50 text-sm">
+            <p class="text-sm text-brand-orange-50">
               We noticed you're behind. This is recoverable with a focused plan.
             </p>
           </div>
 
           <!-- Plan Content -->
-          <div class="px-6 py-6 space-y-6">
+          <div class="space-y-6 px-6 py-6">
             <!-- Trigger Info -->
             <div
-              class="bg-brand-orange-50 border-l-4 border-brand-orange-500 p-4 rounded-sm"
+              class="rounded-sm border-l-4 border-brand-orange-500 bg-brand-orange-50 p-4"
             >
-              <p class="text-sm text-brand-orange-900 font-medium">
+              <p class="text-sm font-medium text-brand-orange-900">
                 {{ plan.title }}
               </p>
-              <p class="text-xs text-brand-orange-700 mt-1">
+              <p class="mt-1 text-xs text-brand-orange-700">
                 {{ plan.description }}
               </p>
             </div>
@@ -42,7 +42,7 @@
             <!-- Duration -->
             <div class="flex items-center gap-3 text-sm">
               <div
-                class="w-10 h-10 bg-brand-blue-100 rounded-full flex items-center justify-center"
+                class="flex h-10 w-10 items-center justify-center rounded-full bg-brand-blue-100"
               >
                 <span class="text-lg" aria-hidden="true">⏱️</span>
               </div>
@@ -58,7 +58,7 @@
 
             <!-- Steps -->
             <div class="space-y-3">
-              <p class="font-semibold text-slate-900 text-sm">Action Steps:</p>
+              <p class="text-sm font-semibold text-slate-900">Action Steps:</p>
               <ol class="space-y-2">
                 <li
                   v-for="(step, idx) in plan.steps"
@@ -66,17 +66,17 @@
                   class="flex gap-3"
                 >
                   <span
-                    class="shrink-0 w-6 h-6 bg-brand-emerald-100 text-brand-emerald-700 rounded-full flex items-center justify-center text-xs font-bold"
+                    class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-emerald-100 text-xs font-bold text-brand-emerald-700"
                   >
                     {{ idx + 1 }}
                   </span>
-                  <span class="text-sm text-slate-700 pt-0.5">{{ step }}</span>
+                  <span class="pt-0.5 text-sm text-slate-700">{{ step }}</span>
                 </li>
               </ol>
             </div>
 
             <!-- Support Message -->
-            <div class="bg-brand-emerald-50 rounded-sm p-4 text-center">
+            <div class="rounded-sm bg-brand-emerald-50 p-4 text-center">
               <p class="text-sm text-brand-emerald-900">
                 <strong>You've got this!</strong> Many athletes successfully
                 recover from setbacks. Focus on the first step.
@@ -86,17 +86,17 @@
 
           <!-- Footer -->
           <div
-            class="border-t border-slate-200 px-6 py-4 bg-slate-50 space-y-3"
+            class="space-y-3 border-t border-slate-200 bg-slate-50 px-6 py-4"
           >
             <button
               @click="handleAcknowledge"
-              class="w-full px-4 py-3 bg-linear-to-r from-brand-emerald-600 to-brand-emerald-500 text-white font-semibold rounded-xl hover:from-brand-emerald-700 hover:to-brand-emerald-600 transition"
+              class="w-full rounded-xl bg-linear-to-r from-brand-emerald-600 to-brand-emerald-500 px-4 py-3 font-semibold text-white transition hover:from-brand-emerald-700 hover:to-brand-emerald-600"
             >
               Start Recovery Plan
             </button>
             <button
               @click="handleClose"
-              class="w-full px-4 py-3 bg-white text-slate-700 font-semibold rounded-xl border-2 border-slate-300 hover:bg-slate-50 transition"
+              class="w-full rounded-xl border-2 border-slate-300 bg-white px-4 py-3 font-semibold text-slate-700 transition hover:bg-slate-50"
             >
               Review Later
             </button>

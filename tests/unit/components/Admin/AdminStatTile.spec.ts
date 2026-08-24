@@ -10,13 +10,17 @@ describe("AdminStatTile", () => {
   });
 
   it("shows an up arrow for positive delta", () => {
-    const w = mount(AdminStatTile, { props: { label: "x", value: 1, delta: 5 } });
+    const w = mount(AdminStatTile, {
+      props: { label: "x", value: 1, delta: 5 },
+    });
     expect(w.text()).toContain("▲");
     expect(w.text()).toContain("5");
   });
 
   it("shows a down arrow for negative delta", () => {
-    const w = mount(AdminStatTile, { props: { label: "x", value: 1, delta: -3 } });
+    const w = mount(AdminStatTile, {
+      props: { label: "x", value: 1, delta: -3 },
+    });
     expect(w.text()).toContain("▼");
     expect(w.text()).toContain("3");
   });

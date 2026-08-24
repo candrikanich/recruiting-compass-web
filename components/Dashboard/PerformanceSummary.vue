@@ -1,18 +1,18 @@
 <template>
   <div
-    class="bg-white rounded-2xl border border-slate-200 shadow-xs hover:shadow-md transition-shadow p-6"
+    class="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs transition-shadow hover:shadow-md"
   >
-    <h2 class="text-xl font-bold mb-6 text-slate-900">📊 Recent Performance</h2>
+    <h2 class="mb-6 text-xl font-bold text-slate-900">📊 Recent Performance</h2>
 
     <!-- Empty State -->
     <div
       v-if="latestMetricsByType.length === 0"
-      class="text-center py-8 text-slate-600"
+      class="py-8 text-center text-slate-600"
     >
       <p>No performance metrics recorded yet</p>
       <NuxtLink
         to="/performance"
-        class="text-sm mt-2 inline-block text-blue-600 hover:text-blue-700"
+        class="mt-2 inline-block text-sm text-blue-600 hover:text-blue-700"
       >
         Log your first metric →
       </NuxtLink>
@@ -21,19 +21,19 @@
     <!-- Performance Metrics Grid -->
     <div v-else class="space-y-4">
       <!-- Metrics Grid -->
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div class="grid grid-cols-2 gap-3 md:grid-cols-4">
         <div
           v-for="metric in latestMetricsByType"
           :key="metric.metric_type"
-          class="rounded-lg p-3 bg-slate-50"
+          class="rounded-lg bg-slate-50 p-3"
         >
-          <div class="flex items-start justify-between mb-2">
+          <div class="mb-2 flex items-start justify-between">
             <span class="text-2xl">{{
               getMetricIcon(metric.metric_type)
             }}</span>
             <span
               v-if="getTrend(metric.metric_type)"
-              class="text-xs font-bold px-1.5 py-0.5 rounded-sm"
+              class="rounded-sm px-1.5 py-0.5 text-xs font-bold"
               :class="{
                 'bg-emerald-100 text-emerald-700':
                   getTrendDirection(metric.metric_type) === 'up',
@@ -50,10 +50,10 @@
               metric.unit
             }}</span>
           </p>
-          <p class="text-xs mt-1 text-slate-600">
+          <p class="mt-1 text-xs text-slate-600">
             {{ getMetricLabel(metric.metric_type) }}
           </p>
-          <p class="text-xs mt-0.5 text-slate-600">
+          <p class="mt-0.5 text-xs text-slate-600">
             {{ formatDate(metric.recorded_date) }}
           </p>
         </div>
@@ -61,14 +61,14 @@
 
       <!-- Recent Activity -->
       <div class="border-t border-slate-200 pt-4">
-        <h3 class="text-sm font-semibold mb-3 text-slate-900">
+        <h3 class="mb-3 text-sm font-semibold text-slate-900">
           Last 3 Entries
         </h3>
         <div class="space-y-2">
           <div
             v-for="metric in recentMetrics.slice(0, 3)"
             :key="metric.id"
-            class="flex items-center justify-between p-2 rounded-sm transition bg-slate-50 hover:bg-slate-100"
+            class="flex items-center justify-between rounded-sm bg-slate-50 p-2 transition hover:bg-slate-100"
           >
             <div class="flex-1">
               <p class="text-sm font-medium text-slate-900">
@@ -79,7 +79,9 @@
               </p>
             </div>
             <div class="text-right">
-              <p class="text-sm font-bold text-slate-900">{{ formatMetricValue(metric.metric_type, metric.value) }}</p>
+              <p class="text-sm font-bold text-slate-900">
+                {{ formatMetricValue(metric.metric_type, metric.value) }}
+              </p>
               <p class="text-xs text-slate-600">{{ metric.unit }}</p>
             </div>
           </div>
@@ -87,7 +89,7 @@
       </div>
 
       <!-- View All Link -->
-      <div class="text-center pt-2">
+      <div class="pt-2 text-center">
         <NuxtLink
           to="/performance"
           class="text-sm font-medium text-blue-600 hover:text-blue-700"

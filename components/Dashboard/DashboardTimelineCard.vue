@@ -1,13 +1,13 @@
 <template>
   <div
     v-if="!phaseLoading"
-    class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 mb-8"
+    class="mb-8 rounded-xl border border-slate-200 bg-white p-6 shadow-xs"
   >
-    <div class="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6">
       <!-- Phase Badge -->
-      <div class="flex items-center gap-3 shrink-0">
+      <div class="flex shrink-0 items-center gap-3">
         <div
-          class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-semibold"
+          class="inline-flex items-center rounded-full px-3 py-1.5 text-sm font-semibold"
           :class="phaseBadgeClass"
         >
           {{ phaseLabel }}
@@ -15,33 +15,33 @@
       </div>
 
       <!-- Status Score -->
-      <div class="flex items-center gap-2 shrink-0">
+      <div class="flex shrink-0 items-center gap-2">
         <span
-          class="w-2.5 h-2.5 rounded-full shrink-0"
+          class="h-2.5 w-2.5 shrink-0 rounded-full"
           :class="scoreDotClass"
         />
         <span class="text-lg font-bold text-slate-900 tabular-nums">
-          {{ statusScore }}<span class="text-slate-400 font-normal">/100</span>
+          {{ statusScore }}<span class="font-normal text-slate-400">/100</span>
         </span>
       </div>
 
       <!-- Top Priority -->
-      <div v-if="topPriority" class="flex-1 min-w-0">
-        <p class="text-sm font-medium text-slate-900 truncate">
+      <div v-if="topPriority" class="min-w-0 flex-1">
+        <p class="truncate text-sm font-medium text-slate-900">
           {{ topPriority.title }}
         </p>
-        <p class="text-xs text-slate-500 truncate">
+        <p class="truncate text-xs text-slate-500">
           {{ topPriority.whyItMatters }}
         </p>
       </div>
-      <div v-else class="flex-1 min-w-0">
+      <div v-else class="min-w-0 flex-1">
         <p class="text-sm text-slate-500">No pending priorities</p>
       </div>
 
       <!-- Timeline Link -->
       <NuxtLink
         to="/timeline"
-        class="shrink-0 px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition whitespace-nowrap"
+        class="shrink-0 rounded-lg px-4 py-2 text-sm font-medium whitespace-nowrap text-blue-600 transition hover:bg-blue-50 hover:text-blue-700"
       >
         View timeline &rarr;
       </NuxtLink>

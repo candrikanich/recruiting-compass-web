@@ -33,7 +33,8 @@ vi.mock("h3", async (importOriginal) => {
 
 import handler from "~/server/api/admin/cron/trigger.post";
 
-const mkEvent = (body: any) => ({ context: {}, _body: body, node: { req: {} } }) as any;
+const mkEvent = (body: any) =>
+  ({ context: {}, _body: body, node: { req: {} } }) as any;
 
 beforeEach(() => {
   localFetchMock
@@ -47,34 +48,56 @@ beforeEach(() => {
 describe("POST /api/admin/cron/trigger", () => {
   it("triggers a safe job with the cron secret and audits it", async () => {
     const res = await handler(mkEvent({ jobName: "health-ping" }));
-    expect(res).toMatchObject({ ok: true, jobName: "health-ping", dryRun: false });
+    expect(res).toMatchObject({
+      ok: true,
+      jobName: "health-ping",
+      dryRun: false,
+    });
     expect(localFetchMock).toHaveBeenCalledWith(
       "/api/cron/health-ping",
-      expect.objectContaining({ headers: expect.objectContaining({ "x-cron-secret": "secret-x" }) }),
+      expect.objectContaining({
+        headers: expect.objectContaining({ "x-cron-secret": "secret-x" }),
+      }),
     );
     expect(logAdminAction).toHaveBeenCalledWith(
       expect.anything(),
-      expect.objectContaining({ action: "cron.trigger", meta: { jobName: "health-ping", dryRun: false } }),
+      expect.objectContaining({
+        action: "cron.trigger",
+        meta: { jobName: "health-ping", dryRun: false },
+      }),
     );
   });
 
   it("403s each destructive job, never calls the cron, and audits the block", async () => {
-    for (const job of ["process-account-deletions", "notification-prune", "cleanup-expired-invites"]) {
-      await expect(handler(mkEvent({ jobName: job }))).rejects.toMatchObject({ statusCode: 403 });
+    for (const job of [
+      "process-account-deletions",
+      "notification-prune",
+      "cleanup-expired-invites",
+    ]) {
+      await expect(handler(mkEvent({ jobName: job }))).rejects.toMatchObject({
+        statusCode: 403,
+      });
       expect(logAdminAction).toHaveBeenCalledWith(
         expect.anything(),
-        expect.objectContaining({ action: "cron.trigger", meta: { jobName: job, blocked: true } }),
+        expect.objectContaining({
+          action: "cron.trigger",
+          meta: { jobName: job, blocked: true },
+        }),
       );
     }
     expect(localFetchMock).not.toHaveBeenCalled();
   });
 
   it("403s an unknown job", async () => {
-    await expect(handler(mkEvent({ jobName: "nope" }))).rejects.toMatchObject({ statusCode: 403 });
+    await expect(handler(mkEvent({ jobName: "nope" }))).rejects.toMatchObject({
+      statusCode: 403,
+    });
   });
 
   it("forces dryRun for orphaned-storage-sweep even if body says false", async () => {
-    const res = await handler(mkEvent({ jobName: "orphaned-storage-sweep", dryRun: false }));
+    const res = await handler(
+      mkEvent({ jobName: "orphaned-storage-sweep", dryRun: false }),
+    );
     expect(res.dryRun).toBe(true);
     // dryRun is encoded in the URL, not a `query` option.
     expect(localFetchMock).toHaveBeenCalledWith(

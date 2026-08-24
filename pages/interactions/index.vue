@@ -5,7 +5,7 @@
     <!-- Skip Link -->
     <a
       href="#main-content"
-      class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-blue-600 focus:text-white focus:rounded-lg focus:outline-2 focus:outline-blue-600 focus:outline-offset-2"
+      class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:rounded-lg focus:bg-blue-600 focus:px-4 focus:py-2 focus:text-white focus:outline-2 focus:outline-offset-2 focus:outline-blue-600"
     >
       Skip to main content
     </a>
@@ -19,11 +19,11 @@
         <button
           v-if="filteredInteractions.length > 0"
           @click="handleExportCSV"
-          class="px-3 py-2 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50 transition flex items-center gap-2 text-slate-700 focus:outline-2 focus:outline-blue-600 focus:outline-offset-1"
+          class="flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 focus:outline-2 focus:outline-offset-1 focus:outline-blue-600"
         >
           <UIcon
             name="i-heroicons-arrow-down-tray"
-            class="w-4 h-4"
+            class="h-4 w-4"
             aria-hidden="true"
           />
           CSV
@@ -31,11 +31,11 @@
         <button
           v-if="filteredInteractions.length > 0"
           @click="handleExportPDF"
-          class="px-3 py-2 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50 transition flex items-center gap-2 text-slate-700 focus:outline-2 focus:outline-blue-600 focus:outline-offset-1"
+          class="flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 focus:outline-2 focus:outline-offset-1 focus:outline-blue-600"
         >
           <UIcon
             name="i-heroicons-arrow-down-tray"
-            class="w-4 h-4"
+            class="h-4 w-4"
             aria-hidden="true"
           />
           PDF
@@ -43,15 +43,15 @@
         <NuxtLink
           to="/interactions/add"
           data-testid="log-interaction-button"
-          class="px-4 py-2 text-sm font-medium text-white bg-linear-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition flex items-center gap-2 focus:outline-2 focus:outline-blue-600 focus:outline-offset-1"
+          class="flex items-center gap-2 rounded-lg bg-linear-to-r from-blue-500 to-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:from-blue-600 hover:to-blue-700 focus:outline-2 focus:outline-offset-1 focus:outline-blue-600"
         >
-          <UIcon name="i-heroicons-plus" class="w-4 h-4" aria-hidden="true" />
+          <UIcon name="i-heroicons-plus" class="h-4 w-4" aria-hidden="true" />
           Log Interaction
         </NuxtLink>
       </template>
     </PageHeader>
 
-    <main id="main-content" class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+    <main id="main-content" class="mx-auto max-w-7xl px-4 py-8 sm:px-6">
       <!-- Analytics Cards -->
       <h2 class="sr-only">Statistics</h2>
       <AnalyticsCards
@@ -66,7 +66,7 @@
       <template v-if="allInteractions.length > 0">
         <h2 class="sr-only">Filter Options</h2>
         <div
-          class="bg-white rounded-xl border border-slate-200 shadow-xs p-4 mb-6"
+          class="mb-6 rounded-xl border border-slate-200 bg-white p-4 shadow-xs"
         >
           <InteractionFilters
             :filter-values="filterValues"
@@ -98,12 +98,12 @@
       <!-- Loading State -->
       <div
         v-if="loading && allInteractions.length === 0"
-        class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
+        class="rounded-xl border border-slate-200 bg-white p-12 text-center shadow-xs"
         role="status"
         aria-live="polite"
       >
         <div
-          class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"
+          class="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"
           aria-hidden="true"
         ></div>
         <p class="text-slate-600">Loading interactions...</p>
@@ -112,7 +112,7 @@
       <!-- Error State -->
       <div
         v-else-if="error"
-        class="bg-red-50 border-l-4 border-red-600 p-4 mb-6"
+        class="mb-6 border-l-4 border-red-600 bg-red-50 p-4"
         role="alert"
       >
         <p class="text-red-700">{{ error }}</p>
@@ -123,22 +123,22 @@
         v-else-if="
           !loading && allInteractions.length === 0 && coaches.length === 0
         "
-        class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
+        class="rounded-xl border border-slate-200 bg-white p-12 text-center shadow-xs"
         role="status"
       >
         <UIcon
           name="i-heroicons-user-group"
-          class="w-12 h-12 text-slate-400 mx-auto mb-4"
+          class="mx-auto mb-4 h-12 w-12 text-slate-400"
           aria-hidden="true"
         />
-        <h2 class="text-slate-900 font-semibold mb-2">Add a coach first</h2>
-        <p class="text-slate-600 mb-6">
+        <h2 class="mb-2 font-semibold text-slate-900">Add a coach first</h2>
+        <p class="mb-6 text-slate-600">
           Interactions are linked to coaches. Visit a school page to add coaches
           to your list.
         </p>
         <NuxtLink
           to="/schools"
-          class="inline-block px-4 py-2 text-sm font-medium text-white bg-linear-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition"
+          class="inline-block rounded-lg bg-linear-to-r from-blue-500 to-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:from-blue-600 hover:to-blue-700"
         >
           Go to Schools
         </NuxtLink>
@@ -147,21 +147,21 @@
       <!-- Empty State: Has coaches but no interactions -->
       <div
         v-else-if="!loading && allInteractions.length === 0"
-        class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
+        class="rounded-xl border border-slate-200 bg-white p-12 text-center shadow-xs"
         role="status"
       >
         <UIcon
           name="i-heroicons-chat-bubble-left-right"
-          class="w-12 h-12 text-slate-400 mx-auto mb-4"
+          class="mx-auto mb-4 h-12 w-12 text-slate-400"
           aria-hidden="true"
         />
-        <h2 class="text-slate-900 font-semibold mb-2">No interactions yet</h2>
-        <p class="text-slate-600 mb-6">
+        <h2 class="mb-2 font-semibold text-slate-900">No interactions yet</h2>
+        <p class="mb-6 text-slate-600">
           Start logging your recruiting conversations with coaches.
         </p>
         <NuxtLink
           to="/interactions/add"
-          class="inline-block px-4 py-2 text-sm font-medium text-white bg-linear-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition"
+          class="inline-block rounded-lg bg-linear-to-r from-blue-500 to-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:from-blue-600 hover:to-blue-700"
         >
           Log Your First Interaction
         </NuxtLink>
@@ -173,14 +173,14 @@
           filteredInteractions.length === 0 && allInteractions.length > 0
         "
         role="status"
-        class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
+        class="rounded-xl border border-slate-200 bg-white p-12 text-center shadow-xs"
       >
         <UIcon
           name="i-heroicons-magnifying-glass"
-          class="w-12 h-12 text-slate-300 mx-auto mb-4"
+          class="mx-auto mb-4 h-12 w-12 text-slate-300"
           aria-hidden="true"
         />
-        <p class="text-slate-900 font-medium mb-2">
+        <p class="mb-2 font-medium text-slate-900">
           No interactions match your filters
         </p>
         <p class="text-sm text-slate-500">
@@ -189,7 +189,7 @@
       </div>
 
       <!-- Interactions Grid -->
-      <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div v-else class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         <InteractionCard
           v-for="interaction in filteredInteractions"
           :key="interaction.id"

@@ -78,7 +78,7 @@ function handleInput(event: Event) {
     <label
       v-if="label"
       :for="inputId"
-      class="block text-sm font-medium text-slate-900 mb-1.5"
+      class="mb-1.5 block text-sm font-medium text-slate-900"
     >
       {{ label }}
       <span v-if="required" class="text-red-600">*</span>
@@ -87,7 +87,7 @@ function handleInput(event: Event) {
     <div class="relative">
       <div
         v-if="$slots.icon"
-        class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500"
+        class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500"
       >
         <slot name="icon" />
       </div>

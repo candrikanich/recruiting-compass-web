@@ -28,9 +28,7 @@ test.describe("non-admin redirect", () => {
 
   test("non-admin is redirected away from /admin", async ({ page }) => {
     await page.goto("/admin");
-    await expect
-      .poll(() => new URL(page.url()).pathname)
-      .not.toBe("/admin");
+    await expect.poll(() => new URL(page.url()).pathname).not.toBe("/admin");
   });
 });
 

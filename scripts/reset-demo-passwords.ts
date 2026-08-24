@@ -29,7 +29,9 @@ const DEMO_EMAILS = [
 
 async function main(): Promise<void> {
   const supabase = getSupabaseAdmin();
-  console.log(`Resetting demo passwords → ${process.env.NUXT_PUBLIC_SUPABASE_URL}`);
+  console.log(
+    `Resetting demo passwords → ${process.env.NUXT_PUBLIC_SUPABASE_URL}`,
+  );
 
   const { data, error } = await supabase.auth.admin.listUsers({
     page: 1,
@@ -43,15 +45,20 @@ async function main(): Promise<void> {
       console.warn(`⚠️  ${email} not found — skipping`);
       continue;
     }
-    const { error: updErr } = await supabase.auth.admin.updateUserById(user.id, {
-      password: SHARED_PASSWORD,
-      email_confirm: true,
-    });
+    const { error: updErr } = await supabase.auth.admin.updateUserById(
+      user.id,
+      {
+        password: SHARED_PASSWORD,
+        email_confirm: true,
+      },
+    );
     if (updErr) throw new Error(`update ${email} failed: ${updErr.message}`);
     console.log(`   ✅ ${email}`);
   }
 
-  console.log(`\n✅ Done. Shared password for all demo accounts: ${SHARED_PASSWORD}`);
+  console.log(
+    `\n✅ Done. Shared password for all demo accounts: ${SHARED_PASSWORD}`,
+  );
 }
 
 main().catch((err) => {

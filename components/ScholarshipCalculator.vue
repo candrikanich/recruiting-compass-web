@@ -1,18 +1,18 @@
 <template>
-  <div class="rounded-lg shadow-sm p-6 bg-white">
-    <div class="flex items-center justify-between mb-6">
+  <div class="rounded-lg bg-white p-6 shadow-sm">
+    <div class="mb-6 flex items-center justify-between">
       <h2 class="text-2xl font-bold text-slate-900">Scholarship Calculator</h2>
       <button
         v-if="!showCalculator"
         @click="showCalculator = true"
-        class="px-4 py-2 text-white font-semibold rounded-lg transition bg-blue-600 hover:bg-blue-700"
+        class="rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white transition hover:bg-blue-700"
       >
         + Calculate
       </button>
       <button
         v-else
         @click="showCalculator = false"
-        class="px-4 py-2 font-semibold rounded-lg transition bg-slate-50 text-slate-900 hover:bg-slate-100"
+        class="rounded-lg bg-slate-50 px-4 py-2 font-semibold text-slate-900 transition hover:bg-slate-100"
       >
         Hide
       </button>
@@ -20,12 +20,12 @@
 
     <div v-if="showCalculator" class="space-y-6">
       <!-- Input Section -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
         <!-- Total Annual Cost -->
         <div>
           <label
             for="annualCost"
-            class="block text-sm font-medium mb-1 text-slate-600"
+            class="mb-1 block text-sm font-medium text-slate-600"
           >
             Total Annual Cost ($)
           </label>
@@ -36,16 +36,16 @@
             min="0"
             step="100"
             placeholder="e.g., 60000"
-            class="w-full px-4 py-2 rounded-lg border border-slate-300 text-slate-900 bg-white"
+            class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2 text-slate-900"
           />
-          <p class="text-xs mt-1 text-slate-600">Tuition + room/board + fees</p>
+          <p class="mt-1 text-xs text-slate-600">Tuition + room/board + fees</p>
         </div>
 
         <!-- Scholarship Amount (Alternative to Percentage) -->
         <div>
           <label
             for="scholarshipAmount"
-            class="block text-sm font-medium mb-1 text-slate-600"
+            class="mb-1 block text-sm font-medium text-slate-600"
           >
             Scholarship Amount ($) OR
           </label>
@@ -56,9 +56,9 @@
             min="0"
             step="100"
             placeholder="Enter scholarship amount"
-            class="w-full px-4 py-2 rounded-lg border border-slate-300 text-slate-900 bg-white"
+            class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2 text-slate-900"
           />
-          <p class="text-xs mt-1 text-slate-600">
+          <p class="mt-1 text-xs text-slate-600">
             Leave blank to use percentage
           </p>
         </div>
@@ -67,7 +67,7 @@
         <div>
           <label
             for="scholarshipPercentage"
-            class="block text-sm font-medium mb-1 text-slate-600"
+            class="mb-1 block text-sm font-medium text-slate-600"
           >
             Scholarship Percentage (%)
           </label>
@@ -79,9 +79,9 @@
             max="100"
             step="5"
             placeholder="e.g., 50"
-            class="w-full px-4 py-2 rounded-lg border border-slate-300 text-slate-900 bg-white"
+            class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2 text-slate-900"
           />
-          <p class="text-xs mt-1 text-slate-600">
+          <p class="mt-1 text-xs text-slate-600">
             Leave blank if using amount above
           </p>
         </div>
@@ -90,7 +90,7 @@
         <div>
           <label
             for="additionalAid"
-            class="block text-sm font-medium mb-1 text-slate-600"
+            class="mb-1 block text-sm font-medium text-slate-600"
           >
             Additional Aid/Grants ($)
           </label>
@@ -101,23 +101,23 @@
             min="0"
             step="100"
             placeholder="e.g., 5000"
-            class="w-full px-4 py-2 rounded-lg border border-slate-300 text-slate-900 bg-white"
+            class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2 text-slate-900"
           />
-          <p class="text-xs mt-1 text-slate-600">Non-scholarship aid</p>
+          <p class="mt-1 text-xs text-slate-600">Non-scholarship aid</p>
         </div>
 
         <!-- Years to Calculate -->
         <div>
           <label
             for="years"
-            class="block text-sm font-medium mb-1 text-slate-600"
+            class="mb-1 block text-sm font-medium text-slate-600"
           >
             Years to Calculate
           </label>
           <select
             id="years"
             v-model.number="inputs.years"
-            class="w-full px-4 py-2 rounded-lg border border-slate-300 text-slate-900 bg-white"
+            class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2 text-slate-900"
           >
             <option value="1">1 Year</option>
             <option value="2">2 Years</option>
@@ -130,11 +130,11 @@
 
       <!-- Calculations Display -->
       <div
-        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t border-slate-300"
+        class="grid grid-cols-1 gap-4 border-t border-slate-300 pt-4 md:grid-cols-2 lg:grid-cols-4"
       >
         <!-- Annual Scholarship -->
-        <div class="rounded-lg p-4 bg-blue-50 border border-blue-200">
-          <p class="text-sm font-medium mb-1 text-blue-600">
+        <div class="rounded-lg border border-blue-200 bg-blue-50 p-4">
+          <p class="mb-1 text-sm font-medium text-blue-600">
             Annual Scholarship
           </p>
           <p class="text-2xl font-bold text-blue-900">
@@ -143,8 +143,8 @@
         </div>
 
         <!-- Annual Net Cost -->
-        <div class="rounded-lg p-4 bg-orange-50 border border-orange-200">
-          <p class="text-sm font-medium mb-1 text-orange-600">
+        <div class="rounded-lg border border-orange-200 bg-orange-50 p-4">
+          <p class="mb-1 text-sm font-medium text-orange-600">
             Annual Net Cost
           </p>
           <p class="text-2xl font-bold text-orange-900">
@@ -153,8 +153,8 @@
         </div>
 
         <!-- Total Scholarship -->
-        <div class="rounded-lg p-4 bg-emerald-50 border border-emerald-200">
-          <p class="text-sm font-medium mb-1 text-emerald-600">
+        <div class="rounded-lg border border-emerald-200 bg-emerald-50 p-4">
+          <p class="mb-1 text-sm font-medium text-emerald-600">
             Total Scholarship ({{ inputs.years }}yr)
           </p>
           <p class="text-2xl font-bold text-emerald-900">
@@ -163,8 +163,8 @@
         </div>
 
         <!-- Total Net Cost -->
-        <div class="rounded-lg p-4 bg-red-50 border border-red-200">
-          <p class="text-sm font-medium mb-1 text-red-600">
+        <div class="rounded-lg border border-red-200 bg-red-50 p-4">
+          <p class="mb-1 text-sm font-medium text-red-600">
             Total Net Cost ({{ inputs.years }}yr)
           </p>
           <p class="text-2xl font-bold text-red-600">
@@ -175,26 +175,26 @@
 
       <!-- Annual Breakdown Table -->
       <div class="mt-6">
-        <h3 class="font-semibold mb-3 text-slate-900">
+        <h3 class="mb-3 font-semibold text-slate-900">
           Year-by-Year Breakdown
         </h3>
         <div class="overflow-x-auto">
           <table class="w-full text-sm">
             <thead>
               <tr class="border-b-2 border-slate-300">
-                <th class="text-left px-4 py-2 font-semibold text-slate-900">
+                <th class="px-4 py-2 text-left font-semibold text-slate-900">
                   Year
                 </th>
-                <th class="text-right px-4 py-2 font-semibold text-slate-900">
+                <th class="px-4 py-2 text-right font-semibold text-slate-900">
                   Cost
                 </th>
-                <th class="text-right px-4 py-2 font-semibold text-slate-900">
+                <th class="px-4 py-2 text-right font-semibold text-slate-900">
                   Scholarship
                 </th>
-                <th class="text-right px-4 py-2 font-semibold text-slate-900">
+                <th class="px-4 py-2 text-right font-semibold text-slate-900">
                   Aid/Grants
                 </th>
-                <th class="text-right px-4 py-2 font-semibold text-slate-900">
+                <th class="px-4 py-2 text-right font-semibold text-slate-900">
                   Your Cost
                 </th>
               </tr>
@@ -208,16 +208,16 @@
                 <td class="px-4 py-2 font-medium text-slate-900">
                   Year {{ year }}
                 </td>
-                <td class="text-right px-4 py-2 text-slate-900">
+                <td class="px-4 py-2 text-right text-slate-900">
                   {{ formatCurrency(inputs.annualCost) }}
                 </td>
-                <td class="text-right px-4 py-2 font-semibold text-emerald-600">
+                <td class="px-4 py-2 text-right font-semibold text-emerald-600">
                   -{{ formatCurrency(annualScholarship) }}
                 </td>
-                <td class="text-right px-4 py-2 font-semibold text-blue-600">
+                <td class="px-4 py-2 text-right font-semibold text-blue-600">
                   -{{ formatCurrency(inputs.additionalAid) }}
                 </td>
-                <td class="text-right px-4 py-2 font-bold text-red-600">
+                <td class="px-4 py-2 text-right font-bold text-red-600">
                   {{ formatCurrency(annualNetCost) }}
                 </td>
               </tr>
@@ -227,16 +227,16 @@
       </div>
 
       <!-- Action Buttons -->
-      <div v-if="onSaveValue" class="flex gap-3 pt-4 border-t border-slate-300">
+      <div v-if="onSaveValue" class="flex gap-3 border-t border-slate-300 pt-4">
         <button
           @click="saveToOffer"
-          class="flex-1 px-4 py-2 text-white font-semibold rounded-lg transition bg-emerald-600 hover:bg-emerald-700"
+          class="flex-1 rounded-lg bg-emerald-600 px-4 py-2 font-semibold text-white transition hover:bg-emerald-700"
         >
           Save to Offer
         </button>
         <button
           @click="reset"
-          class="flex-1 px-4 py-2 font-semibold rounded-lg transition bg-slate-50 text-slate-900 hover:bg-slate-100"
+          class="flex-1 rounded-lg bg-slate-50 px-4 py-2 font-semibold text-slate-900 transition hover:bg-slate-100"
         >
           Reset
         </button>

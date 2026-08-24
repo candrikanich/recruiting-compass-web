@@ -4,17 +4,17 @@
     <button
       @click="isOpen = !isOpen"
       :class="[
-        'flex items-center gap-1.5 px-3 lg:px-4 py-2 rounded-lg text-sm font-medium transition-colors',
+        'flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors lg:px-4',
         isAnyChildActive
           ? 'bg-brand-blue-100 text-brand-blue-700'
-          : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100',
+          : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900',
       ]"
       data-testid="nav-more-button"
     >
       <span>More</span>
       <UIcon
         name="i-heroicons-chevron-down"
-        class="w-4 h-4 transition-transform"
+        class="h-4 w-4 transition-transform"
         :class="{ 'rotate-180': isOpen }"
       />
     </button>
@@ -30,7 +30,7 @@
     >
       <div
         v-if="isOpen"
-        class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-slate-200 z-50"
+        class="absolute right-0 z-50 mt-2 w-48 rounded-lg border border-slate-200 bg-white shadow-lg"
       >
         <div class="py-1">
           <NuxtLink
@@ -41,12 +41,12 @@
             :class="[
               'flex items-center gap-3 px-4 py-2 text-sm transition-colors',
               isActive(item.to)
-                ? 'bg-brand-blue-50 text-brand-blue-700 font-medium'
+                ? 'bg-brand-blue-50 font-medium text-brand-blue-700'
                 : 'text-slate-700 hover:bg-slate-50',
             ]"
             @click="isOpen = false"
           >
-            <UIcon :name="item.icon" class="w-4 h-4" />
+            <UIcon :name="item.icon" class="h-4 w-4" />
             <span>{{ item.label }}</span>
           </NuxtLink>
         </div>

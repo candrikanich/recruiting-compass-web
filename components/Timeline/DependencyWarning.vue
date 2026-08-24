@@ -1,9 +1,9 @@
 <template>
-  <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+  <div class="rounded-lg border border-yellow-200 bg-yellow-50 p-3">
     <!-- Warning header -->
-    <div class="flex items-start gap-2 mb-2">
+    <div class="mb-2 flex items-start gap-2">
       <svg
-        class="w-4 h-4 text-yellow-600 shrink-0 mt-0.5"
+        class="mt-0.5 h-4 w-4 shrink-0 text-yellow-600"
         fill="currentColor"
         viewBox="0 0 20 20"
       >
@@ -44,14 +44,14 @@
       <button
         v-if="hasCompletePrerequisiteOption"
         @click="$emit('complete-prerequisite', incompletePrerequisites[0]?.id)"
-        class="px-3 py-1 text-xs rounded-sm bg-yellow-200 text-yellow-900 hover:bg-yellow-300 transition font-medium"
+        class="rounded-sm bg-yellow-200 px-3 py-1 text-xs font-medium text-yellow-900 transition hover:bg-yellow-300"
       >
         Complete Prerequisite
       </button>
       <button
         v-if="showContinueOption"
         @click="$emit('continue-anyway')"
-        class="px-3 py-1 text-xs rounded-sm border border-yellow-300 text-yellow-700 hover:bg-yellow-50 transition font-medium"
+        class="rounded-sm border border-yellow-300 px-3 py-1 text-xs font-medium text-yellow-700 transition hover:bg-yellow-50"
       >
         Continue Anyway
       </button>

@@ -1,12 +1,12 @@
 <template>
   <div
     v-if="linkedAthletes.length > 0"
-    class="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden"
+    class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xs"
   >
     <!-- Header -->
-    <div class="px-6 py-4 border-b border-slate-200 bg-slate-50">
+    <div class="border-b border-slate-200 bg-slate-50 px-6 py-4">
       <h2 class="text-lg font-semibold text-slate-900">Athlete Activity</h2>
-      <p class="text-sm text-slate-600 mt-1">
+      <p class="mt-1 text-sm text-slate-600">
         Recent interactions logged by your linked athlete{{
           linkedAthletes.length > 1 ? "s" : ""
         }}
@@ -16,17 +16,17 @@
     <!-- Content -->
     <div v-if="loading" class="p-6 text-center">
       <div
-        class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"
+        class="mx-auto h-6 w-6 animate-spin rounded-full border-b-2 border-blue-600"
       ></div>
-      <p class="text-slate-600 mt-2 text-sm">Loading activity...</p>
+      <p class="mt-2 text-sm text-slate-600">Loading activity...</p>
     </div>
 
     <div v-else-if="recentInteractions.length === 0" class="p-6 text-center">
       <UIcon
         name="i-heroicons-chat-bubble-left-right"
-        class="w-8 h-8 text-slate-300 mx-auto mb-2"
+        class="mx-auto mb-2 h-8 w-8 text-slate-300"
       />
-      <p class="text-slate-600 text-sm">
+      <p class="text-sm text-slate-600">
         No interactions logged yet by your athlete
       </p>
     </div>
@@ -38,7 +38,7 @@
         :key="interaction.id"
         role="button"
         tabindex="0"
-        class="px-6 py-4 hover:bg-slate-50 transition cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-inset"
+        class="cursor-pointer px-6 py-4 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-inset"
         @click="navigateToInteraction(interaction.id)"
         @keydown.enter="navigateToInteraction(interaction.id)"
         @keydown.space.prevent="navigateToInteraction(interaction.id)"
@@ -46,24 +46,24 @@
         <div class="flex items-start gap-3">
           <!-- Type Icon -->
           <div
-            class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+            class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
             :class="getTypeIconBg(interaction.type)"
           >
             <component
               :is="getTypeIcon(interaction.type)"
-              class="w-4 h-4"
+              class="h-4 w-4"
               :class="getTypeIconColor(interaction.type)"
             />
           </div>
 
-          <div class="flex-1 min-w-0">
+          <div class="min-w-0 flex-1">
             <!-- Title and Metadata -->
-            <div class="flex items-center gap-2 flex-wrap mb-1">
+            <div class="mb-1 flex flex-wrap items-center gap-2">
               <span class="font-medium text-slate-900">
                 {{ formatType(interaction.type) }}
               </span>
               <span
-                class="px-2 py-0.5 text-xs font-medium rounded-full"
+                class="rounded-full px-2 py-0.5 text-xs font-medium"
                 :class="
                   interaction.direction === 'outbound'
                     ? 'bg-blue-100 text-blue-700'
@@ -77,13 +77,13 @@
             <!-- Subject/Preview -->
             <p
               v-if="interaction.subject"
-              class="text-sm text-slate-700 font-medium truncate"
+              class="truncate text-sm font-medium text-slate-700"
             >
               {{ interaction.subject }}
             </p>
 
             <!-- School and Coach -->
-            <p class="text-xs text-slate-500 mt-1">
+            <p class="mt-1 text-xs text-slate-500">
               {{ getSchoolName(interaction.school_id) }}
               <span v-if="interaction.coach_id" class="text-slate-400">
                 • {{ getCoachName(interaction.coach_id) }}
@@ -91,7 +91,7 @@
             </p>
 
             <!-- Date -->
-            <p class="text-xs text-slate-400 mt-1">
+            <p class="mt-1 text-xs text-slate-400">
               {{
                 formatDate(interaction.occurred_at || interaction.created_at)
               }}
@@ -101,10 +101,10 @@
       </div>
 
       <!-- View All Link -->
-      <div class="px-6 py-3 bg-slate-50 border-t border-slate-200">
+      <div class="border-t border-slate-200 bg-slate-50 px-6 py-3">
         <NuxtLink
           to="/interactions"
-          class="text-sm font-medium text-blue-600 hover:text-blue-700 transition"
+          class="text-sm font-medium text-blue-600 transition hover:text-blue-700"
         >
           View all athlete interactions →
         </NuxtLink>

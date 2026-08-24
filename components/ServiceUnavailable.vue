@@ -1,6 +1,6 @@
 <template>
   <div
-    class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-95"
+    class="bg-opacity-95 fixed inset-0 z-50 flex items-center justify-center bg-gray-900"
     role="alert"
     aria-live="assertive"
     aria-atomic="true"

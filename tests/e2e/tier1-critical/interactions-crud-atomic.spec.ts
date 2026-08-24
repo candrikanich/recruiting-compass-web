@@ -72,7 +72,9 @@ test.describe("Interactions CRUD — atomic lifecycle (school-attached)", () => 
       .locator("form");
 
     await addForm.locator("#type").selectOption("email");
-    await addForm.locator(String.raw`label:has(input[value="outbound"])`).click();
+    await addForm
+      .locator(String.raw`label:has(input[value="outbound"])`)
+      .click();
     await addForm.locator("#content").fill(content);
     await addForm.locator("#occurred_at").fill(occurredAt);
     await addForm.locator('button[type="submit"]').click();

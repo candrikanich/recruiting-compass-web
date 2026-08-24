@@ -1,19 +1,21 @@
 <template>
   <div class="space-y-6">
     <!-- Notes Card -->
-    <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
-      <div class="flex items-center justify-between mb-4">
+    <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-xs">
+      <div class="mb-4 flex items-center justify-between">
         <h2 class="text-lg font-semibold text-slate-900">{{ title }}</h2>
         <div class="flex items-center gap-2">
           <NotesHistory v-if="!hideHistory" :school-id="schoolId" />
           <button
             @click="toggleEdit"
-            :aria-label="isEditing ? `Cancel editing ${title}` : `Edit ${title}`"
-            class="px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-50 rounded-lg transition flex items-center gap-1"
+            :aria-label="
+              isEditing ? `Cancel editing ${title}` : `Edit ${title}`
+            "
+            class="flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm font-medium text-slate-600 transition hover:bg-slate-50"
           >
             <UIcon
               name="i-heroicons-pencil"
-              class="w-4 h-4"
+              class="h-4 w-4"
               aria-hidden="true"
             />
             {{ isEditing ? "Cancel" : "Edit" }}
@@ -31,14 +33,14 @@
           :id="`notes-textarea-${schoolId}-${title}`"
           v-model="editedValue"
           rows="4"
-          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
           :placeholder="placeholder"
         />
         <button
           @click="handleSave"
           :disabled="isSaving"
           :aria-busy="isSaving"
-          class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-400"
+          class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-400 disabled:opacity-50"
         >
           {{ isSaving ? "Saving..." : "Save" }}
         </button>
@@ -46,7 +48,7 @@
       <p
         v-else
         :data-testid="`school-notes-value-${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`"
-        class="text-slate-700 text-sm whitespace-pre-wrap"
+        class="text-sm whitespace-pre-wrap text-slate-700"
       >
         {{ notes || emptyText }}
       </p>

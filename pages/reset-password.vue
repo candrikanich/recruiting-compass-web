@@ -1,7 +1,7 @@
 <template>
   <AuthPageLayout :back-link="{ to: '/', text: 'Back to Home' }">
     <!-- Status Icon & Header -->
-    <div class="text-center mb-8">
+    <div class="mb-8 text-center">
       <AuthStatusIcon
         :status="
           isValidating
@@ -16,7 +16,7 @@
         :ariaLabel="statusIconLabel"
       />
 
-      <h1 class="text-slate-900 text-3xl font-bold mb-2">
+      <h1 class="mb-2 text-3xl font-bold text-slate-900">
         {{
           passwordUpdated
             ? "Password Reset"
@@ -126,7 +126,7 @@
               ? 'Validating your information'
               : 'Reset your password'
         "
-        class="w-full px-6 py-3 bg-linear-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-lg hover:from-blue-600 hover:to-blue-700 transition disabled:opacity-50 shadow-lg focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        class="w-full rounded-lg bg-linear-to-r from-blue-500 to-blue-600 px-6 py-3 font-semibold text-white shadow-lg transition hover:from-blue-600 hover:to-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
       >
         {{
           loading
@@ -156,14 +156,14 @@
       <NuxtLink
         ref="loginLinkRef"
         to="/login"
-        class="block w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors text-center focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        class="block w-full rounded-lg bg-blue-600 px-4 py-3 text-center font-medium text-white transition-colors hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
       >
         Go to Login
       </NuxtLink>
 
       <NuxtLink
         to="/"
-        class="block w-full py-3 px-4 bg-white/20 hover:bg-white/30 text-white font-medium rounded-lg transition-colors text-center focus:ring-2 focus:ring-white focus:ring-offset-2"
+        class="block w-full rounded-lg bg-white/20 px-4 py-3 text-center font-medium text-white transition-colors hover:bg-white/30 focus:ring-2 focus:ring-white focus:ring-offset-2"
       >
         Back to Home
       </NuxtLink>
@@ -177,14 +177,14 @@
     >
       <NuxtLink
         to="/forgot-password"
-        class="block w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors text-center focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        class="block w-full rounded-lg bg-blue-600 px-4 py-3 text-center font-medium text-white transition-colors hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
       >
         Request New Reset Link
       </NuxtLink>
 
       <NuxtLink
         to="/login"
-        class="block w-full py-3 px-4 bg-white/20 hover:bg-white/30 text-white font-medium rounded-lg transition-colors text-center focus:ring-2 focus:ring-white focus:ring-offset-2"
+        class="block w-full rounded-lg bg-white/20 px-4 py-3 text-center font-medium text-white transition-colors hover:bg-white/30 focus:ring-2 focus:ring-white focus:ring-offset-2"
       >
         Back to Login
       </NuxtLink>

@@ -2,16 +2,16 @@
   <div class="space-y-4">
     <h2 class="text-2xl font-bold">Offer Status Overview</h2>
 
-    <div v-if="offers.length === 0" class="text-center py-8">
-      <div class="text-4xl mb-2">📬</div>
+    <div v-if="offers.length === 0" class="py-8 text-center">
+      <div class="mb-2 text-4xl">📬</div>
       <p class="text-slate-600">No offers yet</p>
     </div>
 
-    <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div v-else class="grid grid-cols-1 gap-4 md:grid-cols-2">
       <!-- Accepted Count -->
       <div
         v-if="acceptedCount > 0"
-        class="p-4 bg-green-50 rounded-lg border border-green-200"
+        class="rounded-lg border border-green-200 bg-green-50 p-4"
       >
         <div class="text-sm text-slate-600">Accepted</div>
         <div class="text-2xl font-bold text-green-600">{{ acceptedCount }}</div>
@@ -20,7 +20,7 @@
       <!-- Pending Count -->
       <div
         v-if="pendingCount > 0"
-        class="p-4 bg-yellow-50 rounded-lg border border-yellow-200"
+        class="rounded-lg border border-yellow-200 bg-yellow-50 p-4"
       >
         <div class="text-sm text-slate-600">Pending</div>
         <div class="text-2xl font-bold text-yellow-600">{{ pendingCount }}</div>
@@ -29,7 +29,7 @@
       <!-- Declined Count -->
       <div
         v-if="declinedCount > 0"
-        class="p-4 bg-red-50 rounded-lg border border-red-200"
+        class="rounded-lg border border-red-200 bg-red-50 p-4"
       >
         <div class="text-sm text-slate-600">Declined</div>
         <div class="text-2xl font-bold text-red-600">{{ declinedCount }}</div>
@@ -38,7 +38,7 @@
       <!-- Total Scholarship Value -->
       <div
         v-if="totalScholarshipValue > 0"
-        class="p-4 bg-blue-50 rounded-lg border border-blue-200"
+        class="rounded-lg border border-blue-200 bg-blue-50 p-4"
       >
         <div class="text-sm text-slate-600">Total Scholarship Value</div>
         <div class="text-2xl font-bold text-blue-600">
@@ -49,7 +49,7 @@
       <!-- Average Offer -->
       <div
         v-if="averageOffer > 0"
-        class="p-4 bg-purple-50 rounded-lg border border-purple-200"
+        class="rounded-lg border border-purple-200 bg-purple-50 p-4"
       >
         <div class="text-sm text-slate-600">Average Offer</div>
         <div class="text-2xl font-bold text-purple-600">
@@ -60,7 +60,7 @@
       <!-- Upcoming Deadlines -->
       <div
         v-if="upcomingDeadlines.length > 0"
-        class="p-4 bg-orange-50 rounded-lg border border-orange-200"
+        class="rounded-lg border border-orange-200 bg-orange-50 p-4"
       >
         <div class="text-sm text-slate-600">Upcoming Deadlines</div>
         <div class="text-2xl font-bold text-orange-600">

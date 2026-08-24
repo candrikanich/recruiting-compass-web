@@ -5,37 +5,37 @@
   >
     <!-- Sticky Status Header (Offsets global header which is top-0) -->
     <div
-      class="sticky top-16 z-30 bg-white/90 backdrop-blur-lg border-b border-slate-200"
+      class="sticky top-16 z-30 border-b border-slate-200 bg-white/90 backdrop-blur-lg"
     >
       <div
-        class="max-w-4xl mx-auto px-4 sm:px-6 py-3 flex justify-between items-center"
+        class="mx-auto flex max-w-4xl items-center justify-between px-4 py-3 sm:px-6"
       >
         <div class="flex items-center gap-3">
           <NuxtLink
             to="/settings"
-            class="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-full transition"
+            class="rounded-full p-1.5 text-slate-500 transition hover:bg-blue-50 hover:text-blue-600"
             title="Back to Settings"
           >
-            <UIcon name="i-heroicons-arrow-left" class="w-5 h-5" />
+            <UIcon name="i-heroicons-arrow-left" class="h-5 w-5" />
           </NuxtLink>
           <div class="flex items-center gap-2">
-            <h1 class="text-sm font-bold text-slate-900 hidden sm:block">
+            <h1 class="hidden text-sm font-bold text-slate-900 sm:block">
               Player Details
             </h1>
             <div
               v-if="saving || isSaving"
-              class="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-blue-600 font-bold"
+              class="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-blue-600 uppercase"
             >
               <div
-                class="w-2.5 h-2.5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"
+                class="h-2.5 w-2.5 animate-spin rounded-full border-2 border-blue-600 border-t-transparent"
               ></div>
               Saving
             </div>
             <div
               v-else
-              class="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-emerald-600 font-bold"
+              class="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-emerald-600 uppercase"
             >
-              <UIcon name="i-heroicons-check-circle" class="w-3 h-3" />
+              <UIcon name="i-heroicons-check-circle" class="h-3 w-3" />
               Saved
             </div>
           </div>
@@ -46,50 +46,50 @@
       </div>
     </div>
 
-    <main class="max-w-4xl mx-auto px-4 sm:px-6 py-6">
+    <main class="mx-auto max-w-4xl px-4 py-6 sm:px-6">
       <!-- Profile Completeness Hero -->
       <div
-        class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 mb-8"
+        class="mb-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
       >
         <ProfileCompleteness :percentage="profileCompleteness" />
       </div>
 
       <!-- Desktop Tab Navigation (Hidden on Mobile) -->
-      <nav class="hidden sm:flex p-1 bg-slate-200/50 rounded-xl mb-8 gap-1">
+      <nav class="mb-8 hidden gap-1 rounded-xl bg-slate-200/50 p-1 sm:flex">
         <button
           v-for="tab in tabs"
           :key="tab.id"
           @click="currentTab = tab.id"
           :class="[
-            'flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-semibold rounded-lg transition-all',
+            'flex flex-1 items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-semibold transition-all',
             currentTab === tab.id
               ? 'bg-white text-blue-600 shadow-sm'
-              : 'text-slate-600 hover:text-slate-900 hover:bg-white/50',
+              : 'text-slate-600 hover:bg-white/50 hover:text-slate-900',
           ]"
         >
-          <UIcon :name="tab.icon" class="w-4 h-4" />
+          <UIcon :name="tab.icon" class="h-4 w-4" />
           <span>{{ tab.name }}</span>
         </button>
       </nav>
 
       <!-- Mobile Tab Bar (Sticky Bottom, iOS Style) -->
       <nav
-        class="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-xl border-t border-slate-200 px-2 pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_20px_-5px_rgba(0,0,0,0.1)]"
+        class="fixed right-0 bottom-0 left-0 z-40 border-t border-slate-200 bg-white/95 px-2 pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_20px_-5px_rgba(0,0,0,0.1)] backdrop-blur-xl sm:hidden"
       >
-        <div class="flex justify-around items-center h-16">
+        <div class="flex h-16 items-center justify-around">
           <button
             v-for="tab in tabs"
             :key="tab.id"
             @click="currentTab = tab.id"
-            class="flex flex-col items-center justify-center flex-1 gap-1"
+            class="flex flex-1 flex-col items-center justify-center gap-1"
             :class="currentTab === tab.id ? 'text-blue-600' : 'text-slate-400'"
           >
             <UIcon
               :name="tab.icon"
-              class="w-6 h-6"
+              class="h-6 w-6"
               :class="currentTab === tab.id ? 'fill-blue-50' : ''"
             />
-            <span class="text-[10px] font-bold uppercase tracking-tighter">{{
+            <span class="text-[10px] font-bold tracking-tighter uppercase">{{
               tab.name
             }}</span>
           </button>
@@ -99,12 +99,12 @@
       <!-- Loading State -->
       <div
         v-if="isLoading"
-        class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
+        class="rounded-xl border border-slate-200 bg-white p-12 text-center shadow-xs"
       >
         <div
-          class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"
+          class="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"
         ></div>
-        <p class="text-slate-600 font-medium">Loading your profile...</p>
+        <p class="font-medium text-slate-600">Loading your profile...</p>
       </div>
 
       <!-- Error summary -->
@@ -118,7 +118,7 @@
         <!-- TAB: BASICS -->
         <div
           v-show="currentTab === 'basics'"
-          class="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300"
+          class="animate-in fade-in slide-in-from-bottom-2 space-y-6 duration-300"
         >
           <PlayerDetailsBasicsTab
             :form="form"
@@ -137,7 +137,7 @@
         <!-- TAB: ATHLETICS -->
         <div
           v-show="currentTab === 'athletics'"
-          class="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300"
+          class="animate-in fade-in slide-in-from-bottom-2 space-y-6 duration-300"
         >
           <PlayerDetailsAthleticsTab
             :form="form"
@@ -157,7 +157,7 @@
         <!-- TAB: ACADEMICS -->
         <div
           v-show="currentTab === 'academics'"
-          class="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300"
+          class="animate-in fade-in slide-in-from-bottom-2 space-y-6 duration-300"
         >
           <PlayerDetailsAcademicsTab
             :form="form"
@@ -172,9 +172,9 @@
         <!-- TAB: PUBLIC PROFILE -->
         <div
           v-show="currentTab === 'public-profile'"
-          class="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300"
+          class="animate-in fade-in slide-in-from-bottom-2 space-y-6 duration-300"
         >
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
             <ProfileSetup />
             <ProfilePreview
               v-if="playerProfile"
@@ -185,10 +185,10 @@
             />
             <div
               v-else-if="profileLoading"
-              class="bg-gray-50 rounded-xl p-4 animate-pulse"
+              class="animate-pulse rounded-xl bg-gray-50 p-4"
             >
-              <div class="h-3 w-32 bg-gray-200 rounded mb-4" />
-              <div class="h-24 bg-gray-200 rounded-xl" />
+              <div class="mb-4 h-3 w-32 rounded bg-gray-200" />
+              <div class="h-24 rounded-xl bg-gray-200" />
             </div>
           </div>
         </div>
@@ -196,51 +196,51 @@
         <!-- TAB: HISTORY -->
         <div
           v-show="currentTab === 'history'"
-          class="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300"
+          class="animate-in fade-in slide-in-from-bottom-2 space-y-6 duration-300"
         >
           <div
-            class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6"
+            class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
           >
             <h2
-              class="text-base font-bold text-slate-900 mb-6 flex items-center gap-2"
+              class="mb-6 flex items-center gap-2 text-base font-bold text-slate-900"
             >
-              <UIcon name="i-heroicons-clock" class="w-5 h-5 text-blue-600" />
+              <UIcon name="i-heroicons-clock" class="h-5 w-5 text-blue-600" />
               High School Career
             </h2>
             <div class="space-y-6">
               <div
                 v-for="grade in gradeLevels"
                 :key="grade.key"
-                class="p-5 rounded-2xl bg-slate-50 border border-slate-100"
+                class="rounded-2xl border border-slate-100 bg-slate-50 p-5"
               >
                 <h3
-                  class="text-xs font-black text-slate-400 uppercase tracking-widest mb-5"
+                  class="mb-5 text-xs font-black tracking-widest text-slate-400 uppercase"
                 >
                   {{ grade.label }}
                 </h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
                   <div>
                     <label
-                      class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1"
+                      class="mb-1.5 ml-1 block text-[10px] font-bold tracking-widest text-slate-400 uppercase"
                       >Team Level</label
                     >
                     <input
                       v-model="form[grade.teamKey]"
                       @blur="triggerSave"
                       placeholder="e.g. Varsity"
-                      class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl font-medium shadow-xs"
+                      class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 font-medium shadow-xs"
                     />
                   </div>
                   <div>
                     <label
-                      class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1"
+                      class="mb-1.5 ml-1 block text-[10px] font-bold tracking-widest text-slate-400 uppercase"
                       >Head Coach</label
                     >
                     <input
                       v-model="form[grade.coachKey]"
                       @blur="triggerSave"
                       placeholder="Coach Name"
-                      class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl font-medium shadow-xs"
+                      class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 font-medium shadow-xs"
                     />
                   </div>
                 </div>
@@ -249,11 +249,11 @@
           </div>
 
           <div
-            class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6"
+            class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
           >
-            <div class="flex items-center justify-between mb-6">
+            <div class="mb-6 flex items-center justify-between">
               <h2 class="text-base font-bold text-slate-900">Travel Teams</h2>
-              <p class="text-xs text-slate-500 font-medium">
+              <p class="text-xs font-medium text-slate-500">
                 Add each org you've played for — most recent shows on your
                 profile.
               </p>
@@ -263,11 +263,11 @@
               <div
                 v-for="(team, idx) in form.travel_teams"
                 :key="idx"
-                class="grid grid-cols-1 md:grid-cols-[7rem_1fr_1fr_auto] gap-4 items-end"
+                class="grid grid-cols-1 items-end gap-4 md:grid-cols-[7rem_1fr_1fr_auto]"
               >
                 <div>
                   <label
-                    class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1"
+                    class="mb-1.5 ml-1 block text-[10px] font-bold tracking-widest text-slate-400 uppercase"
                     >Season Year</label
                   >
                   <input
@@ -275,40 +275,40 @@
                     type="number"
                     @blur="triggerSave"
                     placeholder="2024"
-                    class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium"
+                    class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 font-medium"
                   />
                 </div>
                 <div>
                   <label
-                    class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1"
+                    class="mb-1.5 ml-1 block text-[10px] font-bold tracking-widest text-slate-400 uppercase"
                     >Organization</label
                   >
                   <input
                     v-model="team.name"
                     @blur="triggerSave"
                     placeholder="Team Name"
-                    class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium"
+                    class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 font-medium"
                   />
                 </div>
                 <div>
                   <label
-                    class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1"
+                    class="mb-1.5 ml-1 block text-[10px] font-bold tracking-widest text-slate-400 uppercase"
                     >Head Coach</label
                   >
                   <input
                     v-model="team.coach"
                     @blur="triggerSave"
                     placeholder="Coach Name"
-                    class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium"
+                    class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 font-medium"
                   />
                 </div>
                 <button
                   type="button"
                   @click="removeTravelTeam(idx)"
-                  class="p-3 text-slate-400 hover:text-red-500 transition rounded-xl hover:bg-red-50 shrink-0"
+                  class="shrink-0 rounded-xl p-3 text-slate-400 transition hover:bg-red-50 hover:text-red-500"
                   title="Remove travel team"
                 >
-                  <UIcon name="i-heroicons-trash" class="w-5 h-5" />
+                  <UIcon name="i-heroicons-trash" class="h-5 w-5" />
                 </button>
               </div>
 
@@ -322,9 +322,9 @@
               <button
                 type="button"
                 @click="addTravelTeam"
-                class="inline-flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-700 py-2"
+                class="inline-flex items-center gap-2 py-2 text-sm font-medium text-blue-600 hover:text-blue-700"
               >
-                <UIcon name="i-heroicons-plus" class="w-4 h-4" />
+                <UIcon name="i-heroicons-plus" class="h-4 w-4" />
                 Add Travel Team
               </button>
             </div>

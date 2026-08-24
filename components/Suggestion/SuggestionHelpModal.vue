@@ -11,18 +11,18 @@
     />
 
     <!-- Modal -->
-    <div class="flex items-center justify-center min-h-screen p-4">
+    <div class="flex min-h-screen items-center justify-center p-4">
       <div
         ref="dialogRef"
         role="dialog"
         aria-modal="true"
         aria-labelledby="suggestion-help-title"
-        class="relative bg-white rounded-2xl shadow-lg max-w-2xl w-full"
+        class="relative w-full max-w-2xl rounded-2xl bg-white shadow-lg"
         @click.stop
       >
         <!-- Header -->
         <div
-          class="flex items-center justify-between p-6 border-b border-slate-200"
+          class="flex items-center justify-between border-b border-slate-200 p-6"
         >
           <h2
             id="suggestion-help-title"
@@ -33,10 +33,10 @@
           <button
             @click="handleClose"
             aria-label="Close help dialog"
-            class="text-slate-500 hover:text-slate-700 transition"
+            class="text-slate-500 transition hover:text-slate-700"
           >
             <svg
-              class="w-6 h-6"
+              class="h-6 w-6"
               aria-hidden="true"
               fill="none"
               stroke="currentColor"
@@ -53,20 +53,20 @@
         </div>
 
         <!-- Content -->
-        <div class="p-6 space-y-6">
+        <div class="space-y-6 p-6">
           <!-- Why It Matters -->
           <section>
-            <h3 class="text-lg font-semibold text-slate-900 mb-2">
+            <h3 class="mb-2 text-lg font-semibold text-slate-900">
               Why It Matters
             </h3>
-            <p class="text-slate-700 leading-relaxed">
+            <p class="leading-relaxed text-slate-700">
               {{ helpContent.whyItMatters }}
             </p>
           </section>
 
           <!-- How to Complete -->
           <section>
-            <h3 class="text-lg font-semibold text-slate-900 mb-3">
+            <h3 class="mb-3 text-lg font-semibold text-slate-900">
               How to Complete It
             </h3>
             <ul class="space-y-2">
@@ -76,7 +76,7 @@
                 class="flex gap-3 text-slate-700"
               >
                 <span
-                  class="shrink-0 w-6 h-6 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center text-sm font-semibold"
+                  class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-100 text-sm font-semibold text-blue-700"
                 >
                   {{ index + 1 }}
                 </span>
@@ -87,7 +87,7 @@
 
           <!-- Coaches Expect -->
           <section>
-            <h3 class="text-lg font-semibold text-slate-900 mb-3">
+            <h3 class="mb-3 text-lg font-semibold text-slate-900">
               What Coaches Expect
             </h3>
             <ul class="space-y-2">
@@ -96,24 +96,24 @@
                 :key="index"
                 class="flex gap-2 text-slate-700"
               >
-                <span class="text-blue-600 font-bold">•</span>
+                <span class="font-bold text-blue-600">•</span>
                 <span class="leading-relaxed">{{ expectation }}</span>
               </li>
             </ul>
           </section>
 
           <!-- Timeline -->
-          <section class="bg-blue-50 rounded-lg p-4 border border-blue-200">
-            <h3 class="text-sm font-semibold text-blue-900 mb-1">Timeline</h3>
+          <section class="rounded-lg border border-blue-200 bg-blue-50 p-4">
+            <h3 class="mb-1 text-sm font-semibold text-blue-900">Timeline</h3>
             <p class="text-sm text-blue-800">{{ helpContent.timeline }}</p>
           </section>
         </div>
 
         <!-- Footer -->
-        <div class="flex justify-end gap-3 p-6 border-t border-slate-200">
+        <div class="flex justify-end gap-3 border-t border-slate-200 p-6">
           <button
             @click="handleClose"
-            class="px-4 py-2 text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg font-medium transition"
+            class="rounded-lg bg-slate-100 px-4 py-2 font-medium text-slate-700 transition hover:bg-slate-200"
           >
             Close
           </button>
@@ -121,7 +121,7 @@
             v-if="helpContent.actionLink"
             @click="handleAction"
             :class="[
-              'px-4 py-2 rounded-lg font-medium transition',
+              'rounded-lg px-4 py-2 font-medium transition',
               urgencyColorClasses,
             ]"
           >

@@ -43,12 +43,14 @@ describe("CoachInteractionsLog", () => {
   });
 
   it("renders rows collapsed and reveals content on expand", async () => {
-    const wrapper = mountLog([make({ id: "i1", content: "Hidden until open" })]);
+    const wrapper = mountLog([
+      make({ id: "i1", content: "Hidden until open" }),
+    ]);
 
     // Collapsed: content not shown
     expect(wrapper.text()).not.toContain("Hidden until open");
 
-    await wrapper.find('li button').trigger("click");
+    await wrapper.find("li button").trigger("click");
     expect(wrapper.text()).toContain("Hidden until open");
   });
 

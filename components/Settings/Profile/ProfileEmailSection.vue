@@ -1,6 +1,6 @@
 <template>
-  <section class="bg-white rounded-xl border border-slate-200 shadow-xs p-6">
-    <h2 class="text-lg font-semibold text-slate-900 mb-2">Email Address</h2>
+  <section class="rounded-xl border border-slate-200 bg-white p-6 shadow-xs">
+    <h2 class="mb-2 text-lg font-semibold text-slate-900">Email Address</h2>
 
     <UAlert v-if="emailChangePending" color="info" class="mb-4">
       <template #description>
@@ -9,7 +9,7 @@
       </template>
     </UAlert>
 
-    <p class="text-sm text-slate-600 mb-4">
+    <p class="mb-4 text-sm text-slate-600">
       <span class="font-medium text-slate-800">Current:</span>
       {{ store.user?.email }}
     </p>
@@ -32,7 +32,7 @@
     <form v-else class="space-y-4" @submit.prevent="handleSubmit">
       <div>
         <label
-          class="block text-sm font-medium text-slate-700 mb-1"
+          class="mb-1 block text-sm font-medium text-slate-700"
           for="new-email"
         >
           New Email Address
@@ -48,7 +48,7 @@
       </div>
       <div>
         <label
-          class="block text-sm font-medium text-slate-700 mb-1"
+          class="mb-1 block text-sm font-medium text-slate-700"
           for="current-pass-email"
         >
           Current Password (to confirm)
@@ -60,7 +60,7 @@
           autocomplete="current-password"
           :disabled="loading"
         />
-        <p v-if="error" class="text-sm text-red-600 mt-1">{{ error }}</p>
+        <p v-if="error" class="mt-1 text-sm text-red-600">{{ error }}</p>
       </div>
       <div class="flex items-center gap-3">
         <UButton type="submit" :loading="loading">Update Email</UButton>

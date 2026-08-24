@@ -19,7 +19,14 @@ const detail = {
   family: { unit: {}, members: [], pendingInvitations: [] },
   athletes: [],
   recruiting: {
-    counts: { schools: 3, coaches: 2, interactions: 5, offers: 1, events: 4, messages: 6 },
+    counts: {
+      schools: 3,
+      coaches: 2,
+      interactions: 5,
+      offers: 1,
+      events: 4,
+      messages: 6,
+    },
     recentInteractions: [],
     recentOffers: [],
     recentEvents: [],
@@ -60,6 +67,8 @@ describe("admin user detail page", () => {
     const w = mount(AdminUserDetail, { global: { stubs } });
     await flushPromises();
     expect(w.findAll(".tile").length).toBeGreaterThan(0);
-    expect(w.find("button.delete, [data-testid='delete']").exists()).toBe(false);
+    expect(w.find("button.delete, [data-testid='delete']").exists()).toBe(
+      false,
+    );
   });
 });

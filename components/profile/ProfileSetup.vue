@@ -86,13 +86,13 @@ function copyLink() {
 </script>
 
 <template>
-  <div v-if="loading" class="text-gray-400 text-sm">
+  <div v-if="loading" class="text-sm text-gray-400">
     Loading profile settings…
   </div>
 
   <div
     v-else-if="error"
-    class="text-sm text-red-500 bg-red-50 border border-red-200 rounded-lg px-4 py-3"
+    class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-500"
   >
     Failed to load profile settings. Please refresh the page.
     <button class="ml-2 underline hover:no-underline" @click="fetchProfile()">
@@ -103,7 +103,7 @@ function copyLink() {
   <div v-else-if="profile" class="space-y-6">
     <!-- Publish toggle -->
     <div
-      class="flex items-center justify-between p-4 rounded-xl border"
+      class="flex items-center justify-between rounded-xl border p-4"
       :class="
         draft.is_published
           ? 'border-green-200 bg-green-50'
@@ -111,12 +111,12 @@ function copyLink() {
       "
     >
       <div>
-        <p class="font-medium text-sm text-gray-900">
+        <p class="text-sm font-medium text-gray-900">
           {{
             draft.is_published ? "Profile is live" : "Profile is unpublished"
           }}
         </p>
-        <p class="text-xs text-gray-500 mt-0.5">
+        <p class="mt-0.5 text-xs text-gray-500">
           {{
             draft.is_published
               ? "Coaches can view this profile via your sharing links."
@@ -138,17 +138,17 @@ function copyLink() {
 
     <!-- Sharing links -->
     <div class="space-y-2">
-      <label class="text-xs font-semibold text-gray-400 uppercase tracking-wide"
+      <label class="text-xs font-semibold tracking-wide text-gray-400 uppercase"
         >Your profile link</label
       >
       <div class="flex gap-2">
         <code
-          class="flex-1 bg-gray-100 rounded-lg px-3 py-2 text-sm text-gray-700 truncate"
+          class="flex-1 truncate rounded-lg bg-gray-100 px-3 py-2 text-sm text-gray-700"
         >
           {{ publicUrl }}
         </code>
         <button
-          class="px-3 py-2 text-sm bg-gray-800 text-white rounded-lg hover:bg-gray-700"
+          class="rounded-lg bg-gray-800 px-3 py-2 text-sm text-white hover:bg-gray-700"
           @click="copyLink"
         >
           Copy
@@ -158,18 +158,18 @@ function copyLink() {
 
     <!-- Vanity slug -->
     <div class="space-y-1">
-      <label class="text-xs font-semibold text-gray-400 uppercase tracking-wide"
+      <label class="text-xs font-semibold tracking-wide text-gray-400 uppercase"
         >Custom URL (optional)</label
       >
       <div class="flex items-center gap-2">
-        <span class="text-sm text-gray-400 shrink-0"
+        <span class="shrink-0 text-sm text-gray-400"
           >recruitingcompass.com/p/</span
         >
         <input
           v-model="draft.vanity_slug"
           type="text"
           placeholder="yourname2026"
-          class="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400"
+          class="flex-1 rounded-lg border border-gray-200 px-3 py-2 text-sm focus:ring-2 focus:ring-slate-400 focus:outline-none"
           @blur="onSlugBlur"
         />
       </div>
@@ -181,7 +181,7 @@ function copyLink() {
 
     <!-- Bio -->
     <div class="space-y-1">
-      <label class="text-xs font-semibold text-gray-400 uppercase tracking-wide"
+      <label class="text-xs font-semibold tracking-wide text-gray-400 uppercase"
         >Bio / Statement</label
       >
       <textarea
@@ -189,17 +189,17 @@ function copyLink() {
         rows="3"
         maxlength="300"
         placeholder="A short statement about yourself (300 chars max)"
-        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400 resize-none"
+        class="w-full resize-none rounded-lg border border-gray-200 px-3 py-2 text-sm focus:ring-2 focus:ring-slate-400 focus:outline-none"
         @blur="save({ bio: draft.bio || null })"
       />
-      <p class="text-xs text-gray-400 text-right">
+      <p class="text-right text-xs text-gray-400">
         {{ (draft.bio ?? "").length }}/300
       </p>
     </div>
 
     <!-- Header color -->
     <div class="space-y-2">
-      <label class="text-xs font-semibold text-gray-400 uppercase tracking-wide"
+      <label class="text-xs font-semibold tracking-wide text-gray-400 uppercase"
         >Header color</label
       >
       <div class="flex flex-wrap gap-2">
@@ -207,11 +207,11 @@ function copyLink() {
           v-for="color in HEADER_COLORS"
           :key="color.key"
           :title="color.label"
-          class="w-7 h-7 rounded-full transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-400"
+          class="h-7 w-7 rounded-full transition-transform hover:scale-110 focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:outline-none"
           :class="[
             color.swatch,
             draft.header_color === color.key
-              ? 'ring-2 ring-offset-2 ring-slate-600 scale-110'
+              ? 'scale-110 ring-2 ring-slate-600 ring-offset-2'
               : '',
           ]"
           @click="save({ header_color: color.key })"
@@ -221,7 +221,7 @@ function copyLink() {
 
     <!-- Section toggles -->
     <div class="space-y-3">
-      <label class="text-xs font-semibold text-gray-400 uppercase tracking-wide"
+      <label class="text-xs font-semibold tracking-wide text-gray-400 uppercase"
         >What to show coaches</label
       >
       <div class="space-y-2">
@@ -238,7 +238,7 @@ function copyLink() {
             { key: 'show_film', label: 'Film & video links' },
           ]"
           :key="section.key"
-          class="flex items-center gap-3 cursor-pointer"
+          class="flex cursor-pointer items-center gap-3"
         >
           <input
             type="checkbox"

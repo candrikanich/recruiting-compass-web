@@ -4,24 +4,24 @@
     v-if="stats.length > 0"
     role="region"
     :aria-label="ariaLabel"
-    class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6"
+    class="mb-6 grid grid-cols-2 gap-4 md:grid-cols-4"
   >
     <div
       v-for="stat in stats"
       :key="stat.label"
       :data-testid="stat.testId"
-      class="bg-white rounded-xl border border-slate-200 shadow-xs p-4 hover:shadow-md transition"
+      class="rounded-xl border border-slate-200 bg-white p-4 shadow-xs transition hover:shadow-md"
     >
       <div class="flex items-center gap-3">
         <div
           v-if="stat.icon"
           :class="getIconBgClass(stat.color)"
-          class="w-10 h-10 rounded-lg flex items-center justify-center"
+          class="flex h-10 w-10 items-center justify-center rounded-lg"
         >
           <UIcon
             :name="stat.icon"
             :class="getIconClass(stat.color)"
-            class="w-5 h-5"
+            class="h-5 w-5"
             aria-hidden="true"
           />
         </div>

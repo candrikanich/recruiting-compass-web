@@ -3,7 +3,7 @@
     <!-- Trigger Button -->
     <button
       @click="openModal"
-      class="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1"
+      class="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800"
     >
       <UIcon name="i-heroicons-clock" class="h-4 w-4" aria-hidden="true" />
       View Edit History
@@ -15,13 +15,13 @@
     <!-- Modal -->
     <div
       v-if="isOpen"
-      class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
     >
       <div
-        class="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[80vh] overflow-y-auto p-6"
+        class="max-h-[80vh] w-full max-w-3xl overflow-y-auto rounded-lg bg-white p-6 shadow-xl"
       >
         <!-- Header -->
-        <div class="flex justify-between items-center mb-6">
+        <div class="mb-6 flex items-center justify-between">
           <h2 class="text-2xl font-bold text-brand-slate-900">
             Profile Edit History
           </h2>
@@ -41,19 +41,19 @@
         <!-- Loading State -->
         <div v-if="loading" class="flex justify-center py-8">
           <div
-            class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"
+            class="h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"
           ></div>
         </div>
 
         <!-- Error State -->
-        <div v-else-if="error" class="text-center py-8 text-red-600">
+        <div v-else-if="error" class="py-8 text-center text-red-600">
           {{ error }}
         </div>
 
         <!-- Empty State -->
         <div
           v-else-if="history.length === 0"
-          class="text-center py-8 text-brand-slate-500"
+          class="py-8 text-center text-brand-slate-500"
         >
           No edit history available
         </div>
@@ -67,45 +67,45 @@
           >
             <!-- Timeline dot and line -->
             <div
-              class="absolute left-0 top-0 bottom-0 flex flex-col items-center"
+              class="absolute top-0 bottom-0 left-0 flex flex-col items-center"
             >
               <div
-                class="w-3 h-3 bg-blue-600 rounded-full border-2 border-white shadow-sm"
+                class="h-3 w-3 rounded-full border-2 border-white bg-blue-600 shadow-sm"
               ></div>
               <div
                 v-if="index < history.length - 1"
-                class="flex-1 w-0.5 bg-brand-slate-200 mt-1"
+                class="mt-1 w-0.5 flex-1 bg-brand-slate-200"
               ></div>
             </div>
 
             <!-- Entry content -->
             <div class="ml-8 pb-6">
               <!-- Header with timestamp and badge -->
-              <div class="flex items-center gap-2 mb-2">
+              <div class="mb-2 flex items-center gap-2">
                 <time class="text-sm font-medium text-brand-slate-900">
                   {{ formatTimestamp(entry.timestamp) }}
                 </time>
                 <span
                   v-if="index === 0"
-                  class="px-2 py-0.5 bg-blue-100 text-blue-800 text-xs font-medium rounded-sm"
+                  class="rounded-sm bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800"
                 >
                   Most Recent
                 </span>
               </div>
 
               <!-- Changed fields -->
-              <div class="bg-brand-slate-50 rounded-lg p-4 space-y-3">
+              <div class="space-y-3 rounded-lg bg-brand-slate-50 p-4">
                 <div
                   v-for="change in entry.changes"
                   :key="change.field"
                   class="grid grid-cols-2 gap-4 text-sm"
                 >
                   <div>
-                    <p class="font-medium text-brand-slate-700 mb-1">
+                    <p class="mb-1 font-medium text-brand-slate-700">
                       {{ change.fieldLabel }}
                     </p>
                     <div
-                      class="bg-white rounded-sm p-2 border border-brand-slate-200"
+                      class="rounded-sm border border-brand-slate-200 bg-white p-2"
                     >
                       <span class="text-brand-slate-500">Before:</span>
                       <span class="ml-2 text-brand-slate-900">
@@ -114,12 +114,12 @@
                     </div>
                   </div>
                   <div>
-                    <p class="font-medium text-brand-slate-700 mb-1">&nbsp;</p>
+                    <p class="mb-1 font-medium text-brand-slate-700">&nbsp;</p>
                     <div
-                      class="bg-white rounded-sm p-2 border border-brand-emerald-200"
+                      class="rounded-sm border border-brand-emerald-200 bg-white p-2"
                     >
                       <span class="text-brand-emerald-600">After:</span>
-                      <span class="ml-2 text-brand-slate-900 font-medium">
+                      <span class="ml-2 font-medium text-brand-slate-900">
                         {{ formatValue(change.new_value) }}
                       </span>
                     </div>

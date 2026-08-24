@@ -9,18 +9,18 @@
     />
 
     <!-- Sub-navigation tabs -->
-    <div class="bg-white border-b border-slate-200">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6">
+    <div class="border-b border-slate-200 bg-white">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6">
         <nav class="flex gap-6">
           <NuxtLink
             to="/performance"
-            class="pb-3 px-1 border-b-2 border-transparent text-gray-600 hover:text-gray-900 font-semibold"
+            class="border-b-2 border-transparent px-1 pb-3 font-semibold text-gray-600 hover:text-gray-900"
           >
             Performance Overview
           </NuxtLink>
           <NuxtLink
             to="/performance/timeline"
-            class="pb-3 px-1 border-b-2 border-blue-600 text-blue-600 font-semibold"
+            class="border-b-2 border-blue-600 px-1 pb-3 font-semibold text-blue-600"
           >
             Timeline & Analytics
           </NuxtLink>
@@ -28,7 +28,7 @@
       </div>
     </div>
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <!-- Filters Bar -->
       <PerformanceTimelineFilters
         v-model:dateRange="dateRange"
@@ -39,8 +39,8 @@
 
       <!-- Loading State -->
       <div v-if="loading" class="space-y-8">
-        <div class="bg-white rounded-lg shadow-sm p-6 h-96 animate-pulse"></div>
-        <div class="bg-white rounded-lg shadow-sm p-6 h-96 animate-pulse"></div>
+        <div class="h-96 animate-pulse rounded-lg bg-white p-6 shadow-sm"></div>
+        <div class="h-96 animate-pulse rounded-lg bg-white p-6 shadow-sm"></div>
       </div>
 
       <!-- Charts -->
@@ -59,7 +59,7 @@
         <!-- Empty state -->
         <div
           v-if="chartSections.length === 0"
-          class="bg-white rounded-lg shadow-sm p-12 text-center text-slate-600"
+          class="rounded-lg bg-white p-12 text-center text-slate-600 shadow-sm"
         >
           No performance metrics recorded yet
         </div>

@@ -50,11 +50,11 @@ const handleBlur = () => {
 
 <template>
   <div>
-    <label :for="inputId" class="block text-sm font-medium text-slate-700 mb-2">
+    <label :for="inputId" class="mb-2 block text-sm font-medium text-slate-700">
       {{ label }}
       <span v-if="required" class="text-red-500" aria-hidden="true">*</span>
       <span v-if="required" class="sr-only">(required)</span>
-      <span v-if="autoFilled" class="text-xs font-normal text-blue-700 ml-1"
+      <span v-if="autoFilled" class="ml-1 text-xs font-normal text-blue-700"
         >(auto-filled)</span
       >
     </label>
@@ -67,7 +67,7 @@ const handleBlur = () => {
       :aria-invalid="!!error"
       :aria-describedby="error ? `${inputId}-error` : undefined"
       :style="dropdownStyle"
-      class="px-4 py-3 border-2 border-slate-300 rounded-xl bg-white appearance-none cursor-pointer transition-all focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+      class="cursor-pointer appearance-none rounded-xl border-2 border-slate-300 bg-white px-4 py-3 transition-all focus:border-transparent focus:ring-2 focus:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
       :class="{ 'border-red-500': error }"
       @input="handleInput"
       @blur="handleBlur"

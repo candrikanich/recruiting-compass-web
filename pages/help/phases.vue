@@ -109,7 +109,7 @@
         Navigate to
         <NuxtLink
           to="/documents"
-          class="font-medium text-primary-600 hover:underline"
+          class="text-primary-600 font-medium hover:underline"
           >Documents</NuxtLink
         >
         and select the <strong>Recommendation Letters</strong> tab.

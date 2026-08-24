@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen relative overflow-hidden bg-emerald-600">
+  <div class="relative min-h-screen overflow-hidden bg-emerald-600">
     <!-- Skip link -->
     <SkipLink to="#login-form" text="Skip to login form" />
 
@@ -8,18 +8,18 @@
 
     <!-- Content -->
     <div
-      class="relative z-10 min-h-screen flex items-center justify-center px-6 py-12"
+      class="relative z-10 flex min-h-screen items-center justify-center px-6 py-12"
     >
       <div class="w-full max-w-md">
         <!-- Back Link -->
         <div class="mb-6">
           <NuxtLink
             to="/"
-            class="text-white hover:text-white/80 transition-colors flex items-center gap-2 focus:ring-2 focus:ring-offset-2 focus:ring-white rounded-sm px-2 py-1"
+            class="flex items-center gap-2 rounded-sm px-2 py-1 text-white transition-colors hover:text-white/80 focus:ring-2 focus:ring-white focus:ring-offset-2"
           >
             <UIcon
               name="i-heroicons-arrow-left"
-              class="w-4 h-4"
+              class="h-4 w-4"
               aria-hidden="true"
             />
             Back to Welcome
@@ -28,20 +28,20 @@
 
         <!-- Login Card -->
         <div
-          class="bg-white/95 backdrop-blur-xs rounded-2xl shadow-2xl p-8 border border-white/20"
+          class="rounded-2xl border border-white/20 bg-white/95 p-8 shadow-2xl backdrop-blur-xs"
         >
           <!-- Header -->
-          <div class="text-center mb-8">
+          <div class="mb-8 text-center">
             <h1 class="sr-only">Sign in to The Recruiting Compass</h1>
             <NuxtLink
               to="/"
-              class="inline-block focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 rounded-sm transition-all hover:opacity-90"
+              class="inline-block rounded-sm transition-all hover:opacity-90 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               aria-label="The Recruiting Compass - Find your path, make your move (home)"
             >
               <img
                 src="~/assets/logos/recruiting-compass-stacked.svg"
                 alt=""
-                class="w-96 mx-auto"
+                class="mx-auto w-96"
               />
             </NuxtLink>
           </div>
@@ -53,7 +53,7 @@
             role="alert"
             aria-live="polite"
             aria-atomic="true"
-            class="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg"
+            class="mb-4 rounded-lg border border-yellow-200 bg-yellow-50 p-3"
           >
             <p class="text-sm text-yellow-800">{{ timeoutMessage }}</p>
           </div>

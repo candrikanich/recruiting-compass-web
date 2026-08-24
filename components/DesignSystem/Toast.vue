@@ -2,7 +2,7 @@
   <ClientOnly>
     <Teleport to="body">
       <div
-        class="fixed top-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"
+        class="pointer-events-none fixed top-4 right-4 z-50 flex flex-col gap-2"
       >
         <TransitionGroup name="toast">
           <div
@@ -12,7 +12,7 @@
             :aria-live="getAriaLive(toast.type)"
             aria-atomic="true"
             :class="[
-              'pointer-events-auto px-4 py-3 rounded-lg text-white',
+              'pointer-events-auto rounded-lg px-4 py-3 text-white',
               toastClass(toast.type),
             ]"
           >
@@ -21,13 +21,13 @@
                 <UIcon
                   name="i-heroicons-check-solid"
                   v-if="toast.type === 'success'"
-                  class="w-5 h-5"
+                  class="h-5 w-5"
                   aria-hidden="true"
                 />
                 <UIcon
                   name="i-heroicons-x-mark-solid"
                   v-else-if="toast.type === 'error'"
-                  class="w-5 h-5"
+                  class="h-5 w-5"
                   aria-hidden="true"
                 />
                 <span v-else class="text-lg" aria-hidden="true">{{
@@ -39,18 +39,18 @@
                 v-if="toast.action"
                 @click="runAction(toast)"
                 :aria-label="`${toast.action.label}: ${toast.message}`"
-                class="text-sm font-semibold underline underline-offset-2 hover:opacity-80 transition focus:ring-2 focus:ring-white focus:ring-offset-2 whitespace-nowrap"
+                class="text-sm font-semibold whitespace-nowrap underline underline-offset-2 transition hover:opacity-80 focus:ring-2 focus:ring-white focus:ring-offset-2"
               >
                 {{ toast.action.label }}
               </button>
               <button
                 @click="removeToast(toast.id)"
                 :aria-label="`Dismiss ${toast.type} notification: ${toast.message}`"
-                class="hover:opacity-70 transition focus:ring-2 focus:ring-white focus:ring-offset-2"
+                class="transition hover:opacity-70 focus:ring-2 focus:ring-white focus:ring-offset-2"
               >
                 <UIcon
                   name="i-heroicons-x-mark-solid"
-                  class="w-5 h-5"
+                  class="h-5 w-5"
                   aria-hidden="true"
                 />
               </button>

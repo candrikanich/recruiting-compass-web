@@ -135,7 +135,9 @@ describe("useTemplateResolver", () => {
       // Ordered, abbreviated, coach-facing: positions[0]=SS, next distinct=2B.
       expect(ctx.derived?.position).toBe("SS/2B");
       expect(ctx.derived?.positionSecondary).toBe("2B");
-      expect(ctx.derived?.profileLink).toBe("https://myrecruitingcompass.com/p/jordan");
+      expect(ctx.derived?.profileLink).toBe(
+        "https://myrecruitingcompass.com/p/jordan",
+      );
       expect(ctx.derived?.prepBaseballLink).toBe(
         "https://www.prepbaseballreport.com/profiles/OH/jordan-ellis",
       );

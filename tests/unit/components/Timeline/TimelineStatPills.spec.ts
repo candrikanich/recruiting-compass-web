@@ -47,9 +47,9 @@ describe("TimelineStatPills", () => {
   it("computes task progress percentage correctly", () => {
     const wrapper = mount(TimelineStatPills, { props: defaultProps });
     // 8/24 = 33%, rendered as the task bar's width.
-    expect(wrapper.find("[data-testid='task-bar']").attributes("style")).toContain(
-      "width: 33%",
-    );
+    expect(
+      wrapper.find("[data-testid='task-bar']").attributes("style"),
+    ).toContain("width: 33%");
   });
 
   it("handles zero tasks gracefully", () => {

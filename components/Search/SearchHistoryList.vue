@@ -1,7 +1,7 @@
 <template>
-  <div class="bg-white rounded-lg shadow-sm p-6">
-    <div class="flex items-center justify-between mb-4">
-      <h3 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+  <div class="rounded-lg bg-white p-6 shadow-sm">
+    <div class="mb-4 flex items-center justify-between">
+      <h3 class="flex items-center gap-2 text-lg font-semibold text-gray-900">
         <svg
           class="h-5 w-5"
           fill="none"
@@ -20,7 +20,7 @@
       <button
         v-if="recentSearches.length > 0"
         @click="clearHistory"
-        class="text-xs text-gray-600 hover:text-gray-900 font-medium"
+        class="text-xs font-medium text-gray-600 hover:text-gray-900"
       >
         Clear
       </button>
@@ -31,11 +31,11 @@
       <div
         v-for="search in recentSearches"
         :key="search.id"
-        class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50 cursor-pointer transition"
+        class="flex cursor-pointer items-center gap-3 rounded-lg border border-gray-200 p-3 transition hover:border-blue-300 hover:bg-blue-50"
         @click="$emit('apply-search', search)"
       >
         <svg
-          class="h-4 w-4 text-gray-400 shrink-0"
+          class="h-4 w-4 shrink-0 text-gray-400"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -47,8 +47,8 @@
             d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
           />
         </svg>
-        <div class="flex-1 min-w-0">
-          <p class="text-sm font-medium text-gray-900 truncate">
+        <div class="min-w-0 flex-1">
+          <p class="truncate text-sm font-medium text-gray-900">
             {{ search.query }}
           </p>
           <p class="text-xs text-gray-600">
@@ -82,9 +82,9 @@
     </div>
 
     <!-- Empty State -->
-    <div v-else class="text-center py-8">
+    <div v-else class="py-8 text-center">
       <svg
-        class="mx-auto h-8 w-8 text-gray-400 mb-2"
+        class="mx-auto mb-2 h-8 w-8 text-gray-400"
         fill="none"
         viewBox="0 0 24 24"
         stroke="currentColor"

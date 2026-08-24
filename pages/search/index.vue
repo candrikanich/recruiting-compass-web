@@ -7,7 +7,7 @@
       description="Search across schools, coaches, interactions, and performance metrics"
     />
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+    <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6">
       <!-- Save Search Dialog -->
       <SaveSearchDialog
         :is-open="showSaveDialog"
@@ -21,12 +21,12 @@
 
       <!-- Search Input -->
       <div class="mb-6">
-        <div class="flex gap-2 mb-4">
+        <div class="mb-4 flex gap-2">
           <button
             v-if="searchQuery && hasResults"
             data-testid="save-search-button"
             @click="showSaveDialog = true"
-            class="px-3 py-2 text-sm bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 font-medium transition flex items-center gap-2"
+            class="flex items-center gap-2 rounded-lg bg-blue-50 px-3 py-2 text-sm font-medium text-blue-600 transition hover:bg-blue-100"
           >
             <svg
               class="h-4 w-4"
@@ -61,7 +61,7 @@
       <!-- Saved Searches & History (when not searching) -->
       <div
         v-if="!searchQuery"
-        class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8"
+        class="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-2"
       >
         <SavedSearchesList @apply-search="applySavedSearch" />
         <SearchHistoryList
@@ -72,14 +72,14 @@
 
       <!-- Search Type Tabs -->
       <div class="mb-6 border-b border-brand-slate-200">
-        <nav class="flex gap-6 -mb-px" aria-label="Search result types">
+        <nav class="-mb-px flex gap-6" aria-label="Search result types">
           <button
             v-for="type in searchTypes"
             :key="type"
             :aria-current="searchType === type ? 'true' : undefined"
             @click="searchType = type"
             :class="[
-              'pb-3 px-1 border-b-2 font-semibold transition',
+              'border-b-2 px-1 pb-3 font-semibold transition',
               searchType === type
                 ? 'border-blue-600 text-blue-600'
                 : 'border-transparent text-brand-slate-600 hover:text-brand-slate-900',
@@ -119,38 +119,38 @@
         </p>
 
         <!-- Loading State -->
-        <div v-if="isSearching" class="text-center py-12">
+        <div v-if="isSearching" class="py-12 text-center">
           <div class="inline-flex items-center gap-2">
             <div
-              class="w-4 h-4 bg-blue-600 rounded-full animate-bounce"
+              class="h-4 w-4 animate-bounce rounded-full bg-blue-600"
               style="animation-delay: 0ms"
             ></div>
             <div
-              class="w-4 h-4 bg-blue-600 rounded-full animate-bounce"
+              class="h-4 w-4 animate-bounce rounded-full bg-blue-600"
               style="animation-delay: 150ms"
             ></div>
             <div
-              class="w-4 h-4 bg-blue-600 rounded-full animate-bounce"
+              class="h-4 w-4 animate-bounce rounded-full bg-blue-600"
               style="animation-delay: 300ms"
             ></div>
           </div>
-          <p class="text-brand-slate-600 mt-4">Searching...</p>
+          <p class="mt-4 text-brand-slate-600">Searching...</p>
         </div>
 
         <!-- Error State -->
         <div
           v-else-if="searchError"
-          class="bg-red-50 border border-red-200 rounded-lg p-6"
+          class="rounded-lg border border-red-200 bg-red-50 p-6"
         >
           <p class="text-red-800">{{ searchError }}</p>
         </div>
 
         <!-- Empty State -->
-        <div v-else-if="!hasResults" class="text-center py-12">
+        <div v-else-if="!hasResults" class="py-12 text-center">
           <p class="text-brand-slate-600">
             No results found for "{{ searchQuery }}"
           </p>
-          <p class="text-sm text-brand-slate-500 mt-2">
+          <p class="mt-2 text-sm text-brand-slate-500">
             Try adjusting your search or filters
           </p>
         </div>
@@ -167,7 +167,7 @@
             :count="schoolResults.length"
             result-type="school"
           >
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
               <SchoolCard
                 v-for="school in schoolResults"
                 :key="school.id"
@@ -191,7 +191,7 @@
             :count="coachResults.length"
             result-type="coach"
           >
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
               <CoachCard
                 v-for="coach in coachResults"
                 :key="coach.id"
@@ -253,7 +253,7 @@
       </div>
 
       <!-- Empty Search State -->
-      <div v-else class="text-center py-12">
+      <div v-else class="py-12 text-center">
         <svg
           class="mx-auto h-12 w-12 text-brand-slate-400"
           fill="none"

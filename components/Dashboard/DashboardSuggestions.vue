@@ -2,7 +2,7 @@
   <div v-if="suggestions.length > 0 || deadPeriodMessage" class="mb-6">
     <div class="mb-4">
       <h2 class="text-xl font-semibold text-slate-900">Action Items</h2>
-      <p class="text-slate-600 text-sm mt-1">
+      <p class="mt-1 text-sm text-slate-600">
         {{
           deadPeriodMessage && suggestions.length === 0
             ? "No action items at this time"
@@ -14,7 +14,7 @@
     <!-- Dead Period Notice -->
     <div
       v-if="deadPeriodMessage"
-      class="bg-amber-50 border-l-4 border-amber-400 p-4 mb-4 rounded-r"
+      class="mb-4 rounded-r border-l-4 border-amber-400 bg-amber-50 p-4"
     >
       <div class="flex items-start">
         <div class="shrink-0">
@@ -39,7 +39,7 @@
     <!-- Parent Notice -->
     <div
       v-if="isViewingAsParent"
-      class="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-4"
+      class="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-4"
     >
       <p class="text-sm text-amber-800">
         💡 These suggestions are for
@@ -61,16 +61,16 @@
     <!-- Pending Reminders Indicator -->
     <div
       v-if="moreCount > 0"
-      class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-sm text-center"
+      class="mt-4 rounded-sm border border-blue-200 bg-blue-50 p-3 text-center"
     >
-      <p class="text-sm text-blue-700 mb-2">
+      <p class="mb-2 text-sm text-blue-700">
         <span class="font-semibold">{{ moreCount }}</span>
         {{ moreCount === 1 ? "reminder" : "reminders" }} pending
       </p>
       <button
         @click="surfaceMoreSuggestions"
         :disabled="surfacingMore"
-        class="text-sm text-blue-600 hover:text-blue-800 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+        class="text-sm font-medium text-blue-600 hover:text-blue-800 disabled:cursor-not-allowed disabled:opacity-50"
       >
         {{ surfacingMore ? "Loading..." : "Show more" }}
       </button>

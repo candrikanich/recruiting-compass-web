@@ -1,25 +1,25 @@
 <template>
   <div class="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
-    <div class="max-w-2xl mx-auto">
+    <div class="mx-auto max-w-2xl">
       <!-- Header -->
       <div class="mb-8">
         <h1 class="text-3xl font-bold text-gray-900">
           Batch Fetch School Logos
         </h1>
-        <p class="text-gray-600 mt-2">
+        <p class="mt-2 text-gray-600">
           Fetch favicons for all schools in the database
         </p>
       </div>
 
       <!-- Status Card -->
-      <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+      <div class="mb-6 rounded-lg bg-white p-6 shadow-sm">
         <!-- Idle State -->
         <div v-if="status === 'idle'" class="space-y-4">
           <p class="text-gray-600">
             This utility will fetch and store favicon URLs for all schools in
             your database that don't have one yet.
           </p>
-          <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div class="rounded-lg border border-blue-200 bg-blue-50 p-4">
             <p class="text-sm text-blue-800">
               <strong>Note:</strong> This process may take a minute or two
               depending on the number of schools. The page can be left open
@@ -28,7 +28,7 @@
           </div>
           <button
             @click="startBatchFetch"
-            class="w-full px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition"
+            class="w-full rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white transition hover:bg-blue-700"
           >
             Start Batch Fetch
           </button>
@@ -43,9 +43,9 @@
             >
           </div>
           <p class="text-gray-600">{{ statusMessage }}</p>
-          <div class="bg-gray-100 rounded-sm h-2 overflow-hidden">
+          <div class="h-2 overflow-hidden rounded-sm bg-gray-100">
             <div
-              class="bg-blue-600 h-full transition-all duration-300"
+              class="h-full bg-blue-600 transition-all duration-300"
               :style="{ width: `${progress}%` }"
             ></div>
           </div>
@@ -54,13 +54,13 @@
         <!-- Success State -->
         <div v-else-if="status === 'success'" class="space-y-4">
           <div
-            class="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-2"
+            class="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 p-4"
           >
             <UIcon
               name="i-heroicons-check-solid"
-              class="w-5 h-5 text-green-800"
+              class="h-5 w-5 text-green-800"
             />
-            <p class="text-sm text-green-800 font-medium">
+            <p class="text-sm font-medium text-green-800">
               Batch fetch completed successfully!
             </p>
           </div>
@@ -73,7 +73,7 @@
           </div>
           <button
             @click="resetForm"
-            class="w-full px-6 py-2 bg-gray-200 text-gray-900 font-semibold rounded-lg hover:bg-gray-300 transition"
+            class="w-full rounded-lg bg-gray-200 px-6 py-2 font-semibold text-gray-900 transition hover:bg-gray-300"
           >
             Run Again
           </button>
@@ -82,22 +82,22 @@
         <!-- Error State -->
         <div v-else-if="status === 'error'" class="space-y-4">
           <div
-            class="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-2"
+            class="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-4"
           >
             <UIcon
               name="i-heroicons-x-mark-solid"
-              class="w-5 h-5 text-red-800 shrink-0 mt-0.5"
+              class="mt-0.5 h-5 w-5 shrink-0 text-red-800"
             />
             <div>
-              <p class="text-sm text-red-800 font-medium">
+              <p class="text-sm font-medium text-red-800">
                 Error during batch fetch
               </p>
-              <p v-if="error" class="text-sm text-red-700 mt-2">{{ error }}</p>
+              <p v-if="error" class="mt-2 text-sm text-red-700">{{ error }}</p>
             </div>
           </div>
           <button
             @click="resetForm"
-            class="w-full px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition"
+            class="w-full rounded-lg bg-blue-600 px-6 py-2 font-semibold text-white transition hover:bg-blue-700"
           >
             Try Again
           </button>
@@ -105,28 +105,28 @@
       </div>
 
       <!-- Info Section -->
-      <div class="bg-white rounded-lg shadow-sm p-6 space-y-4">
+      <div class="space-y-4 rounded-lg bg-white p-6 shadow-sm">
         <h2 class="text-lg font-semibold text-gray-900">How it works</h2>
         <ol class="space-y-2 text-sm text-gray-600">
           <li class="flex gap-3">
-            <span class="font-medium text-gray-900 shrink-0">1.</span>
+            <span class="shrink-0 font-medium text-gray-900">1.</span>
             <span>Fetches all schools from your database</span>
           </li>
           <li class="flex gap-3">
-            <span class="font-medium text-gray-900 shrink-0">2.</span>
+            <span class="shrink-0 font-medium text-gray-900">2.</span>
             <span
               >For each school without a favicon URL, attempts to fetch from
               their website</span
             >
           </li>
           <li class="flex gap-3">
-            <span class="font-medium text-gray-900 shrink-0">3.</span>
+            <span class="shrink-0 font-medium text-gray-900">3.</span>
             <span
               >Tries multiple sources (favicon.ico, DuckDuckGo, Google)</span
             >
           </li>
           <li class="flex gap-3">
-            <span class="font-medium text-gray-900 shrink-0">4.</span>
+            <span class="shrink-0 font-medium text-gray-900">4.</span>
             <span>Saves found favicons to the database</span>
           </li>
         </ol>

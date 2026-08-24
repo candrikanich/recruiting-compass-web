@@ -1,8 +1,8 @@
 <template>
   <div
-    class="bg-white rounded-2xl border border-slate-200 shadow-xs hover:shadow-md transition-shadow p-6"
+    class="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs transition-shadow hover:shadow-md"
   >
-    <div class="flex items-center justify-between mb-4">
+    <div class="mb-4 flex items-center justify-between">
       <h3 class="text-lg font-bold text-slate-900">
         🎯 Coaches Needing Follow-up
       </h3>
@@ -14,7 +14,7 @@
     <!-- Empty State -->
     <div
       v-if="needsFollowup.length === 0"
-      class="text-center py-8 text-slate-600"
+      class="py-8 text-center text-slate-600"
     >
       <p class="text-lg">🎉 All caught up!</p>
       <p class="text-sm">No coaches need immediate follow-up</p>
@@ -25,7 +25,7 @@
       <div
         v-for="coach in needsFollowup.slice(0, 5)"
         :key="coach.id"
-        class="flex items-center justify-between p-3 rounded-lg transition bg-slate-50 border border-orange-200 hover:bg-slate-100"
+        class="flex items-center justify-between rounded-lg border border-orange-200 bg-slate-50 p-3 transition hover:bg-slate-100"
       >
         <div class="flex-1">
           <p class="font-semibold text-slate-900">
@@ -45,7 +45,7 @@
             @click="handleEmail(coach)"
             :aria-label="`Email ${coach.first_name} ${coach.last_name}`"
             :title="`Email ${coach.email}`"
-            class="p-2 rounded-sm transition bg-blue-100 text-blue-700 hover:bg-blue-200"
+            class="rounded-sm bg-blue-100 p-2 text-blue-700 transition hover:bg-blue-200"
           >
             <span aria-hidden="true">✉️</span>
           </button>
@@ -56,7 +56,7 @@
             @click="handleText(coach)"
             :aria-label="`Text ${coach.first_name} ${coach.last_name}`"
             :title="`Text ${coach.phone}`"
-            class="p-2 rounded-sm transition bg-emerald-100 text-emerald-700 hover:bg-emerald-200"
+            class="rounded-sm bg-emerald-100 p-2 text-emerald-700 transition hover:bg-emerald-200"
           >
             <span aria-hidden="true">💬</span>
           </button>
@@ -66,7 +66,7 @@
             :to="`/coaches/${coach.id}`"
             :aria-label="`View ${coach.first_name} ${coach.last_name} profile`"
             title="View full profile"
-            class="p-2 rounded-sm transition bg-blue-100 text-blue-700 hover:bg-blue-200"
+            class="rounded-sm bg-blue-100 p-2 text-blue-700 transition hover:bg-blue-200"
           >
             <span aria-hidden="true">👁️</span>
           </NuxtLink>
@@ -77,7 +77,7 @@
       <NuxtLink
         v-if="needsFollowup.length > 5"
         to="/coaches?filter=needs-followup"
-        class="block text-center text-sm font-semibold mt-4 pt-2 border-t border-slate-200 text-blue-600 hover:text-blue-700"
+        class="mt-4 block border-t border-slate-200 pt-2 text-center text-sm font-semibold text-blue-600 hover:text-blue-700"
       >
         View all {{ needsFollowup.length }} coaches →
       </NuxtLink>

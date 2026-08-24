@@ -67,7 +67,10 @@ onMounted(() => fetchGrowth(30));
   <section>
     <div class="mb-6 flex items-center justify-between">
       <h1 class="text-xl font-semibold text-brand-slate-900">Growth</h1>
-      <AdminTimeRange :model-value="range" @update:model-value="onRangeChange" />
+      <AdminTimeRange
+        :model-value="range"
+        @update:model-value="onRangeChange"
+      />
     </div>
 
     <DesignSystemLoadingState v-if="isLoading" />
@@ -92,7 +95,9 @@ onMounted(() => fetchGrowth(30));
         <AdminStatTile label="MAU" :value="growth.activity.mau" />
       </div>
 
-      <div class="mb-6 h-64 rounded-lg border border-brand-slate-200 bg-white p-4">
+      <div
+        class="mb-6 h-64 rounded-lg border border-brand-slate-200 bg-white p-4"
+      >
         <AdminChart type="line" :data="dailyTrendChartData" />
       </div>
 

@@ -1,15 +1,15 @@
 <template>
-  <div class="rounded-lg p-6 mb-8 bg-white shadow-md">
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+  <div class="mb-8 rounded-lg bg-white p-6 shadow-md">
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-4">
       <!-- Date Range Preset -->
       <div>
-        <label class="block text-sm font-medium mb-2 text-slate-900"
+        <label class="mb-2 block text-sm font-medium text-slate-900"
           >Date Range</label
         >
         <select
           :value="dateRange.preset"
           @change="handlePresetChange"
-          class="w-full px-4 py-2 border border-slate-300 rounded-lg text-slate-900 bg-white focus:ring-2 focus:border-transparent"
+          class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2 text-slate-900 focus:border-transparent focus:ring-2"
         >
           <option value="last_30_days">Last 30 Days</option>
           <option value="last_3_months">Last 3 Months</option>
@@ -22,38 +22,38 @@
 
       <!-- Custom Start Date (show if preset=custom) -->
       <div v-if="dateRange.preset === 'custom'">
-        <label class="block text-sm font-medium mb-2 text-slate-900"
+        <label class="mb-2 block text-sm font-medium text-slate-900"
           >Start Date</label
         >
         <input
           type="date"
           :value="dateRange.startDate"
           @input="handleStartDateChange"
-          class="w-full px-4 py-2 border border-slate-300 rounded-lg text-slate-900 bg-white focus:ring-2 focus:border-transparent"
+          class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2 text-slate-900 focus:border-transparent focus:ring-2"
         />
       </div>
 
       <!-- Custom End Date (show if preset=custom) -->
       <div v-if="dateRange.preset === 'custom'">
-        <label class="block text-sm font-medium mb-2 text-slate-900"
+        <label class="mb-2 block text-sm font-medium text-slate-900"
           >End Date</label
         >
         <input
           type="date"
           :value="dateRange.endDate"
           @input="handleEndDateChange"
-          class="w-full px-4 py-2 border border-slate-300 rounded-lg text-slate-900 bg-white focus:ring-2 focus:border-transparent"
+          class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2 text-slate-900 focus:border-transparent focus:ring-2"
         />
       </div>
 
       <!-- Verified Only -->
       <div class="flex items-end">
-        <label class="flex items-center cursor-pointer">
+        <label class="flex cursor-pointer items-center">
           <input
             type="checkbox"
             :checked="verifiedOnly"
             @change="handleVerifiedChange"
-            class="w-4 h-4 rounded-sm accent-blue-600"
+            class="h-4 w-4 rounded-sm accent-blue-600"
           />
           <span class="ml-2 text-sm font-medium text-slate-900"
             >Verified Only</span
@@ -63,10 +63,10 @@
 
       <!-- Export Dropdown -->
       <div class="flex items-end gap-2">
-        <div class="flex-1 relative">
+        <div class="relative flex-1">
           <button
             @click="showExportMenu = !showExportMenu"
-            class="w-full px-4 py-2 font-semibold rounded-lg transition bg-slate-50 text-slate-900 hover:bg-slate-100"
+            class="w-full rounded-lg bg-slate-50 px-4 py-2 font-semibold text-slate-900 transition hover:bg-slate-100"
           >
             Export ▼
           </button>
@@ -74,17 +74,17 @@
           <!-- Export Menu -->
           <div
             v-if="showExportMenu"
-            class="absolute bottom-full right-0 mb-2 w-48 rounded-lg z-10 bg-white border border-slate-300 shadow-lg"
+            class="absolute right-0 bottom-full z-10 mb-2 w-48 rounded-lg border border-slate-300 bg-white shadow-lg"
           >
             <button
               @click="handleExport('csv')"
-              class="block w-full text-left px-4 py-2 rounded-t-lg text-sm text-slate-900 hover:bg-slate-50"
+              class="block w-full rounded-t-lg px-4 py-2 text-left text-sm text-slate-900 hover:bg-slate-50"
             >
               Export as CSV
             </button>
             <button
               @click="handleExport('json')"
-              class="block w-full text-left px-4 py-2 rounded-b-lg text-sm text-slate-900 hover:bg-slate-50"
+              class="block w-full rounded-b-lg px-4 py-2 text-left text-sm text-slate-900 hover:bg-slate-50"
             >
               Export as JSON
             </button>
@@ -92,7 +92,7 @@
         </div>
         <button
           @click="handleAdvancedExport"
-          class="px-4 py-2 text-white font-semibold rounded-lg transition bg-blue-600 hover:bg-blue-700"
+          class="rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white transition hover:bg-blue-700"
         >
           Advanced
         </button>

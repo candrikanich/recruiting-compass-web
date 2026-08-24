@@ -1,35 +1,35 @@
 <template>
   <div
     v-if="!statusLoading"
-    class="bg-white rounded-2xl border border-slate-200 shadow-xs p-6"
+    class="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs"
   >
     <!-- Header with Status Badge -->
-    <div class="flex items-center justify-between mb-6">
-      <h3 class="text-slate-900 font-semibold">Overall Status</h3>
+    <div class="mb-6 flex items-center justify-between">
+      <h3 class="font-semibold text-slate-900">Overall Status</h3>
       <div
-        class="flex items-center gap-2 px-3 py-2 rounded-lg"
+        class="flex items-center gap-2 rounded-lg px-3 py-2"
         :class="statusBadgeClass"
       >
-        <div class="w-2 h-2 rounded-full" :class="statusDotClass" />
+        <div class="h-2 w-2 rounded-full" :class="statusDotClass" />
         <span class="text-sm font-medium">{{ statusLabelDisplay }}</span>
       </div>
     </div>
 
     <!-- Status Score and Message -->
-    <div class="mb-6 pb-6 border-b border-slate-200">
+    <div class="mb-6 border-b border-slate-200 pb-6">
       <div class="mb-3">
         <div class="text-3xl font-bold text-slate-900">
           {{ statusScore }}<span class="text-xl text-slate-500">/100</span>
         </div>
-        <p class="text-sm text-slate-600 mt-1">{{ advice }}</p>
+        <p class="mt-1 text-sm text-slate-600">{{ advice }}</p>
       </div>
     </div>
 
     <!-- Key Metrics -->
-    <div class="space-y-4 mb-6">
+    <div class="mb-6 space-y-4">
       <!-- Task Progress -->
       <div>
-        <div class="flex items-center justify-between mb-2">
+        <div class="mb-2 flex items-center justify-between">
           <span class="text-sm font-medium text-slate-700">Task Progress</span>
           <span class="text-sm font-semibold text-slate-900"
             >{{ taskCompletedCount }}/{{ taskTotalCount }} ({{
@@ -37,7 +37,7 @@
             }}%)</span
           >
         </div>
-        <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+        <div class="h-2 overflow-hidden rounded-full bg-slate-100">
           <div
             class="h-full bg-blue-500 transition-all duration-300"
             :style="{ width: `${taskProgressPercent}%` }"
@@ -56,12 +56,12 @@
     </div>
 
     <!-- Strongest & Weakest Areas -->
-    <div class="mb-6 pb-6 border-t border-slate-200 pt-6">
+    <div class="mb-6 border-t border-slate-200 pt-6 pb-6">
       <div class="grid grid-cols-2 gap-4">
         <!-- Strongest Areas -->
         <div v-if="strongestAreas.length > 0">
           <h4
-            class="text-xs font-semibold text-slate-700 mb-2 flex items-center gap-1"
+            class="mb-2 flex items-center gap-1 text-xs font-semibold text-slate-700"
           >
             <span class="text-emerald-600">✓</span>
             Strengths
@@ -80,7 +80,7 @@
         <!-- Weakest Areas -->
         <div v-if="weakestAreas.length > 0">
           <h4
-            class="text-xs font-semibold text-slate-700 mb-2 flex items-center gap-1"
+            class="mb-2 flex items-center gap-1 text-xs font-semibold text-slate-700"
           >
             <span class="text-amber-600">!</span>
             Focus Areas
@@ -101,16 +101,16 @@
     <!-- Action Items for Behind/At Risk -->
     <div
       v-if="showActionItems && nextActions.length > 0"
-      class="bg-slate-50 rounded-lg p-4"
+      class="rounded-lg bg-slate-50 p-4"
     >
-      <h4 class="text-sm font-semibold text-slate-900 mb-3">Next Steps</h4>
+      <h4 class="mb-3 text-sm font-semibold text-slate-900">Next Steps</h4>
       <ul class="space-y-2">
         <li
           v-for="(action, idx) in nextActions"
           :key="idx"
           class="flex gap-2 text-sm text-slate-700"
         >
-          <span class="text-slate-400 shrink-0">{{ idx + 1 }}.</span>
+          <span class="shrink-0 text-slate-400">{{ idx + 1 }}.</span>
           <span>{{ action }}</span>
         </li>
       </ul>

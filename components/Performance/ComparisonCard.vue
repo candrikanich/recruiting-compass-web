@@ -1,6 +1,6 @@
 <template>
-  <div class="rounded-lg p-4 bg-white border border-slate-300">
-    <p class="text-xs font-semibold uppercase tracking-wider text-slate-600">
+  <div class="rounded-lg border border-slate-300 bg-white p-4">
+    <p class="text-xs font-semibold tracking-wider text-slate-600 uppercase">
       {{ label }}
     </p>
     <div class="mt-2 flex items-baseline gap-1">

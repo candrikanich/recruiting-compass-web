@@ -1,16 +1,16 @@
 <template>
   <div
     v-if="schoolCount > 0"
-    class="bg-white rounded-2xl border border-slate-200 shadow-xs hover:shadow-md transition-shadow p-6"
+    class="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs transition-shadow hover:shadow-md"
   >
-    <div class="flex items-center gap-3 mb-5">
-      <div class="p-2 bg-slate-100 rounded-lg">
+    <div class="mb-5 flex items-center gap-3">
+      <div class="rounded-lg bg-slate-100 p-2">
         <UIcon
           name="i-heroicons-building-library"
-          class="w-5 h-5 text-slate-700"
+          class="h-5 w-5 text-slate-700"
         />
       </div>
-      <h3 class="text-slate-900 font-semibold">Schools by Size</h3>
+      <h3 class="font-semibold text-slate-900">Schools by Size</h3>
     </div>
     <div class="space-y-3">
       <div
@@ -18,13 +18,13 @@
         :key="size"
       >
         <div v-if="breakdown[size] > 0">
-          <div class="flex items-center justify-between mb-1.5">
+          <div class="mb-1.5 flex items-center justify-between">
             <span class="text-slate-700">{{ size }}</span>
-            <span class="text-slate-900 font-medium">{{
+            <span class="font-medium text-slate-900">{{
               breakdown[size]
             }}</span>
           </div>
-          <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+          <div class="h-2 overflow-hidden rounded-full bg-slate-100">
             <div
               :class="getSizeBarColor(size)"
               class="h-full transition-all duration-500"

@@ -2,18 +2,18 @@
   <div
     class="min-h-screen bg-linear-to-br from-blue-50 to-indigo-100 px-4 py-12"
   >
-    <div class="max-w-xl mx-auto">
+    <div class="mx-auto max-w-xl">
       <!-- Step indicator -->
-      <div class="text-center mb-8">
-        <h1 class="text-3xl font-bold text-slate-900 mb-2">
+      <div class="mb-8 text-center">
+        <h1 class="mb-2 text-3xl font-bold text-slate-900">
           Welcome to The Recruiting Compass
         </h1>
-        <div class="flex items-center justify-center gap-2 mt-4">
+        <div class="mt-4 flex items-center justify-center gap-2">
           <div
             v-for="n in totalSteps"
             :key="n"
             :class="[
-              'w-3 h-3 rounded-full transition-colors',
+              'h-3 w-3 rounded-full transition-colors',
               n <= step ? 'bg-blue-500' : 'bg-slate-200',
             ]"
           />
@@ -23,14 +23,14 @@
         </div>
       </div>
 
-      <div class="bg-white rounded-lg shadow-lg p-8">
+      <div class="rounded-lg bg-white p-8 shadow-lg">
         <!-- Step 1: Player Details -->
         <div v-if="step === 1" data-testid="step-1" class="space-y-6">
           <div>
-            <h2 class="text-2xl font-bold text-slate-900 mb-1">
+            <h2 class="mb-1 text-2xl font-bold text-slate-900">
               Tell us about your player
             </h2>
-            <p class="text-slate-500 text-sm">
+            <p class="text-sm text-slate-500">
               We'll pre-fill their profile so they can hit the ground running.
               Name and position are optional.
             </p>
@@ -40,7 +40,7 @@
             <div>
               <label
                 for="playerName"
-                class="block text-sm font-medium text-slate-700 mb-1"
+                class="mb-1 block text-sm font-medium text-slate-700"
               >
                 Player's name
               </label>
@@ -51,7 +51,7 @@
                 type="text"
                 autocomplete="name"
                 placeholder="First Last"
-                class="w-full px-4 py-2 border border-slate-300 rounded-lg focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:border-transparent"
+                class="w-full rounded-lg border border-slate-300 px-4 py-2 focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-blue-500"
               />
             </div>
 
@@ -59,7 +59,7 @@
             <div>
               <label
                 for="playerDob"
-                class="block text-sm font-medium text-slate-700 mb-1"
+                class="mb-1 block text-sm font-medium text-slate-700"
               >
                 Player's date of birth <span class="text-red-600">*</span>
               </label>
@@ -69,17 +69,17 @@
                 data-testid="player-dob"
                 type="date"
                 :max="today"
-                class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                class="w-full rounded-lg border px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
                 :class="playerTooYoung ? 'border-red-400' : 'border-slate-300'"
               />
-              <p class="text-xs text-slate-500 mt-1">
+              <p class="mt-1 text-xs text-slate-500">
                 Recruiting Compass is for ages 13 and up. By entering a date of
                 birth, you confirm the player is 13 or older.
               </p>
               <p
                 v-if="playerTooYoung"
                 data-testid="age-error"
-                class="text-sm text-red-600 mt-1"
+                class="mt-1 text-sm text-red-600"
               >
                 Your player must be 13 or older to use Recruiting Compass.
                 Players under 13 cannot create an account.
@@ -89,7 +89,7 @@
             <div>
               <label
                 for="graduationYear"
-                class="block text-sm font-medium text-slate-700 mb-1"
+                class="mb-1 block text-sm font-medium text-slate-700"
               >
                 Graduation year
               </label>
@@ -97,7 +97,7 @@
                 id="graduationYear"
                 v-model="graduationYear"
                 data-testid="graduation-year"
-                class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                class="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Select graduation year</option>
                 <option
@@ -113,7 +113,7 @@
             <div>
               <label
                 for="sport"
-                class="block text-sm font-medium text-slate-700 mb-1"
+                class="mb-1 block text-sm font-medium text-slate-700"
               >
                 Primary sport <span class="text-red-600">*</span>
               </label>
@@ -121,7 +121,7 @@
                 id="sport"
                 v-model="sport"
                 data-testid="sport"
-                class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                class="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
                 @change="position = ''"
               >
                 <option value="">Select sport</option>
@@ -134,7 +134,7 @@
             <div v-if="sport">
               <label
                 for="position"
-                class="block text-sm font-medium text-slate-700 mb-1"
+                class="mb-1 block text-sm font-medium text-slate-700"
               >
                 Position
               </label>
@@ -142,7 +142,7 @@
                 id="position"
                 v-model="position"
                 data-testid="position"
-                class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                class="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Select position</option>
                 <option
@@ -161,7 +161,7 @@
               data-testid="next-button"
               type="button"
               :disabled="!playerDob || playerTooYoung || !sport"
-              class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              class="w-full rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
               @click="savePlayerDetails"
             >
               Next
@@ -172,10 +172,10 @@
         <!-- Step 2: Invite Player -->
         <div v-if="step === 2" data-testid="step-2" class="space-y-6">
           <div>
-            <h2 class="text-2xl font-bold text-slate-900 mb-1">
+            <h2 class="mb-1 text-2xl font-bold text-slate-900">
               Invite your player
             </h2>
-            <p class="text-slate-500 text-sm">
+            <p class="text-sm text-slate-500">
               Send them an email invite or share your family code.
             </p>
           </div>
@@ -183,7 +183,7 @@
           <div>
             <label
               for="inviteEmail"
-              class="block text-sm font-medium text-slate-700 mb-1"
+              class="mb-1 block text-sm font-medium text-slate-700"
             >
               Player's email address
             </label>
@@ -194,7 +194,7 @@
               type="email"
               autocomplete="email"
               placeholder="player@example.com"
-              class="w-full px-4 py-2 border border-slate-300 rounded-lg focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:border-transparent"
+              class="w-full rounded-lg border border-slate-300 px-4 py-2 focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-blue-500"
             />
           </div>
 
@@ -202,25 +202,25 @@
             data-testid="send-invite-button"
             type="button"
             :disabled="!inviteEmail || inviteLoading"
-            class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            class="w-full rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
             @click="sendPlayerInvite"
           >
             {{ inviteLoading ? "Sending\u2026" : "Send invite" }}
           </button>
 
-          <div v-if="inviteError" class="text-red-600 text-sm">
+          <div v-if="inviteError" class="text-sm text-red-600">
             {{ inviteError }}
           </div>
 
           <!-- Family code display -->
           <div class="border-t border-slate-200 pt-4">
-            <p class="text-sm text-slate-500 mb-2">Or share your family code</p>
+            <p class="mb-2 text-sm text-slate-500">Or share your family code</p>
             <div
-              class="flex items-center gap-3 bg-slate-50 rounded-lg px-4 py-3"
+              class="flex items-center gap-3 rounded-lg bg-slate-50 px-4 py-3"
             >
               <span
                 data-testid="family-code-display"
-                class="font-mono font-bold text-lg text-slate-900 tracking-wider flex-1"
+                class="flex-1 font-mono text-lg font-bold tracking-wider text-slate-900"
               >
                 {{
                   familyCodeLoading
@@ -231,14 +231,14 @@
               <button
                 v-if="myFamilyCode && !familyCodeLoading"
                 type="button"
-                class="text-slate-400 hover:text-slate-700 transition-colors"
+                class="text-slate-400 transition-colors hover:text-slate-700"
                 :title="codeCopied ? 'Copied!' : 'Copy code'"
                 @click="copyCode"
               >
                 <svg
                   v-if="!codeCopied"
                   xmlns="http://www.w3.org/2000/svg"
-                  class="w-5 h-5"
+                  class="h-5 w-5"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -252,7 +252,7 @@
                 <svg
                   v-else
                   xmlns="http://www.w3.org/2000/svg"
-                  class="w-5 h-5 text-green-500"
+                  class="h-5 w-5 text-green-500"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -262,7 +262,7 @@
                 </svg>
               </button>
             </div>
-            <p class="text-xs text-slate-400 mt-1">
+            <p class="mt-1 text-xs text-slate-400">
               Your player enters this code during their signup.
             </p>
           </div>
@@ -270,7 +270,7 @@
           <button
             data-testid="skip-invite"
             type="button"
-            class="w-full px-4 py-2 border border-slate-300 rounded-lg text-slate-600 hover:bg-slate-50 transition-colors"
+            class="w-full rounded-lg border border-slate-300 px-4 py-2 text-slate-600 transition-colors hover:bg-slate-50"
             @click="skipInvite"
           >
             I'll invite them later

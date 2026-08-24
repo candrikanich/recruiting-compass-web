@@ -2,7 +2,7 @@
   <div class="space-y-6">
     <!-- Header -->
     <div>
-      <h3 class="text-lg font-semibold text-slate-900 mb-2">
+      <h3 class="mb-2 text-lg font-semibold text-slate-900">
         Coach Interest Level
       </h3>
       <p class="text-sm text-slate-600">
@@ -23,11 +23,11 @@
           :id="`calibration-q${idx}`"
           v-model="answers[idx]"
           @change="updateScore"
-          class="w-5 h-5 mt-0.5 text-indigo-600 border-2 border-slate-300 rounded-sm focus:ring-2 focus:ring-indigo-500 cursor-pointer shrink-0"
+          class="mt-0.5 h-5 w-5 shrink-0 cursor-pointer rounded-sm border-2 border-slate-300 text-indigo-600 focus:ring-2 focus:ring-indigo-500"
         />
         <label
           :for="`calibration-q${idx}`"
-          class="text-sm text-slate-700 cursor-pointer flex-1"
+          class="flex-1 cursor-pointer text-sm text-slate-700"
         >
           {{ question }}
         </label>
@@ -36,17 +36,17 @@
 
     <!-- Result -->
     <div
-      class="p-4 rounded-xl border-2"
+      class="rounded-xl border-2 p-4"
       :class="[
-        interestLevel === 'high' ? 'bg-green-50 border-green-200' : '',
-        interestLevel === 'medium' ? 'bg-amber-50 border-amber-200' : '',
-        interestLevel === 'low' ? 'bg-slate-50 border-slate-200' : '',
-        interestLevel === 'not_set' ? 'bg-slate-50 border-slate-200' : '',
+        interestLevel === 'high' ? 'border-green-200 bg-green-50' : '',
+        interestLevel === 'medium' ? 'border-amber-200 bg-amber-50' : '',
+        interestLevel === 'low' ? 'border-slate-200 bg-slate-50' : '',
+        interestLevel === 'not_set' ? 'border-slate-200 bg-slate-50' : '',
       ]"
     >
       <div class="flex items-center gap-3">
         <div
-          class="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+          class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
           :class="[
             interestLevel === 'high' ? 'bg-green-200 text-green-700' : '',
             interestLevel === 'medium' ? 'bg-amber-200 text-amber-700' : '',
@@ -61,7 +61,7 @@
         </div>
         <div class="flex-1">
           <p
-            class="font-semibold text-sm"
+            class="text-sm font-semibold"
             :class="[
               interestLevel === 'high' ? 'text-green-900' : '',
               interestLevel === 'medium' ? 'text-amber-900' : '',

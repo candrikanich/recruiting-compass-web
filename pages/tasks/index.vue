@@ -324,9 +324,9 @@ const onUrgencyFilterChange = () => {
     class="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-slate-100"
   >
     <!-- Parent Context Banner -->
-    <div v-if="isViewingAsParent" class="bg-blue-50 border-b-2 border-blue-200">
-      <div class="max-w-4xl mx-auto px-4 sm:px-6 py-3">
-        <p class="text-sm text-blue-700 font-medium">
+    <div v-if="isViewingAsParent" class="border-b-2 border-blue-200 bg-blue-50">
+      <div class="mx-auto max-w-4xl px-4 py-3 sm:px-6">
+        <p class="text-sm font-medium text-blue-700">
           👁 Viewing {{ athleteProfile?.full_name }}'s Tasks (Read-Only)
         </p>
       </div>
@@ -334,10 +334,10 @@ const onUrgencyFilterChange = () => {
 
     <!-- Header -->
     <div
-      class="bg-linear-to-r from-slate-50 to-blue-50 border-b border-slate-200"
+      class="border-b border-slate-200 bg-linear-to-r from-slate-50 to-blue-50"
     >
-      <div class="max-w-4xl mx-auto px-4 sm:px-6 py-6">
-        <h1 class="text-3xl font-bold text-slate-900 mb-2">
+      <div class="mx-auto max-w-4xl px-4 py-6 sm:px-6">
+        <h1 class="mb-2 text-3xl font-bold text-slate-900">
           {{
             isViewingAsParent
               ? `${athleteProfile?.full_name}'s Tasks`
@@ -357,7 +357,7 @@ const onUrgencyFilterChange = () => {
     <!-- Athlete Switcher (Parent view only) -->
     <div
       v-if="isViewingAsParent && linkedAthletes.length > 0"
-      class="max-w-4xl mx-auto px-4 sm:px-6 pt-6"
+      class="mx-auto max-w-4xl px-4 pt-6 sm:px-6"
     >
       <AthleteSwitcher
         :linked-athletes="linkedAthletes"
@@ -367,11 +367,11 @@ const onUrgencyFilterChange = () => {
     </div>
 
     <!-- Progress Counter -->
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 py-6">
+    <div class="mx-auto max-w-4xl px-4 py-6 sm:px-6">
       <div
-        class="bg-white border border-slate-200 rounded-xl p-6 shadow-xs mb-4"
+        class="mb-4 rounded-xl border border-slate-200 bg-white p-6 shadow-xs"
       >
-        <div class="text-lg font-semibold text-slate-900 mb-3">
+        <div class="mb-3 text-lg font-semibold text-slate-900">
           {{
             isViewingAsParent ? `${athleteProfile?.full_name} has` : `You've`
           }}
@@ -380,22 +380,22 @@ const onUrgencyFilterChange = () => {
           }}%)
         </div>
         <!-- Progress Bar -->
-        <div class="w-full bg-slate-200 rounded-full h-3">
+        <div class="h-3 w-full rounded-full bg-slate-200">
           <div
-            class="bg-blue-600 h-3 rounded-full transition-all duration-500"
+            class="h-3 rounded-full bg-blue-600 transition-all duration-500"
             :style="{ width: `${stats.percentComplete}%` }"
           />
         </div>
       </div>
 
       <!-- Filter Controls -->
-      <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-xs">
+      <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
         <div class="grid grid-cols-2 gap-4">
           <!-- Status Filter -->
           <div>
             <label
               for="status-filter"
-              class="block text-sm font-medium text-slate-700 mb-2"
+              class="mb-2 block text-sm font-medium text-slate-700"
             >
               Status
             </label>
@@ -403,7 +403,7 @@ const onUrgencyFilterChange = () => {
               id="status-filter"
               v-model="statusFilter"
               @change="onStatusFilterChange"
-              class="w-full px-3 py-2 border border-slate-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500 text-sm"
+              class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-blue-500 focus:ring-blue-500"
               data-testid="status-filter"
             >
               <option value="all">All</option>
@@ -417,7 +417,7 @@ const onUrgencyFilterChange = () => {
           <div>
             <label
               for="urgency-filter"
-              class="block text-sm font-medium text-slate-700 mb-2"
+              class="mb-2 block text-sm font-medium text-slate-700"
             >
               Deadline Urgency
             </label>
@@ -425,7 +425,7 @@ const onUrgencyFilterChange = () => {
               id="urgency-filter"
               v-model="urgencyFilter"
               @change="onUrgencyFilterChange"
-              class="w-full px-3 py-2 border border-slate-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500 text-sm"
+              class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-blue-500 focus:ring-blue-500"
               data-testid="urgency-filter"
             >
               <option value="all">All</option>
@@ -452,15 +452,15 @@ const onUrgencyFilterChange = () => {
           role="status"
           aria-live="polite"
           data-testid="task-success-message"
-          class="mt-4 bg-brand-emerald-50 border border-brand-emerald-200 rounded-lg p-4"
+          class="mt-4 rounded-lg border border-brand-emerald-200 bg-brand-emerald-50 p-4"
         >
-          <p class="text-brand-emerald-700 font-semibold">Great job! 🎉</p>
+          <p class="font-semibold text-brand-emerald-700">Great job! 🎉</p>
         </div>
       </Transition>
     </div>
 
     <!-- Task List -->
-    <main class="max-w-4xl mx-auto px-4 sm:px-6 pb-8">
+    <main class="mx-auto max-w-4xl px-4 pb-8 sm:px-6">
       <!-- Loading State — only on the initial load. On athlete-switch refetch
            the list below stays mounted (keyed v-for diffs) instead of the whole
            list unmounting/remounting, which stranded Transition transitionend
@@ -469,14 +469,14 @@ const onUrgencyFilterChange = () => {
         <div
           v-for="i in 5"
           :key="i"
-          class="h-20 bg-white rounded-lg animate-pulse"
+          class="h-20 animate-pulse rounded-lg bg-white"
         />
       </div>
 
       <!-- Error State -->
       <div
         v-else-if="error"
-        class="bg-red-50 border border-red-200 rounded-lg p-6"
+        class="rounded-lg border border-red-200 bg-red-50 p-6"
       >
         <p class="text-red-700">{{ error }}</p>
       </div>
@@ -484,9 +484,9 @@ const onUrgencyFilterChange = () => {
       <!-- Empty State -->
       <div
         v-else-if="filteredTasks.length === 0"
-        class="bg-white border border-slate-200 rounded-lg p-8 text-center"
+        class="rounded-lg border border-slate-200 bg-white p-8 text-center"
       >
-        <p class="text-slate-600 text-lg">
+        <p class="text-lg text-slate-600">
           No tasks available for this grade level
         </p>
       </div>
@@ -497,7 +497,7 @@ const onUrgencyFilterChange = () => {
           v-for="task in filteredTasks"
           :key="task.id"
           data-testid="task-item"
-          class="bg-white border border-slate-200 rounded-lg overflow-hidden hover:shadow-md transition"
+          class="overflow-hidden rounded-lg border border-slate-200 bg-white transition hover:shadow-md"
         >
           <div class="p-4">
             <div class="flex items-start gap-4">
@@ -520,15 +520,15 @@ const onUrgencyFilterChange = () => {
               />
 
               <!-- Task Info -->
-              <div class="flex-1 min-w-0">
+              <div class="min-w-0 flex-1">
                 <button
                   type="button"
                   :data-testid="`task-title-${task.id}`"
                   :aria-expanded="expandedTaskId === task.id"
                   @click="toggleTaskDetails(task.id)"
-                  class="w-full text-left hover:opacity-75 transition"
+                  class="w-full text-left transition hover:opacity-75"
                 >
-                  <div class="flex items-center gap-2 mb-1">
+                  <div class="mb-1 flex items-center gap-2">
                     <h3
                       class="font-semibold"
                       :class="{
@@ -544,13 +544,13 @@ const onUrgencyFilterChange = () => {
                     </h3>
                     <span
                       v-if="isTaskLocked(task.id)"
-                      class="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full shrink-0"
+                      class="shrink-0 rounded-full bg-red-100 px-2 py-0.5 text-xs text-red-700"
                     >
                       🔒 Locked
                     </span>
                     <span
                       v-if="task.required"
-                      class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full shrink-0"
+                      class="shrink-0 rounded-full bg-blue-100 px-2 py-0.5 text-xs text-blue-700"
                     >
                       Required
                     </span>
@@ -561,7 +561,7 @@ const onUrgencyFilterChange = () => {
                   </div>
                   <p
                     v-if="task.description"
-                    class="text-sm text-slate-600 line-clamp-2"
+                    class="line-clamp-2 text-sm text-slate-600"
                   >
                     {{ task.description }}
                   </p>
@@ -570,7 +570,7 @@ const onUrgencyFilterChange = () => {
 
               <!-- Status Badge -->
               <div
-                class="text-xs px-2 py-1 rounded-full whitespace-nowrap shrink-0"
+                class="shrink-0 rounded-full px-2 py-1 text-xs whitespace-nowrap"
                 :class="{
                   'bg-brand-emerald-100 text-brand-emerald-700':
                     task.athlete_task?.status === 'completed',
@@ -602,10 +602,10 @@ const onUrgencyFilterChange = () => {
             >
               <div
                 v-if="expandedTaskId === task.id"
-                class="mt-4 pt-4 border-t border-slate-200 space-y-3"
+                class="mt-4 space-y-3 border-t border-slate-200 pt-4"
               >
                 <div v-if="task.why_it_matters">
-                  <h4 class="font-semibold text-sm text-slate-900 mb-1">
+                  <h4 class="mb-1 text-sm font-semibold text-slate-900">
                     Why It Matters
                   </h4>
                   <p class="text-sm text-slate-600">
@@ -613,23 +613,23 @@ const onUrgencyFilterChange = () => {
                   </p>
                 </div>
                 <div v-if="task.failure_risk">
-                  <h4 class="font-semibold text-sm text-slate-900 mb-1">
+                  <h4 class="mb-1 text-sm font-semibold text-slate-900">
                     What Can Go Wrong
                   </h4>
                   <p class="text-sm text-slate-600">{{ task.failure_risk }}</p>
                 </div>
                 <div
                   v-if="isTaskLocked(task.id)"
-                  class="bg-red-50 border border-red-200 rounded-sm p-3"
+                  class="rounded-sm border border-red-200 bg-red-50 p-3"
                 >
-                  <h4 class="font-semibold text-sm text-red-900 mb-2">
+                  <h4 class="mb-2 text-sm font-semibold text-red-900">
                     🔒 Complete These First
                   </h4>
-                  <p class="text-sm text-red-800 mb-2">
+                  <p class="mb-2 text-sm text-red-800">
                     This task is locked until you complete:
                   </p>
                   <ul
-                    class="text-sm text-red-800 list-disc list-inside space-y-1"
+                    class="list-inside list-disc space-y-1 text-sm text-red-800"
                   >
                     <li
                       v-for="prereq in task.prerequisite_tasks"
@@ -641,15 +641,15 @@ const onUrgencyFilterChange = () => {
                 </div>
                 <div
                   v-else-if="task.has_incomplete_prerequisites"
-                  class="bg-amber-50 border border-amber-200 rounded-sm p-3"
+                  class="rounded-sm border border-amber-200 bg-amber-50 p-3"
                 >
-                  <h4 class="font-semibold text-sm text-amber-900 mb-1">
+                  <h4 class="mb-1 text-sm font-semibold text-amber-900">
                     Prerequisites
                   </h4>
                   <p class="text-sm text-amber-800">
                     Complete the following tasks first:
                   </p>
-                  <ul class="text-sm text-amber-800 list-disc list-inside mt-2">
+                  <ul class="mt-2 list-inside list-disc text-sm text-amber-800">
                     <li
                       v-for="prereq in task.prerequisite_tasks"
                       :key="prereq.id"

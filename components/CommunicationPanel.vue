@@ -1,13 +1,13 @@
 <template>
-  <div class="rounded-xl border border-slate-200 shadow-xs p-6 bg-white">
+  <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-xs">
     <!-- Header -->
-    <div class="flex items-center justify-between mb-6">
+    <div class="mb-6 flex items-center justify-between">
       <h2 class="text-lg font-semibold text-slate-900">
         💬 Quick Communication
       </h2>
       <button
         @click="showTemplateManager = !showTemplateManager"
-        class="px-3 py-1.5 text-xs font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition"
+        class="rounded-lg px-3 py-1.5 text-xs font-medium text-blue-600 transition hover:bg-blue-50"
       >
         Manage Templates
       </button>
@@ -16,9 +16,9 @@
     <!-- Coach/School Context -->
     <div
       v-if="coach"
-      class="mb-6 p-4 rounded-lg border border-blue-200 bg-blue-50"
+      class="mb-6 rounded-lg border border-blue-200 bg-blue-50 p-4"
     >
-      <p class="text-sm mb-1 text-slate-900">
+      <p class="mb-1 text-sm text-slate-900">
         <span class="font-semibold"
           >{{ coach.first_name }} {{ coach.last_name }}</span
         >
@@ -59,16 +59,16 @@
     </div>
 
     <!-- Communication Buttons -->
-    <div class="space-y-3 mb-6">
+    <div class="mb-6 space-y-3">
       <!-- Email -->
       <div v-if="coach.email">
         <button
           @click="showEmailComposer = true"
-          class="w-full flex items-center justify-between p-4 rounded-lg border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition"
+          class="flex w-full items-center justify-between rounded-lg border border-slate-200 p-4 transition hover:border-slate-300 hover:bg-slate-50"
         >
           <div class="flex items-center gap-3">
             <div
-              class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center"
+              class="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100"
             >
               <span class="text-lg">📧</span>
             </div>
@@ -85,11 +85,11 @@
       <div v-if="coach.phone">
         <button
           @click="showTextComposer = true"
-          class="w-full flex items-center justify-between p-4 rounded-lg border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition"
+          class="flex w-full items-center justify-between rounded-lg border border-slate-200 p-4 transition hover:border-slate-300 hover:bg-slate-50"
         >
           <div class="flex items-center gap-3">
             <div
-              class="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center"
+              class="flex h-10 w-10 items-center justify-center rounded-lg bg-green-100"
             >
               <span class="text-lg">💬</span>
             </div>
@@ -108,11 +108,11 @@
       <div v-if="coach.instagram_handle">
         <button
           @click="openInstagram"
-          class="w-full flex items-center justify-between p-4 rounded-lg border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition"
+          class="flex w-full items-center justify-between rounded-lg border border-slate-200 p-4 transition hover:border-slate-300 hover:bg-slate-50"
         >
           <div class="flex items-center gap-3">
             <div
-              class="w-10 h-10 rounded-lg bg-pink-100 flex items-center justify-center"
+              class="flex h-10 w-10 items-center justify-center rounded-lg bg-pink-100"
             >
               <span class="text-lg">📸</span>
             </div>
@@ -133,7 +133,7 @@
       <Transition name="fade">
         <div
           v-if="showEmailComposer"
-          class="fixed inset-0 bg-black/40 z-50"
+          class="fixed inset-0 z-50 bg-black/40"
           @click.self="handleCloseEmail"
           @keydown.escape="handleCloseEmail"
         >
@@ -144,207 +144,222 @@
               role="dialog"
               aria-modal="true"
               aria-labelledby="email-modal-title"
-              class="absolute right-0 top-0 h-full w-full max-w-lg overflow-y-auto border-l border-slate-200 bg-white shadow-2xl"
+              class="absolute top-0 right-0 h-full w-full max-w-lg overflow-y-auto border-l border-slate-200 bg-white shadow-2xl"
             >
-            <div
-              class="p-6 border-b border-slate-200 flex items-center justify-between"
-            >
-              <h3
-                id="email-modal-title"
-                class="text-lg font-semibold text-slate-900"
-              >
-                Send Email to {{ coach.first_name }}
-              </h3>
-              <button
-                @click="handleCloseEmail"
-                aria-label="Close email composer"
-                class="text-2xl text-slate-500 transition hover:text-slate-900"
-              >
-                ×
-              </button>
-            </div>
-
-            <div class="p-6 space-y-5">
-              <!-- Template Selection -->
-              <div>
-                <label class="block text-sm font-medium text-slate-700 mb-2"
-                  >Template</label
-                >
-                <select
-                  v-model="selectedEmailTemplate"
-                  class="w-full px-3 py-2 rounded-lg border border-slate-300 text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-                >
-                  <option value="">Custom message</option>
-                  <option v-for="t in emailTemplates" :key="t.id" :value="t.id">
-                    {{ t.name }}
-                  </option>
-                </select>
-              </div>
-
-              <!-- Subject -->
-              <div>
-                <label class="block text-sm font-medium text-slate-700 mb-2"
-                  >Subject</label
-                >
-                <input
-                  v-model="emailComposer.subject"
-                  type="text"
-                  class="w-full px-3 py-2 rounded-lg border border-slate-300 text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-                  placeholder="Email subject..."
-                />
-              </div>
-
-              <!-- Body -->
-              <div>
-                <label class="block text-sm font-medium text-slate-700 mb-2"
-                  >Message</label
-                >
-                <textarea
-                  v-model="emailComposer.body"
-                  rows="6"
-                  class="w-full px-3 py-2 rounded-lg border border-slate-300 text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-                  placeholder="Your message..."
-                />
-              </div>
-
-              <!-- Live Preview -->
-              <div>
-                <label class="block text-sm font-medium text-slate-700 mb-2"
-                  >Preview — what the coach sees</label
-                >
-                <div
-                  class="w-full px-3 py-2 rounded-lg border border-slate-200 bg-slate-50 text-slate-900 text-sm whitespace-pre-wrap"
-                >
-                  <template v-for="(seg, i) in emailPreviewSegments" :key="i"
-                    ><strong
-                      v-if="seg.unresolved"
-                      class="text-amber-600 font-semibold"
-                      >{{ seg.text }}</strong
-                    ><template v-else>{{ seg.text }}</template></template
-                  >
-                </div>
-              </div>
-
-              <!-- Variables in this template -->
               <div
-                v-if="selectedEmailTemplateObj"
-                class="rounded-lg p-3 bg-blue-50 border border-blue-200"
+                class="flex items-center justify-between border-b border-slate-200 p-6"
               >
-                <p class="text-xs font-semibold mb-2 text-blue-900">
-                  Variables in this template
-                </p>
-                <div class="space-y-1">
-                  <div
-                    v-for="row in emailVariableRows"
-                    :key="row.key"
-                    class="grid grid-cols-2 gap-2 text-xs items-center"
+                <h3
+                  id="email-modal-title"
+                  class="text-lg font-semibold text-slate-900"
+                >
+                  Send Email to {{ coach.first_name }}
+                </h3>
+                <button
+                  @click="handleCloseEmail"
+                  aria-label="Close email composer"
+                  class="text-2xl text-slate-500 transition hover:text-slate-900"
+                >
+                  ×
+                </button>
+              </div>
+
+              <div class="space-y-5 p-6">
+                <!-- Template Selection -->
+                <div>
+                  <label class="mb-2 block text-sm font-medium text-slate-700"
+                    >Template</label
                   >
-                    <span class="font-mono text-blue-800">{{
-                      tokenOf(row.key)
-                    }}</span>
-                    <div v-if="row.editable" class="flex flex-col gap-0.5">
-                      <div class="flex items-center gap-1">
-                        <input
-                          v-model="emailInputs[row.key]"
-                          type="text"
-                          :placeholder="row.value ? '' : 'add…'"
-                          :disabled="savingKey === `email:${row.key}`"
-                          class="flex-1 min-w-0 px-1.5 py-0.5 rounded border border-slate-300 text-xs text-slate-900"
-                          @keydown.enter.prevent="saveField(row, 'email')"
-                        />
-                        <button
-                          type="button"
-                          :disabled="savingKey === `email:${row.key}`"
-                          class="px-1.5 py-0.5 rounded bg-blue-600 text-white text-xs disabled:opacity-50"
-                          @click="saveField(row, 'email')"
-                        >
-                          Save
-                        </button>
-                      </div>
-                      <span
-                        v-if="saveErrors[`email:${row.key}`]"
-                        class="text-red-600 text-[10px]"
-                        >{{ saveErrors[`email:${row.key}`] }}</span
-                      >
-                    </div>
-                    <div v-else-if="row.authored" class="flex flex-col gap-0.5">
-                      <input
-                        v-model="emailAuthored[row.key]"
-                        type="text"
-                        placeholder="write for this message…"
-                        class="w-full min-w-0 px-1.5 py-0.5 rounded border border-slate-300 text-xs text-slate-900"
-                        @blur="reresolveSelected"
-                      />
-                      <span class="text-slate-400 text-[10px]"
-                        >for this message only</span
-                      >
-                    </div>
-                    <div v-else class="flex items-center gap-2 min-w-0">
-                      <span v-if="row.value" class="text-slate-700 truncate">{{
-                        row.value
+                  <select
+                    v-model="selectedEmailTemplate"
+                    class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Custom message</option>
+                    <option
+                      v-for="t in emailTemplates"
+                      :key="t.id"
+                      :value="t.id"
+                    >
+                      {{ t.name }}
+                    </option>
+                  </select>
+                </div>
+
+                <!-- Subject -->
+                <div>
+                  <label class="mb-2 block text-sm font-medium text-slate-700"
+                    >Subject</label
+                  >
+                  <input
+                    v-model="emailComposer.subject"
+                    type="text"
+                    class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+                    placeholder="Email subject..."
+                  />
+                </div>
+
+                <!-- Body -->
+                <div>
+                  <label class="mb-2 block text-sm font-medium text-slate-700"
+                    >Message</label
+                  >
+                  <textarea
+                    v-model="emailComposer.body"
+                    rows="6"
+                    class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+                    placeholder="Your message..."
+                  />
+                </div>
+
+                <!-- Live Preview -->
+                <div>
+                  <label class="mb-2 block text-sm font-medium text-slate-700"
+                    >Preview — what the coach sees</label
+                  >
+                  <div
+                    class="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm whitespace-pre-wrap text-slate-900"
+                  >
+                    <template v-for="(seg, i) in emailPreviewSegments" :key="i"
+                      ><strong
+                        v-if="seg.unresolved"
+                        class="font-semibold text-amber-600"
+                        >{{ seg.text }}</strong
+                      ><template v-else>{{ seg.text }}</template></template
+                    >
+                  </div>
+                </div>
+
+                <!-- Variables in this template -->
+                <div
+                  v-if="selectedEmailTemplateObj"
+                  class="rounded-lg border border-blue-200 bg-blue-50 p-3"
+                >
+                  <p class="mb-2 text-xs font-semibold text-blue-900">
+                    Variables in this template
+                  </p>
+                  <div class="space-y-1">
+                    <div
+                      v-for="row in emailVariableRows"
+                      :key="row.key"
+                      class="grid grid-cols-2 items-center gap-2 text-xs"
+                    >
+                      <span class="font-mono text-blue-800">{{
+                        tokenOf(row.key)
                       }}</span>
-                      <span v-else class="text-amber-600 font-medium"
-                        >needs input</span
+                      <div v-if="row.editable" class="flex flex-col gap-0.5">
+                        <div class="flex items-center gap-1">
+                          <input
+                            v-model="emailInputs[row.key]"
+                            type="text"
+                            :placeholder="row.value ? '' : 'add…'"
+                            :disabled="savingKey === `email:${row.key}`"
+                            class="min-w-0 flex-1 rounded border border-slate-300 px-1.5 py-0.5 text-xs text-slate-900"
+                            @keydown.enter.prevent="saveField(row, 'email')"
+                          />
+                          <button
+                            type="button"
+                            :disabled="savingKey === `email:${row.key}`"
+                            class="rounded bg-blue-600 px-1.5 py-0.5 text-xs text-white disabled:opacity-50"
+                            @click="saveField(row, 'email')"
+                          >
+                            Save
+                          </button>
+                        </div>
+                        <span
+                          v-if="saveErrors[`email:${row.key}`]"
+                          class="text-[10px] text-red-600"
+                          >{{ saveErrors[`email:${row.key}`] }}</span
+                        >
+                      </div>
+                      <div
+                        v-else-if="row.authored"
+                        class="flex flex-col gap-0.5"
                       >
-                      <NuxtLink
-                        v-if="row.linkToProfile"
-                        :to="PROFILE_EDIT_ROUTE"
-                        class="text-blue-600 hover:underline shrink-0"
-                        >Edit in profile →</NuxtLink
-                      >
+                        <input
+                          v-model="emailAuthored[row.key]"
+                          type="text"
+                          placeholder="write for this message…"
+                          class="w-full min-w-0 rounded border border-slate-300 px-1.5 py-0.5 text-xs text-slate-900"
+                          @blur="reresolveSelected"
+                        />
+                        <span class="text-[10px] text-slate-400"
+                          >for this message only</span
+                        >
+                      </div>
+                      <div v-else class="flex min-w-0 items-center gap-2">
+                        <span
+                          v-if="row.value"
+                          class="truncate text-slate-700"
+                          >{{ row.value }}</span
+                        >
+                        <span v-else class="font-medium text-amber-600"
+                          >needs input</span
+                        >
+                        <NuxtLink
+                          v-if="row.linkToProfile"
+                          :to="PROFILE_EDIT_ROUTE"
+                          class="shrink-0 text-blue-600 hover:underline"
+                          >Edit in profile →</NuxtLink
+                        >
+                      </div>
                     </div>
                   </div>
                 </div>
+
+                <!-- Nudge to add a stat when the athlete has none -->
+                <NuxtLink
+                  v-if="showAddMetricCta"
+                  to="/performance"
+                  class="flex items-center gap-2 rounded-lg bg-blue-50 p-3 text-sm text-blue-700 transition hover:bg-blue-100"
+                >
+                  <UIcon
+                    name="i-heroicons-chart-bar"
+                    class="h-4 w-4 shrink-0"
+                    aria-hidden="true"
+                  />
+                  <span
+                    >Add a metric to strengthen this email — coaches look for
+                    numbers.</span
+                  >
+                </NuxtLink>
+
+                <!-- Unresolved send warning -->
+                <p v-if="emailSendWarning" class="text-xs text-amber-700">
+                  {{ emailSendWarning }}
+                </p>
+
+                <!-- Log Interaction Checkbox -->
+                <div class="flex items-center gap-2 pt-2">
+                  <input
+                    id="emailLogInteraction"
+                    v-model="shouldLogInteraction"
+                    type="checkbox"
+                    class="h-4 w-4 rounded-sm border-slate-300 text-blue-600"
+                  />
+                  <label
+                    for="emailLogInteraction"
+                    class="text-sm text-slate-700"
+                  >
+                    Log this interaction in coach history
+                  </label>
+                </div>
               </div>
 
-              <!-- Nudge to add a stat when the athlete has none -->
-              <NuxtLink
-                v-if="showAddMetricCta"
-                to="/performance"
-                class="flex items-center gap-2 p-3 rounded-lg bg-blue-50 text-sm text-blue-700 hover:bg-blue-100 transition"
-              >
-                <UIcon
-                  name="i-heroicons-chart-bar"
-                  class="w-4 h-4 shrink-0"
-                  aria-hidden="true"
-                />
-                <span>Add a metric to strengthen this email — coaches look for numbers.</span>
-              </NuxtLink>
-
-              <!-- Unresolved send warning -->
-              <p v-if="emailSendWarning" class="text-xs text-amber-700">
-                {{ emailSendWarning }}
-              </p>
-
-              <!-- Log Interaction Checkbox -->
-              <div class="flex items-center gap-2 pt-2">
-                <input
-                  id="emailLogInteraction"
-                  v-model="shouldLogInteraction"
-                  type="checkbox"
-                  class="w-4 h-4 rounded-sm border-slate-300 text-blue-600"
-                />
-                <label for="emailLogInteraction" class="text-sm text-slate-700">
-                  Log this interaction in coach history
-                </label>
+              <div class="flex gap-3 border-t border-slate-200 p-6">
+                <button
+                  @click="sendEmail"
+                  :disabled="emailUnresolved.length > 0"
+                  class="flex-1 rounded-lg bg-linear-to-r from-blue-500 to-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:from-blue-600 hover:to-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Send Email
+                </button>
+                <button
+                  @click="handleCloseEmail"
+                  class="flex-1 rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                >
+                  Cancel
+                </button>
               </div>
-            </div>
-
-            <div class="p-6 border-t border-slate-200 flex gap-3">
-              <button
-                @click="sendEmail"
-                :disabled="emailUnresolved.length > 0"
-                class="flex-1 px-4 py-2 bg-linear-to-r from-blue-500 to-blue-600 text-white font-medium rounded-lg hover:from-blue-600 hover:to-blue-700 transition text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Send Email
-              </button>
-              <button
-                @click="handleCloseEmail"
-                class="flex-1 px-4 py-2 border border-slate-300 text-slate-700 font-medium rounded-lg hover:bg-slate-50 transition text-sm"
-              >
-                Cancel
-              </button>
-            </div>
             </div>
           </Transition>
         </div>
@@ -356,7 +371,7 @@
       <Transition name="fade">
         <div
           v-if="showTextComposer"
-          class="fixed inset-0 bg-black/40 z-50"
+          class="fixed inset-0 z-50 bg-black/40"
           @click.self="handleCloseText"
           @keydown.escape="handleCloseText"
         >
@@ -367,207 +382,215 @@
               role="dialog"
               aria-modal="true"
               aria-labelledby="text-modal-title"
-              class="absolute right-0 top-0 h-full w-full max-w-lg overflow-y-auto border-l border-slate-200 bg-white shadow-2xl"
+              class="absolute top-0 right-0 h-full w-full max-w-lg overflow-y-auto border-l border-slate-200 bg-white shadow-2xl"
             >
-            <div
-              class="p-6 border-b border-slate-200 flex items-center justify-between"
-            >
-              <h3
-                id="text-modal-title"
-                class="text-lg font-semibold text-slate-900"
-              >
-                Send Text to {{ coach.first_name }}
-              </h3>
-              <button
-                @click="handleCloseText"
-                aria-label="Close text composer"
-                class="text-2xl text-slate-500 transition hover:text-slate-900"
-              >
-                ×
-              </button>
-            </div>
-
-            <div class="p-6 space-y-5">
-              <!-- Template Selection -->
-              <div>
-                <label class="block text-sm font-medium text-slate-700 mb-2"
-                  >Template</label
-                >
-                <select
-                  v-model="selectedTextTemplate"
-                  class="w-full px-3 py-2 rounded-lg border border-slate-300 text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-                >
-                  <option value="">Custom message</option>
-                  <option
-                    v-for="t in messageTemplates"
-                    :key="t.id"
-                    :value="t.id"
-                  >
-                    {{ t.name }}
-                  </option>
-                </select>
-              </div>
-
-              <!-- Body -->
-              <div>
-                <div class="flex items-center justify-between mb-2">
-                  <label class="block text-sm font-medium text-slate-700"
-                    >Message</label
-                  >
-                  <span class="text-xs text-slate-500"
-                    >{{ textComposer.body.length }}/160</span
-                  >
-                </div>
-                <textarea
-                  v-model="textComposer.body"
-                  rows="4"
-                  maxlength="160"
-                  class="w-full px-3 py-2 rounded-lg border border-slate-300 text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-                  placeholder="Your message..."
-                />
-                <p class="text-xs text-slate-500 mt-2">
-                  SMS limited to 160 characters
-                </p>
-              </div>
-
-              <!-- Live Preview -->
-              <div>
-                <label class="block text-sm font-medium text-slate-700 mb-2"
-                  >Preview — what the coach sees</label
-                >
-                <div
-                  class="w-full px-3 py-2 rounded-lg border border-slate-200 bg-slate-50 text-slate-900 text-sm whitespace-pre-wrap"
-                >
-                  <template v-for="(seg, i) in textPreviewSegments" :key="i"
-                    ><strong
-                      v-if="seg.unresolved"
-                      class="text-amber-600 font-semibold"
-                      >{{ seg.text }}</strong
-                    ><template v-else>{{ seg.text }}</template></template
-                  >
-                </div>
-              </div>
-
-              <!-- Variables in this template -->
               <div
-                v-if="selectedTextTemplateObj"
-                class="rounded-lg p-3 bg-blue-50 border border-blue-200"
+                class="flex items-center justify-between border-b border-slate-200 p-6"
               >
-                <p class="text-xs font-semibold mb-2 text-blue-900">
-                  Variables in this template
-                </p>
-                <div class="space-y-1">
-                  <div
-                    v-for="row in textVariableRows"
-                    :key="row.key"
-                    class="grid grid-cols-2 gap-2 text-xs items-center"
+                <h3
+                  id="text-modal-title"
+                  class="text-lg font-semibold text-slate-900"
+                >
+                  Send Text to {{ coach.first_name }}
+                </h3>
+                <button
+                  @click="handleCloseText"
+                  aria-label="Close text composer"
+                  class="text-2xl text-slate-500 transition hover:text-slate-900"
+                >
+                  ×
+                </button>
+              </div>
+
+              <div class="space-y-5 p-6">
+                <!-- Template Selection -->
+                <div>
+                  <label class="mb-2 block text-sm font-medium text-slate-700"
+                    >Template</label
                   >
-                    <span class="font-mono text-blue-800">{{
-                      tokenOf(row.key)
-                    }}</span>
-                    <div v-if="row.editable" class="flex flex-col gap-0.5">
-                      <div class="flex items-center gap-1">
-                        <input
-                          v-model="textInputs[row.key]"
-                          type="text"
-                          :placeholder="row.value ? '' : 'add…'"
-                          :disabled="savingKey === `text:${row.key}`"
-                          class="flex-1 min-w-0 px-1.5 py-0.5 rounded border border-slate-300 text-xs text-slate-900"
-                          @keydown.enter.prevent="saveField(row, 'text')"
-                        />
-                        <button
-                          type="button"
-                          :disabled="savingKey === `text:${row.key}`"
-                          class="px-1.5 py-0.5 rounded bg-blue-600 text-white text-xs disabled:opacity-50"
-                          @click="saveField(row, 'text')"
-                        >
-                          Save
-                        </button>
-                      </div>
-                      <span
-                        v-if="saveErrors[`text:${row.key}`]"
-                        class="text-red-600 text-[10px]"
-                        >{{ saveErrors[`text:${row.key}`] }}</span
-                      >
-                    </div>
-                    <div v-else-if="row.authored" class="flex flex-col gap-0.5">
-                      <input
-                        v-model="textAuthored[row.key]"
-                        type="text"
-                        placeholder="write for this message…"
-                        class="w-full min-w-0 px-1.5 py-0.5 rounded border border-slate-300 text-xs text-slate-900"
-                        @blur="reresolveSelected"
-                      />
-                      <span class="text-slate-400 text-[10px]"
-                        >for this message only</span
-                      >
-                    </div>
-                    <div v-else class="flex items-center gap-2 min-w-0">
-                      <span v-if="row.value" class="text-slate-700 truncate">{{
-                        row.value
+                  <select
+                    v-model="selectedTextTemplate"
+                    class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Custom message</option>
+                    <option
+                      v-for="t in messageTemplates"
+                      :key="t.id"
+                      :value="t.id"
+                    >
+                      {{ t.name }}
+                    </option>
+                  </select>
+                </div>
+
+                <!-- Body -->
+                <div>
+                  <div class="mb-2 flex items-center justify-between">
+                    <label class="block text-sm font-medium text-slate-700"
+                      >Message</label
+                    >
+                    <span class="text-xs text-slate-500"
+                      >{{ textComposer.body.length }}/160</span
+                    >
+                  </div>
+                  <textarea
+                    v-model="textComposer.body"
+                    rows="4"
+                    maxlength="160"
+                    class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+                    placeholder="Your message..."
+                  />
+                  <p class="mt-2 text-xs text-slate-500">
+                    SMS limited to 160 characters
+                  </p>
+                </div>
+
+                <!-- Live Preview -->
+                <div>
+                  <label class="mb-2 block text-sm font-medium text-slate-700"
+                    >Preview — what the coach sees</label
+                  >
+                  <div
+                    class="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm whitespace-pre-wrap text-slate-900"
+                  >
+                    <template v-for="(seg, i) in textPreviewSegments" :key="i"
+                      ><strong
+                        v-if="seg.unresolved"
+                        class="font-semibold text-amber-600"
+                        >{{ seg.text }}</strong
+                      ><template v-else>{{ seg.text }}</template></template
+                    >
+                  </div>
+                </div>
+
+                <!-- Variables in this template -->
+                <div
+                  v-if="selectedTextTemplateObj"
+                  class="rounded-lg border border-blue-200 bg-blue-50 p-3"
+                >
+                  <p class="mb-2 text-xs font-semibold text-blue-900">
+                    Variables in this template
+                  </p>
+                  <div class="space-y-1">
+                    <div
+                      v-for="row in textVariableRows"
+                      :key="row.key"
+                      class="grid grid-cols-2 items-center gap-2 text-xs"
+                    >
+                      <span class="font-mono text-blue-800">{{
+                        tokenOf(row.key)
                       }}</span>
-                      <span v-else class="text-amber-600 font-medium"
-                        >needs input</span
+                      <div v-if="row.editable" class="flex flex-col gap-0.5">
+                        <div class="flex items-center gap-1">
+                          <input
+                            v-model="textInputs[row.key]"
+                            type="text"
+                            :placeholder="row.value ? '' : 'add…'"
+                            :disabled="savingKey === `text:${row.key}`"
+                            class="min-w-0 flex-1 rounded border border-slate-300 px-1.5 py-0.5 text-xs text-slate-900"
+                            @keydown.enter.prevent="saveField(row, 'text')"
+                          />
+                          <button
+                            type="button"
+                            :disabled="savingKey === `text:${row.key}`"
+                            class="rounded bg-blue-600 px-1.5 py-0.5 text-xs text-white disabled:opacity-50"
+                            @click="saveField(row, 'text')"
+                          >
+                            Save
+                          </button>
+                        </div>
+                        <span
+                          v-if="saveErrors[`text:${row.key}`]"
+                          class="text-[10px] text-red-600"
+                          >{{ saveErrors[`text:${row.key}`] }}</span
+                        >
+                      </div>
+                      <div
+                        v-else-if="row.authored"
+                        class="flex flex-col gap-0.5"
                       >
-                      <NuxtLink
-                        v-if="row.linkToProfile"
-                        :to="PROFILE_EDIT_ROUTE"
-                        class="text-blue-600 hover:underline shrink-0"
-                        >Edit in profile →</NuxtLink
-                      >
+                        <input
+                          v-model="textAuthored[row.key]"
+                          type="text"
+                          placeholder="write for this message…"
+                          class="w-full min-w-0 rounded border border-slate-300 px-1.5 py-0.5 text-xs text-slate-900"
+                          @blur="reresolveSelected"
+                        />
+                        <span class="text-[10px] text-slate-400"
+                          >for this message only</span
+                        >
+                      </div>
+                      <div v-else class="flex min-w-0 items-center gap-2">
+                        <span
+                          v-if="row.value"
+                          class="truncate text-slate-700"
+                          >{{ row.value }}</span
+                        >
+                        <span v-else class="font-medium text-amber-600"
+                          >needs input</span
+                        >
+                        <NuxtLink
+                          v-if="row.linkToProfile"
+                          :to="PROFILE_EDIT_ROUTE"
+                          class="shrink-0 text-blue-600 hover:underline"
+                          >Edit in profile →</NuxtLink
+                        >
+                      </div>
                     </div>
                   </div>
                 </div>
+
+                <!-- Nudge to add a stat when the athlete has none -->
+                <NuxtLink
+                  v-if="showAddMetricCta"
+                  to="/performance"
+                  class="flex items-center gap-2 rounded-lg bg-blue-50 p-3 text-sm text-blue-700 transition hover:bg-blue-100"
+                >
+                  <UIcon
+                    name="i-heroicons-chart-bar"
+                    class="h-4 w-4 shrink-0"
+                    aria-hidden="true"
+                  />
+                  <span>Add a metric to strengthen this message.</span>
+                </NuxtLink>
+
+                <!-- Unresolved send warning -->
+                <p v-if="textSendWarning" class="text-xs text-amber-700">
+                  {{ textSendWarning }}
+                </p>
+
+                <!-- Log Interaction Checkbox -->
+                <div class="flex items-center gap-2 pt-2">
+                  <input
+                    id="textLogInteraction"
+                    v-model="shouldLogInteraction"
+                    type="checkbox"
+                    class="h-4 w-4 rounded-sm border-slate-300 text-blue-600"
+                  />
+                  <label
+                    for="textLogInteraction"
+                    class="text-sm text-slate-700"
+                  >
+                    Log this interaction in coach history
+                  </label>
+                </div>
               </div>
 
-              <!-- Nudge to add a stat when the athlete has none -->
-              <NuxtLink
-                v-if="showAddMetricCta"
-                to="/performance"
-                class="flex items-center gap-2 p-3 rounded-lg bg-blue-50 text-sm text-blue-700 hover:bg-blue-100 transition"
-              >
-                <UIcon
-                  name="i-heroicons-chart-bar"
-                  class="w-4 h-4 shrink-0"
-                  aria-hidden="true"
-                />
-                <span>Add a metric to strengthen this message.</span>
-              </NuxtLink>
-
-              <!-- Unresolved send warning -->
-              <p v-if="textSendWarning" class="text-xs text-amber-700">
-                {{ textSendWarning }}
-              </p>
-
-              <!-- Log Interaction Checkbox -->
-              <div class="flex items-center gap-2 pt-2">
-                <input
-                  id="textLogInteraction"
-                  v-model="shouldLogInteraction"
-                  type="checkbox"
-                  class="w-4 h-4 rounded-sm border-slate-300 text-blue-600"
-                />
-                <label for="textLogInteraction" class="text-sm text-slate-700">
-                  Log this interaction in coach history
-                </label>
+              <div class="flex gap-3 border-t border-slate-200 p-6">
+                <button
+                  @click="sendText"
+                  :disabled="textUnresolved.length > 0"
+                  class="flex-1 rounded-lg bg-linear-to-r from-green-500 to-green-600 px-4 py-2 text-sm font-medium text-white transition hover:from-green-600 hover:to-green-700 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Send Text
+                </button>
+                <button
+                  @click="handleCloseText"
+                  class="flex-1 rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                >
+                  Cancel
+                </button>
               </div>
-            </div>
-
-            <div class="p-6 border-t border-slate-200 flex gap-3">
-              <button
-                @click="sendText"
-                :disabled="textUnresolved.length > 0"
-                class="flex-1 px-4 py-2 bg-linear-to-r from-green-500 to-green-600 text-white font-medium rounded-lg hover:from-green-600 hover:to-green-700 transition text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Send Text
-              </button>
-              <button
-                @click="handleCloseText"
-                class="flex-1 px-4 py-2 border border-slate-300 text-slate-700 font-medium rounded-lg hover:bg-slate-50 transition text-sm"
-              >
-                Cancel
-              </button>
-            </div>
             </div>
           </Transition>
         </div>
@@ -579,7 +602,7 @@
       <Transition name="fade">
         <div
           v-if="showTemplateManager"
-          class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+          class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
           @keydown.escape="handleCloseTemplate"
         >
           <div
@@ -587,10 +610,10 @@
             role="dialog"
             aria-modal="true"
             aria-labelledby="template-modal-title"
-            class="bg-white rounded-xl shadow-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-slate-200"
+            class="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-lg"
           >
             <div
-              class="p-6 border-b border-slate-200 flex items-center justify-between"
+              class="flex items-center justify-between border-b border-slate-200 p-6"
             >
               <h3
                 id="template-modal-title"
@@ -608,19 +631,19 @@
             </div>
 
             <div class="p-6">
-              <p class="text-sm text-slate-600 mb-4">
+              <p class="mb-4 text-sm text-slate-600">
                 Manage your custom communication templates
               </p>
               <!-- Template list would go here in full implementation -->
-              <p class="text-center text-slate-500 py-8 text-sm">
+              <p class="py-8 text-center text-sm text-slate-500">
                 Template management coming in next update
               </p>
             </div>
 
-            <div class="p-6 border-t border-slate-200">
+            <div class="border-t border-slate-200 p-6">
               <button
                 @click="handleCloseTemplate"
-                class="w-full px-4 py-2 border border-slate-300 text-slate-700 font-medium rounded-lg hover:bg-slate-50 transition text-sm"
+                class="w-full rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
               >
                 Close
               </button>
@@ -1119,7 +1142,6 @@ const saveField = async (
   }
 };
 
-
 const sendEmail = async () => {
   if (emailUnresolved.value.length > 0) {
     emailSendWarning.value = `Fill these variables before sending: ${emailUnresolved.value.join(", ")}`;
@@ -1154,7 +1176,10 @@ const sendText = async () => {
   if (!(await passesSendGuardrails("text"))) return;
 
   await logSentMessage("text");
-  window.location.href = toSmsHref(props.coach.phone ?? "", textCleanBody.value);
+  window.location.href = toSmsHref(
+    props.coach.phone ?? "",
+    textCleanBody.value,
+  );
 
   if (shouldLogInteraction.value) {
     emit("interaction-logged", {
@@ -1227,10 +1252,7 @@ const logSentMessage = async (channel: "email" | "text"): Promise<void> => {
       programNote: authored["programNote"] ?? null,
       updateHook: authored["updateHook"] ?? null,
       subject: channel === "email" ? emailComposer.value.subject : null,
-      body:
-        channel === "email"
-          ? emailCleanBody.value
-          : textCleanBody.value,
+      body: channel === "email" ? emailCleanBody.value : textCleanBody.value,
     });
   } catch {
     // Logging failure must not block the send.

@@ -4,10 +4,10 @@
     v-if="loading"
     role="status"
     aria-live="polite"
-    class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
+    class="rounded-xl border border-slate-200 bg-white p-12 text-center shadow-xs"
   >
     <div
-      class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"
+      class="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"
       aria-hidden="true"
     ></div>
     <p class="text-slate-600">{{ loadingMessage }}</p>
@@ -17,7 +17,7 @@
   <div
     v-else-if="error"
     role="alert"
-    class="bg-red-50 border border-red-200 rounded-xl p-4 mb-6"
+    class="mb-6 rounded-xl border border-red-200 bg-red-50 p-4"
   >
     <p class="text-red-700">{{ error }}</p>
   </div>
@@ -26,16 +26,16 @@
   <div
     v-else-if="isEmpty"
     role="status"
-    class="bg-white rounded-xl border border-slate-200 shadow-xs p-12 text-center"
+    class="rounded-xl border border-slate-200 bg-white p-12 text-center shadow-xs"
   >
     <component
       v-if="emptyIcon"
       :is="emptyIcon"
-      class="w-12 h-12 text-slate-300 mx-auto mb-4"
+      class="mx-auto mb-4 h-12 w-12 text-slate-300"
       aria-hidden="true"
     />
-    <p class="text-slate-900 font-medium mb-2">{{ emptyTitle }}</p>
-    <p class="text-sm text-slate-500 mb-6">{{ emptyMessage }}</p>
+    <p class="mb-2 font-medium text-slate-900">{{ emptyTitle }}</p>
+    <p class="mb-6 text-sm text-slate-500">{{ emptyMessage }}</p>
     <slot name="empty-action" />
   </div>
 

@@ -1,14 +1,14 @@
 <template>
   <AuthPageLayout :back-link="{ to: '/login', text: 'Back to Login' }">
     <!-- Header -->
-    <div class="text-center mb-8">
+    <div class="mb-8 text-center">
       <AuthStatusIcon
         :status="emailSent ? 'success' : 'default'"
         icon="email"
         :ariaLabel="emailSent ? 'Reset email sent' : 'Password reset form'"
       />
 
-      <h1 class="text-slate-900 text-3xl font-bold mb-2">
+      <h1 class="mb-2 text-3xl font-bold text-slate-900">
         {{ emailSent ? "Check Your Email" : "Reset Your Password" }}
       </h1>
       <p class="text-slate-600">
@@ -34,7 +34,7 @@
         We've sent a password reset link to
         <span class="font-semibold">{{ submittedEmail }}</span>
       </p>
-      <p class="text-sm mt-2">
+      <p class="mt-2 text-sm">
         Click the link in the email to reset your password. The link will expire
         in 24 hours.
       </p>
@@ -79,7 +79,7 @@
               ? 'Validating your information'
               : 'Send password reset link'
         "
-        class="w-full px-6 py-3 bg-linear-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-lg hover:from-blue-600 hover:to-blue-700 transition disabled:opacity-50 shadow-lg focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        class="w-full rounded-lg bg-linear-to-r from-blue-500 to-blue-600 px-6 py-3 font-semibold text-white shadow-lg transition hover:from-blue-600 hover:to-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
       >
         {{
           loading
@@ -113,7 +113,7 @@
               ? `Resend available in ${cooldown.cooldown.value} seconds`
               : 'Resend reset link'
         "
-        class="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-medium rounded-lg transition-colors focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        class="w-full rounded-lg bg-blue-600 px-4 py-3 font-medium text-white transition-colors hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-gray-400"
       >
         <span v-if="passwordReset.loading.value">Sending...</span>
         <span v-else-if="cooldown.isActive.value">
@@ -124,7 +124,7 @@
 
       <NuxtLink
         to="/login"
-        class="block w-full py-3 px-4 bg-white/20 hover:bg-white/30 text-white font-medium rounded-lg transition-colors text-center focus:ring-2 focus:ring-white focus:ring-offset-2"
+        class="block w-full rounded-lg bg-white/20 px-4 py-3 text-center font-medium text-white transition-colors hover:bg-white/30 focus:ring-2 focus:ring-white focus:ring-offset-2"
       >
         Back to Login
       </NuxtLink>
@@ -133,12 +133,12 @@
     <!-- Help section -->
     <section
       aria-labelledby="help-heading"
-      class="mt-8 p-4 bg-slate-50 rounded-lg border border-slate-200"
+      class="mt-8 rounded-lg border border-slate-200 bg-slate-50 p-4"
     >
-      <h2 id="help-heading" class="font-semibold text-slate-700 text-xs">
+      <h2 id="help-heading" class="text-xs font-semibold text-slate-700">
         Tip
       </h2>
-      <p class="text-slate-600 text-xs leading-relaxed mt-1">
+      <p class="mt-1 text-xs leading-relaxed text-slate-600">
         Check your spam or promotions folder if you don't see the reset email.
         The link will expire after 24 hours.
       </p>

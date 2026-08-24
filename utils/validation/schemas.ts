@@ -294,7 +294,10 @@ export const offerSchema = z
 export const playerDetailsSchema = z.object({
   graduation_year: graduationYearSchema,
   positions: z.array(z.string()).default([]),
-  gender: z.enum(["male", "female", "other", "prefer_not_to_say"]).nullable().optional(),
+  gender: z
+    .enum(["male", "female", "other", "prefer_not_to_say"])
+    .nullable()
+    .optional(),
   // Per-sport athlete attributes (registry: utils/attributes/canonical.ts).
   bats: z.enum(["L", "R", "S"]).nullable().optional(),
   throws: z.enum(["L", "R"]).nullable().optional(),
@@ -308,7 +311,10 @@ export const playerDetailsSchema = z.object({
   shoots: z.enum(["L", "R"]).nullable().optional(),
   catches: z.enum(["L", "R"]).nullable().optional(),
   wp_dominant_hand: z.enum(["L", "R"]).nullable().optional(),
-  rowing_side: z.enum(["port", "starboard", "both", "cox"]).nullable().optional(),
+  rowing_side: z
+    .enum(["port", "starboard", "both", "cox"])
+    .nullable()
+    .optional(),
   rowing_discipline: z.enum(["sweep", "scull", "both"]).nullable().optional(),
   throwing_hand: z.enum(["L", "R"]).nullable().optional(),
   kicking_foot: z.enum(["L", "R"]).nullable().optional(),

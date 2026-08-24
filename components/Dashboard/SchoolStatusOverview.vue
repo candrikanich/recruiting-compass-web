@@ -1,23 +1,23 @@
 <template>
   <div
-    class="bg-white rounded-2xl border border-slate-200 shadow-xs hover:shadow-md transition-shadow p-6"
+    class="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs transition-shadow hover:shadow-md"
   >
-    <h2 class="text-xl font-bold mb-6 text-slate-900">
+    <h2 class="mb-6 text-xl font-bold text-slate-900">
       🎯 School Status Overview
     </h2>
 
     <!-- Status Summary -->
-    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-8">
+    <div class="mb-8 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
       <div
         v-for="status in statusCounts"
         :key="status.status"
-        class="text-center p-4 rounded-lg border border-slate-200"
+        class="rounded-lg border border-slate-200 p-4 text-center"
       >
-        <p class="text-2xl mb-1">{{ getStatusEmoji(status.status) }}</p>
+        <p class="mb-1 text-2xl">{{ getStatusEmoji(status.status) }}</p>
         <p class="text-xs text-slate-600">
           {{ getSchoolStatusLabel(status.status) }}
         </p>
-        <p class="text-2xl font-bold mt-1 text-slate-900">{{ status.count }}</p>
+        <p class="mt-1 text-2xl font-bold text-slate-900">{{ status.count }}</p>
       </div>
     </div>
 
@@ -26,9 +26,9 @@
       <div
         v-for="status in schoolsByStatus"
         :key="status.status"
-        class="pt-4 border-t border-slate-200"
+        class="border-t border-slate-200 pt-4"
       >
-        <h3 class="font-semibold mb-3 flex items-center gap-2 text-slate-900">
+        <h3 class="mb-3 flex items-center gap-2 font-semibold text-slate-900">
           <span>{{ getStatusEmoji(status.status) }}</span>
           <span>{{ getSchoolStatusLabel(status.status) }}</span>
           <span class="text-xs font-normal text-slate-600"
@@ -40,21 +40,21 @@
           No schools
         </div>
 
-        <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div v-else class="grid grid-cols-1 gap-3 md:grid-cols-2">
           <NuxtLink
             v-for="school in status.schools"
             :key="school.id"
             :to="`/schools/${school.id}`"
-            class="p-3 rounded-lg transition group border border-slate-200 bg-white hover:border-blue-400 hover:bg-blue-50"
+            class="group rounded-lg border border-slate-200 bg-white p-3 transition hover:border-blue-400 hover:bg-blue-50"
           >
             <div class="flex items-start justify-between">
               <div class="flex-1">
                 <p class="font-semibold text-slate-900">{{ school.name }}</p>
-                <p class="text-xs mt-1 text-slate-600">{{ school.location }}</p>
+                <p class="mt-1 text-xs text-slate-600">{{ school.location }}</p>
               </div>
               <span v-if="school.is_favorite" class="text-lg">⭐</span>
             </div>
-            <div v-if="school.division" class="text-xs mt-2 text-slate-600">
+            <div v-if="school.division" class="mt-2 text-xs text-slate-600">
               {{ school.division }} • {{ school.conference }}
             </div>
           </NuxtLink>

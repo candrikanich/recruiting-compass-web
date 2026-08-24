@@ -58,7 +58,7 @@ const maxDateOfBirth = computed(() => new Date().toISOString().split("T")[0]);
     <div v-if="role === 'player'">
       <label
         for="invite-dob"
-        class="block text-sm font-medium text-slate-700 mb-1.5"
+        class="mb-1.5 block text-sm font-medium text-slate-700"
       >
         Player Date of Birth <span class="text-red-600">*</span>
       </label>
@@ -70,7 +70,7 @@ const maxDateOfBirth = computed(() => new Date().toISOString().split("T")[0]);
         :max="maxDateOfBirth"
         :value="dateOfBirth ?? ''"
         :disabled="loading"
-        class="w-full px-3 py-2 text-base border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors duration-200"
+        class="w-full rounded-lg border border-slate-300 px-3 py-2 text-base transition-colors duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
         @input="
           emit('update:dateOfBirth', ($event.target as HTMLInputElement).value)
         "

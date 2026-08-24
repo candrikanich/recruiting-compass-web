@@ -1,7 +1,7 @@
 <template>
   <div
     v-if="isOpen"
-    class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
     @keydown.escape="handleClose"
   >
     <div
@@ -9,10 +9,10 @@
       role="dialog"
       aria-modal="true"
       aria-labelledby="edit-event-title"
-      class="bg-white rounded-lg shadow-lg max-w-2xl w-full max-h-screen overflow-y-auto"
+      class="max-h-screen w-full max-w-2xl overflow-y-auto rounded-lg bg-white shadow-lg"
     >
       <div
-        class="sticky top-0 bg-white border-b border-gray-200 p-6 flex items-center justify-between"
+        class="sticky top-0 flex items-center justify-between border-b border-gray-200 bg-white p-6"
       >
         <h2 id="edit-event-title" class="text-2xl font-bold text-gray-900">
           Edit Event
@@ -22,16 +22,16 @@
           aria-label="Close edit event dialog"
           class="text-gray-600 hover:text-gray-900"
         >
-          <UIcon name="i-heroicons-x-mark-solid" class="w-6 h-6" />
+          <UIcon name="i-heroicons-x-mark-solid" class="h-6 w-6" />
         </button>
       </div>
 
-      <form @submit.prevent="emit('submit')" class="p-6 space-y-6">
+      <form @submit.prevent="emit('submit')" class="space-y-6 p-6">
         <!-- Event Name -->
         <div>
           <label
             for="editName"
-            class="block text-sm font-medium text-gray-700 mb-1"
+            class="mb-1 block text-sm font-medium text-gray-700"
           >
             Event Name <span class="text-red-600">*</span>
           </label>
@@ -40,7 +40,7 @@
             v-model="formData.name"
             type="text"
             required
-            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
           />
         </div>
 
@@ -48,7 +48,7 @@
         <div>
           <label
             for="editType"
-            class="block text-sm font-medium text-gray-700 mb-1"
+            class="mb-1 block text-sm font-medium text-gray-700"
           >
             Event Type <span class="text-red-600">*</span>
           </label>
@@ -56,7 +56,7 @@
             id="editType"
             v-model="formData.type"
             required
-            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
           >
             <option value="">Select Type</option>
             <option value="camp">Camp</option>
@@ -71,7 +71,7 @@
         <div>
           <label
             for="editLocation"
-            class="block text-sm font-medium text-gray-700 mb-1"
+            class="mb-1 block text-sm font-medium text-gray-700"
           >
             Location
           </label>
@@ -80,16 +80,16 @@
             v-model="formData.location"
             type="text"
             placeholder="e.g., University Stadium, City, State"
-            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
           />
         </div>
 
         <!-- Dates -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
           <div>
             <label
               for="editStartDate"
-              class="block text-sm font-medium text-gray-700 mb-1"
+              class="mb-1 block text-sm font-medium text-gray-700"
             >
               Start Date <span class="text-red-600">*</span>
             </label>
@@ -98,13 +98,13 @@
               v-model="formData.start_date"
               type="date"
               required
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
             />
           </div>
           <div>
             <label
               for="editEndDate"
-              class="block text-sm font-medium text-gray-700 mb-1"
+              class="mb-1 block text-sm font-medium text-gray-700"
             >
               End Date
             </label>
@@ -112,7 +112,7 @@
               id="editEndDate"
               v-model="formData.end_date"
               type="date"
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
             />
           </div>
         </div>
@@ -121,7 +121,7 @@
         <div>
           <label
             for="editCost"
-            class="block text-sm font-medium text-gray-700 mb-1"
+            class="mb-1 block text-sm font-medium text-gray-700"
           >
             Cost ($)
           </label>
@@ -132,7 +132,7 @@
             step="0.01"
             min="0"
             placeholder="0.00"
-            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
           />
         </div>
 
@@ -140,7 +140,7 @@
         <div>
           <label
             for="editNotes"
-            class="block text-sm font-medium text-gray-700 mb-1"
+            class="mb-1 block text-sm font-medium text-gray-700"
           >
             Performance Notes
           </label>
@@ -149,23 +149,23 @@
             v-model="formData.performance_notes"
             rows="4"
             placeholder="How did it go? Any highlights?"
-            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
           />
         </div>
 
         <!-- Buttons -->
-        <div class="flex gap-4 justify-end">
+        <div class="flex justify-end gap-4">
           <button
             type="button"
             @click="handleClose"
-            class="px-6 py-2 bg-gray-200 text-gray-900 font-semibold rounded-lg hover:bg-gray-300 transition"
+            class="rounded-lg bg-gray-200 px-6 py-2 font-semibold text-gray-900 transition hover:bg-gray-300"
           >
             Cancel
           </button>
           <button
             type="submit"
             :disabled="isUpdating"
-            class="px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
+            class="rounded-lg bg-blue-600 px-6 py-2 font-semibold text-white transition hover:bg-blue-700 disabled:opacity-50"
           >
             {{ isUpdating ? "Saving..." : "Save Changes" }}
           </button>

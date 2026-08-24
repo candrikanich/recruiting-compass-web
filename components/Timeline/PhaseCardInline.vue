@@ -1,6 +1,6 @@
 <template>
   <div
-    class="bg-white rounded-2xl shadow-xs hover:shadow-md transition-shadow"
+    class="rounded-2xl bg-white shadow-xs transition-shadow hover:shadow-md"
     :class="[
       isCompleted
         ? 'border border-emerald-200 opacity-60'
@@ -15,73 +15,73 @@
     >
       <div class="flex items-center gap-4">
         <!-- Completion status icon (leading) -->
-        <div class="w-8 h-8 shrink-0">
-            <svg
-              v-if="percentComplete === 100"
-              class="w-8 h-8 text-emerald-500"
-              fill="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <circle cx="12" cy="12" r="10" />
-              <path
-                fill="white"
-                d="M10 14.59l-3.3-3.3-1.4 1.42L10 17.41l9-9-1.41-1.41z"
-              />
-            </svg>
-            <svg
-              v-else-if="percentComplete > 0"
-              class="w-8 h-8 text-blue-500"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <circle cx="12" cy="12" r="10" stroke-width="2" />
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M9 12l2 2 4-4"
-                opacity="0.5"
-              />
-            </svg>
-            <svg
-              v-else
-              class="w-8 h-8 text-slate-300"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <circle cx="12" cy="12" r="10" stroke-width="2" />
-            </svg>
+        <div class="h-8 w-8 shrink-0">
+          <svg
+            v-if="percentComplete === 100"
+            class="h-8 w-8 text-emerald-500"
+            fill="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <path
+              fill="white"
+              d="M10 14.59l-3.3-3.3-1.4 1.42L10 17.41l9-9-1.41-1.41z"
+            />
+          </svg>
+          <svg
+            v-else-if="percentComplete > 0"
+            class="h-8 w-8 text-blue-500"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <circle cx="12" cy="12" r="10" stroke-width="2" />
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M9 12l2 2 4-4"
+              opacity="0.5"
+            />
+          </svg>
+          <svg
+            v-else
+            class="h-8 w-8 text-slate-300"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <circle cx="12" cy="12" r="10" stroke-width="2" />
+          </svg>
         </div>
 
         <!-- Title + theme -->
-        <div class="flex-1 min-w-0">
-          <div class="flex items-center gap-2 flex-wrap">
+        <div class="min-w-0 flex-1">
+          <div class="flex flex-wrap items-center gap-2">
             <h3 class="text-xl font-bold text-slate-900">{{ title }}</h3>
             <span
               v-if="isCurrentPhase"
-              class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold"
+              class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700"
             >
-              <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full" />
+              <span class="h-1.5 w-1.5 rounded-full bg-emerald-500" />
               Current
             </span>
           </div>
-          <p class="text-slate-600 text-sm mt-1">{{ theme }}</p>
+          <p class="mt-1 text-sm text-slate-600">{{ theme }}</p>
         </div>
 
         <!-- Stats -->
-        <div class="text-right shrink-0">
+        <div class="shrink-0 text-right">
           <div class="text-2xl font-bold text-slate-900">
             {{ completedCount }}/{{ totalCount }}
           </div>
-          <div class="text-slate-500 text-sm">tasks</div>
+          <div class="text-sm text-slate-500">tasks</div>
         </div>
 
         <!-- Expand chevron -->
         <svg
           :class="{ 'rotate-180': expanded }"
-          class="w-6 h-6 text-slate-400 transition-transform shrink-0"
+          class="h-6 w-6 shrink-0 text-slate-400 transition-transform"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -97,7 +97,7 @@
 
       <!-- Progress bar + percent -->
       <div class="mt-4 flex items-center gap-3">
-        <div class="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
+        <div class="h-2 flex-1 overflow-hidden rounded-full bg-slate-100">
           <div
             class="h-full transition-all duration-300"
             :class="

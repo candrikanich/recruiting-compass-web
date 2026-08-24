@@ -1,16 +1,16 @@
 <template>
-  <div class="rounded-lg p-6 mb-6 bg-white shadow-md">
-    <div class="flex flex-col md:flex-row gap-4 items-end">
+  <div class="mb-6 rounded-lg bg-white p-6 shadow-md">
+    <div class="flex flex-col items-end gap-4 md:flex-row">
       <!-- Date Range Preset -->
       <div class="flex-1">
-        <label class="block text-sm font-medium mb-2 text-slate-900"
+        <label class="mb-2 block text-sm font-medium text-slate-900"
           >Date Range</label
         >
         <select
           data-testid="date-range-preset"
           :value="dateRange.preset"
           @change="handlePresetChange"
-          class="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:ring-2 focus:border-transparent"
+          class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2 text-slate-900 focus:border-transparent focus:ring-2"
         >
           <option value="last_7_days">Last 7 Days</option>
           <option value="last_30_days">Last 30 Days</option>
@@ -24,7 +24,7 @@
 
       <!-- Custom Start Date -->
       <div v-if="dateRange.preset === 'custom'" class="flex-1">
-        <label class="block text-sm font-medium mb-2 text-slate-900"
+        <label class="mb-2 block text-sm font-medium text-slate-900"
           >Start Date</label
         >
         <input
@@ -32,13 +32,13 @@
           type="date"
           :value="dateRange.startDate"
           @input="handleStartDateChange"
-          class="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:ring-2 focus:border-transparent"
+          class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2 text-slate-900 focus:border-transparent focus:ring-2"
         />
       </div>
 
       <!-- Custom End Date -->
       <div v-if="dateRange.preset === 'custom'" class="flex-1">
-        <label class="block text-sm font-medium mb-2 text-slate-900"
+        <label class="mb-2 block text-sm font-medium text-slate-900"
           >End Date</label
         >
         <input
@@ -46,7 +46,7 @@
           type="date"
           :value="dateRange.endDate"
           @input="handleEndDateChange"
-          class="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:ring-2 focus:border-transparent"
+          class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2 text-slate-900 focus:border-transparent focus:ring-2"
         />
       </div>
 
@@ -54,7 +54,7 @@
       <button
         data-testid="clear-date-range-button"
         @click="handleClear"
-        class="px-4 py-2 border border-slate-300 font-medium rounded-lg transition text-slate-900 hover:bg-slate-50"
+        class="rounded-lg border border-slate-300 px-4 py-2 font-medium text-slate-900 transition hover:bg-slate-50"
       >
         Clear
       </button>
@@ -64,7 +64,7 @@
         data-testid="apply-date-range-button"
         v-if="dateRange.preset === 'custom'"
         @click="handleApply"
-        class="px-4 py-2 text-white font-medium rounded-lg transition bg-blue-600 hover:bg-blue-700"
+        class="rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition hover:bg-blue-700"
       >
         Apply
       </button>

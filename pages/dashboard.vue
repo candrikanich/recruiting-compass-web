@@ -5,7 +5,7 @@
     <!-- Skip Link for Keyboard Navigation -->
     <a
       href="#main-content"
-      class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-blue-600 focus:text-white focus:rounded-lg focus:shadow-lg"
+      class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:rounded-lg focus:bg-blue-600 focus:px-4 focus:py-2 focus:text-white focus:shadow-lg"
     >
       Skip to main content
     </a>
@@ -18,7 +18,7 @@
 
     <main
       id="main-content"
-      class="max-w-7xl mx-auto px-4 sm:px-6 py-8"
+      class="mx-auto max-w-7xl px-4 py-8 sm:px-6"
       role="main"
     >
       <!-- Parent Context Banner -->
@@ -56,9 +56,9 @@
       </section>
 
       <!-- Main content + persistent sidebar -->
-      <div class="grid grid-cols-1 lg:grid-cols-6 gap-6">
+      <div class="grid grid-cols-1 gap-6 lg:grid-cols-6">
         <!-- Left: main content (4 cols) -->
-        <div class="lg:col-span-4 space-y-6">
+        <div class="space-y-6 lg:col-span-4">
           <!-- Action Items — always visible -->
           <section aria-labelledby="suggestions-heading">
             <h2 id="suggestions-heading" class="sr-only">
@@ -87,7 +87,7 @@
                   v-bind="widgetPropsMap[entry.id] ?? {}"
                 />
                 <template #fallback>
-                  <div class="animate-pulse bg-gray-200 h-64 rounded-lg" />
+                  <div class="h-64 animate-pulse rounded-lg bg-gray-200" />
                 </template>
               </Suspense>
             </div>
@@ -107,7 +107,7 @@
                   v-bind="widgetPropsMap[group.entry.id] ?? {}"
                 />
                 <template #fallback>
-                  <div class="animate-pulse bg-gray-200 h-64 rounded-lg" />
+                  <div class="h-64 animate-pulse rounded-lg bg-gray-200" />
                 </template>
               </Suspense>
             </div>
@@ -115,7 +115,7 @@
         </div>
 
         <!-- Right: persistent sidebar (2 cols) -->
-        <aside class="lg:col-span-2 space-y-6" aria-label="Dashboard sidebar">
+        <aside class="space-y-6 lg:col-span-2" aria-label="Dashboard sidebar">
           <!-- Recruiting packet pinned to top; Upcoming Events sits directly
                below it via the eventsSummary-first default right-column order. -->
           <DashboardRecruitingPacketWidget
@@ -132,7 +132,7 @@
                 v-bind="widgetPropsMap[entry.id] ?? {}"
               />
               <template #fallback>
-                <div class="animate-pulse bg-gray-200 h-40 rounded-lg" />
+                <div class="h-40 animate-pulse rounded-lg bg-gray-200" />
               </template>
             </Suspense>
           </template>

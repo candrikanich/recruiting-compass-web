@@ -1,20 +1,20 @@
 <template>
   <div
-    class="bg-white rounded-2xl border border-slate-200 shadow-xs hover:shadow-md transition-shadow p-6"
+    class="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs transition-shadow hover:shadow-md"
   >
     <!-- Header -->
-    <div class="flex items-center justify-between mb-5">
+    <div class="mb-5 flex items-center justify-between">
       <div class="flex items-center gap-3">
-        <div class="p-2 bg-slate-100 rounded-lg">
-          <UIcon name="i-heroicons-sparkles" class="w-5 h-5 text-slate-700" />
+        <div class="rounded-lg bg-slate-100 p-2">
+          <UIcon name="i-heroicons-sparkles" class="h-5 w-5 text-slate-700" />
         </div>
-        <h3 class="text-slate-900 font-semibold">Recent Activity</h3>
+        <h3 class="font-semibold text-slate-900">Recent Activity</h3>
       </div>
       <button
         @click="refresh"
         :disabled="loading"
         data-testid="refresh-activity"
-        class="px-3 py-1 bg-brand-blue-100 text-brand-blue-700 rounded-full text-sm font-medium hover:bg-brand-blue-200 transition disabled:opacity-50"
+        class="rounded-full bg-brand-blue-100 px-3 py-1 text-sm font-medium text-brand-blue-700 transition hover:bg-brand-blue-200 disabled:opacity-50"
       >
         {{ loading ? "Loading..." : "Refresh" }}
       </button>
@@ -23,16 +23,16 @@
     <!-- Loading State -->
     <div v-if="loading" class="flex items-center justify-center py-8">
       <div
-        class="animate-spin rounded-full h-6 w-6 border border-brand-blue-300 border-t-brand-blue-600"
+        class="h-6 w-6 animate-spin rounded-full border border-brand-blue-300 border-t-brand-blue-600"
       />
     </div>
 
     <!-- Error State -->
-    <div v-else-if="error" class="text-center py-6 text-red-600 text-sm">
+    <div v-else-if="error" class="py-6 text-center text-sm text-red-600">
       <p>{{ error }}</p>
       <button
         @click="refresh"
-        class="mt-2 text-blue-600 hover:text-blue-700 font-medium"
+        class="mt-2 font-medium text-blue-600 hover:text-blue-700"
       >
         Try Again
       </button>
@@ -49,9 +49,9 @@
     </div>
 
     <!-- Empty State -->
-    <div v-else class="text-center py-6 text-slate-500">
+    <div v-else class="py-6 text-center text-slate-500">
       <p class="text-sm">No recent activity</p>
-      <p class="text-xs text-slate-400 mt-1">
+      <p class="mt-1 text-xs text-slate-400">
         Start logging interactions or updating your profile
       </p>
     </div>
@@ -59,7 +59,7 @@
     <!-- View All Link -->
     <NuxtLink
       to="/activity"
-      class="mt-4 block w-full py-2 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors text-slate-700 text-center text-sm font-medium"
+      class="mt-4 block w-full rounded-lg border border-slate-300 py-2 text-center text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
     >
       View All Activity
     </NuxtLink>

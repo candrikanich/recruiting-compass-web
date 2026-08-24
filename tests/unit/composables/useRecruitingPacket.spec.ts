@@ -555,5 +555,4 @@ describe("useRecruitingPacket", () => {
       expect(breakdown.other).toBe(0);
     });
   });
-
 });

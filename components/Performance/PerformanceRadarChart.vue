@@ -1,9 +1,9 @@
 <template>
-  <div class="rounded-lg shadow-sm p-6 bg-white">
-    <h2 class="text-2xl font-bold mb-4 text-slate-900">
+  <div class="rounded-lg bg-white p-6 shadow-sm">
+    <h2 class="mb-4 text-2xl font-bold text-slate-900">
       Current Performance Snapshot
     </h2>
-    <p class="text-sm mb-6 text-slate-600">
+    <p class="mb-6 text-sm text-slate-600">
       Latest metrics recorded (updated as new data is added)
     </p>
 
@@ -11,16 +11,16 @@
       <Radar :data="radarData" :options="radarOptions" />
     </div>
 
-    <div v-else class="text-center py-12">
+    <div v-else class="py-12 text-center">
       <p class="text-slate-600">
         Log at least one metric to see your performance snapshot
       </p>
     </div>
 
     <!-- Legend -->
-    <div v-if="hasMetrics" class="mt-8 pt-6 border-t border-slate-300">
-      <h3 class="text-sm font-semibold mb-4 text-slate-900">Latest Values</h3>
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div v-if="hasMetrics" class="mt-8 border-t border-slate-300 pt-6">
+      <h3 class="mb-4 text-sm font-semibold text-slate-900">Latest Values</h3>
+      <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
         <div
           v-for="type in metricTypes"
           :key="type"

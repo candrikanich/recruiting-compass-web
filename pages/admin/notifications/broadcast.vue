@@ -1,14 +1,14 @@
 <template>
-  <div class="min-h-screen bg-slate-50 py-12 px-6">
-    <div class="max-w-2xl mx-auto">
+  <div class="min-h-screen bg-slate-50 px-6 py-12">
+    <div class="mx-auto max-w-2xl">
       <div class="mb-8">
         <NuxtLink
           to="/admin"
-          class="text-blue-600 hover:text-blue-700 mb-4 inline-block"
+          class="mb-4 inline-block text-blue-600 hover:text-blue-700"
         >
           ← Back to Admin
         </NuxtLink>
-        <h1 class="text-4xl font-bold text-slate-900 mb-2">
+        <h1 class="mb-2 text-4xl font-bold text-slate-900">
           Broadcast Notification
         </h1>
         <p class="text-slate-600">
@@ -16,13 +16,13 @@
         </p>
       </div>
 
-      <div class="bg-white rounded-lg shadow-md p-6">
+      <div class="rounded-lg bg-white p-6 shadow-md">
         <form @submit.prevent="submit" class="space-y-5">
           <!-- Target -->
           <div>
             <label
               for="target"
-              class="block text-sm font-medium text-slate-700 mb-1"
+              class="mb-1 block text-sm font-medium text-slate-700"
             >
               Target
             </label>
@@ -40,7 +40,7 @@
           <div v-if="form.target === 'user'">
             <label
               for="user_id"
-              class="block text-sm font-medium text-slate-700 mb-1"
+              class="mb-1 block text-sm font-medium text-slate-700"
             >
               User ID (UUID)
             </label>
@@ -58,7 +58,7 @@
           <div>
             <label
               for="type"
-              class="block text-sm font-medium text-slate-700 mb-1"
+              class="mb-1 block text-sm font-medium text-slate-700"
             >
               Type
             </label>
@@ -78,10 +78,10 @@
           <div>
             <label
               for="title"
-              class="block text-sm font-medium text-slate-700 mb-1"
+              class="mb-1 block text-sm font-medium text-slate-700"
             >
               Title
-              <span class="text-slate-400 font-normal">(max 200 chars)</span>
+              <span class="font-normal text-slate-400">(max 200 chars)</span>
             </label>
             <input
               id="title"
@@ -97,10 +97,10 @@
           <div>
             <label
               for="message"
-              class="block text-sm font-medium text-slate-700 mb-1"
+              class="mb-1 block text-sm font-medium text-slate-700"
             >
               Message
-              <span class="text-slate-400 font-normal"
+              <span class="font-normal text-slate-400"
                 >(optional, max 1000 chars)</span
               >
             </label>
@@ -110,20 +110,20 @@
               rows="4"
               maxlength="1000"
               placeholder="Optional notification body…"
-              class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 resize-y"
+              class="w-full resize-y rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
             />
           </div>
 
           <!-- Status messages -->
           <div
             v-if="successMessage"
-            class="rounded-lg bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-800"
+            class="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800"
           >
             ✓ {{ successMessage }}
           </div>
           <div
             v-if="errorMessage"
-            class="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-800"
+            class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"
           >
             ✗ {{ errorMessage }}
           </div>
@@ -133,7 +133,7 @@
             <button
               type="submit"
               :disabled="sending"
-              class="w-full rounded-lg bg-blue-600 px-4 py-2.5 font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50 transition"
+              class="w-full rounded-lg bg-blue-600 px-4 py-2.5 font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {{ sending ? "Sending…" : "Send broadcast" }}
             </button>

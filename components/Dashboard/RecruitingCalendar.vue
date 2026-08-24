@@ -1,16 +1,16 @@
 <template>
   <div
-    class="bg-white rounded-2xl border border-slate-200 shadow-xs hover:shadow-md transition-shadow p-6"
+    class="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs transition-shadow hover:shadow-md"
   >
     <!-- Header -->
-    <div class="flex items-center justify-between mb-6">
+    <div class="mb-6 flex items-center justify-between">
       <div class="flex items-center gap-3">
         <div
-          class="w-10 h-10 bg-linear-to-br from-amber-500 to-orange-600 rounded-xl flex items-center justify-center shadow-md"
+          class="flex h-10 w-10 items-center justify-center rounded-xl bg-linear-to-br from-amber-500 to-orange-600 shadow-md"
         >
           <span class="text-lg">📆</span>
         </div>
-        <h2 class="text-slate-900 font-semibold">Recruiting Calendar</h2>
+        <h2 class="font-semibold text-slate-900">Recruiting Calendar</h2>
       </div>
       <div class="text-sm text-slate-600">Class of {{ graduationYear }}</div>
     </div>
@@ -18,14 +18,14 @@
     <!-- Current Period Highlight -->
     <div
       v-if="currentPeriod"
-      class="rounded-xl p-4 mb-6 bg-linear-to-r from-blue-100 to-indigo-100 border border-blue-200"
+      class="mb-6 rounded-xl border border-blue-200 bg-linear-to-r from-blue-100 to-indigo-100 p-4"
     >
-      <div class="flex items-center gap-3 mb-2">
-        <div class="w-3 h-3 rounded-full animate-pulse bg-blue-500" />
+      <div class="mb-2 flex items-center gap-3">
+        <div class="h-3 w-3 animate-pulse rounded-full bg-blue-500" />
         <span class="font-semibold text-blue-900">Current Period</span>
       </div>
       <p class="text-lg font-bold text-slate-900">{{ currentPeriod.name }}</p>
-      <p class="text-sm mt-1 text-slate-700">{{ currentPeriod.description }}</p>
+      <p class="mt-1 text-sm text-slate-700">{{ currentPeriod.description }}</p>
     </div>
 
     <!-- Next Key Dates -->
@@ -34,23 +34,23 @@
         v-for="date in upcomingDates"
         :key="date.id"
         :class="[
-          'flex items-center justify-between p-3 rounded-xl border-2 transition-all',
+          'flex items-center justify-between rounded-xl border-2 p-3 transition-all',
           date.isUrgent
-            ? 'bg-red-50 border-red-200 hover:border-red-300'
-            : 'bg-white border-slate-200 hover:border-blue-300',
+            ? 'border-red-200 bg-red-50 hover:border-red-300'
+            : 'border-slate-200 bg-white hover:border-blue-300',
         ]"
       >
         <div class="flex items-center gap-3">
           <span class="text-xl">{{ date.emoji }}</span>
           <div>
-            <p class="font-medium text-sm text-slate-900">{{ date.name }}</p>
+            <p class="text-sm font-medium text-slate-900">{{ date.name }}</p>
             <p class="text-xs text-slate-600">{{ date.description }}</p>
           </div>
         </div>
         <div class="text-right">
           <p
             :class="[
-              'font-semibold text-sm',
+              'text-sm font-semibold',
               date.isUrgent ? 'text-red-600' : 'text-blue-600',
             ]"
           >
@@ -62,31 +62,31 @@
     </div>
 
     <!-- Division Rules Summary -->
-    <div class="mt-6 pt-4 border-t border-slate-200">
+    <div class="mt-6 border-t border-slate-200 pt-4">
       <details class="text-sm">
         <summary
-          class="cursor-pointer font-medium text-slate-700 hover:text-slate-900 transition-colors"
+          class="cursor-pointer font-medium text-slate-700 transition-colors hover:text-slate-900"
         >
           NCAA Division Rules Quick Reference
         </summary>
         <div class="mt-3 space-y-3 text-xs">
-          <div class="p-3 rounded-xl bg-blue-50 border border-blue-200">
+          <div class="rounded-xl border border-blue-200 bg-blue-50 p-3">
             <p class="font-semibold text-blue-900">Division I</p>
-            <p class="text-slate-700 mt-1">
+            <p class="mt-1 text-slate-700">
               Coaches can contact you starting June 15 after sophomore year.
               Official visits allowed after August 1 before junior year.
             </p>
           </div>
-          <div class="p-3 rounded-xl bg-emerald-50 border border-emerald-200">
+          <div class="rounded-xl border border-emerald-200 bg-emerald-50 p-3">
             <p class="font-semibold text-emerald-900">Division II</p>
-            <p class="text-slate-700 mt-1">
+            <p class="mt-1 text-slate-700">
               Contact begins June 15 after sophomore year. More flexibility with
               unofficial visits.
             </p>
           </div>
-          <div class="p-3 rounded-xl bg-purple-50 border border-purple-200">
+          <div class="rounded-xl border border-purple-200 bg-purple-50 p-3">
             <p class="font-semibold text-purple-900">Division III</p>
-            <p class="text-slate-700 mt-1">
+            <p class="mt-1 text-slate-700">
               No recruiting calendar restrictions. Coaches can contact at any
               time.
             </p>
