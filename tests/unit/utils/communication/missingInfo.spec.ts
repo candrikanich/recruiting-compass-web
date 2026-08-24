@@ -41,7 +41,7 @@ describe("deriveMissingInfoFields", () => {
     expect(rows.map((r) => r.id)).toContain("intendedMajor");
   });
 
-  it("locks programNote/fitReason for a parent, editable for the athlete", () => {
+  it("programNote and fitReason always have static editableByParent: false", () => {
     const input = {
       ...base,
       referencedKeys: ["programNote", "fitReason"],
@@ -49,8 +49,18 @@ describe("deriveMissingInfoFields", () => {
     };
     const athlete = deriveMissingInfoFields({ ...input, canEditProfile: true });
     const parent = deriveMissingInfoFields({ ...input, canEditProfile: false });
-    expect(athlete.every((r) => r.editableByParent || r.id === "programNote")).toBe(true);
-    expect(parent.find((r) => r.id === "programNote")!.editableByParent).toBe(false);
+
+    // Assert athlete case (canEditProfile: true)
+    const athleteProgramNote = athlete.find((r) => r.id === "programNote")!;
+    const athleteFitReason = athlete.find((r) => r.id === "fitReason")!;
+    expect(athleteProgramNote.editableByParent).toBe(false);
+    expect(athleteFitReason.editableByParent).toBe(false);
+
+    // Assert parent case (canEditProfile: false) — flags must be identical (static)
+    const parentProgramNote = parent.find((r) => r.id === "programNote")!;
+    const parentFitReason = parent.find((r) => r.id === "fitReason")!;
+    expect(parentProgramNote.editableByParent).toBe(false);
+    expect(parentFitReason.editableByParent).toBe(false);
   });
 
   it("orders fixed: questionnaire, intendedMajor, programNote, fitReason, other, metric", () => {

@@ -89,7 +89,7 @@ export function deriveMissingInfoFields(input: MissingInfoInput): MissingInfoFie
       title: "Why does it fit you?",
       prompt: "How do you fit their style, level, or needs?",
       editor: { kind: "text", multiline: true },
-      editableByParent: input.canEditProfile,
+      editableByParent: false,
     });
   }
   // 5. Other authored vars.
