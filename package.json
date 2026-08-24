@@ -90,7 +90,7 @@
     "eslint": "^9.39.5",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-vue": "^9.32.0",
-    "happy-dom": "^20.11.2",
+    "happy-dom": "^20.11.6",
     "pa11y-ci": "^4.1.1",
     "postcss": "^8.5.26",
     "prettier": "^3.9.6",
@@ -102,7 +102,7 @@
     "typescript-eslint": "^8.67.0",
     "vitest": "^4.0.17",
     "vitest-axe": "^0.1.0",
-    "vue-tsc": "^3.3.9"
+    "vue-tsc": "^3.3.10"
   },
   "overrides": {
     "vite": "^7.3.2",
