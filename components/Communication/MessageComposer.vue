@@ -31,7 +31,8 @@
               </button>
             </div>
 
-            <div class="p-6 space-y-5">
+            <!-- Stage 1: Compose (template + subject + body) -->
+            <div v-if="stage === 'compose'" class="p-6 space-y-5">
               <!-- Template Selection -->
               <div>
                 <label class="block text-sm font-medium text-slate-700 mb-2"
@@ -88,8 +89,20 @@
                   Texts are limited to {{ SMS_TEXT_LIMIT }} characters
                 </p>
               </div>
+            </div>
 
-              <!-- Live Preview -->
+            <!-- Stage 2: Complete your info (only when something's missing) -->
+            <CommunicationMissingInfoStep
+              v-else-if="stage === 'info'"
+              :channel="channel"
+              :can-edit-profile="canEditProfile"
+              :athlete-name="athleteName"
+              @continue="onInfoContinue"
+              @back="stage = 'compose'"
+            />
+
+            <!-- Stage 3: Preview + send -->
+            <div v-else class="p-6 space-y-5">
               <div>
                 <label class="block text-sm font-medium text-slate-700 mb-2"
                   >Preview — what the coach sees</label
@@ -108,26 +121,6 @@
                   >
                 </div>
               </div>
-
-              <!-- Variables in this template -->
-              <CommunicationTemplateVariablesPanel
-                v-if="channel.selectedTemplateObj.value"
-                :channel="channel"
-              />
-
-              <!-- Nudge to add a stat when the athlete has none -->
-              <NuxtLink
-                v-if="showAddMetricCta"
-                to="/performance"
-                class="flex items-center gap-2 p-3 rounded-lg bg-blue-50 text-sm text-blue-700 hover:bg-blue-100 transition"
-              >
-                <UIcon
-                  name="i-heroicons-chart-bar"
-                  class="w-4 h-4 shrink-0"
-                  aria-hidden="true"
-                />
-                <span>{{ ui.metricCta }}</span>
-              </NuxtLink>
 
               <!-- Unresolved send warning -->
               <p v-if="channel.sendWarning.value" class="text-xs text-amber-700">
@@ -148,7 +141,33 @@
               </div>
             </div>
 
-            <div class="p-6 border-t border-slate-200 flex gap-3">
+            <!-- Footer: compose stage -->
+            <div
+              v-if="stage === 'compose'"
+              class="p-6 border-t border-slate-200 flex gap-3"
+            >
+              <button
+                :class="[
+                  'flex-1 px-4 py-2 text-white font-medium rounded-lg transition text-sm bg-linear-to-r',
+                  ui.gradient,
+                ]"
+                @click="onComposeContinue"
+              >
+                Continue
+              </button>
+              <button
+                class="flex-1 px-4 py-2 border border-slate-300 text-slate-700 font-medium rounded-lg hover:bg-slate-50 transition text-sm"
+                @click="close"
+              >
+                Cancel
+              </button>
+            </div>
+
+            <!-- Footer: preview stage (info stage supplies its own buttons) -->
+            <div
+              v-else-if="stage === 'preview'"
+              class="p-6 border-t border-slate-200 flex gap-3"
+            >
               <button
                 :disabled="channel.unresolved.value.length > 0"
                 :class="[
@@ -161,9 +180,9 @@
               </button>
               <button
                 class="flex-1 px-4 py-2 border border-slate-300 text-slate-700 font-medium rounded-lg hover:bg-slate-50 transition text-sm"
-                @click="close"
+                @click="stage = channel.hasMissingInfo.value ? 'info' : 'compose'"
               >
-                Cancel
+                Back
               </button>
             </div>
           </div>
@@ -183,11 +202,15 @@ import type { Coach } from "~/types/models";
 const props = defineProps<{
   channel: ChannelController;
   coach: Coach;
-  showAddMetricCta: boolean;
+  canEditProfile: boolean;
+  athleteName: string;
 }>();
 
 const open = defineModel<boolean>("open", { required: true });
 const logInteraction = defineModel<boolean>("logInteraction", { required: true });
+
+// Staged flow: compose → info (skipped when nothing's missing) → preview + send.
+const stage = ref<"compose" | "info" | "preview">("compose");
 
 const isEmail = computed(() => props.channel.channel === "email");
 const titleId = computed(() => `${props.channel.channel}-modal-title`);
@@ -199,15 +222,12 @@ const ui = computed(() =>
         title: "Send Email",
         closeLabel: "Close email composer",
         gradient: "from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700",
-        metricCta:
-          "Add a metric to strengthen this email — coaches look for numbers.",
       }
     : {
         title: "Send Text",
         closeLabel: "Close text composer",
         gradient:
           "from-green-500 to-green-600 hover:from-green-600 hover:to-green-700",
-        metricCta: "Add a metric to strengthen this message.",
       },
 );
 
@@ -217,15 +237,34 @@ const { activate, deactivate } = useFocusTrap(dialogRef);
 const close = (): void => {
   deactivate();
   open.value = false;
+  stage.value = "compose";
   props.channel.onClose();
+};
+
+const onComposeContinue = (): void => {
+  stage.value = props.channel.hasMissingInfo.value ? "info" : "preview";
+};
+
+const onInfoContinue = async (): Promise<void> => {
+  await props.channel.commitMissingInfo();
+  stage.value = "preview";
 };
 
 const onSend = async (): Promise<void> => {
   if (await props.channel.send()) close();
 };
 
+// A fresh template restarts the flow at compose.
+watch(
+  () => props.channel.selectedTemplateId.value,
+  () => {
+    stage.value = "compose";
+  },
+);
+
 watch(open, async (isOpen) => {
   if (isOpen) {
+    stage.value = "compose";
     await nextTick();
     activate();
   } else {

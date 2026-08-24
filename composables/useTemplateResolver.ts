@@ -59,7 +59,7 @@ export const useTemplateResolver = () => {
       const { data, error } = (await supabase
         .from("template_variables")
         .select(
-          "key, source_type, source_path, category, is_required_default",
+          "key, source_type, source_path, category, is_required_default, label",
         )) as {
         data: RegistryVar[] | null;
         error: FetchError | null;
