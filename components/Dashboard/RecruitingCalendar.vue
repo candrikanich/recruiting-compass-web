@@ -119,45 +119,8 @@
       <p class="mt-1 text-sm text-slate-700">{{ currentPeriod.description }}</p>
     </div>
 
-    <!-- Next Key Dates -->
-    <div class="space-y-3">
-      <div
-        v-for="date in upcomingDates"
-        :key="date.id"
-        :class="[
-          'flex items-center justify-between rounded-xl border-2 p-3 transition-all',
-          date.isUrgent
-            ? 'border-red-200 bg-red-50 hover:border-red-300'
-            : 'border-slate-200 bg-white hover:border-blue-300',
-        ]"
-      >
-        <div class="flex items-center gap-3">
-          <span class="text-xl">{{ date.emoji }}</span>
-          <div>
-            <p class="text-sm font-medium text-slate-900">{{ date.name }}</p>
-            <p class="text-xs text-slate-600">{{ date.description }}</p>
-          </div>
-        </div>
-        <div class="text-right">
-          <p
-            :class="[
-              'text-sm font-semibold',
-              date.isUrgent ? 'text-red-600' : 'text-blue-600',
-            ]"
-          >
-            {{ date.countdown }}
-          </p>
-          <p class="text-xs text-slate-500">{{ formatDate(date.date) }}</p>
-        </div>
-      </div>
-
-      <div
-        v-if="upcomingDates.length === 0"
-        class="text-sm text-slate-500 py-4 text-center"
-      >
-        No upcoming dates for this sport's calendar.
-      </div>
-    </div>
+    <!-- Next Key Dates — single milestone-row source, shared with Timeline -->
+    <UpcomingMilestones :milestones="upcomingMilestones" bare />
 
     <!-- Division Rules Summary -->
     <div class="mt-6 border-t border-slate-200 pt-4">
@@ -208,8 +171,8 @@ import {
   type Division,
   type RecruitingPeriod,
 } from "~/utils/recruitingCalendar";
-import { getMilestoneTypeIcon } from "~/utils/ncaaRecruitingCalendar";
 import { parseLocalDateOnly, exclusiveEndOfDay } from "~/utils/localDate";
+import UpcomingMilestones from "~/components/Timeline/UpcomingMilestones.vue";
 
 interface Props {
   graduationYear?: number;
@@ -260,16 +223,6 @@ const resolverOpts = computed(() => ({
 const today = new Date();
 today.setHours(0, 0, 0, 0);
 
-interface RecruitingDate {
-  id: string;
-  name: string;
-  description: string;
-  date: Date;
-  emoji: string;
-  countdown: string;
-  isUrgent: boolean;
-}
-
 interface CurrentPeriodDisplay {
   name: string;
   description: string;
@@ -283,58 +236,19 @@ const PERIOD_TYPE_LABELS: Record<string, string> = {
   evaluation: "Evaluation Period",
 };
 
-const getCountdown = (date: Date): string => {
-  const diff = date.getTime() - today.getTime();
-  const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-
-  if (days < 0) return "Passed";
-  if (days === 0) return "Today";
-  if (days === 1) return "Tomorrow";
-  if (days <= 7) return `${days} days`;
-  if (days <= 30) return `${Math.ceil(days / 7)} weeks`;
-  if (days <= 365) return `${Math.floor(days / 30)} months`;
-  return `${Math.floor(days / 365)}y ${Math.floor((days % 365) / 30)}m`;
-};
-
-const isWithin30Days = (date: Date): boolean => {
-  const diff = date.getTime() - today.getTime();
-  const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-  return days >= 0 && days <= 30;
-};
-
-const formatDate = (date: Date): string => {
-  return date.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-};
-
 // Next key dates: this sport's own resolved SportCalendar milestones plus the
 // still-generic SAT/ACT/NCAA/NAIA/application deadlines, sport/division-scoped.
-const upcomingDates = computed<RecruitingDate[]>(() => {
-  const milestones = getUpcomingMilestones({
+// Raw Milestone[] — rendered by the embedded <UpcomingMilestones bare/>.
+const upcomingMilestones = computed(() =>
+  getUpcomingMilestones({
     sport: props.sport,
     division: props.division,
     graduationYear: props.graduationYear,
     limit: 5,
     opts: resolverOpts.value,
     currentDate: today,
-  });
-
-  return milestones.map((m) => {
-    const date = parseLocalDateOnly(m.date);
-    return {
-      id: `${m.date}-${m.title}`,
-      name: m.title,
-      description: m.description ?? "",
-      date,
-      emoji: getMilestoneTypeIcon(m.type),
-      countdown: getCountdown(date),
-      isUrgent: isWithin30Days(date),
-    };
-  });
-});
+  }),
+);
 
 // The resolved SportCalendar this sport/division/gender/subdivision
 // combination reads from — shared by the current-period lookup and the L6a
