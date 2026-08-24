@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { mount } from "@vue/test-utils";
 import TaskItem from "~/components/Timeline/TaskItem.vue";
+import DesignSystemFormAnimatedCheck from "~/components/DesignSystem/Form/AnimatedCheck.vue";
 import type { TaskWithStatus } from "~/types/timeline";
 
 /**
@@ -41,6 +42,7 @@ function mountTaskItem(isViewingAsParent: boolean) {
   return mount(TaskItem, {
     props: { task: baseTask },
     global: {
+      components: { DesignSystemFormAnimatedCheck },
       provide: {
         activeFamily: {
           isViewingAsParent: { value: isViewingAsParent },
