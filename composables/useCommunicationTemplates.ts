@@ -1,6 +1,8 @@
-import { ref, computed, type ComputedRef, type Ref } from "vue";
+import { ref, computed, inject, type ComputedRef, type Ref } from "vue";
 import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
+import { useActiveFamily } from "./useActiveFamily";
+import { useFamilyContext } from "./useFamilyContext";
 import { createClientLogger } from "~/utils/logger";
 import { renderTemplate as renderText } from "~/utils/templateResolver";
 import type { CommunicationTemplate } from "~/types/models";
@@ -102,6 +104,19 @@ export const useCommunicationTemplates = (): {
   const supabase = useSupabase();
   const userStore = useUserStore();
 
+  // Family scope: templates are shared across the whole family unit (a parent can
+  // proofread/tweak a template the player sends). Prefer the injected context so
+  // a parent switching athletes re-scopes correctly; fall back to the singleton.
+  const injectedFamily =
+    inject<ReturnType<typeof useActiveFamily>>("activeFamily");
+  if (!injectedFamily) {
+    logger.warn(
+      "[useCommunicationTemplates] activeFamily injection failed, using " +
+        "singleton fallback. May cause sync issues when parent switches athletes.",
+    );
+  }
+  const activeFamily = injectedFamily ?? useFamilyContext();
+
   // State
   const templates = ref<CommunicationTemplate[]>([]);
   const isLoading = ref(false);
@@ -134,11 +149,17 @@ export const useCommunicationTemplates = (): {
     error.value = null;
 
     try {
-      // Fetch user templates AND predefined templates
+      // Fetch this family's templates AND predefined/global templates. RLS
+      // enforces the same scope; the explicit filter keeps the payload tight and
+      // still returns predefined rows (family_unit_id NULL) via the OR.
+      const familyId = activeFamily.activeFamilyId?.value;
+      const scopeFilter = familyId
+        ? `family_unit_id.eq.${familyId},is_predefined.eq.true`
+        : `is_predefined.eq.true`;
       const response = await supabase
         .from("communication_templates")
         .select("*")
-        .or(`user_id.eq.${userStore.user.id},is_predefined.eq.true`)
+        .or(scopeFilter)
         .order("updated_at", { ascending: false });
       const { data, error: err } = response as {
         data: CommunicationTemplate[] | null;
@@ -188,6 +209,7 @@ export const useCommunicationTemplates = (): {
 
       const newTemplate: CommunicationTemplateInsert = {
         user_id: userStore.user.id,
+        family_unit_id: activeFamily.activeFamilyId?.value ?? undefined,
         name,
         type,
         subject: type === "email" ? subject : undefined,
@@ -233,14 +255,14 @@ export const useCommunicationTemplates = (): {
 
     try {
       // .select() lets us confirm a row was actually updated. A 0-row update
-      // (e.g. editing a non-owned predefined/global row) returns NO Supabase
-      // error, so without this it would silently report false success.
+      // (e.g. editing a predefined/global row, or one outside this family) returns
+      // NO Supabase error, so without this it would silently report false success.
+      // RLS scopes writes to the family; no explicit user_id filter needed.
       const updateResponse =
         (await // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (supabase.from("communication_templates") as any)
           .update(updates)
           .eq("id", id)
-          .eq("user_id", userStore.user.id)
           .select()) as {
           data: CommunicationTemplate[] | null;
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -253,7 +275,7 @@ export const useCommunicationTemplates = (): {
       if (!data || data.length === 0) {
         throw new Error(
           "No template was updated — it may be a read-only built-in " +
-            "template or not owned by you.",
+            "template or belong to another family.",
         );
       }
 
@@ -278,11 +300,11 @@ export const useCommunicationTemplates = (): {
     error.value = null;
 
     try {
+      // RLS scopes deletes to the family; predefined built-ins are blocked by policy.
       const { error: err } = await supabase
         .from("communication_templates")
         .delete()
-        .eq("id", id)
-        .eq("user_id", userStore.user.id);
+        .eq("id", id);
 
       if (err) throw err;
 
