@@ -15,6 +15,11 @@ const state = {
     family_units: { created_by_user_id: string | null } | null;
   }>,
   existingUser: null as object | null,
+  // Spy on users.update(...) so the guardian-consent write on minor acceptance
+  // is observable. Returns a chainable .eq() to match the handler's call shape.
+  usersUpdateSpy: vi.fn((_payload: unknown) => ({
+    eq: () => Promise.resolve({ error: null }),
+  })),
   existingMember: null as object | null,
   inviterProfile: { full_name: "Alice Smith" },
   family: { family_name: "Smith Family" } as {
@@ -121,6 +126,7 @@ vi.mock("~/server/utils/supabase", () => ({
               single: () =>
                 Promise.resolve({ data: state.inviterProfile, error: null }),
             }),
+          update: state.usersUpdateSpy,
         };
       }
       if (table === "family_units") {
@@ -319,13 +325,28 @@ describe("POST /api/family/invite/[token]/accept", () => {
     Date.now() + 7 * 24 * 60 * 60 * 1000,
   ).toISOString();
 
+  // A DOB ~15 years ago → a minor (13–17) whose acceptance must record consent.
+  const minorDob = new Date(
+    Date.now() - 15 * 365.25 * 24 * 60 * 60 * 1000,
+  )
+    .toISOString()
+    .split("T")[0];
+  // A DOB ~20 years ago → an adult; no guardian consent should be recorded.
+  const adultDob = new Date(
+    Date.now() - 20 * 365.25 * 24 * 60 * 60 * 1000,
+  )
+    .toISOString()
+    .split("T")[0];
+
   beforeEach(() => {
     state.userId = "accepting-user-id";
     state.userEmail = "invited@example.com";
     state.existingMember = null;
+    state.existingUser = null;
     state.invitation = {
       id: "invite-abc",
       family_unit_id: "family-123",
+      invited_by: "inviting-parent-id",
       invited_email: "invited@example.com",
       role: "parent",
       status: "pending",
@@ -336,6 +357,9 @@ describe("POST /api/family/invite/[token]/accept", () => {
       pending_player_details: null,
     };
     state.familyMemberInsertSpy = vi.fn(() => Promise.resolve({ error: null }));
+    state.usersUpdateSpy = vi.fn((_payload: unknown) => ({
+      eq: () => Promise.resolve({ error: null }),
+    }));
   });
 
   it("creates family_member record and marks invitation accepted", async () => {
@@ -413,5 +437,44 @@ describe("POST /api/family/invite/[token]/accept", () => {
         position: "Midfielder",
       },
     });
+  });
+
+  it("records guardian consent when a minor (13-17) accepts a player invite", async () => {
+    state.invitation = { ...state.invitation!, role: "player" };
+    state.existingUser = { date_of_birth: minorDob };
+    const { default: handler } =
+      await import("~/server/api/family/invite/[token]/accept.post");
+    await handler({} as Parameters<typeof handler>[0]);
+
+    expect(state.usersUpdateSpy).toHaveBeenCalledTimes(1);
+    expect(state.usersUpdateSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        guardian_consent_at: expect.any(String),
+        // Consent is attributed to the inviting parent/guardian.
+        guardian_consent_by: "inviting-parent-id",
+        guardian_consent_terms_version: expect.anything(),
+      }),
+    );
+  });
+
+  it("does NOT record guardian consent when an adult accepts a player invite", async () => {
+    state.invitation = { ...state.invitation!, role: "player" };
+    state.existingUser = { date_of_birth: adultDob };
+    const { default: handler } =
+      await import("~/server/api/family/invite/[token]/accept.post");
+    await handler({} as Parameters<typeof handler>[0]);
+
+    expect(state.usersUpdateSpy).not.toHaveBeenCalled();
+  });
+
+  it("does NOT record guardian consent for a parent-role invite", async () => {
+    // role stays "parent"; even a minor DOB must not trigger the consent write,
+    // because the consent branch only runs for player-role acceptances.
+    state.existingUser = { date_of_birth: minorDob };
+    const { default: handler } =
+      await import("~/server/api/family/invite/[token]/accept.post");
+    await handler({} as Parameters<typeof handler>[0]);
+
+    expect(state.usersUpdateSpy).not.toHaveBeenCalled();
   });
 });
