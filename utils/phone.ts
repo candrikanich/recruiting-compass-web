@@ -8,6 +8,14 @@
 
 const E164_US = /^\+1\d{10}$/;
 
+/**
+ * Max characters for a coach outreach text. 480 ≈ 3 SMS segments — Messages
+ * concatenates multipart texts natively, so legitimately long multi-event
+ * templates can send. Matches iOS `QuickCommunicationViewModel.textLimit`
+ * (raised from the old one-segment 160 for web/iOS parity).
+ */
+export const SMS_TEXT_LIMIT = 480;
+
 /** Digits only, with a leading US country code stripped when present. */
 export function nationalDigits(input: string): string {
   const digits = input.replace(/\D/g, "");
