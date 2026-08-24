@@ -1,6 +1,5 @@
 import { ref, computed, watch } from "vue";
 import { usePreferenceManager } from "~/composables/usePreferenceManager";
-import { useAppToast } from "~/composables/useAppToast";
 import { useSportsPositionLookup } from "~/composables/useSportsPositionLookup";
 import { useAutoSave } from "~/composables/useAutoSave";
 import {
@@ -10,12 +9,26 @@ import {
   normalizePositions as normalizePositionsForSport,
 } from "~/utils/positions/canonical";
 import { formatPhoneDisplay, toStoredPhone } from "~/utils/phone";
-import { normalizeHandle, type SocialPlatform } from "~/utils/social";
 import {
   calculateProfileCompleteness,
   isHomeLocationPresent,
 } from "~/utils/profileCompletenessCalculation";
 import { useVideoLinks } from "~/composables/useVideoLinks";
+import { useCoreCourses } from "~/composables/useCoreCourses";
+import {
+  useTravelTeams,
+  buildLegacyTravelTeam,
+} from "~/composables/useTravelTeams";
+import { useSocialHandles } from "~/composables/useSocialHandles";
+import {
+  BATS_OPTIONS,
+  THROWS_OPTIONS,
+  CAMPUS_SIZE_OPTIONS,
+  GENDER_OPTIONS,
+  COST_SENSITIVITY_OPTIONS,
+  SOCIAL_INPUTS,
+  GRADE_LEVELS,
+} from "~/utils/playerDetails/formOptions";
 import type { PlayerDetails, TravelTeam } from "~/types/models";
 
 /**
@@ -31,38 +44,7 @@ export function usePlayerDetailsForm() {
     getHomeLocation,
   } = usePreferenceManager();
   const { links: videoLinks, load: loadVideoLinks } = useVideoLinks();
-  const { showToast } = useAppToast();
   const { commonSports, getPositionsBySport } = useSportsPositionLookup();
-
-  const BATS_OPTIONS = [
-    { value: "R", label: "Right" },
-    { value: "L", label: "Left" },
-    { value: "S", label: "Switch" },
-  ] as const;
-
-  const THROWS_OPTIONS = [
-    { value: "R", label: "Right" },
-    { value: "L", label: "Left" },
-  ] as const;
-
-  const CAMPUS_SIZE_OPTIONS = [
-    { value: "small" as const, label: "Small (<5K)" },
-    { value: "medium" as const, label: "Mid (5K–25K)" },
-    { value: "large" as const, label: "Large (25K+)" },
-  ];
-
-  const GENDER_OPTIONS = [
-    { value: "male" as const, label: "Male" },
-    { value: "female" as const, label: "Female" },
-    { value: "other" as const, label: "Other" },
-    { value: "prefer_not_to_say" as const, label: "Prefer not to say" },
-  ];
-
-  const COST_SENSITIVITY_OPTIONS = [
-    { value: "high" as const, label: "High" },
-    { value: "medium" as const, label: "Medium" },
-    { value: "low" as const, label: "Low" },
-  ];
 
   const heightFeet = ref<number | undefined>(undefined);
   const heightInches = ref<number | undefined>(undefined);
@@ -176,6 +158,14 @@ export function usePlayerDetailsForm() {
     },
   });
 
+  // List-editing + social-handle concerns operate on the shared form + autosave.
+  const { newCourseInput, addCourse, removeCourse } = useCoreCourses(
+    form,
+    triggerSave,
+  );
+  const { addTravelTeam, removeTravelTeam } = useTravelTeams(form, triggerSave);
+  const { handleSocialBlur } = useSocialHandles(form, triggerSave);
+
   watch(
     () => form.value.primary_sport,
     (sport, previousSport) => {
@@ -240,136 +230,6 @@ export function usePlayerDetailsForm() {
     const [item] = list.splice(index, 1);
     list.splice(target, 0, item);
   };
-
-  const newCourseInput = ref("");
-
-  const addCourse = () => {
-    const trimmed = newCourseInput.value.trim();
-    if (!trimmed || form.value.core_courses?.includes(trimmed)) return;
-    form.value.core_courses = [...(form.value.core_courses ?? []), trimmed];
-    newCourseInput.value = "";
-    triggerSave();
-  };
-
-  const removeCourse = (idx: number) => {
-    form.value.core_courses = (form.value.core_courses ?? []).filter(
-      (_, i) => i !== idx,
-    );
-    triggerSave();
-  };
-
-  const buildLegacyTravelTeam = (details: PlayerDetails): TravelTeam[] => {
-    if (
-      details.travel_team_year === undefined &&
-      !details.travel_team_name &&
-      !details.travel_team_coach
-    ) {
-      return [];
-    }
-    return [
-      {
-        year: details.travel_team_year,
-        name: details.travel_team_name ?? "",
-        coach: details.travel_team_coach ?? "",
-      },
-    ];
-  };
-
-  const addTravelTeam = () => {
-    form.value.travel_teams = [
-      ...(form.value.travel_teams ?? []),
-      { year: undefined, name: "", coach: "" },
-    ];
-  };
-
-  const removeTravelTeam = (idx: number) => {
-    form.value.travel_teams = (form.value.travel_teams ?? []).filter(
-      (_, i) => i !== idx,
-    );
-    triggerSave();
-  };
-
-  const SOCIAL_PLATFORMS: Record<string, SocialPlatform | null> = {
-    twitter_handle: "twitter",
-    instagram_handle: "instagram",
-    tiktok_handle: "tiktok",
-    facebook_url: null,
-  };
-
-  function handleSocialBlur(key: string, value: string) {
-    const platform = SOCIAL_PLATFORMS[key];
-    if (!platform) return;
-
-    const { handle, isShortUrl } = normalizeHandle(value, platform);
-    (form.value as Record<string, unknown>)[key] = handle;
-
-    if (isShortUrl) {
-      showToast(
-        "Short links can't be used as handles — enter your username directly.",
-        "warning",
-      );
-    }
-
-    triggerSave();
-  }
-
-  const socialInputs: {
-    key: keyof PlayerDetails;
-    label: string;
-    prefix?: string;
-    placeholder: string;
-  }[] = [
-    {
-      key: "twitter_handle",
-      label: "Twitter / X",
-      prefix: "@",
-      placeholder: "username",
-    },
-    {
-      key: "instagram_handle",
-      label: "Instagram",
-      prefix: "@",
-      placeholder: "username",
-    },
-    {
-      key: "tiktok_handle",
-      label: "TikTok",
-      prefix: "@",
-      placeholder: "username",
-    },
-    {
-      key: "facebook_url",
-      label: "Facebook URL",
-      placeholder: "https://facebook.com/...",
-    },
-  ];
-
-  const gradeLevels = [
-    {
-      key: "9",
-      label: "9th Grade (Freshman)",
-      teamKey: "ninth_grade_team",
-      coachKey: "ninth_grade_coach",
-    },
-    {
-      key: "10",
-      label: "10th Grade (Sophomore)",
-      teamKey: "tenth_grade_team",
-      coachKey: "tenth_grade_coach",
-    },
-    {
-      key: "11",
-      label: "11th Grade (Junior)",
-      teamKey: "eleventh_grade_team",
-      coachKey: "eleventh_grade_coach",
-    },
-    {
-      key: "12",
-      label: "12th Grade (Senior)",
-      teamKey: "twelfth_grade_team",
-      coachKey: "twelfth_grade_coach",
-    },
-  ] as const;
 
   const load = async () => {
     await Promise.all([loadAllPreferences(), loadVideoLinks()]);
@@ -437,8 +297,8 @@ export function usePlayerDetailsForm() {
     addTravelTeam,
     removeTravelTeam,
     handleSocialBlur,
-    socialInputs,
-    gradeLevels,
+    socialInputs: SOCIAL_INPUTS,
+    gradeLevels: GRADE_LEVELS,
     BATS_OPTIONS,
     THROWS_OPTIONS,
     CAMPUS_SIZE_OPTIONS,
