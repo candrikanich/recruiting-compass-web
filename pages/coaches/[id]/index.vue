@@ -315,6 +315,15 @@ const handleOpenInstagram = () => {
   void logSocialDm();
 };
 
+// School-wide refresh (not coach-filtered): the metrics panel ranks this coach
+// against the school's other coaches, while the log/recent list filter by coach
+// in-page. No-op for a coach without a school.
+const refreshSchoolInteractions = async (): Promise<void> => {
+  if (coach.value?.school_id) {
+    await fetchInteractions({ schoolId: coach.value.school_id });
+  }
+};
+
 // Best-effort: opening a social profile is a hand-off, so like mailto/sms this logs
 // on click. createInteraction is player-role + family gated, so a parent-viewed
 // coach simply won't log — never surface that as an error.
@@ -325,11 +334,7 @@ async function logSocialDm(): Promise<void> {
       ...socialDmInteraction(coach.value),
       occurred_at: new Date().toISOString(),
     });
-    if (coach.value.school_id) {
-      // School-wide (not coach-filtered): the metrics panel ranks this coach
-      // against the school's other coaches; the log/recent list filter by coach.
-      await fetchInteractions({ schoolId: coach.value.school_id });
-    }
+    await refreshSchoolInteractions();
   } catch {
     // swallow — logging is best-effort
   }
@@ -346,12 +351,7 @@ const handleCoachInteractionLogged = async (interactionData: {
       if (updatedCoach) {
         coach.value = updatedCoach;
       }
-
-      if (coach.value?.school_id) {
-        // School-wide (not coach-filtered): the metrics panel ranks this coach
-      // against the school's other coaches; the log/recent list filter by coach.
-      await fetchInteractions({ schoolId: coach.value.school_id });
-      }
+      await refreshSchoolInteractions();
     };
 
     await handleInteractionLogged(interactionData as any, refreshData);
