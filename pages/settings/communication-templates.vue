@@ -74,7 +74,7 @@
                 : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50',
             ]"
           >
-            {{ type.charAt(0).toUpperCase() + type.slice(1) }}
+            {{ typeLabel(type) }}
             ({{
               templates.filter((t: CommunicationTemplate) => t.type === type)
                 .length
@@ -101,10 +101,7 @@
               <div class="flex-1">
                 <h3 class="font-bold text-gray-900">{{ template.name }}</h3>
                 <p class="mt-1 text-xs text-gray-500">
-                  {{
-                    template.type.charAt(0).toUpperCase() +
-                    template.type.slice(1)
-                  }}
+                  {{ typeLabel(template.type) }}
                   {{
                     template.created_at
                       ? ` • ${formatDate(template.created_at)}`
@@ -150,8 +147,18 @@ definePageMeta({
 
 const { templates, loadUserTemplates } = useCommunicationTemplates();
 
-const templateTypes = ["email", "text", "twitter"] as const;
+const templateTypes = ["email", "message", "phone_script", "social"] as const;
 type TemplateType = (typeof templateTypes)[number];
+
+const TYPE_LABELS: Record<string, string> = {
+  email: "Email",
+  message: "Text",
+  phone_script: "Phone Script",
+  social: "Social",
+};
+
+const typeLabel = (type: string): string =>
+  TYPE_LABELS[type] ?? type.charAt(0).toUpperCase() + type.slice(1);
 
 const activeTab = ref<"list" | "create">("list");
 const filterType = ref<TemplateType | null>(null);

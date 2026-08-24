@@ -252,6 +252,7 @@ export const useTemplateResolver = () => {
         events: entities.event,
       },
       prefs: athleteCtx.prefs,
+      locationPrefs: athleteCtx.locationPrefs,
       metrics: athleteCtx.metrics,
       derived: athleteCtx.derived,
       authored,

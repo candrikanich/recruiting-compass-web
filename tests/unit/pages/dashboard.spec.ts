@@ -1263,128 +1263,6 @@ describe("Dashboard Page Logic", () => {
     });
   });
 
-  describe("useRecruitingPacket Integration", () => {
-    const createMockRecruitingPacket = (
-      overrides: Partial<{
-        hasGeneratedPacket: boolean;
-      }> = {},
-    ) => ({
-      hasGeneratedPacket: ref(overrides.hasGeneratedPacket ?? false),
-      generatePacket: vi.fn().mockResolvedValue({
-        html: "<html>packet</html>",
-        filename: "packet.html",
-        data: {},
-      }),
-      openPacketPreview: vi.fn().mockResolvedValue(undefined),
-      resetPacket: vi.fn(),
-      loading: ref(false),
-      error: ref<string | null>(null),
-    });
-
-    const createMockToast = () => ({
-      showToast: vi.fn(),
-    });
-
-    describe("handleGeneratePacket", () => {
-      const executeHandleGeneratePacket = async (params: {
-        mockPacket: ReturnType<typeof createMockRecruitingPacket>;
-        mockToast: ReturnType<typeof createMockToast>;
-      }) => {
-        const recruitingPacketLoading = ref(false);
-        const recruitingPacketError = ref<string | null>(null);
-
-        recruitingPacketLoading.value = true;
-        recruitingPacketError.value = null;
-
-        try {
-          await params.mockPacket.openPacketPreview();
-          params.mockToast.showToast(
-            "Recruiting packet generated successfully!",
-            "success",
-          );
-        } catch (err) {
-          const message =
-            err instanceof Error
-              ? err.message
-              : "Failed to generate recruiting packet";
-          recruitingPacketError.value = message;
-          params.mockToast.showToast(message, "error");
-        } finally {
-          recruitingPacketLoading.value = false;
-        }
-
-        return { recruitingPacketLoading, recruitingPacketError };
-      };
-
-      it("calls openPacketPreview on the composable", async () => {
-        const mockPacket = createMockRecruitingPacket();
-        const mockToast = createMockToast();
-
-        await executeHandleGeneratePacket({ mockPacket, mockToast });
-
-        expect(mockPacket.openPacketPreview).toHaveBeenCalledOnce();
-      });
-
-      it("shows success toast after successful generation", async () => {
-        const mockPacket = createMockRecruitingPacket();
-        const mockToast = createMockToast();
-
-        await executeHandleGeneratePacket({ mockPacket, mockToast });
-
-        expect(mockToast.showToast).toHaveBeenCalledWith(
-          "Recruiting packet generated successfully!",
-          "success",
-        );
-      });
-
-      it("sets loading to false after successful generation", async () => {
-        const mockPacket = createMockRecruitingPacket();
-        const mockToast = createMockToast();
-
-        const { recruitingPacketLoading } = await executeHandleGeneratePacket({
-          mockPacket,
-          mockToast,
-        });
-
-        expect(recruitingPacketLoading.value).toBe(false);
-      });
-
-      it("sets error and shows error toast when openPacketPreview fails", async () => {
-        const mockPacket = createMockRecruitingPacket();
-        mockPacket.openPacketPreview.mockRejectedValue(
-          new Error("Preview window blocked"),
-        );
-        const mockToast = createMockToast();
-
-        const { recruitingPacketError } = await executeHandleGeneratePacket({
-          mockPacket,
-          mockToast,
-        });
-
-        expect(recruitingPacketError.value).toBe("Preview window blocked");
-        expect(mockToast.showToast).toHaveBeenCalledWith(
-          "Preview window blocked",
-          "error",
-        );
-      });
-
-      it("handles non-Error thrown values with fallback message", async () => {
-        const mockPacket = createMockRecruitingPacket();
-        mockPacket.openPacketPreview.mockRejectedValue("string error");
-        const mockToast = createMockToast();
-
-        const { recruitingPacketError } = await executeHandleGeneratePacket({
-          mockPacket,
-          mockToast,
-        });
-
-        expect(recruitingPacketError.value).toBe(
-          "Failed to generate recruiting packet",
-        );
-      });
-    });
-  });
-
   describe("useFamilyContext Integration (Parent Mode)", () => {
     type AccessibleFamily = {
       familyUnitId: string;
@@ -2127,7 +2005,7 @@ describe("Dashboard Page Logic", () => {
         }
       };
 
-      it("handles recruiting packet API failure gracefully", async () => {
+      it("handles a network API failure gracefully", async () => {
         const errorMessages: string[] = [];
 
         const result = await simulateNetworkFetch({

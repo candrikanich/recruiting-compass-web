@@ -73,13 +73,22 @@ test.describe("Athlete switcher — memory soak", () => {
       }
       if (!u) return;
 
+      // Graduation year is the latest allowed (2040) on purpose. This 2nd
+      // athlete is added to the SHARED parent@test.com family and never removed,
+      // so it is visible to sibling specs (e.g. profile-edit-restrictions) that
+      // resolve "the parent's athlete". The server resolves a multi-athlete
+      // parent to the athlete closest to graduation (getLinkedAthleteId); the
+      // latest year keeps this sport-less soak athlete from ever becoming that
+      // default and starving those specs of the real, sport-seeded
+      // player@test.com (grad 2028). Must stay > player@test.com's year and
+      // within the users.graduation_year_range check (2024–2040).
       await supabase.from("users").upsert(
         {
           id: u.id,
           email: ATHLETE2.email,
           full_name: ATHLETE2.displayName,
           role: "player",
-          graduation_year: 2027,
+          graduation_year: 2040,
         },
         { onConflict: "id" },
       );

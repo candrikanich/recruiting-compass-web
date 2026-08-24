@@ -446,6 +446,7 @@ export type Database = {
           contact_window: string;
           created_at: string | null;
           description: string | null;
+          family_unit_id: string | null;
           id: string;
           is_favorite: boolean | null;
           is_predefined: boolean | null;
@@ -469,6 +470,7 @@ export type Database = {
           contact_window?: string;
           created_at?: string | null;
           description?: string | null;
+          family_unit_id?: string | null;
           id?: string;
           is_favorite?: boolean | null;
           is_predefined?: boolean | null;
@@ -492,6 +494,7 @@ export type Database = {
           contact_window?: string;
           created_at?: string | null;
           description?: string | null;
+          family_unit_id?: string | null;
           id?: string;
           is_favorite?: boolean | null;
           is_predefined?: boolean | null;

@@ -250,12 +250,11 @@
 
             <!-- Terms and Conditions -->
             <div class="rounded-lg border border-slate-200 bg-slate-50 p-4">
-              <label class="flex cursor-pointer items-start gap-3">
-                <input
-                  v-model="agreeToTerms"
-                  type="checkbox"
-                  class="mt-1 rounded-sm border-slate-300 text-blue-600 focus:ring-blue-500"
-                />
+              <DesignSystemFormAnimatedCheck
+                v-model="agreeToTerms"
+                size="sm"
+                class="items-start"
+              >
                 <span class="text-sm text-slate-700">
                   I agree to the
                   <NuxtLink
@@ -270,7 +269,7 @@
                     >Privacy Policy</NuxtLink
                   >
                 </span>
-              </label>
+              </DesignSystemFormAnimatedCheck>
             </div>
 
             <!-- Submit -->

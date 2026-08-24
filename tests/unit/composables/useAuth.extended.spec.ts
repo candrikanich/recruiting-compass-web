@@ -434,4 +434,54 @@ describe("useAuth - Extended Error Handling for Login", () => {
       expect(auth.session.value).toEqual(mockSession);
     });
   });
+
+  describe("Signup metadata", () => {
+    it("passes role and full_name into supabase.auth.signUp user metadata", async () => {
+      mockAuth.signUp.mockResolvedValue({
+        data: { user: mockUser, session: null },
+        error: null,
+      });
+
+      const auth = useAuth();
+      await auth.signup("New@Example.com", "SecurePass123", "New Player", "player");
+
+      expect(mockAuth.signUp).toHaveBeenCalledTimes(1);
+      const params = mockAuth.signUp.mock.calls[0][0];
+      // Email is normalized (trimmed + lowercased) before hitting Supabase.
+      expect(params.email).toBe("new@example.com");
+      expect(params.password).toBe("SecurePass123");
+      expect(params.options.data).toMatchObject({
+        role: "player",
+        full_name: "New Player",
+      });
+    });
+
+    it("omits the options block entirely when no role or name is given", async () => {
+      mockAuth.signUp.mockResolvedValue({
+        data: { user: mockUser, session: null },
+        error: null,
+      });
+
+      const auth = useAuth();
+      await auth.signup("solo@example.com", "SecurePass123");
+
+      const params = mockAuth.signUp.mock.calls[0][0];
+      expect(params.options).toBeUndefined();
+    });
+
+    it("surfaces a signup error and sets error state", async () => {
+      const signUpError = new Error("User already registered");
+      mockAuth.signUp.mockResolvedValue({
+        data: { user: null, session: null },
+        error: signUpError,
+      });
+
+      const auth = useAuth();
+      await expect(
+        auth.signup("dupe@example.com", "SecurePass123", "Dupe", "parent"),
+      ).rejects.toThrow("User already registered");
+      expect(auth.error.value).toEqual(signUpError);
+      expect(auth.loading.value).toBe(false);
+    });
+  });
 });

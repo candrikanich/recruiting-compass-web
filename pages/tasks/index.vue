@@ -163,13 +163,6 @@ const filteredTasks = computed(() => {
   });
 });
 
-const taskCheckboxClass = (taskId: string) => [
-  "mt-1 w-5 h-5 text-blue-600 rounded-sm shrink-0",
-  isViewingAsParent.value || isTaskLocked(taskId)
-    ? "opacity-50 cursor-not-allowed"
-    : "cursor-pointer",
-];
-
 const taskCheckboxTitle = (taskId: string): string => {
   if (isViewingAsParent.value)
     return "Parents can view tasks but cannot mark them complete";
@@ -502,22 +495,21 @@ const onUrgencyFilterChange = () => {
           <div class="p-4">
             <div class="flex items-start gap-4">
               <!-- Checkbox -->
-              <input
-                type="checkbox"
-                :data-testid="`task-checkbox-${task.id}`"
-                class="task-checkbox"
-                :checked="task.athlete_task?.status === 'completed'"
-                :disabled="isViewingAsParent || isTaskLocked(task.id)"
-                @change="
-                  handleToggleTask(
-                    task.id,
-                    task.athlete_task?.status || 'not_started',
-                  )
-                "
-                :class="taskCheckboxClass(task.id)"
-                :title="taskCheckboxTitle(task.id)"
-                :aria-label="taskCheckboxAriaLabel(task)"
-              />
+              <span class="shrink-0" :title="taskCheckboxTitle(task.id)">
+                <DesignSystemFormAnimatedCheck
+                  size="sm"
+                  :data-testid="`task-checkbox-${task.id}`"
+                  :model-value="task.athlete_task?.status === 'completed'"
+                  :disabled="isViewingAsParent || isTaskLocked(task.id)"
+                  :aria-label="taskCheckboxAriaLabel(task)"
+                  @update:model-value="
+                    handleToggleTask(
+                      task.id,
+                      task.athlete_task?.status || 'not_started',
+                    )
+                  "
+                />
+              </span>
 
               <!-- Task Info -->
               <div class="min-w-0 flex-1">
