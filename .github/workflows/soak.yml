@@ -57,6 +57,9 @@ jobs:
         env:
           CI: true
           SOAK: "1"
+          # TEMP: dump net-listeners-by-type from athlete-switcher soak to
+          # pinpoint the per-switch leak. Remove with the diagnostic block.
+          SOAK_LC: "1"
           # Soak suite runs against the dedicated test Supabase project, never prod.
           NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.TEST_SUPABASE_URL }}
           NUXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.TEST_SUPABASE_ANON_KEY }}
