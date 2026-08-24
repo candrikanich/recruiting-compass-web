@@ -157,11 +157,6 @@
               @toggle="whatMattersCollapsed = !whatMattersCollapsed"
               @priority-click="handlePriorityClick"
             />
-            <UpcomingMilestones
-              :milestones="upcomingMilestones"
-              :collapsed="milestonesCollapsed"
-              @toggle="milestonesCollapsed = !milestonesCollapsed"
-            />
             <RecruitingCalendar
               :graduation-year="athleteGraduationYear"
               :sport="athleteSport"
@@ -227,13 +222,12 @@ import TimelineStatPills from "~/components/Timeline/TimelineStatPills.vue";
 import WhatMattersNow from "~/components/Timeline/WhatMattersNow.vue";
 import CommonWorries from "~/components/Timeline/CommonWorries.vue";
 import WhatNotToStress from "~/components/Timeline/WhatNotToStress.vue";
-import UpcomingMilestones from "~/components/Timeline/UpcomingMilestones.vue";
 import RecruitingCalendar from "~/components/Dashboard/RecruitingCalendar.vue";
 import { getWhatMattersNow } from "~/utils/whatMattersNow";
 import { getCommonWorries } from "~/utils/parentWorries";
 import { getReassuranceMessages } from "~/utils/parentReassurance";
 import { createClientLogger } from "~/utils/logger";
-import { getUpcomingMilestones, NO_SPORT_FALLBACK, type AppSport } from "~/utils/recruitingCalendar";
+import { NO_SPORT_FALLBACK, type AppSport } from "~/utils/recruitingCalendar";
 import { usePreferenceManager } from "~/composables/usePreferenceManager";
 
 const logger = createClientLogger("Timeline");
@@ -275,7 +269,6 @@ const seniorExpanded = ref(false);
 
 // Guidance sidebar collapse state
 const whatMattersCollapsed = ref(false);
-const milestonesCollapsed = ref(true);
 const worriesCollapsed = ref(true);
 const stressCollapsed = ref(true);
 
@@ -347,17 +340,6 @@ const athleteGender = computed<string | null>(
 );
 const athleteGraduationYear = computed(
   () => getPlayerDetails()?.graduation_year,
-);
-
-const upcomingMilestones = computed(() =>
-  getUpcomingMilestones({
-    currentDate: new Date(),
-    sport: athleteSport.value,
-    division: "D1",
-    graduationYear: athleteGraduationYear.value,
-    limit: 5,
-    opts: { gender: athleteGender.value },
-  }),
 );
 
 // Initialize expanded state based on current phase

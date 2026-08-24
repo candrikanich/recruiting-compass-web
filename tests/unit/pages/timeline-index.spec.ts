@@ -162,12 +162,16 @@ describe("pages/timeline/index.vue", () => {
       const wrapper = mountPage();
       await wrapper.vm.$nextTick();
 
+      // The resolver call now lives in the embedded <RecruitingCalendar>
+      // (single milestone-row source) rather than a page-level computed, so
+      // opts also carries the calendar's footballSubdivision default. Athlete's
+      // real sport/gender/graduation year must still flow through.
       expect(getUpcomingMilestonesSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           sport: "Softball",
           division: "D1",
           graduationYear: 2027,
-          opts: { gender: "female" },
+          opts: expect.objectContaining({ gender: "female" }),
         }),
       );
     });
