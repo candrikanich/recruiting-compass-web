@@ -17,6 +17,16 @@ const h = vi.hoisted(() => {
     },
     { key: "coachSalutation", source_type: "computed", source_path: null },
     { key: "daysSinceContact", source_type: "computed", source_path: null },
+    {
+      key: "hometownCity",
+      source_type: "column",
+      source_path: "pref:location.city",
+    },
+    {
+      key: "hometownState",
+      source_type: "column",
+      source_path: "pref:location.state",
+    },
   ];
   const RESULTS: Record<string, { data: unknown; error: unknown }> = {
     template_variables: { data: registryRows, error: null },
@@ -169,6 +179,27 @@ describe("useTemplateResolver", () => {
       // values map drives the variables panel
       expect(result.values.playerName).toBe("Jordan Ellis");
       expect(result.values.daysSinceContact).toBeUndefined();
+    });
+
+    it("carries locationPrefs so hometown city/state resolve from Settings home location", async () => {
+      const resolver = useTemplateResolver();
+      const athleteCtx = {
+        tables: { users: { id: "athlete1" } },
+        locationPrefs: { city: "Dublin", state: "OH" },
+        derived: {},
+      } as unknown as Awaited<
+        ReturnType<typeof resolver.buildAthleteContext>
+      >;
+
+      const result = await resolver.resolveTemplate(
+        { subject: "", body: "{{hometownCity}}, {{hometownState}}" },
+        {},
+        athleteCtx,
+      );
+
+      expect(result.values.hometownCity).toBe("Dublin");
+      expect(result.values.hometownState).toBe("OH");
+      expect(result.body).toBe("Dublin, OH");
     });
 
     it("resolves [[gate|text]] optional spans — no bracket leak into fields", async () => {
