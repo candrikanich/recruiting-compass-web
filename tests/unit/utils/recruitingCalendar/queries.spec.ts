@@ -77,13 +77,55 @@ describe("sport-aware queries", () => {
     expect([...dates].sort((a, b) => a.localeCompare(b))).toEqual(dates);
   });
 
-  it("getUpcomingMilestones respects limit", () => {
+  it("getUpcomingMilestones caps GENERIC milestones at limit but still surfaces sport milestones", () => {
+    // Contract: `limit` caps the generic (SAT/ACT/deadline) bucket only. The
+    // resolved sport calendar's own milestones (signing etc.) always append,
+    // so a near-term generic date is never stolen to make room for a far-off
+    // signing. Total may exceed `limit` by the sport-milestone count.
     const milestones = getUpcomingMilestones({
       sport: "Baseball",
       division: "D1",
-      currentDate: new Date("2026-08-01T00:00:00Z"),
+      currentDate: new Date(2026, 7, 1), // local Aug 1 2026
       limit: 2,
     });
-    expect(milestones.length).toBeLessThanOrEqual(2);
+    const generics = milestones.filter((m) => m.type === "test" || m.type === "deadline");
+    expect(generics.length).toBeLessThanOrEqual(2);
+    // MBA signing (2026-11-11) still present despite only 2 generic slots.
+    expect(milestones.some((m) => m.title.includes("Early Signing Period"))).toBe(true);
+  });
+
+  it("getUpcomingMilestones surfaces a senior's signing date, uncrowded by nearer generic test dates", () => {
+    // Regression: generic SAT/ACT dates in early 2026 used to fill all 5 slots
+    // before Baseball D1's Nov 2026 signing, truncating it out of the list.
+    const currentDate = new Date(2026, 0, 1); // local Jan 1 2026
+    const milestones = getUpcomingMilestones({
+      sport: "Baseball",
+      division: "D1",
+      graduationYear: 2029, // currentYear (2026) + 3 → senior bucket
+      currentDate,
+    });
+    expect(milestones.some((m) => m.type === "signing")).toBe(true);
+    expect(milestones.some((m) => m.title.includes("Early Signing Period"))).toBe(true);
+  });
+
+  it("getUpcomingMilestones surfaces the signing date with no graduationYear (unfiltered)", () => {
+    const milestones = getUpcomingMilestones({
+      sport: "Baseball",
+      division: "D1",
+      currentDate: new Date(2026, 0, 1), // local Jan 1 2026
+    });
+    expect(milestones.some((m) => m.type === "signing")).toBe(true);
+  });
+
+  it("getUpcomingMilestones withholds signing from underclassmen via the grade-type filter", () => {
+    // Sophomore bucket keeps only test/ncaa-period — signing (a sport
+    // milestone) must NOT append for a freshman/sophomore.
+    const milestones = getUpcomingMilestones({
+      sport: "Baseball",
+      division: "D1",
+      graduationYear: 2030, // currentYear (2026) + 4 → underclassman bucket
+      currentDate: new Date(2026, 0, 1),
+    });
+    expect(milestones.some((m) => m.type === "signing")).toBe(false);
   });
 });
