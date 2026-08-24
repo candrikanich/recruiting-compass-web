@@ -592,6 +592,13 @@ export function useQuickCommunication(params: QuickCommunicationParams) {
     );
   };
 
+  // Athlete display name for the missing-info parent-lock note.
+  const athleteName = computed(
+    () =>
+      (athleteCtx.value?.tables?.users?.full_name as string | undefined) ??
+      "your athlete",
+  );
+
   return {
     email,
     text,
@@ -599,6 +606,8 @@ export function useQuickCommunication(params: QuickCommunicationParams) {
     showAddMetricCta,
     showQuestionnairePrompt,
     answerQuestionnaire,
+    canEditProfile,
+    athleteName,
     init,
   };
 }
