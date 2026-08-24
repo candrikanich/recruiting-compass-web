@@ -38,18 +38,12 @@ describe("computeMetricTrends", () => {
     expect(computeMetricTrends([metric("velo", 80, day(1))])).toEqual([]);
   });
 
-  // Direction compares mean(first 3) to mean(last 3). With <= 3 records those
-  // windows fully overlap → always "stable" (documented quirk of the shipped
-  // algorithm; distinguishing direction needs > 3 records). See explicit test
-  // below. The direction tests therefore use 6 records.
+  // Direction compares mean(earliest half) to mean(latest half), non-overlapping
+  // (middle dropped at odd counts), so it resolves from n=2 upward.
   it("marks a rising higher-is-better metric as improving", () => {
     const trend = computeMetricTrends([
       metric("velo", 80, day(1)),
-      metric("velo", 82, day(2)),
-      metric("velo", 84, day(3)),
-      metric("velo", 90, day(4)),
-      metric("velo", 93, day(5)),
-      metric("velo", 96, day(6)),
+      metric("velo", 96, day(2)),
     ])[0];
     expect(trend.type).toBe("velo");
     expect(trend.trend).toBe("improving");
@@ -58,11 +52,7 @@ describe("computeMetricTrends", () => {
   it("marks a falling higher-is-better metric as declining", () => {
     const trend = computeMetricTrends([
       metric("velo", 96, day(1)),
-      metric("velo", 93, day(2)),
-      metric("velo", 90, day(3)),
-      metric("velo", 84, day(4)),
-      metric("velo", 82, day(5)),
-      metric("velo", 80, day(6)),
+      metric("velo", 80, day(2)),
     ])[0];
     expect(trend.trend).toBe("declining");
   });
@@ -70,11 +60,7 @@ describe("computeMetricTrends", () => {
   it("inverts direction for a lower-is-better metric (falling time improves)", () => {
     const trend = computeMetricTrends([
       metric("low_sprint", 7.5, day(1)),
-      metric("low_sprint", 7.4, day(2)),
-      metric("low_sprint", 7.3, day(3)),
-      metric("low_sprint", 7.0, day(4)),
-      metric("low_sprint", 6.9, day(5)),
-      metric("low_sprint", 6.8, day(6)),
+      metric("low_sprint", 6.8, day(2)),
     ])[0];
     expect(trend.trend).toBe("improving");
   });
@@ -82,23 +68,19 @@ describe("computeMetricTrends", () => {
   it("treats within-1% movement as stable", () => {
     const trend = computeMetricTrends([
       metric("velo", 100, day(1)),
-      metric("velo", 100.1, day(2)),
-      metric("velo", 100.2, day(3)),
-      metric("velo", 100.3, day(4)),
-      metric("velo", 100.4, day(5)),
-      metric("velo", 100.5, day(6)),
+      metric("velo", 100.5, day(2)),
     ])[0];
     expect(trend.trend).toBe("stable");
   });
 
-  it("reports stable for <= 3 records regardless of movement (shipped quirk)", () => {
-    // first3 and last3 windows fully overlap at 3 records → no direction.
-    const trend = computeMetricTrends([
+  it("resolves direction at 3 records by dropping the middle", () => {
+    // half = 1 → first=[80], last=[100]; the middle record is ignored.
+    const improving = computeMetricTrends([
       metric("velo", 80, day(1)),
-      metric("velo", 90, day(2)),
+      metric("velo", 999, day(2)), // middle — dropped, must not sway direction
       metric("velo", 100, day(3)),
     ])[0];
-    expect(trend.trend).toBe("stable");
+    expect(improving.trend).toBe("improving");
   });
 
   it("caps values at the last 10 records, chronologically", () => {
