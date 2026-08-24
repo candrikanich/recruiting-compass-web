@@ -6,7 +6,7 @@
 
 import type { FetchOptions } from "ofetch";
 import { useSupabase } from "~/composables/useSupabase";
-import { useCsrf } from "~/composables/useCsrf";
+import { useCsrf, getCsrfCookie } from "~/composables/useCsrf";
 import { useAppToast } from "~/composables/useAppToast";
 import { useUserStore } from "~/stores/user";
 import { FetchError } from "ofetch";
@@ -102,8 +102,10 @@ export const useAuthFetch = () => {
         STATE_CHANGING_METHODS.includes(method)
       ) {
         const { getCsrfToken } = useCsrf();
-        // Invalidate the cached token so getCsrfToken fetches a fresh one
-        const csrfCookie = useCookie("csrf-token");
+        // Invalidate the cached token so getCsrfToken fetches a fresh one.
+        // Use the memoized ref (not a fresh useCookie) so this retry path
+        // doesn't register a leaking cookieStore listener — see useCsrf.
+        const csrfCookie = getCsrfCookie();
         csrfCookie.value = null;
         const freshCsrfToken = await getCsrfToken();
         const retryHeaders = { ...headers, "x-csrf-token": freshCsrfToken };

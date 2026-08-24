@@ -30,14 +30,41 @@ export async function getLinkedAthleteId(
 
   if (!parentMembership?.family_unit_id) return null;
 
-  const { data: playerMembership } = await supabase
+  const { data: playerMembers } = await supabase
     .from("family_members")
     .select("user_id")
     .eq("family_unit_id", parentMembership.family_unit_id)
-    .eq("role", "player")
-    .maybeSingle();
+    .eq("role", "player");
 
-  return playerMembership?.user_id ?? null;
+  const members = (playerMembers ?? []) as Array<{ user_id: string }>;
+  if (members.length === 0) return null;
+  if (members.length === 1) return members[0].user_id;
+
+  // A parent can have several athletes (multi-athlete families). The previous
+  // `.maybeSingle()` errored on >1 row and silently returned null, dropping the
+  // parent to their own (empty) preference row. Resolve deterministically to the
+  // athlete closest to graduation — lowest graduation_year, nulls last, oldest
+  // account as a tiebreak — mirroring the app's default parent athlete pick.
+  const ids = members.map((m) => m.user_id);
+  const { data: athletes } = await supabase
+    .from("users")
+    .select("id, graduation_year, created_at")
+    .in("id", ids);
+
+  const rows = (athletes ?? []) as Array<{
+    id: string;
+    graduation_year: number | null;
+    created_at: string | null;
+  }>;
+  if (rows.length === 0) return ids[0];
+
+  const sorted = [...rows].sort((a, b) => {
+    const ay = a.graduation_year ?? Number.POSITIVE_INFINITY;
+    const by = b.graduation_year ?? Number.POSITIVE_INFINITY;
+    if (ay !== by) return ay - by;
+    return String(a.created_at ?? "").localeCompare(String(b.created_at ?? ""));
+  });
+  return sorted[0].id;
 }
 
 /**

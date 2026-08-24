@@ -132,7 +132,11 @@ export const useDashboardData = () => {
       chunks.push(schoolIds.slice(i, i + CHUNK_SIZE));
     }
 
-    const results = await Promise.all(
+    // Degrade gracefully: one failing chunk must not blank the whole dashboard.
+    // allSettled keeps the chunks that succeeded; a partial failure is a warning,
+    // not a thrown error (which previously took down the entire dashboard load
+    // and logged console errors under heavy/bloated school lists).
+    const settled = await Promise.allSettled(
       chunks.map((chunk) =>
         supabase
           .from("coaches")
@@ -143,13 +147,27 @@ export const useDashboardData = () => {
       ),
     );
 
-    const coachesData: NonNullable<(typeof results)[number]["data"]> = [];
-    for (const { data, error: coachesError } of results) {
-      if (coachesError) {
-        logger.error("Error fetching coaches:", coachesError);
-        throw coachesError;
+    const coachesData: Coach[] = [];
+    let failedChunks = 0;
+    for (const outcome of settled) {
+      if (outcome.status === "rejected") {
+        failedChunks++;
+        logger.warn("Coaches chunk request failed:", outcome.reason);
+        continue;
       }
-      if (data) coachesData.push(...data);
+      const { data, error: coachesError } = outcome.value;
+      if (coachesError) {
+        failedChunks++;
+        logger.warn("Coaches chunk returned an error:", coachesError);
+        continue;
+      }
+      if (data) coachesData.push(...(data as Coach[]));
+    }
+
+    if (failedChunks > 0) {
+      logger.warn(
+        `Dashboard coaches: ${failedChunks}/${chunks.length} chunk(s) failed; showing partial results.`,
+      );
     }
 
     allCoaches.value = coachesData;

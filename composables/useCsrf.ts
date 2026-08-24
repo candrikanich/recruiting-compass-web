@@ -1,8 +1,29 @@
 import { useCookie } from "#app";
+import type { Ref } from "vue";
 import { createClientLogger } from "~/utils/logger";
 
 const CSRF_COOKIE_NAME = "csrf-token";
 const CSRF_HEADER_NAME = "x-csrf-token";
+
+/**
+ * Memoized csrf-token cookie ref.
+ *
+ * `useCsrf()` is invoked per request all over the app — frequently from inside
+ * async actions (task fetches, athlete switches) that have no active Vue effect
+ * scope. Nuxt's `useCookie` registers a `cookieStore` "change" listener on every
+ * call and only cleans it up via `onScopeDispose`; called scope-less, that
+ * listener leaks forever. On a long-lived tab this climbed ~2 listeners per
+ * athlete switch (soak-caught) until the tab degraded.
+ *
+ * The app is SPA-only (`ssr: false`), so a module-scoped ref is one-per-browser
+ * (never shared across users the way an SSR singleton would be). Creating the
+ * cookie ref exactly once means `useCookie`'s listener is registered once, not
+ * per call — killing the leak at its source for every caller.
+ */
+let csrfCookieRef: Ref<string | null | undefined> | null = null;
+export function getCsrfCookie(): Ref<string | null | undefined> {
+  return (csrfCookieRef ??= useCookie<string | null>(CSRF_COOKIE_NAME));
+}
 
 interface _CsrfTokenResponse {
   token: string;
@@ -48,7 +69,7 @@ export function useCsrf(): {
   ) => Promise<unknown>;
   delete: (url: string, options?: FetchOptions) => Promise<unknown>;
 } {
-  const token = useCookie(CSRF_COOKIE_NAME);
+  const token = getCsrfCookie();
 
   /**
    * Fetches or retrieves cached CSRF token from cookie.
