@@ -116,13 +116,9 @@
 
         <!-- Right: persistent sidebar (2 cols) -->
         <aside class="space-y-6 lg:col-span-2" aria-label="Dashboard sidebar">
-          <!-- Recruiting packet pinned to top; Upcoming Events sits directly
-               below it via the eventsSummary-first default right-column order. -->
-          <DashboardRecruitingPacketWidget
-            :recruiting-packet-loading="recruitingPacketLoading"
-            :recruiting-packet-error="recruitingPacketError"
-            @generate-packet="handleGeneratePacket"
-          />
+          <!-- Public profile share link pinned to top; Upcoming Events sits
+               directly below via the eventsSummary-first right-column order. -->
+          <DashboardPublicProfileLinkCard />
 
           <!-- Sport-aware NCAA recruiting calendar (contact periods, key
                dates), same sport/gender source as the dead-period banner
@@ -173,7 +169,6 @@ import { useUserTasks } from "~/composables/useUserTasks";
 import { useSuggestions } from "~/composables/useSuggestions";
 import { useFamilyCtx } from "~/composables/useFamilyCtx";
 import { useViewLogging } from "~/composables/useViewLogging";
-import { useRecruitingPacket } from "~/composables/useRecruitingPacket";
 import { useDashboardData } from "~/composables/useDashboardData";
 import { useDashboardCalculations } from "~/composables/useDashboardCalculations";
 import { usePreferenceManager } from "~/composables/usePreferenceManager";
@@ -185,7 +180,7 @@ import ParentOnboardingBanner from "~/components/Dashboard/ParentOnboardingBanne
 import DashboardTimelineCard from "~/components/Dashboard/DashboardTimelineCard.vue";
 import DashboardStatsCards from "~/components/Dashboard/DashboardStatsCards.vue";
 import DashboardSuggestions from "~/components/Dashboard/DashboardSuggestions.vue";
-import DashboardRecruitingPacketWidget from "~/components/Dashboard/RecruitingPacketWidget.vue";
+import DashboardPublicProfileLinkCard from "~/components/Dashboard/PublicProfileLinkCard.vue";
 import DashboardContactFrequencyWidget from "~/components/Dashboard/ContactFrequencyWidget.vue";
 import DashboardAthleteActivityWidget from "~/components/Dashboard/AthleteActivityWidget.vue";
 import RecruitingCalendar from "~/components/Dashboard/RecruitingCalendar.vue";
@@ -220,7 +215,6 @@ const notificationsComposable = useNotifications();
 const userTasksComposable = useUserTasks();
 const suggestionsComposable = useSuggestions();
 const viewLoggingComposable = useViewLogging();
-const recruitingPacketComposable = useRecruitingPacket();
 
 // Destructure suggestions ref for template auto-unwrapping
 const { dashboardSuggestions } = suggestionsComposable ?? {
@@ -378,8 +372,6 @@ const { isViewingAsParent, parentAccessibleFamilies } = activeFamily;
 
 // Local state
 const user = computed(() => userStore.user);
-const recruitingPacketLoading = ref(false);
-const recruitingPacketError = ref<string | null>(null);
 
 // Determine target user ID (current user or viewed athlete if parent)
 const targetUserId = computed(() => {
@@ -440,24 +432,6 @@ const deleteTask = async (taskId: string) => {
 const handleSuggestionDismiss = async (suggestionId: string) => {
   if (suggestionsComposable) {
     await suggestionsComposable.dismissSuggestion(suggestionId);
-  }
-};
-
-// Recruiting packet event handlers
-const handleGeneratePacket = async () => {
-  recruitingPacketLoading.value = true;
-  recruitingPacketError.value = null;
-
-  try {
-    await recruitingPacketComposable.openPacketPreview();
-    showToast("Recruiting packet generated successfully!", "success");
-  } catch (err) {
-    const message = "Failed to generate recruiting packet";
-    recruitingPacketError.value = message;
-    showToast(message, "error");
-    logger.error("Packet generation error", err);
-  } finally {
-    recruitingPacketLoading.value = false;
   }
 };
 
