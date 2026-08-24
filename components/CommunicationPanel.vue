@@ -6,7 +6,7 @@
         💬 Quick Communication
       </h2>
       <button
-        @click="showTemplateManager = !showTemplateManager"
+        @click="navigateTo('/settings/communication-templates')"
         class="rounded-lg px-3 py-1.5 text-xs font-medium text-blue-600 transition hover:bg-blue-50"
       >
         Manage Templates
@@ -115,67 +115,11 @@
       :can-edit-profile="qc.canEditProfile.value"
       :athlete-name="qc.athleteName.value"
     />
-
-    <!-- Template Manager Modal -->
-    <Teleport to="body">
-      <Transition name="fade">
-        <div
-          v-if="showTemplateManager"
-          class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-          @keydown.escape="handleCloseTemplate"
-        >
-          <div
-            ref="templateDialogRef"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="template-modal-title"
-            class="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-lg"
-          >
-            <div
-              class="flex items-center justify-between border-b border-slate-200 p-6"
-            >
-              <h3
-                id="template-modal-title"
-                class="text-lg font-semibold text-slate-900"
-              >
-                Communication Templates
-              </h3>
-              <button
-                @click="handleCloseTemplate"
-                aria-label="Close template manager"
-                class="text-2xl text-slate-500 transition hover:text-slate-900"
-              >
-                ×
-              </button>
-            </div>
-
-            <div class="p-6">
-              <p class="mb-4 text-sm text-slate-600">
-                Manage your custom communication templates
-              </p>
-              <p class="text-center text-slate-500 py-8 text-sm">
-                Template management coming in next update
-              </p>
-            </div>
-
-            <div class="border-t border-slate-200 p-6">
-              <button
-                @click="handleCloseTemplate"
-                class="w-full rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      </Transition>
-    </Teleport>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch, nextTick } from "vue";
-import { useFocusTrap } from "~/composables/useFocusTrap";
+import { ref } from "vue";
 import { useQuickCommunication } from "~/composables/useQuickCommunication";
 import { formatPhoneDisplay } from "~/utils/phone";
 import { getRoleLabel } from "~/utils/coachLabels";
@@ -210,40 +154,8 @@ qc.init();
 
 const showEmailComposer = ref(false);
 const showTextComposer = ref(false);
-const showTemplateManager = ref(false);
 
 const openInstagram = (): void => {
   window.open(`https://instagram.com/${props.coach.instagram_handle}`, "_blank");
 };
-
-// Template Manager focus trap (composer drawers own their own traps).
-const templateDialogRef = ref<HTMLElement | null>(null);
-const { activate: activateTemplate, deactivate: deactivateTemplate } =
-  useFocusTrap(templateDialogRef);
-
-const handleCloseTemplate = (): void => {
-  deactivateTemplate();
-  showTemplateManager.value = false;
-};
-
-watch(showTemplateManager, async (isOpen) => {
-  if (isOpen) {
-    await nextTick();
-    activateTemplate();
-  } else {
-    deactivateTemplate();
-  }
-});
 </script>
-
-<style scoped>
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.2s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-</style>
