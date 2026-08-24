@@ -7,4 +7,4 @@
  * this path so nothing server-side needs to change; this file just
  * re-exports the shared implementation.
  */
-export * from "~/utils/ncaaRecruitingCalendar";
+export * from "../../utils/ncaaRecruitingCalendar";
