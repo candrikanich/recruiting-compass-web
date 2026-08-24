@@ -161,20 +161,26 @@ describe("GET /api/user/preferences/[category]", () => {
           return {
             select: () => ({
               eq: (col: string, val: string) => ({
-                eq: (roleCol: string, roleVal: string) => ({
-                  maybeSingle: () => {
-                    if (roleVal === "parent") {
-                      return Promise.resolve({
-                        data: { family_unit_id: "family-a" },
-                        error: null,
-                      });
-                    }
-                    return Promise.resolve({
-                      data: { user_id: "athlete-1" },
-                      error: null,
-                    });
-                  },
-                }),
+                eq: (roleCol: string, roleVal: string) => {
+                  if (roleVal === "parent") {
+                    return {
+                      maybeSingle: () =>
+                        Promise.resolve({
+                          data: { family_unit_id: "family-a" },
+                          error: null,
+                        }),
+                    };
+                  }
+                  // Player members: resolver now awaits a list (no maybeSingle).
+                  const list = Promise.resolve({
+                    data: [{ user_id: "athlete-1" }],
+                    error: null,
+                  });
+                  return {
+                    then: (res: (v: unknown) => unknown, rej: (e: unknown) => unknown) =>
+                      list.then(res, rej),
+                  };
+                },
               }),
             }),
           };
@@ -287,18 +293,26 @@ describe("POST /api/user/preferences/[category]", () => {
           return {
             select: () => ({
               eq: () => ({
-                eq: (_roleCol: string, roleVal: string) => ({
-                  maybeSingle: () =>
-                    roleVal === "parent"
-                      ? Promise.resolve({
+                eq: (_roleCol: string, roleVal: string) => {
+                  if (roleVal === "parent") {
+                    return {
+                      maybeSingle: () =>
+                        Promise.resolve({
                           data: { family_unit_id: "family-a" },
                           error: null,
-                        })
-                      : Promise.resolve({
-                          data: { user_id: "athlete-1" },
-                          error: null,
                         }),
-                }),
+                    };
+                  }
+                  // Player members: resolver now awaits a list (no maybeSingle).
+                  const list = Promise.resolve({
+                    data: [{ user_id: "athlete-1" }],
+                    error: null,
+                  });
+                  return {
+                    then: (res: (v: unknown) => unknown, rej: (e: unknown) => unknown) =>
+                      list.then(res, rej),
+                  };
+                },
               }),
             }),
           };

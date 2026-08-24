@@ -4,6 +4,8 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 // fetchCoaches chunks large families instead of building one over-long URL.
 const inCallSizes: number[] = [];
 let chunkError: { message: string } | null = null;
+// 0-based index of a single chunk to fail (partial-failure tests); null = none.
+let failNthChunk: number | null = null;
 
 const mockSupabase = { from: vi.fn() };
 
@@ -19,17 +21,22 @@ const makeIds = (n: number): string[] =>
 beforeEach(() => {
   inCallSizes.length = 0;
   chunkError = null;
+  failNthChunk = null;
   vi.clearAllMocks();
   vi.spyOn(console, "error").mockImplementation(() => {});
+  vi.spyOn(console, "warn").mockImplementation(() => {});
 
   mockSupabase.from.mockImplementation(() => ({
     select: () => ({
       in: (_col: string, vals: string[]) => {
+        const idx = inCallSizes.length;
         inCallSizes.push(vals.length);
+        const errored =
+          chunkError ?? (failNthChunk === idx ? { message: "Bad Request" } : null);
         // One coach per school id so merged count == total ids.
         return Promise.resolve({
-          data: chunkError ? null : vals.map((id) => ({ id: `coach-${id}` })),
-          error: chunkError,
+          data: errored ? null : vals.map((id) => ({ id: `coach-${id}` })),
+          error: errored,
         });
       },
     }),
@@ -66,13 +73,25 @@ describe("useDashboardData.fetchCoaches chunking", () => {
     expect(allCoaches.value).toEqual([]);
   });
 
-  it("throws if any chunk query errors", async () => {
-    chunkError = { message: "Bad Request" };
-    const { fetchCoaches } = useDashboardData();
+  it("degrades gracefully: one failing chunk keeps the successful chunks, no throw", async () => {
+    failNthChunk = 0; // first of two 150-id chunks fails
+    const { fetchCoaches, allCoaches, coachCount } = useDashboardData();
 
-    await expect(fetchCoaches(makeIds(300))).rejects.toMatchObject({
-      message: "Bad Request",
-    });
+    // Must not throw — a partial coaches failure can't blank the dashboard.
+    await expect(fetchCoaches(makeIds(300))).resolves.toBeUndefined();
+
+    // Second chunk's 150 coaches survive; the failed chunk is simply omitted.
+    expect(coachCount.value).toBe(150);
+    expect(allCoaches.value).toHaveLength(150);
+  });
+
+  it("empties coaches without throwing when every chunk errors", async () => {
+    chunkError = { message: "Bad Request" };
+    const { fetchCoaches, allCoaches, coachCount } = useDashboardData();
+
+    await expect(fetchCoaches(makeIds(300))).resolves.toBeUndefined();
+    expect(coachCount.value).toBe(0);
+    expect(allCoaches.value).toEqual([]);
   });
 });
 
