@@ -122,7 +122,9 @@ const sentimentBadgeClass = (sentiment: string): string =>
     </div>
 
     <!-- Filter bar -->
-    <div class="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+    <div
+      class="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)]"
+    >
       <div>
         <label class="mb-1 block text-[11px] font-semibold text-slate-400">Type</label>
         <select
