@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import SchoolLogo from "~/components/School/SchoolLogo.vue";
+import { formatPhoneDisplay, toTelHref } from "~/utils/phone";
 import type { Coach, School } from "~/types/models";
 
 const props = defineProps<{ coach: Coach; school?: School | null }>();
@@ -40,10 +41,10 @@ const fullName = computed(
 
     <a
       v-if="coach.phone"
-      :href="`tel:${coach.phone}`"
+      :href="toTelHref(coach.phone)"
       class="mt-1 block truncate text-[13px] text-slate-600 hover:underline"
     >
-      {{ coach.phone }}
+      {{ formatPhoneDisplay(coach.phone) }}
     </a>
 
     <div
