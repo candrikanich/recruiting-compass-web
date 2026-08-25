@@ -96,6 +96,23 @@
       @blur="validateNotes"
     />
 
+    <!-- Source -->
+    <DesignSystemFormInput
+      v-model="formData.source"
+      label="Source"
+      :disabled="loading"
+      placeholder="e.g., Camp, LinkedIn, Referral"
+      :error="fieldErrors.source"
+      @blur="validateSource"
+    />
+
+    <!-- Tags -->
+    <CoachTagsCard
+      :tags="formData.tags"
+      @add="handleAddTag"
+      @remove="handleRemoveTag"
+    />
+
     <!-- Submit and Cancel buttons -->
     <div class="flex gap-4">
       <button
@@ -127,6 +144,7 @@
 <script setup lang="ts">
 import { reactive, watch, toRefs } from "vue";
 import FormErrorSummary from "~/components/Validation/FormErrorSummary.vue";
+import CoachTagsCard from "~/components/Coach/detail/CoachTagsCard.vue";
 import { useFormValidation } from "~/composables/useFormValidation";
 import { formatPhoneDisplay } from "~/utils/phone";
 import { coachSchema, type CoachInput } from "~/utils/validation/schemas";
@@ -151,6 +169,8 @@ const props = defineProps<{
     twitter_handle?: string;
     instagram_handle?: string;
     notes?: string;
+    source?: string | null;
+    tags?: string[];
   };
 }>();
 
@@ -172,7 +192,19 @@ const formData = reactive({
   twitter_handle: props.initialData?.twitter_handle || "",
   instagram_handle: props.initialData?.instagram_handle || "",
   notes: props.initialData?.notes || "",
+  source: props.initialData?.source || "",
+  tags: [...(props.initialData?.tags || [])],
 });
+
+const handleAddTag = (tag: string) => {
+  if (!formData.tags.includes(tag)) {
+    formData.tags = [...formData.tags, tag];
+  }
+};
+
+const handleRemoveTag = (tag: string) => {
+  formData.tags = formData.tags.filter((t) => t !== tag);
+};
 
 // Watch for changes to initialData from parent
 const { initialData } = toRefs(props);
@@ -190,6 +222,8 @@ watch(
         twitter_handle: newData.twitter_handle ?? formData.twitter_handle,
         instagram_handle: newData.instagram_handle ?? formData.instagram_handle,
         notes: newData.notes ?? formData.notes,
+        source: newData.source ?? formData.source,
+        tags: newData.tags ? [...newData.tags] : formData.tags,
       });
     }
   },
@@ -210,6 +244,7 @@ const validators = {
     instagram_handle: coachSchema.shape.instagram_handle,
   }),
   notes: z.object({ notes: coachSchema.shape.notes }),
+  source: z.object({ source: coachSchema.shape.source }),
 };
 
 const validateRole = async () => {
@@ -258,6 +293,14 @@ const validateInstagram = async () => {
 
 const validateNotes = async () => {
   await validateField("notes", formData.notes, validators.notes.shape.notes);
+};
+
+const validateSource = async () => {
+  await validateField(
+    "source",
+    formData.source,
+    validators.source.shape.source,
+  );
 };
 
 const handleSubmit = async () => {

@@ -178,6 +178,30 @@
               />
             </div>
 
+            <!-- Source -->
+            <div>
+              <label
+                for="source"
+                class="mb-1 block text-sm font-medium text-slate-500"
+              >
+                Source
+              </label>
+              <input
+                id="source"
+                v-model="form.source"
+                type="text"
+                placeholder="e.g., Camp, LinkedIn, Referral"
+                class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2 text-slate-900 focus:ring-2 focus:ring-blue-500/20"
+              />
+            </div>
+
+            <!-- Tags -->
+            <CoachTagsCard
+              :tags="form.tags"
+              @add="handleAddTag"
+              @remove="handleRemoveTag"
+            />
+
             <!-- Actions -->
             <div class="flex gap-4 border-t border-slate-200 pt-4">
               <button
@@ -205,6 +229,7 @@
 <script setup lang="ts">
 import { reactive, ref, watch, toRefs, nextTick } from "vue";
 import { useFocusTrap } from "~/composables/useFocusTrap";
+import CoachTagsCard from "~/components/Coach/detail/CoachTagsCard.vue";
 import type { Coach } from "~/types/models";
 import { createClientLogger } from "~/utils/logger";
 import {
@@ -247,7 +272,19 @@ const form = reactive({
   instagram_handle: props.coach.instagram_handle || "",
   role: props.coach.role,
   notes: props.coach.notes || "",
+  source: props.coach.source || "",
+  tags: [...(props.coach.tags || [])],
 });
+
+const handleAddTag = (tag: string) => {
+  if (!form.tags.includes(tag)) {
+    form.tags = [...form.tags, tag];
+  }
+};
+
+const handleRemoveTag = (tag: string) => {
+  form.tags = form.tags.filter((t) => t !== tag);
+};
 
 // Watch for changes to coach prop and update form
 const { coach } = toRefs(props);
@@ -265,6 +302,8 @@ watch(
         instagram_handle: newCoach.instagram_handle || "",
         role: newCoach.role,
         notes: newCoach.notes || "",
+        source: newCoach.source || "",
+        tags: [...(newCoach.tags || [])],
       });
     }
   },
