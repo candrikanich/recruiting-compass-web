@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import type { Coach } from "~/types/models";
+import SchoolLogo from "~/components/School/SchoolLogo.vue";
+import type { Coach, School } from "~/types/models";
 
-const props = defineProps<{ coach: Coach }>();
+const props = defineProps<{ coach: Coach; school?: School | null }>();
 
 const initials = computed(() => {
   const first = props.coach.first_name?.[0] ?? "";
@@ -17,7 +18,11 @@ const fullName = computed(
 
 <template>
   <section class="rounded-xl border border-slate-200 bg-white p-5 text-center">
+    <div v-if="school" class="mb-3 flex justify-center">
+      <SchoolLogo :school="school" size="xl" />
+    </div>
     <div
+      v-else
       class="mx-auto mb-3 flex h-24 w-24 items-center justify-center rounded-full border-[3px] border-slate-200 bg-slate-100 text-lg font-semibold text-slate-600"
       aria-hidden="true"
     >
