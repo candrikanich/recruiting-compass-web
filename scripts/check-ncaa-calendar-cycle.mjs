@@ -29,16 +29,34 @@ const NEXT_SEASON = "2027-28";
 /** Build the D1 per-sport PDF URLs for a season. Mirrors the real NCAA filenames. */
 export function d1Urls(season) {
   // Most codes follow {season}D1Rec_{CODE}RecruitingCalendar.pdf.
-  const codes = ["MBA", "WSB", "MBB", "WBB", "XCTF", "WVB", "MGO", "MLA", "WLA"];
+  const codes = [
+    "MBA",
+    "WSB",
+    "MBB",
+    "WBB",
+    "XCTF",
+    "WVB",
+    "MGO",
+    "MLA",
+    "WLA",
+  ];
   const urls = codes.map((code) => ({
     code,
     url: `${BUCKET}/${season}/${season}D1Rec_${code}RecruitingCalendar.pdf`,
   }));
   // Football breaks the infix mold: FBS/FCS (no MFB).
-  urls.push({ code: "FBS", url: `${BUCKET}/${season}/${season}D1Rec_FBSRecruitingCalendar.pdf` });
-  urls.push({ code: "FCS", url: `${BUCKET}/${season}/${season}D1Rec_FCSRecruitingCalendar.pdf` });
+  urls.push({
+    code: "FBS",
+    url: `${BUCKET}/${season}/${season}D1Rec_FBSRecruitingCalendar.pdf`,
+  });
+  urls.push({
+    code: "FCS",
+    url: `${BUCKET}/${season}/${season}D1Rec_FCSRecruitingCalendar.pdf`,
+  });
   // The "Other Sports" catch-all uses an EN-DASH (U+2013) in the year in the filename
-  // (verified: the ASCII-hyphen variant 404s).
+  // (verified: the ASCII-hyphen variant 404s). NOTE: this one PDF also carries the
+  // per-sport OTHER_* sub-calendars (soccer/swim/hockey/rowing/field-hockey/wrestling
+  // AND women's gymnastics) — re-transcribing it must refresh all of them.
   const enDashSeason = season.replace("-", "–");
   urls.push({
     code: "Other",
@@ -74,7 +92,9 @@ async function main() {
   console.log(`  transcribed season: ${CURRENT_SEASON}`);
   console.log(`  found ${found.length}/${results.length} published PDFs`);
   for (const r of results) {
-    console.log(`   ${r.status === 200 ? "✓" : "✗"} ${r.code}  (${r.status})  ${r.url}`);
+    console.log(
+      `   ${r.status === 200 ? "✓" : "✗"} ${r.code}  (${r.status})  ${r.url}`,
+    );
   }
 
   const cycleAvailable = season !== CURRENT_SEASON && found.length > 0;

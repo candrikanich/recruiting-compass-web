@@ -24,7 +24,8 @@ export type NcaaCalendarKey =
   | "OTHER_ROWING"
   | "OTHER_FIELDHOCKEY"
   | "OTHER_MWRESTLING"
-  | "OTHER_WWRESTLING";
+  | "OTHER_WWRESTLING"
+  | "OTHER_WGYM";
 
 export type Division = "D1" | "D2" | "D3";
 

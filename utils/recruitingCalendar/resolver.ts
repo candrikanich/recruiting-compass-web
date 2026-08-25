@@ -61,6 +61,9 @@ export const GENDER_SPLIT_SPORTS: Partial<
   Soccer: { men: "OTHER_MSOCCER", women: "OTHER_WSOCCER" },
   "Ice Hockey": { men: "OTHER_MICEHOCKEY", women: "OTHER_WICEHOCKEY" },
   Wrestling: { men: "OTHER_MWRESTLING", women: "OTHER_WWRESTLING" },
+  // Only women's gymnastics has a distinct calendar in the "Other" bundle PDF;
+  // men's gymnastics is folded into "All Other Sports" (generic "Other").
+  Gymnastics: { men: "Other", women: "OTHER_WGYM" },
 };
 
 /**
@@ -108,9 +111,10 @@ export function resolveCalendarKey(
     return single;
   }
 
-  // Any remaining AppSport (currently: Tennis, Water Polo, Gymnastics, Beach
-  // Volleyball) has no published NCAA recruiting calendar and no sport-specific
-  // windows in the "Other" bundle — falls to the generic "Other" default.
+  // Any remaining AppSport (currently: Tennis, Water Polo, Beach Volleyball) has
+  // no published NCAA recruiting calendar and no sport-specific windows in the
+  // "Other" bundle — falls to the generic "Other" default. (Gymnastics is
+  // handled above: women's has its own OTHER_WGYM, men's maps to "Other".)
   return "Other";
 }
 

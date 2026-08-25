@@ -1,5 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { resolveCalendarKey, NO_SPORT_FALLBACK } from "~/utils/recruitingCalendar/resolver";
+import {
+  resolveCalendarKey,
+  NO_SPORT_FALLBACK,
+} from "~/utils/recruitingCalendar/resolver";
 
 describe("resolveCalendarKey", () => {
   it("maps single-calendar sports", () => {
@@ -14,7 +17,9 @@ describe("resolveCalendarKey", () => {
     expect(resolveCalendarKey("Basketball", { gender: "female" })).toBe("WBB");
     expect(resolveCalendarKey("Lacrosse", { gender: "female" })).toBe("WLA");
     expect(resolveCalendarKey("Basketball", { gender: null })).toBe("MBB"); // default men's
-    expect(resolveCalendarKey("Basketball", { gender: "prefer_not_to_say" })).toBe("MBB");
+    expect(
+      resolveCalendarKey("Basketball", { gender: "prefer_not_to_say" }),
+    ).toBe("MBB");
   });
   it("normalizes gender case — a capitalized 'Female' still resolves to the women's calendar", () => {
     expect(resolveCalendarKey("Basketball", { gender: "Female" })).toBe("WBB");
@@ -28,7 +33,9 @@ describe("resolveCalendarKey", () => {
     expect(resolveCalendarKey("Golf", { gender: null })).toBe("MGO");
     expect(resolveCalendarKey("Golf")).toBe("MGO");
     expect(resolveCalendarKey("Golf", { gender: "other" })).toBe("MGO");
-    expect(resolveCalendarKey("Golf", { gender: "prefer_not_to_say" })).toBe("MGO");
+    expect(resolveCalendarKey("Golf", { gender: "prefer_not_to_say" })).toBe(
+      "MGO",
+    );
     expect(resolveCalendarKey("Golf", { gender: "female" })).toBe("Other");
   });
   it("lacrosse: covers the male and no-opts branches (only WLA/female was previously tested)", () => {
@@ -37,10 +44,12 @@ describe("resolveCalendarKey", () => {
   });
   it("football subdivision toggle, default FBS", () => {
     expect(resolveCalendarKey("Football")).toBe("FBS");
-    expect(resolveCalendarKey("Football", { footballSubdivision: "FCS" })).toBe("FCS");
+    expect(resolveCalendarKey("Football", { footballSubdivision: "FCS" })).toBe(
+      "FCS",
+    );
   });
   it("sports without any published NCAA calendar fall to the generic Other default", () => {
-    for (const s of ["Tennis", "Water Polo"] as const) {
+    for (const s of ["Tennis", "Water Polo", "Beach Volleyball"] as const) {
       expect(resolveCalendarKey(s)).toBe("Other");
     }
   });
@@ -53,23 +62,63 @@ describe("resolveCalendarKey", () => {
     expect(resolveCalendarKey("Field Hockey")).toBe("OTHER_FIELDHOCKEY");
   });
   it("Soccer: gender-split sub-keys, default men's", () => {
-    expect(resolveCalendarKey("Soccer", { gender: "male" })).toBe("OTHER_MSOCCER");
-    expect(resolveCalendarKey("Soccer", { gender: "female" })).toBe("OTHER_WSOCCER");
-    expect(resolveCalendarKey("Soccer", { gender: null })).toBe("OTHER_MSOCCER");
-    expect(resolveCalendarKey("Soccer", { gender: "other" })).toBe("OTHER_MSOCCER");
-    expect(resolveCalendarKey("Soccer", { gender: "prefer_not_to_say" })).toBe("OTHER_MSOCCER");
+    expect(resolveCalendarKey("Soccer", { gender: "male" })).toBe(
+      "OTHER_MSOCCER",
+    );
+    expect(resolveCalendarKey("Soccer", { gender: "female" })).toBe(
+      "OTHER_WSOCCER",
+    );
+    expect(resolveCalendarKey("Soccer", { gender: null })).toBe(
+      "OTHER_MSOCCER",
+    );
+    expect(resolveCalendarKey("Soccer", { gender: "other" })).toBe(
+      "OTHER_MSOCCER",
+    );
+    expect(resolveCalendarKey("Soccer", { gender: "prefer_not_to_say" })).toBe(
+      "OTHER_MSOCCER",
+    );
   });
   it("Ice Hockey: gender-split sub-keys, default men's", () => {
-    expect(resolveCalendarKey("Ice Hockey", { gender: "male" })).toBe("OTHER_MICEHOCKEY");
-    expect(resolveCalendarKey("Ice Hockey", { gender: "female" })).toBe("OTHER_WICEHOCKEY");
-    expect(resolveCalendarKey("Ice Hockey", { gender: null })).toBe("OTHER_MICEHOCKEY");
-    expect(resolveCalendarKey("Ice Hockey", { gender: "prefer_not_to_say" })).toBe("OTHER_MICEHOCKEY");
+    expect(resolveCalendarKey("Ice Hockey", { gender: "male" })).toBe(
+      "OTHER_MICEHOCKEY",
+    );
+    expect(resolveCalendarKey("Ice Hockey", { gender: "female" })).toBe(
+      "OTHER_WICEHOCKEY",
+    );
+    expect(resolveCalendarKey("Ice Hockey", { gender: null })).toBe(
+      "OTHER_MICEHOCKEY",
+    );
+    expect(
+      resolveCalendarKey("Ice Hockey", { gender: "prefer_not_to_say" }),
+    ).toBe("OTHER_MICEHOCKEY");
   });
   it("Wrestling: gender-split sub-keys, default men's", () => {
-    expect(resolveCalendarKey("Wrestling", { gender: "male" })).toBe("OTHER_MWRESTLING");
-    expect(resolveCalendarKey("Wrestling", { gender: "female" })).toBe("OTHER_WWRESTLING");
-    expect(resolveCalendarKey("Wrestling", { gender: null })).toBe("OTHER_MWRESTLING");
-    expect(resolveCalendarKey("Wrestling", { gender: "other" })).toBe("OTHER_MWRESTLING");
-    expect(resolveCalendarKey("Wrestling", { gender: "prefer_not_to_say" })).toBe("OTHER_MWRESTLING");
+    expect(resolveCalendarKey("Wrestling", { gender: "male" })).toBe(
+      "OTHER_MWRESTLING",
+    );
+    expect(resolveCalendarKey("Wrestling", { gender: "female" })).toBe(
+      "OTHER_WWRESTLING",
+    );
+    expect(resolveCalendarKey("Wrestling", { gender: null })).toBe(
+      "OTHER_MWRESTLING",
+    );
+    expect(resolveCalendarKey("Wrestling", { gender: "other" })).toBe(
+      "OTHER_MWRESTLING",
+    );
+    expect(
+      resolveCalendarKey("Wrestling", { gender: "prefer_not_to_say" }),
+    ).toBe("OTHER_MWRESTLING");
+  });
+  it("Gymnastics: women's has its own calendar; men's/unspecified use generic Other", () => {
+    // Only women's gymnastics is enumerated in the "Other" bundle PDF; men's is
+    // folded into "All Other Sports". Default (men's) is the generic Other.
+    expect(resolveCalendarKey("Gymnastics", { gender: "female" })).toBe(
+      "OTHER_WGYM",
+    );
+    expect(resolveCalendarKey("Gymnastics", { gender: "male" })).toBe("Other");
+    expect(resolveCalendarKey("Gymnastics", { gender: null })).toBe("Other");
+    expect(
+      resolveCalendarKey("Gymnastics", { gender: "prefer_not_to_say" }),
+    ).toBe("Other");
   });
 });
