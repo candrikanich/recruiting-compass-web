@@ -24,18 +24,20 @@
         <div class="font-medium text-slate-900 group-hover:text-slate-950">
           {{ milestone.title }}
         </div>
-        <div class="mt-0.5 text-xs text-slate-500">
-          {{ formatDate(milestone.date) }}
-        </div>
         <div v-if="milestone.description" class="mt-1 text-xs text-slate-600">
           {{ milestone.description }}
         </div>
       </div>
-      <div
-        v-if="milestone.url"
-        class="shrink-0 text-slate-400 transition group-hover:text-slate-600"
-      >
-        ↗
+      <div class="shrink-0 text-right">
+        <div class="text-xs text-slate-500">
+          {{ formatDate(milestone.date) }}
+        </div>
+        <div
+          v-if="milestone.url"
+          class="mt-0.5 text-slate-400 transition group-hover:text-slate-600"
+        >
+          ↗
+        </div>
       </div>
     </a>
   </div>
@@ -96,9 +98,6 @@
             <div class="font-medium text-slate-900 group-hover:text-slate-950">
               {{ milestone.title }}
             </div>
-            <div class="mt-0.5 text-xs text-slate-500">
-              {{ formatDate(milestone.date) }}
-            </div>
             <div
               v-if="milestone.description"
               class="mt-1 text-xs text-slate-600"
@@ -106,11 +105,16 @@
               {{ milestone.description }}
             </div>
           </div>
-          <div
-            v-if="milestone.url"
-            class="shrink-0 text-slate-400 transition group-hover:text-slate-600"
-          >
-            ↗
+          <div class="shrink-0 text-right">
+            <div class="text-xs text-slate-500">
+              {{ formatDate(milestone.date) }}
+            </div>
+            <div
+              v-if="milestone.url"
+              class="mt-0.5 text-slate-400 transition group-hover:text-slate-600"
+            >
+              ↗
+            </div>
           </div>
         </a>
       </div>
