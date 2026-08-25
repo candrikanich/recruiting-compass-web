@@ -127,7 +127,7 @@ const sentimentBadgeClass = (sentiment: string): string =>
         <label class="mb-1 block text-[11px] font-semibold text-slate-400">Type</label>
         <select
           v-model="selectedType"
-          class="w-full rounded-md border border-slate-200 bg-slate-50 px-[10px] py-[7px] text-[13px] text-slate-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+          class="h-[40px] w-full rounded-md border border-slate-200 bg-slate-50 px-[10px] text-[13px] text-slate-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
         >
           <option value="">All types</option>
           <option v-for="t in typeOptions" :key="t.value" :value="t.value">
@@ -151,7 +151,7 @@ const sentimentBadgeClass = (sentiment: string): string =>
         <label class="mb-1 block text-[11px] font-semibold text-slate-400">Date range</label>
         <select
           v-model="selectedDateRange"
-          class="w-full rounded-md border border-slate-200 bg-slate-50 px-[10px] py-[7px] text-[13px] text-slate-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+          class="h-[40px] w-full rounded-md border border-slate-200 bg-slate-50 px-[10px] text-[13px] text-slate-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
         >
           <option value="">All time</option>
           <option value="7">Last 7 days</option>
@@ -165,7 +165,7 @@ const sentimentBadgeClass = (sentiment: string): string =>
         <label class="mb-1 block text-[11px] font-semibold text-slate-400">Sentiment</label>
         <select
           v-model="selectedSentiment"
-          class="w-full rounded-md border border-slate-200 bg-slate-50 px-[10px] py-[7px] text-[13px] text-slate-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+          class="h-[40px] w-full rounded-md border border-slate-200 bg-slate-50 px-[10px] text-[13px] text-slate-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
         >
           <option value="">All sentiments</option>
           <option value="very_positive">Very Positive</option>
