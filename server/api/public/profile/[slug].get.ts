@@ -8,7 +8,7 @@ import type {
   CommitmentStatus,
 } from "~/types/models";
 import {
-  normalizeSectionConfig,
+  resolveSections,
   isSectionVisible,
 } from "~/utils/profile/sectionConfig";
 import {
@@ -48,6 +48,7 @@ interface AssemblePublicProfileInput {
     values_tags: string[];
     awards: ProfileAward[];
     section_config: unknown;
+    show_metrics: boolean;
     show_academics: boolean;
     show_athletic: boolean;
     show_film: boolean;
@@ -71,7 +72,7 @@ export function assemblePublicProfile(
   input: AssemblePublicProfileInput,
 ): PublicProfileData {
   const { profile, user, details, metricsRows, videoLinks, schools } = input;
-  const sections = normalizeSectionConfig(profile.section_config);
+  const sections = resolveSections(profile);
 
   return {
     playerName: user?.full_name ?? "Athlete",
@@ -136,9 +137,13 @@ export function assemblePublicProfile(
     jerseyNumber: (details?.jersey_number as number | undefined) ?? null,
     commitmentStatus: profile.commitment_status,
     committedSchoolName: input.committedSchoolName,
-    lookingFor: profile.looking_for ?? null,
-    valuesTags: profile.values_tags ?? [],
-    awards: profile.awards ?? [],
+    lookingFor: isSectionVisible(sections, "values")
+      ? (profile.looking_for ?? null)
+      : null,
+    valuesTags: isSectionVisible(sections, "values")
+      ? (profile.values_tags ?? [])
+      : [],
+    awards: isSectionVisible(sections, "awards") ? (profile.awards ?? []) : [],
     metrics: isSectionVisible(sections, "metrics")
       ? buildPublicMetrics(metricsRows)
       : null,
@@ -214,7 +219,9 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    const sections = normalizeSectionConfig(profile.section_config);
+    const sections = resolveSections(
+      profile as unknown as AssemblePublicProfileInput["profile"],
+    );
 
     const { data: user } = await supabase
       .from("users")
