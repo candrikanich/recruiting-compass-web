@@ -48,6 +48,8 @@ const handleSubmit = async () => {
       twitter_handle: null,
       instagram_handle: null,
       notes: null,
+      tags: [],
+      source: null,
       last_contact_date: null,
     });
 

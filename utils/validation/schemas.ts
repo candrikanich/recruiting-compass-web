@@ -153,6 +153,8 @@ export const coachSchema = z.object({
   twitter_handle: twitterHandleSchema,
   instagram_handle: instagramHandleSchema,
   notes: richTextSchema(5000),
+  tags: z.array(sanitizedTextSchema(40)).max(20).default([]),
+  source: sanitizedTextSchema(80).nullable().optional(),
 });
 
 // ============================================================================

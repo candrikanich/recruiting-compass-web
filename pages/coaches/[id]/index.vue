@@ -12,7 +12,9 @@
 
     <!-- Page Header -->
     <div class="border-b border-slate-200 bg-white">
-      <div class="mx-auto max-w-5xl px-4 py-4 sm:px-6">
+      <div
+        class="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6"
+      >
         <NuxtLink
           :to="backLink.to"
           class="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700"
@@ -20,10 +22,29 @@
           <UIcon name="i-heroicons-arrow-left" class="h-4 w-4" />
           {{ backLink.text }}
         </NuxtLink>
+
+        <div v-if="coach" class="flex items-center gap-2">
+          <button
+            type="button"
+            data-test="edit-coach-btn"
+            class="rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+            @click="editCoach"
+          >
+            Edit
+          </button>
+          <button
+            type="button"
+            data-test="coach-detail-delete-btn"
+            class="rounded-lg border border-red-200 px-3 py-1.5 text-sm font-medium text-red-600 transition hover:bg-red-50"
+            @click="openDeleteModal"
+          >
+            Delete
+          </button>
+        </div>
       </div>
     </div>
 
-    <main id="main-content" class="mx-auto max-w-5xl px-4 py-8 sm:px-6">
+    <main id="main-content" class="mx-auto max-w-6xl px-4 py-8 sm:px-6">
       <!-- Loading State -->
       <div v-if="loading" class="py-12 text-center">
         <p class="text-slate-600">Loading coach profile...</p>
@@ -45,107 +66,55 @@
         <p class="text-slate-600">Coach not found</p>
       </div>
 
-      <!-- Coach Detail -->
-      <div v-if="!loading && coach" class="space-y-6">
-        <!-- Header Component -->
-        <CoachHeader
-          :coach="coach"
-          :school-name="schoolName"
-          @send-email="sendEmail"
-          @send-text="sendText"
-          @call-coach="callCoach"
-          @open-twitter="handleOpenTwitter"
-          @open-instagram="handleOpenInstagram"
-          @edit-coach="editCoach"
-          @delete-coach="openDeleteModal"
-        />
+      <!-- Coach Detail: two-column layout -->
+      <div v-if="!loading && coach" class="flex flex-col items-start gap-5 lg:flex-row">
+        <!-- Left rail -->
+        <div class="w-full shrink-0 space-y-5 lg:w-[340px]">
+          <CoachIdentityCard :coach="coach" />
+          <CoachChannelActions
+            :coach="coach"
+            @log-interaction="openLogInteraction"
+            @open-social="handleOpenSocial"
+          />
+          <CoachInternalNotes :notes="coach.notes" @edit="editCoach" />
+          <CoachTagsCard :tags="coach.tags" @add="handleAddTag" @remove="handleRemoveTag" />
+          <CoachProfileMeta :coach="coach" />
+          <CoachProfileLink
+            :coach-id="coachId"
+            :coach-email="coach.email"
+            :coach-phone="coach.phone"
+            :coach-last-name="coach.last_name"
+            :school-id="coach.school_id ?? null"
+          />
+        </div>
 
-        <!-- Stats Grid Component -->
-        <CoachStatsGrid :stats="stats" />
-
-        <!-- Notes Editor Component -->
-        <CoachNotesEditor
-          v-model="notes"
-          title="Notes"
-          placeholder="Add notes about this coach..."
-          :save-fn="saveNotes"
-        />
-
-        <!-- Communication Analytics (folded in from the former /analytics page) -->
-        <CoachMetricsPanel
-          :metrics="coachMetrics"
-          :comparison="coachComparison"
-          :insights="coachInsightsList"
-        />
-
-        <!-- Interactions Log (filter + expand; folded in from /communications) -->
-        <CoachInteractionsLog
-          :interactions="recentInteractions"
-          :coach-name="`${coach.first_name} ${coach.last_name}`"
-        />
-
-        <!-- Send Profile -->
-        <CoachProfileLink
-          :coach-id="coachId"
-          :coach-email="coach?.email ?? null"
-          :coach-phone="coach?.phone ?? null"
-          :coach-last-name="coach?.last_name ?? null"
-          :school-id="coach?.school_id ?? null"
-        />
+        <!-- Right column -->
+        <div class="min-w-0 w-full flex-1 space-y-5">
+          <CoachAlerts
+            :overdue="insights.overdueAlert.value"
+            :days-since-contact="insights.daysSinceContact.value"
+            :channel-preference="insights.channelPreferenceAlert.value"
+            :preferred-channel="insights.preferredChannel.value"
+          />
+          <CoachStatCards
+            :days-since-contact="insights.daysSinceContact.value"
+            :is-overdue="insights.isOverdue.value"
+            :total-interactions="insights.totalInteractions.value"
+            :preferred-channel="insights.preferredChannel.value"
+            :response-rate="insights.responseRate.value"
+          />
+          <div ref="communicationPanelEl">
+            <CommunicationPanel
+              :coach="coach"
+              :school="school"
+              :school-name="schoolName"
+              @interaction-logged="handleCoachInteractionLogged"
+            />
+          </div>
+          <CoachInteractionsTable :interactions="recentInteractions" />
+        </div>
       </div>
     </main>
-
-    <!-- Communication Panel Drawer (right-anchored: keeps the coach page in view) -->
-    <Teleport to="body">
-      <Transition name="fade">
-        <div
-          v-if="showPanel && coach"
-          class="fixed inset-0 z-50 bg-black/40"
-          @click.self="handleCloseCommunicationPanel"
-          @keydown.escape="handleCloseCommunicationPanel"
-        >
-          <Transition name="drawer">
-            <div
-              v-if="showPanel && coach"
-              ref="communicationDialogRef"
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="communication-panel-title"
-              class="absolute top-0 right-0 h-full w-full max-w-lg overflow-y-auto border-l border-slate-200 bg-white shadow-2xl"
-              @click.stop
-            >
-              <div
-                class="sticky top-0 flex items-center justify-between border-b border-slate-200 bg-white p-4"
-              >
-                <h2
-                  id="communication-panel-title"
-                  class="text-xl font-bold text-slate-900"
-                >
-                  Quick Communication
-                </h2>
-                <button
-                  @click="handleCloseCommunicationPanel"
-                  aria-label="Close communication panel"
-                  class="text-slate-400 hover:text-slate-600"
-                >
-                  <UIcon name="i-heroicons-x-mark" class="h-6 w-6" />
-                </button>
-              </div>
-              <div class="p-6">
-                <CommunicationPanel
-                  :coach="coach"
-                  :school="school"
-                  :school-name="schoolName"
-                  :initial-type="communicationType"
-                  @close="handleCloseCommunicationPanel"
-                  @interaction-logged="handleCoachInteractionLogged"
-                />
-              </div>
-            </div>
-          </Transition>
-        </div>
-      </Transition>
-    </Teleport>
 
     <!-- Edit Coach Modal -->
     <EditCoachModal
@@ -173,29 +142,28 @@
 import { ref, computed, reactive, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useCoaches } from "~/composables/useCoaches";
+import { useCoachStore } from "~/stores/coaches";
 import { useSchools } from "~/composables/useSchools";
 import { useInteractions } from "~/composables/useInteractions";
-import { useCoachStats } from "~/composables/useCoachStats";
-import {
-  calcCoachMetrics,
-  compareCoachToSchool,
-  coachInsights,
-} from "~/composables/useCoachAnalytics";
-import { toTelHref } from "~/utils/phone";
-import { openTwitter, openInstagram } from "~/utils/socialMediaHandlers";
-import { socialDmInteraction } from "~/utils/socialDm";
-import { useUserStore } from "~/stores/user";
+import { useCoachInsights } from "~/composables/useCoachInsights";
+import { useCommunication } from "~/composables/useCommunication";
 import { useDeleteModal } from "~/composables/useDeleteModal";
-import { useCommunicationModal } from "~/composables/useCommunicationModal";
 import { deriveBackLink } from "~/composables/useBackLink";
 import DeleteConfirmationModal from "~/components/DeleteConfirmationModal.vue";
-import CoachHeader from "~/components/Coach/CoachHeader.vue";
-import CoachStatsGrid from "~/components/Coach/CoachStatsGrid.vue";
-import CoachNotesEditor from "~/components/Coach/CoachNotesEditor.vue";
-import CoachMetricsPanel from "~/components/Coach/CoachMetricsPanel.vue";
-import CoachInteractionsLog from "~/components/Coach/CoachInteractionsLog.vue";
+import EditCoachModal from "~/components/EditCoachModal.vue";
+import CommunicationPanel from "~/components/CommunicationPanel.vue";
+import CoachIdentityCard from "~/components/Coach/detail/CoachIdentityCard.vue";
+import CoachChannelActions from "~/components/Coach/detail/CoachChannelActions.vue";
+import CoachInternalNotes from "~/components/Coach/detail/CoachInternalNotes.vue";
+import CoachTagsCard from "~/components/Coach/detail/CoachTagsCard.vue";
+import CoachProfileMeta from "~/components/Coach/detail/CoachProfileMeta.vue";
+import CoachAlerts from "~/components/Coach/detail/CoachAlerts.vue";
+import CoachStatCards from "~/components/Coach/detail/CoachStatCards.vue";
+import CoachInteractionsTable from "~/components/Coach/detail/CoachInteractionsTable.vue";
+import CoachProfileLink from "~/components/coaches/CoachProfileLink.vue";
 import type { Coach, Interaction, School } from "~/types/models";
 import { createClientLogger } from "~/utils/logger";
+import { socialDmInteraction } from "~/utils/socialDm";
 
 const logger = createClientLogger("CoachDetail");
 
@@ -208,12 +176,11 @@ const router = useRouter();
 const coachId = route.params.id as string;
 const backLink = computed(() => deriveBackLink(route.query));
 
-const { getCoach, updateCoach, smartDelete, coaches, fetchCoaches } =
-  useCoaches();
+const { getCoach, updateCoach, smartDelete, fetchCoaches } = useCoaches();
+const coachStore = useCoachStore();
 const { getSchool } = useSchools();
 const { interactions, fetchInteractions, createInteraction } =
   useInteractions();
-const userStore = useUserStore();
 
 // Coach data and loading state
 const coach = ref<Coach | null>(null);
@@ -221,16 +188,12 @@ const loading = ref(false);
 const error = ref<string | null>(null);
 const schoolName = ref("");
 const school = ref<School | undefined>(undefined);
+const communicationPanelEl = ref<HTMLElement | null>(null);
 
-// Communication modal with focus trap management
-const {
-  dialogRef: communicationDialogRef,
-  showPanel,
-  communicationType,
-  openCommunication,
-  handleInteractionLogged,
-  handleClose: handleCloseCommunicationPanel,
-} = useCommunicationModal();
+// The inline CommunicationPanel composes+sends and emits interaction-logged;
+// this composable's handleInteractionLogged does the create-record +
+// last_contact_date bookkeeping that used to live behind a modal drawer.
+const { openCommunication, handleInteractionLogged } = useCommunication();
 
 // Delete modal management
 const {
@@ -257,68 +220,20 @@ const recentInteractions = computed<Interaction[]>(() => {
     });
 });
 
-// Use the coach stats composable
-const { stats } = useCoachStats(coach, recentInteractions);
+const insights = useCoachInsights(coach, recentInteractions);
 
-// Communication analytics — computed from the school-wide interactions this page
-// already loads (ranking needs every coach at the school), plus the coaches list.
-const coachMetrics = computed(() =>
-  calcCoachMetrics(interactions.value || [], coachId),
-);
-const coachComparison = computed(() =>
-  compareCoachToSchool(
-    interactions.value || [],
-    coaches.value || [],
-    coachId,
-    coach.value?.school_id ?? undefined,
-  ),
-);
-const coachInsightsList = computed(() =>
-  coachInsights(interactions.value || [], coachId),
-);
-
-// Notes v-models
-const notes = computed({
-  get: (): string => coach.value?.notes || "",
-  set: (value: string) => {
-    if (coach.value) {
-      coach.value.notes = value;
-    }
-  },
-});
-
-// Communication handlers
-const sendEmail = () => {
-  if (coach.value) {
-    openCommunication(coach.value, "email");
-  }
+// Communication handlers: the panel is embedded inline (not a modal), so
+// "Log Interaction" brings it into view rather than opening a drawer.
+const openLogInteraction = () => {
+  communicationPanelEl.value?.scrollIntoView({
+    behavior: "smooth",
+    block: "start",
+  });
 };
 
-const sendText = () => {
-  if (coach.value) {
-    openCommunication(coach.value, "text");
-  }
-};
-
-const callCoach = () => {
-  if (coach.value?.phone) {
-    window.location.href = toTelHref(coach.value.phone);
-  }
-};
-
-const handleOpenTwitter = () => {
-  openTwitter(coach.value?.twitter_handle);
-  void logSocialDm();
-};
-
-const handleOpenInstagram = () => {
-  openInstagram(coach.value?.instagram_handle);
-  void logSocialDm();
-};
-
-// School-wide refresh (not coach-filtered): the metrics panel ranks this coach
-// against the school's other coaches, while the log/recent list filter by coach
-// in-page. No-op for a coach without a school.
+// School-wide refresh (not coach-filtered): the interactions table filters by
+// coach in-page, but ranking/analytics elsewhere need the school's full set.
+// No-op for a coach without a school.
 const refreshSchoolInteractions = async (): Promise<void> => {
   if (coach.value?.school_id) {
     await fetchInteractions({ schoolId: coach.value.school_id });
@@ -341,12 +256,21 @@ async function logSocialDm(): Promise<void> {
   }
 }
 
+const handleOpenSocial = (_platform: "twitter" | "instagram") => {
+  void logSocialDm();
+};
+
 const handleCoachInteractionLogged = async (interactionData: {
   type: string;
   direction: string;
   content: string;
 }) => {
+  if (!coach.value) return;
   try {
+    // Prime the composable's selectedCoach — CommunicationPanel is inline, so
+    // there's no separate "open" step to have set it already.
+    openCommunication(coach.value, "email");
+
     const refreshData = async () => {
       const updatedCoach = await getCoach(coachId);
       if (updatedCoach) {
@@ -387,10 +311,24 @@ const deleteCoach = async () => {
   }
 };
 
-// Notes save handlers
-const saveNotes = async (value: string) => {
+// Tag handlers
+const handleAddTag = async (tag: string) => {
   if (!coach.value) return;
-  const updated = await updateCoach(coach.value.id, { notes: value });
+  const trimmed = tag.trim();
+  if (!trimmed) return;
+  if (trimmed.length > 40) return;
+  if (coach.value.tags.includes(trimmed)) return;
+  if (coach.value.tags.length >= 20) return;
+
+  const nextTags = [...coach.value.tags, trimmed];
+  const updated = await coachStore.updateCoachTags(coach.value.id, nextTags);
+  if (updated) coach.value = updated;
+};
+
+const handleRemoveTag = async (tag: string) => {
+  if (!coach.value) return;
+  const nextTags = coach.value.tags.filter((t) => t !== tag);
+  const updated = await coachStore.updateCoachTags(coach.value.id, nextTags);
   if (updated) coach.value = updated;
 };
 
@@ -414,8 +352,9 @@ onMounted(async () => {
         }
       }
 
-      // Fetch school-wide interactions + coaches so the metrics panel can rank
-      // this coach against the school's others; the log filters by coach in-page.
+      // Fetch school-wide interactions + coaches so downstream ranking can
+      // compare this coach against the school's others; the table filters
+      // by coach in-page.
       if (coachData.school_id) {
         await Promise.all([
           fetchInteractions({ schoolId: coachData.school_id }),
@@ -432,25 +371,3 @@ onMounted(async () => {
   }
 });
 </script>
-
-<style scoped>
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
-.drawer-enter-active,
-.drawer-leave-active {
-  transition: transform 0.25s ease;
-}
-
-.drawer-enter-from,
-.drawer-leave-to {
-  transform: translateX(100%);
-}
-</style>

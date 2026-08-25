@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { mount, flushPromises } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
 import { ref } from "vue";
-import type { Coach, Interaction } from "~/types/models";
+import type { Coach } from "~/types/models";
 
 // Mock vue-router
 const mockPush = vi.fn();
@@ -22,6 +22,9 @@ const mockUpdateCoach = vi.fn();
 const mockSmartDelete = vi.fn();
 const mockGetSchool = vi.fn();
 const mockFetchInteractions = vi.fn();
+const mockFetchCoaches = vi.fn();
+const mockCreateInteraction = vi.fn();
+const mockUpdateCoachTags = vi.fn();
 const mockOpenCommunication = vi.fn();
 const mockHandleInteractionLogged = vi.fn();
 
@@ -30,8 +33,13 @@ vi.mock("~/composables/useCoaches", () => ({
     getCoach: mockGetCoach,
     updateCoach: mockUpdateCoach,
     smartDelete: mockSmartDelete,
-    coaches: ref([]),
-    fetchCoaches: vi.fn().mockResolvedValue(undefined),
+    fetchCoaches: mockFetchCoaches,
+  })),
+}));
+
+vi.mock("~/stores/coaches", () => ({
+  useCoachStore: vi.fn(() => ({
+    updateCoachTags: mockUpdateCoachTags,
   })),
 }));
 
@@ -45,32 +53,14 @@ vi.mock("~/composables/useInteractions", () => ({
   useInteractions: vi.fn(() => ({
     interactions: ref([]),
     fetchInteractions: mockFetchInteractions,
+    createInteraction: mockCreateInteraction,
   })),
 }));
 
 vi.mock("~/composables/useCommunication", () => ({
   useCommunication: vi.fn(() => ({
-    showPanel: ref(false),
-    communicationType: ref("email"),
     openCommunication: mockOpenCommunication,
     handleInteractionLogged: mockHandleInteractionLogged,
-  })),
-}));
-
-vi.mock("~/composables/useCoachStats", () => ({
-  useCoachStats: vi.fn(() => ({
-    stats: ref({
-      totalInteractions: 5,
-      daysSinceContact: 3,
-      preferredMethod: "Email",
-    }),
-  })),
-}));
-
-vi.mock("~/composables/useFocusTrap", () => ({
-  useFocusTrap: vi.fn(() => ({
-    activate: vi.fn(),
-    deactivate: vi.fn(),
   })),
 }));
 
@@ -80,82 +70,7 @@ vi.mock("~/stores/user", () => ({
   })),
 }));
 
-vi.mock("~/utils/socialMediaHandlers", () => ({
-  openTwitter: vi.fn(),
-  openInstagram: vi.fn(),
-}));
-
-// Mock Heroicons
-// Mock child components
-vi.mock("~/components/Coach/CoachHeader.vue", () => ({
-  default: {
-    name: "CoachHeader",
-    props: ["coach", "schoolName"],
-    emits: [
-      "send-email",
-      "send-text",
-      "call-coach",
-      "open-twitter",
-      "open-instagram",
-      "edit-coach",
-      "delete-coach",
-    ],
-    template: `
-      <div data-test="coach-header">
-        <button @click="$emit('send-email')" data-test="send-email-btn">Email</button>
-        <button @click="$emit('send-text')" data-test="send-text-btn">Text</button>
-        <button @click="$emit('call-coach')" data-test="call-coach-btn">Call</button>
-        <button @click="$emit('open-twitter')" data-test="open-twitter-btn">Twitter</button>
-        <button @click="$emit('open-instagram')" data-test="open-instagram-btn">Instagram</button>
-        <button @click="$emit('edit-coach')" data-test="edit-coach-btn">Edit</button>
-        <button @click="$emit('delete-coach')" data-test="coach-detail-delete-btn">Delete</button>
-      </div>
-    `,
-  },
-}));
-
-vi.mock("~/components/Coach/CoachStatsGrid.vue", () => ({
-  default: {
-    name: "CoachStatsGrid",
-    props: ["stats"],
-    template: '<div data-test="coach-stats-grid">Stats</div>',
-  },
-}));
-
-vi.mock("~/components/Coach/CoachNotesEditor.vue", () => ({
-  default: {
-    name: "CoachNotesEditor",
-    props: ["modelValue", "title", "subtitle", "placeholder", "saveFn"],
-    emits: ["update:modelValue"],
-    template: `
-      <div data-test="coach-notes-editor">
-        <input
-          :value="modelValue"
-          @input="$emit('update:modelValue', $event.target.value)"
-          data-test="notes-input"
-        />
-        <button @click="saveFn(modelValue)" data-test="save-notes-btn">Save</button>
-      </div>
-    `,
-  },
-}));
-
-vi.mock("~/components/Coach/CoachInteractionsLog.vue", () => ({
-  default: {
-    name: "CoachInteractionsLog",
-    props: ["interactions", "coachName"],
-    template: '<div data-test="coach-interactions-log">Interactions</div>',
-  },
-}));
-
-vi.mock("~/components/Coach/CoachMetricsPanel.vue", () => ({
-  default: {
-    name: "CoachMetricsPanel",
-    props: ["metrics", "comparison", "insights"],
-    template: '<div data-test="coach-metrics-panel">Metrics</div>',
-  },
-}));
-
+// Mock child components to isolate the page's composition/wiring
 vi.mock("~/components/DeleteConfirmationModal.vue", () => ({
   default: {
     name: "DeleteConfirmationModal",
@@ -173,7 +88,7 @@ vi.mock("~/components/DeleteConfirmationModal.vue", () => ({
 vi.mock("~/components/EditCoachModal.vue", () => ({
   default: {
     name: "EditCoachModal",
-    props: ["coach", "isOpen"],
+    props: ["coach", "isOpen", "updateFn"],
     emits: ["close", "updated"],
     template: `
       <div v-if="isOpen" data-test="edit-coach-modal">
@@ -184,14 +99,25 @@ vi.mock("~/components/EditCoachModal.vue", () => ({
   },
 }));
 
-vi.mock("~/components/CommunicationPanel.vue", () => ({
+vi.mock("~/components/coaches/CoachProfileLink.vue", () => ({
   default: {
+    name: "CoachProfileLink",
+    props: ["coachId", "coachEmail", "coachPhone", "coachLastName", "schoolId"],
+    template: '<div data-test="coach-profile-link">Profile link</div>',
+  },
+}));
+
+// setup.ts registers a global name-matched CommunicationPanel stub
+// (`<div><slot /></div>`) that overrides any component import — override it
+// here with one that exposes the interaction-logged flow for assertions.
+const globalStubs = {
+  NuxtLink: { template: "<a><slot /></a>" },
+  CommunicationPanel: {
     name: "CommunicationPanel",
-    props: ["coach", "schoolName", "initialType"],
-    emits: ["close", "interaction-logged"],
+    props: ["coach", "school", "schoolName"],
+    emits: ["interaction-logged"],
     template: `
       <div data-test="communication-panel">
-        <button @click="$emit('close')" data-test="close-panel-btn">Close</button>
         <button @click="$emit('interaction-logged', { type: 'email', direction: 'outbound', content: 'Test' })"
                 data-test="log-interaction-btn">
           Log Interaction
@@ -199,7 +125,7 @@ vi.mock("~/components/CommunicationPanel.vue", () => ({
       </div>
     `,
   },
-}));
+};
 
 describe("Coach Detail Page", () => {
   const mockCoach: Coach = {
@@ -210,7 +136,12 @@ describe("Coach Detail Page", () => {
     school_id: "school-123",
     email: "john@example.com",
     phone: "555-1234",
+    twitter_handle: null,
+    instagram_handle: null,
     notes: "Initial notes",
+    tags: ["fastball"],
+    source: null,
+    last_contact_date: null,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   };
@@ -226,87 +157,60 @@ describe("Coach Detail Page", () => {
     mockGetCoach.mockResolvedValue(mockCoach);
     mockGetSchool.mockResolvedValue(mockSchool);
     mockFetchInteractions.mockResolvedValue(undefined);
+    mockFetchCoaches.mockResolvedValue(undefined);
+    mockCreateInteraction.mockResolvedValue({ id: "interaction-1" });
+    mockUpdateCoachTags.mockResolvedValue({ ...mockCoach, tags: ["fastball", "new-tag"] });
   });
 
   afterEach(() => {
     vi.clearAllMocks();
   });
 
+  async function mountPage() {
+    const CoachDetailPage = await import("~/pages/coaches/[id]/index.vue").then(
+      (m) => m.default,
+    );
+    const wrapper = mount(CoachDetailPage, {
+      global: { stubs: globalStubs },
+    });
+    await flushPromises();
+    return wrapper;
+  }
+
   describe("Data Loading", () => {
     it("displays coach data after loading", async () => {
-      const CoachDetailPage =
-        await import("~/pages/coaches/[id]/index.vue").then((m) => m.default);
-      const wrapper = mount(CoachDetailPage, {
-        global: {
-          stubs: { NuxtLink: { template: "<a><slot /></a>" }, Teleport: true },
-        },
-      });
+      const wrapper = await mountPage();
 
-      await flushPromises();
-
-      // Should show coach data after loading
-      expect(wrapper.find('[data-test="coach-header"]').exists()).toBe(true);
+      expect(wrapper.findComponent({ name: "CoachIdentityCard" }).exists()).toBe(
+        true,
+      );
     });
 
-    it("loads and displays coach data on mount", async () => {
-      const CoachDetailPage =
-        await import("~/pages/coaches/[id]/index.vue").then((m) => m.default);
-      const wrapper = mount(CoachDetailPage, {
-        global: {
-          stubs: { NuxtLink: { template: "<a><slot /></a>" }, Teleport: true },
-        },
-      });
-
-      await flushPromises();
+    it("loads coach data on mount", async () => {
+      await mountPage();
 
       expect(mockGetCoach).toHaveBeenCalledWith("coach-123");
-      expect(wrapper.find('[data-test="coach-header"]').exists()).toBe(true);
     });
 
     it("fetches school name for the coach", async () => {
-      const CoachDetailPage =
-        await import("~/pages/coaches/[id]/index.vue").then((m) => m.default);
-      const wrapper = mount(CoachDetailPage, {
-        global: {
-          stubs: { NuxtLink: { template: "<a><slot /></a>" }, Teleport: true },
-        },
-      });
-
-      await flushPromises();
+      await mountPage();
 
       expect(mockGetSchool).toHaveBeenCalledWith("school-123");
     });
 
-    it("fetches interactions for the coach", async () => {
-      const CoachDetailPage =
-        await import("~/pages/coaches/[id]/index.vue").then((m) => m.default);
-      const wrapper = mount(CoachDetailPage, {
-        global: {
-          stubs: { NuxtLink: { template: "<a><slot /></a>" }, Teleport: true },
-        },
-      });
+    it("fetches interactions and coaches for the coach's school", async () => {
+      await mountPage();
 
-      await flushPromises();
-
-      // School-wide (not coach-filtered): the metrics panel ranks this coach
-      // against the school's others; per-coach filtering happens in-page.
       expect(mockFetchInteractions).toHaveBeenCalledWith({
         schoolId: "school-123",
       });
+      expect(mockFetchCoaches).toHaveBeenCalledWith("school-123");
     });
 
     it("displays error message when coach fetch fails", async () => {
       mockGetCoach.mockRejectedValue(new Error("Failed to load"));
 
-      const CoachDetailPage =
-        await import("~/pages/coaches/[id]/index.vue").then((m) => m.default);
-      const wrapper = mount(CoachDetailPage, {
-        global: {
-          stubs: { NuxtLink: { template: "<a><slot /></a>" }, Teleport: true },
-        },
-      });
-
-      await flushPromises();
+      const wrapper = await mountPage();
 
       expect(wrapper.text()).toContain("Failed to load");
     });
@@ -314,204 +218,194 @@ describe("Coach Detail Page", () => {
     it("shows coach not found when coach is null", async () => {
       mockGetCoach.mockResolvedValue(null);
 
-      const CoachDetailPage =
-        await import("~/pages/coaches/[id]/index.vue").then((m) => m.default);
-      const wrapper = mount(CoachDetailPage, {
-        global: {
-          stubs: { NuxtLink: { template: "<a><slot /></a>" }, Teleport: true },
-        },
-      });
-
-      await flushPromises();
-
-      expect(wrapper.text()).toContain("Coach not found");
-    });
-
-    it("sets error when coach data is undefined", async () => {
-      mockGetCoach.mockResolvedValue(undefined);
-
-      const CoachDetailPage =
-        await import("~/pages/coaches/[id]/index.vue").then((m) => m.default);
-      const wrapper = mount(CoachDetailPage, {
-        global: {
-          stubs: { NuxtLink: { template: "<a><slot /></a>" }, Teleport: true },
-        },
-      });
-
-      await flushPromises();
+      const wrapper = await mountPage();
 
       expect(wrapper.text()).toContain("Coach not found");
     });
   });
 
-  describe("Communication Features", () => {
-    it("opens communication panel for email", async () => {
-      const CoachDetailPage =
-        await import("~/pages/coaches/[id]/index.vue").then((m) => m.default);
-      const wrapper = mount(CoachDetailPage, {
-        global: {
-          stubs: { NuxtLink: { template: "<a><slot /></a>" }, Teleport: true },
-        },
-      });
+  describe("Two-column composition", () => {
+    it("renders the left rail and right column components", async () => {
+      const wrapper = await mountPage();
 
+      expect(wrapper.findComponent({ name: "CoachIdentityCard" }).exists()).toBe(
+        true,
+      );
+      expect(
+        wrapper.findComponent({ name: "CoachChannelActions" }).exists(),
+      ).toBe(true);
+      expect(
+        wrapper.findComponent({ name: "CoachInternalNotes" }).exists(),
+      ).toBe(true);
+      expect(wrapper.findComponent({ name: "CoachTagsCard" }).exists()).toBe(
+        true,
+      );
+      expect(wrapper.findComponent({ name: "CoachProfileMeta" }).exists()).toBe(
+        true,
+      );
+      expect(wrapper.findComponent({ name: "CoachAlerts" }).exists()).toBe(true);
+      expect(wrapper.findComponent({ name: "CoachStatCards" }).exists()).toBe(
+        true,
+      );
+      expect(
+        wrapper.find('[data-test="communication-panel"]').exists(),
+      ).toBe(true);
+      expect(
+        wrapper.findComponent({ name: "CoachInteractionsTable" }).exists(),
+      ).toBe(true);
+    });
+  });
+
+  describe("Tags", () => {
+    it("adds a tag via updateCoachTags with existing tags preserved", async () => {
+      const wrapper = await mountPage();
+
+      const tagsCard = wrapper.findComponent({ name: "CoachTagsCard" });
+      tagsCard.vm.$emit("add", "new-tag");
       await flushPromises();
 
-      const emailBtn = wrapper.find('[data-test="send-email-btn"]');
-      await emailBtn.trigger("click");
+      expect(mockUpdateCoachTags).toHaveBeenCalledWith("coach-123", [
+        "fastball",
+        "new-tag",
+      ]);
+    });
+
+    it("removes a tag via updateCoachTags", async () => {
+      const wrapper = await mountPage();
+
+      const tagsCard = wrapper.findComponent({ name: "CoachTagsCard" });
+      tagsCard.vm.$emit("remove", "fastball");
+      await flushPromises();
+
+      expect(mockUpdateCoachTags).toHaveBeenCalledWith("coach-123", []);
+    });
+
+    it("does not call updateCoachTags when the tag is already present", async () => {
+      const wrapper = await mountPage();
+
+      const tagsCard = wrapper.findComponent({ name: "CoachTagsCard" });
+      tagsCard.vm.$emit("add", "fastball");
+      await flushPromises();
+
+      expect(mockUpdateCoachTags).not.toHaveBeenCalled();
+    });
+
+    it("does not call updateCoachTags when the tag exceeds 40 characters", async () => {
+      const wrapper = await mountPage();
+
+      const tagsCard = wrapper.findComponent({ name: "CoachTagsCard" });
+      const overLongTag = "a".repeat(41);
+      tagsCard.vm.$emit("add", overLongTag);
+      await flushPromises();
+
+      expect(mockUpdateCoachTags).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("Interaction logging", () => {
+    it("routes CommunicationPanel's interaction-logged event through handleInteractionLogged", async () => {
+      const wrapper = await mountPage();
+
+      await wrapper.find('[data-test="log-interaction-btn"]').trigger("click");
+      await flushPromises();
 
       expect(mockOpenCommunication).toHaveBeenCalledWith(
         expect.objectContaining({ id: "coach-123" }),
         "email",
       );
+      expect(mockHandleInteractionLogged).toHaveBeenCalled();
     });
+  });
 
-    it("opens communication panel for text", async () => {
-      const CoachDetailPage =
-        await import("~/pages/coaches/[id]/index.vue").then((m) => m.default);
-      const wrapper = mount(CoachDetailPage, {
-        global: {
-          stubs: { NuxtLink: { template: "<a><slot /></a>" }, Teleport: true },
-        },
+  describe("Social DM logging", () => {
+    it("logs a best-effort dm interaction when CoachChannelActions emits open-social for twitter", async () => {
+      const wrapper = await mountPage();
+
+      const channelActions = wrapper.findComponent({
+        name: "CoachChannelActions",
       });
-
+      channelActions.vm.$emit("open-social", "twitter");
       await flushPromises();
 
-      const textBtn = wrapper.find('[data-test="send-text-btn"]');
-      await textBtn.trigger("click");
+      expect(mockCreateInteraction).toHaveBeenCalledWith(
+        expect.objectContaining({
+          coach_id: "coach-123",
+          school_id: "school-123",
+          type: "dm",
+          direction: "outbound",
+        }),
+      );
+      expect(mockFetchInteractions).toHaveBeenCalledWith({
+        schoolId: "school-123",
+      });
+    });
 
-      expect(mockOpenCommunication).toHaveBeenCalledWith(
-        expect.objectContaining({ id: "coach-123" }),
-        "text",
+    it("logs a best-effort dm interaction when CoachChannelActions emits open-social for instagram", async () => {
+      const wrapper = await mountPage();
+
+      const channelActions = wrapper.findComponent({
+        name: "CoachChannelActions",
+      });
+      channelActions.vm.$emit("open-social", "instagram");
+      await flushPromises();
+
+      expect(mockCreateInteraction).toHaveBeenCalledWith(
+        expect.objectContaining({
+          coach_id: "coach-123",
+          type: "dm",
+          direction: "outbound",
+        }),
       );
     });
 
-    it("handles call coach action", async () => {
-      // Mock window.location.href
-      delete (window as any).location;
-      (window as any).location = { href: "" };
+    it("swallows createInteraction failure — social-open logging is best-effort", async () => {
+      mockCreateInteraction.mockRejectedValue(new Error("insert failed"));
 
-      const CoachDetailPage =
-        await import("~/pages/coaches/[id]/index.vue").then((m) => m.default);
-      const wrapper = mount(CoachDetailPage, {
-        global: {
-          stubs: { NuxtLink: { template: "<a><slot /></a>" }, Teleport: true },
-        },
+      const wrapper = await mountPage();
+
+      const channelActions = wrapper.findComponent({
+        name: "CoachChannelActions",
       });
-
+      channelActions.vm.$emit("open-social", "twitter");
       await flushPromises();
 
-      const callBtn = wrapper.find('[data-test="call-coach-btn"]');
-      await callBtn.trigger("click");
-
-      expect(window.location.href).toBe("tel:555-1234");
-    });
-
-    it("handles Twitter action", async () => {
-      const { openTwitter } = await import("~/utils/socialMediaHandlers");
-
-      const CoachDetailPage =
-        await import("~/pages/coaches/[id]/index.vue").then((m) => m.default);
-      const wrapper = mount(CoachDetailPage, {
-        global: {
-          stubs: { NuxtLink: { template: "<a><slot /></a>" }, Teleport: true },
-        },
-      });
-
-      await flushPromises();
-
-      const twitterBtn = wrapper.find('[data-test="open-twitter-btn"]');
-      await twitterBtn.trigger("click");
-
-      expect(openTwitter).toHaveBeenCalled();
-    });
-
-    it("handles Instagram action", async () => {
-      const { openInstagram } = await import("~/utils/socialMediaHandlers");
-
-      const CoachDetailPage =
-        await import("~/pages/coaches/[id]/index.vue").then((m) => m.default);
-      const wrapper = mount(CoachDetailPage, {
-        global: {
-          stubs: { NuxtLink: { template: "<a><slot /></a>" }, Teleport: true },
-        },
-      });
-
-      await flushPromises();
-
-      const instagramBtn = wrapper.find('[data-test="open-instagram-btn"]');
-      await instagramBtn.trigger("click");
-
-      expect(openInstagram).toHaveBeenCalled();
+      expect(wrapper.text()).not.toContain("insert failed");
     });
   });
 
   describe("Coach Management", () => {
-    it("opens edit modal when edit is clicked", async () => {
-      const CoachDetailPage =
-        await import("~/pages/coaches/[id]/index.vue").then((m) => m.default);
-      const wrapper = mount(CoachDetailPage, {
-        global: {
-          stubs: {
-            NuxtLink: { template: "<a><slot /></a>" },
-            Teleport: true,
-            EditCoachModal: {
-              name: "EditCoachModal",
-              props: ["coach", "isOpen"],
-              template:
-                '<div v-if="isOpen" data-test="edit-coach-modal">Edit Modal</div>',
-            },
-          },
-        },
-      });
-
-      await flushPromises();
+    it("opens edit modal when header edit button is clicked", async () => {
+      const wrapper = await mountPage();
 
       const editBtn = wrapper.find('[data-test="edit-coach-btn"]');
       expect(editBtn.exists()).toBe(true);
-
-      await editBtn.trigger("click");
-      await wrapper.vm.$nextTick();
-
-      const modal = wrapper.find('[data-test="edit-coach-modal"]');
-      expect(modal.exists()).toBe(true);
-    });
-
-    it("closes edit modal when close event is emitted", async () => {
-      const CoachDetailPage =
-        await import("~/pages/coaches/[id]/index.vue").then((m) => m.default);
-      const wrapper = mount(CoachDetailPage, {
-        global: {
-          stubs: {
-            NuxtLink: { template: "<a><slot /></a>" },
-            Teleport: true,
-            EditCoachModal: {
-              name: "EditCoachModal",
-              props: ["coach", "isOpen"],
-              emits: ["close", "updated"],
-              template: `
-                <div v-if="isOpen" data-test="edit-coach-modal">
-                  <button @click="$emit('close')" data-test="close-modal-btn">Close</button>
-                </div>
-              `,
-            },
-          },
-        },
-      });
-
-      await flushPromises();
-
-      // Open modal
-      const editBtn = wrapper.find('[data-test="edit-coach-btn"]');
       await editBtn.trigger("click");
       await wrapper.vm.$nextTick();
 
       expect(wrapper.find('[data-test="edit-coach-modal"]').exists()).toBe(
         true,
       );
+    });
 
-      // Close modal
-      const closeBtn = wrapper.find('[data-test="close-modal-btn"]');
-      await closeBtn.trigger("click");
+    it("opens edit modal when CoachInternalNotes emits edit", async () => {
+      const wrapper = await mountPage();
+
+      const notes = wrapper.findComponent({ name: "CoachInternalNotes" });
+      notes.vm.$emit("edit");
+      await wrapper.vm.$nextTick();
+
+      expect(wrapper.find('[data-test="edit-coach-modal"]').exists()).toBe(
+        true,
+      );
+    });
+
+    it("closes edit modal on close event", async () => {
+      const wrapper = await mountPage();
+
+      await wrapper.find('[data-test="edit-coach-btn"]').trigger("click");
+      await wrapper.vm.$nextTick();
+
+      await wrapper.find('[data-test="close-edit-btn"]').trigger("click");
       await wrapper.vm.$nextTick();
 
       expect(wrapper.find('[data-test="edit-coach-modal"]').exists()).toBe(
@@ -520,15 +414,7 @@ describe("Coach Detail Page", () => {
     });
 
     it("opens delete modal when delete is clicked", async () => {
-      const CoachDetailPage =
-        await import("~/pages/coaches/[id]/index.vue").then((m) => m.default);
-      const wrapper = mount(CoachDetailPage, {
-        global: {
-          stubs: { NuxtLink: { template: "<a><slot /></a>" }, Teleport: true },
-        },
-      });
-
-      await flushPromises();
+      const wrapper = await mountPage();
 
       const deleteBtn = wrapper.find('[data-test="coach-detail-delete-btn"]');
       await deleteBtn.trigger("click");
@@ -540,22 +426,12 @@ describe("Coach Detail Page", () => {
     it("deletes coach and navigates when confirmed", async () => {
       mockSmartDelete.mockResolvedValue({ cascadeUsed: false });
 
-      const CoachDetailPage =
-        await import("~/pages/coaches/[id]/index.vue").then((m) => m.default);
-      const wrapper = mount(CoachDetailPage, {
-        global: {
-          stubs: { NuxtLink: { template: "<a><slot /></a>" }, Teleport: true },
-        },
-      });
+      const wrapper = await mountPage();
 
+      await wrapper.find('[data-test="coach-detail-delete-btn"]').trigger("click");
       await flushPromises();
 
-      const deleteBtn = wrapper.find('[data-test="coach-detail-delete-btn"]');
-      await deleteBtn.trigger("click");
-      await flushPromises();
-
-      const confirmBtn = wrapper.find('[data-test="confirm-delete-btn"]');
-      await confirmBtn.trigger("click");
+      await wrapper.find('[data-test="confirm-delete-btn"]').trigger("click");
       await flushPromises();
 
       expect(mockSmartDelete).toHaveBeenCalledWith("coach-123");
@@ -563,21 +439,10 @@ describe("Coach Detail Page", () => {
     });
 
     it("closes delete modal when cancelled", async () => {
-      const CoachDetailPage =
-        await import("~/pages/coaches/[id]/index.vue").then((m) => m.default);
-      const wrapper = mount(CoachDetailPage, {
-        global: {
-          stubs: { NuxtLink: { template: "<a><slot /></a>" }, Teleport: true },
-        },
-      });
+      const wrapper = await mountPage();
 
+      await wrapper.find('[data-test="coach-detail-delete-btn"]').trigger("click");
       await flushPromises();
-
-      const deleteBtn = wrapper.find('[data-test="coach-detail-delete-btn"]');
-      await deleteBtn.trigger("click");
-      await flushPromises();
-
-      expect(wrapper.find('[data-test="delete-modal"]').exists()).toBe(true);
 
       const cancelBtn = wrapper.find('[data-test="cancel-delete-btn"]');
       await cancelBtn.trigger("click");
@@ -589,22 +454,12 @@ describe("Coach Detail Page", () => {
     it("handles delete error gracefully", async () => {
       mockSmartDelete.mockRejectedValue(new Error("Delete failed"));
 
-      const CoachDetailPage =
-        await import("~/pages/coaches/[id]/index.vue").then((m) => m.default);
-      const wrapper = mount(CoachDetailPage, {
-        global: {
-          stubs: { NuxtLink: { template: "<a><slot /></a>" }, Teleport: true },
-        },
-      });
+      const wrapper = await mountPage();
 
+      await wrapper.find('[data-test="coach-detail-delete-btn"]').trigger("click");
       await flushPromises();
 
-      const deleteBtn = wrapper.find('[data-test="coach-detail-delete-btn"]');
-      await deleteBtn.trigger("click");
-      await flushPromises();
-
-      const confirmBtn = wrapper.find('[data-test="confirm-delete-btn"]');
-      await confirmBtn.trigger("click");
+      await wrapper.find('[data-test="confirm-delete-btn"]').trigger("click");
       await flushPromises();
 
       expect(wrapper.text()).toContain("Delete failed");
@@ -612,79 +467,9 @@ describe("Coach Detail Page", () => {
     });
   });
 
-  describe("Notes Management", () => {
-    it("saves regular notes when save is clicked", async () => {
-      mockUpdateCoach.mockResolvedValue(undefined);
-
-      const CoachDetailPage =
-        await import("~/pages/coaches/[id]/index.vue").then((m) => m.default);
-      const wrapper = mount(CoachDetailPage, {
-        global: {
-          stubs: { NuxtLink: { template: "<a><slot /></a>" }, Teleport: true },
-        },
-      });
-
-      await flushPromises();
-
-      const notesEditors = wrapper.findAll('[data-test="coach-notes-editor"]');
-      const regularNotesEditor = notesEditors[0];
-
-      const input = regularNotesEditor.find('[data-test="notes-input"]');
-      await input.setValue("Updated notes");
-
-      const saveBtn = regularNotesEditor.find('[data-test="save-notes-btn"]');
-      await saveBtn.trigger("click");
-      await flushPromises();
-
-      expect(mockUpdateCoach).toHaveBeenCalledWith("coach-123", {
-        notes: "Updated notes",
-      });
-    });
-  });
-
-  describe("Stats and Interactions", () => {
-    it("renders stats grid component", async () => {
-      const CoachDetailPage =
-        await import("~/pages/coaches/[id]/index.vue").then((m) => m.default);
-      const wrapper = mount(CoachDetailPage, {
-        global: {
-          stubs: { NuxtLink: { template: "<a><slot /></a>" }, Teleport: true },
-        },
-      });
-
-      await flushPromises();
-
-      expect(wrapper.find('[data-test="coach-stats-grid"]').exists()).toBe(
-        true,
-      );
-    });
-
-    it("renders recent interactions component", async () => {
-      const CoachDetailPage =
-        await import("~/pages/coaches/[id]/index.vue").then((m) => m.default);
-      const wrapper = mount(CoachDetailPage, {
-        global: {
-          stubs: { NuxtLink: { template: "<a><slot /></a>" }, Teleport: true },
-        },
-      });
-
-      await flushPromises();
-
-      expect(
-        wrapper.find('[data-test="coach-interactions-log"]').exists(),
-      ).toBe(true);
-    });
-  });
-
   describe("Accessibility", () => {
     it("has skip link", async () => {
-      const CoachDetailPage =
-        await import("~/pages/coaches/[id]/index.vue").then((m) => m.default);
-      const wrapper = mount(CoachDetailPage, {
-        global: {
-          stubs: { NuxtLink: { template: "<a><slot /></a>" }, Teleport: true },
-        },
-      });
+      const wrapper = await mountPage();
 
       const skipLink = wrapper.find('a[href="#main-content"]');
       expect(skipLink.exists()).toBe(true);
@@ -692,16 +477,9 @@ describe("Coach Detail Page", () => {
     });
 
     it("main content has proper id for skip link", async () => {
-      const CoachDetailPage =
-        await import("~/pages/coaches/[id]/index.vue").then((m) => m.default);
-      const wrapper = mount(CoachDetailPage, {
-        global: {
-          stubs: { NuxtLink: { template: "<a><slot /></a>" }, Teleport: true },
-        },
-      });
+      const wrapper = await mountPage();
 
-      const mainContent = wrapper.find("#main-content");
-      expect(mainContent.exists()).toBe(true);
+      expect(wrapper.find("#main-content").exists()).toBe(true);
     });
   });
 });
