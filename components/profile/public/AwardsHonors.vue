@@ -11,14 +11,14 @@ defineProps<{ awards: ProfileAward[] }>();
       Awards &amp; Honors
     </h2>
     <div class="flex flex-wrap gap-1.5">
-      <DSBadge
+      <DesignSystemBadge
         v-for="(award, idx) in awards"
         :key="`${award.title}-${idx}`"
         color="orange"
         variant="light"
       >
         {{ award.title }}<span v-if="award.year"> · {{ award.year }}</span>
-      </DSBadge>
+      </DesignSystemBadge>
     </div>
   </section>
 </template>

@@ -10,7 +10,7 @@ defineProps<{ metrics: PublicMetric[] }>();
     v-if="metrics.length"
     class="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4"
   >
-    <DSCard v-for="metric in metrics" :key="metric.key" padding="md">
+    <DesignSystemCard v-for="metric in metrics" :key="metric.key" padding="md">
       <div class="flex items-baseline gap-1">
         <span class="text-2xl font-bold text-brand-slate-900">{{
           metric.value
@@ -36,6 +36,6 @@ defineProps<{ metrics: PublicMetric[] }>();
           />
         </svg>
       </div>
-    </DSCard>
+    </DesignSystemCard>
   </section>
 </template>

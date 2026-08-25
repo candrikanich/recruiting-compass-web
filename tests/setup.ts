@@ -4,7 +4,7 @@ import { createPinia, setActivePinia } from "pinia";
 import { config } from "@vue/test-utils";
 import * as axeMatchers from "vitest-axe/matchers";
 import DesignSystemFormSegmentedControl from "~/components/DesignSystem/Form/FormSegmentedControl.vue";
-import DSButton from "~/components/DesignSystem/Button.vue";
+import DesignSystemButton from "~/components/DesignSystem/Button.vue";
 expect.extend(axeMatchers);
 
 // Set up environment for Pinia
@@ -268,7 +268,7 @@ config.global.stubs = {
 config.global.components = {
   ...(config.global.components ?? {}),
   DesignSystemFormSegmentedControl,
-  DSButton,
+  DesignSystemButton,
 };
 
 // Initialize Pinia for tests

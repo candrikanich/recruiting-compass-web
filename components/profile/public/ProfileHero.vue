@@ -62,13 +62,13 @@ const physicals = computed(() => {
           <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">
             {{ data.playerName }}
           </h1>
-          <DSBadge
+          <DesignSystemBadge
             v-if="data.athletic?.primary_sport"
             color="blue"
             variant="solid"
           >
             {{ data.athletic.primary_sport }}
-          </DSBadge>
+          </DesignSystemBadge>
         </div>
 
         <p
@@ -86,12 +86,12 @@ const physicals = computed(() => {
         </p>
 
         <div class="mt-6 flex flex-wrap items-center gap-3">
-          <DSButton color="blue" variant="solid" @click="$emit('contact')">
+          <DesignSystemButton color="blue" variant="solid" @click="$emit('contact')">
             Contact Player
-          </DSButton>
-          <DSButton color="slate" variant="outline" @click="$emit('interest')">
+          </DesignSystemButton>
+          <DesignSystemButton color="slate" variant="outline" @click="$emit('interest')">
             Express Interest
-          </DSButton>
+          </DesignSystemButton>
           <span
             class="inline-flex items-center gap-1.5 rounded-full bg-brand-emerald-900/40 px-3 py-1 text-xs font-medium text-brand-emerald-300 ring-1 ring-brand-emerald-700/50"
           >

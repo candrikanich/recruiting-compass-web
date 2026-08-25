@@ -18,7 +18,7 @@ const PLATFORM_LABEL: Record<VideoLink["platform"], string> = {
       Highlights
     </h2>
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-      <DSCard v-for="link in film" :key="link.url" padding="md">
+      <DesignSystemCard v-for="link in film" :key="link.url" padding="md">
         <a
           :href="link.url"
           target="_blank"
@@ -44,7 +44,7 @@ const PLATFORM_LABEL: Record<VideoLink["platform"], string> = {
             </p>
           </div>
         </a>
-      </DSCard>
+      </DesignSystemCard>
     </div>
   </section>
 </template>

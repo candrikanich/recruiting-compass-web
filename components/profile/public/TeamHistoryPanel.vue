@@ -10,7 +10,7 @@ defineProps<{ entries: PublicTeamHistoryEntry[] | null }>();
     <h2 class="mb-3 text-sm font-semibold text-brand-slate-900">
       Team History
     </h2>
-    <DSCard padding="md">
+    <DesignSystemCard padding="md">
       <ul class="divide-y divide-brand-slate-100">
         <li
           v-for="(entry, idx) in entries"
@@ -35,6 +35,6 @@ defineProps<{ entries: PublicTeamHistoryEntry[] | null }>();
           </span>
         </li>
       </ul>
-    </DSCard>
+    </DesignSystemCard>
   </section>
 </template>

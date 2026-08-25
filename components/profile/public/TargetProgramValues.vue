@@ -11,7 +11,7 @@ defineProps<{
     <h2 class="mb-3 text-sm font-semibold text-brand-slate-900">
       What I'm Looking For
     </h2>
-    <DSCard padding="md">
+    <DesignSystemCard padding="md">
       <p v-if="lookingFor" class="text-sm leading-relaxed text-brand-slate-700">
         {{ lookingFor }}
       </p>
@@ -20,15 +20,15 @@ defineProps<{
         class="mt-3 flex flex-wrap gap-1.5"
         :class="{ 'mt-0': !lookingFor }"
       >
-        <DSBadge
+        <DesignSystemBadge
           v-for="tag in valuesTags"
           :key="tag"
           color="purple"
           variant="light"
         >
           {{ tag }}
-        </DSBadge>
+        </DesignSystemBadge>
       </div>
-    </DSCard>
+    </DesignSystemCard>
   </section>
 </template>

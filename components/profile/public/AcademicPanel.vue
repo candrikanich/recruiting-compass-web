@@ -11,7 +11,7 @@ defineProps<{
 <template>
   <section v-if="academics">
     <h2 class="mb-3 text-sm font-semibold text-brand-slate-900">Academics</h2>
-    <DSCard padding="md">
+    <DesignSystemCard padding="md">
       <dl class="grid grid-cols-2 gap-x-8 gap-y-3 text-sm sm:grid-cols-3">
         <div v-if="academics.gpa != null" class="flex flex-col">
           <dt class="text-xs text-brand-slate-500">GPA</dt>
@@ -56,6 +56,6 @@ defineProps<{
           {{ academics.core_courses.join(", ") }}
         </p>
       </div>
-    </DSCard>
+    </DesignSystemCard>
   </section>
 </template>
