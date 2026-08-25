@@ -112,7 +112,7 @@ describe("ProfilePreview.vue", () => {
     await nextTick();
 
     expect(wrapper.text()).toContain("Fall Highlights");
-    expect(wrapper.text()).toContain("hudl");
+    expect(wrapper.text()).toContain("Hudl");
   });
 
   it("shows no film section when show_film is false, even with links loaded", async () => {
