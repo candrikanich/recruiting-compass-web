@@ -298,4 +298,135 @@ describe("canonical positions", () => {
       ]);
     });
   });
+
+  // Snapshot guard for the ENTIRE sport/position vocabulary. Any accidental
+  // sport deletion, rename, or position-list edit fails here loudly — the
+  // per-function specs above only spot-check a handful of sports, so the less
+  // common sports (Field Hockey, Water Polo, Wrestling, Rowing, ...) would
+  // otherwise regress silently. Onboarding, the edit form, and iOS all derive
+  // from this map, so it is the one place worth pinning exactly.
+  describe("SPORT_POSITIONS complete vocabulary (regression guard)", () => {
+    const EXPECTED_VOCABULARY: Record<string, readonly string[]> = {
+      Baseball: [
+        "Pitcher",
+        "Catcher",
+        "First Base",
+        "Second Base",
+        "Third Base",
+        "Shortstop",
+        "Left Field",
+        "Center Field",
+        "Right Field",
+        "Designated Hitter",
+      ],
+      Softball: [
+        "Pitcher",
+        "Catcher",
+        "First Base",
+        "Second Base",
+        "Third Base",
+        "Shortstop",
+        "Left Field",
+        "Center Field",
+        "Right Field",
+        "Designated Hitter",
+      ],
+      Basketball: [
+        "Point Guard",
+        "Shooting Guard",
+        "Small Forward",
+        "Power Forward",
+        "Center",
+      ],
+      Football: [
+        "Quarterback",
+        "Running Back",
+        "Wide Receiver",
+        "Tight End",
+        "Offensive Line",
+        "Defensive Line",
+        "Linebacker",
+        "Defensive Back",
+        "Kicker",
+        "Punter",
+      ],
+      Soccer: ["Goalkeeper", "Defender", "Midfielder", "Forward"],
+      Volleyball: [
+        "Outside Hitter",
+        "Middle Blocker",
+        "Setter",
+        "Libero",
+        "Opposite Hitter",
+        "Defensive Specialist",
+      ],
+      "Track & Field": [
+        "Sprinter",
+        "Distance Runner",
+        "Jumper",
+        "Thrower",
+        "Hurdler",
+      ],
+      Swimming: [
+        "Freestyle",
+        "Backstroke",
+        "Breaststroke",
+        "Butterfly",
+        "Individual Medley",
+        "Diver",
+      ],
+      "Cross Country": ["Runner"],
+      Tennis: ["Singles", "Doubles"],
+      Golf: ["Golfer"],
+      Lacrosse: ["Attackman", "Midfielder", "Defenseman", "Goalie"],
+      "Field Hockey": ["Forward", "Midfielder", "Defender", "Goalkeeper"],
+      "Ice Hockey": ["Forward", "Defenseman", "Goalie"],
+      Wrestling: ["Wrestler"],
+      Rowing: ["Rower"],
+      "Water Polo": ["Field Player", "Goalkeeper"],
+      Gymnastics: [
+        "All-Around",
+        "Vault",
+        "Uneven Bars",
+        "Balance Beam",
+        "Floor Exercise",
+        "Pommel Horse",
+        "Still Rings",
+        "Parallel Bars",
+        "Horizontal Bar",
+      ],
+      "Beach Volleyball": ["Blocker", "Defender"],
+    };
+
+    it("exposes exactly the expected sport keys (no add/drop/rename)", () => {
+      expect(Object.keys(SPORT_POSITIONS).sort()).toEqual(
+        Object.keys(EXPECTED_VOCABULARY).sort(),
+      );
+    });
+
+    it("pins every sport's full position list", () => {
+      expect(SPORT_POSITIONS).toEqual(EXPECTED_VOCABULARY);
+    });
+
+    it.each(Object.keys(EXPECTED_VOCABULARY))(
+      "%s: getCanonicalPositions returns the pinned list",
+      (sport) => {
+        expect(getCanonicalPositions(sport)).toEqual([
+          ...EXPECTED_VOCABULARY[sport],
+        ]);
+      },
+    );
+
+    it("every sport has at least one position and no blank/dupe entries", () => {
+      for (const [sport, positions] of Object.entries(SPORT_POSITIONS)) {
+        expect(positions.length, `${sport} has no positions`).toBeGreaterThan(
+          0,
+        );
+        const trimmed = positions.map((p) => p.trim());
+        expect(trimmed, `${sport} has a blank position`).not.toContain("");
+        expect(new Set(trimmed).size, `${sport} has duplicate positions`).toBe(
+          positions.length,
+        );
+      }
+    });
+  });
 });

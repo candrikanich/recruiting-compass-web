@@ -13,6 +13,7 @@
  * - p2-data-football-track.md           → FBS, FCS, XCTF
  * - p2-data-vball-golf-lacrosse.md      → WVB, MGO, MLA, WLA
  * - p2-data-other-d2.md                 → Other (D1 "All Other Sports"), D2_ALL
+ * - Other bundle PDF, re-read 2026-08-25 → OTHER_WGYM (women's gymnastics)
  *
  * Edge cases applied (locked, see plan):
  * - MBB "TBD" combine windows (NBA G League Combine, NBA Draft Combine, NBPA
@@ -68,7 +69,13 @@ const MBA: SportCalendar = {
       description: "Quiet period — in-person contact only on campus",
       confidence: "MEDIUM",
     },
-    { type: "contact", start: "2026-09-11", end: "2026-10-11", description: "Contact period", confidence: "MEDIUM" },
+    {
+      type: "contact",
+      start: "2026-09-11",
+      end: "2026-10-11",
+      description: "Contact period",
+      confidence: "MEDIUM",
+    },
     {
       type: "quiet",
       start: "2026-10-12",
@@ -81,14 +88,16 @@ const MBA: SportCalendar = {
       type: "dead",
       start: "2026-11-09",
       end: "2026-11-12",
-      description: "Dead period spanning the D1/D2 early signing period open (Nov 11, 2026)",
+      description:
+        "Dead period spanning the D1/D2 early signing period open (Nov 11, 2026)",
       confidence: "HIGH",
     },
     {
       type: "recruiting_shutdown",
       start: "2026-11-24",
       end: "2026-11-29",
-      description: "Thanksgiving recruiting shutdown — no contacts, evaluations, visits, or correspondence",
+      description:
+        "Thanksgiving recruiting shutdown — no contacts, evaluations, visits, or correspondence",
       confidence: "MEDIUM",
     },
     {
@@ -98,22 +107,36 @@ const MBA: SportCalendar = {
       description: "Winter-holiday recruiting shutdown",
       confidence: "MEDIUM",
     },
-    { type: "dead", start: "2027-01-07", end: "2027-01-10", description: "Dead period", confidence: "MEDIUM" },
+    {
+      type: "dead",
+      start: "2027-01-07",
+      end: "2027-01-10",
+      description: "Dead period",
+      confidence: "MEDIUM",
+    },
     {
       type: "contact",
       start: "2027-03-01",
       end: "2027-07-31",
-      description: "Contact period (spring/summer, season-long — interrupted by 3 dead periods)",
+      description:
+        "Contact period (spring/summer, season-long — interrupted by 3 dead periods)",
       confidence: "HIGH",
     },
     {
       type: "dead",
       start: "2027-05-31",
       end: "2027-06-07",
-      description: "Dead period (around College World Series selection/travel window)",
+      description:
+        "Dead period (around College World Series selection/travel window)",
       confidence: "MEDIUM",
     },
-    { type: "dead", start: "2027-06-19", end: "2027-06-21", description: "Dead period", confidence: "MEDIUM" },
+    {
+      type: "dead",
+      start: "2027-06-19",
+      end: "2027-06-21",
+      description: "Dead period",
+      confidence: "MEDIUM",
+    },
     {
       type: "dead",
       start: "2027-07-03",
@@ -140,7 +163,13 @@ const WSB: SportCalendar = {
   source: `${BUCKET}/${SEASON}D1Rec_WSBRecruitingCalendar.pdf`,
   verifiedOn: VERIFIED_ON,
   periods: [
-    { type: "contact", start: "2026-08-01", end: "2026-08-09", description: "Contact Period", confidence: "HIGH" },
+    {
+      type: "contact",
+      start: "2026-08-01",
+      end: "2026-08-09",
+      description: "Contact Period",
+      confidence: "HIGH",
+    },
     {
       type: "evaluation",
       start: "2026-08-10",
@@ -153,7 +182,8 @@ const WSB: SportCalendar = {
       type: "dead",
       start: "2026-08-28",
       end: "2026-09-03",
-      description: "Dead Period (carved out of the Aug 10–Nov 22 evaluation window)",
+      description:
+        "Dead Period (carved out of the Aug 10–Nov 22 evaluation window)",
       confidence: "HIGH",
     },
     {
@@ -168,7 +198,8 @@ const WSB: SportCalendar = {
       type: "dead",
       start: "2026-11-09",
       end: "2026-11-12",
-      description: "Dead Period (carved out of the Oct17–Nov22 evaluation window)",
+      description:
+        "Dead Period (carved out of the Oct17–Nov22 evaluation window)",
       confidence: "HIGH",
     },
     {
@@ -186,7 +217,13 @@ const WSB: SportCalendar = {
       description: "Recruiting Shutdown",
       confidence: "HIGH",
     },
-    { type: "dead", start: "2026-12-09", end: "2026-12-12", description: "Dead Period", confidence: "HIGH" },
+    {
+      type: "dead",
+      start: "2026-12-09",
+      end: "2026-12-12",
+      description: "Dead Period",
+      confidence: "HIGH",
+    },
     {
       type: "recruiting_shutdown",
       start: "2026-12-22",
@@ -213,14 +250,16 @@ const WSB: SportCalendar = {
       type: "dead",
       start: "2027-06-01",
       end: "2027-06-11",
-      description: "Dead Period (WCWS-anchored; dates shift with WCWS schedule)",
+      description:
+        "Dead Period (WCWS-anchored; dates shift with WCWS schedule)",
       confidence: "HIGH",
     },
     {
       type: "contact",
       start: "2027-06-12",
       end: "2027-07-31",
-      description: "Contact Period (WCWS-anchored; begins the day after the dead period)",
+      description:
+        "Contact Period (WCWS-anchored; begins the day after the dead period)",
       confidence: "HIGH",
     },
   ],
@@ -234,8 +273,20 @@ const MBB: SportCalendar = {
   source: `${BUCKET}/${SEASON}D1Rec_MBBRecruitingCalendar.pdf`,
   verifiedOn: VERIFIED_ON,
   periods: [
-    { type: "dead", start: "2026-08-01", end: "2026-08-19", description: "Dead Period", confidence: "HIGH" },
-    { type: "quiet", start: "2026-08-20", end: "2026-09-08", description: "Quiet Period", confidence: "HIGH" },
+    {
+      type: "dead",
+      start: "2026-08-01",
+      end: "2026-08-19",
+      description: "Dead Period",
+      confidence: "HIGH",
+    },
+    {
+      type: "quiet",
+      start: "2026-08-20",
+      end: "2026-09-08",
+      description: "Quiet Period",
+      confidence: "HIGH",
+    },
     {
       type: "contact",
       start: "2026-09-09",
@@ -248,21 +299,24 @@ const MBB: SportCalendar = {
       type: "dead",
       start: "2026-11-09",
       end: "2026-11-12",
-      description: "Dead Period (carved out of the Sep9–Apr30 recruiting period)",
+      description:
+        "Dead Period (carved out of the Sep9–Apr30 recruiting period)",
       confidence: "HIGH",
     },
     {
       type: "dead",
       start: "2026-12-24",
       end: "2026-12-26",
-      description: "Dead Period (carved out of the Sep9–Apr30 recruiting period)",
+      description:
+        "Dead Period (carved out of the Sep9–Apr30 recruiting period)",
       confidence: "HIGH",
     },
     {
       type: "dead",
       start: "2027-04-01",
       end: "2027-04-08",
-      description: "Dead Period (carved out of the Sep9–Apr30 recruiting period)",
+      description:
+        "Dead Period (carved out of the Sep9–Apr30 recruiting period)",
       confidence: "HIGH",
     },
     {
@@ -277,7 +331,13 @@ const MBB: SportCalendar = {
     // NBA Draft Combine (evaluation, PDF shows "TBD"), NBPA Top 100 Camp (evaluation,
     // PDF shows "TBD") — no concrete dates published; 2025-26 equivalents were May 8–10,
     // May 10–17, and Jun 10–11 respectively but the 2026-27 PDF gives no date to transcribe.
-    { type: "dead", start: "2027-05-09", end: "2027-05-09", description: "Dead Period", confidence: "HIGH" },
+    {
+      type: "dead",
+      start: "2027-05-09",
+      end: "2027-05-09",
+      description: "Dead Period",
+      confidence: "HIGH",
+    },
     {
       type: "evaluation",
       start: "2027-05-14",
@@ -286,20 +346,34 @@ const MBB: SportCalendar = {
         "Evaluation Period — NCAA certified events only and regularly scheduled international scholastic/nonscholastic team practice and competition; begins Friday 8 AM, ends Sunday 4 PM",
       confidence: "HIGH",
     },
-    { type: "dead", start: "2027-05-26", end: "2027-06-06", description: "Dead Period", confidence: "HIGH" },
+    {
+      type: "dead",
+      start: "2027-05-26",
+      end: "2027-06-06",
+      description: "Dead Period",
+      confidence: "HIGH",
+    },
     {
       type: "evaluation",
       start: "2027-06-11",
       end: "2027-06-13",
-      description: "Evaluation Period — for approved NCAA, NFHS and applicable two-year college governing body scholastic events",
+      description:
+        "Evaluation Period — for approved NCAA, NFHS and applicable two-year college governing body scholastic events",
       confidence: "HIGH",
     },
-    { type: "dead", start: "2027-06-19", end: "2027-06-20", description: "Dead Period", confidence: "HIGH" },
+    {
+      type: "dead",
+      start: "2027-06-19",
+      end: "2027-06-20",
+      description: "Dead Period",
+      confidence: "HIGH",
+    },
     {
       type: "evaluation",
       start: "2027-06-25",
       end: "2027-06-27",
-      description: "Evaluation Period — for approved NCAA, NFHS and applicable two-year college governing body scholastic events",
+      description:
+        "Evaluation Period — for approved NCAA, NFHS and applicable two-year college governing body scholastic events",
       confidence: "HIGH",
     },
     {
@@ -318,9 +392,27 @@ const MBB: SportCalendar = {
         "Evaluation Period (active only Jul 8–11 and Jul 15–18, carved out of the Jul1–31 dead period) — NCAA certified events, institutional camps, permissible governing body events, and regularly scheduled international scholastic/nonscholastic team practice and competition; begins Thursday 8 AM, ends Sunday 6 PM",
       confidence: "HIGH",
     },
-    { type: "quiet", start: "2027-07-19", end: "2027-07-25", description: "Quiet Period", confidence: "HIGH" },
-    { type: "dead", start: "2027-08-01", end: "2027-08-18", description: "Dead Period", confidence: "HIGH" },
-    { type: "quiet", start: "2027-08-19", end: "2027-08-31", description: "Quiet Period", confidence: "HIGH" },
+    {
+      type: "quiet",
+      start: "2027-07-19",
+      end: "2027-07-25",
+      description: "Quiet Period",
+      confidence: "HIGH",
+    },
+    {
+      type: "dead",
+      start: "2027-08-01",
+      end: "2027-08-18",
+      description: "Dead Period",
+      confidence: "HIGH",
+    },
+    {
+      type: "quiet",
+      start: "2027-08-19",
+      end: "2027-08-31",
+      description: "Quiet Period",
+      confidence: "HIGH",
+    },
   ],
   milestones: [],
 };
@@ -336,7 +428,8 @@ const WBB: SportCalendar = {
       type: "quiet",
       start: "2026-08-01",
       end: "2026-08-31",
-      description: "Quiet Period; contains a carved-out Recruiting Shutdown Aug 10–16",
+      description:
+        "Quiet Period; contains a carved-out Recruiting Shutdown Aug 10–16",
       confidence: "HIGH",
     },
     {
@@ -358,14 +451,16 @@ const WBB: SportCalendar = {
       type: "evaluation",
       start: "2026-10-01",
       end: "2027-02-28",
-      description: "Evaluation Period — scholastic activities only; contains a carved-out Dead Period Dec 24–26",
+      description:
+        "Evaluation Period — scholastic activities only; contains a carved-out Dead Period Dec 24–26",
       confidence: "HIGH",
     },
     {
       type: "dead",
       start: "2026-12-24",
       end: "2026-12-26",
-      description: "Dead Period (carved out of the Oct1–Feb28 evaluation period)",
+      description:
+        "Dead Period (carved out of the Oct1–Feb28 evaluation period)",
       confidence: "HIGH",
     },
     {
@@ -376,7 +471,13 @@ const WBB: SportCalendar = {
         "Contact Period — for seniors and two-year college PSAs only; evaluation period for other PSAs for scholastic activities only",
       confidence: "HIGH",
     },
-    { type: "dead", start: "2027-04-01", end: "2027-04-05", description: "Dead Period", confidence: "HIGH" },
+    {
+      type: "dead",
+      start: "2027-04-01",
+      end: "2027-04-05",
+      description: "Dead Period",
+      confidence: "HIGH",
+    },
     {
       type: "quiet",
       start: "2027-04-06",
@@ -389,7 +490,8 @@ const WBB: SportCalendar = {
       type: "dead",
       start: "2027-04-22",
       end: "2027-04-22",
-      description: "Dead Period — for high school and two-year college PSAs only",
+      description:
+        "Dead Period — for high school and two-year college PSAs only",
       confidence: "HIGH",
     },
     {
@@ -403,7 +505,8 @@ const WBB: SportCalendar = {
       type: "dead",
       start: "2027-04-26",
       end: "2027-04-26",
-      description: "Dead Period — for high school and two-year college PSAs only",
+      description:
+        "Dead Period — for high school and two-year college PSAs only",
       confidence: "HIGH",
     },
     {
@@ -413,7 +516,13 @@ const WBB: SportCalendar = {
       description: "Recruiting Shutdown",
       confidence: "HIGH",
     },
-    { type: "dead", start: "2027-05-13", end: "2027-05-13", description: "Dead Period", confidence: "HIGH" },
+    {
+      type: "dead",
+      start: "2027-05-13",
+      end: "2027-05-13",
+      description: "Dead Period",
+      confidence: "HIGH",
+    },
     {
       type: "evaluation",
       start: "2027-05-14",
@@ -421,12 +530,19 @@ const WBB: SportCalendar = {
       description: "Evaluation Period — certified nonscholastic events only",
       confidence: "HIGH",
     },
-    { type: "dead", start: "2027-05-17", end: "2027-05-17", description: "Dead Period", confidence: "HIGH" },
+    {
+      type: "dead",
+      start: "2027-05-17",
+      end: "2027-05-17",
+      description: "Dead Period",
+      confidence: "HIGH",
+    },
     {
       type: "dead",
       start: "2027-06-16",
       end: "2027-06-16",
-      description: "Dead Period (separate single-day window from May 17, same legend row grouping)",
+      description:
+        "Dead Period (separate single-day window from May 17, same legend row grouping)",
       confidence: "HIGH",
     },
     {
@@ -437,25 +553,57 @@ const WBB: SportCalendar = {
         "Evaluation Period (begins Jun 17 @ noon, ends Jun 19 @ 6 PM) — for scholastic events approved by the NCAA and NFHS and intercollegiate events approved by applicable two-year college governing body only",
       confidence: "HIGH",
     },
-    { type: "dead", start: "2027-06-20", end: "2027-06-20", description: "Dead Period", confidence: "HIGH" },
+    {
+      type: "dead",
+      start: "2027-06-20",
+      end: "2027-06-20",
+      description: "Dead Period",
+      confidence: "HIGH",
+    },
     {
       type: "dead",
       start: "2027-07-08",
       end: "2027-07-08",
-      description: "Dead Period (separate single-day window from Jun 20, same legend row grouping)",
+      description:
+        "Dead Period (separate single-day window from Jun 20, same legend row grouping)",
       confidence: "HIGH",
     },
-    { type: "evaluation", start: "2027-07-09", end: "2027-07-12", description: "Evaluation Period", confidence: "HIGH" },
-    { type: "dead", start: "2027-07-13", end: "2027-07-13", description: "Dead Period", confidence: "HIGH" },
+    {
+      type: "evaluation",
+      start: "2027-07-09",
+      end: "2027-07-12",
+      description: "Evaluation Period",
+      confidence: "HIGH",
+    },
+    {
+      type: "dead",
+      start: "2027-07-13",
+      end: "2027-07-13",
+      description: "Dead Period",
+      confidence: "HIGH",
+    },
     {
       type: "dead",
       start: "2027-07-22",
       end: "2027-07-22",
-      description: "Dead Period (separate single-day window from Jul 13, same legend row grouping)",
+      description:
+        "Dead Period (separate single-day window from Jul 13, same legend row grouping)",
       confidence: "HIGH",
     },
-    { type: "evaluation", start: "2027-07-23", end: "2027-07-26", description: "Evaluation Period", confidence: "HIGH" },
-    { type: "dead", start: "2027-07-27", end: "2027-07-27", description: "Dead Period", confidence: "HIGH" },
+    {
+      type: "evaluation",
+      start: "2027-07-23",
+      end: "2027-07-26",
+      description: "Evaluation Period",
+      confidence: "HIGH",
+    },
+    {
+      type: "dead",
+      start: "2027-07-27",
+      end: "2027-07-27",
+      description: "Dead Period",
+      confidence: "HIGH",
+    },
   ],
   milestones: [],
 };
@@ -467,7 +615,13 @@ const FBS: SportCalendar = {
   source: `${BUCKET}/${SEASON}D1Rec_FBSRecruitingCalendar.pdf`,
   verifiedOn: VERIFIED_ON,
   periods: [
-    { type: "dead", start: "2026-08-01", end: "2026-08-31", description: "Dead Period — full month of August", confidence: "HIGH" },
+    {
+      type: "dead",
+      start: "2026-08-01",
+      end: "2026-08-31",
+      description: "Dead Period — full month of August",
+      confidence: "HIGH",
+    },
     {
       type: "quiet",
       start: "2026-08-01",
@@ -488,7 +642,8 @@ const FBS: SportCalendar = {
       type: "dead",
       start: "2026-11-30",
       end: "2026-12-31",
-      description: "Dead Period (encompasses the Dec 2–4, 2026 early signing period)",
+      description:
+        "Dead Period (encompasses the Dec 2–4, 2026 early signing period)",
       confidence: "HIGH",
     },
   ],
@@ -497,13 +652,15 @@ const FBS: SportCalendar = {
       date: "2026-12-02",
       title: "Early Signing Period Opens (Football)",
       type: "signing",
-      description: "Early signing period, Dec 2–4, 2026 — falls inside the FBS Nov30–Dec31 Dead Period",
+      description:
+        "Early signing period, Dec 2–4, 2026 — falls inside the FBS Nov30–Dec31 Dead Period",
     },
     {
       date: "2027-02-03",
       title: "Regular (National) Signing Day (Football)",
       type: "signing",
-      description: "First Wednesday of February; no NCAA-wide end date — varies by institution's own scholarship-award policy",
+      description:
+        "First Wednesday of February; no NCAA-wide end date — varies by institution's own scholarship-award policy",
     },
   ],
 };
@@ -515,7 +672,13 @@ const FCS: SportCalendar = {
   source: `${BUCKET}/${SEASON}D1Rec_FCSRecruitingCalendar.pdf`,
   verifiedOn: VERIFIED_ON,
   periods: [
-    { type: "dead", start: "2026-08-01", end: "2026-08-31", description: "Dead Period — full month of August", confidence: "HIGH" },
+    {
+      type: "dead",
+      start: "2026-08-01",
+      end: "2026-08-31",
+      description: "Dead Period — full month of August",
+      confidence: "HIGH",
+    },
     {
       type: "quiet",
       start: "2026-08-01",
@@ -536,24 +699,33 @@ const FCS: SportCalendar = {
       type: "dead",
       start: "2026-11-30",
       end: "2026-12-03",
-      description: "Dead Period (immediately precedes/covers start of early signing period)",
+      description:
+        "Dead Period (immediately precedes/covers start of early signing period)",
       confidence: "HIGH",
     },
     {
       type: "contact",
       start: "2026-12-04",
       end: "2026-12-18",
-      description: "Contact Period (opens the day after early signing starts, in-person off-campus contact permitted)",
+      description:
+        "Contact Period (opens the day after early signing starts, in-person off-campus contact permitted)",
       confidence: "HIGH",
     },
     {
       type: "quiet",
       start: "2026-12-18",
       end: "2026-12-20",
-      description: "Quiet Period (short transition window before year-end dead period)",
+      description:
+        "Quiet Period (short transition window before year-end dead period)",
       confidence: "HIGH",
     },
-    { type: "dead", start: "2026-12-21", end: "2026-12-31", description: "Dead Period (year-end)", confidence: "HIGH" },
+    {
+      type: "dead",
+      start: "2026-12-21",
+      end: "2026-12-31",
+      description: "Dead Period (year-end)",
+      confidence: "HIGH",
+    },
   ],
   milestones: [
     {
@@ -591,21 +763,24 @@ const XCTF: SportCalendar = {
       type: "dead",
       start: "2026-11-09",
       end: "2026-11-12",
-      description: "Dead Period (carve-out within the Aug1–Dec13 Contact window; likely NCAA XC Championships week)",
+      description:
+        "Dead Period (carve-out within the Aug1–Dec13 Contact window; likely NCAA XC Championships week)",
       confidence: "HIGH",
     },
     {
       type: "dead",
       start: "2026-11-21",
       end: "2026-11-21",
-      description: "Dead Period, single day (carve-out within the same Contact window)",
+      description:
+        "Dead Period, single day (carve-out within the same Contact window)",
       confidence: "HIGH",
     },
     {
       type: "dead",
       start: "2026-12-14",
       end: "2026-12-26",
-      description: "Dead Period — holiday dead period, between the two long Contact windows",
+      description:
+        "Dead Period — holiday dead period, between the two long Contact windows",
       confidence: "HIGH",
     },
     {
@@ -620,14 +795,16 @@ const XCTF: SportCalendar = {
       type: "dead",
       start: "2027-03-12",
       end: "2027-03-13",
-      description: "Dead Period (carve-out; likely NCAA Indoor T&F Championships week)",
+      description:
+        "Dead Period (carve-out; likely NCAA Indoor T&F Championships week)",
       confidence: "HIGH",
     },
     {
       type: "dead",
       start: "2027-06-09",
       end: "2027-06-12",
-      description: "Dead Period (carve-out; likely NCAA Outdoor T&F Championships week)",
+      description:
+        "Dead Period (carve-out; likely NCAA Outdoor T&F Championships week)",
       confidence: "HIGH",
     },
   ],
@@ -641,19 +818,27 @@ const WVB: SportCalendar = {
   source: `${BUCKET}/${SEASON}D1Rec_WVBRecruitingCalendar.pdf`,
   verifiedOn: VERIFIED_ON,
   periods: [
-    { type: "quiet", start: "2026-08-01", end: "2026-08-31", description: "Quiet Period — in-person contact only on campus", confidence: "MEDIUM" },
+    {
+      type: "quiet",
+      start: "2026-08-01",
+      end: "2026-08-31",
+      description: "Quiet Period — in-person contact only on campus",
+      confidence: "MEDIUM",
+    },
     {
       type: "contact",
       start: "2026-09-01",
       end: "2026-11-30",
-      description: "Contact Period — off-campus in-person contact/evaluation permitted",
+      description:
+        "Contact Period — off-campus in-person contact/evaluation permitted",
       confidence: "MEDIUM",
     },
     {
       type: "dead",
       start: "2026-11-09",
       end: "2026-11-12",
-      description: "Dead Period — no contact/evaluation/visits, nested inside the Sep–Nov contact window",
+      description:
+        "Dead Period — no contact/evaluation/visits, nested inside the Sep–Nov contact window",
       confidence: "HIGH",
     },
     {
@@ -676,16 +861,59 @@ const WVB: SportCalendar = {
       type: "contact",
       start: "2027-01-15",
       end: "2027-07-31",
-      description: "Contact Period — off-campus in-person contact/evaluation permitted, minus 6 quiet-period carve-outs",
+      description:
+        "Contact Period — off-campus in-person contact/evaluation permitted, minus 6 quiet-period carve-outs",
       confidence: "MEDIUM",
     },
-    { type: "quiet", start: "2027-03-01", end: "2027-03-04", description: "Quiet Period (carve-out within the Jan–Jul contact window)", confidence: "MEDIUM" },
-    { type: "quiet", start: "2027-03-08", end: "2027-03-11", description: "Quiet Period (carve-out)", confidence: "MEDIUM" },
-    { type: "quiet", start: "2027-03-15", end: "2027-03-18", description: "Quiet Period (carve-out)", confidence: "MEDIUM" },
-    { type: "quiet", start: "2027-03-22", end: "2027-03-25", description: "Quiet Period (carve-out)", confidence: "MEDIUM" },
-    { type: "quiet", start: "2027-03-29", end: "2027-04-01", description: "Quiet Period (carve-out)", confidence: "MEDIUM" },
-    { type: "quiet", start: "2027-04-05", end: "2027-04-08", description: "Quiet Period (carve-out)", confidence: "MEDIUM" },
-    { type: "quiet", start: "2027-05-01", end: "2027-06-03", description: "Quiet Period (carve-out; final one of the year)", confidence: "MEDIUM" },
+    {
+      type: "quiet",
+      start: "2027-03-01",
+      end: "2027-03-04",
+      description: "Quiet Period (carve-out within the Jan–Jul contact window)",
+      confidence: "MEDIUM",
+    },
+    {
+      type: "quiet",
+      start: "2027-03-08",
+      end: "2027-03-11",
+      description: "Quiet Period (carve-out)",
+      confidence: "MEDIUM",
+    },
+    {
+      type: "quiet",
+      start: "2027-03-15",
+      end: "2027-03-18",
+      description: "Quiet Period (carve-out)",
+      confidence: "MEDIUM",
+    },
+    {
+      type: "quiet",
+      start: "2027-03-22",
+      end: "2027-03-25",
+      description: "Quiet Period (carve-out)",
+      confidence: "MEDIUM",
+    },
+    {
+      type: "quiet",
+      start: "2027-03-29",
+      end: "2027-04-01",
+      description: "Quiet Period (carve-out)",
+      confidence: "MEDIUM",
+    },
+    {
+      type: "quiet",
+      start: "2027-04-05",
+      end: "2027-04-08",
+      description: "Quiet Period (carve-out)",
+      confidence: "MEDIUM",
+    },
+    {
+      type: "quiet",
+      start: "2027-05-01",
+      end: "2027-06-03",
+      description: "Quiet Period (carve-out; final one of the year)",
+      confidence: "MEDIUM",
+    },
   ],
   milestones: [],
 };
@@ -697,7 +925,13 @@ const MGO: SportCalendar = {
   source: `${BUCKET}/${SEASON}D1Rec_MGORecruitingCalendar.pdf`,
   verifiedOn: VERIFIED_ON,
   periods: [
-    { type: "contact", start: "2026-08-01", end: "2026-11-25", description: "Contact Period", confidence: "MEDIUM" },
+    {
+      type: "contact",
+      start: "2026-08-01",
+      end: "2026-11-25",
+      description: "Contact Period",
+      confidence: "MEDIUM",
+    },
     {
       type: "dead",
       start: "2026-11-09",
@@ -753,14 +987,33 @@ const MLA: SportCalendar = {
   source: `${BUCKET}/${SEASON}D1Rec_MLARecruitingCalendar.pdf`,
   verifiedOn: VERIFIED_ON,
   periods: [
-    { type: "contact", start: "2026-08-01", end: "2026-08-03", description: "Contact Period", confidence: "MEDIUM" },
-    { type: "quiet", start: "2026-08-04", end: "2026-08-10", description: "Quiet Period", confidence: "MEDIUM" },
-    { type: "dead", start: "2026-08-11", end: "2026-08-31", description: "Dead Period", confidence: "MEDIUM" },
+    {
+      type: "contact",
+      start: "2026-08-01",
+      end: "2026-08-03",
+      description: "Contact Period",
+      confidence: "MEDIUM",
+    },
+    {
+      type: "quiet",
+      start: "2026-08-04",
+      end: "2026-08-10",
+      description: "Quiet Period",
+      confidence: "MEDIUM",
+    },
+    {
+      type: "dead",
+      start: "2026-08-11",
+      end: "2026-08-31",
+      description: "Dead Period",
+      confidence: "MEDIUM",
+    },
     {
       type: "contact",
       start: "2026-09-01",
       end: "2026-10-31",
-      description: 'Contact Period — footnoted "No lacrosse evaluations" for the entire month range',
+      description:
+        'Contact Period — footnoted "No lacrosse evaluations" for the entire month range',
       confidence: "MEDIUM",
     },
     {
@@ -778,7 +1031,13 @@ const MLA: SportCalendar = {
       description: "Dead Period nested inside the Nov 1–22 contact window",
       confidence: "HIGH",
     },
-    { type: "dead", start: "2026-11-23", end: "2026-11-29", description: "Dead Period — Thanksgiving week", confidence: "HIGH" },
+    {
+      type: "dead",
+      start: "2026-11-23",
+      end: "2026-11-29",
+      description: "Dead Period — Thanksgiving week",
+      confidence: "HIGH",
+    },
     {
       type: "quiet",
       start: "2026-11-30",
@@ -808,12 +1067,19 @@ const MLA: SportCalendar = {
       description: 'Contact Period — footnoted "No lacrosse evaluations"',
       confidence: "MEDIUM",
     },
-    { type: "quiet", start: "2027-01-19", end: "2027-02-28", description: "Quiet Period", confidence: "MEDIUM" },
+    {
+      type: "quiet",
+      start: "2027-01-19",
+      end: "2027-02-28",
+      description: "Quiet Period",
+      confidence: "MEDIUM",
+    },
     {
       type: "contact",
       start: "2027-03-01",
       end: "2027-05-27",
-      description: "Contact Period (no evaluation-blocking footnote — full evaluation allowed, unlike the fall/Jan contact windows)",
+      description:
+        "Contact Period (no evaluation-blocking footnote — full evaluation allowed, unlike the fall/Jan contact windows)",
       confidence: "MEDIUM",
     },
     {
@@ -829,7 +1095,8 @@ const MLA: SportCalendar = {
       type: "contact",
       start: "2027-06-01",
       end: "2027-07-31",
-      description: 'Contact Period — "JUN 1 @ NOON – JUL 31" (effective noon), minus the Jul 1–10 dead-period carve-out',
+      description:
+        'Contact Period — "JUN 1 @ NOON – JUL 31" (effective noon), minus the Jul 1–10 dead-period carve-out',
       confidence: "MEDIUM",
     },
     {
@@ -855,11 +1122,24 @@ const WLA: SportCalendar = {
       type: "recruiting_shutdown",
       start: "2026-08-01",
       end: "2026-08-14",
-      description: "Recruiting Shutdown — no contacts, evaluations, visits, correspondence, or calls permitted",
+      description:
+        "Recruiting Shutdown — no contacts, evaluations, visits, correspondence, or calls permitted",
       confidence: "MEDIUM",
     },
-    { type: "quiet", start: "2026-08-15", end: "2026-08-27", description: "Quiet Period", confidence: "MEDIUM" },
-    { type: "dead", start: "2026-08-28", end: "2026-09-03", description: "Dead Period", confidence: "MEDIUM" },
+    {
+      type: "quiet",
+      start: "2026-08-15",
+      end: "2026-08-27",
+      description: "Quiet Period",
+      confidence: "MEDIUM",
+    },
+    {
+      type: "dead",
+      start: "2026-08-28",
+      end: "2026-09-03",
+      description: "Dead Period",
+      confidence: "MEDIUM",
+    },
     {
       type: "contact",
       start: "2026-09-04",
@@ -872,28 +1152,32 @@ const WLA: SportCalendar = {
       type: "evaluation",
       start: "2026-11-06",
       end: "2026-11-08",
-      description: "Evaluation Period — first of three pre-Thanksgiving weekends, 5 PM Friday – Sunday",
+      description:
+        "Evaluation Period — first of three pre-Thanksgiving weekends, 5 PM Friday – Sunday",
       confidence: "HIGH",
     },
     {
       type: "dead",
       start: "2026-11-09",
       end: "2026-11-12",
-      description: "Dead Period nested between the first and second pre-Thanksgiving evaluation weekends",
+      description:
+        "Dead Period nested between the first and second pre-Thanksgiving evaluation weekends",
       confidence: "HIGH",
     },
     {
       type: "evaluation",
       start: "2026-11-13",
       end: "2026-11-15",
-      description: "Evaluation Period — second pre-Thanksgiving weekend, 5 PM Friday – Sunday",
+      description:
+        "Evaluation Period — second pre-Thanksgiving weekend, 5 PM Friday – Sunday",
       confidence: "HIGH",
     },
     {
       type: "dead",
       start: "2026-11-18",
       end: "2026-11-20",
-      description: "Dead Period — ends on the 20th when IWLCA Convention adjourns",
+      description:
+        "Dead Period — ends on the 20th when IWLCA Convention adjourns",
       confidence: "HIGH",
     },
     {
@@ -915,14 +1199,16 @@ const WLA: SportCalendar = {
       type: "contact",
       start: "2026-12-01",
       end: "2026-12-30",
-      description: "Contact Period — subject to Bylaw 13.1.7.3.1, minus the Dec 22–26 shutdown carve-out",
+      description:
+        "Contact Period — subject to Bylaw 13.1.7.3.1, minus the Dec 22–26 shutdown carve-out",
       confidence: "MEDIUM",
     },
     {
       type: "recruiting_shutdown",
       start: "2026-12-22",
       end: "2026-12-26",
-      description: "Recruiting Shutdown — Christmas window, nested inside the Dec 1–30 contact period",
+      description:
+        "Recruiting Shutdown — Christmas window, nested inside the Dec 1–30 contact period",
       confidence: "HIGH",
     },
     {
@@ -939,7 +1225,13 @@ const WLA: SportCalendar = {
       description: "Contact Period — subject to Bylaw 13.1.7.3.1",
       confidence: "MEDIUM",
     },
-    { type: "dead", start: "2027-05-28", end: "2027-05-30", description: "Dead Period", confidence: "MEDIUM" },
+    {
+      type: "dead",
+      start: "2027-05-28",
+      end: "2027-05-30",
+      description: "Dead Period",
+      confidence: "MEDIUM",
+    },
     {
       type: "contact",
       start: "2027-05-31",
@@ -959,7 +1251,8 @@ const WLA: SportCalendar = {
       type: "dead",
       start: "2027-07-02",
       end: "2027-07-06",
-      description: "Dead Period carve-out inside the Jun 11–Jul 31 evaluation window",
+      description:
+        "Dead Period carve-out inside the Jun 11–Jul 31 evaluation window",
       confidence: "MEDIUM",
     },
   ],
@@ -976,10 +1269,11 @@ const OTHER_SOURCE = `${BUCKET}/${OTHER_SEASON_EN_DASH}D1Rec_OtherRecruitingCale
 // ---------------------------------------------------------------------------
 // Other — Division I "All Other Sports" generic default. Used for app
 // sports with no dedicated NCAA recruiting calendar AND no sport-specific
-// windows enumerated in the "Other" bundle PDF: Tennis, Water Polo, and
-// non-male Golf. Soccer, Swimming, Ice Hockey, Rowing, Field Hockey, and
-// Wrestling have their own OTHER_* sub-calendars below (transcribed from the
-// same PDF) instead of falling back to this generic default.
+// windows enumerated in the "Other" bundle PDF: Tennis, Water Polo, non-male
+// Golf, Beach Volleyball, and men's Gymnastics. Soccer, Swimming, Ice Hockey,
+// Rowing, Field Hockey, Wrestling, and women's Gymnastics have their own OTHER_*
+// sub-calendars below (transcribed from the same PDF) instead of falling back to
+// this generic default.
 // ---------------------------------------------------------------------------
 const OTHER: SportCalendar = {
   source: OTHER_SOURCE,
@@ -1082,7 +1376,8 @@ const OTHER_SWIM: SportCalendar = {
       type: "recruiting_shutdown",
       start: "2026-08-17",
       end: "2026-08-23",
-      description: "Recruiting Shutdown — the third Monday in August through the following Sunday",
+      description:
+        "Recruiting Shutdown — the third Monday in August through the following Sunday",
       confidence: "HIGH",
     },
     {
@@ -1208,7 +1503,8 @@ const OTHER_FIELDHOCKEY: SportCalendar = {
       type: "recruiting_shutdown",
       start: "2026-12-24",
       end: "2027-01-01",
-      description: "Recruiting Shutdown (label only; no detail text on source card)",
+      description:
+        "Recruiting Shutdown (label only; no detail text on source card)",
       confidence: "HIGH",
     },
   ],
@@ -1238,7 +1534,8 @@ const OTHER_MWRESTLING: SportCalendar = {
       type: "recruiting_shutdown",
       start: "2027-03-16",
       end: "2027-03-21",
-      description: "Recruiting Shutdown — Tuesday through Sunday of the NCAA Division I Wrestling Championships",
+      description:
+        "Recruiting Shutdown — Tuesday through Sunday of the NCAA Division I Wrestling Championships",
       confidence: "HIGH",
     },
   ],
@@ -1273,6 +1570,74 @@ const OTHER_WWRESTLING: SportCalendar = {
   milestones: [],
 };
 
+// ---------------------------------------------------------------------------
+// OTHER_WGYM — Women's Gymnastics. Enumerated as its own table in the D1 "Other"
+// bundle PDF (unlike Beach Volleyball and Men's Gymnastics, which the PDF folds
+// into "All Other Sports" — they stay on the generic OTHER default). Transcribed
+// 2026-08-25 directly from the live PDF (source "Updated: August 4, 2026").
+// ---------------------------------------------------------------------------
+const OTHER_WGYM: SportCalendar = {
+  source: OTHER_SOURCE,
+  verifiedOn: "2026-08-25",
+  periods: [
+    {
+      type: "dead",
+      start: "2026-11-09",
+      end: "2026-11-12",
+      description:
+        "Dead Period — Monday through Thursday of the initial week for the fall signing date for athletics aid agreements",
+      confidence: "HIGH",
+    },
+    {
+      type: "recruiting_shutdown",
+      start: "2026-11-26",
+      end: "2026-11-29",
+      description:
+        "Recruiting Shutdown — Thanksgiving Day to the Sunday after Thanksgiving",
+      confidence: "HIGH",
+    },
+    {
+      type: "dead",
+      start: "2026-12-01",
+      end: "2026-12-30",
+      description: "Dead Period, Dec 1–30 (label only)",
+      confidence: "HIGH",
+    },
+    {
+      type: "dead",
+      start: "2027-04-14",
+      end: "2027-04-18",
+      description:
+        "Dead Period — The day before the first day of the National Collegiate Gymnastics Championships to noon on the day after the championships (effective noon)",
+      confidence: "HIGH",
+    },
+    {
+      type: "dead",
+      start: "2027-05-11",
+      end: "2027-05-13",
+      description:
+        "Dead Period — The first day to last day of the coaches association convention",
+      confidence: "HIGH",
+    },
+    {
+      type: "quiet",
+      start: "2027-05-17",
+      end: "2027-05-23",
+      description:
+        "Quiet Period — Monday to Sunday after the USA Gymnastics Developmental Nationals",
+      confidence: "HIGH",
+    },
+    {
+      type: "dead",
+      start: "2027-06-01",
+      end: "2027-06-15",
+      description: "Dead Period, Jun 1–15 (label only)",
+      confidence: "HIGH",
+    },
+  ],
+  milestones: [],
+};
+
 export const D1_CALENDARS: Record<NcaaCalendarKey, SportCalendar> = {
   MBA,
   WSB,
@@ -1295,6 +1660,7 @@ export const D1_CALENDARS: Record<NcaaCalendarKey, SportCalendar> = {
   OTHER_FIELDHOCKEY,
   OTHER_MWRESTLING,
   OTHER_WWRESTLING,
+  OTHER_WGYM,
 };
 
 // ---------------------------------------------------------------------------
