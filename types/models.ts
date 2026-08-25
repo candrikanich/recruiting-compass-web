@@ -524,7 +524,7 @@ export interface PublicProfileData {
   photoUrl: string | null;
   headerColor: string;
   bio: string | null;
-  /** null when show_academics is false */
+  /** null when the "academics" section is not visible */
   academics: {
     gpa?: number;
     sat_score?: number;
@@ -557,7 +557,7 @@ export interface PublicProfileData {
     on3_url?: string;
     sports247_url?: string;
   } | null;
-  /** null when show_film is false */
+  /** null when the "film" section is not visible */
   film: VideoLink[] | null;
   /** null when show_schools is false */
   schools: Array<{ id: string; name: string }> | null;
@@ -575,9 +575,9 @@ export interface PublicProfileData {
   lookingFor: string | null;
   valuesTags: string[];
   awards: ProfileAward[];
-  /** null when show_metrics is false */
+  /** null when the "metrics" section is not visible */
   metrics: PublicMetric[] | null;
-  /** null when show_schools is false */
+  /** null when the "team_history" section is not visible */
   teamHistory: PublicTeamHistoryEntry[] | null;
   sections: ProfileSection[];
 }
