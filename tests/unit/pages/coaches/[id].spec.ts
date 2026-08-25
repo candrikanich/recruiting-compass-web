@@ -279,6 +279,27 @@ describe("Coach Detail Page", () => {
 
       expect(mockUpdateCoachTags).toHaveBeenCalledWith("coach-123", []);
     });
+
+    it("does not call updateCoachTags when the tag is already present", async () => {
+      const wrapper = await mountPage();
+
+      const tagsCard = wrapper.findComponent({ name: "CoachTagsCard" });
+      tagsCard.vm.$emit("add", "fastball");
+      await flushPromises();
+
+      expect(mockUpdateCoachTags).not.toHaveBeenCalled();
+    });
+
+    it("does not call updateCoachTags when the tag exceeds 40 characters", async () => {
+      const wrapper = await mountPage();
+
+      const tagsCard = wrapper.findComponent({ name: "CoachTagsCard" });
+      const overLongTag = "a".repeat(41);
+      tagsCard.vm.$emit("add", overLongTag);
+      await flushPromises();
+
+      expect(mockUpdateCoachTags).not.toHaveBeenCalled();
+    });
   });
 
   describe("Interaction logging", () => {

@@ -48,4 +48,24 @@ describe("useCoachInsights", () => {
     expect(i.channelPreferenceAlert.value).toBe(false);
     expect(i.preferredChannel.value).toBeNull();
   });
+
+  it("responseRate is 100% when all interactions are inbound", () => {
+    const i = useCoachInsights(
+      ref(coach()),
+      ref([ix({ direction: "inbound" }), ix({ direction: "inbound" })]),
+    );
+    expect(i.sentReceived.value).toEqual({ sent: 0, received: 2 });
+    expect(i.responseRate.value).toBe(100);
+  });
+
+  it("breaks a preferred-channel tie by returning the first-seen type", () => {
+    // Two types tied at 1 each — Map insertion order preserves first-seen
+    // ("email" occurs before "phone_call" in the fixture), and Array#sort
+    // is stable, so the tie resolves deterministically to "email".
+    const i = useCoachInsights(
+      ref(coach()),
+      ref([ix({ type: "email" }), ix({ type: "phone_call" })]),
+    );
+    expect(i.preferredChannel.value).toBe("email");
+  });
 });

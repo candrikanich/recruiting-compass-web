@@ -314,7 +314,13 @@ const deleteCoach = async () => {
 // Tag handlers
 const handleAddTag = async (tag: string) => {
   if (!coach.value) return;
-  const nextTags = [...coach.value.tags, tag];
+  const trimmed = tag.trim();
+  if (!trimmed) return;
+  if (trimmed.length > 40) return;
+  if (coach.value.tags.includes(trimmed)) return;
+  if (coach.value.tags.length >= 20) return;
+
+  const nextTags = [...coach.value.tags, trimmed];
   const updated = await coachStore.updateCoachTags(coach.value.id, nextTags);
   if (updated) coach.value = updated;
 };

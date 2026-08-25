@@ -308,7 +308,10 @@ watch(
 );
 
 const handleSubmit = async () => {
-  const parsed = coachSchema.safeParse(form);
+  const parsed = coachSchema.safeParse({
+    ...form,
+    source: form.source || null,
+  });
   if (!parsed.success) {
     logger.error("Coach edit validation failed", parsed.error.flatten());
     return;
