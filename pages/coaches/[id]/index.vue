@@ -71,7 +71,11 @@
         <!-- Left rail -->
         <div class="space-y-4">
           <CoachIdentityCard :coach="coach" />
-          <CoachChannelActions :coach="coach" @log-interaction="openLogInteraction" />
+          <CoachChannelActions
+            :coach="coach"
+            @log-interaction="openLogInteraction"
+            @open-social="handleOpenSocial"
+          />
           <CoachInternalNotes :notes="coach.notes" @edit="editCoach" />
           <CoachTagsCard :tags="coach.tags" @add="handleAddTag" @remove="handleRemoveTag" />
           <CoachProfileMeta :coach="coach" />
@@ -159,6 +163,7 @@ import CoachInteractionsTable from "~/components/Coach/detail/CoachInteractionsT
 import CoachProfileLink from "~/components/coaches/CoachProfileLink.vue";
 import type { Coach, Interaction, School } from "~/types/models";
 import { createClientLogger } from "~/utils/logger";
+import { socialDmInteraction } from "~/utils/socialDm";
 
 const logger = createClientLogger("CoachDetail");
 
@@ -174,7 +179,8 @@ const backLink = computed(() => deriveBackLink(route.query));
 const { getCoach, updateCoach, smartDelete, fetchCoaches } = useCoaches();
 const coachStore = useCoachStore();
 const { getSchool } = useSchools();
-const { interactions, fetchInteractions } = useInteractions();
+const { interactions, fetchInteractions, createInteraction } =
+  useInteractions();
 
 // Coach data and loading state
 const coach = ref<Coach | null>(null);
@@ -232,6 +238,26 @@ const refreshSchoolInteractions = async (): Promise<void> => {
   if (coach.value?.school_id) {
     await fetchInteractions({ schoolId: coach.value.school_id });
   }
+};
+
+// Best-effort: opening a social profile is a hand-off, so like mailto/sms this logs
+// on click. createInteraction is player-role + family gated, so a parent-viewed
+// coach simply won't log — never surface that as an error.
+async function logSocialDm(): Promise<void> {
+  if (!coach.value) return;
+  try {
+    await createInteraction({
+      ...socialDmInteraction(coach.value),
+      occurred_at: new Date().toISOString(),
+    });
+    await refreshSchoolInteractions();
+  } catch {
+    // swallow — logging is best-effort
+  }
+}
+
+const handleOpenSocial = (_platform: "twitter" | "instagram") => {
+  void logSocialDm();
 };
 
 const handleCoachInteractionLogged = async (interactionData: {

@@ -4,7 +4,10 @@ import { openTwitter, openInstagram } from "~/utils/socialMediaHandlers";
 import type { Coach } from "~/types/models";
 
 const props = defineProps<{ coach: Coach }>();
-const emit = defineEmits<{ logInteraction: [] }>();
+const emit = defineEmits<{
+  logInteraction: [];
+  openSocial: [platform: "twitter" | "instagram"];
+}>();
 
 function onEmail(): void {
   if (props.coach.email) {
@@ -22,6 +25,16 @@ function onCall(): void {
   if (props.coach.phone) {
     window.location.href = toTelHref(props.coach.phone);
   }
+}
+
+function onTwitter(): void {
+  openTwitter(props.coach.twitter_handle);
+  emit("openSocial", "twitter");
+}
+
+function onInstagram(): void {
+  openInstagram(props.coach.instagram_handle);
+  emit("openSocial", "instagram");
 }
 </script>
 
@@ -68,7 +81,7 @@ function onCall(): void {
         data-action="twitter"
         :aria-label="`View ${coach.first_name} ${coach.last_name} on X`"
         class="flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-sm text-brand-slate-700 transition hover:bg-brand-slate-100"
-        @click="openTwitter(coach.twitter_handle)"
+        @click="onTwitter"
       >
         <UIcon name="i-heroicons-at-symbol" class="h-4 w-4" aria-hidden="true" />
         Twitter
@@ -79,7 +92,7 @@ function onCall(): void {
         data-action="instagram"
         :aria-label="`View ${coach.first_name} ${coach.last_name} on Instagram`"
         class="flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-sm text-brand-pink-500 transition hover:bg-brand-pink-50"
-        @click="openInstagram(coach.instagram_handle)"
+        @click="onInstagram"
       >
         <UIcon name="i-heroicons-camera" class="h-4 w-4" aria-hidden="true" />
         Instagram

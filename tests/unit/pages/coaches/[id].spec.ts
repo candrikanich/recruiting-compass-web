@@ -23,6 +23,7 @@ const mockSmartDelete = vi.fn();
 const mockGetSchool = vi.fn();
 const mockFetchInteractions = vi.fn();
 const mockFetchCoaches = vi.fn();
+const mockCreateInteraction = vi.fn();
 const mockUpdateCoachTags = vi.fn();
 const mockOpenCommunication = vi.fn();
 const mockHandleInteractionLogged = vi.fn();
@@ -52,6 +53,7 @@ vi.mock("~/composables/useInteractions", () => ({
   useInteractions: vi.fn(() => ({
     interactions: ref([]),
     fetchInteractions: mockFetchInteractions,
+    createInteraction: mockCreateInteraction,
   })),
 }));
 
@@ -156,6 +158,7 @@ describe("Coach Detail Page", () => {
     mockGetSchool.mockResolvedValue(mockSchool);
     mockFetchInteractions.mockResolvedValue(undefined);
     mockFetchCoaches.mockResolvedValue(undefined);
+    mockCreateInteraction.mockResolvedValue({ id: "interaction-1" });
     mockUpdateCoachTags.mockResolvedValue({ ...mockCoach, tags: ["fastball", "new-tag"] });
   });
 
@@ -290,6 +293,62 @@ describe("Coach Detail Page", () => {
         "email",
       );
       expect(mockHandleInteractionLogged).toHaveBeenCalled();
+    });
+  });
+
+  describe("Social DM logging", () => {
+    it("logs a best-effort dm interaction when CoachChannelActions emits open-social for twitter", async () => {
+      const wrapper = await mountPage();
+
+      const channelActions = wrapper.findComponent({
+        name: "CoachChannelActions",
+      });
+      channelActions.vm.$emit("open-social", "twitter");
+      await flushPromises();
+
+      expect(mockCreateInteraction).toHaveBeenCalledWith(
+        expect.objectContaining({
+          coach_id: "coach-123",
+          school_id: "school-123",
+          type: "dm",
+          direction: "outbound",
+        }),
+      );
+      expect(mockFetchInteractions).toHaveBeenCalledWith({
+        schoolId: "school-123",
+      });
+    });
+
+    it("logs a best-effort dm interaction when CoachChannelActions emits open-social for instagram", async () => {
+      const wrapper = await mountPage();
+
+      const channelActions = wrapper.findComponent({
+        name: "CoachChannelActions",
+      });
+      channelActions.vm.$emit("open-social", "instagram");
+      await flushPromises();
+
+      expect(mockCreateInteraction).toHaveBeenCalledWith(
+        expect.objectContaining({
+          coach_id: "coach-123",
+          type: "dm",
+          direction: "outbound",
+        }),
+      );
+    });
+
+    it("swallows createInteraction failure — social-open logging is best-effort", async () => {
+      mockCreateInteraction.mockRejectedValue(new Error("insert failed"));
+
+      const wrapper = await mountPage();
+
+      const channelActions = wrapper.findComponent({
+        name: "CoachChannelActions",
+      });
+      channelActions.vm.$emit("open-social", "twitter");
+      await flushPromises();
+
+      expect(wrapper.text()).not.toContain("insert failed");
     });
   });
 
