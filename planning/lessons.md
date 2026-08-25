@@ -121,6 +121,20 @@ Tracks mistake patterns (with recurrence counts) and process insights.
 
 ---
 
+### Cross-Repo Agent with isolation:worktree Edits the Wrong Repo's main
+
+**Times seen:** 1 | **Last seen:** 2026-08-25
+**Context:** Web session dispatched an iOS-parity agent with `isolation:worktree`. The agent got a worktree of the WEB repo, then edited the iOS repo directly at its absolute path — landing uncommitted parity work on the shared iOS `main`, tangled with a concurrent iOS widget-reorder session's staged changes.
+**Root Cause:** `isolation:worktree` worktrees the CURRENT (dispatching) repo only. For cross-repo work the "isolation" is fake — the agent edits the target repo's live checkout, which another session may own.
+**Prevention:**
+- Never dispatch an `isolation:worktree` agent to edit a repo other than the session's own.
+- Cross-repo (iOS-from-web) work: run it from a session in that repo, OR have the agent `git worktree add` IN the target repo and `cd` there. Never edit the target's `main`.
+- Recovery pattern when it happens: `git stash push -u` (safety backup) → `git merge --ff-only origin/main` → branch off clean main → `git checkout stash@{0} -- <only your files>` → build-verify → commit.
+- iOS build from a non-Xcode shell: `DEVELOPER_DIR=/Applications/Xcode-beta.app/Contents/Developer xcodebuild build -destination 'generic/platform=iOS Simulator' -quiet` (CommandLineTools can't build; a named sim can silently fall back to My Mac and exit 0 without building).
+- Enforced by the dirty-main PreToolUse guard hook (added 2026-08-25).
+
+---
+
 ## Template (for new bug patterns)
 
 ```markdown
