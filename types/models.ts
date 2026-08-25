@@ -444,6 +444,43 @@ export interface PlayerDetails {
   // useVideoLinks/VideoLinkRow — not on PlayerDetails)
   core_courses?: string[];
   intended_major?: string; // backs template {{intendedMajor}}
+  jersey_number?: number | null;
+}
+
+export type ProfileSectionKey =
+  | "metrics"
+  | "film"
+  | "academics"
+  | "values"
+  | "team_history"
+  | "awards";
+
+export interface ProfileSection {
+  key: ProfileSectionKey;
+  visible: boolean;
+}
+
+export type CommitmentStatus = "uncommitted" | "committed";
+
+export interface ProfileAward {
+  title: string;
+  year: number | null;
+}
+
+export interface PublicMetric {
+  key: string;
+  label: string;
+  value: string;
+  unit: string | null;
+  verified: boolean;
+}
+
+export interface PublicTeamHistoryEntry {
+  name: string;
+  level: string | null;
+  coach: string | null;
+  contact: string | null;
+  years: string | null;
 }
 
 export interface PlayerProfile {
@@ -459,6 +496,14 @@ export interface PlayerProfile {
   show_athletic: boolean;
   show_film: boolean;
   show_schools: boolean;
+  banner_url: string | null;
+  looking_for: string | null;
+  commitment_status: CommitmentStatus;
+  committed_school_id: string | null;
+  awards: ProfileAward[];
+  values_tags: string[];
+  section_config: ProfileSection[];
+  show_metrics: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -523,6 +568,18 @@ export interface PublicProfileData {
     tiktok_handle?: string;
     facebook_url?: string;
   } | null;
+  bannerUrl: string | null;
+  jerseyNumber: number | null;
+  commitmentStatus: CommitmentStatus;
+  committedSchoolName: string | null;
+  lookingFor: string | null;
+  valuesTags: string[];
+  awards: ProfileAward[];
+  /** null when show_metrics is false */
+  metrics: PublicMetric[] | null;
+  /** null when show_schools is false */
+  teamHistory: PublicTeamHistoryEntry[] | null;
+  sections: ProfileSection[];
 }
 
 export interface SchoolPreference {
