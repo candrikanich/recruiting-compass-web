@@ -40,10 +40,11 @@ export function buildTeamHistory(
   for (const [teamKey, coachKey, level] of GRADE_FIELDS) {
     const name = details[teamKey];
     if (typeof name === "string" && name.trim()) {
+      const coach = details[coachKey];
       out.push({
         name: name.trim(),
         level,
-        coach: (details[coachKey] as string) || null,
+        coach: typeof coach === "string" ? coach : null,
         contact: null,
         years: null,
       });
@@ -54,12 +55,15 @@ export function buildTeamHistory(
     for (const t of travel) {
       const name = (t as { name?: unknown }).name;
       if (typeof name === "string" && name.trim()) {
+        const tObj = t as Record<string, unknown>;
+        const coach = tObj.coach;
+        const years = tObj.years;
         out.push({
           name: name.trim(),
           level: "Travel",
-          coach: ((t as { coach?: string }).coach) || null,
+          coach: typeof coach === "string" ? coach : null,
           contact: null,
-          years: ((t as { years?: string }).years) || null,
+          years: typeof years === "string" ? years : null,
         });
       }
     }
