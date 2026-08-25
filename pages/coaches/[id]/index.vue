@@ -67,9 +67,9 @@
       </div>
 
       <!-- Coach Detail: two-column layout -->
-      <div v-if="!loading && coach" class="grid gap-6 lg:grid-cols-[340px_1fr]">
+      <div v-if="!loading && coach" class="flex flex-col items-start gap-5 lg:flex-row">
         <!-- Left rail -->
-        <div class="space-y-4">
+        <div class="w-full shrink-0 space-y-5 lg:w-[340px]">
           <CoachIdentityCard :coach="coach" />
           <CoachChannelActions
             :coach="coach"
@@ -89,7 +89,7 @@
         </div>
 
         <!-- Right column -->
-        <div class="space-y-6">
+        <div class="min-w-0 w-full flex-1 space-y-5">
           <CoachAlerts
             :overdue="insights.overdueAlert.value"
             :days-since-contact="insights.daysSinceContact.value"

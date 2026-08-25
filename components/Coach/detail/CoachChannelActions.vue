@@ -36,18 +36,23 @@ function onInstagram(): void {
   openInstagram(props.coach.instagram_handle);
   emit("openSocial", "instagram");
 }
+
+const buttonClass =
+  "flex items-center justify-center gap-2 rounded-lg px-[14px] py-[10px] text-[13px] font-semibold text-white transition hover:opacity-90";
 </script>
 
 <template>
-  <section class="rounded-xl border border-slate-200 bg-white p-5">
-    <h3 class="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-500">Channels</h3>
-    <div class="flex flex-wrap gap-2">
+  <section class="rounded-xl border border-slate-200 bg-white p-4">
+    <h3 class="mb-3 text-xs font-bold uppercase tracking-wide text-slate-400">
+      Direct Channels
+    </h3>
+    <div class="grid grid-cols-2 gap-[10px]">
       <button
         v-if="coach.email"
         type="button"
         data-action="email"
         :aria-label="`Email ${coach.first_name} ${coach.last_name}`"
-        class="flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-sm text-brand-blue-600 transition hover:bg-brand-blue-50"
+        :class="[buttonClass, 'bg-blue-500']"
         @click="onEmail"
       >
         <UIcon name="i-heroicons-envelope" class="h-4 w-4" aria-hidden="true" />
@@ -58,7 +63,7 @@ function onInstagram(): void {
         type="button"
         data-action="text"
         :aria-label="`Text ${coach.first_name} ${coach.last_name}`"
-        class="flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-sm text-brand-emerald-600 transition hover:bg-brand-emerald-50"
+        :class="[buttonClass, 'bg-emerald-500']"
         @click="onText"
       >
         <UIcon name="i-heroicons-chat-bubble-left" class="h-4 w-4" aria-hidden="true" />
@@ -69,7 +74,7 @@ function onInstagram(): void {
         type="button"
         data-action="call"
         :aria-label="`Call ${coach.first_name} ${coach.last_name}`"
-        class="flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-sm text-brand-purple-600 transition hover:bg-brand-purple-50"
+        :class="[buttonClass, 'bg-orange-500']"
         @click="onCall"
       >
         <UIcon name="i-heroicons-phone" class="h-4 w-4" aria-hidden="true" />
@@ -80,7 +85,7 @@ function onInstagram(): void {
         type="button"
         data-action="twitter"
         :aria-label="`View ${coach.first_name} ${coach.last_name} on X`"
-        class="flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-sm text-brand-slate-700 transition hover:bg-brand-slate-100"
+        :class="[buttonClass, 'bg-sky-500']"
         @click="onTwitter"
       >
         <UIcon name="i-heroicons-at-symbol" class="h-4 w-4" aria-hidden="true" />
@@ -91,22 +96,21 @@ function onInstagram(): void {
         type="button"
         data-action="instagram"
         :aria-label="`View ${coach.first_name} ${coach.last_name} on Instagram`"
-        class="flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-sm text-brand-pink-500 transition hover:bg-brand-pink-50"
+        :class="[buttonClass, 'bg-fuchsia-500']"
         @click="onInstagram"
       >
         <UIcon name="i-heroicons-camera" class="h-4 w-4" aria-hidden="true" />
         Instagram
       </button>
+      <button
+        type="button"
+        data-action="log-interaction"
+        :class="[buttonClass, 'bg-slate-700']"
+        @click="emit('logInteraction')"
+      >
+        <UIcon name="i-heroicons-plus" class="h-4 w-4" aria-hidden="true" />
+        Log Interaction
+      </button>
     </div>
-
-    <button
-      type="button"
-      data-action="log-interaction"
-      class="mt-3 flex w-full items-center justify-center gap-1.5 rounded-lg bg-brand-blue-600 px-3 py-2 text-sm font-medium text-white transition hover:bg-brand-blue-700"
-      @click="emit('logInteraction')"
-    >
-      <UIcon name="i-heroicons-clipboard-document-check" class="h-4 w-4" aria-hidden="true" />
-      Log Interaction
-    </button>
   </section>
 </template>
