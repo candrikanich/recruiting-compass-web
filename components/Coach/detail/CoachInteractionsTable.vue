@@ -136,16 +136,20 @@ const sentimentBadgeClass = (sentiment: string): string =>
         </select>
       </div>
 
-      <DesignSystemFormSegmentedControl
-        v-model="selectedDirection"
-        label="Direction"
-        size="sm"
-        :options="[
-          { value: '', label: 'Both' },
-          { value: 'outbound', label: 'Sent' },
-          { value: 'inbound', label: 'Received' },
-        ]"
-      />
+      <div>
+        <label class="mb-1 block text-[11px] font-semibold text-slate-400">Direction</label>
+        <DesignSystemFormSegmentedControl
+          v-model="selectedDirection"
+          label="Direction"
+          hide-label
+          size="sm"
+          :options="[
+            { value: '', label: 'Both' },
+            { value: 'outbound', label: 'Sent' },
+            { value: 'inbound', label: 'Received' },
+          ]"
+        />
+      </div>
 
       <div>
         <label class="mb-1 block text-[11px] font-semibold text-slate-400">Date range</label>
