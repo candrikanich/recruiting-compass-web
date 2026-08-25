@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
 import { navigateTo } from "#app";
+import { useRoute } from "vue-router";
 import { useInteractions } from "~/composables/useInteractions";
 import { useUserStore } from "~/stores/user";
 import { useAppToast } from "~/composables/useAppToast";
@@ -13,9 +14,20 @@ definePageMeta({
 });
 
 const logger = createClientLogger("InteractionAdd");
+const route = useRoute();
 const userStore = useUserStore();
 const { createInteraction, loading } = useInteractions();
 const { showToast } = useAppToast();
+
+// Prefill coach/school when arriving from a coach's "Log Interaction" action.
+const initialData = computed<Partial<Interaction>>(() => {
+  const coachId = typeof route.query.coachId === "string" ? route.query.coachId : "";
+  const schoolId = typeof route.query.schoolId === "string" ? route.query.schoolId : "";
+  return {
+    ...(coachId ? { coach_id: coachId } : {}),
+    ...(schoolId ? { school_id: schoolId } : {}),
+  };
+});
 
 const pageTitle = computed(() => {
   return userStore.isAthlete ? "Log My Interaction" : "Log Interaction";
@@ -88,6 +100,7 @@ const handleCancel = () => {
   >
     <InteractionForm
       :loading="loading"
+      :initial-data="initialData"
       @submit="handleSubmit"
       @cancel="handleCancel"
     />

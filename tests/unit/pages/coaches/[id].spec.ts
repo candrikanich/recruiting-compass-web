@@ -4,6 +4,9 @@ import { createPinia, setActivePinia } from "pinia";
 import { ref } from "vue";
 import type { Coach } from "~/types/models";
 
+// Nuxt auto-imports navigateTo as a global; the page calls it bare.
+global.navigateTo = vi.fn();
+
 // Mock vue-router
 const mockPush = vi.fn();
 vi.mock("vue-router", () => ({
@@ -107,24 +110,8 @@ vi.mock("~/components/coaches/CoachProfileLink.vue", () => ({
   },
 }));
 
-// setup.ts registers a global name-matched CommunicationPanel stub
-// (`<div><slot /></div>`) that overrides any component import — override it
-// here with one that exposes the interaction-logged flow for assertions.
 const globalStubs = {
   NuxtLink: { template: "<a><slot /></a>" },
-  CommunicationPanel: {
-    name: "CommunicationPanel",
-    props: ["coach", "school", "schoolName"],
-    emits: ["interaction-logged"],
-    template: `
-      <div data-test="communication-panel">
-        <button @click="$emit('interaction-logged', { type: 'email', direction: 'outbound', content: 'Test' })"
-                data-test="log-interaction-btn">
-          Log Interaction
-        </button>
-      </div>
-    `,
-  },
 };
 
 describe("Coach Detail Page", () => {
@@ -248,7 +235,7 @@ describe("Coach Detail Page", () => {
         true,
       );
       expect(
-        wrapper.find('[data-test="communication-panel"]').exists(),
+        wrapper.findComponent({ name: "CoachCommunicationAnalytics" }).exists(),
       ).toBe(true);
       expect(
         wrapper.findComponent({ name: "CoachInteractionsTable" }).exists(),
@@ -303,17 +290,18 @@ describe("Coach Detail Page", () => {
   });
 
   describe("Interaction logging", () => {
-    it("routes CommunicationPanel's interaction-logged event through handleInteractionLogged", async () => {
+    it("navigates to the interaction-create page prefilled when CoachChannelActions emits log-interaction", async () => {
       const wrapper = await mountPage();
 
-      await wrapper.find('[data-test="log-interaction-btn"]').trigger("click");
+      const channelActions = wrapper.findComponent({
+        name: "CoachChannelActions",
+      });
+      channelActions.vm.$emit("log-interaction");
       await flushPromises();
 
-      expect(mockOpenCommunication).toHaveBeenCalledWith(
-        expect.objectContaining({ id: "coach-123" }),
-        "email",
+      expect(global.navigateTo).toHaveBeenCalledWith(
+        "/interactions/add?coachId=coach-123&schoolId=school-123",
       );
-      expect(mockHandleInteractionLogged).toHaveBeenCalled();
     });
   });
 
@@ -377,7 +365,7 @@ describe("Coach Detail Page", () => {
     it("opens edit modal when header edit button is clicked", async () => {
       const wrapper = await mountPage();
 
-      const editBtn = wrapper.find('[data-test="edit-coach-btn"]');
+      const editBtn = wrapper.find('[data-testid="coach-header-edit"]');
       expect(editBtn.exists()).toBe(true);
       await editBtn.trigger("click");
       await wrapper.vm.$nextTick();
@@ -402,7 +390,7 @@ describe("Coach Detail Page", () => {
     it("closes edit modal on close event", async () => {
       const wrapper = await mountPage();
 
-      await wrapper.find('[data-test="edit-coach-btn"]').trigger("click");
+      await wrapper.find('[data-testid="coach-header-edit"]').trigger("click");
       await wrapper.vm.$nextTick();
 
       await wrapper.find('[data-test="close-edit-btn"]').trigger("click");
@@ -416,7 +404,7 @@ describe("Coach Detail Page", () => {
     it("opens delete modal when delete is clicked", async () => {
       const wrapper = await mountPage();
 
-      const deleteBtn = wrapper.find('[data-test="coach-detail-delete-btn"]');
+      const deleteBtn = wrapper.find('[data-testid="coach-header-delete"]');
       await deleteBtn.trigger("click");
       await flushPromises();
 
@@ -428,7 +416,7 @@ describe("Coach Detail Page", () => {
 
       const wrapper = await mountPage();
 
-      await wrapper.find('[data-test="coach-detail-delete-btn"]').trigger("click");
+      await wrapper.find('[data-testid="coach-header-delete"]').trigger("click");
       await flushPromises();
 
       await wrapper.find('[data-test="confirm-delete-btn"]').trigger("click");
@@ -441,7 +429,7 @@ describe("Coach Detail Page", () => {
     it("closes delete modal when cancelled", async () => {
       const wrapper = await mountPage();
 
-      await wrapper.find('[data-test="coach-detail-delete-btn"]').trigger("click");
+      await wrapper.find('[data-testid="coach-header-delete"]').trigger("click");
       await flushPromises();
 
       const cancelBtn = wrapper.find('[data-test="cancel-delete-btn"]');
@@ -456,7 +444,7 @@ describe("Coach Detail Page", () => {
 
       const wrapper = await mountPage();
 
-      await wrapper.find('[data-test="coach-detail-delete-btn"]').trigger("click");
+      await wrapper.find('[data-testid="coach-header-delete"]').trigger("click");
       await flushPromises();
 
       await wrapper.find('[data-test="confirm-delete-btn"]').trigger("click");
