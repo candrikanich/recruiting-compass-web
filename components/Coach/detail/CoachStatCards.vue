@@ -56,30 +56,31 @@ const preferredChannelIcon = computed(() =>
           OVERDUE
         </span>
       </div>
-      <svg viewBox="0 0 40 40" class="h-12 w-12 shrink-0">
-        <circle
-          cx="20"
-          cy="20"
-          r="16"
-          fill="none"
-          stroke-width="4"
-          class="text-slate-200"
-          stroke="currentColor"
-        />
-        <circle
-          cx="20"
-          cy="20"
-          r="16"
-          fill="none"
-          stroke-width="4"
-          stroke="currentColor"
-          :class="isOverdue ? 'text-red-500' : 'text-blue-500'"
-          :stroke-dasharray="RING_CIRCUMFERENCE"
-          stroke-dashoffset="0"
-          stroke-linecap="round"
-          transform="rotate(-90 20 20)"
-        />
-      </svg>
+      <div class="relative h-12 w-12 shrink-0">
+        <svg viewBox="0 0 40 40" class="h-12 w-12">
+          <circle
+            cx="20"
+            cy="20"
+            r="16"
+            fill="none"
+            stroke-width="4"
+            stroke="currentColor"
+            :class="isOverdue ? 'text-red-500' : 'text-slate-300'"
+            :stroke-dasharray="RING_CIRCUMFERENCE"
+            stroke-dashoffset="0"
+            stroke-linecap="round"
+            transform="rotate(-90 20 20)"
+          />
+        </svg>
+        <div class="absolute inset-0 flex items-center justify-center">
+          <UIcon
+            :name="isOverdue ? 'i-heroicons-exclamation-circle' : 'i-heroicons-clock'"
+            class="h-5 w-5"
+            :class="isOverdue ? 'text-red-500' : 'text-slate-400'"
+            aria-hidden="true"
+          />
+        </div>
+      </div>
     </div>
 
     <!-- Total Interactions -->
@@ -93,28 +94,26 @@ const preferredChannelIcon = computed(() =>
         </p>
         <p class="text-[11px] text-slate-600">{{ totalInteractions }} interactions logged</p>
       </div>
-      <svg viewBox="0 0 40 40" class="h-12 w-12 shrink-0">
-        <circle
-          cx="20"
-          cy="20"
-          r="16"
-          fill="none"
-          stroke-width="4"
-          class="text-slate-200"
-          stroke="currentColor"
-        />
-        <circle
-          cx="20"
-          cy="20"
-          r="16"
-          fill="none"
-          stroke-width="4"
-          stroke="currentColor"
-          class="text-blue-500"
-          stroke-linecap="round"
-          transform="rotate(-90 20 20)"
-        />
-      </svg>
+      <div class="relative h-12 w-12 shrink-0">
+        <svg viewBox="0 0 40 40" class="h-12 w-12">
+          <circle
+            cx="20"
+            cy="20"
+            r="16"
+            fill="none"
+            stroke-width="4"
+            stroke="currentColor"
+            class="text-blue-500"
+            :stroke-dasharray="RING_CIRCUMFERENCE"
+            stroke-dashoffset="0"
+            stroke-linecap="round"
+            transform="rotate(-90 20 20)"
+          />
+        </svg>
+        <div class="absolute inset-0 flex items-center justify-center">
+          <span class="text-[12px] font-bold text-blue-500">{{ totalInteractions }}</span>
+        </div>
+      </div>
     </div>
 
     <!-- Preferred Channel -->

@@ -22,25 +22,6 @@
           <UIcon name="i-heroicons-arrow-left" class="h-4 w-4" />
           {{ backLink.text }}
         </NuxtLink>
-
-        <div v-if="coach" class="flex items-center gap-2">
-          <button
-            type="button"
-            data-test="edit-coach-btn"
-            class="rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
-            @click="editCoach"
-          >
-            Edit
-          </button>
-          <button
-            type="button"
-            data-test="coach-detail-delete-btn"
-            class="rounded-lg border border-red-200 px-3 py-1.5 text-sm font-medium text-red-600 transition hover:bg-red-50"
-            @click="openDeleteModal"
-          >
-            Delete
-          </button>
-        </div>
       </div>
     </div>
 
@@ -66,8 +47,16 @@
         <p class="text-slate-600">Coach not found</p>
       </div>
 
-      <!-- Coach Detail: two-column layout -->
-      <div v-if="!loading && coach" class="flex flex-col items-start gap-5 lg:flex-row">
+      <!-- Coach Detail: header toolbar + two-column layout -->
+      <div v-if="!loading && coach" class="space-y-5">
+        <CoachDetailHeader
+          :coach="coach"
+          :school-name="schoolName"
+          @edit="editCoach"
+          @delete="openDeleteModal"
+        />
+
+        <div class="flex flex-col items-start gap-5 lg:flex-row">
         <!-- Left rail -->
         <div class="w-full shrink-0 space-y-5 lg:w-[340px]">
           <CoachIdentityCard :coach="coach" />
@@ -103,15 +92,13 @@
             :preferred-channel="insights.preferredChannel.value"
             :response-rate="insights.responseRate.value"
           />
-          <div ref="communicationPanelEl">
-            <CommunicationPanel
-              :coach="coach"
-              :school="school"
-              :school-name="schoolName"
-              @interaction-logged="handleCoachInteractionLogged"
-            />
-          </div>
+          <CoachCommunicationAnalytics
+            :sent="insights.sentReceived.value.sent"
+            :received="insights.sentReceived.value.received"
+            :response-rate="insights.responseRate.value"
+          />
           <CoachInteractionsTable :interactions="recentInteractions" />
+        </div>
         </div>
       </div>
     </main>
@@ -146,12 +133,12 @@ import { useCoachStore } from "~/stores/coaches";
 import { useSchools } from "~/composables/useSchools";
 import { useInteractions } from "~/composables/useInteractions";
 import { useCoachInsights } from "~/composables/useCoachInsights";
-import { useCommunication } from "~/composables/useCommunication";
 import { useDeleteModal } from "~/composables/useDeleteModal";
 import { deriveBackLink } from "~/composables/useBackLink";
 import DeleteConfirmationModal from "~/components/DeleteConfirmationModal.vue";
 import EditCoachModal from "~/components/EditCoachModal.vue";
-import CommunicationPanel from "~/components/CommunicationPanel.vue";
+import CoachDetailHeader from "~/components/Coach/detail/CoachDetailHeader.vue";
+import CoachCommunicationAnalytics from "~/components/Coach/detail/CoachCommunicationAnalytics.vue";
 import CoachIdentityCard from "~/components/Coach/detail/CoachIdentityCard.vue";
 import CoachChannelActions from "~/components/Coach/detail/CoachChannelActions.vue";
 import CoachInternalNotes from "~/components/Coach/detail/CoachInternalNotes.vue";
@@ -188,12 +175,6 @@ const loading = ref(false);
 const error = ref<string | null>(null);
 const schoolName = ref("");
 const school = ref<School | undefined>(undefined);
-const communicationPanelEl = ref<HTMLElement | null>(null);
-
-// The inline CommunicationPanel composes+sends and emits interaction-logged;
-// this composable's handleInteractionLogged does the create-record +
-// last_contact_date bookkeeping that used to live behind a modal drawer.
-const { openCommunication, handleInteractionLogged } = useCommunication();
 
 // Delete modal management
 const {
@@ -222,13 +203,11 @@ const recentInteractions = computed<Interaction[]>(() => {
 
 const insights = useCoachInsights(coach, recentInteractions);
 
-// Communication handlers: the panel is embedded inline (not a modal), so
-// "Log Interaction" brings it into view rather than opening a drawer.
+// "Log Interaction" now routes to the interaction-create page, prefilling this
+// coach + school via query params (the inline composer was removed from the page).
 const openLogInteraction = () => {
-  communicationPanelEl.value?.scrollIntoView({
-    behavior: "smooth",
-    block: "start",
-  });
+  const schoolId = coach.value?.school_id ?? "";
+  navigateTo(`/interactions/add?coachId=${coachId}&schoolId=${schoolId}`);
 };
 
 // School-wide refresh (not coach-filtered): the interactions table filters by
@@ -258,32 +237,6 @@ async function logSocialDm(): Promise<void> {
 
 const handleOpenSocial = (_platform: "twitter" | "instagram") => {
   void logSocialDm();
-};
-
-const handleCoachInteractionLogged = async (interactionData: {
-  type: string;
-  direction: string;
-  content: string;
-}) => {
-  if (!coach.value) return;
-  try {
-    // Prime the composable's selectedCoach — CommunicationPanel is inline, so
-    // there's no separate "open" step to have set it already.
-    openCommunication(coach.value, "email");
-
-    const refreshData = async () => {
-      const updatedCoach = await getCoach(coachId);
-      if (updatedCoach) {
-        coach.value = updatedCoach;
-      }
-      await refreshSchoolInteractions();
-    };
-
-    await handleInteractionLogged(interactionData as any, refreshData);
-  } catch (err) {
-    error.value =
-      err instanceof Error ? err.message : "Failed to log interaction";
-  }
 };
 
 // Coach management handlers
