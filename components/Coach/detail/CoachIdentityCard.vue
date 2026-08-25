@@ -38,6 +38,14 @@ const fullName = computed(
       {{ coach.email }}
     </a>
 
+    <a
+      v-if="coach.phone"
+      :href="`tel:${coach.phone}`"
+      class="mt-1 block truncate text-[13px] text-slate-600 hover:underline"
+    >
+      {{ coach.phone }}
+    </a>
+
     <div
       v-if="coach.twitter_handle || coach.instagram_handle"
       class="mt-3 space-y-2 border-t border-slate-200 pt-3"
