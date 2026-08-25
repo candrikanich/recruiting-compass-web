@@ -51,6 +51,7 @@
       <div v-if="!loading && coach" class="space-y-5">
         <CoachDetailHeader
           :coach="coach"
+          :school="school"
           :school-name="schoolName"
           @edit="editCoach"
           @delete="openDeleteModal"
@@ -59,7 +60,7 @@
         <div class="flex flex-col items-start gap-5 lg:flex-row">
         <!-- Left rail -->
         <div class="w-full shrink-0 space-y-5 lg:w-[340px]">
-          <CoachIdentityCard :coach="coach" />
+          <CoachIdentityCard :coach="coach" :school="school" />
           <CoachChannelActions
             :coach="coach"
             @log-interaction="openLogInteraction"
