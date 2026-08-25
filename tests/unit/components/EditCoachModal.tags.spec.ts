@@ -14,7 +14,7 @@ describe("EditCoachModal.vue Tags + Source", () => {
     first_name: "John",
     last_name: "Smith",
     email: "john.smith@university.edu",
-    phone: "555-1234",
+    phone: "5551234567",
     twitter_handle: "@coachsmith",
     instagram_handle: "coachsmith",
     notes: "Great head coach",
@@ -76,6 +76,50 @@ describe("EditCoachModal.vue Tags + Source", () => {
         source: "LinkedIn",
       }),
     );
+
+    wrapper.unmount();
+  });
+
+  it("rejects save when a tag exceeds the 40-character cap enforced by coachSchema", async () => {
+    const updateFn = vi.fn().mockResolvedValue(coach);
+    const overLengthTag = "x".repeat(41);
+    const wrapper = mount(EditCoachModal, {
+      props: {
+        coach: { ...coach, tags: [overLengthTag] },
+        isOpen: true,
+        updateFn,
+      },
+      attachTo: hostElement,
+    });
+
+    const form = document.querySelector("form") as HTMLFormElement;
+    form.dispatchEvent(new Event("submit", { cancelable: true }));
+    await wrapper.vm.$nextTick();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(updateFn).not.toHaveBeenCalled();
+
+    wrapper.unmount();
+  });
+
+  it("rejects save when source exceeds the 80-character cap enforced by coachSchema", async () => {
+    const updateFn = vi.fn().mockResolvedValue(coach);
+    const overLengthSource = "s".repeat(81);
+    const wrapper = mount(EditCoachModal, {
+      props: {
+        coach: { ...coach, source: overLengthSource },
+        isOpen: true,
+        updateFn,
+      },
+      attachTo: hostElement,
+    });
+
+    const form = document.querySelector("form") as HTMLFormElement;
+    form.dispatchEvent(new Event("submit", { cancelable: true }));
+    await wrapper.vm.$nextTick();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(updateFn).not.toHaveBeenCalled();
 
     wrapper.unmount();
   });

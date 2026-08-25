@@ -232,11 +232,8 @@ import { useFocusTrap } from "~/composables/useFocusTrap";
 import CoachTagsCard from "~/components/Coach/detail/CoachTagsCard.vue";
 import type { Coach } from "~/types/models";
 import { createClientLogger } from "~/utils/logger";
-import {
-  formatPhoneDisplay,
-  formatPhoneNational,
-  toStoredPhone,
-} from "~/utils/phone";
+import { coachSchema } from "~/utils/validation/schemas";
+import { formatPhoneDisplay, formatPhoneNational } from "~/utils/phone";
 
 const logger = createClientLogger("EditCoachModal");
 
@@ -311,12 +308,22 @@ watch(
 );
 
 const handleSubmit = async () => {
+  const parsed = coachSchema.safeParse(form);
+  if (!parsed.success) {
+    logger.error("Coach edit validation failed", parsed.error.flatten());
+    return;
+  }
+
   loading.value = true;
   try {
-    const updated = await props.updateFn(props.coach.id, {
-      ...form,
-      phone: toStoredPhone(form.phone),
-    });
+    // school_id isn't part of this form; edit never reassigns a coach's school.
+    // coachSchema's shared field schemas admit `null` for parity with other
+    // forms, but this form's inputs never produce it — safe to narrow here.
+    const { school_id: _schoolId, ...updatePayload } = parsed.data;
+    const updated = await props.updateFn(
+      props.coach.id,
+      updatePayload as Partial<Coach>,
+    );
     emit("updated", updated);
     handleClose();
   } catch (err) {
