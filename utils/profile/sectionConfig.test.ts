@@ -12,6 +12,9 @@ describe("sectionConfig", () => {
     expect(isSectionVisible(s, "film")).toBe(true);
     expect(isSectionVisible(s, "academics")).toBe(false);
     expect(isSectionVisible(s, "metrics")).toBe(false);
+    expect(isSectionVisible(s, "values")).toBe(true);
+    expect(isSectionVisible(s, "team_history")).toBe(true);
+    expect(isSectionVisible(s, "awards")).toBe(true);
     expect(s.map((x) => x.key)).toEqual(DEFAULT_SECTION_ORDER);
   });
 
@@ -34,10 +37,23 @@ describe("sectionConfig", () => {
     expect(isSectionVisible(s, "metrics")).toBe(false);
   });
 
+  it("deduplicates: keeps first occurrence, drops duplicates", () => {
+    const raw = [
+      { key: "film", visible: true },
+      { key: "film", visible: false },
+    ];
+    const s = normalizeSectionConfig(raw);
+    expect(s.filter((x) => x.key === "film")).toHaveLength(1);
+    expect(isSectionVisible(s, "film")).toBe(true);
+  });
+
   it("normalizes empty/garbage to full default (all hidden except backfill rules)", () => {
-    expect(normalizeSectionConfig(null).map((x) => x.key)).toEqual(
-      DEFAULT_SECTION_ORDER,
-    );
-    expect(normalizeSectionConfig("nope").length).toBe(DEFAULT_SECTION_ORDER.length);
+    const nullResult = normalizeSectionConfig(null);
+    expect(nullResult.map((x) => x.key)).toEqual(DEFAULT_SECTION_ORDER);
+    nullResult.forEach((x) => expect(x.visible).toBe(false));
+
+    const garbageResult = normalizeSectionConfig("nope");
+    expect(garbageResult.length).toBe(DEFAULT_SECTION_ORDER.length);
+    garbageResult.forEach((x) => expect(x.visible).toBe(false));
   });
 });
