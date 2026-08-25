@@ -1,6 +1,17 @@
-import type { AppSport, CalendarMilestone, Division, NcaaCalendarKey, RecruitingPeriod, SportCalendar } from "./types";
+import type {
+  AppSport,
+  CalendarMilestone,
+  Division,
+  NcaaCalendarKey,
+  RecruitingPeriod,
+  SportCalendar,
+} from "./types";
 import { D1_CALENDARS, D2_ALL_SPORTS, D3_FALLBACK } from "./calendarData";
-import { parseLocalDateOnly, exclusiveEndOfDay, formatLocalDateOnly } from "~/utils/localDate";
+import {
+  parseLocalDateOnly,
+  exclusiveEndOfDay,
+  formatLocalDateOnly,
+} from "~/utils/localDate";
 import {
   SAT_TEST_DATES_2026,
   ACT_TEST_DATES_2026,
@@ -42,7 +53,9 @@ const SINGLE_CALENDAR_SPORTS: Partial<Record<AppSport, NcaaCalendarKey>> = {
  * Exported so UI callers (e.g. `RecruitingCalendar.vue`'s men's/women's
  * toggle) can reuse this exact set instead of keeping a duplicate in sync.
  */
-export const GENDER_SPLIT_SPORTS: Partial<Record<AppSport, { men: NcaaCalendarKey; women: NcaaCalendarKey }>> = {
+export const GENDER_SPLIT_SPORTS: Partial<
+  Record<AppSport, { men: NcaaCalendarKey; women: NcaaCalendarKey }>
+> = {
   Basketball: { men: "MBB", women: "WBB" },
   Lacrosse: { men: "MLA", women: "WLA" },
   Soccer: { men: "OTHER_MSOCCER", women: "OTHER_WSOCCER" },
@@ -61,7 +74,8 @@ export const GENDER_SPLIT_SPORTS: Partial<Record<AppSport, { men: NcaaCalendarKe
  */
 export const NO_SPORT_FALLBACK: AppSport = "Tennis";
 
-const isMen = (gender: string | null | undefined): boolean => (gender ?? "").toLowerCase() !== "female";
+const isMen = (gender: string | null | undefined): boolean =>
+  (gender ?? "").toLowerCase() !== "female";
 
 /**
  * Maps an app sport (plus optional gender/football-subdivision context) to
@@ -70,7 +84,10 @@ const isMen = (gender: string | null | undefined): boolean => (gender ?? "").toL
  * Gender defaults to men's whenever the sport is gender-split and gender is
  * null, unspecified, "other", or "prefer_not_to_say".
  */
-export function resolveCalendarKey(sport: AppSport, opts?: ResolveCalendarKeyOptions): NcaaCalendarKey {
+export function resolveCalendarKey(
+  sport: AppSport,
+  opts?: ResolveCalendarKeyOptions,
+): NcaaCalendarKey {
   const gender = opts?.gender;
 
   if (sport === "Football") {
@@ -91,9 +108,9 @@ export function resolveCalendarKey(sport: AppSport, opts?: ResolveCalendarKeyOpt
     return single;
   }
 
-  // Any remaining AppSport (currently: Tennis, Water Polo) has no published
-  // NCAA recruiting calendar and no sport-specific windows in the "Other"
-  // bundle — falls to the generic "Other" default.
+  // Any remaining AppSport (currently: Tennis, Water Polo, Gymnastics, Beach
+  // Volleyball) has no published NCAA recruiting calendar and no sport-specific
+  // windows in the "Other" bundle — falls to the generic "Other" default.
   return "Other";
 }
 
@@ -125,10 +142,16 @@ export function getSportCalendar(
  * correspondence either — but both block contact, which is what
  * `isDeadPeriod` answers).
  */
-const BLOCKING_TYPES: ReadonlySet<RecruitingPeriod["type"]> = new Set(["dead", "recruiting_shutdown"]);
+const BLOCKING_TYPES: ReadonlySet<RecruitingPeriod["type"]> = new Set([
+  "dead",
+  "recruiting_shutdown",
+]);
 
 function isWithinPeriod(date: Date, period: RecruitingPeriod): boolean {
-  return date >= parseLocalDateOnly(period.start) && date < exclusiveEndOfDay(period.end);
+  return (
+    date >= parseLocalDateOnly(period.start) &&
+    date < exclusiveEndOfDay(period.end)
+  );
 }
 
 /** True if `date` falls within a dead (or recruiting-shutdown) period for `sport`/`division`. */
@@ -139,7 +162,9 @@ export function isDeadPeriod(
   opts?: ResolveCalendarKeyOptions,
 ): boolean {
   const calendar = getSportCalendar(sport, division, opts);
-  return calendar.periods.some((period) => BLOCKING_TYPES.has(period.type) && isWithinPeriod(date, period));
+  return calendar.periods.some(
+    (period) => BLOCKING_TYPES.has(period.type) && isWithinPeriod(date, period),
+  );
 }
 
 /** True if `date` falls within a quiet period for `sport`/`division`. */
@@ -150,7 +175,9 @@ export function isQuietPeriod(
   opts?: ResolveCalendarKeyOptions,
 ): boolean {
   const calendar = getSportCalendar(sport, division, opts);
-  return calendar.periods.some((period) => period.type === "quiet" && isWithinPeriod(date, period));
+  return calendar.periods.some(
+    (period) => period.type === "quiet" && isWithinPeriod(date, period),
+  );
 }
 
 /**
@@ -164,7 +191,9 @@ export function getDeadPeriodMessage(
   opts?: ResolveCalendarKeyOptions,
 ): string | null {
   const calendar = getSportCalendar(sport, division, opts);
-  const period = calendar.periods.find((p) => BLOCKING_TYPES.has(p.type) && isWithinPeriod(date, p));
+  const period = calendar.periods.find(
+    (p) => BLOCKING_TYPES.has(p.type) && isWithinPeriod(date, p),
+  );
   if (!period) return null;
 
   return `Dead period - no recruiting contact permitted per NCAA rules (${period.description})`;
@@ -179,7 +208,9 @@ export function getNextDeadPeriod(
 ): RecruitingPeriod | null {
   const calendar = getSportCalendar(sport, division, opts);
   const future = calendar.periods
-    .filter((p) => BLOCKING_TYPES.has(p.type) && parseLocalDateOnly(p.start) >= date)
+    .filter(
+      (p) => BLOCKING_TYPES.has(p.type) && parseLocalDateOnly(p.start) >= date,
+    )
     .sort((a, b) => a.start.localeCompare(b.start));
 
   return future[0] ?? null;
@@ -231,16 +262,29 @@ export interface GetUpcomingMilestonesParams {
  * (mirrors the legacy `getUpcomingMilestones` phase buckets), and division —
  * then sorted ascending and capped at `limit` (default 5).
  */
-export function getUpcomingMilestones(params: GetUpcomingMilestonesParams): CalendarMilestone[] {
-  const { sport, division, graduationYear, limit = 5, opts, currentDate = new Date() } = params;
+export function getUpcomingMilestones(
+  params: GetUpcomingMilestonesParams,
+): CalendarMilestone[] {
+  const {
+    sport,
+    division,
+    graduationYear,
+    limit = 5,
+    opts,
+    currentDate = new Date(),
+  } = params;
 
   const calendar = getSportCalendar(sport, division, opts);
-  const generic = GENERIC_MILESTONES.filter((m) => matchesDivision(m, division)).map(toCalendarMilestone);
+  const generic = GENERIC_MILESTONES.filter((m) =>
+    matchesDivision(m, division),
+  ).map(toCalendarMilestone);
 
   const currentDateISO = formatLocalDateOnly(currentDate);
-  const byDate = (a: CalendarMilestone, b: CalendarMilestone) => a.date.localeCompare(b.date);
+  const byDate = (a: CalendarMilestone, b: CalendarMilestone) =>
+    a.date.localeCompare(b.date);
   const typeAllowed = gradeTypeFilter(graduationYear, currentDateISO);
-  const isUpcoming = (m: CalendarMilestone) => m.date >= currentDateISO && typeAllowed(m);
+  const isUpcoming = (m: CalendarMilestone) =>
+    m.date >= currentDateISO && typeAllowed(m);
 
   // Two sources, capped differently: the generic SAT/ACT/deadline bucket is
   // capped at `limit` (soonest first) so it can't flood the list, while the
@@ -252,7 +296,10 @@ export function getUpcomingMilestones(params: GetUpcomingMilestonesParams): Cale
   const sportMilestones = calendar.milestones.filter(isUpcoming);
 
   const seen = new Set(cappedGeneric.map((m) => `${m.date}|${m.title}`));
-  const merged = [...cappedGeneric, ...sportMilestones.filter((m) => !seen.has(`${m.date}|${m.title}`))];
+  const merged = [
+    ...cappedGeneric,
+    ...sportMilestones.filter((m) => !seen.has(`${m.date}|${m.title}`)),
+  ];
 
   return merged.sort(byDate);
 }
@@ -276,12 +323,18 @@ function gradeTypeFilter(
   if (yearsOut === 3) {
     // Senior year
     return (m) =>
-      m.type === "test" || m.type === "application" || m.type === "signing" || m.type === "ncaa-period";
+      m.type === "test" ||
+      m.type === "application" ||
+      m.type === "signing" ||
+      m.type === "ncaa-period";
   }
   if (yearsOut === 2) {
     // Junior year
     return (m) =>
-      m.type === "test" || m.type === "deadline" || m.type === "ncaa-period" || m.type === "application";
+      m.type === "test" ||
+      m.type === "deadline" ||
+      m.type === "ncaa-period" ||
+      m.type === "application";
   }
   // Freshman/Sophomore — focus on tests
   return (m) => m.type === "test" || m.type === "ncaa-period";

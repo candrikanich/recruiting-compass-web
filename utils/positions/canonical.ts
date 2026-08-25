@@ -89,6 +89,23 @@ export const SPORT_POSITIONS: Record<string, readonly string[]> = {
   Wrestling: ["Wrestler"],
   Rowing: ["Rower"],
   "Water Polo": ["Field Player", "Goalkeeper"],
+  // Gymnastics has "events", not positions; they differ by gender (women's vs
+  // men's artistic). One combined superset + All-Around serves both — coaches
+  // recruit by event specialty. Women's: Vault/Uneven Bars/Balance Beam/Floor;
+  // Men's: Floor/Pommel Horse/Still Rings/Vault/Parallel Bars/Horizontal Bar.
+  Gymnastics: [
+    "All-Around",
+    "Vault",
+    "Uneven Bars",
+    "Balance Beam",
+    "Floor Exercise",
+    "Pommel Horse",
+    "Still Rings",
+    "Parallel Bars",
+    "Horizontal Bar",
+  ],
+  // Beach Volleyball is a 2-player game with two roles, distinct from indoor.
+  "Beach Volleyball": ["Blocker", "Defender"],
 } as const;
 
 /**

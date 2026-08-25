@@ -295,7 +295,7 @@ interface Props {
   isFiltering: boolean;
 }
 
-// Full sport list from the registry (17 sports) — no baseball-only options.
+// Full sport list from the registry (19 sports) — no baseball-only options.
 const sportOptions = computed(() => Object.keys(SPORT_POSITIONS));
 
 // Full union of metric types across every sport (deduped, ordered), labelled
