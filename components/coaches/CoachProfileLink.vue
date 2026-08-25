@@ -140,7 +140,7 @@ function formatDate(iso: string | null): string {
 </script>
 
 <template>
-  <div class="space-y-3 rounded-xl border border-gray-100 p-4">
+  <div class="space-y-3 rounded-xl border border-slate-200 bg-white p-4">
     <h3 class="text-sm font-semibold text-gray-700">Send Recruiting Profile</h3>
 
     <div v-if="loading" class="text-sm text-gray-400">Loading…</div>
