@@ -4,8 +4,23 @@ import type { Coach, Interaction } from "~/types/models";
 export const OVERDUE_DAYS = 14;
 
 export function useCoachInsights(coach: Ref<Coach | null>, interactions: Ref<Interaction[]>) {
+  // Prefer the actual interaction history — the most recent interaction is the
+  // true "last contact". Fall back to the coach's stored last_contact_date only
+  // when no dated interactions are loaded (e.g. list views without the history).
+  const lastContactAt = computed<string | null>(() => {
+    let latest: number | null = null;
+    for (const i of interactions.value) {
+      if (!i.occurred_at) continue;
+      const t = new Date(i.occurred_at).getTime();
+      if (Number.isNaN(t)) continue;
+      if (latest === null || t > latest) latest = t;
+    }
+    if (latest !== null) return new Date(latest).toISOString();
+    return coach.value?.last_contact_date ?? null;
+  });
+
   const daysSinceContact = computed<number | null>(() => {
-    const d = coach.value?.last_contact_date;
+    const d = lastContactAt.value;
     if (!d) return null;
     return Math.floor((Date.now() - new Date(d).getTime()) / 864e5);
   });

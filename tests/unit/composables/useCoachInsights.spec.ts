@@ -31,6 +31,31 @@ describe("useCoachInsights", () => {
     expect(i.isOverdue.value).toBe(false);
   });
 
+  it("derives daysSinceContact from the most recent interaction when last_contact_date is null", () => {
+    const i = useCoachInsights(
+      ref(coach()),
+      ref([ix({ occurred_at: daysAgo(60) }), ix({ occurred_at: daysAgo(90) })]),
+    );
+    expect(i.daysSinceContact.value).toBe(60);
+    expect(i.isOverdue.value).toBe(true);
+  });
+
+  it("prefers the most recent interaction over an older last_contact_date", () => {
+    const i = useCoachInsights(
+      ref(coach({ last_contact_date: daysAgo(100) })),
+      ref([ix({ occurred_at: daysAgo(5) })]),
+    );
+    expect(i.daysSinceContact.value).toBe(5);
+  });
+
+  it("falls back to last_contact_date when interactions have no dates", () => {
+    const i = useCoachInsights(
+      ref(coach({ last_contact_date: daysAgo(20) })),
+      ref([ix({ occurred_at: undefined })]),
+    );
+    expect(i.daysSinceContact.value).toBe(20);
+  });
+
   it("computes preferred channel as the mode of interaction types", () => {
     const i = useCoachInsights(ref(coach()), ref([ix({ type: "phone_call" }), ix({ type: "phone_call" }), ix({ type: "email" })]));
     expect(i.preferredChannel.value).toBe("phone_call");
