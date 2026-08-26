@@ -112,8 +112,12 @@ test.describe("Public profile — Express Interest", () => {
       ).toBeVisible();
 
       // Close the confirmation — the popover only closes on this explicit
-      // action (not on submit), same fix as the sibling Contact modal.
-      await anonPage.getByRole("button", { name: "Close" }).click();
+      // action (not on submit), same fix as the sibling Contact modal. The
+      // header's icon-close button is always rendered (even pre-submit) and
+      // shares the same "Close" aria-label as the confirmation's button, so
+      // a role-based lookup would hit both — use its stable data-test
+      // instead of asserting on a strict-mode-ambiguous accessible name.
+      await anonPage.locator('[data-test="popover-close"]').click();
 
       // Hero button is disabled and now reads "Interest Sent" — persisted
       // client-side (per-slug localStorage) so a repeat visitor can't spam.
