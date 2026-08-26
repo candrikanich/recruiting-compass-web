@@ -9,11 +9,14 @@ const props = withDefaults(
   defineProps<{
     metrics: PublicMetric[];
     athletic?: PublicProfileData["athletic"];
+    playerName?: string | null;
   }>(),
-  { athletic: null },
+  { athletic: null, playerName: null },
 );
 
-const credentials = computed(() => buildRecruitingCredentials(props.athletic));
+const credentials = computed(() =>
+  buildRecruitingCredentials(props.athletic, props.playerName),
+);
 </script>
 
 <template>
