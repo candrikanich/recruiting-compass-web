@@ -8,10 +8,7 @@ import type {
 } from "~/types/models";
 import { useUserStore } from "~/stores/user";
 import { useVideoLinks } from "~/composables/useVideoLinks";
-import {
-  backfillSectionConfig,
-  normalizeSectionConfig,
-} from "~/utils/profile/sectionConfig";
+import { resolveSections } from "~/utils/profile/sectionConfig";
 
 const props = defineProps<{
   settings: PlayerProfile;
@@ -114,19 +111,11 @@ const previewData = computed<PublicProfileData>(() => ({
   sections: previewSections.value,
 }));
 
-// section_config may not be populated yet (new profile, or this preview's
-// mock settings) — fall back to deriving visibility from the show_* flags so
-// the preview still reflects what the owner just toggled.
-const previewSections = computed(() =>
-  Array.isArray(props.settings.section_config) &&
-  props.settings.section_config.length
-    ? normalizeSectionConfig(props.settings.section_config)
-    : backfillSectionConfig({
-        show_metrics: props.settings.show_metrics,
-        show_film: props.settings.show_film,
-        show_academics: props.settings.show_academics,
-      }),
-);
+// Mirrors the public endpoint's resolution so the owner preview never
+// diverges from the live page: show_metrics/show_film/show_academics stay
+// authoritative overrides, and an empty/absent section_config backfills to a
+// sensible default instead of hiding every section.
+const previewSections = computed(() => resolveSections(props.settings));
 
 // Socials are not gated by a visibility flag — shown whenever a handle is set.
 const previewSocial = computed<PublicProfileData["social"]>(() => {

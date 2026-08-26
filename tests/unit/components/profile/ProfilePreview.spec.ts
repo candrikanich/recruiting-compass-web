@@ -148,4 +148,58 @@ describe("ProfilePreview.vue", () => {
 
     expect(wrapper.text()).not.toContain("Film");
   });
+
+  it("resolves sections via resolveSections: empty section_config + show_academics true still shows Academics", async () => {
+    vi.mocked(useVideoLinks).mockReturnValue({
+      links: ref([]),
+      isLoading: ref(false),
+      error: ref(null),
+      load: vi.fn(),
+      add: vi.fn(),
+      update: vi.fn(),
+      remove: vi.fn(),
+    });
+
+    // Bug reproduction: an empty/absent section_config used to be passed
+    // straight to normalizeSectionConfig, which defaults every section
+    // (including academics) to hidden — even with show_academics: true.
+    const wrapper = mountPreview({
+      section_config: [],
+      show_academics: true,
+    });
+    await nextTick();
+
+    expect(wrapper.text()).toContain("Academics");
+    expect(wrapper.text()).toContain("GPA");
+  });
+
+  it("resolves sections via resolveSections: show_academics false overrides a stale section_config entry", async () => {
+    vi.mocked(useVideoLinks).mockReturnValue({
+      links: ref([]),
+      isLoading: ref(false),
+      error: ref(null),
+      load: vi.fn(),
+      add: vi.fn(),
+      update: vi.fn(),
+      remove: vi.fn(),
+    });
+
+    // A stored section_config marking academics visible=true is stale once
+    // the owner toggles show_academics off — resolveSections' show_* override
+    // must win over the persisted config entry.
+    const wrapper = mountPreview({
+      section_config: [
+        { key: "academics", visible: true },
+        { key: "metrics", visible: false },
+        { key: "film", visible: false },
+        { key: "values", visible: true },
+        { key: "team_history", visible: true },
+        { key: "awards", visible: true },
+      ],
+      show_academics: false,
+    });
+    await nextTick();
+
+    expect(wrapper.text()).not.toContain("Academics");
+  });
 });
