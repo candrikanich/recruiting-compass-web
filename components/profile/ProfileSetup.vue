@@ -215,7 +215,7 @@ function onSectionConfigUpdate(sections: ProfileSection[]) {
       </div>
     </header>
 
-    <div class="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_360px]">
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
     <div class="flex flex-col gap-6">
       <ShareProfilePanel :url="publicUrl ?? ''" />
 
@@ -304,7 +304,11 @@ function onSectionConfigUpdate(sections: ProfileSection[]) {
     </div>
 
     <aside class="lg:sticky lg:top-6 lg:self-start">
-      <ProfileMiniPreview :details="props.details" :url="publicUrl ?? ''" />
+      <ProfileMiniPreview
+        :draft="draft"
+        :details="props.details"
+        :url="publicUrl ?? ''"
+      />
     </aside>
     </div>
   </div>
