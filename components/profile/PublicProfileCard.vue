@@ -85,17 +85,6 @@ onMounted(() => {
   }
 });
 
-// Programs offered to the popover derive from the athlete's public sport +
-// positions — null-safe since `athletic` is null when that section is
-// hidden, in which case the popover falls back to its free-text input.
-const interestPrograms = computed(() => {
-  const a = props.data.athletic;
-  const values = [a?.primary_sport, ...(a?.positions ?? [])].filter(
-    (v): v is string => !!v,
-  );
-  return [...new Set(values)];
-});
-
 function handleInterest() {
   emit("interest");
   if (!props.slug) return;
@@ -211,7 +200,6 @@ function onInterestSubmitted() {
       v-if="showInterestPopover && slug"
       :slug="slug"
       :player-name="data.playerName"
-      :programs="interestPrograms"
       @close="closeInterestPopover"
       @submitted="onInterestSubmitted"
     />

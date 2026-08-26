@@ -15,7 +15,6 @@ import { useRuntimeConfig } from "#app";
 const props = defineProps<{
   slug: string;
   playerName: string;
-  programs?: string[];
 }>();
 
 const emit = defineEmits<{
@@ -40,8 +39,6 @@ const coachName = ref("");
 const coachEmail = ref("");
 const hp = ref("");
 
-const hasProgramOptions = computed(() => !!props.programs?.length);
-
 const fieldErrors = ref<{ program?: string; coachEmail?: string; note?: string }>({});
 const submitError = ref("");
 const submitting = ref(false);
@@ -53,9 +50,9 @@ function validate(): boolean {
   const errors: typeof fieldErrors.value = {};
   const trimmedProgram = program.value.trim();
   if (!trimmedProgram) {
-    errors.program = "Please select or enter a program.";
+    errors.program = "Please enter your school or program.";
   } else if (trimmedProgram.length > 80) {
-    errors.program = "Keep the program under 80 characters.";
+    errors.program = "Keep it under 80 characters.";
   }
   if (note.value.trim().length > 1000) {
     errors.note = "Keep the note under 1000 characters.";
@@ -235,30 +232,17 @@ function handleClose() {
     <form v-else class="flex flex-col gap-4 px-5 py-4" @submit.prevent="handleSubmit">
       <div>
         <label class="mb-1 block text-sm font-medium text-brand-slate-700" for="interest-program">
-          Program
+          School / Program
           <span aria-hidden="true" class="text-red-500">*</span>
         </label>
-        <select
-          v-if="hasProgramOptions"
-          id="interest-program"
-          data-test="program-select"
-          v-model="program"
-          required
-          class="w-full rounded-xl border-2 bg-white px-3 py-2 focus:border-transparent focus:ring-2 focus:ring-brand-blue-500"
-          :class="fieldErrors.program ? 'border-red-500' : 'border-brand-slate-300'"
-        >
-          <option value="" disabled>Select a program</option>
-          <option v-for="p in programs" :key="p" :value="p">{{ p }}</option>
-        </select>
         <input
-          v-else
           id="interest-program"
           data-test="program-input"
           type="text"
           v-model="program"
           required
           maxlength="80"
-          placeholder="e.g. Baseball - SS"
+          placeholder="e.g. Ohio State University"
           class="w-full rounded-xl border-2 bg-white px-3 py-2 focus:border-transparent focus:ring-2 focus:ring-brand-blue-500"
           :class="fieldErrors.program ? 'border-red-500' : 'border-brand-slate-300'"
         />

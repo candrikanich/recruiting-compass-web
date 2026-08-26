@@ -150,31 +150,20 @@ describe("PublicProfileCard", () => {
     expect(w.findComponent(ExpressInterestPopover).exists()).toBe(false);
   });
 
-  it("derives programs from primary_sport + positions, deduped", async () => {
-    const dataWithPositions = {
-      ...dataAwardsHidden,
-      athletic: { primary_sport: "Baseball", positions: ["SS", "Baseball"] },
-    };
+  it("opens the Express Interest popover on the hero interest event", async () => {
     const w = mount(PublicProfileCard, {
-      props: { data: dataWithPositions, slug: "owen-a" },
+      props: { data: dataAwardsHidden, slug: "owen-a" },
     });
-    const hero = w.findComponent(ProfileHero);
-    await hero.vm.$emit("interest");
+    expect(w.findComponent(ExpressInterestPopover).exists()).toBe(false);
 
+    await w.findComponent(ProfileHero).vm.$emit("interest");
+
+    // The popover no longer receives a programs list — it collects the
+    // coach's own school/program via a free-text field, so the athlete's
+    // followed schools are never exposed to the visitor.
     const popover = w.findComponent(ExpressInterestPopover);
-    expect(popover.props("programs")).toEqual(["Baseball", "SS"]);
-  });
-
-  it("passes empty programs when athletic is null (hidden section)", async () => {
-    const dataNoAthletic = { ...dataAwardsHidden, athletic: null };
-    const w = mount(PublicProfileCard, {
-      props: { data: dataNoAthletic, slug: "owen-a" },
-    });
-    const hero = w.findComponent(ProfileHero);
-    await hero.vm.$emit("interest");
-
-    const popover = w.findComponent(ExpressInterestPopover);
-    expect(popover.props("programs")).toEqual([]);
+    expect(popover.exists()).toBe(true);
+    expect(popover.props("programs")).toBeUndefined();
   });
 
   it("keeps the popover mounted (showing its confirmation) on submitted, and only unmounts on close", async () => {
