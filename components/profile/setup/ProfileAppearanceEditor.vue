@@ -1,16 +1,18 @@
 <!-- components/profile/setup/ProfileAppearanceEditor.vue -->
 <script setup lang="ts">
+import { ref } from "vue";
 import { useProfileBanner } from "~/composables/useProfileBanner";
 
+// Six theme swatches matching the Figma design (navy / blue / teal / red /
+// purple / indigo). Keys are constrained to the header_color enum the server
+// accepts (server/api/player/profile.put.ts).
 const HEADER_COLORS = [
-  { key: "slate", label: "Slate", swatch: "bg-slate-700" },
+  { key: "slate", label: "Navy", swatch: "bg-slate-800" },
   { key: "blue", label: "Blue", swatch: "bg-blue-700" },
-  { key: "indigo", label: "Indigo", swatch: "bg-indigo-700" },
-  { key: "violet", label: "Violet", swatch: "bg-violet-700" },
-  { key: "rose", label: "Rose", swatch: "bg-rose-700" },
-  { key: "amber", label: "Amber", swatch: "bg-amber-600" },
-  { key: "emerald", label: "Emerald", swatch: "bg-emerald-700" },
   { key: "teal", label: "Teal", swatch: "bg-teal-700" },
+  { key: "rose", label: "Red", swatch: "bg-rose-700" },
+  { key: "violet", label: "Purple", swatch: "bg-violet-700" },
+  { key: "indigo", label: "Indigo", swatch: "bg-indigo-900" },
 ] as const;
 
 defineProps<{
@@ -24,6 +26,11 @@ const emit = defineEmits<{
 }>();
 
 const { uploading, error, uploadBanner } = useProfileBanner();
+
+const bannerInput = ref<HTMLInputElement | null>(null);
+function triggerBannerUpload() {
+  bannerInput.value?.click();
+}
 
 async function onBannerChange(event: Event) {
   const file = (event.target as HTMLInputElement).files?.[0];
@@ -40,8 +47,8 @@ async function onBannerChange(event: Event) {
 <template>
   <div class="flex flex-col gap-6">
     <div class="space-y-2">
-      <label class="text-xs font-semibold tracking-wide text-brand-slate-400 uppercase">
-        Header color
+      <label class="text-sm font-medium text-brand-slate-700">
+        Hero Background Color Theme
       </label>
       <div class="flex flex-wrap gap-2">
         <button
@@ -61,18 +68,32 @@ async function onBannerChange(event: Event) {
     </div>
 
     <div class="space-y-2">
-      <label class="text-xs font-semibold tracking-wide text-brand-slate-400 uppercase" for="banner-upload">
-        Upload Custom Banner
-      </label>
+      <div class="flex flex-wrap items-center gap-3">
+        <button
+          type="button"
+          data-test="banner-upload-trigger"
+          class="inline-flex items-center gap-2 rounded-lg border border-brand-slate-300 bg-white px-4 py-2 text-sm font-medium text-brand-slate-700 transition-colors hover:bg-brand-slate-50"
+          @click="triggerBannerUpload"
+        >
+          <UIcon
+            name="i-heroicons-arrow-up-tray"
+            class="h-4 w-4"
+            aria-hidden="true"
+          />
+          Upload Custom Banner
+        </button>
+        <span class="text-xs text-brand-slate-400">
+          Recommended: 1200×400 JPG or PNG
+        </span>
+      </div>
       <input
-        id="banner-upload"
+        ref="bannerInput"
         data-test="banner-upload"
         type="file"
         accept="image/jpeg,image/png,image/webp"
-        class="block w-full text-sm text-brand-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-brand-blue-50 file:px-3 file:py-2 file:text-sm file:font-medium file:text-brand-blue-700 hover:file:bg-brand-blue-100"
+        class="hidden"
         @change="onBannerChange"
       />
-      <p class="text-xs text-brand-slate-400">Recommended: 1200x400 JPG or PNG</p>
       <p v-if="uploading" data-test="banner-uploading" class="text-xs text-brand-slate-500">
         Uploading…
       </p>
