@@ -57,6 +57,7 @@ const previewData = computed<PublicProfileData>(() => {
             graduation_year: details.graduation_year as number | undefined,
             high_school: (details.school_name ?? details.high_school) as
               string | undefined,
+            intended_major: details.intended_major as string | undefined,
             core_courses: details.core_courses as string[] | undefined,
           }
         : null,
@@ -122,6 +123,7 @@ const previewData = computed<PublicProfileData>(() => {
     teamHistory: isSectionVisible(sections, "team_history")
       ? buildTeamHistory(details)
       : null,
+    updatedAt: null,
     sections,
   };
 });

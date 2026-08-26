@@ -59,7 +59,7 @@ describe("PublicProfileCard", () => {
       props: { data: dataAwardsHidden, slug: "owen-a" },
     });
     expect(w.text()).toContain("Exit Velocity"); // metrics visible
-    expect(w.text()).not.toContain("Awards & Honors");
+    expect(w.text()).not.toContain("Awards & Athletic Honors");
     expect(w.text()).not.toContain("All-Conference");
   });
 
@@ -67,7 +67,7 @@ describe("PublicProfileCard", () => {
     const w = mount(PublicProfileCard, {
       props: { data: dataAwardsVisible, slug: "owen-a" },
     });
-    expect(w.text()).toContain("Awards & Honors");
+    expect(w.text()).toContain("Awards & Athletic Honors");
     expect(w.text()).toContain("All-Conference");
   });
 

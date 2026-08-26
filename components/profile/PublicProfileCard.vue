@@ -11,6 +11,7 @@ import TeamHistoryPanel from "~/components/profile/public/TeamHistoryPanel.vue";
 import AwardsHonors from "~/components/profile/public/AwardsHonors.vue";
 import ContactPlayerModal from "~/components/profile/public/ContactPlayerModal.vue";
 import ExpressInterestPopover from "~/components/profile/public/ExpressInterestPopover.vue";
+import { buildSocialLinks } from "~/utils/profile/socialLinks";
 
 // `slug` is optional because the owner-side live preview (ProfileLivePreview)
 // renders this card before the profile has a real public URL.
@@ -24,6 +25,29 @@ const emit = defineEmits<{ contact: []; interest: [] }>();
 const visibleSections = computed(() =>
   props.data.sections.filter((s) => s.visible),
 );
+
+// Figma pairs Academic Profile + Target Program & Values into one two-column
+// row. When both are visible the pair renders together at the academics slot,
+// and the standalone `values` entry is skipped so it isn't drawn twice.
+const academicsVisible = computed(() =>
+  visibleSections.value.some((s) => s.key === "academics"),
+);
+const valuesVisible = computed(() =>
+  visibleSections.value.some((s) => s.key === "values"),
+);
+
+const footerSocials = computed(() => buildSocialLinks(props.data.social));
+
+const lastUpdated = computed(() => {
+  if (!props.data.updatedAt) return null;
+  const d = new Date(props.data.updatedAt);
+  if (Number.isNaN(d.getTime())) return null;
+  return d.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+});
 
 // The public page deliberately hides the player's target schools (Phase 2
 // decision) — the modal always falls back to its free-text school field.
@@ -114,13 +138,25 @@ function onInterestSubmitted() {
           :player-name="data.playerName"
         />
         <HighlightsReel v-else-if="section.key === 'film'" :film="data.film" />
-        <AcademicPanel
+        <!-- Academics + Target render as a paired two-column row (Figma). When
+             values is also visible it is drawn here and skipped below. -->
+        <div
           v-else-if="section.key === 'academics'"
-          :academics="data.academics"
-          :ncaa-id="data.athletic?.ncaa_id"
-        />
+          class="grid grid-cols-1 gap-6"
+          :class="{ 'md:grid-cols-2 md:items-start': valuesVisible }"
+        >
+          <AcademicPanel
+            :academics="data.academics"
+            :ncaa-id="data.athletic?.ncaa_id"
+          />
+          <TargetProgramValues
+            v-if="valuesVisible"
+            :looking-for="data.lookingFor"
+            :values-tags="data.valuesTags"
+          />
+        </div>
         <TargetProgramValues
-          v-else-if="section.key === 'values'"
+          v-else-if="section.key === 'values' && !academicsVisible"
           :looking-for="data.lookingFor"
           :values-tags="data.valuesTags"
         />
@@ -132,12 +168,35 @@ function onInterestSubmitted() {
       </template>
     </div>
 
-    <footer class="bg-gray-50 px-6 py-4 text-center">
-      <p class="text-xs text-gray-400">
-        Powered by
-        <a href="/" class="text-gray-500 hover:text-gray-700"
-          >The Recruiting Compass</a
+    <footer class="border-t border-gray-100 bg-gray-50 px-6 py-5">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <a
+          href="/"
+          class="flex items-center gap-2 text-xs font-medium text-gray-500 hover:text-gray-700"
         >
+          <UIcon
+            name="i-heroicons-viewfinder-circle"
+            class="h-4 w-4"
+            aria-hidden="true"
+          />
+          Powered by The Recruiting Compass
+        </a>
+        <div v-if="footerSocials.length" class="flex items-center gap-3">
+          <a
+            v-for="link in footerSocials"
+            :key="link.platform"
+            :href="link.url"
+            target="_blank"
+            rel="noopener noreferrer"
+            :aria-label="link.platform"
+            class="text-gray-400 hover:text-gray-600"
+          >
+            <UIcon :name="link.icon" class="h-4 w-4" aria-hidden="true" />
+          </a>
+        </div>
+      </div>
+      <p v-if="lastUpdated" class="mt-3 text-xs text-gray-400">
+        Profile last updated: {{ lastUpdated }}
       </p>
     </footer>
 
