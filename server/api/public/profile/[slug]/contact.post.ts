@@ -117,10 +117,10 @@ export default defineEventHandler(async (event) => {
     }
     const data = parsed.data;
 
-    const turnstileResult = await verifyTurnstile(
-      data.turnstileToken,
-      clientIp,
-    );
+    const turnstileResult = await verifyTurnstile(data.turnstileToken, {
+      ip: clientIp,
+      expectedAction: "contact",
+    });
     if (turnstileResult.reason === "disabled") {
       logger.warn(
         "Turnstile verification disabled (no secret key configured) — relying on honeypot + rate limit only",
