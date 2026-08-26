@@ -1,14 +1,13 @@
 /**
- * POST /api/public/profile/[slug]/contact
+ * POST /api/public/profile/[slug]/interest
  *
- * Unauthenticated "Contact Player" lead-capture on the public player profile.
- * A coach/visitor submits a lightweight form; this endpoint stores the lead in
- * `profile_contacts` (service-role write, no RLS INSERT policy) and notifies
- * the player in-app + by email. NEVER creates/mutates a coach or school row
- * from unauthenticated input — `matchCoachByEmail` only matches, `school_id`
- * is only set when a real school row is supplied, `school_name` free-texts
- * the rest. The response is always `{ ok: true }` — no player/coach PII ever
- * leaves this endpoint.
+ * Unauthenticated "Express Interest" lead-capture on the public player
+ * profile — a lighter one-tap sibling of Contact Player. Stores the lead in
+ * `profile_contacts` (service-role write, no RLS INSERT policy) as
+ * `type: 'interest'` and notifies the player in-app + by email. NEVER
+ * creates/mutates a coach row from unauthenticated input —
+ * `matchCoachByEmail` only matches. The response is always `{ ok: true }` —
+ * no player/coach PII ever leaves this endpoint.
  */
 import {
   defineEventHandler,
@@ -34,8 +33,6 @@ import type { Database } from "~/types/database";
 
 const HASH_SLUG_RE = /^[a-z0-9]{6}$/;
 const VANITY_SLUG_RE = /^[a-z0-9][a-z0-9-]{0,28}[a-z0-9]$/;
-const UUID_RE =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 // Loose-but-sufficient IPv4/IPv6 validators for the `profile_contacts.ip`
 // `inet` column — a malformed header value must degrade to `null`, never
@@ -52,13 +49,11 @@ function toValidInetOrNull(ip: string | null | undefined): string | null {
   return null;
 }
 
-const contactSchema = z.object({
-  coachName: z.string().trim().min(1).max(120),
+const interestSchema = z.object({
+  program: z.string().trim().min(1).max(80),
+  note: z.string().trim().min(1).max(1000).optional(),
+  coachName: z.string().trim().min(1).max(120).optional(),
   coachEmail: z.string().trim().email().optional(),
-  coachTitle: z.string().trim().max(80).optional(),
-  schoolId: z.string().trim().uuid().optional(),
-  schoolName: z.string().trim().max(120).optional(),
-  note: z.string().trim().min(1).max(2000),
   turnstileToken: z.string().optional(),
   hp: z.string().optional(),
 });
@@ -69,7 +64,7 @@ type NotificationInsert =
   Database["public"]["Tables"]["notifications"]["Insert"];
 
 export default defineEventHandler(async (event) => {
-  const logger = useLogger(event, "public/profile/contact");
+  const logger = useLogger(event, "public/profile/interest");
 
   try {
     const slug = getRouterParam(event, "slug")!;
@@ -108,13 +103,13 @@ export default defineEventHandler(async (event) => {
     throwIfRateLimited(rateLimitResult);
 
     throwIfRateLimited(
-      await rateLimitByKey(event, `contact:${slug}`, {
+      await rateLimitByKey(event, `interest:${slug}`, {
         requests: 20,
         window: "1 h",
       }),
     );
 
-    const parsed = contactSchema.safeParse(body);
+    const parsed = interestSchema.safeParse(body);
     if (!parsed.success) {
       throw createError({
         statusCode: 422,
@@ -125,7 +120,7 @@ export default defineEventHandler(async (event) => {
 
     const turnstileResult = await verifyTurnstile(data.turnstileToken, {
       ip: clientIp,
-      expectedAction: "contact",
+      expectedAction: "interest",
     });
     if (turnstileResult.reason === "disabled") {
       logger.warn(
@@ -154,7 +149,7 @@ export default defineEventHandler(async (event) => {
       );
       throw createError({
         statusCode: 500,
-        statusMessage: "Failed to submit contact",
+        statusMessage: "Failed to submit interest",
       });
     }
     if (!profileResult.data) {
@@ -170,7 +165,7 @@ export default defineEventHandler(async (event) => {
         );
         throw createError({
           statusCode: 500,
-          statusMessage: "Failed to submit contact",
+          statusMessage: "Failed to submit interest",
         });
       }
     }
@@ -179,7 +174,9 @@ export default defineEventHandler(async (event) => {
     if (!profile || !profile.is_published) {
       // Never distinguish "not found" from "unpublished" — both look like a
       // 404 to an unauthenticated caller.
-      logger.warn("Contact submitted for unknown/unpublished slug", { slug });
+      logger.warn("Interest submitted for unknown/unpublished slug", {
+        slug,
+      });
       throw createError({
         statusCode: 404,
         statusMessage: "Profile not found",
@@ -191,37 +188,18 @@ export default defineEventHandler(async (event) => {
       email: data.coachEmail,
     });
 
-    // Defensive re-verification: a well-formed schoolId that doesn't exist
-    // or belongs to another family must never reach the insert — the FK
-    // would 500 the submission (nonexistent) or link an attacker-supplied
-    // schoolId to someone else's school (cross-family leak). Falls back to
-    // null; school_name still free-texts the lead.
-    let verifiedSchoolId: string | null = null;
-    if (data.schoolId && UUID_RE.test(data.schoolId)) {
-      const { data: schoolRow, error: schoolError } = await admin
-        .from("schools")
-        .select("id")
-        .eq("id", data.schoolId)
-        .eq("family_unit_id", profile.family_unit_id)
-        .maybeSingle();
-      if (schoolError) {
-        logger.warn("Failed to verify supplied schoolId", schoolError);
-      } else if (schoolRow) {
-        verifiedSchoolId = schoolRow.id;
-      }
-    }
+    // `coach_name` is NOT NULL — anonymous interest gets a placeholder.
+    const coachLabel = data.coachName ?? "A coach";
 
     const insertRow: ProfileContactInsert = {
       family_unit_id: profile.family_unit_id,
       player_user_id: profile.user_id,
-      type: "contact",
-      coach_name: data.coachName,
+      type: "interest",
+      coach_name: coachLabel,
       coach_email: data.coachEmail ?? null,
-      coach_title: data.coachTitle ?? null,
       matched_coach_id: matchedCoachId,
-      school_id: verifiedSchoolId,
-      school_name: data.schoolName ?? null,
-      note: data.note,
+      program: data.program,
+      note: data.note ?? null,
       ip: toValidInetOrNull(clientIp),
       user_agent: userAgent,
     };
@@ -236,7 +214,7 @@ export default defineEventHandler(async (event) => {
       logger.error("Failed to insert profile_contacts row", insertError);
       throw createError({
         statusCode: 500,
-        statusMessage: "Failed to submit contact",
+        statusMessage: "Failed to submit interest",
       });
     }
 
@@ -249,10 +227,8 @@ export default defineEventHandler(async (event) => {
         .eq("id", profile.user_id)
         .maybeSingle();
 
-      const coachLabel = data.coachName;
-      const schoolLabel = data.schoolName ? ` from ${data.schoolName}` : "";
-      const title = "New contact from a coach";
-      const message = `${coachLabel}${schoolLabel} reached out through your public profile.`;
+      const title = "New interest from a coach";
+      const message = `${coachLabel} expressed interest in your ${data.program} profile.`;
 
       const notificationRow: NotificationInsert = {
         user_id: profile.user_id,
@@ -280,10 +256,10 @@ export default defineEventHandler(async (event) => {
         });
       }
     } catch (notifyErr) {
-      logger.warn("Failed to notify player of inbound contact", notifyErr);
+      logger.warn("Failed to notify player of inbound interest", notifyErr);
     }
 
-    logger.info("Public contact submitted", {
+    logger.info("Public interest submitted", {
       slug,
       ip: clientIp,
       matched: !!matchedCoachId,
@@ -292,10 +268,10 @@ export default defineEventHandler(async (event) => {
     return { ok: true };
   } catch (err) {
     if (err instanceof Error && "statusCode" in err) throw err;
-    logger.error("Failed to submit public contact", err);
+    logger.error("Failed to submit public interest", err);
     throw createError({
       statusCode: 500,
-      statusMessage: "Failed to submit contact",
+      statusMessage: "Failed to submit interest",
     });
   }
 });

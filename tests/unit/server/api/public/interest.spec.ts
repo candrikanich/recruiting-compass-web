@@ -8,7 +8,6 @@ const mockState = {
     is_published: boolean;
   } | null,
   userRow: null as { email: string; full_name: string | null } | null,
-  schoolRow: null as { id: string } | null,
   insertedContact: null as Record<string, unknown> | null,
   contactInsertError: null as object | null,
   notificationInserts: [] as Record<string, unknown>[],
@@ -100,18 +99,6 @@ vi.mock("~/server/utils/supabase", () => ({
           },
         };
       }
-      if (table === "schools") {
-        return {
-          select: () => ({
-            eq: () => ({
-              eq: () => ({
-                maybeSingle: () =>
-                  Promise.resolve({ data: mockState.schoolRow, error: null }),
-              }),
-            }),
-          }),
-        };
-      }
       if (table === "notifications") {
         return {
           insert: (row: Record<string, unknown>) => {
@@ -160,7 +147,7 @@ vi.mock("h3", async (importOriginal) => {
 });
 
 const { default: handler } = await import(
-  "~/server/api/public/profile/[slug]/contact.post"
+  "~/server/api/public/profile/[slug]/interest.post"
 );
 
 function makeEvent(
@@ -174,14 +161,10 @@ function makeEvent(
 }
 
 const validBody = {
-  coachName: "Coach Smith",
-  coachEmail: "coach@example.edu",
-  coachTitle: "Head Coach",
-  schoolName: "Example State",
-  note: "Loved your film, would like to talk.",
+  program: "2027 Baseball Camp",
 };
 
-describe("POST /api/public/profile/[slug]/contact", () => {
+describe("POST /api/public/profile/[slug]/interest", () => {
   beforeEach(() => {
     mockState.profileRow = {
       id: "profile-1",
@@ -190,7 +173,6 @@ describe("POST /api/public/profile/[slug]/contact", () => {
       is_published: true,
     };
     mockState.userRow = { email: "player@example.com", full_name: "Player One" };
-    mockState.schoolRow = null;
     mockState.insertedContact = null;
     mockState.contactInsertError = null;
     mockState.notificationInserts = [];
@@ -224,7 +206,7 @@ describe("POST /api/public/profile/[slug]/contact", () => {
     expect(mockState.notificationInserts).toHaveLength(0);
   });
 
-  it("returns 429 when rate limited", async () => {
+  it("returns 429 when per-IP rate limited", async () => {
     rateLimitByIpMock.mockResolvedValueOnce({
       success: false,
       limit: 5,
@@ -236,10 +218,27 @@ describe("POST /api/public/profile/[slug]/contact", () => {
     });
   });
 
-  it("returns 422 on invalid body", async () => {
-    await expect(
-      handler(makeEvent({ coachName: "", note: "" })),
-    ).rejects.toMatchObject({ statusCode: 422 });
+  it("returns 429 when per-slug rate limited, using an interest-namespaced key", async () => {
+    rateLimitByKeyMock.mockResolvedValueOnce({
+      success: false,
+      limit: 20,
+      remaining: 0,
+      reset: Date.now() + 60_000,
+    });
+    await expect(handler(makeEvent(validBody))).rejects.toMatchObject({
+      statusCode: 429,
+    });
+    expect(rateLimitByKeyMock).toHaveBeenCalledWith(
+      expect.anything(),
+      "interest:abc123",
+      expect.objectContaining({ requests: 20, window: "1 h" }),
+    );
+  });
+
+  it("returns 422 when program is missing", async () => {
+    await expect(handler(makeEvent({}))).rejects.toMatchObject({
+      statusCode: 422,
+    });
   });
 
   it("returns 403 when Turnstile verification fails", async () => {
@@ -248,6 +247,14 @@ describe("POST /api/public/profile/[slug]/contact", () => {
       handler(makeEvent({ ...validBody, turnstileToken: "bad" })),
     ).rejects.toMatchObject({ statusCode: 403 });
     expect(mockState.insertedContact).toBeNull();
+  });
+
+  it("calls verifyTurnstile with expectedAction 'interest'", async () => {
+    await handler(makeEvent(validBody));
+    expect(verifyTurnstileMock).toHaveBeenCalledWith(
+      undefined,
+      expect.objectContaining({ expectedAction: "interest" }),
+    );
   });
 
   it("returns 404 when the slug does not resolve to a profile", async () => {
@@ -269,21 +276,18 @@ describe("POST /api/public/profile/[slug]/contact", () => {
     });
   });
 
-  it("inserts profile_contacts with matched_coach_id set on email match and notifies the player", async () => {
-    matchCoachByEmailMock.mockResolvedValueOnce({ coachId: "coach-42" });
+  it("inserts an anonymous interest with a placeholder coach name, no match, and notifies", async () => {
     const result = await handler(makeEvent(validBody));
 
     expect(result).toEqual({ ok: true });
     expect(mockState.insertedContact).toMatchObject({
       family_unit_id: "family-1",
       player_user_id: "player-1",
-      type: "contact",
-      coach_name: "Coach Smith",
-      coach_email: "coach@example.edu",
-      coach_title: "Head Coach",
-      matched_coach_id: "coach-42",
-      school_name: "Example State",
-      note: "Loved your film, would like to talk.",
+      type: "interest",
+      program: "2027 Baseball Camp",
+      coach_name: "A coach",
+      coach_email: null,
+      matched_coach_id: null,
       ip: "1.2.3.4",
       user_agent: "Mozilla/5.0",
     });
@@ -291,95 +295,48 @@ describe("POST /api/public/profile/[slug]/contact", () => {
     expect(mockState.notificationInserts[0]).toMatchObject({
       user_id: "player-1",
       type: "inbound_interaction",
+      title: "New interest from a coach",
       related_entity_type: "profile_contact",
       related_entity_id: "contact-1",
     });
     expect(sendNotificationEmailMock).toHaveBeenCalledTimes(1);
-    expect(sendNotificationEmailMock.mock.calls[0][0]).toMatchObject({
-      to: "player@example.com",
-    });
   });
 
-  it("inserts profile_contacts with matched_coach_id null when no coach match, and still notifies", async () => {
-    matchCoachByEmailMock.mockResolvedValueOnce({ coachId: null });
-    const result = await handler(makeEvent(validBody));
+  it("sets matched_coach_id when coachEmail matches an existing coach", async () => {
+    matchCoachByEmailMock.mockResolvedValueOnce({ coachId: "coach-42" });
+    const result = await handler(
+      makeEvent({
+        ...validBody,
+        coachName: "Coach Smith",
+        coachEmail: "coach@example.edu",
+      }),
+    );
 
     expect(result).toEqual({ ok: true });
     expect(mockState.insertedContact).toMatchObject({
-      matched_coach_id: null,
+      coach_name: "Coach Smith",
+      coach_email: "coach@example.edu",
+      matched_coach_id: "coach-42",
     });
-    expect(mockState.notificationInserts).toHaveLength(1);
-    expect(sendNotificationEmailMock).toHaveBeenCalledTimes(1);
   });
 
   it("never leaks player/coach PII in the response body", async () => {
-    const result = await handler(makeEvent(validBody));
+    const result = await handler(
+      makeEvent({ ...validBody, coachName: "Coach Smith" }),
+    );
     const serialized = JSON.stringify(result);
     expect(serialized).not.toContain("player@example.com");
-    expect(serialized).not.toContain("coach@example.edu");
     expect(serialized).not.toContain("Coach Smith");
     expect(Object.keys(result as object).sort()).toEqual(["ok"]);
   });
 
-  it("nulls out a well-formed but nonexistent schoolId instead of 500ing, keeping school_name", async () => {
-    mockState.schoolRow = null; // no row matches (nonexistent)
-    const result = await handler(
-      makeEvent({
-        ...validBody,
-        schoolId: "65c867f3-8754-4bae-9900-4c8ac8875538",
-      }),
-    );
-    expect(result).toEqual({ ok: true });
-    expect(mockState.insertedContact).toMatchObject({
-      school_id: null,
-      school_name: "Example State",
-    });
-  });
-
-  it("nulls out a schoolId belonging to a different family instead of linking it", async () => {
-    // The mocked schools query is family-scoped (.eq(family_unit_id)); a
-    // school owned by another family never matches, so this returns the
-    // same "no row" shape as nonexistent — verifying the query is scoped,
-    // not just an existence check.
-    mockState.schoolRow = null;
-    const result = await handler(
-      makeEvent({
-        ...validBody,
-        schoolId: "a046d781-9a96-4f60-814a-158c5d9a99f3",
-      }),
-    );
-    expect(result).toEqual({ ok: true });
-    expect(mockState.insertedContact).toMatchObject({
-      school_id: null,
-      school_name: "Example State",
-    });
-  });
-
-  it("uses the verified schoolId when it belongs to the player's own family", async () => {
-    mockState.schoolRow = { id: "6eb01d94-1965-45a5-9106-1c3c9851a1aa" };
-    const result = await handler(
-      makeEvent({
-        ...validBody,
-        schoolId: "6eb01d94-1965-45a5-9106-1c3c9851a1aa",
-      }),
-    );
-    expect(result).toEqual({ ok: true });
-    expect(mockState.insertedContact).toMatchObject({
-      school_id: "6eb01d94-1965-45a5-9106-1c3c9851a1aa",
-    });
-  });
-
   it("does not fail the response when notification insert fails", async () => {
-    const mockFrom = (
-      await import("~/server/utils/supabase")
-    ).useSupabaseAdmin();
-    void mockFrom;
     sendNotificationEmailMock.mockRejectedValueOnce(new Error("resend down"));
     const result = await handler(makeEvent(validBody));
     expect(result).toEqual({ ok: true });
   });
 
-  describe("trusted client IP (I1)", () => {
+  describe("trusted client IP", () => {
     it("uses x-vercel-forwarded-for for the rate-limit key and stored ip", async () => {
       const result = await handler(
         makeEvent(validBody, { "x-vercel-forwarded-for": "9.9.9.9" }),
@@ -390,46 +347,8 @@ describe("POST /api/public/profile/[slug]/contact", () => {
         expect.objectContaining({ ip: "9.9.9.9" }),
       );
       expect(mockState.insertedContact).toMatchObject({ ip: "9.9.9.9" });
-      expect(verifyTurnstileMock).toHaveBeenCalledWith(undefined, {
-        ip: "9.9.9.9",
-        expectedAction: "contact",
-      });
     });
 
-    it("ignores a spoofed leftmost X-Forwarded-For when x-vercel-forwarded-for is present", async () => {
-      // getRequestIP is mocked to always resolve "1.2.3.4" (simulating what
-      // an attacker-controlled leftmost X-Forwarded-For would produce);
-      // the trusted header must win.
-      const result = await handler(
-        makeEvent(validBody, { "x-vercel-forwarded-for": "9.9.9.9" }),
-      );
-      expect(result).toEqual({ ok: true });
-      expect(mockState.insertedContact).not.toMatchObject({ ip: "1.2.3.4" });
-      expect(rateLimitByIpMock.mock.calls[0][1]).not.toMatchObject({
-        ip: "1.2.3.4",
-      });
-    });
-
-    it("falls back to x-real-ip when x-vercel-forwarded-for is absent", async () => {
-      await handler(makeEvent(validBody, { "x-real-ip": "8.8.4.4" }));
-      expect(rateLimitByIpMock).toHaveBeenCalledWith(
-        expect.anything(),
-        expect.objectContaining({ ip: "8.8.4.4" }),
-      );
-      expect(mockState.insertedContact).toMatchObject({ ip: "8.8.4.4" });
-    });
-
-    it("falls back to h3-resolved IP when neither trusted header is present", async () => {
-      await handler(makeEvent(validBody));
-      expect(rateLimitByIpMock).toHaveBeenCalledWith(
-        expect.anything(),
-        expect.objectContaining({ ip: "1.2.3.4" }),
-      );
-      expect(mockState.insertedContact).toMatchObject({ ip: "1.2.3.4" });
-    });
-  });
-
-  describe("malformed IP (M1)", () => {
     it("inserts with ip null instead of 500ing when the resolved IP is malformed", async () => {
       const result = await handler(
         makeEvent(validBody, { "x-vercel-forwarded-for": "garbage" }),

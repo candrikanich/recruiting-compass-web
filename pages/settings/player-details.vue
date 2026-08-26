@@ -188,6 +188,14 @@
           </div>
         </div>
 
+        <!-- TAB: INBOX -->
+        <div
+          v-show="currentTab === 'inbox'"
+          class="animate-in fade-in slide-in-from-bottom-2 space-y-6 duration-300"
+        >
+          <ProfileInbox />
+        </div>
+
         <!-- TAB: HISTORY -->
         <div
           v-show="currentTab === 'history'"
@@ -366,6 +374,7 @@ const validTabs = [
   "academics",
   "history",
   "public-profile",
+  "inbox",
 ];
 const currentTab = ref(
   validTabs.includes(route.query.tab as string)
@@ -382,6 +391,7 @@ const tabs = [
   },
   { id: "history", name: "History", icon: "i-heroicons-clock" },
   { id: "public-profile", name: "Public Profile", icon: "i-heroicons-share" },
+  { id: "inbox", name: "Inbox", icon: "i-heroicons-inbox-arrow-down" },
 ];
 
 const { loading: profileLoading } = usePlayerProfile();

@@ -79,6 +79,16 @@ export async function rateLimitByUser(
   return safeLimit(() => limiter.limit(userId));
 }
 
+export async function rateLimitByKey(
+  event: H3Event,
+  key: string,
+  options: RateLimitOptions,
+): Promise<RateLimitResult> {
+  const limiter = createLimiter(options);
+  if (!limiter) return BYPASS_RESULT;
+  return safeLimit(() => limiter.limit(key));
+}
+
 export function throwIfRateLimited(
   result: Pick<RateLimitResult, "success" | "reset">,
 ): void {

@@ -1,6 +1,6 @@
 <!-- components/profile/PublicProfileCard.vue -->
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, onMounted } from "vue";
 import type { PublicProfileData } from "~/types/models";
 import ProfileHero from "~/components/profile/public/ProfileHero.vue";
 import MetricsGrid from "~/components/profile/public/MetricsGrid.vue";
@@ -10,6 +10,7 @@ import TargetProgramValues from "~/components/profile/public/TargetProgramValues
 import TeamHistoryPanel from "~/components/profile/public/TeamHistoryPanel.vue";
 import AwardsHonors from "~/components/profile/public/AwardsHonors.vue";
 import ContactPlayerModal from "~/components/profile/public/ContactPlayerModal.vue";
+import ExpressInterestPopover from "~/components/profile/public/ExpressInterestPopover.vue";
 
 // `slug` is optional because the owner-side live preview (ProfileLivePreview)
 // renders this card before the profile has a real public URL.
@@ -39,6 +40,58 @@ function handleContact() {
 function closeContactModal() {
   showContactModal.value = false;
 }
+
+// Express Interest mirrors the Contact flow above, plus a persisted "sent"
+// state so the hero button reflects a prior submission across reloads.
+const showInterestPopover = ref(false);
+const interestSent = ref(false);
+
+function interestSentKey(slug: string): string {
+  return `interest-sent:${slug}`;
+}
+
+onMounted(() => {
+  if (!props.slug) return;
+  try {
+    interestSent.value =
+      window.localStorage.getItem(interestSentKey(props.slug)) === "true";
+  } catch {
+    // Storage unavailable (private mode, SSR hydration edge case) — the
+    // server remains the source of truth, so just skip the UX shortcut.
+  }
+});
+
+// Programs offered to the popover derive from the athlete's public sport +
+// positions — null-safe since `athletic` is null when that section is
+// hidden, in which case the popover falls back to its free-text input.
+const interestPrograms = computed(() => {
+  const a = props.data.athletic;
+  const values = [a?.primary_sport, ...(a?.positions ?? [])].filter(
+    (v): v is string => !!v,
+  );
+  return [...new Set(values)];
+});
+
+function handleInterest() {
+  emit("interest");
+  if (!props.slug) return;
+  showInterestPopover.value = true;
+}
+
+function closeInterestPopover() {
+  showInterestPopover.value = false;
+}
+
+function onInterestSubmitted() {
+  interestSent.value = true;
+  if (!props.slug) return;
+  try {
+    window.localStorage.setItem(interestSentKey(props.slug), "true");
+  } catch {
+    // Best-effort persistence only — a failed write just means the button
+    // re-enables on the next visit; it doesn't block the confirmation UX.
+  }
+}
 </script>
 
 <template>
@@ -47,8 +100,9 @@ function closeContactModal() {
   >
     <ProfileHero
       :data="data"
+      :interest-sent="interestSent"
       @contact="handleContact"
-      @interest="$emit('interest')"
+      @interest="handleInterest"
     />
 
     <div class="space-y-6 px-6 py-6">
@@ -92,6 +146,15 @@ function closeContactModal() {
       :slug="slug"
       :player-name="data.playerName"
       @close="closeContactModal"
+    />
+
+    <ExpressInterestPopover
+      v-if="showInterestPopover && slug"
+      :slug="slug"
+      :player-name="data.playerName"
+      :programs="interestPrograms"
+      @close="closeInterestPopover"
+      @submitted="onInterestSubmitted"
     />
   </article>
 </template>
