@@ -3,6 +3,8 @@ import { z } from "zod";
 import { requireAuth } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import { useLogger } from "~/server/utils/logger";
+import { normalizeSectionConfig, backfillSectionConfig } from "~/utils/profile/sectionConfig";
+import type { ProfileSection } from "~/types/models";
 
 const RESERVED_SLUGS = new Set([
   "api",
@@ -43,7 +45,57 @@ const UpdateProfileSchema = z.object({
     .regex(/^[a-z0-9][a-z0-9-]{0,28}[a-z0-9]$/, "Invalid slug format")
     .nullable()
     .optional(),
+  banner_url: z.string().url().nullable().optional(),
+  looking_for: z.string().max(600).nullable().optional(),
+  commitment_status: z.enum(["uncommitted", "committed"]).optional(),
+  committed_school_id: z.string().uuid().nullable().optional(),
+  awards: z
+    .array(z.object({ title: z.string().max(120), year: z.number().int().nullable() }))
+    .optional(),
+  values_tags: z.array(z.string().max(60)).max(12).optional(),
+  section_config: z
+    .array(
+      z.object({
+        key: z.enum(["metrics", "film", "academics", "values", "team_history", "awards"]),
+        visible: z.boolean(),
+      }),
+    )
+    .optional(),
+  show_metrics: z.boolean().optional(),
 });
+
+const LEGACY_KEYS = {
+  metrics: "show_metrics",
+  film: "show_film",
+  academics: "show_academics",
+} as const;
+
+export function reconcileVisibility(
+  updates: Record<string, unknown>,
+  current: { section_config?: unknown; show_metrics?: boolean; show_film?: boolean; show_academics?: boolean },
+): Record<string, unknown> {
+  const out = { ...updates };
+  if (Array.isArray(updates.section_config)) {
+    const sections = normalizeSectionConfig(updates.section_config);
+    out.section_config = sections;
+    for (const [key, col] of Object.entries(LEGACY_KEYS)) {
+      out[col] = sections.some((s) => s.key === (key as ProfileSection["key"]) && s.visible);
+    }
+    return out;
+  }
+  const touchedLegacy = Object.entries(LEGACY_KEYS).filter(([, col]) => col in updates);
+  if (touchedLegacy.length) {
+    const base =
+      Array.isArray(current.section_config) && current.section_config.length
+        ? normalizeSectionConfig(current.section_config)
+        : backfillSectionConfig(current);
+    out.section_config = base.map((s) => {
+      const hit = touchedLegacy.find(([key]) => key === s.key);
+      return hit ? { ...s, visible: !!updates[hit[1]] } : s;
+    });
+  }
+  return out;
+}
 
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "player/profile");
@@ -82,9 +134,17 @@ export default defineEventHandler(async (event) => {
       });
     }
 
+    const { data: currentRow } = await supabase
+      .from("player_profiles")
+      .select("section_config, show_metrics, show_film, show_academics")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    const merged = reconcileVisibility(updates, currentRow ?? {});
+
     const { error } = await supabase
       .from("player_profiles")
-      .update(updates)
+      .update(merged as typeof updates)
       .eq("user_id", userId);
 
     if (error) {
