@@ -156,6 +156,26 @@ export default defineEventHandler(async (event) => {
       email: data.coachEmail,
     });
 
+    // Defensive re-verification: a well-formed schoolId that doesn't exist
+    // or belongs to another family must never reach the insert — the FK
+    // would 500 the submission (nonexistent) or link an attacker-supplied
+    // schoolId to someone else's school (cross-family leak). Falls back to
+    // null; school_name still free-texts the lead.
+    let verifiedSchoolId: string | null = null;
+    if (data.schoolId && UUID_RE.test(data.schoolId)) {
+      const { data: schoolRow, error: schoolError } = await admin
+        .from("schools")
+        .select("id")
+        .eq("id", data.schoolId)
+        .eq("family_unit_id", profile.family_unit_id)
+        .maybeSingle();
+      if (schoolError) {
+        logger.warn("Failed to verify supplied schoolId", schoolError);
+      } else if (schoolRow) {
+        verifiedSchoolId = schoolRow.id;
+      }
+    }
+
     const insertRow: ProfileContactInsert = {
       family_unit_id: profile.family_unit_id,
       player_user_id: profile.user_id,
@@ -164,7 +184,7 @@ export default defineEventHandler(async (event) => {
       coach_email: data.coachEmail ?? null,
       coach_title: data.coachTitle ?? null,
       matched_coach_id: matchedCoachId,
-      school_id: data.schoolId && UUID_RE.test(data.schoolId) ? data.schoolId : null,
+      school_id: verifiedSchoolId,
       school_name: data.schoolName ?? null,
       note: data.note,
       ip,

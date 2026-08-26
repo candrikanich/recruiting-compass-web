@@ -8,6 +8,7 @@ const mockState = {
     is_published: boolean;
   } | null,
   userRow: null as { email: string; full_name: string | null } | null,
+  schoolRow: null as { id: string } | null,
   insertedContact: null as Record<string, unknown> | null,
   contactInsertError: null as object | null,
   notificationInserts: [] as Record<string, unknown>[],
@@ -92,6 +93,18 @@ vi.mock("~/server/utils/supabase", () => ({
           },
         };
       }
+      if (table === "schools") {
+        return {
+          select: () => ({
+            eq: () => ({
+              eq: () => ({
+                maybeSingle: () =>
+                  Promise.resolve({ data: mockState.schoolRow, error: null }),
+              }),
+            }),
+          }),
+        };
+      }
       if (table === "notifications") {
         return {
           insert: (row: Record<string, unknown>) => {
@@ -158,6 +171,7 @@ describe("POST /api/public/profile/[slug]/contact", () => {
       is_published: true,
     };
     mockState.userRow = { email: "player@example.com", full_name: "Player One" };
+    mockState.schoolRow = null;
     mockState.insertedContact = null;
     mockState.contactInsertError = null;
     mockState.notificationInserts = [];
@@ -279,6 +293,54 @@ describe("POST /api/public/profile/[slug]/contact", () => {
     expect(serialized).not.toContain("coach@example.edu");
     expect(serialized).not.toContain("Coach Smith");
     expect(Object.keys(result as object).sort()).toEqual(["ok"]);
+  });
+
+  it("nulls out a well-formed but nonexistent schoolId instead of 500ing, keeping school_name", async () => {
+    mockState.schoolRow = null; // no row matches (nonexistent)
+    const result = await handler(
+      makeEvent({
+        ...validBody,
+        schoolId: "65c867f3-8754-4bae-9900-4c8ac8875538",
+      }),
+    );
+    expect(result).toEqual({ ok: true });
+    expect(mockState.insertedContact).toMatchObject({
+      school_id: null,
+      school_name: "Example State",
+    });
+  });
+
+  it("nulls out a schoolId belonging to a different family instead of linking it", async () => {
+    // The mocked schools query is family-scoped (.eq(family_unit_id)); a
+    // school owned by another family never matches, so this returns the
+    // same "no row" shape as nonexistent — verifying the query is scoped,
+    // not just an existence check.
+    mockState.schoolRow = null;
+    const result = await handler(
+      makeEvent({
+        ...validBody,
+        schoolId: "a046d781-9a96-4f60-814a-158c5d9a99f3",
+      }),
+    );
+    expect(result).toEqual({ ok: true });
+    expect(mockState.insertedContact).toMatchObject({
+      school_id: null,
+      school_name: "Example State",
+    });
+  });
+
+  it("uses the verified schoolId when it belongs to the player's own family", async () => {
+    mockState.schoolRow = { id: "6eb01d94-1965-45a5-9106-1c3c9851a1aa" };
+    const result = await handler(
+      makeEvent({
+        ...validBody,
+        schoolId: "6eb01d94-1965-45a5-9106-1c3c9851a1aa",
+      }),
+    );
+    expect(result).toEqual({ ok: true });
+    expect(mockState.insertedContact).toMatchObject({
+      school_id: "6eb01d94-1965-45a5-9106-1c3c9851a1aa",
+    });
   });
 
   it("does not fail the response when notification insert fails", async () => {
