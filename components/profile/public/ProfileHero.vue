@@ -2,6 +2,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import type { PublicProfileData } from "~/types/models";
+import { buildSocialLinks } from "~/utils/profile/socialLinks";
 
 const props = defineProps<{ data: PublicProfileData }>();
 
@@ -36,6 +37,8 @@ const physicals = computed(() => {
   }
   return parts;
 });
+
+const socialLinks = computed(() => buildSocialLinks(props.data.social));
 </script>
 
 <template>
@@ -84,6 +87,26 @@ const physicals = computed(() => {
         >
           {{ data.bio }}
         </p>
+
+        <div
+          v-if="socialLinks.length"
+          class="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-brand-slate-300"
+        >
+          <template v-for="(link, i) in socialLinks" :key="link.platform">
+            <span v-if="i > 0" aria-hidden="true" class="text-brand-slate-500"
+              >·</span
+            >
+            <a
+              :href="link.url"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center gap-1 hover:text-white"
+            >
+              <UIcon :name="link.icon" class="h-4 w-4" aria-hidden="true" />
+              {{ link.handle }}
+            </a>
+          </template>
+        </div>
 
         <div class="mt-6 flex flex-wrap items-center gap-3">
           <DesignSystemButton color="blue" variant="solid" @click="$emit('contact')">

@@ -25,4 +25,45 @@ describe("ProfileHero", () => {
     expect(w.emitted().contact).toBeTruthy();
     expect(w.emitted().interest).toBeTruthy();
   });
+
+  it("renders the social links row when social handles are present", () => {
+    const w = mount(ProfileHero, {
+      props: {
+        data: {
+          playerName: "Owen A",
+          photoUrl: null,
+          headerColor: "slate",
+          bannerUrl: null,
+          jerseyNumber: 7,
+          commitmentStatus: "uncommitted",
+          committedSchoolName: null,
+          bio: "x",
+          athletic: { primary_sport: "Baseball" },
+          social: { twitter_handle: "owenA", instagram_handle: "owen.a" },
+        } as never,
+      },
+    });
+    expect(w.text()).toContain("@owenA");
+    expect(w.text()).toContain("@owen.a");
+  });
+
+  it("renders no social row when social is absent", () => {
+    const w = mount(ProfileHero, {
+      props: {
+        data: {
+          playerName: "Owen A",
+          photoUrl: null,
+          headerColor: "slate",
+          bannerUrl: null,
+          jerseyNumber: 7,
+          commitmentStatus: "uncommitted",
+          committedSchoolName: null,
+          bio: "x",
+          athletic: { primary_sport: "Baseball" },
+          social: null,
+        } as never,
+      },
+    });
+    expect(w.text()).not.toContain("@");
+  });
 });
