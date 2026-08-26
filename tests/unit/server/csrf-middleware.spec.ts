@@ -74,6 +74,17 @@ describe("CSRF middleware path exemptions", () => {
     it("exempts the RFC 8058 one-click email unsubscribe exact path", () => {
       expect(isCsrfExemptPath("/api/email/unsubscribe")).toBe(true);
     });
+    it("exempts public share-page endpoints (contact/interest/view)", () => {
+      expect(
+        isCsrfExemptPath("/api/public/profile/owen-andrikanich-2028/contact"),
+      ).toBe(true);
+      expect(
+        isCsrfExemptPath("/api/public/profile/owen-andrikanich-2028/interest"),
+      ).toBe(true);
+      expect(
+        isCsrfExemptPath("/api/public/profile/owen-andrikanich-2028/view"),
+      ).toBe(true);
+    });
     it("does not exempt undefined path", () => {
       expect(isCsrfExemptPath(undefined)).toBe(false);
     });
@@ -97,6 +108,10 @@ describe("CSRF middleware path exemptions", () => {
     });
     it("does NOT exempt arbitrary paths containing 'schools'", () => {
       expect(isCsrfExemptPath("/api/admin/schools/export")).toBe(false);
+    });
+    it("does NOT exempt a lookalike prefix without the trailing slash", () => {
+      // "/api/public/" (trailing slash) must not match "/api/publications".
+      expect(isCsrfExemptPath("/api/publications/create")).toBe(false);
     });
     // Regression guard for the drift this file previously had: there is no
     // suffix-based cascade-delete/deletion-blockers exemption in the real
@@ -126,6 +141,7 @@ describe("exported constants match what the middleware actually enforces", () =>
       "/api/csrf-token",
       "/api/health",
       "/api/auth",
+      "/api/public/",
     ]);
   });
 

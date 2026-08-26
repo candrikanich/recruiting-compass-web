@@ -26,6 +26,12 @@ export const CSRF_EXEMPT_PREFIXES = [
   "/api/csrf-token",
   "/api/health",
   "/api/auth",
+  // Public share-page endpoints (contact / express-interest / view). These are
+  // called by unauthenticated visitors who have no session and therefore no
+  // CSRF token — CSRF protects cookie-authenticated actions, which these are
+  // not. Abuse is instead gated by honeypot + per-IP/per-slug rate limiting +
+  // Cloudflare Turnstile inside each handler.
+  "/api/public/",
 ] as const;
 
 // Exact full paths that are CSRF-exempt
