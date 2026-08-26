@@ -34,6 +34,7 @@ vi.mock("h3", async (importOriginal) => {
 import {
   rateLimitByIp,
   rateLimitByUser,
+  rateLimitByKey,
   throwIfRateLimited,
 } from "~/server/utils/rateLimit";
 import { getRequestIP, createError } from "h3";
@@ -113,6 +114,78 @@ describe("rateLimitByUser", () => {
     });
 
     expect(mockLimit).toHaveBeenCalledWith("user-abc");
+  });
+});
+
+describe("rateLimitByKey", () => {
+  beforeEach(() => {
+    mockLimit.mockClear();
+    process.env.UPSTASH_REDIS_REST_URL = "https://test.upstash.io";
+    process.env.UPSTASH_REDIS_REST_TOKEN = "test-token";
+  });
+
+  it("uses caller-supplied key as rate limit key", async () => {
+    mockLimit.mockResolvedValue({
+      success: true,
+      limit: 20,
+      remaining: 19,
+      reset: Date.now(),
+    });
+
+    await rateLimitByKey({} as never, "contact:abc123", {
+      requests: 20,
+      window: "1 h",
+    });
+
+    expect(mockLimit).toHaveBeenCalledWith("contact:abc123");
+  });
+
+  it("returns success result when under limit", async () => {
+    const now = Date.now();
+    mockLimit.mockResolvedValue({
+      success: true,
+      limit: 20,
+      remaining: 19,
+      reset: now + 3600000,
+    });
+
+    const result = await rateLimitByKey({} as never, "interest:xyz789", {
+      requests: 20,
+      window: "1 h",
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.remaining).toBe(19);
+  });
+
+  it("returns BYPASS_RESULT when Upstash env is missing", async () => {
+    delete process.env.UPSTASH_REDIS_REST_URL;
+    delete process.env.UPSTASH_REDIS_REST_TOKEN;
+
+    const result = await rateLimitByKey({} as never, "contact:abc123", {
+      requests: 20,
+      window: "1 h",
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.limit).toBe(0);
+    expect(result.remaining).toBe(0);
+    expect(result.reset).toBe(0);
+    expect(mockLimit).not.toHaveBeenCalled();
+  });
+
+  it("returns BYPASS_RESULT when limiter throws", async () => {
+    mockLimit.mockRejectedValue(new Error("Redis connection failed"));
+
+    const result = await rateLimitByKey({} as never, "contact:abc123", {
+      requests: 20,
+      window: "1 h",
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.limit).toBe(0);
+    expect(result.remaining).toBe(0);
+    expect(result.reset).toBe(0);
   });
 });
 

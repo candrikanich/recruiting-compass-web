@@ -22,7 +22,11 @@ import {
 import { z } from "zod";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import { useLogger } from "~/server/utils/logger";
-import { rateLimitByIp, throwIfRateLimited } from "~/server/utils/rateLimit";
+import {
+  rateLimitByIp,
+  rateLimitByKey,
+  throwIfRateLimited,
+} from "~/server/utils/rateLimit";
 import { verifyTurnstile, isHoneypotTripped } from "~/server/utils/turnstile";
 import { matchCoachByEmail } from "~/server/utils/matchCoachByEmail";
 import { sendNotificationEmail } from "~/server/utils/emailService";
@@ -101,12 +105,14 @@ export default defineEventHandler(async (event) => {
       window: "10 m",
       ip: clientIp,
     });
-    // TODO(per-slug rate limit): rateLimit.ts only exports rateLimitByIp/
-    // rateLimitByUser (keyed internally). A per-slug limiter (key
-    // `contact:<slug>`) would blunt targeting a single athlete but needs a
-    // small addition to rateLimit.ts (exported rateLimitByKey) — deferring;
-    // per-IP is the must-have guard and is in place.
     throwIfRateLimited(rateLimitResult);
+
+    throwIfRateLimited(
+      await rateLimitByKey(event, `contact:${slug}`, {
+        requests: 20,
+        window: "1 h",
+      }),
+    );
 
     const parsed = contactSchema.safeParse(body);
     if (!parsed.success) {

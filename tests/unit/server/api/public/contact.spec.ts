@@ -20,12 +20,19 @@ const rateLimitByIpMock = vi.fn(async () => ({
   remaining: 4,
   reset: 0,
 }));
+const rateLimitByKeyMock = vi.fn(async () => ({
+  success: true,
+  limit: 20,
+  remaining: 19,
+  reset: 0,
+}));
 const verifyTurnstileMock = vi.fn(async () => ({ ok: true }));
 const matchCoachByEmailMock = vi.fn(async () => ({ coachId: null as string | null }));
 const sendNotificationEmailMock = vi.fn(async () => ({ success: true }));
 
 vi.mock("~/server/utils/rateLimit", () => ({
   rateLimitByIp: (...args: unknown[]) => rateLimitByIpMock(...args),
+  rateLimitByKey: (...args: unknown[]) => rateLimitByKeyMock(...args),
   throwIfRateLimited: (result: { success: boolean }) => {
     if (!result.success) {
       const err = new Error("Too many requests") as Error & {
@@ -192,6 +199,13 @@ describe("POST /api/public/profile/[slug]/contact", () => {
       success: true,
       limit: 5,
       remaining: 4,
+      reset: 0,
+    });
+    rateLimitByKeyMock.mockClear();
+    rateLimitByKeyMock.mockResolvedValue({
+      success: true,
+      limit: 20,
+      remaining: 19,
       reset: 0,
     });
     verifyTurnstileMock.mockClear();
