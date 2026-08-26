@@ -1,35 +1,13 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "~/types/database";
 
-type CoachRole = Database["public"]["Enums"]["coach_role"];
-type CoachInsert = Database["public"]["Tables"]["coaches"]["Insert"];
-
-export interface MatchOrCreateCoachParams {
+export interface MatchCoachByEmailParams {
   familyUnitId: string;
-  name: string;
   email?: string | null;
-  title?: string | null;
-  schoolId?: string | null;
 }
 
-export interface MatchOrCreateCoachResult {
-  coachId: string;
-  created: boolean;
-}
-
-function splitName(name: string): { firstName: string; lastName: string } {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (parts.length <= 1) {
-    return { firstName: parts[0] ?? "", lastName: "" };
-  }
-  return { firstName: parts.slice(0, -1).join(" "), lastName: parts[parts.length - 1] };
-}
-
-function mapTitleToRole(title?: string | null): CoachRole {
-  const normalized = title?.trim().toLowerCase() ?? "";
-  if (normalized.includes("head")) return "head";
-  if (normalized.includes("assistant")) return "assistant";
-  return "recruiting";
+export interface MatchCoachByEmailResult {
+  coachId: string | null;
 }
 
 // ILIKE treats % and _ as wildcards; escape them so a case-insensitive exact
@@ -39,83 +17,23 @@ function escapeIlike(value: string): string {
 }
 
 /**
- * coaches.user_id is legacy NOT NULL (predates family-scoped ownership) with no
- * owning user in the inbound lead-capture flow. Resolve the family's creating
- * user as a stand-in owner, falling back to any family member.
+ * Family-scoped, email-only coach lookup for the unauthenticated public
+ * Contact-Player flow. Never creates a coach — an unmatched email logs the
+ * interaction with coach_id=NULL, and the player links/creates the coach later.
  */
-async function resolveOwnerUserId(
+export async function matchCoachByEmail(
   admin: SupabaseClient<Database>,
-  familyUnitId: string,
-): Promise<string> {
-  const { data: family } = await admin
-    .from("family_units")
-    .select("created_by_user_id")
-    .eq("id", familyUnitId)
-    .maybeSingle();
+  params: MatchCoachByEmailParams,
+): Promise<MatchCoachByEmailResult> {
+  const email = params.email?.trim();
+  if (!email) return { coachId: null };
 
-  if (family?.created_by_user_id) return family.created_by_user_id;
-
-  const { data: member } = await admin
-    .from("family_members")
-    .select("user_id")
-    .eq("family_unit_id", familyUnitId)
-    .order("added_at", { ascending: true })
-    .limit(1)
-    .maybeSingle();
-
-  if (member?.user_id) return member.user_id;
-
-  throw new Error(`No owning user found for family ${familyUnitId}; cannot create coach`);
-}
-
-export async function matchOrCreateCoach(
-  admin: SupabaseClient<Database>,
-  params: MatchOrCreateCoachParams,
-): Promise<MatchOrCreateCoachResult> {
-  const { familyUnitId, name, email, title, schoolId } = params;
-  const normalizedEmail = email?.trim() || null;
-
-  if (normalizedEmail) {
-    const { data: existing } = await admin
-      .from("coaches")
-      .select("id")
-      .eq("family_unit_id", familyUnitId)
-      .ilike("email", escapeIlike(normalizedEmail))
-      .maybeSingle();
-
-    if (existing?.id) {
-      return { coachId: existing.id, created: false };
-    }
-  }
-
-  if (!schoolId) {
-    throw new Error(
-      "matchOrCreateCoach: schoolId is required to create a coach (coaches.school_id is NOT NULL)",
-    );
-  }
-
-  const { firstName, lastName } = splitName(name);
-  const ownerUserId = await resolveOwnerUserId(admin, familyUnitId);
-
-  const insertData: CoachInsert = {
-    family_unit_id: familyUnitId,
-    first_name: firstName,
-    last_name: lastName,
-    email: normalizedEmail,
-    role: mapTitleToRole(title),
-    school_id: schoolId,
-    user_id: ownerUserId,
-  };
-
-  const { data: created, error } = await admin
+  const { data } = await admin
     .from("coaches")
-    .insert(insertData)
     .select("id")
-    .single();
+    .eq("family_unit_id", params.familyUnitId)
+    .ilike("email", escapeIlike(email))
+    .maybeSingle();
 
-  if (error || !created) {
-    throw new Error(error?.message ?? "Failed to create coach");
-  }
-
-  return { coachId: created.id, created: true };
+  return { coachId: data?.id ?? null };
 }
