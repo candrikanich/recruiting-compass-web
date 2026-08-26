@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { mount } from "@vue/test-utils";
 import PublicProfileCard from "~/components/profile/PublicProfileCard.vue";
 import ProfileHero from "~/components/profile/public/ProfileHero.vue";
+import ContactPlayerModal from "~/components/profile/public/ContactPlayerModal.vue";
 
 const baseData = {
   playerName: "Owen A",
@@ -103,5 +104,25 @@ describe("PublicProfileCard", () => {
     expect(w.find('[aria-labelledby="contact-player-title"]').exists()).toBe(
       false,
     );
+  });
+
+  it("stays mounted (showing its confirmation) when the modal emits submitted, and only unmounts on close", async () => {
+    const w = mount(PublicProfileCard, {
+      props: { data: dataAwardsHidden, slug: "owen-a" },
+    });
+    const hero = w.findComponent(ProfileHero);
+    await hero.vm.$emit("contact");
+
+    const modal = w.findComponent(ContactPlayerModal);
+    expect(modal.exists()).toBe(true);
+
+    // Real usage: ContactPlayerModal sets its own submitted state AND emits
+    // "submitted" in the same tick — the modal must NOT unmount here, or its
+    // confirmation screen never gets a chance to render.
+    await modal.vm.$emit("submitted");
+    expect(w.findComponent(ContactPlayerModal).exists()).toBe(true);
+
+    await modal.vm.$emit("close");
+    expect(w.findComponent(ContactPlayerModal).exists()).toBe(false);
   });
 });

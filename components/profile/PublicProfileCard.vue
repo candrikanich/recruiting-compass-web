@@ -92,7 +92,6 @@ function closeContactModal() {
       :slug="slug"
       :player-name="data.playerName"
       @close="closeContactModal"
-      @submitted="closeContactModal"
     />
   </article>
 </template>
