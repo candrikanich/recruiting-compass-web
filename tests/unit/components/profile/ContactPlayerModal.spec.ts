@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { mount } from "@vue/test-utils";
 
 let turnstileSiteKey = "";
@@ -154,5 +154,67 @@ describe("ContactPlayerModal", () => {
     const w = mount(ContactPlayerModal, { props: baseProps });
     await w.find("[data-test='modal-close']").trigger("click");
     expect(w.emitted().close).toBeTruthy();
+  });
+
+  describe("Turnstile widget render + reset", () => {
+    afterEach(() => {
+      delete (window as unknown as { turnstile?: unknown }).turnstile;
+    });
+
+    it("renders the widget with action: 'contact' when a site key is configured", async () => {
+      turnstileSiteKey = "test-site-key";
+      const renderMock = vi.fn().mockReturnValue("widget-1");
+      (window as unknown as { turnstile: unknown }).turnstile = {
+        render: renderMock,
+        reset: vi.fn(),
+      };
+
+      mount(ContactPlayerModal, { props: baseProps });
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      expect(renderMock).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          sitekey: "test-site-key",
+          action: "contact",
+        }),
+      );
+    });
+
+    it("resets the widget and clears the token when a submit fails", async () => {
+      turnstileSiteKey = "test-site-key";
+      const resetMock = vi.fn();
+      let capturedCallback: ((token: string) => void) | undefined;
+      const renderMock = vi.fn((_el, options) => {
+        capturedCallback = options.callback;
+        return "widget-1";
+      });
+      (window as unknown as { turnstile: unknown }).turnstile = {
+        render: renderMock,
+        reset: resetMock,
+      };
+
+      const fetchMock = vi.fn().mockRejectedValue(new Error("boom"));
+      vi.stubGlobal("$fetch", fetchMock);
+
+      const w = mount(ContactPlayerModal, { props: baseProps });
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      capturedCallback?.("spent-token");
+      await w.vm.$nextTick();
+
+      await w.find("[data-test='coach-name']").setValue("Coach Smith");
+      await w.find("[data-test='note']").setValue("Note text here.");
+      await w.find("form").trigger("submit");
+      await w.vm.$nextTick();
+      await w.vm.$nextTick();
+
+      expect(resetMock).toHaveBeenCalledWith("widget-1");
+      expect(fetchMock).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          body: expect.objectContaining({ turnstileToken: "spent-token" }),
+        }),
+      );
+    });
   });
 });

@@ -83,6 +83,7 @@ const turnstileSiteKey = computed(
 const turnstileEnabled = computed(() => turnstileSiteKey.value.length > 0);
 const turnstileToken = ref<string | undefined>(undefined);
 const turnstileEl = ref<HTMLDivElement | null>(null);
+const turnstileWidgetId = ref<string | undefined>(undefined);
 
 const TURNSTILE_SCRIPT_SRC =
   "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
@@ -90,8 +91,13 @@ const TURNSTILE_SCRIPT_SRC =
 type TurnstileGlobal = {
   render: (
     el: HTMLElement,
-    options: { sitekey: string; callback: (token: string) => void },
-  ) => void;
+    options: {
+      sitekey: string;
+      action?: string;
+      callback: (token: string) => void;
+    },
+  ) => string;
+  reset: (widgetId?: string) => void;
 };
 
 function loadTurnstileScript(): Promise<void> {
@@ -127,8 +133,9 @@ onMounted(async () => {
     await loadTurnstileScript();
     const w = window as unknown as { turnstile?: TurnstileGlobal };
     if (w.turnstile && turnstileEl.value) {
-      w.turnstile.render(turnstileEl.value, {
+      turnstileWidgetId.value = w.turnstile.render(turnstileEl.value, {
         sitekey: turnstileSiteKey.value,
+        action: "contact",
         callback: (token: string) => {
           turnstileToken.value = token;
         },
@@ -178,9 +185,21 @@ async function handleSubmit() {
     emit("submitted");
   } catch (err) {
     submitError.value = friendlyErrorMessage(err);
+    resetTurnstile();
   } finally {
     submitting.value = false;
   }
+}
+
+// A Turnstile token is single-use — Cloudflare redeems it at siteverify, so
+// replaying the same token after a failed submit always fails. Resetting
+// the widget mints a fresh token for the retry instead of 403-looping.
+function resetTurnstile() {
+  const w = window as unknown as { turnstile?: TurnstileGlobal };
+  if (w.turnstile) {
+    w.turnstile.reset(turnstileWidgetId.value);
+  }
+  turnstileToken.value = undefined;
 }
 
 function handleClose() {

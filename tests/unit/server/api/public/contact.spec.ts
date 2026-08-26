@@ -376,7 +376,10 @@ describe("POST /api/public/profile/[slug]/contact", () => {
         expect.objectContaining({ ip: "9.9.9.9" }),
       );
       expect(mockState.insertedContact).toMatchObject({ ip: "9.9.9.9" });
-      expect(verifyTurnstileMock).toHaveBeenCalledWith(undefined, "9.9.9.9");
+      expect(verifyTurnstileMock).toHaveBeenCalledWith(undefined, {
+        ip: "9.9.9.9",
+        expectedAction: "contact",
+      });
     });
 
     it("ignores a spoofed leftmost X-Forwarded-For when x-vercel-forwarded-for is present", async () => {
