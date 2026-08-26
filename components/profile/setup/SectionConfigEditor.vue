@@ -4,6 +4,7 @@ import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import Sortable from "sortablejs";
 import type { ProfileSection } from "~/types/models";
 import { SECTION_META } from "~/utils/profile/sectionMeta";
+import { normalizeSectionConfig } from "~/utils/profile/sectionConfig";
 
 const props = withDefaults(
   defineProps<{
@@ -20,21 +21,21 @@ const emit = defineEmits<{
 const listRef = ref<HTMLElement | null>(null);
 let sortable: Sortable | null = null;
 
-// Unknown keys (defensive — normalizeSectionConfig already filters these
-// out before they reach here) are preserved in the emitted array but never
-// rendered or reordered.
-const knownSections = computed(() =>
-  props.modelValue.filter((section) => section.key in SECTION_META),
-);
-const unknownSections = computed(() =>
-  props.modelValue.filter((section) => !(section.key in SECTION_META)),
-);
+// normalizeSectionConfig is the single source of truth for "valid section
+// key" (dedup, ordering, backfill) — do not reimplement that split here.
+// Anything it drops is an unknown key, preserved unmodified below so
+// toggle/reorder emits round-trip caller data without loss.
+const knownSections = computed(() => normalizeSectionConfig(props.modelValue));
+const unknownSections = computed(() => {
+  const knownKeys = new Set(knownSections.value.map((section) => section.key));
+  return props.modelValue.filter((section) => !knownKeys.has(section.key));
+});
 
 function toggleVisibility(key: ProfileSection["key"]) {
-  const next = props.modelValue.map((section) =>
+  const next = knownSections.value.map((section) =>
     section.key === key ? { ...section, visible: !section.visible } : section,
   );
-  emit("update:modelValue", next);
+  emit("update:modelValue", [...next, ...unknownSections.value]);
 }
 
 function isDisabled(key: ProfileSection["key"]) {
