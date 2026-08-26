@@ -8,7 +8,7 @@
 
 ## Decisions (Chris, 2026-08-26 — bind this phase)
 
-- **Storage = reuse `interactions` (direction=inbound), NOT a new `profile_contacts` table.** Match-or-create coach → `interactions` row (`direction='inbound'`, `coach_id`, `family_unit_id`) → existing `createInboundInteractionAlert` (`utils/interactions/inboundAlerts.ts`) mints the LIVE `inbound_interaction` notification + `sendNotificationEmail`. Shows in the coach timeline; the `last_contact_date` trigger fires. **No new table → no player_contacts migration.**
+- **Storage = new `profile_contacts` table** (spec's original design). ~~Reuse interactions~~ was REVERSED 2026-08-26: `interactions.school_id` is **NOT NULL** (verified live) + `logged_by` NOT NULL, so `interactions` cannot hold a school-less inbound lead from a stranger. `profile_contacts` is a purpose-built inbound-lead sink: `matched_coach_id` nullable (linked when email matches an existing coach via `matchCoachByEmail`), `school_id` optional + `school_name` free-text, `ip`/`user_agent` for abuse triage, `type` (`contact` now, `interest` for Phase 4). **No unauthenticated writes to coaches/schools/interactions.** Player is notified directly (mint notification + `sendNotificationEmail`); the full leads inbox is Phase 4.
 - **Coach dedup = email-only.** Within the player's `family_unit_id`, match on case-insensitive `coaches.email`; no email or no match → create. (Accepts more duplicates when a coach omits email — Chris's call.)
 - **Turnstile behind a verifier interface + env flag.** Real honeypot + rate-limit + code path always; Turnstile verification is a no-op **pass** when `TURNSTILE_SECRET_KEY` is absent (mirrors `emailService.ts:90`'s missing-RESEND guard). Widget renders only when the public site key is present. Wire real keys later with no rebuild.
 - **This phase = Contact Player only.** Express Interest = Phase 4 (separate endpoint + popover + inbox + analytics).
@@ -36,7 +36,7 @@
 - No secret in client bundle: `TURNSTILE_SECRET_KEY` server-only (`runtimeConfig`), only `turnstileSiteKey` public.
 - UI: no raw hex/rgba — brand tokens; `DesignSystem*` (never `DS*`); `npm run audit:tokens` clean.
 - Gates before "done": `npm run type-check`, `npm run lint`, `npm run test`, `npm run audit:tokens`.
-- Single Supabase DB serves prod + QA. **No migration this phase** (reusing `interactions`). If any schema need emerges, STOP and raise it — don't add a table silently.
+- Single Supabase DB serves prod + QA. **One migration this phase: the `profile_contacts` table** (Task 2B), applied live via Supabase MCP by the controller (Chris approved the table). No OTHER schema changes — do not alter `interactions`/`coaches`/`schools`.
 
 ---
 
@@ -66,6 +66,47 @@
 
 ---
 
+### Task 2B: `profile_contacts` table + migration (applied live)
+
+**Files:** Create `supabase/migrations/<next-ts>_profile_contacts.sql`. Types: regenerate or hand-add the `profile_contacts` row/insert types if the repo hand-maintains `types/models.ts` / `types/database.types.ts` (check how Phase-2 added `player_profiles` types).
+
+**Schema (additive, no changes to existing tables):**
+```sql
+create table if not exists public.profile_contacts (
+  id uuid primary key default gen_random_uuid(),
+  family_unit_id uuid not null references public.family_units(id) on delete cascade,
+  player_user_id uuid references auth.users(id) on delete set null,  -- notification target
+  type text not null default 'contact' check (type in ('contact','interest')),
+  coach_name text not null,
+  coach_email text,
+  coach_title text,
+  matched_coach_id uuid references public.coaches(id) on delete set null,
+  school_id uuid references public.schools(id) on delete set null,
+  school_name text,                        -- free-text fallback when no school_id
+  note text,
+  program text,                            -- Phase 4 (express interest)
+  ip inet,
+  user_agent text,
+  created_at timestamptz not null default now()
+);
+alter table public.profile_contacts enable row level security;
+-- Family members read their own leads (Phase 4 inbox); NO public policy; service-role inserts.
+create policy "profile_contacts family read" on public.profile_contacts
+  for select using (
+    family_unit_id in (
+      select family_unit_id from public.family_members where user_id = auth.uid()
+    )
+  );
+create index if not exists idx_profile_contacts_family on public.profile_contacts(family_unit_id, created_at desc);
+```
+(Verify the `family_members` column names against the repo's existing family RLS policies — mirror the exact predicate the other family-scoped tables use.)
+
+- [ ] **Step 1:** Write the migration file with the exact next timestamp (`ls supabase/migrations/ | tail`).
+- [ ] **Step 2:** Controller applies live via MCP `apply_migration` (name `profile_contacts`) + verifies: table exists, RLS on, the family read policy present, service-role insert works. (Chris approved the table.)
+- [ ] **Step 3:** Add `profile_contacts` to the TS types the same way Phase 2 typed `player_profiles` (so the endpoint's insert is typed, no `as any`). Commit `feat(db): profile_contacts inbound-lead table + family-read RLS`.
+
+---
+
 ### Task 3: `POST /api/public/profile/[slug]/contact` endpoint
 
 **Files:** Create `server/api/public/profile/[slug]/contact.post.ts`; Test `tests/unit/server/api/public/contact.spec.ts` (unit) + note integration path.
@@ -76,16 +117,16 @@
 3. Zod `safeParse` → 422 `.issues[0]?.message`.
 4. `verifyTurnstile(body.turnstileToken, ip)` → `{ ok:false }` → 403.
 5. Resolve player by slug (reuse resolver); unpublished/not-found → 404.
-6. `matchCoachByEmail(admin, { familyUnitId, email })` → `coachId | null` (match-only; NEVER creates a coach — Chris 2026-08-26).
-7. Insert `interactions` row: `direction='inbound'`, `coach_id` (matched id OR **null**), `family_unit_id`, `type` (existing inbound-appropriate enum — verify the live enum; NO enum add without asking), `subject` (`"Contact from <coachName>"`), `content` (note + coachName + coachEmail + coachTitle + schoolName so the player has the lead details even when `coach_id` is null), `occurred_at=now()`.
-8. `createInboundInteractionAlert(...)` with the resolved player user (coach may be null) → notification + email (fire-and-forget-safe, never blocks the response). **Verify the alert works with a null coach** — read `inboundAlerts.ts:14`; if it hard-requires a coach, adapt (pass coach details / degrade gracefully) or STOP + report.
-9. **Turnstile-disabled warning:** when `verifyTurnstile` returns `reason:'disabled'`, log a `useLogger` WARNING (loud signal that a keyless prod deploy has no CAPTCHA — the flag is off). Defense-in-depth (honeypot + rate-limit) still applies.
+6. `matchCoachByEmail(admin, { familyUnitId, email: body.coachEmail })` → `matchedCoachId | null` (match-only; sets `matched_coach_id`; NEVER creates a coach).
+7. Insert a `profile_contacts` row (service-role): `family_unit_id`, `player_user_id` (the player's user, for the notification target), `type='contact'`, `coach_name`, `coach_email`, `coach_title`, `matched_coach_id`, `school_id` (only if a valid one was supplied — else null), `school_name` (free-text), `note`, `ip` (client ip), `user_agent`. No FK can be violated (coach/school both nullable).
+8. Notify the player directly (NOT `createInboundInteractionAlert`, which is interactions-coupled): mint an in-app notification (`createNotification`/the notifications insert — reuse the existing path; type `inbound_interaction` is the closest LIVE enum value, title "New contact from a coach", message summarizing coachName + schoolName, `related_entity_type='profile_contact'`, `related_entity_id`=the new row id) **and** `sendNotificationEmail` to the player (fire-and-forget-safe — a notify failure must NOT fail the response). Read `useNotifications`/`inboundAlerts.ts` for the exact notification insert shape; respect `notification_preferences` if the existing inbound path does.
+9. **Turnstile-disabled warning:** when `verifyTurnstile` returns `reason:'disabled'`, `logger.warn` (loud keyless-prod-no-CAPTCHA signal). Defense-in-depth (honeypot + rate-limit) still applies.
 9. `useLogger(event,'public:contact').info({ ip, ua, slug, created })` for triage.
 10. Return `{ ok: true }` (never coach/player PII).
 
-- [ ] **Step 1 (TDD RED):** unit tests over a mocked admin + mocked deps: honeypot → `{ok:true}` and NO insert; bad body → 422; Turnstile fail → 403; happy path → coach matched/created + interaction insert + alert called + `{ok:true}`; response never contains player email/name. Run → FAIL.
-- [ ] **Step 2:** Implement, reusing rateLimit + slug resolver + useSupabaseAdmin + createInboundInteractionAlert. Verify the `interactions.type` enum has an inbound-appropriate value (read the type); if none fits, use the closest existing value — do NOT add an enum (no migration) without stopping to ask.
-- [ ] **Step 3:** GREEN + type-check + lint. `npm run dev` + `curl` the endpoint (honeypot, bad body, happy path shapes). Commit `feat(api): public Contact Player endpoint (hardened, match-or-create + inbound alert)`.
+- [ ] **Step 1 (TDD RED):** unit tests over a mocked admin + mocked deps: honeypot → `{ok:true}` and NO `profile_contacts` insert + NO notify; bad body → 422; Turnstile `{ok:false}` → 403; unknown slug → 404; happy path email-match → `profile_contacts` insert with `matched_coach_id` set + notification minted + `{ok:true}`; happy path no-match → insert with `matched_coach_id` null + notification still minted + `{ok:true}`; response never contains player/coach email or name. Run → FAIL.
+- [ ] **Step 2:** Implement, reusing rateLimit + slug resolver + useSupabaseAdmin + matchCoachByEmail + the existing notification insert path + sendNotificationEmail. Insert into `profile_contacts` (Task 2B). Never create a coach/school.
+- [ ] **Step 3:** GREEN + type-check + lint. `npm run dev` + `curl` the endpoint (honeypot, bad body, happy path shapes; confirm a `profile_contacts` row + a notification land). Commit `feat(api): public Contact Player endpoint (hardened, profile_contacts + notify)`.
 
 ---
 
