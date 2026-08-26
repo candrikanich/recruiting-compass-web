@@ -141,3 +141,8 @@ Unauthenticated write endpoints. Required: Turnstile verification server-side, p
 - Drag-reorder lib vs up/down buttons for section config (leaning: up/down to avoid a dep, revisit if UX weak).
 - Banner storage bucket policy (public-read) + image size/type validation limits.
 - Whether Express Interest requires coach email at all (Figma shows program + note only; player-side value of anonymous interest vs identifiable).
+
+## Update 2026-08-25 — Phase 2 design inputs (Chris)
+
+- **Target-schools list:** stays DROPPED from the public page (intentional).
+- **Socials + recruiting-service IDs:** to be RESTORED as public sections. Chris is producing an updated design for these; Phase 2's section-config editor must manage them as sections (`social`, `recruiting_services`) alongside the existing six. Public rendering of the restored sections lands with Chris's updated design (Phase 2), not Phase 1.
