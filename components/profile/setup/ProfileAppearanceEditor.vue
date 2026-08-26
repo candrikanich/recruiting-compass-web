@@ -7,7 +7,7 @@ import { useProfileBanner } from "~/composables/useProfileBanner";
 // purple / indigo). Keys are constrained to the header_color enum the server
 // accepts (server/api/player/profile.put.ts).
 const HEADER_COLORS = [
-  { key: "slate", label: "Navy", swatch: "bg-slate-800" },
+  { key: "slate", label: "Navy", swatch: "bg-slate-900" },
   { key: "blue", label: "Blue", swatch: "bg-blue-700" },
   { key: "teal", label: "Teal", swatch: "bg-teal-700" },
   { key: "rose", label: "Red", swatch: "bg-rose-700" },
