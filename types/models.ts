@@ -533,6 +533,7 @@ export interface PublicProfileData {
     act_score?: number;
     graduation_year?: number;
     high_school?: string;
+    intended_major?: string;
     core_courses?: string[];
   } | null;
   /** null when show_athletic is false */
@@ -581,6 +582,8 @@ export interface PublicProfileData {
   metrics: PublicMetric[] | null;
   /** null when the "team_history" section is not visible */
   teamHistory: PublicTeamHistoryEntry[] | null;
+  /** ISO timestamp of the profile row's last update; drives the footer stamp. */
+  updatedAt: string | null;
   sections: ProfileSection[];
 }
 

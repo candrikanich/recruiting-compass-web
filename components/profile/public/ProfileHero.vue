@@ -53,11 +53,11 @@ const socialLinks = computed(() => buildSocialLinks(props.data.social));
         v-if="data.photoUrl"
         :src="data.photoUrl"
         :alt="`${data.playerName} profile photo`"
-        class="h-24 w-24 shrink-0 rounded-full object-cover ring-2 ring-white/20"
+        class="h-32 w-32 shrink-0 rounded-2xl object-cover ring-2 ring-white/20 sm:h-36 sm:w-36"
       />
       <div
         v-else
-        class="flex h-24 w-24 shrink-0 items-center justify-center rounded-full bg-brand-slate-700 text-2xl font-semibold ring-2 ring-white/20"
+        class="flex h-32 w-32 shrink-0 items-center justify-center rounded-2xl bg-brand-slate-700 text-3xl font-semibold ring-2 ring-white/20 sm:h-36 sm:w-36"
         aria-hidden="true"
       >
         {{ data.playerName.charAt(0) }}
@@ -111,24 +111,28 @@ const socialLinks = computed(() => buildSocialLinks(props.data.social));
           </template>
         </div>
 
-        <div class="mt-6 flex flex-wrap items-center gap-3">
-          <DesignSystemButton color="blue" variant="solid" @click="$emit('contact')">
-            Contact Player
-          </DesignSystemButton>
-          <DesignSystemButton
-            color="slate"
-            variant="outline"
-            :disabled="interestSent"
-            @click="$emit('interest')"
-          >
-            {{ interestSent ? "Interest Sent" : "Express Interest" }}
-          </DesignSystemButton>
-          <span
-            class="inline-flex items-center gap-1.5 rounded-full bg-brand-emerald-900/40 px-3 py-1 text-xs font-medium text-brand-emerald-300 ring-1 ring-brand-emerald-700/50"
-          >
-            Verified Coach Access
-          </span>
-        </div>
+      </div>
+
+      <div
+        class="flex shrink-0 flex-col gap-3 sm:w-44"
+      >
+        <DesignSystemButton
+          color="blue"
+          variant="solid"
+          full-width
+          @click="$emit('contact')"
+        >
+          Contact Player
+        </DesignSystemButton>
+        <DesignSystemButton
+          color="slate"
+          variant="outline"
+          full-width
+          :disabled="interestSent"
+          @click="$emit('interest')"
+        >
+          {{ interestSent ? "Interest Sent" : "Express Interest" }}
+        </DesignSystemButton>
       </div>
     </div>
   </header>

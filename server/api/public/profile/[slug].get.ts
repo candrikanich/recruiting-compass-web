@@ -53,6 +53,7 @@ interface AssemblePublicProfileInput {
     show_athletic: boolean;
     show_film: boolean;
     show_schools: boolean;
+    updated_at?: string | null;
   };
   user: { full_name: string | null; profile_photo_url: string | null } | null;
   details: Record<string, unknown> | null;
@@ -88,6 +89,8 @@ export function assemblePublicProfile(
             graduation_year: details.graduation_year as number | undefined,
             high_school: (details.school_name ?? details.high_school) as
               string | undefined,
+            intended_major: (details.intended_major as string | undefined) ||
+              undefined,
             core_courses: details.core_courses as string[] | undefined,
           }
         : null,
@@ -150,6 +153,7 @@ export function assemblePublicProfile(
     teamHistory: isSectionVisible(sections, "team_history")
       ? buildTeamHistory(details)
       : null,
+    updatedAt: profile.updated_at ?? null,
     sections,
   };
 }
