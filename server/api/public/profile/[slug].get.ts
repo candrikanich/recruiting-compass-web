@@ -275,7 +275,9 @@ export default defineEventHandler(async (event) => {
     if (isSectionVisible(sections, "metrics")) {
       const { data } = await supabase
         .from("performance_metrics")
-        .select("metric_type, display_value, value, unit, verified, is_primary")
+        .select(
+          "metric_type, display_value, value, unit, verified, is_primary, created_at",
+        )
         .eq("user_id", profile.user_id);
       metricsRows = data ?? [];
     }
