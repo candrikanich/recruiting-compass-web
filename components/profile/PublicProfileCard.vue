@@ -1,6 +1,6 @@
 <!-- components/profile/PublicProfileCard.vue -->
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import type { PublicProfileData } from "~/types/models";
 import ProfileHero from "~/components/profile/public/ProfileHero.vue";
 import MetricsGrid from "~/components/profile/public/MetricsGrid.vue";
@@ -9,10 +9,13 @@ import AcademicPanel from "~/components/profile/public/AcademicPanel.vue";
 import TargetProgramValues from "~/components/profile/public/TargetProgramValues.vue";
 import TeamHistoryPanel from "~/components/profile/public/TeamHistoryPanel.vue";
 import AwardsHonors from "~/components/profile/public/AwardsHonors.vue";
+import ContactPlayerModal from "~/components/profile/public/ContactPlayerModal.vue";
 
-const props = defineProps<{ data: PublicProfileData }>();
+// `slug` is optional because the owner-side live preview (ProfileLivePreview)
+// renders this card before the profile has a real public URL.
+const props = defineProps<{ data: PublicProfileData; slug?: string }>();
 
-defineEmits<{ contact: []; interest: [] }>();
+const emit = defineEmits<{ contact: []; interest: [] }>();
 
 // section_config (owner-ordered, owner-visible) drives what renders below the
 // hero — a hidden section stays entirely off the page even though the API
@@ -20,6 +23,22 @@ defineEmits<{ contact: []; interest: [] }>();
 const visibleSections = computed(() =>
   props.data.sections.filter((s) => s.visible),
 );
+
+// The public page deliberately hides the player's target schools (Phase 2
+// decision) — the modal always falls back to its free-text school field.
+const showContactModal = ref(false);
+
+function handleContact() {
+  emit("contact");
+  // No real slug to submit against (e.g. owner live preview) — don't open a
+  // form that can't actually send.
+  if (!props.slug) return;
+  showContactModal.value = true;
+}
+
+function closeContactModal() {
+  showContactModal.value = false;
+}
 </script>
 
 <template>
@@ -28,7 +47,7 @@ const visibleSections = computed(() =>
   >
     <ProfileHero
       :data="data"
-      @contact="$emit('contact')"
+      @contact="handleContact"
       @interest="$emit('interest')"
     />
 
@@ -67,5 +86,12 @@ const visibleSections = computed(() =>
         >
       </p>
     </footer>
+
+    <ContactPlayerModal
+      v-if="showContactModal && slug"
+      :slug="slug"
+      :player-name="data.playerName"
+      @close="closeContactModal"
+    />
   </article>
 </template>
