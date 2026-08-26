@@ -9,7 +9,7 @@
   configured, so the flow works unchanged before Turnstile is provisioned.
 -->
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount, nextTick } from "vue";
 import { useRuntimeConfig } from "#app";
 
 const props = defineProps<{
@@ -22,6 +22,17 @@ const emit = defineEmits<{
   close: [];
   submitted: [];
 }>();
+
+const dialogRef = ref<HTMLDialogElement | null>(null);
+
+onMounted(async () => {
+  await nextTick();
+  dialogRef.value?.showModal?.();
+});
+
+onBeforeUnmount(() => {
+  dialogRef.value?.close?.();
+});
 
 const program = ref("");
 const note = ref("");
@@ -183,10 +194,11 @@ function handleClose() {
 </script>
 
 <template>
-  <div
-    class="w-full max-w-sm rounded-xl border-2 border-brand-slate-200 bg-white p-0 shadow-2xl"
-    role="dialog"
+  <dialog
+    ref="dialogRef"
+    class="w-full max-w-sm rounded-xl border-2 border-brand-slate-200 bg-white p-0 shadow-2xl backdrop:bg-black/50"
     aria-labelledby="express-interest-title"
+    @cancel.prevent="handleClose"
   >
     <div class="flex items-center justify-between border-b border-brand-slate-200 px-5 py-3">
       <h2 id="express-interest-title" class="text-base font-semibold text-brand-slate-900">
@@ -332,5 +344,5 @@ function handleClose() {
         </DesignSystemButton>
       </div>
     </form>
-  </div>
+  </dialog>
 </template>

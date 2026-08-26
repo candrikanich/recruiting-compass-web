@@ -4,7 +4,10 @@ import { computed } from "vue";
 import type { PublicProfileData } from "~/types/models";
 import { buildSocialLinks } from "~/utils/profile/socialLinks";
 
-const props = defineProps<{ data: PublicProfileData }>();
+const props = withDefaults(
+  defineProps<{ data: PublicProfileData; interestSent?: boolean }>(),
+  { interestSent: false },
+);
 
 defineEmits<{ contact: []; interest: [] }>();
 
@@ -112,8 +115,13 @@ const socialLinks = computed(() => buildSocialLinks(props.data.social));
           <DesignSystemButton color="blue" variant="solid" @click="$emit('contact')">
             Contact Player
           </DesignSystemButton>
-          <DesignSystemButton color="slate" variant="outline" @click="$emit('interest')">
-            Express Interest
+          <DesignSystemButton
+            color="slate"
+            variant="outline"
+            :disabled="interestSent"
+            @click="$emit('interest')"
+          >
+            {{ interestSent ? "Interest Sent" : "Express Interest" }}
           </DesignSystemButton>
           <span
             class="inline-flex items-center gap-1.5 rounded-full bg-brand-emerald-900/40 px-3 py-1 text-xs font-medium text-brand-emerald-300 ring-1 ring-brand-emerald-700/50"

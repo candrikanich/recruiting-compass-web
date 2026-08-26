@@ -47,6 +47,51 @@ describe("ProfileHero", () => {
     expect(w.text()).toContain("@owen.a");
   });
 
+  it("labels the interest button 'Express Interest' and emits interest when not yet sent", async () => {
+    const w = mount(ProfileHero, {
+      props: {
+        data: {
+          playerName: "Owen A",
+          photoUrl: null,
+          headerColor: "slate",
+          bannerUrl: null,
+          jerseyNumber: 7,
+          commitmentStatus: "uncommitted",
+          committedSchoolName: null,
+          bio: "x",
+          athletic: { primary_sport: "Baseball" },
+        } as never,
+      },
+    });
+    const btn = w.findAll("button")[1];
+    expect(btn.text()).toBe("Express Interest");
+    expect(btn.attributes("disabled")).toBeUndefined();
+    await btn.trigger("click");
+    expect(w.emitted().interest).toBeTruthy();
+  });
+
+  it("shows a disabled 'Interest Sent' button and does not emit interest when interestSent is true", async () => {
+    const w = mount(ProfileHero, {
+      props: {
+        data: {
+          playerName: "Owen A",
+          photoUrl: null,
+          headerColor: "slate",
+          bannerUrl: null,
+          jerseyNumber: 7,
+          commitmentStatus: "uncommitted",
+          committedSchoolName: null,
+          bio: "x",
+          athletic: { primary_sport: "Baseball" },
+        } as never,
+        interestSent: true,
+      },
+    });
+    const btn = w.findAll("button")[1];
+    expect(btn.text()).toBe("Interest Sent");
+    expect(btn.attributes("disabled")).toBeDefined();
+  });
+
   it("renders no social row when social is absent", () => {
     const w = mount(ProfileHero, {
       props: {

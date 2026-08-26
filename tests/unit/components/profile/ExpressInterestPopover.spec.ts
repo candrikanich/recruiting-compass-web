@@ -137,6 +137,13 @@ describe("ExpressInterestPopover", () => {
     expect(w.emitted().close).toBeTruthy();
   });
 
+  it("renders a native <dialog> and emits close on Escape (cancel event)", async () => {
+    const w = mount(ExpressInterestPopover, { props: baseProps });
+    expect(w.find("dialog").exists()).toBe(true);
+    await w.find("dialog").trigger("cancel");
+    expect(w.emitted().close).toBeTruthy();
+  });
+
   describe("Turnstile widget render + reset", () => {
     afterEach(() => {
       delete (window as unknown as { turnstile?: unknown }).turnstile;
