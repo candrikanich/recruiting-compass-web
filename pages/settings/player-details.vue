@@ -174,22 +174,17 @@
           v-show="currentTab === 'public-profile'"
           class="animate-in fade-in slide-in-from-bottom-2 space-y-6 duration-300"
         >
-          <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            <ProfileSetup />
-            <ProfilePreview
-              v-if="playerProfile"
-              :settings="playerProfile"
-              :player-name="userStore.user?.full_name ?? 'Athlete'"
-              :details="form as unknown as Record<string, unknown>"
-              :schools="previewSchools"
-            />
-            <div
-              v-else-if="profileLoading"
-              class="animate-pulse rounded-xl bg-gray-50 p-4"
-            >
-              <div class="mb-4 h-3 w-32 rounded bg-gray-200" />
-              <div class="h-24 rounded-xl bg-gray-200" />
-            </div>
+          <ProfileSetup
+            v-if="!profileLoading"
+            :details="form as unknown as PlayerDetails"
+            :schools="previewSchools"
+          />
+          <div
+            v-else
+            class="animate-pulse rounded-xl bg-gray-50 p-4"
+          >
+            <div class="mb-4 h-3 w-32 rounded bg-gray-200" />
+            <div class="h-24 rounded-xl bg-gray-200" />
           </div>
         </div>
 
@@ -339,6 +334,7 @@
 import { ref, computed, onMounted } from "vue";
 import { useRoute } from "#app";
 import { usePlayerProfile } from "~/composables/usePlayerProfile";
+import type { PlayerDetails } from "~/types/models";
 import { useFormValidation } from "~/composables/useFormValidation";
 import { usePlayerDetailsForm } from "~/composables/usePlayerDetailsForm";
 import { useUserStore } from "~/stores/user";
@@ -388,7 +384,7 @@ const tabs = [
   { id: "public-profile", name: "Public Profile", icon: "i-heroicons-share" },
 ];
 
-const { profile: playerProfile, loading: profileLoading } = usePlayerProfile();
+const { loading: profileLoading } = usePlayerProfile();
 
 const {
   isLoading,

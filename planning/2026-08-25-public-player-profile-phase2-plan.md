@@ -17,7 +17,8 @@
 - **Global component tags are `DesignSystem*`** (path-derived), never `DS*` — verify against `.nuxt/components.d.ts`. See `planning/lessons.md`.
 - Columns already exist from Phase 1 (`banner_url`, `looking_for`, `commitment_status`, `committed_school_id`, `awards`, `values_tags`, `section_config`, `show_metrics`) — **no new player_profiles migration**. Only a Storage bucket is new.
 - Owner writes flow through `usePlayerProfile.updateProfile(updates: Partial<PlayerProfile>)` → Pinia store → `PUT /api/player/profile`. Never mutate Pinia state directly in components.
-- Section keys (canonical): `metrics | film | academics | values | team_history | awards`. **`social` and `recruiting_services` are PENDING Chris's updated design** — the section editor must be data-driven off a single `SECTION_META` list so those keys slot in later without touching the editor; do NOT build their public rendering in this phase.
+- Section keys (canonical): `metrics | film | academics | values | team_history | awards` — **all 6 are `SECTION_META` rows** (values keeps its own reorderable/toggleable row per Chris 2026-08-25). The editor is data-driven off `SECTION_META` regardless.
+- **Socials + recruiting-services are NOT section keys** — Chris's design (Figma `TSVId5Z9…` node 5-5) renders them as *inline sub-elements*, not reorderable sections: socials = a hero row of `icon + @handle` (X/Instagram/TikTok) under the bio; recruiting-services = a credential row under the metrics header (`NCAA ID` tag + external-link badges e.g. PrepBaseball Report, Perfect Game). Data already flows to the public endpoint (`buildSocial()` + the `athletic` section off `user_preferences.data`); the gap is render-only. No owner editor for these this phase (owner sets handles/service IDs in existing player-details forms). See new Tasks 5A + 5B.
 - Commitment states: `uncommitted | committed`.
 - Single Supabase DB serves prod + QA; Storage bucket + policies applied live via MCP (controller-run, with Chris's ok).
 - Gates before "done": `npm run type-check`, `npm run lint`, `npm run test`, `npm run audit:tokens` all pass.
@@ -343,6 +344,45 @@ git commit -m "feat(profile): section-config drag/visibility editor"
 
 ---
 
+### Task 5A: Public render — hero social links row
+
+**Files:**
+- Modify: `components/profile/public/ProfileHero.vue`
+- Create: `utils/profile/socialLinks.ts` (pure builder: `social` → `{ platform, handle, url, icon }[]`)
+- Test: `tests/unit/utils/profile/socialLinks.spec.ts` + hero render assertion
+
+**Interfaces:**
+- Consumes: `PublicProfileData.social` (already returned by `buildSocial()` — `twitter_handle`, `instagram_handle`, `tiktok_handle`, `facebook_url`).
+- Produces: `buildSocialLinks(social): SocialLink[]` — one entry per present handle, `url` derived (`https://x.com/<handle>` sans `@`, `https://instagram.com/<handle>`, `https://tiktok.com/@<handle>`), skips empty. Hero renders an inline `icon + @handle` row, `·`-separated, under the bio. Renders nothing when list is empty.
+
+- [ ] **Step 1: Failing test** — `buildSocialLinks` returns only present platforms with correct URLs; empty input → `[]`. Hero shows `@handle` text when social present, none when absent.
+- [ ] **Step 2: Verify it fails.**
+- [ ] **Step 3: Implement** the pure builder + hero row (brand tokens, `DesignSystem*`; icons via existing icon set — X/Instagram/TikTok). Strip leading `@` for URLs, keep `@` for display.
+- [ ] **Step 4: Verify it passes** + `npm run type-check`.
+- [ ] **Step 5: Commit** `feat(profile): render hero social links row (X/IG/TikTok)`
+
+---
+
+### Task 5B: Public render — metrics credential badges (NCAA ID + recruiting services)
+
+**Files:**
+- Create: `components/profile/public/MetricsCredentials.vue`
+- Create: `utils/profile/recruitingCredentials.ts` (pure builder off the `athletic` section + `ALL_SERVICE_DEFS`)
+- Modify: `components/profile/public/MetricsGrid.vue` (render `MetricsCredentials` under the section header, above the grid)
+- Test: `tests/unit/utils/profile/recruitingCredentials.spec.ts` + component render
+
+**Interfaces:**
+- Consumes: `PublicProfileData.athletic` (already exposes `ncaa_id`, `perfect_game_id`, `prep_baseball_id`, `hudl_url`, `ncsa_id`, etc.); `ALL_SERVICE_DEFS` from `utils/services/canonical.ts` (label + URL template per service).
+- Produces: `buildRecruitingCredentials(athletic): { ncaaId: string|null; services: { key, label, url }[] }`. Maps each present service field → its `ALL_SERVICE_DEFS` label + resolved external URL; skips services with no value and any without a URL template. `MetricsCredentials.vue` renders the `NCAA ID: <id>` tag (when present) followed by external-link badges (label + external-link icon, `target="_blank" rel="noopener"`). Renders nothing when NCAA ID absent AND no service badges.
+
+- [ ] **Step 1: Failing test** — builder returns NCAA ID + only the services with values and URL templates; component renders one badge per service with an external link, and nothing when the credential set is empty.
+- [ ] **Step 2: Verify it fails.**
+- [ ] **Step 3: Implement.** Builder pulls from `ALL_SERVICE_DEFS` (single source for label + URL) — do NOT hardcode service labels. Component uses brand tokens + `DesignSystem*`. NCAA ID stays ALSO in `AcademicPanel` (design shows it in both places — do not remove it there).
+- [ ] **Step 4: Verify it passes** + `npm run type-check` + `npm run audit:tokens`.
+- [ ] **Step 5: Commit** `feat(profile): metrics credential row (NCAA ID + recruiting-service links)`
+
+---
+
 ### Task 6: Content editors — looking_for, awards, values_tags
 
 **Files:**
@@ -640,10 +680,10 @@ git commit -m "test(e2e): owner section toggle reflects on public page"
 
 **Spec coverage (Phase 2 slice):** banner upload (T2/T4/T7), looking_for/awards/values editors (T6), section-config drag+visibility editor writing `section_config` (T5) with server sync (T3), commitment status (T7), share tools + QR (T1/T8), live mini-preview (T9), setup page assembly + route (T11), owner-preview parity fix (T10), E2E (T12), gates (T13). ✓
 
-**Placeholder scan:** section-editor `SECTION_META` is the single extension point for the pending `social`/`recruiting_services` sections (per Chris's updated design) — intentionally deferred, not a gap. No TBD/TODO. ✓
+**Design reconciliation (2026-08-25):** Chris's Figma (`TSVId5Z9…` node 5-5) received. Socials + recruiting-services are inline sub-elements (hero row / metrics credential row), NOT section keys → built as public-render components in Tasks 5A + 5B off already-exposed data; `SECTION_META` holds the 6 canonical section keys only (values keeps its own row). Awards + Values owner editors ARE built (Task 6, Chris confirmed) despite the mockup's Content card showing only Bio + Looking-For. ✓
 
 **Type consistency:** `reconcileVisibility`, `useProfileBanner`, `SECTION_META`, `SectionConfigEditor`, `resolveSections` referenced with stable names across tasks; `ProfileSection`/`ProfileAward`/`CommitmentStatus` reused from Phase 1 types. ✓
 
 **Dependencies on Phase 1:** all new columns + `resolveSections` land with PR #487. **This plan must not start until #487 is merged to `develop`** (or be explicitly stacked on `feat/public-player-profile`). ✓
 
-**Deferred to later phases:** `social` + `recruiting_services` public rendering (awaiting Chris's updated design); Phase 3 (Contact Player) + Phase 4 (Express Interest).
+**Deferred to later phases:** Phase 3 (Contact Player button/flow) + Phase 4 (Express Interest) — hero buttons render but their handlers/anti-abuse land later. Socials + recruiting-services public rendering is now IN scope (Tasks 5A/5B); no owner editor for them this phase (edited via existing player-details forms).
