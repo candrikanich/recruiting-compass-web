@@ -35,12 +35,23 @@ export default defineEventHandler(async (event) => {
     const { id: userId } = await requireAuth(event);
     const supabase = useSupabaseAdmin();
 
-    const { data: membership } = await supabase
+    const { data: membership, error: membershipError } = await supabase
       .from("family_members")
       .select("family_unit_id")
       .eq("user_id", userId)
       .single();
 
+    // A genuine query failure must surface as 500 — only a clean "no row"
+    // (membership absent, error null) is the 403 "not a family member" case.
+    // `.single()` sets PGRST116 when zero rows match; treat that as no-row,
+    // any other error as a server failure.
+    if (membershipError && membershipError.code !== "PGRST116") {
+      logger.error("Failed to resolve family membership", membershipError);
+      throw createError({
+        statusCode: 500,
+        statusMessage: "Failed to load inbound leads",
+      });
+    }
     if (!membership) {
       throw createError({
         statusCode: 403,
