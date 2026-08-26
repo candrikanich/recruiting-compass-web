@@ -104,7 +104,10 @@ test.describe("Public profile — Express Interest", () => {
       // Honeypot (`hp`) intentionally left untouched — a real coach never
       // sees or fills it; a filled value would silently no-op the submit.
 
-      await anonPage.getByRole("button", { name: "Express interest" }).click();
+      // The hero "Express Interest" button and the popover's submit button
+      // share the accessible name "Express interest" (strict-mode collision) —
+      // target the submit by its stable data-test inside the open dialog.
+      await anonPage.locator('[data-test="submit-interest"]').click();
 
       await expect(anonPage.getByText("Interest sent.")).toBeVisible();
       await expect(

@@ -339,7 +339,14 @@ function handleClose() {
         <DesignSystemButton type="button" variant="outline" color="slate" @click="handleClose">
           Cancel
         </DesignSystemButton>
-        <DesignSystemButton type="submit" variant="solid" color="blue" :disabled="submitting" :loading="submitting">
+        <DesignSystemButton
+          data-test="submit-interest"
+          type="submit"
+          variant="solid"
+          color="blue"
+          :disabled="submitting"
+          :loading="submitting"
+        >
           Express interest
         </DesignSystemButton>
       </div>
