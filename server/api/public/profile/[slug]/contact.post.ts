@@ -15,6 +15,7 @@ import {
   getRouterParam,
   getRequestIP,
   getRequestHeader,
+  getHeader,
   readBody,
   createError,
 } from "h3";
@@ -31,6 +32,21 @@ const HASH_SLUG_RE = /^[a-z0-9]{6}$/;
 const VANITY_SLUG_RE = /^[a-z0-9][a-z0-9-]{0,28}[a-z0-9]$/;
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+// Loose-but-sufficient IPv4/IPv6 validators for the `profile_contacts.ip`
+// `inet` column — a malformed header value must degrade to `null`, never
+// fail the insert (a dropped lead is worse than a missing IP).
+const IPV4_RE =
+  /^(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}$/;
+const IPV6_RE = /^[0-9a-fA-F:]{2,}$/;
+
+function toValidInetOrNull(ip: string | null | undefined): string | null {
+  if (!ip) return null;
+  const trimmed = ip.trim();
+  if (IPV4_RE.test(trimmed)) return trimmed;
+  if (trimmed.includes(":") && IPV6_RE.test(trimmed)) return trimmed;
+  return null;
+}
 
 const contactSchema = z.object({
   coachName: z.string().trim().min(1).max(120),
@@ -59,7 +75,16 @@ export default defineEventHandler(async (event) => {
         statusMessage: "Profile not found",
       });
     }
-    const ip = getRequestIP(event, { xForwardedFor: true }) ?? null;
+    // The trusted client IP — Vercel's `x-vercel-forwarded-for` is
+    // platform-set and cannot be spoofed by the client, unlike the leftmost
+    // value of `X-Forwarded-For`, which h3's `xForwardedFor: true` reads and
+    // an attacker can rotate to evade per-IP rate limiting. Falls back to
+    // `x-real-ip`, then h3's resolution, for local/non-Vercel environments.
+    const clientIp =
+      getHeader(event, "x-vercel-forwarded-for") ||
+      getHeader(event, "x-real-ip") ||
+      getRequestIP(event, { xForwardedFor: true }) ||
+      undefined;
     const rawUserAgent = getRequestHeader(event, "user-agent") ?? null;
     const userAgent = rawUserAgent ? rawUserAgent.slice(0, 512) : null;
 
@@ -74,6 +99,7 @@ export default defineEventHandler(async (event) => {
     const rateLimitResult = await rateLimitByIp(event, {
       requests: 5,
       window: "10 m",
+      ip: clientIp,
     });
     // TODO(per-slug rate limit): rateLimit.ts only exports rateLimitByIp/
     // rateLimitByUser (keyed internally). A per-slug limiter (key
@@ -91,7 +117,10 @@ export default defineEventHandler(async (event) => {
     }
     const data = parsed.data;
 
-    const turnstileResult = await verifyTurnstile(data.turnstileToken, ip ?? undefined);
+    const turnstileResult = await verifyTurnstile(
+      data.turnstileToken,
+      clientIp,
+    );
     if (turnstileResult.reason === "disabled") {
       logger.warn(
         "Turnstile verification disabled (no secret key configured) — relying on honeypot + rate limit only",
@@ -187,7 +216,7 @@ export default defineEventHandler(async (event) => {
       school_id: verifiedSchoolId,
       school_name: data.schoolName ?? null,
       note: data.note,
-      ip,
+      ip: toValidInetOrNull(clientIp),
       user_agent: userAgent,
     };
 
@@ -250,7 +279,7 @@ export default defineEventHandler(async (event) => {
 
     logger.info("Public contact submitted", {
       slug,
-      ip,
+      ip: clientIp,
       matched: !!matchedCoachId,
     });
 

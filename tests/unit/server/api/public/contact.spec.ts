@@ -135,6 +135,12 @@ vi.mock("h3", async (importOriginal) => {
     getRouterParam: vi.fn(() => "abc123"),
     getRequestIP: vi.fn(() => "1.2.3.4"),
     getRequestHeader: vi.fn(() => "Mozilla/5.0"),
+    getHeader: vi.fn(
+      (
+        event: { _headers?: Record<string, string> },
+        name: string,
+      ) => event._headers?.[name.toLowerCase()],
+    ),
     readBody: vi.fn(async (event: { _body?: unknown }) => event._body ?? {}),
     createError: (cfg: { statusCode: number; statusMessage?: string }) => {
       const err = new Error(cfg.statusMessage) as Error & {
@@ -150,8 +156,14 @@ const { default: handler } = await import(
   "~/server/api/public/profile/[slug]/contact.post"
 );
 
-function makeEvent(body: Record<string, unknown>) {
-  return { _body: body } as unknown as Parameters<typeof handler>[0];
+function makeEvent(
+  body: Record<string, unknown>,
+  headers: Record<string, string> = {},
+) {
+  return {
+    _body: body,
+    _headers: headers,
+  } as unknown as Parameters<typeof handler>[0];
 }
 
 const validBody = {
@@ -351,5 +363,62 @@ describe("POST /api/public/profile/[slug]/contact", () => {
     sendNotificationEmailMock.mockRejectedValueOnce(new Error("resend down"));
     const result = await handler(makeEvent(validBody));
     expect(result).toEqual({ ok: true });
+  });
+
+  describe("trusted client IP (I1)", () => {
+    it("uses x-vercel-forwarded-for for the rate-limit key and stored ip", async () => {
+      const result = await handler(
+        makeEvent(validBody, { "x-vercel-forwarded-for": "9.9.9.9" }),
+      );
+      expect(result).toEqual({ ok: true });
+      expect(rateLimitByIpMock).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({ ip: "9.9.9.9" }),
+      );
+      expect(mockState.insertedContact).toMatchObject({ ip: "9.9.9.9" });
+      expect(verifyTurnstileMock).toHaveBeenCalledWith(undefined, "9.9.9.9");
+    });
+
+    it("ignores a spoofed leftmost X-Forwarded-For when x-vercel-forwarded-for is present", async () => {
+      // getRequestIP is mocked to always resolve "1.2.3.4" (simulating what
+      // an attacker-controlled leftmost X-Forwarded-For would produce);
+      // the trusted header must win.
+      const result = await handler(
+        makeEvent(validBody, { "x-vercel-forwarded-for": "9.9.9.9" }),
+      );
+      expect(result).toEqual({ ok: true });
+      expect(mockState.insertedContact).not.toMatchObject({ ip: "1.2.3.4" });
+      expect(rateLimitByIpMock.mock.calls[0][1]).not.toMatchObject({
+        ip: "1.2.3.4",
+      });
+    });
+
+    it("falls back to x-real-ip when x-vercel-forwarded-for is absent", async () => {
+      await handler(makeEvent(validBody, { "x-real-ip": "8.8.4.4" }));
+      expect(rateLimitByIpMock).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({ ip: "8.8.4.4" }),
+      );
+      expect(mockState.insertedContact).toMatchObject({ ip: "8.8.4.4" });
+    });
+
+    it("falls back to h3-resolved IP when neither trusted header is present", async () => {
+      await handler(makeEvent(validBody));
+      expect(rateLimitByIpMock).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({ ip: "1.2.3.4" }),
+      );
+      expect(mockState.insertedContact).toMatchObject({ ip: "1.2.3.4" });
+    });
+  });
+
+  describe("malformed IP (M1)", () => {
+    it("inserts with ip null instead of 500ing when the resolved IP is malformed", async () => {
+      const result = await handler(
+        makeEvent(validBody, { "x-vercel-forwarded-for": "garbage" }),
+      );
+      expect(result).toEqual({ ok: true });
+      expect(mockState.insertedContact).toMatchObject({ ip: null });
+    });
   });
 });
