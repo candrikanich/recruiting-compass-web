@@ -26,9 +26,12 @@ function onSchoolChange(event: Event) {
 <template>
   <div class="flex flex-col gap-4">
     <div>
-      <label class="mb-2 block text-sm font-medium text-brand-slate-700" for="commitment-status">
-        Recruitment status
+      <label class="block text-sm font-medium text-brand-slate-700" for="commitment-status">
+        Commitment Status
       </label>
+      <p class="mt-0.5 mb-2 text-xs text-brand-slate-500">
+        Updating this adds a status tag to your live page
+      </p>
       <select
         id="commitment-status"
         data-test="status-select"

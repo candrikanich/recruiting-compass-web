@@ -82,22 +82,28 @@ onBeforeUnmount(() => {
         <p class="text-sm font-medium text-brand-slate-900">
           {{ SECTION_META[section.key].label }}
         </p>
-        <p class="truncate text-xs text-brand-slate-500">
-          {{ SECTION_META[section.key].description }}
-        </p>
       </div>
 
-      <DesignSystemButton
+      <button
         data-test="section-visibility"
         type="button"
-        variant="outline"
-        color="slate"
-        size="sm"
         :aria-pressed="section.visible"
+        :aria-label="
+          section.visible
+            ? `Hide ${SECTION_META[section.key].label}`
+            : `Show ${SECTION_META[section.key].label}`
+        "
+        :title="section.visible ? 'Visible — click to hide' : 'Hidden — click to show'"
+        class="shrink-0 rounded-md p-1.5 transition-colors hover:bg-brand-slate-100"
+        :class="section.visible ? 'text-brand-slate-600' : 'text-brand-slate-300'"
         @click="toggleVisibility(section.key)"
       >
-        {{ section.visible ? "Visible" : "Hidden" }}
-      </DesignSystemButton>
+        <UIcon
+          :name="section.visible ? 'i-heroicons-eye' : 'i-heroicons-eye-slash'"
+          class="h-5 w-5"
+          aria-hidden="true"
+        />
+      </button>
     </li>
   </ul>
 </template>

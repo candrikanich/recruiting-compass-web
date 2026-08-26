@@ -16,7 +16,7 @@ import ProfileAppearanceEditor from "~/components/profile/setup/ProfileAppearanc
 import ProfileContentEditor from "~/components/profile/setup/ProfileContentEditor.vue";
 import SectionConfigEditor from "~/components/profile/setup/SectionConfigEditor.vue";
 import CommitmentStatusControl from "~/components/profile/setup/CommitmentStatusControl.vue";
-import ProfileLivePreview from "~/components/profile/setup/ProfileLivePreview.vue";
+import ProfileMiniPreview from "~/components/profile/setup/ProfileMiniPreview.vue";
 
 const props = defineProps<{
   details: PlayerDetails;
@@ -170,44 +170,53 @@ function onSectionConfigUpdate(sections: ProfileSection[]) {
     </button>
   </div>
 
-  <div v-else-if="profile" class="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_360px]">
-    <div class="flex flex-col gap-6">
-      <!-- Publish toggle -->
+  <div v-else-if="profile" class="flex flex-col gap-6">
+    <!-- Workspace header bar (Figma 5:225): brand left, live-status + toggle right -->
+    <header
+      class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-brand-slate-200 bg-white px-5 py-3"
+    >
+      <div class="flex items-center gap-2 text-brand-slate-900">
+        <UIcon
+          name="i-heroicons-viewfinder-circle"
+          class="h-6 w-6"
+          aria-hidden="true"
+        />
+        <span class="font-semibold tracking-tight">RecruitingCompass Workspace</span>
+      </div>
       <div
-        class="flex items-center justify-between rounded-xl border p-4"
-        :class="
-          draft.is_published
-            ? 'border-green-200 bg-green-50'
-            : 'border-brand-slate-200 bg-white'
-        "
+        class="flex items-center gap-2.5 rounded-full px-3 py-1.5"
+        :class="draft.is_published ? 'bg-brand-emerald-50' : 'bg-brand-slate-50'"
       >
-        <div>
-          <p class="text-sm font-medium text-brand-slate-900">
-            {{
-              draft.is_published ? "Profile is live" : "Profile is unpublished"
-            }}
-          </p>
-          <p class="mt-0.5 text-xs text-brand-slate-500">
-            {{
-              draft.is_published
-                ? "Coaches can view this profile via your sharing links."
-                : "Only you can see this. Publish to make it shareable."
-            }}
-          </p>
-        </div>
+        <span
+          class="h-2 w-2 rounded-full"
+          :class="draft.is_published ? 'bg-brand-emerald-500' : 'bg-brand-slate-300'"
+          aria-hidden="true"
+        />
+        <span
+          class="text-sm font-medium"
+          :class="draft.is_published ? 'text-brand-emerald-700' : 'text-brand-slate-500'"
+        >
+          {{ draft.is_published ? "Your profile is live & public" : "Profile is unpublished" }}
+        </span>
         <button
           data-test="publish-toggle"
-          class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors"
-          :class="draft.is_published ? 'bg-green-500' : 'bg-brand-slate-300'"
+          type="button"
+          :aria-pressed="draft.is_published"
+          aria-label="Toggle profile visibility"
+          class="relative inline-flex h-5 w-9 items-center rounded-full transition-colors"
+          :class="draft.is_published ? 'bg-brand-emerald-500' : 'bg-brand-slate-300'"
           @click="save({ is_published: !draft.is_published })"
         >
           <span
-            class="inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform"
-            :class="draft.is_published ? 'translate-x-6' : 'translate-x-1'"
+            class="inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform"
+            :class="draft.is_published ? 'translate-x-5' : 'translate-x-1'"
           />
         </button>
       </div>
+    </header>
 
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_360px]">
+    <div class="flex flex-col gap-6">
       <ShareProfilePanel :url="publicUrl ?? ''" />
 
       <!-- Vanity slug -->
@@ -237,7 +246,7 @@ function onSectionConfigUpdate(sections: ProfileSection[]) {
       <!-- 1. Appearance -->
       <section class="space-y-3">
         <h3 class="text-sm font-semibold text-brand-slate-900">
-          1. Appearance
+          1. Appearance Settings
         </h3>
         <ProfileAppearanceEditor
           :header-color="draft.header_color"
@@ -249,7 +258,9 @@ function onSectionConfigUpdate(sections: ProfileSection[]) {
 
       <!-- 2. Content -->
       <section class="space-y-3">
-        <h3 class="text-sm font-semibold text-brand-slate-900">2. Content</h3>
+        <h3 class="text-sm font-semibold text-brand-slate-900">
+          2. Profile Content
+        </h3>
         <ProfileContentEditor
           :bio="draft.bio"
           :looking-for="draft.looking_for"
@@ -293,7 +304,8 @@ function onSectionConfigUpdate(sections: ProfileSection[]) {
     </div>
 
     <aside class="lg:sticky lg:top-6 lg:self-start">
-      <ProfileLivePreview :draft="draft" :details="props.details" />
+      <ProfileMiniPreview :details="props.details" :url="publicUrl ?? ''" />
     </aside>
+    </div>
   </div>
 </template>

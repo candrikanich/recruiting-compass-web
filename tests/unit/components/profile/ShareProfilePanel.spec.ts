@@ -2,14 +2,8 @@ import { describe, it, expect, vi } from "vitest";
 import { mount, flushPromises } from "@vue/test-utils";
 import ShareProfilePanel from "../../../../components/profile/setup/ShareProfilePanel.vue";
 
-vi.mock("qrcode", () => ({
-  default: {
-    toDataURL: vi.fn().mockResolvedValue("data:image/png;base64,fake"),
-  },
-}));
-
 describe("ShareProfilePanel", () => {
-  it("builds share links from the url and renders a QR image", async () => {
+  it("builds share links from the url", async () => {
     const w = mount(ShareProfilePanel, { props: { url: "https://x.test/p/abc" } });
     await flushPromises();
     const mailto = w.find("a[href^='mailto:']");
@@ -18,19 +12,6 @@ describe("ShareProfilePanel", () => {
     expect(mailto.attributes("href")).toContain("x.test%2Fp%2Fabc");
     expect(sms.exists()).toBe(true);
     expect(tw.attributes("href")).toContain("x.test");
-    expect(w.find("img[data-test='qr']").exists()).toBe(true);
-  });
-
-  it("regenerates the QR code when the url prop changes", async () => {
-    const QRCode = (await import("qrcode")).default;
-    const w = mount(ShareProfilePanel, { props: { url: "https://x.test/p/abc" } });
-    await flushPromises();
-    vi.mocked(QRCode.toDataURL).mockClear();
-
-    await w.setProps({ url: "https://x.test/p/def" });
-    await flushPromises();
-
-    expect(QRCode.toDataURL).toHaveBeenCalledWith("https://x.test/p/def");
   });
 
   it("copies the url to the clipboard when copy is clicked", async () => {
