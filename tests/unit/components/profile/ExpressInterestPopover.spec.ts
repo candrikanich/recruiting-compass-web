@@ -23,15 +23,7 @@ describe("ExpressInterestPopover", () => {
     turnstileSiteKey = "";
   });
 
-  it("renders a program select when programs are provided", () => {
-    const w = mount(ExpressInterestPopover, {
-      props: { ...baseProps, programs: ["Baseball - SS", "Baseball - OF"] },
-    });
-    expect(w.find("[data-test='program-select']").exists()).toBe(true);
-    expect(w.find("[data-test='program-input']").exists()).toBe(false);
-  });
-
-  it("renders a free-text program input when programs is empty", () => {
+  it("renders a free-text School / Program input (no dropdown that leaks the athlete's schools)", () => {
     const w = mount(ExpressInterestPopover, { props: baseProps });
     expect(w.find("[data-test='program-input']").exists()).toBe(true);
     expect(w.find("[data-test='program-select']").exists()).toBe(false);
