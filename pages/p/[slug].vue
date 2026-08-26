@@ -84,7 +84,7 @@ useSeoMeta({
     </div>
 
     <!-- Profile card -->
-    <div v-else-if="profile" class="mx-auto max-w-2xl px-4 py-8">
+    <div v-else-if="profile" class="mx-auto max-w-6xl px-4 py-8">
       <ProfilePublicProfileCard :data="profile" :slug="slug" />
     </div>
 
