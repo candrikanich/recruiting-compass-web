@@ -130,6 +130,8 @@ export interface Coach {
   twitter_handle: string | null;
   instagram_handle: string | null;
   notes: string | null;
+  tags: string[];
+  source: string | null;
   last_contact_date: string | null;
   created_by?: string;
   updated_by?: string;

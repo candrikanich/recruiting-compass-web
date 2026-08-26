@@ -328,6 +328,8 @@ const handleCoachFormSubmit = async (formData: any) => {
       twitter_handle: formData.twitter_handle || null,
       instagram_handle: formData.instagram_handle || null,
       notes: formData.notes || null,
+      tags: formData.tags || [],
+      source: formData.source || null,
       last_contact_date: null,
     });
 
