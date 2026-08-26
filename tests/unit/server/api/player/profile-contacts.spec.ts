@@ -41,6 +41,11 @@ const LEAD_ROWS = [
     note: "Interested",
     matched_coach_id: null,
     created_at: "2026-08-20T00:00:00.000Z",
+    // Sensitive columns present on the row so a leak would be observable if the
+    // endpoint ever returned rows verbatim instead of an explicit column list.
+    ip: "203.0.113.7",
+    user_agent: "Mozilla/5.0",
+    family_unit_id: "family-1",
   },
   {
     id: "lead-1",
@@ -53,8 +58,13 @@ const LEAD_ROWS = [
     note: "Reaching out",
     matched_coach_id: "coach-123",
     created_at: "2026-07-01T00:00:00.000Z",
+    ip: "198.51.100.4",
+    user_agent: "curl/8.0",
+    family_unit_id: "family-1",
   },
 ];
+
+const SENSITIVE_COLUMNS = ["ip", "user_agent", "family_unit_id"] as const;
 
 /**
  * Builds a mocked admin client matching this endpoint's exact call shape:
@@ -62,11 +72,20 @@ const LEAD_ROWS = [
  * - `profile_contacts` select().eq().order().limit() → leads
  * - `profile_contacts` select("*", {count}).eq().eq().gte() → per-type count
  */
+interface MockError {
+  code?: string;
+  message: string;
+}
+
 function buildAdminMock(opts: {
   membership: { family_unit_id: string } | null;
   leads: typeof LEAD_ROWS;
   interestCount: number;
   contactCount: number;
+  membershipError?: MockError | null;
+  leadsError?: MockError | null;
+  /** Records the column string passed to the leads `select(...)` call. */
+  capture?: { leadsSelect?: string };
 }) {
   const from = vi.fn((table: string) => {
     if (table === "family_members") {
@@ -74,14 +93,17 @@ function buildAdminMock(opts: {
         select: () => ({
           eq: () => ({
             single: () =>
-              Promise.resolve({ data: opts.membership, error: null }),
+              Promise.resolve({
+                data: opts.membershipError ? null : opts.membership,
+                error: opts.membershipError ?? null,
+              }),
           }),
         }),
       };
     }
     if (table === "profile_contacts") {
       return {
-        select: (_cols: string, countOpts?: { count?: string }) => {
+        select: (cols: string, countOpts?: { count?: string }) => {
           if (countOpts?.count) {
             // Count query: select(...).eq(family).eq(type).gte(month) → { count }
             const chain = {
@@ -99,11 +121,24 @@ function buildAdminMock(opts: {
             return chain;
           }
           // Leads listing: select().eq(family).order().limit()
+          if (opts.capture) opts.capture.leadsSelect = cols;
+          // Project rows to the requested columns, like PostgREST honoring the
+          // SELECT — so a sensitive column can only reach the response if the
+          // endpoint actually asked for it.
+          const wanted = cols.split(",").map((c) => c.trim());
+          const projected = opts.leads.map((row) =>
+            Object.fromEntries(
+              Object.entries(row).filter(([k]) => wanted.includes(k)),
+            ),
+          );
           return {
             eq: () => ({
               order: () => ({
                 limit: () =>
-                  Promise.resolve({ data: opts.leads, error: null }),
+                  Promise.resolve({
+                    data: opts.leadsError ? null : projected,
+                    error: opts.leadsError ?? null,
+                  }),
               }),
             }),
           };
@@ -167,6 +202,8 @@ describe("GET /api/player/profile/contacts", () => {
   it("never exposes ip, user_agent, or family_unit_id in the payload", async () => {
     await mockAuth({ id: "user-1", email: "user@example.com" });
     const { useSupabaseAdmin } = await import("~/server/utils/supabase");
+    // The mock rows carry ip/user_agent/family_unit_id, and the mock projects
+    // by the SELECT column list — so these leak iff the endpoint asked for them.
     vi.mocked(useSupabaseAdmin).mockReturnValue(
       buildAdminMock({
         membership: { family_unit_id: "family-1" },
@@ -181,11 +218,77 @@ describe("GET /api/player/profile/contacts", () => {
       leads: Record<string, unknown>[];
     };
 
+    expect(result.leads.length).toBe(LEAD_ROWS.length);
     for (const lead of result.leads) {
-      expect(lead).not.toHaveProperty("ip");
-      expect(lead).not.toHaveProperty("user_agent");
-      expect(lead).not.toHaveProperty("family_unit_id");
+      for (const col of SENSITIVE_COLUMNS) {
+        expect(lead).not.toHaveProperty(col);
+      }
     }
+  });
+
+  it("does not request the sensitive columns in the leads SELECT", async () => {
+    await mockAuth({ id: "user-1", email: "user@example.com" });
+    const { useSupabaseAdmin } = await import("~/server/utils/supabase");
+    const capture: { leadsSelect?: string } = {};
+    vi.mocked(useSupabaseAdmin).mockReturnValue(
+      buildAdminMock({
+        membership: { family_unit_id: "family-1" },
+        leads: LEAD_ROWS,
+        interestCount: 0,
+        contactCount: 0,
+        capture,
+      }),
+    );
+    const handler = await loadHandler();
+
+    await handler(fakeEvent());
+
+    // The real guard against PII leakage is the explicit SELECT column list,
+    // not post-fetch stripping — assert it directly.
+    expect(capture.leadsSelect).toBeDefined();
+    const columns = capture.leadsSelect!.split(",").map((c) => c.trim());
+    for (const col of SENSITIVE_COLUMNS) {
+      expect(columns).not.toContain(col);
+    }
+    expect(columns).toContain("coach_name");
+  });
+
+  it("returns 500 when the family membership lookup fails (not a 403)", async () => {
+    await mockAuth({ id: "user-1", email: "user@example.com" });
+    const { useSupabaseAdmin } = await import("~/server/utils/supabase");
+    vi.mocked(useSupabaseAdmin).mockReturnValue(
+      buildAdminMock({
+        membership: null,
+        membershipError: { code: "57014", message: "statement timeout" },
+        leads: [],
+        interestCount: 0,
+        contactCount: 0,
+      }),
+    );
+    const handler = await loadHandler();
+
+    await expect(handler(fakeEvent())).rejects.toMatchObject({
+      statusCode: 500,
+    });
+  });
+
+  it("returns 500 when the leads query fails", async () => {
+    await mockAuth({ id: "user-1", email: "user@example.com" });
+    const { useSupabaseAdmin } = await import("~/server/utils/supabase");
+    vi.mocked(useSupabaseAdmin).mockReturnValue(
+      buildAdminMock({
+        membership: { family_unit_id: "family-1" },
+        leads: [],
+        leadsError: { code: "42P01", message: "relation missing" },
+        interestCount: 0,
+        contactCount: 0,
+      }),
+    );
+    const handler = await loadHandler();
+
+    await expect(handler(fakeEvent())).rejects.toMatchObject({
+      statusCode: 500,
+    });
   });
 
   it("propagates an unauthenticated request's rejection", async () => {
