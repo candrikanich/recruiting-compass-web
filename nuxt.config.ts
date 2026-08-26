@@ -202,7 +202,9 @@ export default defineNuxtConfig({
       process.env.NUXT_ADMIN_TOKEN_SECRET ||
       "",
     collegeScorecardApiKey: process.env.NUXT_COLLEGE_SCORECARD_API_KEY || "",
+    turnstileSecretKey: process.env.NUXT_TURNSTILE_SECRET_KEY || "",
     public: {
+      turnstileSiteKey: process.env.NUXT_PUBLIC_TURNSTILE_SITE_KEY || "",
       supabaseUrl: process.env.NUXT_PUBLIC_SUPABASE_URL || "",
       supabaseAnonKey: process.env.NUXT_PUBLIC_SUPABASE_ANON_KEY || "",
       authEnforcementEnabled:
