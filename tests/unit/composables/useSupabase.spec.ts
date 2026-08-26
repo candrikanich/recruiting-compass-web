@@ -1,5 +1,20 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 
+// Captures the callback useSupabase() registers via onAuthStateChange, since
+// the client is a module-level singleton — it's only ever constructed (and
+// onAuthStateChange only ever called) once across this whole test file.
+let authStateCallback:
+  | ((event: string, session: unknown) => void)
+  | undefined;
+const mockSignOut = vi.fn();
+
+// useServiceStatus is a Nuxt auto-import in the source (no explicit import
+// statement) — inject as a global for the test environment.
+global.useServiceStatus = () => ({
+  markServiceUnavailable: vi.fn(),
+  markServiceAvailable: vi.fn(),
+});
+
 // Mock Supabase
 vi.mock("@supabase/supabase-js", () => ({
   createClient: vi.fn(() => ({
@@ -7,7 +22,10 @@ vi.mock("@supabase/supabase-js", () => ({
       getSession: vi.fn(),
       signUp: vi.fn(),
       signInWithPassword: vi.fn(),
-      signOut: vi.fn(),
+      signOut: mockSignOut,
+      onAuthStateChange: vi.fn((cb) => {
+        authStateCallback = cb;
+      }),
     },
     from: vi.fn(),
   })),
@@ -40,5 +58,29 @@ describe("useSupabase", () => {
     const client1 = useSupabase();
     const client2 = useSupabase();
     expect(client1).toBe(client2);
+  });
+
+  it("clears the local session when a token refresh comes back with no session", () => {
+    // Reproduces "AuthApiError: Invalid Refresh Token: Refresh Token Not
+    // Found" — Supabase reports TOKEN_REFRESHED with a null session when it
+    // can't recover the stored refresh token. The composable must sign the
+    // user out locally so the SIGNED_OUT listener (plugins/auth.client.ts)
+    // clears app state and middleware/auth.ts redirects to /login.
+    useSupabase();
+    expect(authStateCallback).toBeDefined();
+
+    authStateCallback?.("TOKEN_REFRESHED", null);
+
+    expect(mockSignOut).toHaveBeenCalledOnce();
+    expect(mockSignOut).toHaveBeenCalledWith({ scope: "local" });
+  });
+
+  it("does not sign out on a successful token refresh", () => {
+    useSupabase();
+    expect(authStateCallback).toBeDefined();
+
+    authStateCallback?.("TOKEN_REFRESHED", { access_token: "valid-token" });
+
+    expect(mockSignOut).not.toHaveBeenCalled();
   });
 });
