@@ -269,7 +269,6 @@ function onSectionConfigUpdate(sections: ProfileSection[]) {
         </h3>
         <SectionConfigEditor
           :model-value="draft.section_config"
-          :show-metrics="draft.show_metrics"
           @update:model-value="onSectionConfigUpdate"
         />
       </section>

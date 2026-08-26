@@ -6,13 +6,9 @@ import type { ProfileSection } from "~/types/models";
 import { SECTION_META } from "~/utils/profile/sectionMeta";
 import { normalizeSectionConfig } from "~/utils/profile/sectionConfig";
 
-const props = withDefaults(
-  defineProps<{
-    modelValue: ProfileSection[];
-    showMetrics?: boolean;
-  }>(),
-  { showMetrics: true },
-);
+const props = defineProps<{
+  modelValue: ProfileSection[];
+}>();
 
 const emit = defineEmits<{
   "update:modelValue": [sections: ProfileSection[]];
@@ -36,12 +32,6 @@ function toggleVisibility(key: ProfileSection["key"]) {
     section.key === key ? { ...section, visible: !section.visible } : section,
   );
   emit("update:modelValue", [...next, ...unknownSections.value]);
-}
-
-function isDisabled(key: ProfileSection["key"]) {
-  // Phase 1's show_metrics remains the authoritative owner control for the
-  // metrics row until it grows a dedicated toggle here.
-  return key === "metrics" && !props.showMetrics;
 }
 
 onMounted(() => {
@@ -103,7 +93,6 @@ onBeforeUnmount(() => {
         variant="outline"
         color="slate"
         size="sm"
-        :disabled="isDisabled(section.key)"
         :aria-pressed="section.visible"
         @click="toggleVisibility(section.key)"
       >

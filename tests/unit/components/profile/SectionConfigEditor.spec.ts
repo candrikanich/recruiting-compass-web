@@ -39,14 +39,20 @@ describe("SectionConfigEditor", () => {
     expect(emitted.find((s) => s.key === "unknown_key")).toEqual(unknown);
   });
 
-  it("disables (not hides) the metrics toggle when showMetrics is false", () => {
+  it("lets the metrics toggle flip like any other section (no special disable)", async () => {
     const w = mount(SectionConfigEditor, {
-      props: { modelValue: sections as never, showMetrics: false },
+      props: { modelValue: sections as never },
     });
     const toggles = w.findAll("[data-test='section-visibility']");
-    const metricsToggle = toggles.find((t) => t.attributes("aria-pressed") !== undefined && t.text().length > 0);
-    expect(w.text()).toMatch(/metrics/i); // still rendered, not hidden
-    expect(metricsToggle).toBeTruthy();
-    expect(toggles[0].attributes("disabled")).toBeDefined();
+    // metrics is the first known section (DEFAULT_SECTION_ORDER[0])
+    expect(toggles[0].attributes("disabled")).toBeUndefined();
+    await toggles[0].trigger("click");
+    const emitted = w.emitted("update:modelValue")?.[0]?.[0] as {
+      key: string;
+      visible: boolean;
+    }[];
+    const metrics = emitted.find((s) => s.key === "metrics");
+    expect(metrics).toBeTruthy();
+    expect(metrics!.visible).toBe(false); // flipped from the fixture's visible → hidden
   });
 });
