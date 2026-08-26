@@ -1,21 +1,34 @@
 <!-- components/profile/setup/ProfileMiniPreview.vue -->
 <!--
-  Owner-facing compact preview of the public profile (Figma "Live Mini
-  Preview"). A purpose-built summary card — avatar + key stats + academic
-  summary — NOT a scaled render of the whole public page. Plus a QR card so a
-  coach can scan the profile at a tournament.
+  Owner-facing LIVE preview of the public profile. Renders the real
+  PublicProfileCard from the in-progress draft, so section visibility/order,
+  content, and the chosen hero color all reflect exactly what a coach will see.
+  A Profile QR card sits beneath it. Metrics are fetched (they live in
+  performance_metrics, not on the draft) so the preview isn't missing the
+  athlete's key numbers.
 -->
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import QRCode from "qrcode";
-import type { PlayerDetails } from "~/types/models";
+import type {
+  PlayerDetails,
+  PlayerProfile,
+  PublicProfileData,
+} from "~/types/models";
 import { useUserStore } from "~/stores/user";
 import { usePerformance } from "~/composables/usePerformance";
-import { formatPositionsShort } from "~/utils/positions/canonical";
-import { buildPublicMetrics } from "~/utils/profile/publicProfileBuilders";
+import { resolveSections, isSectionVisible } from "~/utils/profile/sectionConfig";
+import {
+  buildTeamHistory,
+  buildPublicMetrics,
+} from "~/utils/profile/publicProfileBuilders";
 import { createClientLogger } from "~/utils/logger";
+import PublicProfileCard from "~/components/profile/PublicProfileCard.vue";
+
+export type ProfileSetupDraft = Partial<PlayerProfile>;
 
 const props = defineProps<{
+  draft: ProfileSetupDraft;
   details: PlayerDetails;
   url: string;
 }>();
@@ -23,37 +36,96 @@ const props = defineProps<{
 const logger = createClientLogger("profile/setup/ProfileMiniPreview");
 const userStore = useUserStore();
 
-const playerName = computed(() => userStore.user?.full_name ?? "Your Name");
-const photoUrl = computed(() => userStore.user?.profile_photo_url ?? null);
-
-const sportLine = computed(() => {
-  const d = props.details;
-  const posShort = formatPositionsShort(
-    d.primary_sport,
-    d.positions,
-    d.primary_position,
-  );
-  return [d.primary_sport, posShort].filter(Boolean).join(" · ");
-});
-
-// Key stats reuse the public builder so the formatting (e.g. ".410", units)
-// and the newest-per-type dedupe match the live page exactly.
 const { metrics, fetchMetrics } = usePerformance();
-const keyStats = computed(() => buildPublicMetrics(metrics.value).slice(0, 2));
-
 onMounted(() => {
   fetchMetrics().catch(() => {
-    /* preview degrades to no key-stats block; not worth surfacing */
+    /* preview simply shows no metrics; not worth surfacing */
   });
 });
 
-const gpa = computed(() => {
-  const g = props.details.gpa;
-  return typeof g === "number" ? g.toFixed(2) : null;
+function str(v: unknown) {
+  const s = typeof v === "string" ? v.trim() : "";
+  return s.length ? s : undefined;
+}
+
+// Mirrors assemblePublicProfile() in server/api/public/profile/[slug].get.ts,
+// driven by the in-progress draft instead of the persisted row.
+const previewData = computed<PublicProfileData>(() => {
+  const draft = props.draft;
+  const details = props.details as unknown as Record<string, unknown>;
+  const sections = resolveSections({
+    ...draft,
+    section_config: draft.section_config ?? [],
+  });
+
+  const social = {
+    twitter_handle: str(details.twitter_handle),
+    instagram_handle: str(details.instagram_handle),
+    tiktok_handle: str(details.tiktok_handle),
+    facebook_url: str(details.facebook_url),
+  };
+  const hasSocial = Object.values(social).some((v) => v !== undefined);
+
+  return {
+    playerName: userStore.user?.full_name ?? "Athlete",
+    photoUrl: userStore.user?.profile_photo_url ?? null,
+    headerColor: draft.header_color ?? "slate",
+    bio: draft.bio ?? null,
+    academics:
+      isSectionVisible(sections, "academics") && details
+        ? {
+            gpa: details.gpa as number | undefined,
+            sat_score: details.sat_score as number | undefined,
+            act_score: details.act_score as number | undefined,
+            graduation_year: details.graduation_year as number | undefined,
+            high_school: (details.school_name ?? details.high_school) as
+              | string
+              | undefined,
+            intended_major: details.intended_major as string | undefined,
+            core_courses: details.core_courses as string[] | undefined,
+          }
+        : null,
+    athletic:
+      draft.show_athletic && details
+        ? {
+            primary_sport: details.primary_sport as string | undefined,
+            primary_position: details.primary_position as string | undefined,
+            positions: details.positions as string[] | undefined,
+            height_inches: details.height_inches as number | undefined,
+            weight_lbs: details.weight_lbs as number | undefined,
+            ncaa_id: (details.ncaa_id as string | undefined) || undefined,
+            perfect_game_id:
+              (details.perfect_game_id as string | undefined) || undefined,
+            prep_baseball_id:
+              (details.prep_baseball_id as string | undefined) || undefined,
+            prep_baseball_state:
+              (details.prep_baseball_state as string | undefined) || undefined,
+          }
+        : null,
+    film: isSectionVisible(sections, "film") ? [] : null,
+    schools: draft.show_schools ? [] : null,
+    social: hasSocial ? social : null,
+    bannerUrl: draft.banner_url ?? null,
+    jerseyNumber: (details.jersey_number as number | undefined) ?? null,
+    commitmentStatus: draft.commitment_status ?? "uncommitted",
+    committedSchoolName: null,
+    lookingFor: isSectionVisible(sections, "values")
+      ? (draft.looking_for ?? null)
+      : null,
+    valuesTags: isSectionVisible(sections, "values")
+      ? (draft.values_tags ?? [])
+      : [],
+    awards: isSectionVisible(sections, "awards") ? (draft.awards ?? []) : [],
+    metrics: isSectionVisible(sections, "metrics")
+      ? buildPublicMetrics(metrics.value)
+      : null,
+    teamHistory: isSectionVisible(sections, "team_history")
+      ? buildTeamHistory(details)
+      : null,
+    updatedAt: null,
+    sections,
+  };
 });
-const highSchool = computed(
-  () => props.details.high_school ?? null,
-);
 
 // QR of the public URL.
 const qrDataUrl = ref<string | null>(null);
@@ -74,10 +146,10 @@ watch(() => props.url, generateQr);
 </script>
 
 <template>
-  <div class="flex w-full max-w-[400px] flex-col gap-4">
+  <div class="flex w-full flex-col gap-4">
     <div class="flex items-center justify-between">
       <p class="text-xs font-semibold tracking-wide text-brand-slate-400 uppercase">
-        Live Mini Preview
+        Live Preview
       </p>
       <span
         class="inline-flex items-center gap-1 rounded-full bg-brand-emerald-100 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-brand-emerald-700 uppercase"
@@ -87,68 +159,7 @@ watch(() => props.url, generateQr);
       </span>
     </div>
 
-    <!-- Compact profile card -->
-    <div
-      class="overflow-hidden rounded-2xl border border-brand-slate-200 bg-white shadow-sm"
-    >
-      <div class="flex items-center gap-3 bg-brand-slate-900 p-5 text-white">
-        <img
-          v-if="photoUrl"
-          :src="photoUrl"
-          :alt="playerName"
-          class="h-12 w-12 shrink-0 rounded-full object-cover ring-2 ring-white/20"
-        />
-        <div
-          v-else
-          class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-brand-slate-700 text-lg font-semibold ring-2 ring-white/20"
-          aria-hidden="true"
-        >
-          {{ playerName.charAt(0) }}
-        </div>
-        <div class="min-w-0">
-          <p class="truncate font-semibold">{{ playerName }}</p>
-          <p v-if="sportLine" class="truncate text-sm text-brand-slate-300">
-            {{ sportLine }}
-          </p>
-        </div>
-      </div>
-
-      <div class="space-y-4 p-5">
-        <div v-if="keyStats.length">
-          <p class="mb-2 text-xs font-semibold tracking-wide text-brand-slate-400 uppercase">
-            Verified Key Stats
-          </p>
-          <div class="grid grid-cols-2 gap-2">
-            <div
-              v-for="stat in keyStats"
-              :key="stat.key"
-              class="rounded-lg bg-brand-slate-50 p-3"
-            >
-              <p class="text-[11px] text-brand-slate-500">{{ stat.label }}</p>
-              <p class="text-lg font-bold text-brand-slate-900">
-                {{ stat.value }}<span
-                  v-if="stat.unit"
-                  class="ml-0.5 text-xs font-medium text-brand-slate-500"
-                  >{{ stat.unit }}</span
-                >
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div v-if="gpa || highSchool">
-          <p class="mb-2 text-xs font-semibold tracking-wide text-brand-slate-400 uppercase">
-            Academic Summary
-          </p>
-          <p v-if="gpa" class="text-sm text-brand-slate-700">
-            GPA: <span class="font-semibold text-brand-slate-900">{{ gpa }}</span>
-          </p>
-          <p v-if="highSchool" class="text-sm text-brand-slate-500">
-            {{ highSchool }}
-          </p>
-        </div>
-      </div>
-    </div>
+    <PublicProfileCard :data="previewData" />
 
     <!-- QR card -->
     <div

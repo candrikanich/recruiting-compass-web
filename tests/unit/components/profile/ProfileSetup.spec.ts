@@ -82,7 +82,7 @@ describe("ProfileSetup", () => {
     expect(wrapper.text()).toMatch(/content/i);
     expect(wrapper.text()).toMatch(/section configuration/i);
     expect(wrapper.text()).toMatch(/recruitment status/i);
-    expect(wrapper.text()).toMatch(/live mini preview/i);
+    expect(wrapper.text()).toMatch(/live preview/i);
   });
 
   it("renders ShareProfilePanel with the public profile url", () => {

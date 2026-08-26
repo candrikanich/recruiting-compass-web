@@ -4,6 +4,7 @@ import { computed } from "vue";
 import type { PublicProfileData } from "~/types/models";
 import { buildSocialLinks } from "~/utils/profile/socialLinks";
 import { formatPositionsShort } from "~/utils/positions/canonical";
+import { heroBackgroundClass } from "~/utils/profile/headerColor";
 import SocialIcon from "~/components/profile/public/SocialIcon.vue";
 
 const props = withDefaults(
@@ -46,10 +47,12 @@ const physicals = computed(() => {
 });
 
 const socialLinks = computed(() => buildSocialLinks(props.data.social));
+
+const headerBgClass = computed(() => heroBackgroundClass(props.data.headerColor));
 </script>
 
 <template>
-  <header class="bg-brand-slate-900 text-white">
+  <header :class="[headerBgClass, 'text-white']">
     <!-- Coach-header strip (Figma node 5:7): brand left, verified badge right -->
     <div
       class="flex items-center justify-between border-b border-white/10 px-6 py-3 sm:px-10"
