@@ -94,5 +94,8 @@ async function copyLink() {
         Share to Twitter
       </a>
     </div>
+
+    <!-- Optional extra content (e.g. the Custom URL editor) -->
+    <slot />
   </div>
 </template>

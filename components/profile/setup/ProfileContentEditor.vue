@@ -113,6 +113,44 @@ function removeValueTag(index: number) {
     </div>
 
     <div>
+      <h3 class="mb-2 text-sm font-medium text-brand-slate-700">Values</h3>
+      <div class="mb-2 flex flex-wrap gap-2">
+        <span
+          v-for="(tag, index) in valuesTags"
+          :key="tag"
+          class="inline-flex items-center gap-1 rounded-full bg-brand-blue-100 px-3 py-1 text-sm text-brand-blue-700"
+        >
+          {{ tag }}
+          <button
+            type="button"
+            data-test="remove-value-tag"
+            class="text-brand-blue-500 hover:text-brand-blue-700"
+            :aria-label="`Remove ${tag}`"
+            @click="removeValueTag(index)"
+          >
+            &times;
+          </button>
+        </span>
+      </div>
+      <label class="mb-1 block text-xs font-medium text-brand-slate-700" for="profile-values-input">
+        Add a value
+      </label>
+      <input
+        id="profile-values-input"
+        data-test="values-input"
+        type="text"
+        :value="newValueTag"
+        :maxlength="VALUE_TAG_MAX_LENGTH"
+        :disabled="valuesTags.length >= VALUES_MAX_TAGS"
+        placeholder="e.g. Academics"
+        class="w-full rounded-xl border-2 border-brand-slate-300 bg-white px-3 py-2 disabled:cursor-not-allowed disabled:opacity-50"
+        @input="(event: Event) => (newValueTag = (event.target as HTMLInputElement).value)"
+        @keydown.enter.prevent="addValueTag"
+      />
+      <p class="mt-1 text-xs text-brand-slate-500">{{ valuesTags.length }}/{{ VALUES_MAX_TAGS }} tags</p>
+    </div>
+
+    <div>
       <div class="mb-2 flex items-center justify-between">
         <h3 class="text-sm font-medium text-brand-slate-700">Awards</h3>
         <DesignSystemButton
@@ -171,44 +209,6 @@ function removeValueTag(index: number) {
           </DesignSystemButton>
         </li>
       </ul>
-    </div>
-
-    <div>
-      <h3 class="mb-2 text-sm font-medium text-brand-slate-700">Values</h3>
-      <div class="mb-2 flex flex-wrap gap-2">
-        <span
-          v-for="(tag, index) in valuesTags"
-          :key="tag"
-          class="inline-flex items-center gap-1 rounded-full bg-brand-blue-100 px-3 py-1 text-sm text-brand-blue-700"
-        >
-          {{ tag }}
-          <button
-            type="button"
-            data-test="remove-value-tag"
-            class="text-brand-blue-500 hover:text-brand-blue-700"
-            :aria-label="`Remove ${tag}`"
-            @click="removeValueTag(index)"
-          >
-            &times;
-          </button>
-        </span>
-      </div>
-      <label class="mb-1 block text-xs font-medium text-brand-slate-700" for="profile-values-input">
-        Add a value
-      </label>
-      <input
-        id="profile-values-input"
-        data-test="values-input"
-        type="text"
-        :value="newValueTag"
-        :maxlength="VALUE_TAG_MAX_LENGTH"
-        :disabled="valuesTags.length >= VALUES_MAX_TAGS"
-        placeholder="e.g. Academics"
-        class="w-full rounded-xl border-2 border-brand-slate-300 bg-white px-3 py-2 disabled:cursor-not-allowed disabled:opacity-50"
-        @input="(event: Event) => (newValueTag = (event.target as HTMLInputElement).value)"
-        @keydown.enter.prevent="addValueTag"
-      />
-      <p class="mt-1 text-xs text-brand-slate-500">{{ valuesTags.length }}/{{ VALUES_MAX_TAGS }} tags</p>
     </div>
   </div>
 </template>
