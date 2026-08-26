@@ -4,6 +4,7 @@ import { computed } from "vue";
 import type { PublicProfileData } from "~/types/models";
 import { buildSocialLinks } from "~/utils/profile/socialLinks";
 import { formatPositionsShort } from "~/utils/positions/canonical";
+import SocialIcon from "~/components/profile/public/SocialIcon.vue";
 
 const props = withDefaults(
   defineProps<{ data: PublicProfileData; interestSent?: boolean }>(),
@@ -128,7 +129,7 @@ const socialLinks = computed(() => buildSocialLinks(props.data.social));
                 rel="noopener noreferrer"
                 class="inline-flex items-center gap-1 hover:text-white"
               >
-                <UIcon :name="link.icon" class="h-4 w-4" aria-hidden="true" />
+                <SocialIcon :platform="link.platform" class="h-4 w-4" />
                 {{ link.handle }}
               </a>
             </template>

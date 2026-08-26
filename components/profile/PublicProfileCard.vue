@@ -12,6 +12,7 @@ import AwardsHonors from "~/components/profile/public/AwardsHonors.vue";
 import ContactPlayerModal from "~/components/profile/public/ContactPlayerModal.vue";
 import ExpressInterestPopover from "~/components/profile/public/ExpressInterestPopover.vue";
 import { buildSocialLinks } from "~/utils/profile/socialLinks";
+import SocialIcon from "~/components/profile/public/SocialIcon.vue";
 
 // `slug` is optional because the owner-side live preview (ProfileLivePreview)
 // renders this card before the profile has a real public URL.
@@ -34,6 +35,16 @@ const academicsVisible = computed(() =>
 );
 const valuesVisible = computed(() =>
   visibleSections.value.some((s) => s.key === "values"),
+);
+
+// Team History + Awards likewise pair into a two-column row to cut the
+// full-width whitespace/scroll. Awards renders at the team_history slot when
+// both are visible and is skipped standalone below.
+const teamHistoryVisible = computed(() =>
+  visibleSections.value.some((s) => s.key === "team_history"),
+);
+const awardsVisible = computed(() =>
+  visibleSections.value.some((s) => s.key === "awards"),
 );
 
 const footerSocials = computed(() => buildSocialLinks(props.data.social));
@@ -160,11 +171,20 @@ function onInterestSubmitted() {
           :looking-for="data.lookingFor"
           :values-tags="data.valuesTags"
         />
-        <TeamHistoryPanel
+        <!-- Team History + Awards render as a paired two-column row. When
+             awards is also visible it is drawn here and skipped below. -->
+        <div
           v-else-if="section.key === 'team_history'"
-          :entries="data.teamHistory"
+          class="grid grid-cols-1 gap-6"
+          :class="{ 'md:grid-cols-2 md:items-start': awardsVisible }"
+        >
+          <TeamHistoryPanel :entries="data.teamHistory" />
+          <AwardsHonors v-if="awardsVisible" :awards="data.awards" />
+        </div>
+        <AwardsHonors
+          v-else-if="section.key === 'awards' && !teamHistoryVisible"
+          :awards="data.awards"
         />
-        <AwardsHonors v-else-if="section.key === 'awards'" :awards="data.awards" />
       </template>
     </div>
 
@@ -191,7 +211,7 @@ function onInterestSubmitted() {
             :aria-label="link.platform"
             class="text-gray-400 hover:text-gray-600"
           >
-            <UIcon :name="link.icon" class="h-4 w-4" aria-hidden="true" />
+            <SocialIcon :platform="link.platform" class="h-4 w-4" />
           </a>
         </div>
       </div>
