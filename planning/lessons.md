@@ -121,6 +121,20 @@ Tracks mistake patterns (with recurrence counts) and process insights.
 
 ---
 
+### Cross-Repo Agent with isolation:worktree Edits the Wrong Repo's main
+
+**Times seen:** 1 | **Last seen:** 2026-08-25
+**Context:** Web session dispatched an iOS-parity agent with `isolation:worktree`. The agent got a worktree of the WEB repo, then edited the iOS repo directly at its absolute path — landing uncommitted parity work on the shared iOS `main`, tangled with a concurrent iOS widget-reorder session's staged changes.
+**Root Cause:** `isolation:worktree` worktrees the CURRENT (dispatching) repo only. For cross-repo work the "isolation" is fake — the agent edits the target repo's live checkout, which another session may own.
+**Prevention:**
+- Never dispatch an `isolation:worktree` agent to edit a repo other than the session's own.
+- Cross-repo (iOS-from-web) work: run it from a session in that repo, OR have the agent `git worktree add` IN the target repo and `cd` there. Never edit the target's `main`.
+- Recovery pattern when it happens: `git stash push -u` (safety backup) → `git merge --ff-only origin/main` → branch off clean main → `git checkout stash@{0} -- <only your files>` → build-verify → commit.
+- iOS build from a non-Xcode shell: `DEVELOPER_DIR=/Applications/Xcode-beta.app/Contents/Developer xcodebuild build -destination 'generic/platform=iOS Simulator' -quiet` (CommandLineTools can't build; a named sim can silently fall back to My Mac and exit 0 without building).
+- Enforced by the dirty-main PreToolUse guard hook (added 2026-08-25).
+
+---
+
 ## Template (for new bug patterns)
 
 ```markdown
@@ -360,6 +374,20 @@ Source: session work (CommunicationPanel email composer → right drawer, commit
 - **Kill nested-modal stacking by matching drawer widths**: if a hub modal opens a composer modal, both centered = modal-on-modal. Make the hub AND the composer the same-width right drawer (`max-w-lg`) — the composer then opens *exactly over* the hub, reading as a step/content-replace, not a second layer. (Coach page: the `Quick Communication` wrapper and the email composer are now both `max-w-lg` drawers.)
 - **Presentation chrome is NOT a parity item**: this is web CSS layout. iOS presents the same flow with a native `.sheet` (already the platform-idiomatic "drawer") — nothing to replicate. Parity tracks data/fields/UX-capability, not modal-vs-drawer container styling. No field, option, or feature changed here.
 - **Deferred debt this exposed**: (1) text composer + template manager in `CommunicationPanel` still centered modals (same 3-line recipe when wanted); (2) the wrapper still renders its own "Quick Communication" header above the panel's own — dedup needs a prop since the panel renders standalone in 3 other pages; (3) the real file-size win is extracting the shared compose/resolve/guardrail state into a `useCoachComposer` composable so email+text are thin child drawers — a tested refactor, not a frame swap.
+
+## DesignSystem* not DS* — Nuxt global component tag names — 2026-08-25
+Source: public-player-profile Phase 1 (final review caught it repo-wide, PR #487)
+
+- **Bug**: 7 new components used global tags `<DSCard>/<DSBadge>/<DSButton>`. Nuxt auto-imports components by PATH: `components/DesignSystem/Button.vue` → global tag `DesignSystemButton`, NOT `DSButton`. The `DS*` tags fail `resolveComponent` and fall back to unstyled native custom elements — **looks fine in isolated unit tests, renders unstyled in the real app**. The `components/DesignSystem/index.ts` barrel exporting `DSButton` is only for EXPLICIT `import { DSButton }`, not template auto-import.
+- **How it hid**: a `tests/setup.ts` stub registered the invented name `DSButton` globally, so unit tests resolved a tag that never resolves in the app — the stub masked the bug. Registering an INVENTED name in test setup is an anti-pattern; register the REAL auto-import name (precedent: `DesignSystemFormSegmentedControl`).
+- **Rule**: for global (unimported) template tags, use the `DesignSystem*` path-derived name; verify against `.nuxt/components.d.ts` or existing usage (`pages/join.vue`). If you must use `DS*`, `import` it explicitly. This is the "Tests passing ≠ code working. Run the thing." class from CLAUDE.md.
+
+## section_config vs show_* desync — new visibility model must honor the old write path — 2026-08-25
+Source: public-player-profile Phase 1 final review (blocker), PR #487
+
+- **Bug**: introduced a `section_config` jsonb (ordered visibility) as the new public-profile section model, and made the public endpoint gate on it — but the only owner write path (`profile.put.ts`) still wrote only the legacy `show_*` bools and never `section_config`, and there was no Phase-1 UI to edit `section_config`. Result: (a) new rows default `section_config='[]'` → all sections hidden → **near-blank public page**; (b) an owner turning a section OFF via the existing UI had no effect on the public page — a **soft-privacy regression in the wrong direction**.
+- **Fix (endpoint-side, no write-path change)**: `resolveSections()` — when `section_config` is empty, fall back to `backfillSectionConfig(show_*)`; and make the editable `show_*` bools AUTHORITATIVE for their keys (metrics/film/academics) layered over stored config. Keeps `section_config` as the future Phase-2 source while honoring the only editable control that exists today.
+- **Rule**: when a new data model supersedes an old one but ships in an earlier phase than its editor, the reader must reconcile old+new — never let a read path depend solely on a field nothing writes yet. Empty-default of a gating field must mean "sensible default", not "hide everything".
 
 ## Cross-file vs intra-file test order dependence — isolate the right one — 2026-08-25
 Source: develop CI red on interactions-add.spec (4 deterministic fails), PR #488

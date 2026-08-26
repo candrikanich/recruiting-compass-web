@@ -10,6 +10,7 @@ const mockState = {
     url: string;
     title: string | null;
   }>,
+  metricsRows: [] as Array<Record<string, unknown>>,
 };
 
 const videoLinksEqSpy = vi.fn();
@@ -74,6 +75,14 @@ vi.mock("~/server/utils/supabase", () => ({
           }),
         };
       }
+      if (table === "performance_metrics") {
+        return {
+          select: () => ({
+            eq: () =>
+              Promise.resolve({ data: mockState.metricsRows, error: null }),
+          }),
+        };
+      }
       return {};
     },
   })),
@@ -114,6 +123,7 @@ describe("GET /api/public/profile/[slug]", () => {
     mockState.playerPrefsData = null;
     mockState.schoolsRows = [];
     mockState.videoLinksRows = [];
+    mockState.metricsRows = [];
     videoLinksEqSpy.mockClear();
   });
 
@@ -147,6 +157,7 @@ describe("GET /api/public/profile/[slug]", () => {
       show_athletic: false,
       show_film: false,
       show_schools: false,
+      section_config: [{ key: "academics", visible: true }],
       bio: "Future D1 pitcher",
     };
     mockState.userRow = { full_name: "John Smith" };
@@ -172,6 +183,7 @@ describe("GET /api/public/profile/[slug]", () => {
       show_athletic: false,
       show_film: true,
       show_schools: false,
+      section_config: [{ key: "film", visible: true }],
       bio: null,
     };
     mockState.userRow = { full_name: "Jane Doe" };
@@ -200,6 +212,7 @@ describe("GET /api/public/profile/[slug]", () => {
       show_athletic: false,
       show_film: true,
       show_schools: false,
+      section_config: [{ key: "film", visible: true }],
       bio: null,
     };
     mockState.userRow = { full_name: "Jane Doe" };

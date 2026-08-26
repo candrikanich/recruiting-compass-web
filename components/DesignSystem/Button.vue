@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { resolveComponent } from "vue";
+import { computed, resolveComponent } from "vue";
 
 export type ButtonVariant = "gradient" | "outline" | "solid" | "ghost";
 export type ButtonColor =

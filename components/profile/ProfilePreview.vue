@@ -8,6 +8,10 @@ import type {
 } from "~/types/models";
 import { useUserStore } from "~/stores/user";
 import { useVideoLinks } from "~/composables/useVideoLinks";
+import {
+  backfillSectionConfig,
+  normalizeSectionConfig,
+} from "~/utils/profile/sectionConfig";
 
 const props = defineProps<{
   settings: PlayerProfile;
@@ -95,7 +99,34 @@ const previewData = computed<PublicProfileData>(() => ({
   film: props.settings.show_film ? filmLinks.value : null,
   schools: props.settings.show_schools ? props.schools : null,
   social: previewSocial.value,
+  bannerUrl: props.settings.banner_url ?? null,
+  jerseyNumber: (props.details?.jersey_number as number | undefined) ?? null,
+  commitmentStatus: props.settings.commitment_status,
+  committedSchoolName: null,
+  lookingFor: props.settings.looking_for ?? null,
+  valuesTags: props.settings.values_tags ?? [],
+  awards: props.settings.awards ?? [],
+  metrics: props.settings.show_metrics
+    ? ((props.details?.metrics as PublicProfileData["metrics"]) ?? [])
+    : null,
+  teamHistory:
+    (props.details?.team_history as PublicProfileData["teamHistory"]) ?? null,
+  sections: previewSections.value,
 }));
+
+// section_config may not be populated yet (new profile, or this preview's
+// mock settings) — fall back to deriving visibility from the show_* flags so
+// the preview still reflects what the owner just toggled.
+const previewSections = computed(() =>
+  Array.isArray(props.settings.section_config) &&
+  props.settings.section_config.length
+    ? normalizeSectionConfig(props.settings.section_config)
+    : backfillSectionConfig({
+        show_metrics: props.settings.show_metrics,
+        show_film: props.settings.show_film,
+        show_academics: props.settings.show_academics,
+      }),
+);
 
 // Socials are not gated by a visibility flag — shown whenever a handle is set.
 const previewSocial = computed<PublicProfileData["social"]>(() => {
@@ -120,6 +151,6 @@ const previewSocial = computed<PublicProfileData["social"]>(() => {
     <p class="mb-3 text-xs font-semibold tracking-wide text-gray-400 uppercase">
       Preview — What coaches see
     </p>
-    <ProfilePublicProfileCard :profile="previewData" />
+    <ProfilePublicProfileCard :data="previewData" />
   </div>
 </template>
