@@ -37,6 +37,7 @@ const visibleSections = computed(() =>
         <MetricsGrid
           v-if="section.key === 'metrics'"
           :metrics="data.metrics ?? []"
+          :athletic="data.athletic"
         />
         <HighlightsReel v-else-if="section.key === 'film'" :film="data.film" />
         <AcademicPanel
