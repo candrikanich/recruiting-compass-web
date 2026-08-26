@@ -3,7 +3,7 @@
 import { reactive, ref, watch } from "vue";
 import { useDebounceFn } from "@vueuse/core";
 import { usePlayerProfile } from "~/composables/usePlayerProfile";
-import { resolveSections } from "~/utils/profile/sectionConfig";
+import { resolveSections, deriveLegacyVisibility } from "~/utils/profile/sectionConfig";
 import type {
   CommitmentStatus,
   PlayerDetails,
@@ -42,6 +42,10 @@ const draft = reactive({
   values_tags: [] as string[],
   section_config: [] as ProfileSection[],
   show_metrics: true,
+  show_athletic: true,
+  show_film: true,
+  show_academics: true,
+  show_schools: true,
 });
 
 watch(
@@ -65,6 +69,10 @@ watch(
       show_academics: p.show_academics,
     });
     draft.show_metrics = p.show_metrics;
+    draft.show_athletic = p.show_athletic;
+    draft.show_film = p.show_film;
+    draft.show_academics = p.show_academics;
+    draft.show_schools = p.show_schools;
   },
   { immediate: true },
 );
@@ -136,6 +144,14 @@ function onSlugBlur() {
   if (validateSlug(draft.vanity_slug)) {
     save({ vanity_slug: draft.vanity_slug || null });
   }
+}
+
+// Mirrors the server's reconcileVisibility: a section_config edit also
+// derives show_metrics/show_film/show_academics so the local draft (and the
+// live preview reading it) agrees with what the server will store, without
+// waiting for a reload.
+function onSectionConfigUpdate(sections: ProfileSection[]) {
+  save({ section_config: sections, ...deriveLegacyVisibility(sections) });
 }
 </script>
 
@@ -254,7 +270,7 @@ function onSlugBlur() {
         <SectionConfigEditor
           :model-value="draft.section_config"
           :show-metrics="draft.show_metrics"
-          @update:model-value="(sections) => save({ section_config: sections })"
+          @update:model-value="onSectionConfigUpdate"
         />
       </section>
 

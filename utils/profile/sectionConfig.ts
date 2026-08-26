@@ -82,6 +82,25 @@ export function resolveSections(input: {
   );
 }
 
+/**
+ * Mirrors the legacy show_metrics/show_film/show_academics derivation the
+ * profile PUT endpoint applies when `section_config` is written
+ * (reconcileVisibility in server/api/player/profile.put.ts) so client-side
+ * drafts can keep those flags in agreement with a section_config edit before
+ * the round trip to the server completes.
+ */
+export function deriveLegacyVisibility(
+  sections: ProfileSection[],
+): { show_metrics: boolean; show_film: boolean; show_academics: boolean } {
+  const visible = (key: ProfileSectionKey) =>
+    sections.some((s) => s.key === key && s.visible);
+  return {
+    show_metrics: visible("metrics"),
+    show_film: visible("film"),
+    show_academics: visible("academics"),
+  };
+}
+
 export function isSectionVisible(
   sections: ProfileSection[],
   key: ProfileSectionKey,
