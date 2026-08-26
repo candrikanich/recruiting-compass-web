@@ -8,7 +8,7 @@
       class="sticky top-16 z-30 border-b border-slate-200 bg-white/90 backdrop-blur-lg"
     >
       <div
-        class="mx-auto flex max-w-4xl items-center justify-between px-4 py-3 sm:px-6"
+        class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6"
       >
         <div class="flex items-center gap-3">
           <NuxtLink
@@ -46,7 +46,7 @@
       </div>
     </div>
 
-    <main class="mx-auto max-w-4xl px-4 py-6 sm:px-6">
+    <main class="mx-auto max-w-7xl px-4 py-6 sm:px-6">
       <!-- Profile Completeness Hero -->
       <div
         class="mb-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
