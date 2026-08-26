@@ -217,43 +217,47 @@ function onSectionConfigUpdate(sections: ProfileSection[]) {
 
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
     <div class="flex flex-col gap-6">
-      <ShareProfilePanel :url="publicUrl ?? ''" />
-
-      <!-- Vanity slug -->
-      <div class="space-y-1">
-        <label
-          class="text-xs font-semibold tracking-wide text-brand-slate-400 uppercase"
-          >Custom URL (optional)</label
-        >
-        <div class="flex items-center gap-2">
-          <span class="shrink-0 text-sm text-brand-slate-400"
-            >recruitingcompass.com/p/</span
+      <ShareProfilePanel :url="publicUrl ?? ''">
+        <!-- Custom URL lives with the share link — they configure the same URL -->
+        <div class="mt-4 space-y-1 border-t border-brand-slate-100 pt-4">
+          <label
+            class="text-xs font-semibold tracking-wide text-brand-slate-400 uppercase"
+            >Custom URL (optional)</label
           >
-          <input
-            v-model="draft.vanity_slug"
-            type="text"
-            placeholder="yourname2026"
-            class="flex-1 rounded-lg border border-brand-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-slate-400 focus:outline-none"
-            @blur="onSlugBlur"
-          />
+          <div class="flex items-center gap-2">
+            <span class="shrink-0 text-sm text-brand-slate-400"
+              >recruitingcompass.com/p/</span
+            >
+            <input
+              v-model="draft.vanity_slug"
+              type="text"
+              placeholder="yourname2026"
+              class="flex-1 rounded-lg border border-brand-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-slate-400 focus:outline-none"
+              @blur="onSlugBlur"
+            />
+          </div>
+          <p v-if="slugError" class="text-xs text-red-500">{{ slugError }}</p>
+          <p class="text-xs text-brand-slate-400">
+            Changing your custom URL will break any links using the old one.
+          </p>
         </div>
-        <p v-if="slugError" class="text-xs text-red-500">{{ slugError }}</p>
-        <p class="text-xs text-brand-slate-400">
-          Changing your custom URL will break any links using the old one.
-        </p>
-      </div>
+      </ShareProfilePanel>
 
       <!-- 1. Appearance -->
       <section class="space-y-3">
         <h3 class="text-sm font-semibold text-brand-slate-900">
           1. Appearance Settings
         </h3>
-        <ProfileAppearanceEditor
-          :header-color="draft.header_color"
-          :banner-url="draft.banner_url"
-          @update:header-color="(color) => save({ header_color: color })"
-          @update:banner-url="(url) => save({ banner_url: url })"
-        />
+        <div
+          class="rounded-2xl border border-brand-slate-200 bg-white p-6 shadow-xs"
+        >
+          <ProfileAppearanceEditor
+            :header-color="draft.header_color"
+            :banner-url="draft.banner_url"
+            @update:header-color="(color) => save({ header_color: color })"
+            @update:banner-url="(url) => save({ banner_url: url })"
+          />
+        </div>
       </section>
 
       <!-- 2. Content -->
@@ -261,16 +265,20 @@ function onSectionConfigUpdate(sections: ProfileSection[]) {
         <h3 class="text-sm font-semibold text-brand-slate-900">
           2. Profile Content
         </h3>
-        <ProfileContentEditor
-          :bio="draft.bio"
-          :looking-for="draft.looking_for"
-          :awards="draft.awards"
-          :values-tags="draft.values_tags"
-          @update:bio="onBioUpdate"
-          @update:looking-for="onLookingForUpdate"
-          @update:awards="(awards) => save({ awards })"
-          @update:values-tags="(tags) => save({ values_tags: tags })"
-        />
+        <div
+          class="rounded-2xl border border-brand-slate-200 bg-white p-6 shadow-xs"
+        >
+          <ProfileContentEditor
+            :bio="draft.bio"
+            :looking-for="draft.looking_for"
+            :awards="draft.awards"
+            :values-tags="draft.values_tags"
+            @update:bio="onBioUpdate"
+            @update:looking-for="onLookingForUpdate"
+            @update:awards="(awards) => save({ awards })"
+            @update:values-tags="(tags) => save({ values_tags: tags })"
+          />
+        </div>
       </section>
 
       <!-- 3. Section Configuration -->
@@ -278,10 +286,14 @@ function onSectionConfigUpdate(sections: ProfileSection[]) {
         <h3 class="text-sm font-semibold text-brand-slate-900">
           3. Section Configuration
         </h3>
-        <SectionConfigEditor
-          :model-value="draft.section_config"
-          @update:model-value="onSectionConfigUpdate"
-        />
+        <div
+          class="rounded-2xl border border-brand-slate-200 bg-white p-6 shadow-xs"
+        >
+          <SectionConfigEditor
+            :model-value="draft.section_config"
+            @update:model-value="onSectionConfigUpdate"
+          />
+        </div>
       </section>
 
       <!-- 4. Recruitment Status -->
@@ -289,15 +301,19 @@ function onSectionConfigUpdate(sections: ProfileSection[]) {
         <h3 class="text-sm font-semibold text-brand-slate-900">
           4. Recruitment Status
         </h3>
-        <CommitmentStatusControl
-          :status="draft.commitment_status"
-          :committed-school-id="draft.committed_school_id"
-          :schools="props.schools"
-          @update:status="(status) => save({ commitment_status: status })"
-          @update:committed-school-id="
-            (schoolId) => save({ committed_school_id: schoolId })
-          "
-        />
+        <div
+          class="rounded-2xl border border-brand-slate-200 bg-white p-6 shadow-xs"
+        >
+          <CommitmentStatusControl
+            :status="draft.commitment_status"
+            :committed-school-id="draft.committed_school_id"
+            :schools="props.schools"
+            @update:status="(status) => save({ commitment_status: status })"
+            @update:committed-school-id="
+              (schoolId) => save({ committed_school_id: schoolId })
+            "
+          />
+        </div>
       </section>
 
       <p v-if="saveError" class="text-xs text-red-500">{{ saveError }}</p>
