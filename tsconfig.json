@@ -10,6 +10,7 @@
     "**/*.spec.ts",
     "**/*.test.ts",
     "vitest.config.ts",
-    "playwright.config.ts"
+    "playwright.config.ts",
+    "supabase/functions/**/*"
   ]
 }
