@@ -102,15 +102,15 @@ test.describe("User Story 6.1: Parent Views Recruiting Stage Guidance", () => {
     expect(messageCount).toBeGreaterThan(0);
   });
 
-  test("Scenario 5: Parent views Upcoming Milestones section", async ({
+  test("Scenario 5: Parent views Recruiting Calendar (milestones merged in)", async ({
     page,
   }) => {
-    // Verify "Upcoming Milestones" section is visible
-    const milestonesHeader = page.locator("text=Upcoming Milestones");
+    // Milestones were folded into the Recruiting Calendar (rendered <UpcomingMilestones bare/>), so assert the calendar section heading.
+    const milestonesHeader = page.getByRole("heading", { name: "Recruiting Calendar" });
     await expect(milestonesHeader).toBeVisible();
 
     // Verify calendar icon
-    const calendarIcon = page.locator("text=📅");
+    const calendarIcon = page.locator("text=📆");
     await expect(calendarIcon).toBeVisible();
 
     // Verify milestone items display with dates
@@ -160,7 +160,7 @@ test.describe("User Story 6.1: Parent Views Recruiting Stage Guidance", () => {
     await expect(page.locator("text=What Matters Right Now")).toBeVisible();
     await expect(page.locator("text=Common Worries")).toBeVisible();
     await expect(page.locator("text=What NOT to Stress About")).toBeVisible();
-    await expect(page.locator("text=Upcoming Milestones")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Recruiting Calendar" })).toBeVisible();
 
     // Verify sections stack vertically (not side-by-side). boundingBox() is
     // async — a missing await here previously made this an always-truthy
@@ -194,7 +194,7 @@ test.describe("User Story 6.1: Parent Views Recruiting Stage Guidance", () => {
     await expect(page.locator("text=What Matters Right Now")).toBeVisible();
     await expect(page.locator("text=Common Worries")).toBeVisible();
     await expect(page.locator("text=What NOT to Stress About")).toBeVisible();
-    await expect(page.locator("text=Upcoming Milestones")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Recruiting Calendar" })).toBeVisible();
   });
 
   test("Scenario 9: Timeline loads in under 1 second", async ({ page }) => {
@@ -218,7 +218,7 @@ test.describe("User Story 6.1: Parent Views Recruiting Stage Guidance", () => {
     // Verify "What Matters Now" has blue gradient
     const whatMattersCard = page
       .locator("text=What Matters Right Now")
-      .locator("..//..")
+      .locator("xpath=ancestor::div[contains(concat(' ',@class,' '),' rounded-2xl ')][1]")
       .first();
     const bgClass = await whatMattersCard.getAttribute("class");
     expect(bgClass).toContain("blue");
@@ -226,7 +226,7 @@ test.describe("User Story 6.1: Parent Views Recruiting Stage Guidance", () => {
     // Verify "Common Worries" has amber gradient
     const worriesCard = page
       .locator("text=Common Worries")
-      .locator("..//..")
+      .locator("xpath=ancestor::div[contains(concat(' ',@class,' '),' rounded-2xl ')][1]")
       .first();
     const worriesBgClass = await worriesCard.getAttribute("class");
     expect(worriesBgClass).toContain("amber");
@@ -234,15 +234,15 @@ test.describe("User Story 6.1: Parent Views Recruiting Stage Guidance", () => {
     // Verify "What NOT to Stress" has emerald gradient
     const reassuranceCard = page
       .locator("text=What NOT to Stress About")
-      .locator("..//..")
+      .locator("xpath=ancestor::div[contains(concat(' ',@class,' '),' rounded-2xl ')][1]")
       .first();
     const reassuranceBgClass = await reassuranceCard.getAttribute("class");
     expect(reassuranceBgClass).toContain("emerald");
 
-    // Verify "Upcoming Milestones" has white background
+    // Recruiting Calendar card (houses milestones) has a white background
     const milestonesCard = page
-      .locator("text=Upcoming Milestones")
-      .locator("..//..")
+      .getByRole("heading", { name: "Recruiting Calendar" })
+      .locator("xpath=ancestor::div[contains(concat(' ',@class,' '),' rounded-2xl ')][1]")
       .first();
     const milestonesBgClass = await milestonesCard.getAttribute("class");
     expect(milestonesBgClass).toContain("bg-white");

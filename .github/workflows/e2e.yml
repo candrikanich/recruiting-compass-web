@@ -65,6 +65,9 @@ jobs:
           NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.TEST_SUPABASE_URL }}
           NUXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.TEST_SUPABASE_ANON_KEY }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.TEST_SUPABASE_SERVICE_ROLE_KEY }}
+          # Slug the seed publishes for the player's public profile — the
+          # anonymous public-profile spec resolves /p/:slug against it.
+          E2E_PROFILE_SLUG: e2e-test-player
           # Do NOT set NUXT_PUBLIC_ADMIN_HOST here. On the loopback E2E host the
           # app serves admin + main from one origin (see middleware/host.global
           # loopback carve-out); setting it to localhost makes every non-admin
@@ -134,6 +137,9 @@ jobs:
           NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.TEST_SUPABASE_URL }}
           NUXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.TEST_SUPABASE_ANON_KEY }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.TEST_SUPABASE_SERVICE_ROLE_KEY }}
+          # Slug the seed publishes for the player's public profile — the
+          # anonymous public-profile spec resolves /p/:slug against it.
+          E2E_PROFILE_SLUG: e2e-test-player
           # Do NOT set NUXT_PUBLIC_ADMIN_HOST here. On the loopback E2E host the
           # app serves admin + main from one origin (see middleware/host.global
           # loopback carve-out); setting it to localhost makes every non-admin

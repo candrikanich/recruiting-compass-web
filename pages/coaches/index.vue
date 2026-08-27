@@ -288,7 +288,6 @@
           v-if="showPanel && selectedCoach"
           class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
           @click="showPanel = false"
-          aria-hidden="true"
           role="presentation"
         >
           <div

@@ -124,7 +124,7 @@ test.describe("Coach directory — tile navigation", () => {
     await tile.click();
 
     await page.waitForURL(new RegExp(`/coaches/${coachId}(\\?.*)?$`));
-    await expect(page.getByText(coachLastName)).toBeVisible();
+    await expect(page.getByText(coachLastName).first()).toBeVisible();
   });
 
   // Regression coverage for a bug found by this spec: `@click.stop` alone on

@@ -43,6 +43,7 @@ async function copyLink() {
 
     <div class="mb-3 flex items-center gap-2">
       <span
+        data-test="profile-share-url"
         class="min-w-0 flex-1 truncate rounded-lg border border-brand-slate-200 bg-brand-slate-50 px-3 py-2 text-sm text-brand-slate-700"
         :title="url"
       >

@@ -130,7 +130,7 @@ test.describe("Coach detail — back-nav and legacy redirect", () => {
     await tile.click();
 
     await page.waitForURL(new RegExp(`/coaches/${coachId}`));
-    await expect(page.getByText(coachLastName)).toBeVisible();
+    await expect(page.getByText(coachLastName).first()).toBeVisible();
 
     const backLink = page.getByRole("link", { name: "Back to All Coaches" });
     await expect(backLink).toBeVisible();
