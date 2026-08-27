@@ -280,34 +280,37 @@ export default defineEventHandler(async (event) => {
     }
 
     // Notify the player — fire-and-forget-safe: a failure here must never
-    // fail the response, since the lead is already durably stored. When an
-    // interaction was minted (matched path), skip: the
-    // notify_on_inbound_interaction_insert trigger already creates the
-    // notification for it. The notifications-INSERT trigger
-    // (push_on_notification_insert) is the single delivery channel — it
-    // handles both push and email, so no explicit email send here.
+    // fail the response, since the lead is already durably stored. ALWAYS
+    // insert this notification, even on the matched path: the
+    // notify_on_inbound_interaction_insert trigger notifies
+    // `family_members WHERE user_id IS DISTINCT FROM NEW.logged_by`, and the
+    // minted interaction sets `logged_by = profile.user_id` (the player) —
+    // so the trigger excludes the player by design (it's meant for other
+    // family members). This insert is what covers the player themselves.
+    // Repoint to the interaction when one was minted; otherwise the lead
+    // itself. The notifications-INSERT trigger (push_on_notification_insert)
+    // is the single delivery channel — it handles both push and email, so no
+    // explicit email send here.
     try {
-      if (!interactionId) {
-        const coachLabel = data.coachName;
-        const schoolLabel = data.schoolName ? ` from ${data.schoolName}` : "";
-        const title = "New contact from a coach";
-        const message = `${coachLabel}${schoolLabel} reached out through your public profile.`;
+      const coachLabel = data.coachName;
+      const schoolLabel = data.schoolName ? ` from ${data.schoolName}` : "";
+      const title = "New contact from a coach";
+      const message = `${coachLabel}${schoolLabel} reached out through your public profile.`;
 
-        const notificationRow: NotificationInsert = {
-          user_id: profile.user_id,
-          type: "inbound_interaction",
-          title,
-          message,
-          related_entity_type: "profile_contact",
-          related_entity_id: inserted.id,
-          scheduled_for: new Date().toISOString(),
-        };
-        const { error: notifyError } = await admin
-          .from("notifications")
-          .insert(notificationRow);
-        if (notifyError) {
-          logger.warn("Failed to insert notification row", notifyError);
-        }
+      const notificationRow: NotificationInsert = {
+        user_id: profile.user_id,
+        type: "inbound_interaction",
+        title,
+        message,
+        related_entity_type: interactionId ? "interaction" : "profile_contact",
+        related_entity_id: interactionId ?? inserted.id,
+        scheduled_for: new Date().toISOString(),
+      };
+      const { error: notifyError } = await admin
+        .from("notifications")
+        .insert(notificationRow);
+      if (notifyError) {
+        logger.warn("Failed to insert notification row", notifyError);
       }
     } catch (notifyErr) {
       logger.warn("Failed to notify player of inbound contact", notifyErr);

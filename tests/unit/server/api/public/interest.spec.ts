@@ -128,7 +128,9 @@ vi.mock("~/server/utils/supabase", () => ({
         return {
           insert: (row: Record<string, unknown>) => {
             mockState.notificationInserts.push(row);
-            return Promise.resolve({ error: mockState.notificationInsertError });
+            return Promise.resolve({
+              error: mockState.notificationInsertError,
+            });
           },
         };
       }
@@ -155,10 +157,8 @@ vi.mock("h3", async (importOriginal) => {
     getRequestIP: vi.fn(() => "1.2.3.4"),
     getRequestHeader: vi.fn(() => "Mozilla/5.0"),
     getHeader: vi.fn(
-      (
-        event: { _headers?: Record<string, string> },
-        name: string,
-      ) => event._headers?.[name.toLowerCase()],
+      (event: { _headers?: Record<string, string> }, name: string) =>
+        event._headers?.[name.toLowerCase()],
     ),
     readBody: vi.fn(async (event: { _body?: unknown }) => event._body ?? {}),
     createError: (cfg: { statusCode: number; statusMessage?: string }) => {
@@ -171,9 +171,8 @@ vi.mock("h3", async (importOriginal) => {
   };
 });
 
-const { default: handler } = await import(
-  "~/server/api/public/profile/[slug]/interest.post"
-);
+const { default: handler } =
+  await import("~/server/api/public/profile/[slug]/interest.post");
 
 function makeEvent(
   body: Record<string, unknown>,
@@ -197,7 +196,10 @@ describe("POST /api/public/profile/[slug]/interest", () => {
       user_id: "player-1",
       is_published: true,
     };
-    mockState.userRow = { email: "player@example.com", full_name: "Player One" };
+    mockState.userRow = {
+      email: "player@example.com",
+      full_name: "Player One",
+    };
     mockState.insertedContact = null;
     mockState.contactInsertError = null;
     mockState.contactUpdate = null;
@@ -330,7 +332,7 @@ describe("POST /api/public/profile/[slug]/interest", () => {
     });
   });
 
-  it("mints an inbound interaction on email match and does not insert its own notification", async () => {
+  it("mints an inbound interaction on email match and notifies the player pointed at the interaction", async () => {
     matchCoachByEmailMock.mockResolvedValueOnce({
       coachId: "coach-42",
       schoolId: "school-42",
@@ -360,11 +362,16 @@ describe("POST /api/public/profile/[slug]/interest", () => {
       row: { interaction_id: "interaction-1" },
       id: "contact-1",
     });
-    // A DB trigger creates the player notification in production when the
-    // interaction is inserted — the mocked supabase in this unit test does
-    // not run triggers, so the endpoint itself inserts zero notifications
-    // on the matched path.
-    expect(mockState.notificationInserts).toHaveLength(0);
+    // The DB trigger that fires on interaction insert excludes the player
+    // (`logged_by`) — it's meant for other family members. The endpoint
+    // itself is what notifies the player, repointed at the interaction.
+    expect(mockState.notificationInserts).toHaveLength(1);
+    expect(mockState.notificationInserts[0]).toMatchObject({
+      user_id: "player-1",
+      type: "inbound_interaction",
+      related_entity_type: "interaction",
+      related_entity_id: "interaction-1",
+    });
   });
 
   it("sets matched_coach_id when coachEmail matches an existing coach", async () => {
