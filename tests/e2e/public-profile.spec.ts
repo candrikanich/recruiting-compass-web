@@ -3,12 +3,14 @@ import { test, expect } from "@playwright/test";
 /**
  * Public player profile page (`/p/:slug`) — unauthenticated smoke test.
  *
- * Scope intentionally limited to always-present elements. The only
- * published profile in the live DB (`owen-andrikanich-2028`) has its
- * metrics section HIDDEN in section_config, so this does not assert on
- * section content (covered by unit + component tests instead).
+ * Scope intentionally limited to always-present elements — asserts the hero
+ * resolved (a name, not the not-found state) and the always-on controls,
+ * never section content (that varies by section_config; covered by unit +
+ * component tests). The default slug is the one the E2E seed publishes
+ * (see tests/e2e/seed/seed.ts, E2E_PUBLIC_PROFILE_SLUG); override with
+ * E2E_PROFILE_SLUG to point at a specific profile (e.g. a prod smoke run).
  */
-const slug = process.env.E2E_PROFILE_SLUG ?? "owen-andrikanich-2028";
+const slug = process.env.E2E_PROFILE_SLUG ?? "e2e-test-player";
 
 // No auth cookies — the profile page has no auth middleware and must
 // render for a fully anonymous visitor.
@@ -24,10 +26,10 @@ test("public profile renders redesigned layout unauthenticated", async ({
     page.goto(`/p/${slug}`),
   ]);
 
-  // Player name renders in the hero heading.
-  await expect(page.getByRole("heading", { level: 1 })).toContainText(
-    /owen/i,
-  );
+  // Hero resolved to a real profile (a player name), not the not-found state.
+  const heroHeading = page.getByRole("heading", { level: 1 });
+  await expect(heroHeading).toBeVisible();
+  await expect(heroHeading).not.toHaveText(/profile not found/i);
 
   // Contact / interest controls always render regardless of section_config.
   await expect(

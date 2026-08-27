@@ -145,7 +145,7 @@ test.describe("User Story 9.1 - Athlete Views Their Task List", () => {
     );
 
     // Click the checkbox
-    await uncheckedCheckbox.check();
+    await uncheckedCheckbox.check({ force: true });
 
     try {
       // Wait for success message
@@ -170,7 +170,7 @@ test.describe("User Story 9.1 - Athlete Views Their Task List", () => {
       // This mutates a real task on the shared player@test.com account --
       // restore it so other tests/workers reading completion % (Scenario 2,
       // Scenario 6) don't see state this test changed.
-      await uncheckedCheckbox.uncheck().catch(() => null);
+      await uncheckedCheckbox.uncheck({ force: true }).catch(() => null);
     }
   });
 
@@ -210,7 +210,7 @@ test.describe("User Story 9.1 - Athlete Views Their Task List", () => {
     const initialText = await progressText.textContent();
 
     // Uncheck the checkbox
-    await checkedCheckbox.uncheck();
+    await checkedCheckbox.uncheck({ force: true });
 
     try {
       // Verify checkbox is now unchecked
@@ -225,7 +225,7 @@ test.describe("User Story 9.1 - Athlete Views Their Task List", () => {
       // This mutates a real task on the shared player@test.com account --
       // restore it so other tests/workers reading completion % (Scenario 2,
       // Scenario 6) don't see state this test changed.
-      await checkedCheckbox.check().catch(() => null);
+      await checkedCheckbox.check({ force: true }).catch(() => null);
     }
   });
 
@@ -281,14 +281,17 @@ test.describe("User Story 9.1 - Athlete Views Their Task List", () => {
     const progressBar = page.locator(".bg-blue-600").first();
     await expect(progressBar).toBeVisible();
 
-    // Verify checkbox is visible and has adequate size for touch
+    // Verify the checkbox touch target is adequately sized. The <input> is a
+    // visually-hidden `peer sr-only` element (~1px) driving a sibling SVG via
+    // CSS peer state, so measure the wrapping <label> — the real touch target.
     const checkbox = page.locator('input[type="checkbox"]').first();
     const hasCheckbox = await checkbox.count();
 
     if (hasCheckbox > 0) {
-      const bbox = await checkbox.boundingBox();
+      const touchTarget = checkbox.locator("xpath=ancestor::label[1]");
+      const bbox = await touchTarget.boundingBox();
       if (bbox) {
-        // Check touch target size (should be at least 20px)
+        // Check touch target size (should be at least 16px)
         expect(bbox.width).toBeGreaterThanOrEqual(16);
         expect(bbox.height).toBeGreaterThanOrEqual(16);
       }
@@ -363,26 +366,32 @@ test.describe("User Story 9.1 - Athlete Views Their Task List", () => {
     // Get initial state
     const initialState = await firstCheckbox.isChecked();
 
-    // Click checkbox
-    await firstCheckbox.click();
+    // Click checkbox. The input is `peer sr-only` (visually hidden), so a
+    // normal click never reaches it — force past the visibility/actionability
+    // check the same way the visible <label> would forward the toggle.
+    await firstCheckbox.click({ force: true });
 
     try {
       // Verify state changed immediately
       const newState = await firstCheckbox.isChecked();
       expect(newState).not.toBe(initialState);
 
-      // Verify visual feedback (status badge should update)
-      const statusBadge = firstCheckbox
-        .locator(
-          'xpath=../..//following-sibling::div[contains(@class, "rounded-full")]',
-        )
+      // Verify visual feedback: this task's status pill reflects a status.
+      // Scope to the checkbox's own task-item row rather than a brittle
+      // sibling-axis xpath, which broke when the checkbox gained a wrapping
+      // <label>/<span>.
+      const taskItem = firstCheckbox.locator(
+        "xpath=ancestor::*[@data-testid='task-item'][1]",
+      );
+      const statusBadge = taskItem
+        .getByText(/Completed|In Progress|Not Started/)
         .first();
       await expect(statusBadge).toBeVisible();
     } finally {
       // This mutates a real task on the shared player@test.com account --
       // restore it so other tests/workers reading completion % (Scenario 2,
       // Scenario 6) don't see state this test changed.
-      await firstCheckbox.setChecked(initialState).catch(() => null);
+      await firstCheckbox.setChecked(initialState, { force: true }).catch(() => null);
     }
   });
 

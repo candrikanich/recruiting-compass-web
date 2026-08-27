@@ -183,17 +183,23 @@ async function seedPlayerPreferences(
   supabase: SupabaseAdmin,
   playerUserId: string,
 ): Promise<void> {
+  // The app reads/writes player details under category "player_details" (see
+  // server/api/user/preferences/player-details.patch.ts). Seeding the legacy
+  // "player" category left form.primary_sport empty, so the profile-edit
+  // Athletics tab rendered no position buttons.
   const { error } = await supabase.from("user_preferences").upsert(
     {
       user_id: playerUserId,
-      category: "player",
+      category: "player_details",
       data: PLAYER_PREFERENCES,
       updated_at: new Date().toISOString(),
     },
     { onConflict: "user_id,category" },
   );
   if (error) throw error;
-  console.log("✅ Seeded player user_preferences (primary_sport=Baseball)");
+  console.log(
+    "✅ Seeded player user_preferences (player_details, primary_sport=Baseball)",
+  );
 }
 
 async function seedNcesSampleSchools(supabase: SupabaseAdmin): Promise<void> {

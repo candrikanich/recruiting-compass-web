@@ -94,11 +94,11 @@ test.describe("Coaches CRUD — atomic lifecycle", () => {
       })
       .click();
     await page.waitForURL(/\/coaches\/[a-f0-9-]+/);
-    await expect(page.locator("h1").first()).toContainText(firstName);
+    await expect(page.getByRole("heading", { name: new RegExp(firstName) })).toBeVisible();
     await expect(page.locator(`text=${email}`)).toBeVisible();
 
     // 4. UPDATE — open Edit Coach modal, change first name, save
-    await page.getByRole("button", { name: "Edit coach information" }).click();
+    await page.getByRole("button", { name: "Edit Profile" }).click();
     const editDialog = page.getByRole("dialog", { name: "Edit Coach" });
     await expect(editDialog).toBeVisible();
     await editDialog.locator("#firstName").fill(updatedFirstName);
@@ -108,11 +108,11 @@ test.describe("Coaches CRUD — atomic lifecycle", () => {
     // 5. Reload — confirm persistence (mirrors the schools pilot)
     await page.reload();
     await page.waitForLoadState("domcontentloaded");
-    await expect(page.locator("h1").first()).toContainText(updatedFirstName);
+    await expect(page.getByRole("heading", { name: new RegExp(updatedFirstName) })).toBeVisible();
 
     // 6. DELETE — open confirm dialog (alertdialog role), click "Delete"
     await page
-      .getByRole("button", { name: "Delete this coach permanently" })
+      .getByRole("button", { name: "Delete Coach" })
       .click();
     const deleteDialog = page.getByRole("alertdialog");
     await expect(deleteDialog).toBeVisible();
