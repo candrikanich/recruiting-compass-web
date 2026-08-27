@@ -17,6 +17,8 @@ export interface ProfileLead {
   program: string | null;
   note: string | null;
   matched_coach_id: string | null;
+  status: "pending" | "resolved" | "dismissed";
+  interaction_id: string | null;
   created_at: string;
 }
 
