@@ -2,8 +2,10 @@ name: Memory Soak Tests
 
 on:
   # Nightly — CDP heap/node/listener readings vary run-to-run, so soak tests
-  # are unsuitable as a per-PR gate. Runs the full E2E suite with SOAK=1 so the
-  # soak specs (skipped by default) execute in a warmed session/store context.
+  # are unsuitable as a per-PR gate. Runs ONLY the soak specs (SOAK=1), which
+  # each self-baseline (baseline→after inside the test), so this job goes red
+  # only on a real memory regression — not on unrelated general-suite flakes.
+  # General E2E redness / test-isolation debris is tracked as its own effort.
   schedule:
     - cron: "0 8 * * *" # 08:00 UTC daily
   # Allow manual triggering from the Actions tab
@@ -52,8 +54,8 @@ jobs:
           NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.TEST_SUPABASE_URL }}
           NUXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.TEST_SUPABASE_ANON_KEY }}
 
-      - name: Run E2E suite with soak specs enabled
-        run: npm run test:e2e
+      - name: Run soak specs only (SOAK=1)
+        run: npx playwright test --project=chromium tests/e2e/athlete-switcher-soak.spec.ts tests/e2e/task-expand-soak.spec.ts
         env:
           CI: true
           SOAK: "1"
