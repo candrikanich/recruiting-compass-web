@@ -6,9 +6,9 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 // after failing to refresh an invalid/expired refresh token
 // ("AuthApiError: Invalid Refresh Token: Refresh Token Not Found").
 
-vi.mock("#app", () => ({
-  defineNuxtPlugin: (fn: (ctx: unknown) => unknown) => fn,
-}));
+// defineNuxtPlugin is a Nuxt auto-import in the source (used bare, not imported
+// from "#app") — inject it as a global that returns the plugin fn unwrapped.
+global.defineNuxtPlugin = (fn: (ctx: unknown) => unknown) => fn;
 
 let authStateCallback: (event: string) => void = () => {};
 const mockOnAuthStateChange = vi.fn((cb: (event: string) => void) => {
