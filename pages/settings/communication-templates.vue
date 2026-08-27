@@ -187,9 +187,12 @@ const editTemplate = (template: CommunicationTemplate) => {
   activeTab.value = "create";
 };
 
-const onTemplateSaved = () => {
+const onTemplateSaved = async () => {
   editingTemplate.value = null;
   activeTab.value = "list";
+  // TemplateEditor mutates its own useCommunicationTemplates() instance, so the
+  // page's list ref is stale after a create/edit — refetch to surface the row.
+  await loadUserTemplates();
 };
 
 const onEditCancel = () => {
@@ -199,9 +202,10 @@ const onEditCancel = () => {
   }
 };
 
-const onTemplateDeleted = () => {
+const onTemplateDeleted = async () => {
   editingTemplate.value = null;
   activeTab.value = "list";
+  await loadUserTemplates();
 };
 
 onMounted(() => {
