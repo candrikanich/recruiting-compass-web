@@ -1,106 +1,18 @@
-import { defineEventHandler, getHeader, getCookie, createError } from "h3";
-import { createServerSupabaseUserClient } from "~/server/utils/supabase";
-import { useLogger } from "~/server/utils/logger";
-import { requireUuidParam } from "~/server/utils/validation";
-import { requireAuth } from "~/server/utils/auth";
-
-interface BlockerInfo {
-  table: string;
-  count: number;
-  column: string;
-}
+import { defineEventHandler } from "h3";
+import { checkDeletionBlockers } from "~/server/utils/entityDeletion";
 
 /**
  * Diagnose what records are preventing coach deletion
  * GET /api/coaches/[id]/deletion-blockers
- *
- * Returns:
- * - blockers: Array of tables with records referencing this coach
- * - canDelete: boolean indicating if coach can be deleted
- * - message: User-friendly message explaining what's blocking deletion
  */
-export default defineEventHandler(async (event) => {
-  await requireAuth(event);
-
-  const coachId = requireUuidParam(event, "id");
-
-  const authHeader = getHeader(event, "authorization");
-  const token: string | null = authHeader?.startsWith("Bearer ")
-    ? authHeader.slice(7)
-    : getCookie(event, "sb-access-token") || null;
-  if (!token) {
-    throw createError({
-      statusCode: 401,
-      statusMessage: "Unauthorized - no authentication token",
-    });
-  }
-  const client = createServerSupabaseUserClient(token);
-  const logger = useLogger(event, "coaches/deletion-blockers");
-
-  // Verify the coach exists and is visible to this user (RLS-scoped) before
-  // counting child rows. A null row means missing or not owned — return 404
-  // rather than leaking a canDelete verdict for a resource the caller can't see.
-  const { data: coach, error: existenceError } = await client
-    .from("coaches")
-    .select("id")
-    .eq("id", coachId)
-    .maybeSingle();
-  if (existenceError) {
-    logger.error("Failed to verify coach existence", existenceError);
-    throw createError({
-      statusCode: 500,
-      statusMessage: "Failed to check deletion blockers",
-    });
-  }
-  if (!coach) {
-    throw createError({
-      statusCode: 404,
-      statusMessage: "Coach not found",
-    });
-  }
-
-  const blockers: BlockerInfo[] = [];
-
-  // Check interactions
-  const { count: interactionCount, error: interactionError } = await client
-    .from("interactions")
-    .select("*", { count: "exact", head: true })
-    .eq("coach_id", coachId);
-  if (interactionError) {
-    logger.warn("Failed to count coach interactions", interactionError);
-  }
-  if (interactionCount && interactionCount > 0) {
-    blockers.push({
-      table: "interactions",
-      count: interactionCount,
-      column: "coach_id",
-    });
-  }
-
-  // Check offers
-  const { count: offerCount, error: offerError } = await client
-    .from("offers")
-    .select("*", { count: "exact", head: true })
-    .eq("coach_id", coachId);
-  if (offerError) {
-    logger.warn("Failed to count coach offers", offerError);
-  }
-  if (offerCount && offerCount > 0) {
-    blockers.push({ table: "offers", count: offerCount, column: "coach_id" });
-  }
-
-  const canDelete = blockers.length === 0;
-
-  let message = "Coach can be deleted successfully.";
-  if (!canDelete) {
-    const blockerList = blockers.map((b) => `${b.count} ${b.table}`).join(", ");
-    message = `Cannot delete this coach. It has: ${blockerList}. Remove these records first.`;
-  }
-
-  return {
-    coachId,
-    canDelete,
-    blockers,
-    message,
-  };
-});
+export default defineEventHandler((event) =>
+  checkDeletionBlockers(event, {
+    entityTable: "coaches",
+    entityNoun: "coach",
+    idKey: "coachId",
+    children: [
+      { table: "interactions", column: "coach_id" },
+      { table: "offers", column: "coach_id" },
+    ],
+  }),
+);
