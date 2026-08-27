@@ -3321,7 +3321,8 @@ export type Database = {
         | "game"
         | "unofficial_visit"
         | "official_visit"
-        | "other";
+        | "other"
+        | "interest";
       notification_type:
         | "follow_up_reminder"
         | "deadline_alert"
@@ -3509,6 +3510,7 @@ export const Constants = {
         "unofficial_visit",
         "official_visit",
         "other",
+        "interest",
       ],
       notification_type: [
         "follow_up_reminder",

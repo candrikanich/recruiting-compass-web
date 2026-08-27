@@ -13,6 +13,7 @@ export const getTypeIcon = (type: string): string => {
     other: "i-heroicons-chat-bubble-left",
     tweet: "i-heroicons-chat-bubble-left",
     dm: "i-heroicons-chat-bubble-left",
+    interest: "i-heroicons-hand-raised",
   };
   return icons[type] || "i-heroicons-chat-bubble-left";
 };
@@ -32,6 +33,7 @@ export const getTypeIconBg = (type: string): string => {
     other: "bg-gray-100",
     tweet: "bg-sky-100",
     dm: "bg-violet-100",
+    interest: "bg-purple-100",
   };
   return bgs[type] || "bg-slate-100";
 };
@@ -51,6 +53,7 @@ export const getTypeIconColor = (type: string): string => {
     other: "text-gray-600",
     tweet: "text-sky-600",
     dm: "text-violet-600",
+    interest: "text-purple-600",
   };
   return colors[type] || "text-slate-600";
 };
@@ -70,6 +73,7 @@ export const formatType = (type: string): string => {
     other: "Other",
     tweet: "Tweet",
     dm: "Direct Message",
+    interest: "Interest",
   };
   return typeMap[type] || type;
 };
