@@ -146,7 +146,7 @@ interface Notification {
   title: string;
   message: string;
   scheduled_for: string;
-  read_at?: string;
+  read_at?: string | null;
 }
 
 interface Props {
