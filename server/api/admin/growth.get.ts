@@ -56,32 +56,39 @@ async function loadActivityRows(
   windowStart: Date,
   logger: ReturnType<typeof useLogger>,
 ): Promise<ActivityRow[]> {
-  const rows: ActivityRow[] = [];
-  for (const a of ACTIVITY) {
-    try {
-      // Minimal-column select — only the user + timestamp columns needed for dedup, no PII.
-      const { data, error } = await db
-        .from(a.table)
-        .select(`${a.user}, ${a.ts}`)
-        .gte(a.ts, windowStart.toISOString());
-      if (error) {
-        logger.warn("Activity read failed for table", {
+  // Each activity table is an independent read — issue them concurrently and
+  // flatten. Downstream (windowActiveCount/dailyActiveUsers) dedupes by
+  // user+day, so cross-table row order does not matter.
+  const perTable = await Promise.all(
+    ACTIVITY.map(async (a) => {
+      const out: ActivityRow[] = [];
+      try {
+        // Minimal-column select — only the user + timestamp columns needed for dedup, no PII.
+        const { data, error } = await db
+          .from(a.table)
+          .select(`${a.user}, ${a.ts}`)
+          .gte(a.ts, windowStart.toISOString());
+        if (error) {
+          logger.warn("Activity read failed for table", {
+            table: a.table,
+            error,
+          });
+          return out;
+        }
+        for (const r of (data ?? []) as unknown as Record<string, string>[]) {
+          if (r[a.user] && r[a.ts])
+            out.push({ userId: r[a.user], ts: r[a.ts] });
+        }
+      } catch (err) {
+        logger.warn("Activity read threw for table", {
           table: a.table,
-          error,
+          err: String(err),
         });
-        continue;
       }
-      for (const r of (data ?? []) as unknown as Record<string, string>[]) {
-        if (r[a.user] && r[a.ts]) rows.push({ userId: r[a.user], ts: r[a.ts] });
-      }
-    } catch (err) {
-      logger.warn("Activity read threw for table", {
-        table: a.table,
-        err: String(err),
-      });
-    }
-  }
-  return rows;
+      return out;
+    }),
+  );
+  return perTable.flat();
 }
 
 // Minimal shape `countOf` actually needs to filter a count-only query:
@@ -174,24 +181,28 @@ export default defineEventHandler(async (event): Promise<AdminGrowth> => {
   const activityFloorStart = new Date(
     now.getTime() - activityFloorDays * 86400000,
   );
-  const activityRows = await loadActivityRows(db, activityFloorStart, logger);
+  // Activity rows, funnel counts, and adoption user-ids are three independent
+  // reads — run them concurrently rather than in three sequential phases.
+  const [activityRows, [invitesSent, invitesAccepted, accounts, onboarded], featureUserIds] =
+    await Promise.all([
+      loadActivityRows(db, activityFloorStart, logger),
+      Promise.all([
+        countOf(db, "family_invitations", logger),
+        countOf(db, "family_invitations", logger, (q) =>
+          q.not("accepted_at", "is", null),
+        ),
+        countOf(db, "users", logger),
+        countOf(db, "users", logger, (q) => q.eq("onboarding_completed", true)),
+      ]),
+      loadAdoptionUserIds(db, logger),
+    ]);
+
   const activity = {
     dau: windowActiveCount(activityRows, dayAgo, now),
     wau: windowActiveCount(activityRows, weekAgo, now),
     mau: windowActiveCount(activityRows, monthAgo, now),
     dailyTrend: dailyActiveUsers(activityRows, windowStart, now),
   };
-
-  const [invitesSent, invitesAccepted, accounts, onboarded] = await Promise.all(
-    [
-      countOf(db, "family_invitations", logger),
-      countOf(db, "family_invitations", logger, (q) =>
-        q.not("accepted_at", "is", null),
-      ),
-      countOf(db, "users", logger),
-      countOf(db, "users", logger, (q) => q.eq("onboarding_completed", true)),
-    ],
-  );
 
   const funnel = funnelWithDropoff([
     { stage: "Invites sent", count: invitesSent },
@@ -200,8 +211,6 @@ export default defineEventHandler(async (event): Promise<AdminGrowth> => {
     { stage: "Onboarded", count: onboarded },
     { stage: "Active (30d)", count: activity.mau },
   ]);
-
-  const featureUserIds = await loadAdoptionUserIds(db, logger);
 
   return {
     funnel,
