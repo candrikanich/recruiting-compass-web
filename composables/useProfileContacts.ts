@@ -1,5 +1,6 @@
 // composables/useProfileContacts.ts
 import { ref, onMounted } from "vue";
+import { useAuthFetch } from "~/composables/useAuthFetch";
 import { createClientLogger } from "~/utils/logger";
 
 const logger = createClientLogger("profile-contacts");
@@ -31,6 +32,7 @@ interface ProfileContactsResponse {
 }
 
 export function useProfileContacts() {
+  const { $fetchAuth } = useAuthFetch();
   const leads = ref<ProfileLead[]>([]);
   const counts = ref<ProfileContactCounts>({
     interestThisMonth: 0,
@@ -44,7 +46,7 @@ export function useProfileContacts() {
     loading.value = true;
     error.value = null;
     try {
-      const data = await $fetch<ProfileContactsResponse>(
+      const data = await $fetchAuth<ProfileContactsResponse>(
         "/api/player/profile/contacts",
       );
       leads.value = data.leads;
