@@ -96,3 +96,10 @@ describe("interactionFormatters", () => {
     });
   });
 });
+
+describe("interest interaction type", () => {
+  it("formats interest with a label and a non-default icon", () => {
+    expect(formatType("interest")).toBe("Interest");
+    expect(getTypeIcon("interest")).toBe("i-heroicons-hand-raised");
+  });
+});

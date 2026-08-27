@@ -4,6 +4,12 @@ definePageMeta({ layout: "admin", middleware: ["auth", "admin"] });
 
 const { rows, total, loading, error, fetchAuditLog } = useAdminAuditLog();
 
+// AdminDataTable expects a generic row shape; AdminAuditRow rows are rendered
+// via typed cell slots, so widen for the prop binding only.
+const tableRows = computed(
+  () => rows.value as unknown as Record<string, unknown>[],
+);
+
 const columns = [
   { key: "created_at", label: "When" },
   { key: "actor_admin_id", label: "Admin" },
@@ -21,7 +27,7 @@ onMounted(() => fetchAuditLog({ limit: 100 }));
     </h1>
     <AdminDataTable
       :columns="columns"
-      :rows="rows"
+      :rows="tableRows"
       :loading="loading"
       :error="error"
     >

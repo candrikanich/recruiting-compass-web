@@ -1,177 +1,31 @@
-import { defineEventHandler, createError, getHeader, getCookie } from "h3";
-import { createServerSupabaseUserClient } from "~/server/utils/supabase";
-import { requireAuth } from "~/server/utils/auth";
-import { requireUuidParam } from "~/server/utils/validation";
-import { useLogger } from "~/server/utils/logger";
-
-interface BlockerInfo {
-  table: string;
-  count: number;
-  column: string;
-}
+import { defineEventHandler } from "h3";
+import { checkDeletionBlockers } from "~/server/utils/entityDeletion";
 
 /**
  * Diagnose what records are preventing school deletion
  * GET /api/schools/[id]/deletion-blockers
- *
- * Returns:
- * - blockers: Array of tables with records referencing this school
- * - canDelete: boolean indicating if school can be deleted
- * - message: User-friendly message explaining what's blocking deletion
  */
-export default defineEventHandler(async (event) => {
-  const logger = useLogger(event, "schools/deletion-blockers");
-  await requireAuth(event);
-  const schoolId = requireUuidParam(event, "id");
-
-  const authHeader = getHeader(event, "authorization");
-  const token: string | null = authHeader?.startsWith("Bearer ")
-    ? authHeader.slice(7)
-    : getCookie(event, "sb-access-token") || null;
-  if (!token) {
-    throw createError({
-      statusCode: 401,
-      statusMessage: "Unauthorized - no authentication token",
-    });
-  }
-  const client = createServerSupabaseUserClient(token);
-
-  // Verify the school exists and is visible to this user (RLS-scoped) before
-  // counting child rows. A null row means missing or not owned — return 404
-  // rather than leaking a canDelete verdict for a resource the caller can't see.
-  const { data: school, error: existenceError } = await client
-    .from("schools")
-    .select("id")
-    .eq("id", schoolId)
-    .maybeSingle();
-  if (existenceError) {
-    logger.error("Failed to verify school existence", existenceError);
-    throw createError({
-      statusCode: 500,
-      statusMessage: "Failed to check deletion blockers",
-    });
-  }
-  if (!school) {
-    throw createError({
-      statusCode: 404,
-      statusMessage: "School not found",
-    });
-  }
-
-  const blockers: BlockerInfo[] = [];
-
-  // Check coaches
-  const { count: coachCount, error: coachError } = await client
-    .from("coaches")
-    .select("*", { count: "exact", head: true })
-    .eq("school_id", schoolId);
-  if (coachError) {
-    logger.warn("Failed to count school coaches", coachError);
-  }
-  if (coachCount && coachCount > 0) {
-    blockers.push({ table: "coaches", count: coachCount, column: "school_id" });
-  }
-
-  // Check interactions
-  const { count: interactionCount, error: interactionError } = await client
-    .from("interactions")
-    .select("*", { count: "exact", head: true })
-    .eq("school_id", schoolId);
-  if (interactionError) {
-    logger.warn("Failed to count school interactions", interactionError);
-  }
-  if (interactionCount && interactionCount > 0) {
-    blockers.push({
-      table: "interactions",
-      count: interactionCount,
-      column: "school_id",
-    });
-  }
-
-  // Check offers
-  const { count: offerCount, error: offerError } = await client
-    .from("offers")
-    .select("*", { count: "exact", head: true })
-    .eq("school_id", schoolId);
-  if (offerError) {
-    logger.warn("Failed to count school offers", offerError);
-  }
-  if (offerCount && offerCount > 0) {
-    blockers.push({ table: "offers", count: offerCount, column: "school_id" });
-  }
-
-  // Check school_status_history
-  const { count: historyCount, error: historyError } = await client
-    .from("school_status_history")
-    .select("*", { count: "exact", head: true })
-    .eq("school_id", schoolId);
-  if (historyError) {
-    logger.warn("Failed to count school status history", historyError);
-  }
-  if (historyCount && historyCount > 0) {
-    blockers.push({
-      table: "school_status_history",
-      count: historyCount,
-      column: "school_id",
-    });
-  }
-
-  // Check documents
-  const { count: docCount, error: docError } = await client
-    .from("documents")
-    .select("*", { count: "exact", head: true })
-    .eq("school_id", schoolId);
-  if (docError) {
-    logger.warn("Failed to count school documents", docError);
-  }
-  if (docCount && docCount > 0) {
-    blockers.push({
-      table: "documents",
-      count: docCount,
-      column: "school_id",
-    });
-  }
-
-  // Check events
-  const { count: eventCount, error: eventError } = await client
-    .from("events")
-    .select("*", { count: "exact", head: true })
-    .eq("school_id", schoolId);
-  if (eventError) {
-    logger.warn("Failed to count school events", eventError);
-  }
-  if (eventCount && eventCount > 0) {
-    blockers.push({ table: "events", count: eventCount, column: "school_id" });
-  }
-
-  // Check suggestions
-  const { count: suggestionCount, error: suggestionError } = await client
-    .from("suggestion")
-    .select("*", { count: "exact", head: true })
-    .eq("related_school_id", schoolId);
-  if (suggestionError) {
-    logger.warn("Failed to count school suggestions", suggestionError);
-  }
-  if (suggestionCount && suggestionCount > 0) {
-    blockers.push({
-      table: "suggestion",
-      count: suggestionCount,
-      column: "related_school_id",
-    });
-  }
-
-  const canDelete = blockers.length === 0;
-
-  let message = "School can be deleted successfully.";
-  if (!canDelete) {
-    const blockerList = blockers.map((b) => `${b.count} ${b.table}`).join(", ");
-    message = `Cannot delete this school. It has: ${blockerList}. Remove these records first.`;
-  }
-
-  return {
-    schoolId,
-    canDelete,
-    blockers,
-    message,
-  };
-});
+export default defineEventHandler((event) =>
+  checkDeletionBlockers(event, {
+    entityTable: "schools",
+    entityNoun: "school",
+    idKey: "schoolId",
+    children: [
+      { table: "coaches", column: "school_id" },
+      { table: "interactions", column: "school_id" },
+      { table: "offers", column: "school_id" },
+      {
+        table: "school_status_history",
+        column: "school_id",
+        label: "status history",
+      },
+      { table: "documents", column: "school_id" },
+      { table: "events", column: "school_id" },
+      {
+        table: "suggestion",
+        column: "related_school_id",
+        label: "suggestions",
+      },
+    ],
+  }),
+);

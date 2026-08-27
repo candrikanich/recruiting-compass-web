@@ -17,6 +17,8 @@ export interface ProfileLead {
   program: string | null;
   note: string | null;
   matched_coach_id: string | null;
+  status: "pending" | "resolved" | "dismissed";
+  interaction_id: string | null;
   created_at: string;
 }
 
@@ -59,7 +61,31 @@ export function useProfileContacts() {
     }
   }
 
+  async function resolveLead(id: string, interactionId: string): Promise<void> {
+    await $fetchAuth(`/api/player/profile/contacts/${id}/resolve`, {
+      method: "POST",
+      body: { status: "resolved", interactionId },
+    });
+    await fetchContacts();
+  }
+
+  async function dismissLead(id: string): Promise<void> {
+    await $fetchAuth(`/api/player/profile/contacts/${id}/resolve`, {
+      method: "POST",
+      body: { status: "dismissed" },
+    });
+    await fetchContacts();
+  }
+
   onMounted(() => fetchContacts());
 
-  return { leads, counts, loading, error, fetchContacts };
+  return {
+    leads,
+    counts,
+    loading,
+    error,
+    fetchContacts,
+    resolveLead,
+    dismissLead,
+  };
 }

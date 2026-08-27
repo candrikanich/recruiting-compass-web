@@ -8,6 +8,8 @@ import type {
 } from "~/composables/useProfileContacts";
 
 const mockFetchContacts = vi.fn();
+const mockResolveLead = vi.fn();
+const mockDismissLead = vi.fn().mockResolvedValue(undefined);
 const state = {
   leads: ref<ProfileLead[]>([]),
   counts: ref<ProfileContactCounts>({
@@ -26,6 +28,8 @@ vi.mock("~/composables/useProfileContacts", () => ({
     loading: state.loading,
     error: state.error,
     fetchContacts: mockFetchContacts,
+    resolveLead: mockResolveLead,
+    dismissLead: mockDismissLead,
   }),
 }));
 
@@ -37,6 +41,8 @@ const stubs = {
     props: ["error"],
   },
   DesignSystemBadge: { template: "<span><slot /></span>", props: ["color", "variant", "size"] },
+  AssignCoachModal: true,
+  NuxtLink: { template: "<a :href=\"to\"><slot /></a>", props: ["to"] },
 };
 
 const sampleLead: ProfileLead = {
@@ -49,6 +55,8 @@ const sampleLead: ProfileLead = {
   program: "Baseball",
   note: "Loved your highlight film and would like to schedule a call.",
   matched_coach_id: null,
+  status: "pending",
+  interaction_id: null,
   created_at: "2026-08-01T00:00:00.000Z",
 };
 
@@ -101,5 +109,49 @@ describe("ProfileInbox", () => {
     const w = mount(ProfileInbox, { global: { stubs } });
     expect(w.text()).toContain("EMPTY");
     expect(w.text()).toContain("No leads yet");
+  });
+
+  it("shows a Needs coach badge and an Assign coach action for pending leads", () => {
+    state.leads.value = [sampleLead];
+    const w = mount(ProfileInbox, { global: { stubs } });
+    expect(w.text()).toContain("Needs coach");
+    expect(w.find('[data-test="assign-coach-lead-1"]').exists()).toBe(true);
+  });
+
+  it("calls dismissLead when Dismiss is clicked", async () => {
+    state.leads.value = [sampleLead];
+    const w = mount(ProfileInbox, { global: { stubs } });
+    await w.get('[data-test="dismiss-lead-1"]').trigger("click");
+    expect(mockDismissLead).toHaveBeenCalledWith("lead-1");
+  });
+
+  it("shows a Tracked badge and a link to the interaction for resolved leads", () => {
+    state.leads.value = [
+      { ...sampleLead, status: "resolved", interaction_id: "interaction-9" },
+    ];
+    const w = mount(ProfileInbox, { global: { stubs } });
+    expect(w.text()).toContain("Tracked");
+    const link = w.find('a[href="/interactions/interaction-9"]');
+    expect(link.exists()).toBe(true);
+  });
+
+  it("hides dismissed leads by default and shows them when the filter is switched to All", async () => {
+    state.leads.value = [{ ...sampleLead, status: "dismissed" }];
+    const w = mount(ProfileInbox, { global: { stubs } });
+    expect(w.text()).not.toContain("Coach Smith");
+
+    await w.get('[data-test="filter-all"]').trigger("click");
+    expect(w.text()).toContain("Coach Smith");
+  });
+
+  it("opens AssignCoachModal for the clicked lead when Assign coach is clicked", async () => {
+    state.leads.value = [sampleLead];
+    const w = mount(ProfileInbox, { global: { stubs } });
+    expect(w.findComponent({ name: "AssignCoachModal" }).exists()).toBe(
+      false,
+    );
+
+    await w.get('[data-test="assign-coach-lead-1"]').trigger("click");
+    expect(w.findComponent({ name: "AssignCoachModal" }).exists()).toBe(true);
   });
 });

@@ -1,5 +1,5 @@
-import { ref } from "vue";
-import { useAdminAuthHeaders } from "~/composables/useAdminAuthHeaders";
+import { computed } from "vue";
+import { useAdminResource } from "~/composables/useAdminResource";
 import type { AdminAuditRow } from "~/server/api/admin/audit-log.get";
 
 export type { AdminAuditRow };
@@ -11,45 +11,35 @@ export interface FetchAuditLogOptions {
   actor?: string;
 }
 
+interface AuditLogPayload {
+  rows: AdminAuditRow[];
+  total: number;
+}
+
 export function useAdminAuditLog() {
-  const { getAuthHeaders } = useAdminAuthHeaders();
-
-  const rows = ref<AdminAuditRow[]>([]);
-  const total = ref(0);
-  const loading = ref(false);
-  const error = ref<string | null>(null);
-
-  const fetchAuditLog = async (opts: FetchAuditLogOptions = {}) => {
-    loading.value = true;
-    error.value = null;
-
-    try {
-      const headers = await getAuthHeaders();
+  const { data, loading, error, load } = useAdminResource<
+    AuditLogPayload,
+    [FetchAuditLogOptions?]
+  >(
+    (opts = {}) => {
       const params = new URLSearchParams();
       if (opts.limit !== undefined) params.set("limit", String(opts.limit));
       if (opts.offset !== undefined) params.set("offset", String(opts.offset));
       if (opts.action) params.set("action", opts.action);
       if (opts.actor) params.set("actor", opts.actor);
-
       const qs = params.toString();
-      const res = await fetch(`/api/admin/audit-log${qs ? `?${qs}` : ""}`, {
-        headers,
-      });
-      if (!res.ok) throw new Error(`Failed to load audit log: ${res.status}`);
+      return `/api/admin/audit-log${qs ? `?${qs}` : ""}`;
+    },
+    {
+      failLabel: "Failed to load audit log",
+      fallbackMessage: "Could not load the audit log.",
+    },
+  );
 
-      const data = (await res.json()) as {
-        rows: AdminAuditRow[];
-        total: number;
-      };
-      rows.value = data.rows;
-      total.value = data.total;
-    } catch (err) {
-      error.value =
-        err instanceof Error ? err.message : "Could not load the audit log.";
-    } finally {
-      loading.value = false;
-    }
-  };
+  const rows = computed<AdminAuditRow[]>(() => data.value?.rows ?? []);
+  const total = computed(() => data.value?.total ?? 0);
+
+  const fetchAuditLog = (opts: FetchAuditLogOptions = {}) => load(opts);
 
   return { rows, total, loading, error, fetchAuditLog };
 }

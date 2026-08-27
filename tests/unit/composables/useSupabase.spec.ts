@@ -41,6 +41,11 @@ vi.mock("#app", () => ({
   })),
 }));
 
+// tests/setup.ts globally stubs this composable (returns a static mock client)
+// to keep other suites off the network. This file exercises the REAL composable
+// — its onAuthStateChange/TOKEN_REFRESHED handling — so undo that global mock here.
+vi.unmock("~/composables/useSupabase");
+
 import { useSupabase } from "~/composables/useSupabase";
 
 describe("useSupabase", () => {

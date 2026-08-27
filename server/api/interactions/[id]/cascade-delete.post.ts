@@ -1,17 +1,10 @@
-import {
-  defineEventHandler,
-  createError,
-  readBody,
-  getHeader,
-  getCookie,
-} from "h3";
-import { z } from "zod";
+import { defineEventHandler, createError } from "h3";
 import { createServerSupabaseUserClient } from "~/server/utils/supabase";
 import { requireAuth } from "~/server/utils/auth";
+import { extractRequestToken } from "~/server/utils/requestToken";
 import { useLogger } from "~/server/utils/logger";
 import { requireUuidParam } from "~/server/utils/validation";
-
-const cascadeDeleteSchema = z.object({ confirmDelete: z.boolean().optional() });
+import { requireConfirmDelete } from "~/server/utils/entityDeletion";
 
 /**
  * Cascade delete an interaction and all related records
@@ -38,35 +31,9 @@ export default defineEventHandler(async (event) => {
   await requireAuth(event);
   const interactionId = requireUuidParam(event, "id");
 
-  let body: z.infer<typeof cascadeDeleteSchema>;
-  try {
-    body = cascadeDeleteSchema.parse(await readBody(event).catch(() => ({})));
-  } catch {
-    throw createError({
-      statusCode: 400,
-      statusMessage: "Invalid request body",
-    });
-  }
+  await requireConfirmDelete(event);
 
-  const { confirmDelete } = body;
-  if (!confirmDelete) {
-    throw createError({
-      statusCode: 400,
-      statusMessage:
-        'Must set "confirmDelete": true in request body to proceed',
-    });
-  }
-
-  const authHeader = getHeader(event, "authorization");
-  const token: string | null = authHeader?.startsWith("Bearer ")
-    ? authHeader.slice(7)
-    : getCookie(event, "sb-access-token") || null;
-  if (!token) {
-    throw createError({
-      statusCode: 401,
-      statusMessage: "Unauthorized - no authentication token",
-    });
-  }
+  const token = extractRequestToken(event);
   const client = createServerSupabaseUserClient(token);
   const deleted: Record<string, number> = {};
 
