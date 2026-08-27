@@ -32,7 +32,10 @@
               aria-hidden="true"
             />
           </NuxtLink>
-          <NotificationCenter />
+          <NotificationCenter
+            :notifications="notifications"
+            @mark-as-read="handleMarkAsRead"
+          />
           <HeaderProfile class="hidden md:block" />
 
           <!-- Mobile Menu Button -->
@@ -157,10 +160,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { useRoute } from "vue-router";
 import { useUserStore } from "~/stores/user";
 import { useAuthLifecycle } from "~/composables/useAuthLifecycle";
+import { useNotifications } from "~/composables/useNotifications";
 import AthleteSwitcher from "~/components/AthleteSwitcher.vue";
 import HeaderNav from "~/components/Header/HeaderNav.vue";
 import HeaderProfile from "~/components/Header/HeaderProfile.vue";
@@ -171,6 +175,22 @@ const authLifecycle = useAuthLifecycle();
 const userStore = useUserStore();
 const user = computed(() => userStore.user || null);
 const isMobileMenuOpen = ref(false);
+
+// The header bell is presentational — it renders whatever `notifications` it's
+// handed. Own the fetch here so the dropdown actually shows the user's items.
+// fetchNotifications no-ops until the user is in the store, so fetch once the
+// user resolves (it may hydrate after mount).
+const { notifications, fetchNotifications, markAsRead } = useNotifications();
+watch(
+  user,
+  (current) => {
+    if (current) fetchNotifications({ limit: 10 });
+  },
+  { immediate: true },
+);
+const handleMarkAsRead = (id: string) => {
+  markAsRead(id);
+};
 
 const navItems = [
   { to: "/dashboard", label: "Dashboard", icon: "i-heroicons-home" },
