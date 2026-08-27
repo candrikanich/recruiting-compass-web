@@ -8,7 +8,7 @@
       class="sticky top-16 z-30 border-b border-slate-200 bg-white/90 backdrop-blur-lg"
     >
       <div
-        class="mx-auto flex max-w-4xl items-center justify-between px-4 py-3 sm:px-6"
+        class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6"
       >
         <div class="flex items-center gap-3">
           <NuxtLink
@@ -46,7 +46,7 @@
       </div>
     </div>
 
-    <main class="mx-auto max-w-4xl px-4 py-6 sm:px-6">
+    <main class="mx-auto max-w-7xl px-4 py-6 sm:px-6">
       <!-- Profile Completeness Hero -->
       <div
         class="mb-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
@@ -174,23 +174,26 @@
           v-show="currentTab === 'public-profile'"
           class="animate-in fade-in slide-in-from-bottom-2 space-y-6 duration-300"
         >
-          <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            <ProfileSetup />
-            <ProfilePreview
-              v-if="playerProfile"
-              :settings="playerProfile"
-              :player-name="userStore.user?.full_name ?? 'Athlete'"
-              :details="form as unknown as Record<string, unknown>"
-              :schools="previewSchools"
-            />
-            <div
-              v-else-if="profileLoading"
-              class="animate-pulse rounded-xl bg-gray-50 p-4"
-            >
-              <div class="mb-4 h-3 w-32 rounded bg-gray-200" />
-              <div class="h-24 rounded-xl bg-gray-200" />
-            </div>
+          <ProfileSetup
+            v-if="!profileLoading"
+            :details="form as unknown as PlayerDetails"
+            :schools="previewSchools"
+          />
+          <div
+            v-else
+            class="animate-pulse rounded-xl bg-gray-50 p-4"
+          >
+            <div class="mb-4 h-3 w-32 rounded bg-gray-200" />
+            <div class="h-24 rounded-xl bg-gray-200" />
           </div>
+        </div>
+
+        <!-- TAB: INBOX -->
+        <div
+          v-show="currentTab === 'inbox'"
+          class="animate-in fade-in slide-in-from-bottom-2 space-y-6 duration-300"
+        >
+          <ProfileInbox />
         </div>
 
         <!-- TAB: HISTORY -->
@@ -339,6 +342,7 @@
 import { ref, computed, onMounted } from "vue";
 import { useRoute } from "#app";
 import { usePlayerProfile } from "~/composables/usePlayerProfile";
+import type { PlayerDetails } from "~/types/models";
 import { useFormValidation } from "~/composables/useFormValidation";
 import { usePlayerDetailsForm } from "~/composables/usePlayerDetailsForm";
 import { useUserStore } from "~/stores/user";
@@ -370,6 +374,7 @@ const validTabs = [
   "academics",
   "history",
   "public-profile",
+  "inbox",
 ];
 const currentTab = ref(
   validTabs.includes(route.query.tab as string)
@@ -386,9 +391,10 @@ const tabs = [
   },
   { id: "history", name: "History", icon: "i-heroicons-clock" },
   { id: "public-profile", name: "Public Profile", icon: "i-heroicons-share" },
+  { id: "inbox", name: "Inbox", icon: "i-heroicons-inbox-arrow-down" },
 ];
 
-const { profile: playerProfile, loading: profileLoading } = usePlayerProfile();
+const { loading: profileLoading } = usePlayerProfile();
 
 const {
   isLoading,

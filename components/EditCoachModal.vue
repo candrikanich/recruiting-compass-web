@@ -178,6 +178,30 @@
               />
             </div>
 
+            <!-- Source -->
+            <div>
+              <label
+                for="source"
+                class="mb-1 block text-sm font-medium text-slate-500"
+              >
+                Source
+              </label>
+              <input
+                id="source"
+                v-model="form.source"
+                type="text"
+                placeholder="e.g., Camp, LinkedIn, Referral"
+                class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2 text-slate-900 focus:ring-2 focus:ring-blue-500/20"
+              />
+            </div>
+
+            <!-- Tags -->
+            <CoachTagsCard
+              :tags="form.tags"
+              @add="handleAddTag"
+              @remove="handleRemoveTag"
+            />
+
             <!-- Actions -->
             <div class="flex gap-4 border-t border-slate-200 pt-4">
               <button
@@ -205,13 +229,11 @@
 <script setup lang="ts">
 import { reactive, ref, watch, toRefs, nextTick } from "vue";
 import { useFocusTrap } from "~/composables/useFocusTrap";
+import CoachTagsCard from "~/components/Coach/detail/CoachTagsCard.vue";
 import type { Coach } from "~/types/models";
 import { createClientLogger } from "~/utils/logger";
-import {
-  formatPhoneDisplay,
-  formatPhoneNational,
-  toStoredPhone,
-} from "~/utils/phone";
+import { coachSchema } from "~/utils/validation/schemas";
+import { formatPhoneDisplay, formatPhoneNational } from "~/utils/phone";
 
 const logger = createClientLogger("EditCoachModal");
 
@@ -247,7 +269,19 @@ const form = reactive({
   instagram_handle: props.coach.instagram_handle || "",
   role: props.coach.role,
   notes: props.coach.notes || "",
+  source: props.coach.source || "",
+  tags: [...(props.coach.tags || [])],
 });
+
+const handleAddTag = (tag: string) => {
+  if (!form.tags.includes(tag)) {
+    form.tags = [...form.tags, tag];
+  }
+};
+
+const handleRemoveTag = (tag: string) => {
+  form.tags = form.tags.filter((t) => t !== tag);
+};
 
 // Watch for changes to coach prop and update form
 const { coach } = toRefs(props);
@@ -265,6 +299,8 @@ watch(
         instagram_handle: newCoach.instagram_handle || "",
         role: newCoach.role,
         notes: newCoach.notes || "",
+        source: newCoach.source || "",
+        tags: [...(newCoach.tags || [])],
       });
     }
   },
@@ -272,12 +308,25 @@ watch(
 );
 
 const handleSubmit = async () => {
+  const parsed = coachSchema.safeParse({
+    ...form,
+    source: form.source || null,
+  });
+  if (!parsed.success) {
+    logger.error("Coach edit validation failed", parsed.error.flatten());
+    return;
+  }
+
   loading.value = true;
   try {
-    const updated = await props.updateFn(props.coach.id, {
-      ...form,
-      phone: toStoredPhone(form.phone),
-    });
+    // school_id isn't part of this form; edit never reassigns a coach's school.
+    // coachSchema's shared field schemas admit `null` for parity with other
+    // forms, but this form's inputs never produce it — safe to narrow here.
+    const { school_id: _schoolId, ...updatePayload } = parsed.data;
+    const updated = await props.updateFn(
+      props.coach.id,
+      updatePayload as Partial<Coach>,
+    );
     emit("updated", updated);
     handleClose();
   } catch (err) {

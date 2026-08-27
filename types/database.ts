@@ -1896,51 +1896,75 @@ export type Database = {
       };
       player_profiles: {
         Row: {
+          awards: Json;
+          banner_url: string | null;
           bio: string | null;
+          commitment_status: string;
+          committed_school_id: string | null;
           created_at: string;
           family_unit_id: string;
           hash_slug: string;
           header_color: string;
           id: string;
           is_published: boolean;
+          looking_for: string | null;
+          section_config: Json;
           show_academics: boolean;
           show_athletic: boolean;
           show_film: boolean;
+          show_metrics: boolean;
           show_schools: boolean;
           updated_at: string;
           user_id: string;
+          values_tags: string[];
           vanity_slug: string | null;
         };
         Insert: {
+          awards?: Json;
+          banner_url?: string | null;
           bio?: string | null;
+          commitment_status?: string;
+          committed_school_id?: string | null;
           created_at?: string;
           family_unit_id: string;
           hash_slug: string;
           header_color?: string;
           id?: string;
           is_published?: boolean;
+          looking_for?: string | null;
+          section_config?: Json;
           show_academics?: boolean;
           show_athletic?: boolean;
           show_film?: boolean;
+          show_metrics?: boolean;
           show_schools?: boolean;
           updated_at?: string;
           user_id: string;
+          values_tags?: string[];
           vanity_slug?: string | null;
         };
         Update: {
+          awards?: Json;
+          banner_url?: string | null;
           bio?: string | null;
+          commitment_status?: string;
+          committed_school_id?: string | null;
           created_at?: string;
           family_unit_id?: string;
           hash_slug?: string;
           header_color?: string;
           id?: string;
           is_published?: boolean;
+          looking_for?: string | null;
+          section_config?: Json;
           show_academics?: boolean;
           show_athletic?: boolean;
           show_film?: boolean;
+          show_metrics?: boolean;
           show_schools?: boolean;
           updated_at?: string;
           user_id?: string;
+          values_tags?: string[];
           vanity_slug?: string | null;
         };
         Relationships: [
@@ -1997,6 +2021,89 @@ export type Database = {
             columns: ["user_id"];
             isOneToOne: false;
             referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      profile_contacts: {
+        Row: {
+          coach_email: string | null;
+          coach_name: string;
+          coach_title: string | null;
+          created_at: string;
+          family_unit_id: string;
+          id: string;
+          ip: string | null;
+          matched_coach_id: string | null;
+          note: string | null;
+          player_user_id: string | null;
+          program: string | null;
+          school_id: string | null;
+          school_name: string | null;
+          type: string;
+          user_agent: string | null;
+        };
+        Insert: {
+          coach_email?: string | null;
+          coach_name: string;
+          coach_title?: string | null;
+          created_at?: string;
+          family_unit_id: string;
+          id?: string;
+          ip?: string | null;
+          matched_coach_id?: string | null;
+          note?: string | null;
+          player_user_id?: string | null;
+          program?: string | null;
+          school_id?: string | null;
+          school_name?: string | null;
+          type?: string;
+          user_agent?: string | null;
+        };
+        Update: {
+          coach_email?: string | null;
+          coach_name?: string;
+          coach_title?: string | null;
+          created_at?: string;
+          family_unit_id?: string;
+          id?: string;
+          ip?: string | null;
+          matched_coach_id?: string | null;
+          note?: string | null;
+          player_user_id?: string | null;
+          program?: string | null;
+          school_id?: string | null;
+          school_name?: string | null;
+          type?: string;
+          user_agent?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "profile_contacts_family_unit_id_fkey";
+            columns: ["family_unit_id"];
+            isOneToOne: false;
+            referencedRelation: "family_units";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "profile_contacts_matched_coach_id_fkey";
+            columns: ["matched_coach_id"];
+            isOneToOne: false;
+            referencedRelation: "coaches";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "profile_contacts_player_user_id_fkey";
+            columns: ["player_user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "profile_contacts_school_id_fkey";
+            columns: ["school_id"];
+            isOneToOne: false;
+            referencedRelation: "schools";
             referencedColumns: ["id"];
           },
         ];

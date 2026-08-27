@@ -1,32 +1,51 @@
 <!-- components/profile/ProfileSetup.vue -->
 <script setup lang="ts">
 import { reactive, ref, watch } from "vue";
+import { useDebounceFn } from "@vueuse/core";
 import { usePlayerProfile } from "~/composables/usePlayerProfile";
+import { resolveSections, deriveLegacyVisibility } from "~/utils/profile/sectionConfig";
+import type {
+  CommitmentStatus,
+  PlayerDetails,
+  PlayerProfile,
+  ProfileAward,
+  ProfileSection,
+} from "~/types/models";
+import ShareProfilePanel from "~/components/profile/setup/ShareProfilePanel.vue";
+import ProfileAppearanceEditor from "~/components/profile/setup/ProfileAppearanceEditor.vue";
+import ProfileContentEditor from "~/components/profile/setup/ProfileContentEditor.vue";
+import SectionConfigEditor from "~/components/profile/setup/SectionConfigEditor.vue";
+import CommitmentStatusControl from "~/components/profile/setup/CommitmentStatusControl.vue";
+import ProfileMiniPreview from "~/components/profile/setup/ProfileMiniPreview.vue";
+
+const props = defineProps<{
+  details: PlayerDetails;
+  schools: { id: string; name: string }[];
+}>();
 
 const { profile, loading, error, publicUrl, updateProfile, fetchProfile } =
   usePlayerProfile();
 
-const HEADER_COLORS = [
-  { key: "slate", label: "Slate", swatch: "bg-slate-700" },
-  { key: "blue", label: "Blue", swatch: "bg-blue-700" },
-  { key: "indigo", label: "Indigo", swatch: "bg-indigo-700" },
-  { key: "violet", label: "Violet", swatch: "bg-violet-700" },
-  { key: "rose", label: "Rose", swatch: "bg-rose-700" },
-  { key: "amber", label: "Amber", swatch: "bg-amber-600" },
-  { key: "emerald", label: "Emerald", swatch: "bg-emerald-700" },
-  { key: "teal", label: "Teal", swatch: "bg-teal-700" },
-] as const;
-
-// Local draft — synced from store, saved on blur/toggle
+// Local draft — synced from store, saved as each control changes so the
+// live preview updates immediately while persistence flows through
+// updateProfile(). Never mutate the Pinia store directly.
 const draft = reactive({
   bio: "",
   vanity_slug: "",
-  show_academics: true,
-  show_athletic: true,
-  show_film: true,
-  show_schools: true,
   is_published: false,
   header_color: "slate",
+  banner_url: null as string | null,
+  looking_for: "",
+  commitment_status: "uncommitted" as CommitmentStatus,
+  committed_school_id: null as string | null,
+  awards: [] as ProfileAward[],
+  values_tags: [] as string[],
+  section_config: [] as ProfileSection[],
+  show_metrics: true,
+  show_athletic: true,
+  show_film: true,
+  show_academics: true,
+  show_schools: true,
 });
 
 watch(
@@ -35,12 +54,25 @@ watch(
     if (!p) return;
     draft.bio = p.bio ?? "";
     draft.vanity_slug = p.vanity_slug ?? "";
-    draft.show_academics = p.show_academics;
-    draft.show_athletic = p.show_athletic;
-    draft.show_film = p.show_film;
-    draft.show_schools = p.show_schools;
     draft.is_published = p.is_published;
     draft.header_color = p.header_color ?? "slate";
+    draft.banner_url = p.banner_url ?? null;
+    draft.looking_for = p.looking_for ?? "";
+    draft.commitment_status = p.commitment_status ?? "uncommitted";
+    draft.committed_school_id = p.committed_school_id ?? null;
+    draft.awards = p.awards ?? [];
+    draft.values_tags = p.values_tags ?? [];
+    draft.section_config = resolveSections({
+      section_config: p.section_config ?? [],
+      show_metrics: p.show_metrics,
+      show_film: p.show_film,
+      show_academics: p.show_academics,
+    });
+    draft.show_metrics = p.show_metrics;
+    draft.show_athletic = p.show_athletic;
+    draft.show_film = p.show_film;
+    draft.show_academics = p.show_academics;
+    draft.show_schools = p.show_schools;
   },
   { immediate: true },
 );
@@ -48,7 +80,7 @@ watch(
 const saveError = ref<string | null>(null);
 const saving = ref(false);
 
-async function save(field: Parameters<typeof updateProfile>[0]) {
+async function save(field: Partial<PlayerProfile>) {
   saving.value = true;
   saveError.value = null;
   try {
@@ -59,6 +91,40 @@ async function save(field: Parameters<typeof updateProfile>[0]) {
   } finally {
     saving.value = false;
   }
+}
+
+// Text fields persist without merging the result back into `draft` — the
+// server stores an empty bio/lookingFor as null, but ProfileContentEditor's
+// props are plain (non-nullable) strings, so draft.bio/looking_for must stay
+// "" locally rather than round-tripping to null.
+async function persistText(field: Partial<PlayerProfile>) {
+  saving.value = true;
+  saveError.value = null;
+  try {
+    await updateProfile(field);
+  } catch (err) {
+    saveError.value = err instanceof Error ? err.message : "Failed to save";
+  } finally {
+    saving.value = false;
+  }
+}
+
+const debouncedSaveBio = useDebounceFn((bio: string) => {
+  persistText({ bio: bio || null });
+}, 500);
+
+const debouncedSaveLookingFor = useDebounceFn((lookingFor: string) => {
+  persistText({ looking_for: lookingFor || null });
+}, 500);
+
+function onBioUpdate(value: string) {
+  draft.bio = value;
+  debouncedSaveBio(value);
+}
+
+function onLookingForUpdate(value: string) {
+  draft.looking_for = value;
+  debouncedSaveLookingFor(value);
 }
 
 const slugError = ref<string | null>(null);
@@ -80,13 +146,17 @@ function onSlugBlur() {
   }
 }
 
-function copyLink() {
-  if (publicUrl.value) navigator.clipboard.writeText(publicUrl.value);
+// Mirrors the server's reconcileVisibility: a section_config edit also
+// derives show_metrics/show_film/show_academics so the local draft (and the
+// live preview reading it) agrees with what the server will store, without
+// waiting for a reload.
+function onSectionConfigUpdate(sections: ProfileSection[]) {
+  save({ section_config: sections, ...deriveLegacyVisibility(sections) });
 }
 </script>
 
 <template>
-  <div v-if="loading" class="text-sm text-gray-400">
+  <div v-if="loading" class="text-sm text-brand-slate-400">
     Loading profile settings…
   </div>
 
@@ -100,157 +170,162 @@ function copyLink() {
     </button>
   </div>
 
-  <div v-else-if="profile" class="space-y-6">
-    <!-- Publish toggle -->
-    <div
-      class="flex items-center justify-between rounded-xl border p-4"
-      :class="
-        draft.is_published
-          ? 'border-green-200 bg-green-50'
-          : 'border-gray-200 bg-white'
-      "
+  <div v-else-if="profile" class="flex flex-col gap-6">
+    <!-- Workspace header bar (Figma 5:225): brand left, live-status + toggle right -->
+    <header
+      class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-brand-slate-200 bg-white px-5 py-3"
     >
-      <div>
-        <p class="text-sm font-medium text-gray-900">
-          {{
-            draft.is_published ? "Profile is live" : "Profile is unpublished"
-          }}
-        </p>
-        <p class="mt-0.5 text-xs text-gray-500">
-          {{
-            draft.is_published
-              ? "Coaches can view this profile via your sharing links."
-              : "Only you can see this. Publish to make it shareable."
-          }}
-        </p>
+      <div class="flex items-center gap-2 text-brand-slate-900">
+        <UIcon
+          name="i-heroicons-viewfinder-circle"
+          class="h-6 w-6"
+          aria-hidden="true"
+        />
+        <span class="font-semibold tracking-tight">RecruitingCompass Workspace</span>
       </div>
-      <button
-        class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors"
-        :class="draft.is_published ? 'bg-green-500' : 'bg-gray-300'"
-        @click="save({ is_published: !draft.is_published })"
+      <div
+        class="flex items-center gap-2.5 rounded-full px-3 py-1.5"
+        :class="draft.is_published ? 'bg-brand-emerald-50' : 'bg-brand-slate-50'"
       >
         <span
-          class="inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform"
-          :class="draft.is_published ? 'translate-x-6' : 'translate-x-1'"
+          class="h-2 w-2 rounded-full"
+          :class="draft.is_published ? 'bg-brand-emerald-500' : 'bg-brand-slate-300'"
+          aria-hidden="true"
         />
-      </button>
-    </div>
-
-    <!-- Sharing links -->
-    <div class="space-y-2">
-      <label class="text-xs font-semibold tracking-wide text-gray-400 uppercase"
-        >Your profile link</label
-      >
-      <div class="flex gap-2">
-        <code
-          class="flex-1 truncate rounded-lg bg-gray-100 px-3 py-2 text-sm text-gray-700"
+        <span
+          class="text-sm font-medium"
+          :class="draft.is_published ? 'text-brand-emerald-700' : 'text-brand-slate-500'"
         >
-          {{ publicUrl }}
-        </code>
+          {{ draft.is_published ? "Your profile is live & public" : "Profile is unpublished" }}
+        </span>
         <button
-          class="rounded-lg bg-gray-800 px-3 py-2 text-sm text-white hover:bg-gray-700"
-          @click="copyLink"
+          data-test="publish-toggle"
+          type="button"
+          :aria-pressed="draft.is_published"
+          aria-label="Toggle profile visibility"
+          class="relative inline-flex h-5 w-9 items-center rounded-full transition-colors"
+          :class="draft.is_published ? 'bg-brand-emerald-500' : 'bg-brand-slate-300'"
+          @click="save({ is_published: !draft.is_published })"
         >
-          Copy
+          <span
+            class="inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform"
+            :class="draft.is_published ? 'translate-x-5' : 'translate-x-1'"
+          />
         </button>
       </div>
-    </div>
+    </header>
 
-    <!-- Vanity slug -->
-    <div class="space-y-1">
-      <label class="text-xs font-semibold tracking-wide text-gray-400 uppercase"
-        >Custom URL (optional)</label
-      >
-      <div class="flex items-center gap-2">
-        <span class="shrink-0 text-sm text-gray-400"
-          >recruitingcompass.com/p/</span
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+    <div class="flex flex-col gap-6">
+      <ShareProfilePanel :url="publicUrl ?? ''">
+        <!-- Custom URL lives with the share link — they configure the same URL -->
+        <div class="mt-4 space-y-1 border-t border-brand-slate-100 pt-4">
+          <label
+            class="text-xs font-semibold tracking-wide text-brand-slate-400 uppercase"
+            >Custom URL (optional)</label
+          >
+          <div class="flex items-center gap-2">
+            <span class="shrink-0 text-sm text-brand-slate-400"
+              >recruitingcompass.com/p/</span
+            >
+            <input
+              v-model="draft.vanity_slug"
+              type="text"
+              placeholder="yourname2026"
+              class="flex-1 rounded-lg border border-brand-slate-200 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-slate-400 focus:outline-none"
+              @blur="onSlugBlur"
+            />
+          </div>
+          <p v-if="slugError" class="text-xs text-red-500">{{ slugError }}</p>
+          <p class="text-xs text-brand-slate-400">
+            Changing your custom URL will break any links using the old one.
+          </p>
+        </div>
+      </ShareProfilePanel>
+
+      <!-- 1. Appearance -->
+      <section class="space-y-3">
+        <h3 class="text-sm font-semibold text-brand-slate-900">
+          1. Appearance Settings
+        </h3>
+        <div
+          class="rounded-2xl border border-brand-slate-200 bg-white p-6 shadow-xs"
         >
-        <input
-          v-model="draft.vanity_slug"
-          type="text"
-          placeholder="yourname2026"
-          class="flex-1 rounded-lg border border-gray-200 px-3 py-2 text-sm focus:ring-2 focus:ring-slate-400 focus:outline-none"
-          @blur="onSlugBlur"
-        />
-      </div>
-      <p v-if="slugError" class="text-xs text-red-500">{{ slugError }}</p>
-      <p class="text-xs text-gray-400">
-        Changing your custom URL will break any links using the old one.
-      </p>
-    </div>
-
-    <!-- Bio -->
-    <div class="space-y-1">
-      <label class="text-xs font-semibold tracking-wide text-gray-400 uppercase"
-        >Bio / Statement</label
-      >
-      <textarea
-        v-model="draft.bio"
-        rows="3"
-        maxlength="300"
-        placeholder="A short statement about yourself (300 chars max)"
-        class="w-full resize-none rounded-lg border border-gray-200 px-3 py-2 text-sm focus:ring-2 focus:ring-slate-400 focus:outline-none"
-        @blur="save({ bio: draft.bio || null })"
-      />
-      <p class="text-right text-xs text-gray-400">
-        {{ (draft.bio ?? "").length }}/300
-      </p>
-    </div>
-
-    <!-- Header color -->
-    <div class="space-y-2">
-      <label class="text-xs font-semibold tracking-wide text-gray-400 uppercase"
-        >Header color</label
-      >
-      <div class="flex flex-wrap gap-2">
-        <button
-          v-for="color in HEADER_COLORS"
-          :key="color.key"
-          :title="color.label"
-          class="h-7 w-7 rounded-full transition-transform hover:scale-110 focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:outline-none"
-          :class="[
-            color.swatch,
-            draft.header_color === color.key
-              ? 'scale-110 ring-2 ring-slate-600 ring-offset-2'
-              : '',
-          ]"
-          @click="save({ header_color: color.key })"
-        />
-      </div>
-    </div>
-
-    <!-- Section toggles -->
-    <div class="space-y-3">
-      <label class="text-xs font-semibold tracking-wide text-gray-400 uppercase"
-        >What to show coaches</label
-      >
-      <div class="space-y-2">
-        <label
-          v-for="section in [
-            {
-              key: 'show_academics',
-              label: 'Academic stats (GPA, SAT/ACT, graduation year)',
-            },
-            {
-              key: 'show_athletic',
-              label: 'Athletic profile (sport, position, height/weight)',
-            },
-            { key: 'show_film', label: 'Film & video links' },
-          ]"
-          :key="section.key"
-          class="flex cursor-pointer items-center gap-3"
-        >
-          <input
-            type="checkbox"
-            :checked="(draft as any)[section.key]"
-            class="h-4 w-4 rounded border-gray-300 text-slate-700"
-            @change="save({ [section.key]: !(draft as any)[section.key] })"
+          <ProfileAppearanceEditor
+            :header-color="draft.header_color"
+            :banner-url="draft.banner_url"
+            @update:header-color="(color) => save({ header_color: color })"
+            @update:banner-url="(url) => save({ banner_url: url })"
           />
-          <span class="text-sm text-gray-700">{{ section.label }}</span>
-        </label>
-      </div>
+        </div>
+      </section>
+
+      <!-- 2. Content -->
+      <section class="space-y-3">
+        <h3 class="text-sm font-semibold text-brand-slate-900">
+          2. Profile Content
+        </h3>
+        <div
+          class="rounded-2xl border border-brand-slate-200 bg-white p-6 shadow-xs"
+        >
+          <ProfileContentEditor
+            :bio="draft.bio"
+            :looking-for="draft.looking_for"
+            :awards="draft.awards"
+            :values-tags="draft.values_tags"
+            @update:bio="onBioUpdate"
+            @update:looking-for="onLookingForUpdate"
+            @update:awards="(awards) => save({ awards })"
+            @update:values-tags="(tags) => save({ values_tags: tags })"
+          />
+        </div>
+      </section>
+
+      <!-- 3. Section Configuration -->
+      <section class="space-y-3">
+        <h3 class="text-sm font-semibold text-brand-slate-900">
+          3. Section Configuration
+        </h3>
+        <div
+          class="rounded-2xl border border-brand-slate-200 bg-white p-6 shadow-xs"
+        >
+          <SectionConfigEditor
+            :model-value="draft.section_config"
+            @update:model-value="onSectionConfigUpdate"
+          />
+        </div>
+      </section>
+
+      <!-- 4. Recruitment Status -->
+      <section class="space-y-3">
+        <h3 class="text-sm font-semibold text-brand-slate-900">
+          4. Recruitment Status
+        </h3>
+        <div
+          class="rounded-2xl border border-brand-slate-200 bg-white p-6 shadow-xs"
+        >
+          <CommitmentStatusControl
+            :status="draft.commitment_status"
+            :committed-school-id="draft.committed_school_id"
+            :schools="props.schools"
+            @update:status="(status) => save({ commitment_status: status })"
+            @update:committed-school-id="
+              (schoolId) => save({ committed_school_id: schoolId })
+            "
+          />
+        </div>
+      </section>
+
+      <p v-if="saveError" class="text-xs text-red-500">{{ saveError }}</p>
     </div>
 
-    <p v-if="saveError" class="text-xs text-red-500">{{ saveError }}</p>
+    <aside class="lg:sticky lg:top-6 lg:self-start">
+      <ProfileMiniPreview
+        :draft="draft"
+        :details="props.details"
+        :url="publicUrl ?? ''"
+      />
+    </aside>
+    </div>
   </div>
 </template>

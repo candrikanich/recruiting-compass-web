@@ -46,7 +46,7 @@ export function useEventMetricsSection(
     try {
       metricLoading.value = true;
       await createMetric({
-        // metric_type is a registry key (any of 17 sports), not a baseball union.
+        // metric_type is a registry key (any of 19 sports), not a baseball union.
         metric_type: newMetric.metric_type,
         value: newMetric.value!,
         recorded_date: event.value!.start_date,

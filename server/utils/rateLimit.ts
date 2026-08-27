@@ -6,6 +6,14 @@ import type { H3Event } from "h3";
 interface RateLimitOptions {
   requests: number;
   window: `${number} ${"s" | "m" | "h" | "d"}`;
+  /**
+   * Overrides the key used for the per-IP limiter. When omitted, falls back
+   * to `getRequestIP(event, { xForwardedFor: true })` (existing behavior,
+   * unchanged). Callers that resolve a trusted client IP themselves (e.g.
+   * `x-vercel-forwarded-for` on Vercel) should pass it here so the limiter
+   * key can't be evaded by a spoofed leftmost X-Forwarded-For value.
+   */
+  ip?: string;
 }
 
 export interface RateLimitResult {
@@ -56,7 +64,8 @@ export async function rateLimitByIp(
 ): Promise<RateLimitResult> {
   const limiter = createLimiter(options);
   if (!limiter) return BYPASS_RESULT;
-  const ip = getRequestIP(event, { xForwardedFor: true }) ?? "unknown";
+  const ip =
+    options.ip ?? getRequestIP(event, { xForwardedFor: true }) ?? "unknown";
   return safeLimit(() => limiter.limit(ip));
 }
 
@@ -68,6 +77,16 @@ export async function rateLimitByUser(
   const limiter = createLimiter(options);
   if (!limiter) return BYPASS_RESULT;
   return safeLimit(() => limiter.limit(userId));
+}
+
+export async function rateLimitByKey(
+  event: H3Event,
+  key: string,
+  options: RateLimitOptions,
+): Promise<RateLimitResult> {
+  const limiter = createLimiter(options);
+  if (!limiter) return BYPASS_RESULT;
+  return safeLimit(() => limiter.limit(key));
 }
 
 export function throwIfRateLimited(

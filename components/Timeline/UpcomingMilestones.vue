@@ -1,5 +1,48 @@
 <template>
-  <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
+  <!-- Bare mode: row list only, no outer card/header — for embedding inside
+       the Recruiting Calendar widget (single milestone-row source). -->
+  <div v-if="bare" class="space-y-2">
+    <div
+      v-if="milestones.length === 0"
+      class="py-4 text-center text-sm text-slate-500"
+    >
+      No upcoming milestones in the next 6 months.
+    </div>
+
+    <a
+      v-for="milestone in milestones"
+      :key="`${milestone.date}-${milestone.title}`"
+      :href="milestone.url"
+      target="_blank"
+      rel="noopener"
+      class="group flex cursor-pointer items-start gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3 transition hover:border-slate-300 hover:bg-slate-100"
+    >
+      <div class="shrink-0">
+        <div class="text-2xl">{{ getMilestoneIcon(milestone.type) }}</div>
+      </div>
+      <div class="min-w-0 flex-1">
+        <div class="font-medium text-slate-900 group-hover:text-slate-950">
+          {{ milestone.title }}
+        </div>
+        <div v-if="milestone.description" class="mt-1 text-xs text-slate-600">
+          {{ milestone.description }}
+        </div>
+      </div>
+      <div class="shrink-0 text-right">
+        <div class="text-xs text-slate-500">
+          {{ formatDate(milestone.date) }}
+        </div>
+        <div
+          v-if="milestone.url"
+          class="mt-0.5 text-slate-400 transition group-hover:text-slate-600"
+        >
+          ↗
+        </div>
+      </div>
+    </a>
+  </div>
+
+  <div v-else class="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
     <button
       type="button"
       data-testid="guidance-header"
@@ -55,9 +98,6 @@
             <div class="font-medium text-slate-900 group-hover:text-slate-950">
               {{ milestone.title }}
             </div>
-            <div class="mt-0.5 text-xs text-slate-500">
-              {{ formatDate(milestone.date) }}
-            </div>
             <div
               v-if="milestone.description"
               class="mt-1 text-xs text-slate-600"
@@ -65,11 +105,16 @@
               {{ milestone.description }}
             </div>
           </div>
-          <div
-            v-if="milestone.url"
-            class="shrink-0 text-slate-400 transition group-hover:text-slate-600"
-          >
-            ↗
+          <div class="shrink-0 text-right">
+            <div class="text-xs text-slate-500">
+              {{ formatDate(milestone.date) }}
+            </div>
+            <div
+              v-if="milestone.url"
+              class="mt-0.5 text-slate-400 transition group-hover:text-slate-600"
+            >
+              ↗
+            </div>
           </div>
         </a>
       </div>
@@ -84,10 +129,13 @@ import { getMilestoneTypeIcon as getIcon } from "~/utils/ncaaRecruitingCalendar"
 interface Props {
   milestones: Milestone[];
   collapsed?: boolean;
+  /** List-only render (no card/header/subtitle) for embedding in another widget. */
+  bare?: boolean;
 }
 
 withDefaults(defineProps<Props>(), {
   collapsed: false,
+  bare: false,
 });
 
 defineEmits<{

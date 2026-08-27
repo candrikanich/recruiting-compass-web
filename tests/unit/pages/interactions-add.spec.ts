@@ -38,6 +38,14 @@ vi.mock("~/composables/useSupabase", () => ({
   }),
 }));
 
+// add.vue calls useRoute() from vue-router and reads route.query. Mock it here
+// so the page never depends on a router context leaked from another spec file
+// (that hidden cross-file dependency made this suite order-dependent).
+vi.mock("vue-router", () => ({
+  useRoute: () => ({ query: {} }),
+  useRouter: () => ({ push: vi.fn(), back: vi.fn(), go: vi.fn() }),
+}));
+
 import InteractionsAddPage from "~/pages/interactions/add.vue";
 
 const InteractionFormStub = {

@@ -1,108 +1,120 @@
 <!-- components/profile/PublicProfileCard.vue -->
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref, onMounted } from "vue";
 import type { PublicProfileData } from "~/types/models";
-import { formatPositionsShort } from "~/utils/positions/canonical";
-import {
-  servicesForSport,
-  serviceProfileUrl,
-} from "~/utils/services/canonical";
-import {
-  openTwitter,
-  openInstagram,
-  openTikTok,
-  openFacebook,
-} from "~/utils/socialMediaHandlers";
+import ProfileHero from "~/components/profile/public/ProfileHero.vue";
+import MetricsGrid from "~/components/profile/public/MetricsGrid.vue";
+import HighlightsReel from "~/components/profile/public/HighlightsReel.vue";
+import AcademicPanel from "~/components/profile/public/AcademicPanel.vue";
+import TargetProgramValues from "~/components/profile/public/TargetProgramValues.vue";
+import TeamHistoryPanel from "~/components/profile/public/TeamHistoryPanel.vue";
+import AwardsHonors from "~/components/profile/public/AwardsHonors.vue";
+import ContactPlayerModal from "~/components/profile/public/ContactPlayerModal.vue";
+import ExpressInterestPopover from "~/components/profile/public/ExpressInterestPopover.vue";
+import { buildSocialLinks } from "~/utils/profile/socialLinks";
+import SocialIcon from "~/components/profile/public/SocialIcon.vue";
 
-const props = withDefaults(defineProps<{ profile: PublicProfileData }>(), {});
+// `slug` is optional because the owner-side live preview (ProfileLivePreview)
+// renders this card before the profile has a real public URL.
+const props = defineProps<{ data: PublicProfileData; slug?: string }>();
 
-const socialLinks = computed(() => {
-  const s = props.profile.social;
-  if (!s) return [];
-  const links: Array<{ label: string; display: string; open: () => void }> = [];
-  if (s.twitter_handle) {
-    const h = s.twitter_handle;
-    links.push({ label: "Twitter", display: h, open: () => openTwitter(h) });
-  }
-  if (s.instagram_handle) {
-    const h = s.instagram_handle;
-    links.push({
-      label: "Instagram",
-      display: h,
-      open: () => openInstagram(h),
-    });
-  }
-  if (s.tiktok_handle) {
-    const h = s.tiktok_handle;
-    links.push({ label: "TikTok", display: h, open: () => openTikTok(h) });
-  }
-  if (s.facebook_url) {
-    const u = s.facebook_url;
-    links.push({ label: "Facebook", display: u, open: () => openFacebook(u) });
-  }
-  return links;
-});
+const emit = defineEmits<{ contact: []; interest: [] }>();
 
-// Coach-facing primary/secondary from the athlete's ENTERED, ordered
-// positions[] (abbreviated "3B/SS"); the stale primary_position string is only
-// a fallback for pre-ordering accounts.
-const primaryPositionLabel = computed(() =>
-  formatPositionsShort(
-    props.profile.athletic?.primary_sport,
-    props.profile.athletic?.positions,
-    props.profile.athletic?.primary_position,
-  ),
+// section_config (owner-ordered, owner-visible) drives what renders below the
+// hero — a hidden section stays entirely off the page even though the API
+// response still carries its data.
+const visibleSections = computed(() =>
+  props.data.sections.filter((s) => s.visible),
 );
 
-// Recruiting-service rows for the athlete's sport (NCAA ID is handled
-// separately — it is an eligibility-center id, not a registry service).
-const recruitingServices = computed(() => {
-  const a = props.profile.athletic;
-  if (!a) return [];
-  const record = a as Record<string, unknown>;
-  const state =
-    typeof record.prep_baseball_state === "string"
-      ? record.prep_baseball_state
-      : undefined;
-  const name = props.profile.playerName;
-  return servicesForSport(a.primary_sport)
-    .map((def) => {
-      const raw = record[def.key];
-      const value = typeof raw === "string" ? raw : "";
-      const url = serviceProfileUrl(def, { value, state, name });
-      // PBR link is built from state + name, so its row appears whenever that
-      // URL resolves (the stored id is irrelevant); the athlete's name is the
-      // link text. Every other service still keys on its stored value.
-      if (def.linkKind === "prepBaseball") {
-        if (!url) return null;
-        return { key: def.key, label: def.label, value: name, url };
-      }
-      if (!value) return null;
-      return { key: def.key, label: def.label, value, url };
-    })
-    .filter((s): s is NonNullable<typeof s> => s !== null);
+// Figma pairs Academic Profile + Target Program & Values into one two-column
+// row. When both are visible the pair renders together at the academics slot,
+// and the standalone `values` entry is skipped so it isn't drawn twice.
+const academicsVisible = computed(() =>
+  visibleSections.value.some((s) => s.key === "academics"),
+);
+const valuesVisible = computed(() =>
+  visibleSections.value.some((s) => s.key === "values"),
+);
+
+// Team History + Awards likewise pair into a two-column row to cut the
+// full-width whitespace/scroll. Awards renders at the team_history slot when
+// both are visible and is skipped standalone below.
+const teamHistoryVisible = computed(() =>
+  visibleSections.value.some((s) => s.key === "team_history"),
+);
+const awardsVisible = computed(() =>
+  visibleSections.value.some((s) => s.key === "awards"),
+);
+
+const footerSocials = computed(() => buildSocialLinks(props.data.social));
+
+const lastUpdated = computed(() => {
+  if (!props.data.updatedAt) return null;
+  const d = new Date(props.data.updatedAt);
+  if (Number.isNaN(d.getTime())) return null;
+  return d.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
 });
 
-const HEADER_GRADIENTS: Record<string, string> = {
-  slate: "bg-gradient-to-br from-slate-800 to-slate-700",
-  blue: "bg-gradient-to-br from-blue-800 to-blue-700",
-  indigo: "bg-gradient-to-br from-indigo-800 to-indigo-700",
-  violet: "bg-gradient-to-br from-violet-800 to-violet-700",
-  rose: "bg-gradient-to-br from-rose-800 to-rose-700",
-  amber: "bg-gradient-to-br from-amber-700 to-amber-600",
-  emerald: "bg-gradient-to-br from-emerald-800 to-emerald-700",
-  teal: "bg-gradient-to-br from-teal-800 to-teal-700",
-};
+// The public page deliberately hides the player's target schools (Phase 2
+// decision) — the modal always falls back to its free-text school field.
+const showContactModal = ref(false);
 
-function formatHeight(inches: number | undefined): string {
-  if (!inches) return "—";
-  const ft = Math.floor(inches / 12);
-  const inn = inches % 12;
-  return `${ft}'${inn}"`;
+function handleContact() {
+  emit("contact");
+  // No real slug to submit against (e.g. owner live preview) — don't open a
+  // form that can't actually send.
+  if (!props.slug) return;
+  showContactModal.value = true;
 }
 
-function formatGPA(gpa: number | undefined): string {
-  return gpa?.toFixed(2) ?? "—";
+function closeContactModal() {
+  showContactModal.value = false;
+}
+
+// Express Interest mirrors the Contact flow above, plus a persisted "sent"
+// state so the hero button reflects a prior submission across reloads.
+const showInterestPopover = ref(false);
+const interestSent = ref(false);
+
+function interestSentKey(slug: string): string {
+  return `interest-sent:${slug}`;
+}
+
+onMounted(() => {
+  if (!props.slug) return;
+  try {
+    interestSent.value =
+      window.localStorage.getItem(interestSentKey(props.slug)) === "true";
+  } catch {
+    // Storage unavailable (private mode, SSR hydration edge case) — the
+    // server remains the source of truth, so just skip the UX shortcut.
+  }
+});
+
+function handleInterest() {
+  emit("interest");
+  if (!props.slug) return;
+  showInterestPopover.value = true;
+}
+
+function closeInterestPopover() {
+  showInterestPopover.value = false;
+}
+
+function onInterestSubmitted() {
+  interestSent.value = true;
+  if (!props.slug) return;
+  try {
+    window.localStorage.setItem(interestSentKey(props.slug), "true");
+  } catch {
+    // Best-effort persistence only — a failed write just means the button
+    // re-enables on the next visit; it doesn't block the confirmation UX.
+  }
 }
 </script>
 
@@ -110,269 +122,106 @@ function formatGPA(gpa: number | undefined): string {
   <article
     class="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm"
   >
-    <!-- Header -->
-    <header
-      class="px-6 py-8 text-white"
-      :class="HEADER_GRADIENTS[profile.headerColor] ?? HEADER_GRADIENTS.slate"
-    >
-      <div class="flex items-center gap-5">
-        <img
-          v-if="profile.photoUrl"
-          :src="profile.photoUrl"
-          :alt="`${profile.playerName} profile photo`"
-          class="h-20 w-20 shrink-0 rounded-full object-cover ring-2 ring-white/20"
+    <ProfileHero
+      :data="data"
+      :interest-sent="interestSent"
+      @contact="handleContact"
+      @interest="handleInterest"
+    />
+
+    <div class="space-y-6 px-6 py-6">
+      <template v-for="section in visibleSections" :key="section.key">
+        <MetricsGrid
+          v-if="section.key === 'metrics'"
+          :metrics="data.metrics ?? []"
+          :athletic="data.athletic"
+          :player-name="data.playerName"
         />
-        <div>
-          <h1 class="text-3xl font-bold tracking-tight">
-            {{ profile.playerName }}
-          </h1>
-          <p
-            v-if="profile.athletic?.primary_sport"
-            class="mt-1 text-sm text-slate-300"
-          >
-            {{ profile.athletic.primary_sport }}
-            <span v-if="primaryPositionLabel">
-              · {{ primaryPositionLabel }}</span
-            >
-          </p>
-          <p
-            v-if="profile.bio"
-            class="mt-3 text-sm leading-relaxed text-slate-200"
-          >
-            {{ profile.bio }}
-          </p>
+        <HighlightsReel v-else-if="section.key === 'film'" :film="data.film" />
+        <!-- Academics + Target render as a paired two-column row (Figma). When
+             values is also visible it is drawn here and skipped below. -->
+        <div
+          v-else-if="section.key === 'academics'"
+          class="grid grid-cols-1 gap-6"
+          :class="{ 'md:grid-cols-2 md:items-start': valuesVisible }"
+        >
+          <AcademicPanel
+            :academics="data.academics"
+            :ncaa-id="data.athletic?.ncaa_id"
+          />
+          <TargetProgramValues
+            v-if="valuesVisible"
+            :looking-for="data.lookingFor"
+            :values-tags="data.valuesTags"
+          />
         </div>
-      </div>
-    </header>
-
-    <div class="divide-y divide-gray-100">
-      <!-- Athletic Stats -->
-      <section
-        v-if="
-          profile.athletic &&
-          (profile.athletic.primary_sport ||
-            profile.athletic.positions?.length ||
-            profile.athletic.height_inches ||
-            profile.athletic.weight_lbs)
-        "
-        class="px-6 py-5"
-      >
-        <h2
-          class="mb-3 text-xs font-semibold tracking-wide text-gray-400 uppercase"
+        <TargetProgramValues
+          v-else-if="section.key === 'values' && !academicsVisible"
+          :looking-for="data.lookingFor"
+          :values-tags="data.valuesTags"
+        />
+        <!-- Team History + Awards render as a paired two-column row. When
+             awards is also visible it is drawn here and skipped below. -->
+        <div
+          v-else-if="section.key === 'team_history'"
+          class="grid grid-cols-1 gap-6"
+          :class="{ 'md:grid-cols-2 md:items-start': awardsVisible }"
         >
-          Athletic Profile
-        </h2>
-        <div v-if="profile.athletic.positions?.length" class="mb-3">
-          <p class="mb-1.5 text-xs text-gray-400">Positions</p>
-          <div class="flex flex-wrap gap-1.5">
-            <span
-              v-for="pos in profile.athletic.positions"
-              :key="pos"
-              class="inline-block rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-700"
-              >{{ pos }}</span
-            >
-          </div>
+          <TeamHistoryPanel :entries="data.teamHistory" />
+          <AwardsHonors v-if="awardsVisible" :awards="data.awards" />
         </div>
-        <dl class="grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
-          <div
-            v-if="profile.athletic.height_inches"
-            class="flex justify-between"
-          >
-            <dt class="text-gray-500">Height</dt>
-            <dd class="font-medium text-gray-900">
-              {{ formatHeight(profile.athletic.height_inches) }}
-            </dd>
-          </div>
-          <div v-if="profile.athletic.weight_lbs" class="flex justify-between">
-            <dt class="text-gray-500">Weight</dt>
-            <dd class="font-medium text-gray-900">
-              {{ profile.athletic.weight_lbs }} lbs
-            </dd>
-          </div>
-        </dl>
-      </section>
-
-      <!-- Film Links -->
-      <section v-if="profile.film?.length" class="px-6 py-5">
-        <h2
-          class="mb-3 text-xs font-semibold tracking-wide text-gray-400 uppercase"
-        >
-          Film
-        </h2>
-        <ul class="space-y-2">
-          <li v-for="link in profile.film" :key="link.url">
-            <a
-              :href="link.url"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 hover:underline"
-            >
-              <span class="capitalize">{{ link.platform }}</span>
-              <span v-if="link.title" class="text-gray-500"
-                >— {{ link.title }}</span
-              >
-            </a>
-          </li>
-        </ul>
-      </section>
-
-      <!-- Academic Stats -->
-      <section
-        v-if="
-          profile.academics &&
-          (profile.academics.gpa ||
-            profile.academics.graduation_year ||
-            profile.academics.sat_score ||
-            profile.academics.act_score ||
-            profile.academics.high_school)
-        "
-        class="px-6 py-5"
-      >
-        <h2
-          class="mb-3 text-xs font-semibold tracking-wide text-gray-400 uppercase"
-        >
-          Academics
-        </h2>
-        <dl class="grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
-          <div v-if="profile.academics.gpa" class="flex justify-between">
-            <dt class="text-gray-500">GPA</dt>
-            <dd class="font-medium text-gray-900">
-              {{ formatGPA(profile.academics.gpa) }}
-            </dd>
-          </div>
-          <div
-            v-if="profile.academics.graduation_year"
-            class="flex justify-between"
-          >
-            <dt class="text-gray-500">Grad Year</dt>
-            <dd class="font-medium text-gray-900">
-              {{ profile.academics.graduation_year }}
-            </dd>
-          </div>
-          <div v-if="profile.academics.sat_score" class="flex justify-between">
-            <dt class="text-gray-500">SAT</dt>
-            <dd class="font-medium text-gray-900">
-              {{ profile.academics.sat_score }}
-            </dd>
-          </div>
-          <div v-if="profile.academics.act_score" class="flex justify-between">
-            <dt class="text-gray-500">ACT</dt>
-            <dd class="font-medium text-gray-900">
-              {{ profile.academics.act_score }}
-            </dd>
-          </div>
-          <div
-            v-if="profile.academics.high_school"
-            class="col-span-2 flex justify-between"
-          >
-            <dt class="text-gray-500">High School</dt>
-            <dd class="font-medium text-gray-900">
-              {{ profile.academics.high_school }}
-            </dd>
-          </div>
-        </dl>
-        <div v-if="profile.academics.core_courses?.length" class="mt-3">
-          <p class="mb-1 text-xs text-gray-400">Core Courses</p>
-          <p class="text-sm text-gray-700">
-            {{ profile.academics.core_courses.join(", ") }}
-          </p>
-        </div>
-      </section>
-
-      <!-- Social -->
-      <section v-if="socialLinks.length" class="px-6 py-5">
-        <h2
-          class="mb-3 text-xs font-semibold tracking-wide text-gray-400 uppercase"
-        >
-          Social
-        </h2>
-        <dl class="space-y-1.5 text-sm">
-          <div
-            v-for="item in socialLinks"
-            :key="item.label"
-            class="flex justify-between"
-          >
-            <dt class="text-gray-500">{{ item.label }}</dt>
-            <dd class="font-medium">
-              <button
-                type="button"
-                class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 hover:underline"
-                :aria-label="`Open ${item.label} profile ${item.display}`"
-                @click="item.open"
-              >
-                {{ item.display }}
-                <svg
-                  class="h-3 w-3"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M14 5h5m0 0v5m0-5L10 14M9 5H5a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4"
-                  />
-                </svg>
-              </button>
-            </dd>
-          </div>
-        </dl>
-      </section>
-
-      <!-- Recruiting Database IDs -->
-      <section
-        v-if="
-          profile.athletic &&
-          (profile.athletic.ncaa_id || recruitingServices.length)
-        "
-        class="px-6 py-5"
-      >
-        <h2
-          class="mb-3 text-xs font-semibold tracking-wide text-gray-400 uppercase"
-        >
-          Recruiting IDs
-        </h2>
-        <dl class="space-y-1.5 text-sm">
-          <div v-if="profile.athletic.ncaa_id" class="flex justify-between">
-            <dt class="text-gray-500">NCAA ID</dt>
-            <dd class="font-mono font-medium text-gray-900">
-              {{ profile.athletic.ncaa_id }}
-            </dd>
-          </div>
-          <div
-            v-for="svc in recruitingServices"
-            :key="svc.key"
-            class="flex justify-between"
-          >
-            <dt class="text-gray-500">{{ svc.label }}</dt>
-            <dd class="font-medium">
-              <a
-                v-if="svc.url"
-                :href="svc.url"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="font-mono text-blue-600 hover:text-blue-800 hover:underline"
-                >{{ svc.value }}</a
-              >
-              <span v-else class="font-mono text-gray-900">{{
-                svc.value
-              }}</span>
-            </dd>
-          </div>
-        </dl>
-      </section>
+        <AwardsHonors
+          v-else-if="section.key === 'awards' && !teamHistoryVisible"
+          :awards="data.awards"
+        />
+      </template>
     </div>
 
-    <!-- Footer -->
-    <footer class="bg-gray-50 px-6 py-4 text-center">
-      <p class="text-xs text-gray-400">
-        Recruiting profile powered by
-        <a href="/" class="text-gray-500 hover:text-gray-700"
-          >The Recruiting Compass</a
+    <footer class="border-t border-gray-100 bg-gray-50 px-6 py-5">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <a
+          href="/"
+          class="flex items-center gap-2 text-xs font-medium text-gray-500 hover:text-gray-700"
         >
+          <UIcon
+            name="i-heroicons-viewfinder-circle"
+            class="h-4 w-4"
+            aria-hidden="true"
+          />
+          Powered by The Recruiting Compass
+        </a>
+        <div v-if="footerSocials.length" class="flex items-center gap-3">
+          <a
+            v-for="link in footerSocials"
+            :key="link.platform"
+            :href="link.url"
+            target="_blank"
+            rel="noopener noreferrer"
+            :aria-label="link.platform"
+            class="text-gray-400 hover:text-gray-600"
+          >
+            <SocialIcon :platform="link.platform" class="h-4 w-4" />
+          </a>
+        </div>
+      </div>
+      <p v-if="lastUpdated" class="mt-3 text-xs text-gray-400">
+        Profile last updated: {{ lastUpdated }}
       </p>
     </footer>
+
+    <ContactPlayerModal
+      v-if="showContactModal && slug"
+      :slug="slug"
+      :player-name="data.playerName"
+      @close="closeContactModal"
+    />
+
+    <ExpressInterestPopover
+      v-if="showInterestPopover && slug"
+      :slug="slug"
+      :player-name="data.playerName"
+      @close="closeInterestPopover"
+      @submitted="onInterestSubmitted"
+    />
   </article>
 </template>

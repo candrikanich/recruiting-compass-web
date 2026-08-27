@@ -321,6 +321,13 @@ export const useCoachStore = defineStore("coaches", () => {
   }
 
   /**
+   * Thin wrapper over updateCoach for the inline tag-chip editor.
+   */
+  async function updateCoachTags(id: string, tags: string[]) {
+    return updateCoach(id, { tags } as Partial<Coach>);
+  }
+
+  /**
    * Delete a coach
    */
   async function deleteCoach(id: string) {
@@ -393,6 +400,7 @@ export const useCoachStore = defineStore("coaches", () => {
     getCoach,
     createCoach,
     updateCoach,
+    updateCoachTags,
     deleteCoach,
     removeCoach,
     reset,

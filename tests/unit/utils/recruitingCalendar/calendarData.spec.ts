@@ -1,5 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { D1_CALENDARS, D2_ALL_SPORTS, D3_FALLBACK } from "~/utils/recruitingCalendar/calendarData";
+import {
+  D1_CALENDARS,
+  D2_ALL_SPORTS,
+  D3_FALLBACK,
+} from "~/utils/recruitingCalendar/calendarData";
 
 const ALL_KEYS = [
   "MBA",
@@ -23,8 +27,12 @@ const ALL_KEYS = [
   "OTHER_FIELDHOCKEY",
   "OTHER_MWRESTLING",
   "OTHER_WWRESTLING",
+  "OTHER_WGYM",
 ] as const;
 const ISO = /^\d{4}-\d{2}-\d{2}$/;
+// The dataset's human-verified transcription dates (most on the original pass,
+// OTHER_WGYM added in the gymnastics/beach follow-up).
+const VERIFIED_DATES = ["2026-08-23", "2026-08-25"];
 
 describe("calendarData integrity (L1)", () => {
   it("has every D1 calendar with source + verifiedOn", () => {
@@ -32,7 +40,7 @@ describe("calendarData integrity (L1)", () => {
       const c = D1_CALENDARS[k];
       expect(c, k).toBeTruthy();
       expect(c.source, k).toMatch(/ncaaorg\.s3\.amazonaws\.com/);
-      expect(c.verifiedOn, k).toBe("2026-08-23");
+      expect(VERIFIED_DATES, k).toContain(c.verifiedOn);
       expect(c.periods.length, k).toBeGreaterThan(0);
     }
   });
@@ -42,7 +50,13 @@ describe("calendarData integrity (L1)", () => {
         expect(p.start, `${k} ${p.description}`).toMatch(ISO);
         expect(p.end).toMatch(ISO);
         expect(p.start <= p.end, `${k} ${p.description}`).toBe(true);
-        expect(["dead", "quiet", "contact", "evaluation", "recruiting_shutdown"]).toContain(p.type);
+        expect([
+          "dead",
+          "quiet",
+          "contact",
+          "evaluation",
+          "recruiting_shutdown",
+        ]).toContain(p.type);
         expect(["HIGH", "MEDIUM", "LOW"]).toContain(p.confidence);
       }
   });
@@ -54,10 +68,12 @@ describe("plausibility (L3)", () => {
     // Thanksgiving-ish shutdowns land in Nov; winter shutdowns in Dec/Jan; July-4 dead in Jul.
     for (const k of ALL_KEYS)
       for (const p of D1_CALENDARS[k].periods) {
-        if (/thanksgiving/i.test(p.description)) expect(month(p.start), `${k}`).toBe(11);
+        if (/thanksgiving/i.test(p.description))
+          expect(month(p.start), `${k}`).toBe(11);
         if (/winter|holiday/i.test(p.description) && p.type !== "contact")
           expect([12, 1]).toContain(month(p.start));
-        if (/july 4|independence/i.test(p.description)) expect(month(p.start)).toBe(7);
+        if (/july 4|independence/i.test(p.description))
+          expect(month(p.start)).toBe(7);
       }
   });
   it("no period spans more than ~10 months (catches a swapped start/end year)", () => {
@@ -93,20 +109,29 @@ describe("Other sub-calendars (per-sport bundle expansion)", () => {
     "OTHER_FIELDHOCKEY",
     "OTHER_MWRESTLING",
     "OTHER_WWRESTLING",
+    "OTHER_WGYM",
   ] as const;
   it("each new sub-key's periods differ from the generic Other default (not just a copy/fallback)", () => {
     for (const k of SUB_KEYS) {
       expect(D1_CALENDARS[k].periods.length, k).toBeGreaterThan(0);
-      expect(D1_CALENDARS[k].periods, k).not.toEqual(D1_CALENDARS.Other.periods);
+      expect(D1_CALENDARS[k].periods, k).not.toEqual(
+        D1_CALENDARS.Other.periods,
+      );
     }
   });
   it("soccer sub-calendars are gender-distinct", () => {
-    expect(D1_CALENDARS.OTHER_MSOCCER.periods).not.toEqual(D1_CALENDARS.OTHER_WSOCCER.periods);
+    expect(D1_CALENDARS.OTHER_MSOCCER.periods).not.toEqual(
+      D1_CALENDARS.OTHER_WSOCCER.periods,
+    );
   });
   it("ice hockey sub-calendars are gender-distinct", () => {
-    expect(D1_CALENDARS.OTHER_MICEHOCKEY.periods).not.toEqual(D1_CALENDARS.OTHER_WICEHOCKEY.periods);
+    expect(D1_CALENDARS.OTHER_MICEHOCKEY.periods).not.toEqual(
+      D1_CALENDARS.OTHER_WICEHOCKEY.periods,
+    );
   });
   it("wrestling sub-calendars are gender-distinct", () => {
-    expect(D1_CALENDARS.OTHER_MWRESTLING.periods).not.toEqual(D1_CALENDARS.OTHER_WWRESTLING.periods);
+    expect(D1_CALENDARS.OTHER_MWRESTLING.periods).not.toEqual(
+      D1_CALENDARS.OTHER_WWRESTLING.periods,
+    );
   });
 });

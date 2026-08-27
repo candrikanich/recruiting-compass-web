@@ -1,0 +1,109 @@
+<!-- components/profile/setup/SectionConfigEditor.vue -->
+<script setup lang="ts">
+import { computed, onBeforeUnmount, onMounted, ref } from "vue";
+import Sortable from "sortablejs";
+import type { ProfileSection } from "~/types/models";
+import { SECTION_META } from "~/utils/profile/sectionMeta";
+import { normalizeSectionConfig } from "~/utils/profile/sectionConfig";
+
+const props = defineProps<{
+  modelValue: ProfileSection[];
+}>();
+
+const emit = defineEmits<{
+  "update:modelValue": [sections: ProfileSection[]];
+}>();
+
+const listRef = ref<HTMLElement | null>(null);
+let sortable: Sortable | null = null;
+
+// normalizeSectionConfig is the single source of truth for "valid section
+// key" (dedup, ordering, backfill) — do not reimplement that split here.
+// Anything it drops is an unknown key, preserved unmodified below so
+// toggle/reorder emits round-trip caller data without loss.
+const knownSections = computed(() => normalizeSectionConfig(props.modelValue));
+const unknownSections = computed(() => {
+  const knownKeys = new Set(knownSections.value.map((section) => section.key));
+  return props.modelValue.filter((section) => !knownKeys.has(section.key));
+});
+
+function toggleVisibility(key: ProfileSection["key"]) {
+  const next = knownSections.value.map((section) =>
+    section.key === key ? { ...section, visible: !section.visible } : section,
+  );
+  emit("update:modelValue", [...next, ...unknownSections.value]);
+}
+
+onMounted(() => {
+  if (!listRef.value) return;
+  sortable = Sortable.create(listRef.value, {
+    handle: ".section-drag-handle",
+    animation: 150,
+    onEnd: (evt) => {
+      const { oldIndex, newIndex } = evt;
+      if (oldIndex == null || newIndex == null || oldIndex === newIndex) return;
+      const reordered = [...knownSections.value];
+      const [moved] = reordered.splice(oldIndex, 1);
+      reordered.splice(newIndex, 0, moved);
+      emit("update:modelValue", [...reordered, ...unknownSections.value]);
+    },
+  });
+});
+
+onBeforeUnmount(() => {
+  sortable?.destroy();
+  sortable = null;
+});
+</script>
+
+<template>
+  <ul ref="listRef" class="flex flex-col gap-2">
+    <li
+      v-for="section in knownSections"
+      :key="section.key"
+      class="flex items-center gap-3 rounded-lg border border-brand-slate-200 bg-white p-3"
+    >
+      <span
+        class="section-drag-handle flex h-8 w-8 shrink-0 cursor-grab items-center justify-center text-brand-slate-400 active:cursor-grabbing"
+        role="img"
+        aria-label="Drag to reorder"
+      >
+        <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+          <circle cx="6" cy="5" r="1.4" />
+          <circle cx="6" cy="10" r="1.4" />
+          <circle cx="6" cy="15" r="1.4" />
+          <circle cx="14" cy="5" r="1.4" />
+          <circle cx="14" cy="10" r="1.4" />
+          <circle cx="14" cy="15" r="1.4" />
+        </svg>
+      </span>
+
+      <div class="min-w-0 flex-1">
+        <p class="text-sm font-medium text-brand-slate-900">
+          {{ SECTION_META[section.key].label }}
+        </p>
+      </div>
+
+      <button
+        data-test="section-visibility"
+        type="button"
+        :aria-pressed="section.visible"
+        :aria-label="
+          section.visible
+            ? `Hide ${SECTION_META[section.key].label}`
+            : `Show ${SECTION_META[section.key].label}`
+        "
+        :title="section.visible ? 'Visible — click to hide' : 'Hidden — click to show'"
+        class="shrink-0 rounded-md p-1.5 transition-colors hover:bg-brand-slate-100"
+        :class="section.visible ? 'text-brand-slate-600' : 'text-brand-slate-300'"
+        @click="toggleVisibility(section.key)"
+      >
+        <UIcon
+          :name="section.visible ? 'i-heroicons-eye' : 'i-heroicons-eye-slash'"
+          class="h-5 w-5"
+          aria-hidden="true"
+        />
+      </button>
+    </li>
+  </ul>
+</template>

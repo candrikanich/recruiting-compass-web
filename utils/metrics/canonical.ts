@@ -7,7 +7,7 @@
  * `SPORT_POSITIONS` in `utils/positions/canonical.ts`.
  *
  * Sibling of the positions registry: a `Record<string, ...>` map plus pure
- * helper functions. Populated for all 17 sports.
+ * helper functions. Populated for all 19 sports.
  */
 
 export const OTHER_KEY = "other";
@@ -59,7 +59,7 @@ const def = (
 });
 
 /**
- * Central emoji per metric key across all 17 sports. Keeps every icon surface
+ * Central emoji per metric key across all 19 sports. Keeps every icon surface
  * sport-aware without a baseball-only branch. Mirrors iOS
  * `MetricRegistry.iconByKey` (SF Symbols there, emoji here — values are
  * intentionally per-platform). Unlisted keys fall back to `DEFAULT_ICON`.
@@ -143,6 +143,16 @@ const ICON_BY_KEY: Record<string, string> = {
   // Rowing
   erg_2k: "🚣",
   erg_split: "⏱️",
+  // Gymnastics (Beach Volleyball reuses the indoor volleyball keys above)
+  aa_score: "🤸",
+  vault_score: "🤸",
+  floor_score: "🤸",
+  bars_score: "🤸",
+  beam_score: "🤸",
+  pommel_score: "🤸",
+  rings_score: "🤸",
+  pbars_score: "🤸",
+  high_bar_score: "🤸",
   // Fallback bucket
   other: DEFAULT_ICON,
 };
@@ -284,6 +294,22 @@ const rowingDefs: MetricDef[] = [
   def("erg_split", "Erg Split", "", dur, true),
 ];
 
+// Gymnastics — judged event scores (higher is better), All-Around plus every
+// artistic event. Vault + Floor Exercise are contested by both genders; Uneven
+// Bars/Balance Beam are women's-only; Pommel Horse/Still Rings/Parallel Bars/
+// High Bar are men's-only. All first-class so coaches recruit by event.
+const gymnasticsDefs: MetricDef[] = [
+  def("aa_score", "All-Around Score", "", dec(3)),
+  def("vault_score", "Vault Score", "", dec(3)),
+  def("floor_score", "Floor Exercise Score", "", dec(3)),
+  def("bars_score", "Uneven Bars Score", "", dec(3)),
+  def("beam_score", "Balance Beam Score", "", dec(3)),
+  def("pommel_score", "Pommel Horse Score", "", dec(3)),
+  def("rings_score", "Still Rings Score", "", dec(3)),
+  def("pbars_score", "Parallel Bars Score", "", dec(3)),
+  def("high_bar_score", "High Bar Score", "", dec(3)),
+];
+
 // Shared across sports (goals/assists/saves/vertical_jump — one def each).
 const sharedDefs: MetricDef[] = [
   def("goals", "Goals", "count", int),
@@ -305,6 +331,7 @@ const allDefs: MetricDef[] = [
   ...tennisDefs,
   ...wrestlingDefs,
   ...rowingDefs,
+  ...gymnasticsDefs,
   ...sharedDefs,
   def(OTHER_KEY, "Other Metric", "", dec(2)),
 ];
@@ -385,6 +412,20 @@ export const SPORT_METRICS: Record<string, readonly string[]> = {
   "Field Hockey": ["goals", "assists", "saves"],
   Rowing: ["erg_2k", "erg_split"],
   "Water Polo": ["goals", "assists", "saves", "steals"],
+  Gymnastics: [
+    "aa_score",
+    "vault_score",
+    "floor_score",
+    "bars_score",
+    "beam_score",
+    "pommel_score",
+    "rings_score",
+    "pbars_score",
+    "high_bar_score",
+  ],
+  // Beach Volleyball reuses the indoor volleyball metric vocabulary (2-player
+  // game, same countable stats) — no new metric defs needed.
+  "Beach Volleyball": ["kills", "aces", "digs", "blocks", "hitting_pct"],
 };
 
 // MARK: Sport metric groups (log-picker section headers — 6 dense sports only)

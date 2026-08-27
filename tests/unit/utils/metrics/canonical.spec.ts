@@ -102,8 +102,8 @@ describe("sport orderings", () => {
       "fielding_pct",
     );
   });
-  it("all 17 sports present", () => {
-    expect(Object.keys(SPORT_METRICS)).toHaveLength(17);
+  it("all 19 sports present", () => {
+    expect(Object.keys(SPORT_METRICS)).toHaveLength(19);
   });
   it("every sport key has a def, and 'other' is never inline", () => {
     for (const [sport, keys] of Object.entries(SPORT_METRICS)) {

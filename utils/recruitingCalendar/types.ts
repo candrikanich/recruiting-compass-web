@@ -24,12 +24,13 @@ export type NcaaCalendarKey =
   | "OTHER_ROWING"
   | "OTHER_FIELDHOCKEY"
   | "OTHER_MWRESTLING"
-  | "OTHER_WWRESTLING";
+  | "OTHER_WWRESTLING"
+  | "OTHER_WGYM";
 
 export type Division = "D1" | "D2" | "D3";
 
 /**
- * The 17 app sport strings, copied verbatim from `utils/metrics/canonical.ts`
+ * The 19 app sport strings, copied verbatim from `utils/metrics/canonical.ts`
  * `SPORT_METRICS` keys.
  */
 export type AppSport =
@@ -49,7 +50,9 @@ export type AppSport =
   | "Ice Hockey"
   | "Field Hockey"
   | "Rowing"
-  | "Water Polo";
+  | "Water Polo"
+  | "Gymnastics"
+  | "Beach Volleyball";
 
 /**
  * One NCAA recruiting-period window. 5-type taxonomy (spike finding): baseball

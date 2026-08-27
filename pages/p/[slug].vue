@@ -2,8 +2,10 @@
 <script setup lang="ts">
 import type { PublicProfileData } from "~/types/models";
 
-// No auth middleware — this page is publicly accessible
-definePageMeta({ layout: "default" });
+// No auth middleware — this page is publicly accessible. The `public` layout
+// renders a standalone coach-header bar instead of the app <Header>, so no app
+// navigation/search/notifications leak onto this externally-shared page.
+definePageMeta({ layout: "public" });
 
 const route = useRoute();
 const slug = route.params.slug as string;
@@ -50,7 +52,7 @@ useSeoMeta({
 </script>
 
 <template>
-  <div class="min-h-screen bg-gray-50">
+  <div>
     <!-- Loading -->
     <div
       v-if="status === 'pending'"
@@ -84,8 +86,8 @@ useSeoMeta({
     </div>
 
     <!-- Profile card -->
-    <div v-else-if="profile" class="mx-auto max-w-2xl px-4 py-8">
-      <ProfilePublicProfileCard :profile="profile" />
+    <div v-else-if="profile" class="mx-auto max-w-6xl px-4 py-8">
+      <ProfilePublicProfileCard :data="profile" :slug="slug" />
     </div>
 
     <!-- Generic error fallback (500 or unexpected status) -->
