@@ -29,6 +29,10 @@ import {
 } from "~/server/utils/rateLimit";
 import { verifyTurnstile, isHoneypotTripped } from "~/server/utils/turnstile";
 import { matchCoachByEmail } from "~/server/utils/matchCoachByEmail";
+import {
+  buildInboundInteractionRow,
+  insertInboundInteraction,
+} from "~/server/utils/inboundInteraction";
 import { sendNotificationEmail } from "~/server/utils/emailService";
 import type { Database } from "~/types/database";
 
@@ -186,10 +190,11 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    const { coachId: matchedCoachId } = await matchCoachByEmail(admin, {
-      familyUnitId: profile.family_unit_id,
-      email: data.coachEmail,
-    });
+    const { coachId: matchedCoachId, schoolId: matchedSchoolId } =
+      await matchCoachByEmail(admin, {
+        familyUnitId: profile.family_unit_id,
+        email: data.coachEmail,
+      });
 
     // Defensive re-verification: a well-formed schoolId that doesn't exist
     // or belongs to another family must never reach the insert — the FK
@@ -224,6 +229,7 @@ export default defineEventHandler(async (event) => {
       note: data.note,
       ip: toValidInetOrNull(clientIp),
       user_agent: userAgent,
+      status: matchedCoachId ? "resolved" : "pending",
     };
 
     const { data: inserted, error: insertError } = await admin
@@ -238,6 +244,40 @@ export default defineEventHandler(async (event) => {
         statusCode: 500,
         statusMessage: "Failed to submit contact",
       });
+    }
+
+    // Mint an inbound interaction when the coach matched — a failure here
+    // must never fail the response, since the lead is already durably
+    // stored.
+    let interactionId: string | null = null;
+    if (matchedCoachId && matchedSchoolId && profile.user_id) {
+      try {
+        const created = await insertInboundInteraction(
+          admin,
+          buildInboundInteractionRow({
+            kind: "contact",
+            coachId: matchedCoachId,
+            schoolId: matchedSchoolId,
+            familyUnitId: profile.family_unit_id,
+            loggedBy: profile.user_id,
+            note: data.note,
+            program: null,
+            occurredAt: new Date().toISOString(),
+          }),
+        );
+        interactionId = created?.id ?? null;
+        if (interactionId) {
+          await admin
+            .from("profile_contacts")
+            .update({ interaction_id: interactionId })
+            .eq("id", inserted.id);
+        }
+      } catch (interErr) {
+        logger.warn(
+          "Failed to create inbound interaction from matched lead",
+          interErr,
+        );
+      }
     }
 
     // Notify the player — fire-and-forget-safe: a failure here must never
@@ -259,8 +299,8 @@ export default defineEventHandler(async (event) => {
         type: "inbound_interaction",
         title,
         message,
-        related_entity_type: "profile_contact",
-        related_entity_id: inserted.id,
+        related_entity_type: interactionId ? "interaction" : "profile_contact",
+        related_entity_id: interactionId ?? inserted.id,
         scheduled_for: new Date().toISOString(),
       };
       const { error: notifyError } = await admin
