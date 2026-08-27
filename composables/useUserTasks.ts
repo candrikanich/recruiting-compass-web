@@ -66,10 +66,18 @@ export const useUserTasks = () => {
     }
   };
 
+  // Unique id — Date.now() alone collides for tasks added in the same
+  // millisecond, which made deleteTask/toggleTask/updateTask hit every task
+  // sharing that timestamp.
+  const newTaskId = () =>
+    typeof crypto !== "undefined" && "randomUUID" in crypto
+      ? `task-${crypto.randomUUID()}`
+      : `task-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
   // Add a new task
   const addTask = async (text: string) => {
     const newTask: UserTask = {
-      id: `task-${Date.now()}`,
+      id: newTaskId(),
       text,
       completed: false,
       created_at: new Date().toISOString(),
