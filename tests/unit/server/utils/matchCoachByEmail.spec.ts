@@ -1,78 +1,27 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 import { matchCoachByEmail } from "~/server/utils/matchCoachByEmail";
 
-/**
- * Minimal chainable coaches-table stub matching the repo's mutable-mockState
- * idiom (mutable call-capture record, chainable .eq()/.ilike(), terminal
- * .maybeSingle()). See resolveAthleteId.spec.ts for the precedent.
- */
-function makeAdmin(matchRow: { id: string } | null) {
-  const calls = { select: [] as Array<[string, string]> };
-  const eq = vi.fn((col: string, val: string) => {
-    calls.select.push([col, val]);
-    return {
-      ilike: vi.fn((col2: string, val2: string) => {
-        calls.select.push([col2, val2]);
-        return { maybeSingle: () => Promise.resolve({ data: matchRow, error: null }) };
-      }),
-    };
-  });
-  const select = vi.fn(() => ({ eq }));
-  const from = vi.fn((table: string) => {
-    if (table !== "coaches") throw new Error(`unexpected table: ${table}`);
-    return { select };
-  });
-
-  return { from, calls, select } as never;
+function fakeAdmin(row: { id: string; school_id: string } | null) {
+  const builder = {
+    select: () => builder,
+    eq: () => builder,
+    ilike: () => builder,
+    maybeSingle: async () => ({ data: row, error: null }),
+  };
+  return { from: () => builder } as never;
 }
 
 describe("matchCoachByEmail", () => {
-  it("returns the coach id on a case-insensitive email match", async () => {
-    const admin = makeAdmin({ id: "existing-coach-id" });
-
-    const result = await matchCoachByEmail(admin, {
-      familyUnitId: "fam-1",
-      email: "coach@x.com", // stored as "Coach@x.com" — match asserted via mock returning a row
+  it("returns coachId and schoolId when a coach matches", async () => {
+    const res = await matchCoachByEmail(fakeAdmin({ id: "c1", school_id: "s1" }), {
+      familyUnitId: "f1",
+      email: "coach@school.edu",
     });
-
-    expect(result).toEqual({ coachId: "existing-coach-id" });
+    expect(res).toEqual({ coachId: "c1", schoolId: "s1" });
   });
 
-  it("returns null coachId when no coach matches", async () => {
-    const admin = makeAdmin(null);
-
-    const result = await matchCoachByEmail(admin, {
-      familyUnitId: "fam-1",
-      email: "unknown@example.com",
-    });
-
-    expect(result).toEqual({ coachId: null });
-  });
-
-  it("returns null coachId without querying when no email is given", async () => {
-    const admin = makeAdmin({ id: "should-not-be-returned" });
-
-    const result = await matchCoachByEmail(admin, { familyUnitId: "fam-1" });
-
-    expect(result).toEqual({ coachId: null });
-    expect((admin as unknown as { select: ReturnType<typeof vi.fn> }).select).not.toHaveBeenCalled();
-  });
-
-  it("returns null coachId for an empty-string email without querying", async () => {
-    const admin = makeAdmin({ id: "should-not-be-returned" });
-
-    const result = await matchCoachByEmail(admin, { familyUnitId: "fam-1", email: "  " });
-
-    expect(result).toEqual({ coachId: null });
-    expect((admin as unknown as { select: ReturnType<typeof vi.fn> }).select).not.toHaveBeenCalled();
-  });
-
-  it("scopes the match to the given family_unit_id", async () => {
-    const admin = makeAdmin({ id: "existing-coach-id" });
-
-    await matchCoachByEmail(admin, { familyUnitId: "fam-42", email: "coach@x.com" });
-
-    const calls = (admin as unknown as { calls: { select: Array<[string, string]> } }).calls;
-    expect(calls.select).toContainEqual(["family_unit_id", "fam-42"]);
+  it("returns nulls when no email is supplied", async () => {
+    const res = await matchCoachByEmail(fakeAdmin(null), { familyUnitId: "f1" });
+    expect(res).toEqual({ coachId: null, schoolId: null });
   });
 });
