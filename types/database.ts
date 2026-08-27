@@ -2033,6 +2033,7 @@ export type Database = {
           created_at: string;
           family_unit_id: string;
           id: string;
+          interaction_id: string | null;
           ip: string | null;
           matched_coach_id: string | null;
           note: string | null;
@@ -2040,6 +2041,7 @@ export type Database = {
           program: string | null;
           school_id: string | null;
           school_name: string | null;
+          status: string;
           type: string;
           user_agent: string | null;
         };
@@ -2050,6 +2052,7 @@ export type Database = {
           created_at?: string;
           family_unit_id: string;
           id?: string;
+          interaction_id?: string | null;
           ip?: string | null;
           matched_coach_id?: string | null;
           note?: string | null;
@@ -2057,6 +2060,7 @@ export type Database = {
           program?: string | null;
           school_id?: string | null;
           school_name?: string | null;
+          status?: string;
           type?: string;
           user_agent?: string | null;
         };
@@ -2067,6 +2071,7 @@ export type Database = {
           created_at?: string;
           family_unit_id?: string;
           id?: string;
+          interaction_id?: string | null;
           ip?: string | null;
           matched_coach_id?: string | null;
           note?: string | null;
@@ -2074,6 +2079,7 @@ export type Database = {
           program?: string | null;
           school_id?: string | null;
           school_name?: string | null;
+          status?: string;
           type?: string;
           user_agent?: string | null;
         };
@@ -2083,6 +2089,13 @@ export type Database = {
             columns: ["family_unit_id"];
             isOneToOne: false;
             referencedRelation: "family_units";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "profile_contacts_interaction_id_fkey";
+            columns: ["interaction_id"];
+            isOneToOne: false;
+            referencedRelation: "interactions";
             referencedColumns: ["id"];
           },
           {
