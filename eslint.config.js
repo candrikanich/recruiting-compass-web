@@ -106,6 +106,7 @@ const noDateOnlyStringConstructor = {
 export default [
   {
     ignores: [
+      "supabase/functions/**/*", // Deno edge functions — different runtime/lint rules (console.log is normal there)
       ".nuxt",
       ".nuxt/**/*",
       "dist",
