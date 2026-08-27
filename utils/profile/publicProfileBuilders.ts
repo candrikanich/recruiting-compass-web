@@ -36,7 +36,9 @@ export function buildPublicMetrics(
       // batting_avg stored unit "unit"). applyFormat gives the correct render
       // (batting_avg 0.41 -> ".410", unit ""); fall back to the raw value only
       // when it isn't numeric.
-      const num = typeof r.value === "number" ? r.value : Number(r.value);
+      // Number(null) and Number("") are 0 (finite) — a missing value must not
+      // masquerade as a real 0.00 reading, so treat null/undefined as non-numeric.
+      const num = r.value == null ? NaN : Number(r.value);
       const value = Number.isFinite(num)
         ? applyFormat(def.format, num)
         : (r.display_value ?? (r.value != null ? String(r.value) : ""));
