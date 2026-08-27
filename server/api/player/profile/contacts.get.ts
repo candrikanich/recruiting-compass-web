@@ -26,6 +26,8 @@ interface ProfileContactLead {
   program: string | null;
   note: string | null;
   matched_coach_id: string | null;
+  status: "pending" | "resolved" | "dismissed";
+  interaction_id: string | null;
   created_at: string;
 }
 
@@ -63,7 +65,7 @@ export default defineEventHandler(async (event) => {
     const { data: leads, error: leadsError } = await supabase
       .from("profile_contacts")
       .select(
-        "id, type, coach_name, coach_email, coach_title, school_name, program, note, matched_coach_id, created_at",
+        "id, type, coach_name, coach_email, coach_title, school_name, program, note, matched_coach_id, status, interaction_id, created_at",
       )
       .eq("family_unit_id", familyUnitId)
       .order("created_at", { ascending: false })

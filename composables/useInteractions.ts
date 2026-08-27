@@ -251,9 +251,6 @@ export const useInteractions = () => {
     files?: File[],
   ) => {
     if (!userStore.user) throw new Error("User not authenticated");
-    if (userStore.user.role !== "player") {
-      throw new Error("Only players can create interactions");
-    }
     if (!activeFamily.activeFamilyId.value) {
       throw new Error("No family context available");
     }

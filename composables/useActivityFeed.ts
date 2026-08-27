@@ -94,6 +94,7 @@ export const useActivityFeed = () => {
       unofficial_visit: "🏫",
       official_visit: "🎓",
       other: "📝",
+      interest: "🙋",
     };
     return iconMap[type] || "📝";
   };

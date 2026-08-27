@@ -157,7 +157,8 @@ export interface Interaction {
     | "game"
     | "unofficial_visit"
     | "official_visit"
-    | "other";
+    | "other"
+    | "interest";
   direction: "outbound" | "inbound";
   subject?: string | null;
   content?: string | null;

@@ -177,6 +177,7 @@ export const interactionSchema = z
       "unofficial_visit",
       "official_visit",
       "other",
+      "interest",
     ]),
     direction: z.enum(["outbound", "inbound"]),
     subject: sanitizedTextSchema(500),

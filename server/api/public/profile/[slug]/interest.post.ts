@@ -28,7 +28,10 @@ import {
 } from "~/server/utils/rateLimit";
 import { verifyTurnstile, isHoneypotTripped } from "~/server/utils/turnstile";
 import { matchCoachByEmail } from "~/server/utils/matchCoachByEmail";
-import { sendNotificationEmail } from "~/server/utils/emailService";
+import {
+  buildInboundInteractionRow,
+  insertInboundInteraction,
+} from "~/server/utils/inboundInteraction";
 import type { Database } from "~/types/database";
 
 const HASH_SLUG_RE = /^[a-z0-9]{6}$/;
@@ -183,10 +186,11 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    const { coachId: matchedCoachId } = await matchCoachByEmail(admin, {
-      familyUnitId: profile.family_unit_id,
-      email: data.coachEmail,
-    });
+    const { coachId: matchedCoachId, schoolId: matchedSchoolId } =
+      await matchCoachByEmail(admin, {
+        familyUnitId: profile.family_unit_id,
+        email: data.coachEmail,
+      });
 
     // `coach_name` is NOT NULL — anonymous interest gets a placeholder.
     const coachLabel = data.coachName ?? "A coach";
@@ -202,6 +206,7 @@ export default defineEventHandler(async (event) => {
       note: data.note ?? null,
       ip: toValidInetOrNull(clientIp),
       user_agent: userAgent,
+      status: matchedCoachId ? "resolved" : "pending",
     };
 
     const { data: inserted, error: insertError } = await admin
@@ -218,15 +223,53 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    // Notify the player — fire-and-forget-safe: a failure here must never
-    // fail the response, since the lead is already durably stored.
-    try {
-      const { data: user } = await admin
-        .from("users")
-        .select("email, full_name")
-        .eq("id", profile.user_id)
-        .maybeSingle();
+    // Mint an inbound interaction when the coach matched — a failure here
+    // must never fail the response, since the lead is already durably
+    // stored.
+    let interactionId: string | null = null;
+    if (matchedCoachId && matchedSchoolId && profile.user_id) {
+      try {
+        const created = await insertInboundInteraction(
+          admin,
+          buildInboundInteractionRow({
+            kind: "interest",
+            coachId: matchedCoachId,
+            schoolId: matchedSchoolId,
+            familyUnitId: profile.family_unit_id,
+            loggedBy: profile.user_id,
+            note: null,
+            program: data.program,
+            occurredAt: new Date().toISOString(),
+          }),
+        );
+        interactionId = created?.id ?? null;
+        if (interactionId) {
+          await admin
+            .from("profile_contacts")
+            .update({ interaction_id: interactionId })
+            .eq("id", inserted.id);
+        }
+      } catch (interErr) {
+        logger.warn(
+          "Failed to create inbound interaction from matched lead",
+          interErr,
+        );
+      }
+    }
 
+    // Notify the player — fire-and-forget-safe: a failure here must never
+    // fail the response, since the lead is already durably stored. ALWAYS
+    // insert this notification, even on the matched path: the
+    // notify_on_inbound_interaction_insert trigger notifies
+    // `family_members WHERE user_id IS DISTINCT FROM NEW.logged_by`, and the
+    // minted interaction sets `logged_by = profile.user_id` (the player) —
+    // so the trigger excludes the player by design (it's meant for other
+    // family members). This insert is what covers the player themselves.
+    // Repoint to the interaction when one was minted; otherwise the lead
+    // itself. The notifications-INSERT trigger (push_on_notification_insert)
+    // is the single delivery channel — it handles both push and email, so no
+    // explicit email send here.
+    try {
       const title = "New interest from a coach";
       const message = `${coachLabel} expressed interest in your ${data.program} profile.`;
 
@@ -235,8 +278,8 @@ export default defineEventHandler(async (event) => {
         type: "inbound_interaction",
         title,
         message,
-        related_entity_type: "profile_contact",
-        related_entity_id: inserted.id,
+        related_entity_type: interactionId ? "interaction" : "profile_contact",
+        related_entity_id: interactionId ?? inserted.id,
         scheduled_for: new Date().toISOString(),
       };
       const { error: notifyError } = await admin
@@ -244,16 +287,6 @@ export default defineEventHandler(async (event) => {
         .insert(notificationRow);
       if (notifyError) {
         logger.warn("Failed to insert notification row", notifyError);
-      }
-
-      if (user?.email) {
-        await sendNotificationEmail({
-          to: user.email,
-          subject: title,
-          title,
-          message,
-          priority: "normal",
-        });
       }
     } catch (notifyErr) {
       logger.warn("Failed to notify player of inbound interest", notifyErr);

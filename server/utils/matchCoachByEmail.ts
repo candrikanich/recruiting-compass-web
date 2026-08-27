@@ -8,6 +8,7 @@ export interface MatchCoachByEmailParams {
 
 export interface MatchCoachByEmailResult {
   coachId: string | null;
+  schoolId: string | null;
 }
 
 // ILIKE treats % and _ as wildcards; escape them so a case-insensitive exact
@@ -26,14 +27,14 @@ export async function matchCoachByEmail(
   params: MatchCoachByEmailParams,
 ): Promise<MatchCoachByEmailResult> {
   const email = params.email?.trim();
-  if (!email) return { coachId: null };
+  if (!email) return { coachId: null, schoolId: null };
 
   const { data } = await admin
     .from("coaches")
-    .select("id")
+    .select("id, school_id")
     .eq("family_unit_id", params.familyUnitId)
     .ilike("email", escapeIlike(email))
     .maybeSingle();
 
-  return { coachId: data?.id ?? null };
+  return { coachId: data?.id ?? null, schoolId: data?.school_id ?? null };
 }
