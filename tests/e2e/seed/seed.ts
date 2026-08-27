@@ -1,6 +1,11 @@
 import { getSupabaseAdmin, createTestAccounts } from "./helpers/supabase-admin";
 import { seedReferenceData } from "./reference-data";
 
+// Deterministic public-profile slug for the seeded player. Kept in sync with
+// tests/e2e/public-profile.spec.ts (E2E_PROFILE_SLUG) so the anon smoke test
+// has a stable /p/:slug on this project.
+const E2E_PUBLIC_PROFILE_SLUG = "e2e-test-player";
+
 const SEED_DATA = {
   schools: [
     {
@@ -174,6 +179,31 @@ async function seedDatabase() {
     }
 
     console.log(`✅ Created ${coachData?.length || 0} coaches`);
+
+    // Step 4b: Publish the player's public profile at a deterministic slug so
+    // the anonymous public-profile smoke test (tests/e2e/public-profile.spec.ts)
+    // always has a reachable /p/:slug on this project. The hero name is read
+    // from users.full_name by the public API, so none is set here.
+    console.log("📇 Publishing player public profile...");
+    // A player_profiles row is created for the account on signup (hash_slug is
+    // NOT NULL and set there), so publish by UPDATE rather than upsert — an
+    // insert here would violate the hash_slug constraint.
+    const { data: publishedProfile, error: profileError } = await supabase
+      .from("player_profiles")
+      .update({ is_published: true, vanity_slug: E2E_PUBLIC_PROFILE_SLUG })
+      .eq("user_id", playerUserId)
+      .select("id");
+    if (profileError) {
+      throw profileError;
+    }
+    if (!publishedProfile?.length) {
+      console.warn(
+        "⚠️  No player_profiles row for the test player — public-profile spec will 404. " +
+          "Ensure the signup profile trigger ran on this project.",
+      );
+    } else {
+      console.log(`✅ Published profile at /p/${E2E_PUBLIC_PROFILE_SLUG}`);
+    }
 
     // Step 5: Reference/support data a fresh project (or reset.ts) lacks.
     await seedReferenceData(supabase, playerUserId);

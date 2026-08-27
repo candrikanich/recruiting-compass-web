@@ -15,7 +15,7 @@ import { test, expect, type Browser, type Locator, type Page } from "@playwright
  * locally and in CI alike.
  *
  * Section under test: "values" ("Target Program & Values" in the editor,
- * rendered publicly as "What I'm Looking For"). Unlike academics/awards/
+ * rendered publicly as "Target Program & Values"). Unlike academics/awards/
  * team-history — which need seeded player-detail rows this shared account
  * may not have — the values section's content (`looking_for`) is set
  * directly on this same tab, so the whole flow is self-seeding.
@@ -35,11 +35,15 @@ async function setSectionVisibility(
   toggle: Locator,
   target: "Visible" | "Hidden",
 ) {
-  const current = (await toggle.textContent())?.trim();
-  if (current !== target) {
+  // The visibility control is now an icon button exposing its state via
+  // aria-pressed (true = section visible), not visible text.
+  const wantPressed = target === "Visible";
+  const isPressed = async () =>
+    (await toggle.getAttribute("aria-pressed")) === "true";
+  if ((await isPressed()) !== wantPressed) {
     await waitForProfileSave(page, () => toggle.click());
   }
-  await expect(toggle).toHaveText(target);
+  await expect(toggle).toHaveAttribute("aria-pressed", String(wantPressed));
 }
 
 test.describe("Public Profile section-visibility toggle", () => {
@@ -76,7 +80,7 @@ test.describe("Public Profile section-visibility toggle", () => {
 
     // Read the published slug directly off the share panel — never hardcode
     // a slug, this account's profile may already exist from a prior run.
-    const shareUrl = page.locator("span.font-mono", { hasText: "/p/" });
+    const shareUrl = page.locator("[data-test='profile-share-url']", { hasText: "/p/" });
     await expect(shareUrl).toBeVisible();
     const urlText = (await shareUrl.textContent())?.trim() ?? "";
     const slug = urlText.split("/p/")[1];
@@ -98,7 +102,7 @@ test.describe("Public Profile section-visibility toggle", () => {
 
       await anonPage.goto(`/p/${slug}`);
       await expect(
-        anonPage.getByRole("heading", { name: "What I'm Looking For" }),
+        anonPage.getByRole("heading", { name: "Target Program & Values" }),
       ).toBeVisible();
       await expect(anonPage.getByText(LOOKING_FOR_TEXT)).toBeVisible();
 
@@ -108,7 +112,7 @@ test.describe("Public Profile section-visibility toggle", () => {
 
       await anonPage.goto(`/p/${slug}`);
       await expect(
-        anonPage.getByRole("heading", { name: "What I'm Looking For" }),
+        anonPage.getByRole("heading", { name: "Target Program & Values" }),
       ).not.toBeVisible();
       await expect(anonPage.getByText(LOOKING_FOR_TEXT)).not.toBeVisible();
 
@@ -118,7 +122,7 @@ test.describe("Public Profile section-visibility toggle", () => {
 
       await anonPage.goto(`/p/${slug}`);
       await expect(
-        anonPage.getByRole("heading", { name: "What I'm Looking For" }),
+        anonPage.getByRole("heading", { name: "Target Program & Values" }),
       ).toBeVisible();
       await expect(anonPage.getByText(LOOKING_FOR_TEXT)).toBeVisible();
     } finally {

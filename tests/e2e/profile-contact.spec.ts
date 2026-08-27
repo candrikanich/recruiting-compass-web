@@ -48,7 +48,7 @@ async function ensurePublishedAndGetSlug(page: Page): Promise<string> {
 
   // Read the published slug directly off the share panel — never hardcode a
   // slug, this account's profile may already exist from a prior run.
-  const shareUrl = page.locator("span.font-mono", { hasText: "/p/" });
+  const shareUrl = page.locator("[data-test='profile-share-url']", { hasText: "/p/" });
   await expect(shareUrl).toBeVisible();
   const urlText = (await shareUrl.textContent())?.trim() ?? "";
   const slug = urlText.split("/p/")[1];

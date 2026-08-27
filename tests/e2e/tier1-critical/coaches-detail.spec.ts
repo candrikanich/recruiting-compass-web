@@ -34,6 +34,28 @@ test.describe("Coach detail page", () => {
 
   let schoolId: string;
   let coachId: string;
+  // Full name of the seeded coach — the Quick Communication composer moved off
+  // the detail page (where Email is now a mailto: link) onto the directory,
+  // where each card's "Email {name}" button opens it; the comm tests target
+  // that button by name.
+  let coachFullName = "";
+
+  /**
+   * Open the Quick Communication dialog from the coach directory for the
+   * seeded coach. The composer used to live inline on the detail page; after
+   * the coach-detail consolidation it opens from the directory card action.
+   */
+  async function openQuickComm(page: import("@playwright/test").Page) {
+    await page.goto("/coaches");
+    await page.waitForLoadState("networkidle");
+    await page
+      .getByRole("button", { name: `Email ${coachFullName}` })
+      .first()
+      .click();
+    const dialog = page.getByRole("dialog", { name: "Quick Communication" });
+    await expect(dialog).toBeVisible();
+    return dialog;
+  }
 
   test.beforeAll(async ({ browser }: { browser: Browser }, testInfo) => {
     testInfo.setTimeout(120_000);
@@ -48,6 +70,7 @@ test.describe("Coach detail page", () => {
       );
 
       const coachName = generateUniqueCoachName("Detail", "Coach");
+      coachFullName = `${coachName.firstName} ${coachName.lastName}`;
       const coachData = createCoachData({
         ...coachName,
         email: generateUniqueCoachEmail("detail"),
@@ -81,23 +104,23 @@ test.describe("Coach detail page", () => {
   test("communication panel opens via Email and closes via close button", async ({
     page,
   }) => {
-    await page.locator('button:has-text("Email")').first().click();
-
-    const dialog = page.getByRole("dialog", { name: "Quick Communication" });
-    await expect(dialog).toBeVisible();
+    const dialog = await openQuickComm(page);
 
     await dialog
-      .getByRole("button", { name: "Close communication panel" })
+      .getByRole("button", { name: "Close Quick Communication dialog" })
       .click();
     await expect(dialog).toBeHidden();
   });
 
   test("communication panel closes on Escape", async ({ page }) => {
-    await page.locator('button:has-text("Email")').first().click();
-    const dialog = page.getByRole("dialog", { name: "Quick Communication" });
-    await expect(dialog).toBeVisible();
+    const dialog = await openQuickComm(page);
 
-    await page.keyboard.press("Escape");
+    // The Escape handler lives on the dialog element; opening via the card
+    // button leaves focus outside it, so press Escape from a focusable
+    // control inside the dialog (as a keyboard user in the modal would).
+    await dialog
+      .getByRole("button", { name: "Close Quick Communication dialog" })
+      .press("Escape");
     await expect(dialog).toBeHidden();
   });
 
@@ -105,10 +128,7 @@ test.describe("Coach detail page", () => {
     page,
   }) => {
     // Open the Quick Communication panel, then the email composer drawer.
-    await page.locator('button:has-text("Email")').first().click();
-    await expect(
-      page.getByRole("dialog", { name: "Quick Communication" }),
-    ).toBeVisible();
+    await openQuickComm(page);
 
     const composer = page.getByRole("dialog", { name: /Send Email to/ });
     await page.getByRole("button", { name: "Send Email" }).first().click();
@@ -148,10 +168,14 @@ test.describe("Coach detail page", () => {
     page,
   }) => {
     const noteText = `Coach note ${Date.now()}`;
-    await page.getByRole("button", { name: "Edit notes" }).click();
-    const textarea = page.getByPlaceholder("Add notes about this coach...");
-    await expect(textarea).toBeVisible();
-    await textarea.fill(noteText);
+    // Notes are edited through the Edit Coach modal (the Internal Notes card's
+    // edit action opens it) rather than an inline editor.
+    await page.getByTestId("edit-notes").click();
+    const editDialog = page.getByRole("dialog", { name: "Edit Coach" });
+    await expect(editDialog).toBeVisible();
+    const notesField = editDialog.locator("#notes");
+    await expect(notesField).toBeVisible();
+    await notesField.fill(noteText);
 
     // Wait for the PATCH /api/coaches/<id> to land before we trust persistence
     const [response] = await Promise.all([
@@ -161,12 +185,12 @@ test.describe("Coach detail page", () => {
           (r.request().method() === "PATCH" || r.request().method() === "PUT"),
         { timeout: 10_000 },
       ),
-      page.getByRole("button", { name: "Save Notes" }).click(),
+      editDialog.getByRole("button", { name: "Save Changes" }).click(),
     ]);
     expect(response.status()).toBeLessThan(400);
 
-    // Editor closes after a successful save
-    await expect(textarea).toBeHidden();
+    // Modal closes after a successful save
+    await expect(editDialog).toBeHidden();
   });
 
   test("renders not-found state for unknown coach id", async ({ page }) => {
@@ -188,10 +212,15 @@ test.describe("Coach detail page", () => {
     await expect(page.locator("#main-content").last()).toBeVisible();
   });
 
-  test("page has exactly one h1 with coach name", async ({ page }) => {
-    const h1 = page.getByRole("heading", { level: 1 });
-    await expect(h1).toHaveCount(1);
-    const text = await h1.textContent();
-    expect(text?.trim().length ?? 0).toBeGreaterThan(0);
+  test("detail page shows the coach name as its primary heading", async ({
+    page,
+  }) => {
+    // The consolidated detail page renders the coach name in the identity
+    // card as a level-2 heading (the page has no coach-name <h1>).
+    const heading = page.getByRole("heading", {
+      level: 2,
+      name: coachFullName,
+    });
+    await expect(heading).toBeVisible();
   });
 });
