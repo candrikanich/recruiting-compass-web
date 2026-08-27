@@ -273,6 +273,25 @@ describe("useInteractions - Advanced Lifecycle", () => {
 
       expect(interactions.value).toContainEqual(newInteraction);
     });
+
+    it("should allow a parent-role user to create an interaction (matches RLS: any family member)", async () => {
+      mockUser = { ...createMockUser(), role: "parent" };
+
+      const newInteraction = createMockInteraction();
+      const insertMock = vi.fn().mockReturnValue(mockQuery);
+      mockQuery.insert = insertMock;
+      mockQuery.select = vi.fn().mockReturnValue(mockQuery);
+      mockQuery.single.mockResolvedValue({ data: newInteraction, error: null });
+
+      const { createInteraction } = useInteractions();
+      const { id, created_at, updated_at, ...interactionData } = newInteraction;
+
+      const result = await createInteraction(interactionData);
+
+      expect(result).toEqual(newInteraction);
+      expect(mockSupabase.from).toHaveBeenCalledWith("interactions");
+      expect(insertMock).toHaveBeenCalled();
+    });
   });
 
   describe("createInteraction - Error Cases", () => {
@@ -285,18 +304,6 @@ describe("useInteractions - Advanced Lifecycle", () => {
 
       await expect(createInteraction(interactionData)).rejects.toThrow(
         "User not authenticated",
-      );
-    });
-
-    it("should throw error when user is not a player", async () => {
-      mockUser = { ...createMockUser(), role: "parent" };
-
-      const { createInteraction } = useInteractions();
-      const { id, created_at, updated_at, ...interactionData } =
-        createMockInteraction();
-
-      await expect(createInteraction(interactionData)).rejects.toThrow(
-        "Only players can create interactions",
       );
     });
 
