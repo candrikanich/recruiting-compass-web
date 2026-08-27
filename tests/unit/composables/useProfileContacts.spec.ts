@@ -87,4 +87,48 @@ describe("useProfileContacts", () => {
     expect(leads.value).toEqual([]);
     expect(mockLogger.error).toHaveBeenCalled();
   });
+
+  it("resolveLead POSTs status=resolved with interactionId to the resolve endpoint and refetches", async () => {
+    mockFetchAuth.mockResolvedValue({ leads: [], counts: sampleCounts });
+    const { useProfileContacts } = await import(
+      "~/composables/useProfileContacts"
+    );
+    const { resolveLead } = useProfileContacts();
+    mockFetchAuth.mockClear();
+    mockFetchAuth
+      .mockResolvedValueOnce(undefined)
+      .mockResolvedValueOnce({ leads: [], counts: sampleCounts });
+    await resolveLead("lead-1", "interaction-1");
+    expect(mockFetchAuth).toHaveBeenNthCalledWith(
+      1,
+      "/api/player/profile/contacts/lead-1/resolve",
+      { method: "POST", body: { status: "resolved", interactionId: "interaction-1" } },
+    );
+    expect(mockFetchAuth).toHaveBeenNthCalledWith(
+      2,
+      "/api/player/profile/contacts",
+    );
+  });
+
+  it("dismissLead POSTs status=dismissed to the resolve endpoint and refetches", async () => {
+    mockFetchAuth.mockResolvedValue({ leads: [], counts: sampleCounts });
+    const { useProfileContacts } = await import(
+      "~/composables/useProfileContacts"
+    );
+    const { dismissLead } = useProfileContacts();
+    mockFetchAuth.mockClear();
+    mockFetchAuth
+      .mockResolvedValueOnce(undefined)
+      .mockResolvedValueOnce({ leads: [], counts: sampleCounts });
+    await dismissLead("lead-1");
+    expect(mockFetchAuth).toHaveBeenNthCalledWith(
+      1,
+      "/api/player/profile/contacts/lead-1/resolve",
+      { method: "POST", body: { status: "dismissed" } },
+    );
+    expect(mockFetchAuth).toHaveBeenNthCalledWith(
+      2,
+      "/api/player/profile/contacts",
+    );
+  });
 });
