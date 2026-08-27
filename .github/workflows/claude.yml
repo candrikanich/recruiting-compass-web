@@ -21,7 +21,7 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
-      issues: read
+      issues: write
       id-token: write
       actions: read # Required for Claude to read CI results on PRs
     steps:
@@ -43,7 +43,7 @@ jobs:
           # Optional: Give a custom prompt to Claude. If this is not specified, Claude will perform the instructions specified in the comment that tagged it.
           # prompt: 'Update the pull request description to include a summary of changes.'
 
-          # Optional: Add claude_args to customize behavior and configuration
-          # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
-          # or https://code.claude.com/docs/en/cli-reference for available options
-          # claude_args: '--allowed-tools Bash(gh pr:*)'
+          # Allow Claude to manage issues (create/close/comment/view) and read auth/PR state.
+          # Without these, gh issue create/close come back "requires approval" in the
+          # non-interactive job and get blocked.
+          claude_args: '--allowed-tools "Bash(gh issue create:*),Bash(gh issue close:*),Bash(gh issue comment:*),Bash(gh issue view:*),Bash(gh issue edit:*),Bash(gh pr:*),Bash(gh auth status:*)"'
