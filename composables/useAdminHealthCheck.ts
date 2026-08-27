@@ -1,5 +1,4 @@
-import { ref } from "vue";
-import { useAdminAuthHeaders } from "~/composables/useAdminAuthHeaders";
+import { useAdminResource } from "~/composables/useAdminResource";
 
 interface AdminHealth {
   ok: boolean;
@@ -7,27 +6,18 @@ interface AdminHealth {
 }
 
 export function useAdminHealthCheck() {
-  const { getAuthHeaders } = useAdminAuthHeaders();
+  const { data, loading, error, load } = useAdminResource<AdminHealth>(
+    () => "/api/admin/health",
+    {
+      failLabel: "Failed to load health",
+      fallbackMessage: "Failed to load health",
+    },
+  );
 
-  const health = ref<AdminHealth | null>(null);
-  const healthLoading = ref(false);
-  const healthError = ref<string | null>(null);
-
-  const loadHealth = async () => {
-    healthLoading.value = true;
-    healthError.value = null;
-    try {
-      const headers = await getAuthHeaders();
-      const res = await fetch("/api/admin/health", { headers });
-      if (!res.ok) throw new Error(`Failed to load health: ${res.status}`);
-      health.value = await res.json();
-    } catch (err) {
-      healthError.value =
-        err instanceof Error ? err.message : "Failed to load health";
-    } finally {
-      healthLoading.value = false;
-    }
+  return {
+    health: data,
+    healthLoading: loading,
+    healthError: error,
+    loadHealth: load,
   };
-
-  return { health, healthLoading, healthError, loadHealth };
 }
