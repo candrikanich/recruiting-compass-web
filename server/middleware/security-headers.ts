@@ -46,9 +46,14 @@ export default defineEventHandler((event) => {
   // Supabase Storage: frame-src/object-src for PDF previews, wss: for WebSocket
   const supabaseUrl = process.env.NUXT_PUBLIC_SUPABASE_URL || "";
   const supabaseWss = supabaseUrl.replace("https://", "wss://");
+  // Cloudflare Turnstile (public-profile Contact/Interest anti-abuse): loads
+  // its script (script-src), renders the challenge in an iframe (frame-src),
+  // and calls home during the challenge (connect-src). Without these the
+  // widget is CSP-blocked and no token can be minted → every submit 403s.
+  const turnstile = "https://challenges.cloudflare.com";
   const cspHeader = isProduction
-    ? `default-src 'self'; script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' ${supabaseUrl} ${supabaseWss} https://vitals.vercel-insights.com; worker-src 'self' blob:; frame-src 'self' ${supabaseUrl}; object-src 'self' ${supabaseUrl}; frame-ancestors 'none'`
-    : `default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://va.vercel-scripts.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https: http://localhost:*; worker-src 'self' blob:; frame-src 'self' ${supabaseUrl}; object-src 'self' ${supabaseUrl}; frame-ancestors 'self'`;
+    ? `default-src 'self'; script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com ${turnstile}; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' ${supabaseUrl} ${supabaseWss} https://vitals.vercel-insights.com ${turnstile}; worker-src 'self' blob:; frame-src 'self' ${supabaseUrl} ${turnstile}; object-src 'self' ${supabaseUrl}; frame-ancestors 'none'`
+    : `default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://va.vercel-scripts.com ${turnstile}; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https: http://localhost:*; worker-src 'self' blob:; frame-src 'self' ${supabaseUrl} ${turnstile}; object-src 'self' ${supabaseUrl}; frame-ancestors 'self'`;
 
   setHeader(event, "Content-Security-Policy", cspHeader);
 });
