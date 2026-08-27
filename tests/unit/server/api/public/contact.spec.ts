@@ -11,7 +11,11 @@ const mockState = {
   schoolRow: null as { id: string } | null,
   insertedContact: null as Record<string, unknown> | null,
   contactInsertError: null as object | null,
+  contactUpdate: null as { row: Record<string, unknown>; id: unknown } | null,
   notificationInserts: [] as Record<string, unknown>[],
+  notificationInsertError: null as object | null,
+  insertedInteraction: null as Record<string, unknown> | null,
+  interactionInsertError: null as object | null,
 };
 
 const rateLimitByIpMock = vi.fn(async () => ({
@@ -27,8 +31,10 @@ const rateLimitByKeyMock = vi.fn(async () => ({
   reset: 0,
 }));
 const verifyTurnstileMock = vi.fn(async () => ({ ok: true }));
-const matchCoachByEmailMock = vi.fn(async () => ({ coachId: null as string | null }));
-const sendNotificationEmailMock = vi.fn(async () => ({ success: true }));
+const matchCoachByEmailMock = vi.fn(async () => ({
+  coachId: null as string | null,
+  schoolId: null as string | null,
+}));
 
 vi.mock("~/server/utils/rateLimit", () => ({
   rateLimitByIp: (...args: unknown[]) => rateLimitByIpMock(...args),
@@ -52,11 +58,6 @@ vi.mock("~/server/utils/turnstile", () => ({
 
 vi.mock("~/server/utils/matchCoachByEmail", () => ({
   matchCoachByEmail: (...args: unknown[]) => matchCoachByEmailMock(...args),
-}));
-
-vi.mock("~/server/utils/emailService", () => ({
-  sendNotificationEmail: (...args: unknown[]) =>
-    sendNotificationEmailMock(...args),
 }));
 
 vi.mock("~/server/utils/supabase", () => ({
@@ -98,6 +99,30 @@ vi.mock("~/server/utils/supabase", () => ({
               }),
             };
           },
+          update: (row: Record<string, unknown>) => ({
+            eq: (_col: string, id: unknown) => {
+              mockState.contactUpdate = { row, id };
+              return Promise.resolve({ error: null });
+            },
+          }),
+        };
+      }
+      if (table === "interactions") {
+        return {
+          insert: (row: Record<string, unknown>) => {
+            mockState.insertedInteraction = row;
+            return {
+              select: () => ({
+                single: () =>
+                  Promise.resolve({
+                    data: mockState.interactionInsertError
+                      ? null
+                      : { id: "interaction-1" },
+                    error: mockState.interactionInsertError,
+                  }),
+              }),
+            };
+          },
         };
       }
       if (table === "schools") {
@@ -116,7 +141,7 @@ vi.mock("~/server/utils/supabase", () => ({
         return {
           insert: (row: Record<string, unknown>) => {
             mockState.notificationInserts.push(row);
-            return Promise.resolve({ error: null });
+            return Promise.resolve({ error: mockState.notificationInsertError });
           },
         };
       }
@@ -193,7 +218,11 @@ describe("POST /api/public/profile/[slug]/contact", () => {
     mockState.schoolRow = null;
     mockState.insertedContact = null;
     mockState.contactInsertError = null;
+    mockState.contactUpdate = null;
     mockState.notificationInserts = [];
+    mockState.notificationInsertError = null;
+    mockState.insertedInteraction = null;
+    mockState.interactionInsertError = null;
     rateLimitByIpMock.mockClear();
     rateLimitByIpMock.mockResolvedValue({
       success: true,
@@ -211,16 +240,14 @@ describe("POST /api/public/profile/[slug]/contact", () => {
     verifyTurnstileMock.mockClear();
     verifyTurnstileMock.mockResolvedValue({ ok: true });
     matchCoachByEmailMock.mockClear();
-    matchCoachByEmailMock.mockResolvedValue({ coachId: null });
-    sendNotificationEmailMock.mockClear();
-    sendNotificationEmailMock.mockResolvedValue({ success: true });
+    matchCoachByEmailMock.mockResolvedValue({ coachId: null, schoolId: null });
   });
 
   it("silently returns ok when honeypot is tripped, with no insert or notify", async () => {
     const result = await handler(makeEvent({ ...validBody, hp: "im-a-bot" }));
     expect(result).toEqual({ ok: true });
     expect(mockState.insertedContact).toBeNull();
-    expect(sendNotificationEmailMock).not.toHaveBeenCalled();
+    expect(mockState.insertedInteraction).toBeNull();
     expect(mockState.notificationInserts).toHaveLength(0);
   });
 
@@ -269,8 +296,11 @@ describe("POST /api/public/profile/[slug]/contact", () => {
     });
   });
 
-  it("inserts profile_contacts with matched_coach_id set on email match and notifies the player", async () => {
-    matchCoachByEmailMock.mockResolvedValueOnce({ coachId: "coach-42" });
+  it("inserts profile_contacts with matched_coach_id set on email match, mints an inbound interaction, and does not insert its own notification", async () => {
+    matchCoachByEmailMock.mockResolvedValueOnce({
+      coachId: "coach-42",
+      schoolId: "school-42",
+    });
     const result = await handler(makeEvent(validBody));
 
     expect(result).toEqual({ ok: true });
@@ -286,7 +316,40 @@ describe("POST /api/public/profile/[slug]/contact", () => {
       note: "Loved your film, would like to talk.",
       ip: "1.2.3.4",
       user_agent: "Mozilla/5.0",
+      status: "resolved",
     });
+    expect(mockState.insertedInteraction).toMatchObject({
+      coach_id: "coach-42",
+      school_id: "school-42",
+      family_unit_id: "family-1",
+      logged_by: "player-1",
+      direction: "inbound",
+      type: "email",
+    });
+    expect(mockState.contactUpdate).toMatchObject({
+      row: { interaction_id: "interaction-1" },
+      id: "contact-1",
+    });
+    // A DB trigger creates the player notification in production when the
+    // interaction is inserted — the mocked supabase in this unit test does
+    // not run triggers, so the endpoint itself inserts zero notifications
+    // on the matched path.
+    expect(mockState.notificationInserts).toHaveLength(0);
+  });
+
+  it("inserts profile_contacts with matched_coach_id null when no coach match, and still inserts one notification", async () => {
+    matchCoachByEmailMock.mockResolvedValueOnce({
+      coachId: null,
+      schoolId: null,
+    });
+    const result = await handler(makeEvent(validBody));
+
+    expect(result).toEqual({ ok: true });
+    expect(mockState.insertedContact).toMatchObject({
+      matched_coach_id: null,
+      status: "pending",
+    });
+    expect(mockState.insertedInteraction).toBeNull();
     expect(mockState.notificationInserts).toHaveLength(1);
     expect(mockState.notificationInserts[0]).toMatchObject({
       user_id: "player-1",
@@ -294,22 +357,6 @@ describe("POST /api/public/profile/[slug]/contact", () => {
       related_entity_type: "profile_contact",
       related_entity_id: "contact-1",
     });
-    expect(sendNotificationEmailMock).toHaveBeenCalledTimes(1);
-    expect(sendNotificationEmailMock.mock.calls[0][0]).toMatchObject({
-      to: "player@example.com",
-    });
-  });
-
-  it("inserts profile_contacts with matched_coach_id null when no coach match, and still notifies", async () => {
-    matchCoachByEmailMock.mockResolvedValueOnce({ coachId: null });
-    const result = await handler(makeEvent(validBody));
-
-    expect(result).toEqual({ ok: true });
-    expect(mockState.insertedContact).toMatchObject({
-      matched_coach_id: null,
-    });
-    expect(mockState.notificationInserts).toHaveLength(1);
-    expect(sendNotificationEmailMock).toHaveBeenCalledTimes(1);
   });
 
   it("never leaks player/coach PII in the response body", async () => {
@@ -370,11 +417,7 @@ describe("POST /api/public/profile/[slug]/contact", () => {
   });
 
   it("does not fail the response when notification insert fails", async () => {
-    const mockFrom = (
-      await import("~/server/utils/supabase")
-    ).useSupabaseAdmin();
-    void mockFrom;
-    sendNotificationEmailMock.mockRejectedValueOnce(new Error("resend down"));
+    mockState.notificationInsertError = new Error("db down");
     const result = await handler(makeEvent(validBody));
     expect(result).toEqual({ ok: true });
   });
