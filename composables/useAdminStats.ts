@@ -1,5 +1,4 @@
-import { ref } from "vue";
-import { useAdminAuthHeaders } from "~/composables/useAdminAuthHeaders";
+import { useAdminResource } from "~/composables/useAdminResource";
 import type { BreakdownSlice, WeekBucket } from "~/utils/adminBreakdown";
 
 interface AdminStats {
@@ -15,27 +14,18 @@ interface AdminStats {
 }
 
 export function useAdminStats() {
-  const { getAuthHeaders } = useAdminAuthHeaders();
+  const { data, loading, error, load } = useAdminResource<AdminStats>(
+    () => "/api/admin/stats",
+    {
+      failLabel: "Failed to load stats",
+      fallbackMessage: "Failed to load stats",
+    },
+  );
 
-  const stats = ref<AdminStats | null>(null);
-  const statsLoading = ref(false);
-  const statsError = ref<string | null>(null);
-
-  const loadStats = async () => {
-    statsLoading.value = true;
-    statsError.value = null;
-    try {
-      const headers = await getAuthHeaders();
-      const res = await fetch("/api/admin/stats", { headers });
-      if (!res.ok) throw new Error(`Failed to load stats: ${res.status}`);
-      stats.value = await res.json();
-    } catch (err) {
-      statsError.value =
-        err instanceof Error ? err.message : "Failed to load stats";
-    } finally {
-      statsLoading.value = false;
-    }
+  return {
+    stats: data,
+    statsLoading: loading,
+    statsError: error,
+    loadStats: load,
   };
-
-  return { stats, statsLoading, statsError, loadStats };
 }
