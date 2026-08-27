@@ -1,6 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-vi.stubGlobal("$fetch", vi.fn());
+// The inbox composable must authenticate through useAuthFetch (Bearer token),
+// NOT bare $fetch — the app sets no auth cookie, so a bare $fetch 401s in prod.
+// Mocking useAuthFetch (and leaving global $fetch unstubbed) makes a regression
+// to bare $fetch fail here instead of only in production.
+const mockFetchAuth = vi.fn();
+vi.mock("~/composables/useAuthFetch", () => ({
+  useAuthFetch: () => ({ $fetchAuth: mockFetchAuth }),
+}));
 
 const mockLogger = {
   info: vi.fn(),
@@ -37,8 +44,7 @@ describe("useProfileContacts", () => {
   });
 
   it("initializes with empty leads and zeroed counts", async () => {
-    const mockFetch = vi.fn().mockResolvedValue({ leads: [], counts: null });
-    vi.stubGlobal("$fetch", mockFetch);
+    mockFetchAuth.mockResolvedValue({ leads: [], counts: null });
     const { useProfileContacts } = await import(
       "~/composables/useProfileContacts"
     );
@@ -52,11 +58,10 @@ describe("useProfileContacts", () => {
   });
 
   it("fetchContacts populates leads and counts from GET /api/player/profile/contacts", async () => {
-    const mockFetch = vi.fn().mockResolvedValue({
+    mockFetchAuth.mockResolvedValue({
       leads: [sampleLead],
       counts: sampleCounts,
     });
-    vi.stubGlobal("$fetch", mockFetch);
     const { useProfileContacts } = await import(
       "~/composables/useProfileContacts"
     );
@@ -64,15 +69,14 @@ describe("useProfileContacts", () => {
     const promise = fetchContacts();
     expect(loading.value).toBe(true);
     await promise;
-    expect(mockFetch).toHaveBeenCalledWith("/api/player/profile/contacts");
+    expect(mockFetchAuth).toHaveBeenCalledWith("/api/player/profile/contacts");
     expect(leads.value).toEqual([sampleLead]);
     expect(counts.value).toEqual(sampleCounts);
     expect(loading.value).toBe(false);
   });
 
-  it("fetchContacts sets a user-friendly error and resets loading when $fetch rejects", async () => {
-    const mockFetch = vi.fn().mockRejectedValue(new Error("Network error"));
-    vi.stubGlobal("$fetch", mockFetch);
+  it("fetchContacts sets a user-friendly error and resets loading when the request rejects", async () => {
+    mockFetchAuth.mockRejectedValue(new Error("Network error"));
     const { useProfileContacts } = await import(
       "~/composables/useProfileContacts"
     );
