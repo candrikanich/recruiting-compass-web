@@ -38,10 +38,17 @@ test.describe("Communication Templates CRUD — atomic lifecycle", () => {
     await page.getByRole("button", { name: "Save Template" }).click();
 
     // 2. READ — page returns to the list tab; our card is present
+    //
+    // In CI, the on-save refetch can take >5s (Supabase + network + parallel
+    // workers), so explicitly wait for the editor to unmount and allow a
+    // longer visible assertion window for the newly created template.
+    await expect(
+      page.getByRole("heading", { name: "Create Template", exact: true }),
+    ).toBeHidden({ timeout: 15_000 });
     const card = page
       .locator("div.rounded-lg.bg-white.p-6.shadow-sm")
       .filter({ has: page.getByRole("heading", { name, exact: true }) });
-    await expect(card.first()).toBeVisible();
+    await expect(card.first()).toBeVisible({ timeout: 20_000 });
 
     // 3. UPDATE — open Edit, change the name, save
     await card.first().getByRole("button", { name: "Edit", exact: true }).click();
