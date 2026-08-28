@@ -1,5 +1,9 @@
 -- cache_snapshots — durable L2 read-through cache for serverless routes.
 --
+-- Version 20260913000000 (retimed from 20260912000000). Live schema_migrations
+-- already recorded 20260912000000 for school recommendations (`response_cache`
+-- + `school_recommendation_dismissals`). Same-version files cannot both apply.
+--
 -- Why Postgres instead of Redis-only:
 --   Vercel isolates are ephemeral. Upstash Redis is optional infra (missing
 --   env = no L1). A small snapshot table lets the public-profile hot path

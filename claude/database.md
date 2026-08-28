@@ -133,9 +133,20 @@ Verified: full E2E suite post-migration, 454 passed / 1 flake (`auth.spec.ts` lo
 
 **Still open, not fixable via available tooling:** `auth_leaked_password_protection` WARN — this is a GoTrue/Auth config setting (HaveIBeenPwned check on signup/password-change), not SQL, and no MCP tool exposes Auth config changes. Needs manual toggle: Supabase Dashboard → Authentication → Sign In / Providers → Password Security → "Leaked password protection."
 
+### 2026-08-28: school recommendations schema applied live
+
+`supabase/migrations/20260912000000_school_recommendations.sql` — applied to live DB `xpxzhqghxecsjhvklsqg` (prod+QA) and verified by Chris. Two tables:
+
+- **`response_cache`** — L3 cache-aside for Nitro (`cache_key` PK, `payload jsonb`, `expires_at`). RLS enabled + FORCE; `anon`/`authenticated` revoked; `service_role` SELECT/INSERT/UPDATE/DELETE only. Index `response_cache_expires_at_idx`.
+- **`school_recommendation_dismissals`** — family-scoped "not this school" rows (`family_unit_id`, `athlete_user_id`, `catalog_key`, unique `(family_unit_id, catalog_key)`). RLS enabled + FORCE; family SELECT/INSERT/DELETE policies. Indexes on `athlete_user_id` and `(family_unit_id, created_at desc)`.
+
+GET `/api/schools/recommendations` ranks without these tables; POST dismiss requires `school_recommendation_dismissals` (now live). Recorded in `schema_migrations` as version `20260912000000`. PR #549 (`cursor/school-recommendations-92b1` → develop).
+
+**Timestamp collision with #548:** #548 originally landed `20260912000000_cache_snapshots.sql`. Live `schema_migrations` already consumed that version for school recs, so the repo retimed cache_snapshots to `20260913000000_cache_snapshots.sql`. Two L3 tables on purpose: recs → `response_cache` (`sharedCache`); public profiles → `cache_snapshots` (`readThroughCache`).
+
 ### 2026-08-28: `cache_snapshots` applied live (public-profile L2)
 
-Applied via Supabase MCP `apply_migration` name `cache_snapshots` to prod+QA project `xpxzhqghxecsjhvklsqg` (Chris confirmed applied; applying session had MCP, the Cloud Agent that shipped the code did not). Repo file `supabase/migrations/20260912000000_cache_snapshots.sql` rode in on PR #548 (`f535f5e1` on develop).
+Applied via Supabase MCP `apply_migration` name `cache_snapshots` to prod+QA project `xpxzhqghxecsjhvklsqg` (Chris confirmed applied; applying session had MCP, the Cloud Agent that shipped the code did not). Repo file is now `supabase/migrations/20260913000000_cache_snapshots.sql` (retimed after the #549 collision). SQL is `CREATE TABLE IF NOT EXISTS` — a later apply of the 20260913 file is a no-op on the table.
 
 What landed:
 
@@ -143,4 +154,4 @@ What landed:
 - Indexes: PK on `cache_key`, `cache_snapshots_namespace_idx`, `cache_snapshots_expires_at_idx`.
 - Function `public.invalidate_public_profile_snapshot()` (`SECURITY DEFINER`, `search_path = ''`) + trigger `player_profiles_invalidate_cache_snapshot` AFTER UPDATE OR DELETE on `player_profiles` — deletes `pubprof:v1:{user_id}`.
 
-Code path: `server/utils/publicProfileRead.ts` (L1 Redis 60s + L2 this table 300s, fail-open). `is_published` is still read from `player_profiles` on every GET. L2 starts filling once QA is on #548; applying the table first was safe because missing-table is fail-open.
+Code path: `server/utils/publicProfileRead.ts` (L1 Redis 60s + L2 this table 300s, fail-open). `is_published` is still read from `player_profiles` on every GET.

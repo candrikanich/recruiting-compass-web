@@ -85,7 +85,7 @@ server/utils/publicProfileRead.ts     publish check + origin + cache orchestrati
 server/utils/readThroughCache.ts      generic L1/L2/singleflight (reusable)
 server/utils/redis.ts                 Upstash client (fail-open)
 
-supabase/migrations/20260912000000_cache_snapshots.sql
+supabase/migrations/20260913000000_cache_snapshots.sql
 ```
 
 The Vue tree does not change. Caching is a server concern. `PublicProfileCard`
@@ -237,9 +237,10 @@ would invite RLS joins that the service-role writer would bypass anyway.
 Shipped in this change:
 
 - `readThroughCache` + `publicProfileRead` + GET/PUT wiring
-- Migration `20260912000000_cache_snapshots.sql` — **applied live 2026-08-28**
+- Migration `20260913000000_cache_snapshots.sql` — **applied live 2026-08-28**
   via MCP `apply_migration` name `cache_snapshots` on `xpxzhqghxecsjhvklsqg`
-  (see `claude/database.md`)
+  (see `claude/database.md`). Retimed from `20260912000000` because that
+  version was already consumed live by school recommendations (PR #549).
 - Unit tests for cache semantics, origin skip rules, GET 304, existing
   public-profile assembly contract
 
