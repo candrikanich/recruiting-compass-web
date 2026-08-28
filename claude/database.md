@@ -132,3 +132,15 @@ Verified: full E2E suite post-migration, 454 passed / 1 flake (`auth.spec.ts` lo
 `supabase/migrations/20260801000000_move_pg_trgm_to_extensions.sql` — `ALTER EXTENSION pg_trgm SET SCHEMA extensions;`, closing the `extension_in_public` advisor WARN. Safe because `extensions` is already in the database's default `search_path` (`"$user", public, extensions`) and `ALTER EXTENSION ... SET SCHEMA` preserves object identity (no drop/recreate). Only real dependent: `nces_schools_name_trgm` GIN index (`gin_trgm_ops`), backing the high-school search feature's plain `.ilike()` query in `server/api/schools/high-school-search.get.ts`. Verified post-move: index `indisvalid = true`, query still returns correct results, `smart-inputs.spec.ts` High School Search suite 4/4 pass.
 
 **Still open, not fixable via available tooling:** `auth_leaked_password_protection` WARN — this is a GoTrue/Auth config setting (HaveIBeenPwned check on signup/password-change), not SQL, and no MCP tool exposes Auth config changes. Needs manual toggle: Supabase Dashboard → Authentication → Sign In / Providers → Password Security → "Leaked password protection."
+
+### 2026-08-28: `cache_snapshots` applied live (public-profile L2)
+
+Applied via Supabase MCP `apply_migration` name `cache_snapshots` to prod+QA project `xpxzhqghxecsjhvklsqg` (Chris confirmed applied; applying session had MCP, the Cloud Agent that shipped the code did not). Repo file `supabase/migrations/20260912000000_cache_snapshots.sql` rode in on PR #548 (`f535f5e1` on develop).
+
+What landed:
+
+- Table `public.cache_snapshots` — derived public JSON snapshots, **not** tenant data. RLS on, **no policies**, `REVOKE` from `anon`/`authenticated`, service-role only (same pattern as `admin_audit_log`).
+- Indexes: PK on `cache_key`, `cache_snapshots_namespace_idx`, `cache_snapshots_expires_at_idx`.
+- Function `public.invalidate_public_profile_snapshot()` (`SECURITY DEFINER`, `search_path = ''`) + trigger `player_profiles_invalidate_cache_snapshot` AFTER UPDATE OR DELETE on `player_profiles` — deletes `pubprof:v1:{user_id}`.
+
+Code path: `server/utils/publicProfileRead.ts` (L1 Redis 60s + L2 this table 300s, fail-open). `is_published` is still read from `player_profiles` on every GET. L2 starts filling once QA is on #548; applying the table first was safe because missing-table is fail-open.

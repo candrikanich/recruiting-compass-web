@@ -237,8 +237,9 @@ would invite RLS joins that the service-role writer would bypass anyway.
 Shipped in this change:
 
 - `readThroughCache` + `publicProfileRead` + GET/PUT wiring
-- Migration `20260912000000_cache_snapshots.sql` (apply to the live DB before
-  L2 starts filling; until then L2 fail-opens and L1/origin still work)
+- Migration `20260912000000_cache_snapshots.sql` — **applied live 2026-08-28**
+  via MCP `apply_migration` name `cache_snapshots` on `xpxzhqghxecsjhvklsqg`
+  (see `claude/database.md`)
 - Unit tests for cache semantics, origin skip rules, GET 304, existing
   public-profile assembly contract
 
