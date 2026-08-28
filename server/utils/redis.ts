@@ -54,6 +54,7 @@ export const CACHE_KEYS = {
   NCES_SEARCH: (q: string, state: string) =>
     `nces:search:${q.toLowerCase().trim()}:${state.toLowerCase()}`,
   SCHOOL_RECS: (athleteId: string) => `rec:v1:${athleteId}`,
+  PUBLIC_PROFILE: (userId: string) => `pubprof:v1:${userId}`,
 } as const;
 
 /**

@@ -37,10 +37,11 @@ function onChange(event: Event) {
     :class="disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'"
   >
     <!-- Real checkbox: keyboard, focus, screen-reader announce, form semantics.
-         Visually hidden, drives the SVG below purely via CSS peer state. -->
+         Invisible but full-size for hit-testing (sr-only clips to 0×0 which
+         breaks WebKit mouse-event routing). -->
     <input
       type="checkbox"
-      class="peer sr-only"
+      class="peer absolute inset-0 z-10 cursor-pointer opacity-0 disabled:cursor-not-allowed"
       :checked="modelValue"
       :disabled="disabled"
       v-bind="$attrs"

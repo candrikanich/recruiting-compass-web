@@ -146,3 +146,4 @@ See [`/planning/lessons.md`](../planning/lessons.md) for evolving patterns.
 - [Architecture Diagrams (extended)](technical/ARCHITECTURE_DIAGRAMS.md)
 - [Feature Flow Diagrams](technical/FEATURE_FLOW_DIAGRAMS.md)
 - [API Reference](api/API_ENDPOINT_DOCUMENTATION.md)
+- [Public Profile Read Path](technical/public-profile-read-path.md) — two-tier cache for the unauthenticated profile GET

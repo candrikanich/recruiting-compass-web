@@ -1,84 +1,50 @@
 /**
  * Nitro plugin for Sentry server-side context
  *
- * Adds request context (correlation ID, user, path) to Sentry scope
- * for every incoming request.
+ * Adds request context (correlation ID, user, path) to the isolation scope
+ * for every incoming request so later captures in the same request inherit it.
  */
 
 import * as Sentry from "@sentry/nuxt";
 import { getHeader } from "h3";
 import type { H3Event } from "h3";
+import {
+  applySentryRequestContext,
+  isSentryConfigured,
+  resolveClientIp,
+} from "~/server/utils/sentryContext";
 
 export default defineNitroPlugin((nitroApp) => {
-  // Only run if Sentry is configured
-  const dsn = process.env.SENTRY_DSN;
-  if (!dsn) {
+  // Match SDK init: NUXT_PUBLIC_SENTRY_DSN (documented) or SENTRY_DSN.
+  if (!isSentryConfigured()) {
     return;
   }
 
-  // TODO: REMOVE — Sentry logs verification test
-  Sentry.logger.info("Sentry server logs verification", {
-    log_source: "sentry_test",
-  });
-
   nitroApp.hooks.hook("request", (event) => {
-    // Set up Sentry scope for this request
-    Sentry.withScope((scope) => {
-      // Add correlation ID
-      const requestId = event.context.requestId as string | undefined;
-      if (requestId) {
-        scope.setTag("correlation_id", requestId);
-        scope.setContext("request", {
-          request_id: requestId,
-          path: event.path,
-          method: event.method,
-        });
-      }
-
-      // Add user context if available
-      const user = event.context.user as
-        { id: string; email?: string } | undefined;
-      if (user) {
-        scope.setUser({
-          id: user.id,
-          email: user.email,
-          ip_address: getClientIP(event),
-        });
-      }
-
-      // Add URL as tag for filtering
-      scope.setTag("path", event.path);
-      scope.setTag("method", event.method);
+    // Isolation scope lives for the request. withScope() would clone+discard
+    // and the tags would never appear on later captureException calls.
+    applySentryRequestContext(Sentry.getIsolationScope(), {
+      requestId: event.context.requestId as string | undefined,
+      path: event.path,
+      method: event.method,
+      user: event.context.user as { id: string; email?: string } | undefined,
+      ip: getClientIP(event),
     });
   });
 
   // Capture Nitro errors
   nitroApp.hooks.hook("error", (error, { event }) => {
     Sentry.withScope((scope) => {
-      // Add request context
       if (event) {
-        const requestId = event.context.requestId as string | undefined;
-        if (requestId) {
-          scope.setTag("correlation_id", requestId);
-        }
-
-        scope.setContext("request", {
+        applySentryRequestContext(scope, {
+          requestId: event.context.requestId as string | undefined,
           path: event.path,
           method: event.method,
-          request_id: requestId,
+          user: event.context.user as
+            { id: string; email?: string } | undefined,
         });
-
-        const user = event.context.user as
-          { id: string; email?: string } | undefined;
-        if (user) {
-          scope.setUser({
-            id: user.id,
-            email: user.email,
-          });
-        }
       }
 
-      // Capture the error
       if (error instanceof Error) {
         Sentry.captureException(error);
       } else {
@@ -88,13 +54,9 @@ export default defineNitroPlugin((nitroApp) => {
   });
 });
 
-/**
- * Get client IP from request
- */
 function getClientIP(event: H3Event): string {
-  const forwarded = getHeader(event, "x-forwarded-for");
-  if (forwarded) {
-    return forwarded.split(",")[0].trim();
-  }
-  return event.node.req.socket.remoteAddress || "unknown";
+  return resolveClientIp(
+    getHeader(event, "x-forwarded-for"),
+    event.node.req.socket.remoteAddress,
+  );
 }

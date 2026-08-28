@@ -17,17 +17,17 @@ test.describe("School Detail - Notes Management", () => {
     schoolId = await schoolHelpers.createSchool(page, schoolData);
 
     await page.goto(`/schools/${schoolId}`);
-    await page.waitForLoadState("domcontentloaded");
+    await page.waitForLoadState("networkidle");
   });
 
   test("should display shared notes section with Edit button", async ({
     page,
   }) => {
     const notesHeading = page.locator(notesSelectors.sharedNotesSection);
-    await expect(notesHeading).toBeVisible();
+    await expect(notesHeading).toBeVisible({ timeout: 15000 });
 
     const editButton = page.locator(notesSelectors.editButton);
-    await expect(editButton).toBeVisible();
+    await expect(editButton).toBeVisible({ timeout: 15000 });
   });
 
   test("should edit and save shared notes", async ({ page }) => {

@@ -3,6 +3,8 @@
 **Status:** MVP in code (PR #549). Schema applied live 2026-08-28 (`20260912000000_school_recommendations.sql`).
 **Issue:** #121 (product), #529 (system design)
 
+Develop also shipped a public-profile cache (`cache_snapshots` + `readThroughCache`, PR #548) that originally used the same migration timestamp. Recs keep `response_cache` via `sharedCache`; public profiles keep `cache_snapshots`. The profile migration is retimed to `20260913000000_cache_snapshots.sql` so live `schema_migrations` (already recorded `20260912000000` for this feature) can still apply it.
+
 New users land on an empty school list. This system turns profile signals we already collect into a short, ranked set of NCAA programs they can add in one tap — without calling College Scorecard on every page view.
 
 ---
