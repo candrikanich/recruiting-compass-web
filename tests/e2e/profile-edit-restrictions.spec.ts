@@ -53,32 +53,30 @@ test.describe("Profile Edit Restrictions (User Story 2.2)", () => {
       await page.goto("/settings/player-details");
       await page.waitForLoadState("domcontentloaded");
 
-      // Wait for the form to render — selects appear only once isLoading
-      // flips false. global-setup seeds primary_sport=Baseball into the player's
-      // user_preferences.player_details so the Athletics tab renders position
-      // buttons.
+      // Selects appear only once isLoading flips false. Wait for the seeded
+      // sport too — availablePositions is empty until primary_sport is set, and
+      // the Athletics panel is v-show hidden until the tab click commits.
+      const sportSelect = page
+        .locator("label")
+        .filter({ hasText: "Primary Sport" })
+        .locator("xpath=following-sibling::select");
+      await expect(sportSelect).toBeVisible({ timeout: 15000 });
+      await expect(sportSelect).toHaveValue("Baseball", { timeout: 15000 });
+
       await page
-        .locator("select")
-        .first()
-        .waitFor({ state: "visible", timeout: 15000 });
+        .locator("nav.mb-8")
+        .getByRole("button", { name: "Athletics" })
+        .click();
+      await expect(
+        page.getByRole("heading", { name: "Physical Profile" }),
+      ).toBeVisible({ timeout: 15000 });
 
-      // Navigate to Athletics tab (use first match - desktop nav button)
-      const athleticsTab = page
-        .locator("button", { hasText: "Athletics" })
-        .first();
-      await athleticsTab.click();
-
-      // Position buttons should be interactive for the parent — none disabled
-      // from the old read-only gating. Scope to the canonical position buttons:
-      // other controls (e.g. the video "Add" button) are disabled by input
-      // validation, not by role, and are not part of this assertion.
-      const positionButtons = page.locator("button:visible").filter({
-        hasText:
-          /^(Pitcher|Catcher|First Base|Second Base|Third Base|Shortstop|Left Field|Center Field|Right Field|Designated Hitter|Utility)$/,
+      const pitcher = page.getByRole("button", {
+        name: "Pitcher",
+        exact: true,
       });
-      expect(await positionButtons.count()).toBeGreaterThan(0);
-      const disabledPositions = positionButtons.and(page.locator("[disabled]"));
-      expect(await disabledPositions.count()).toBe(0);
+      await expect(pitcher).toBeVisible({ timeout: 15000 });
+      await expect(pitcher).toBeEnabled();
     });
 
     test("parent sees auto-save status indicator (edits persist)", async ({
