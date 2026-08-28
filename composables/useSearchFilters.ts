@@ -1,5 +1,10 @@
 import { ref, computed } from "vue";
 import { createClientLogger } from "~/utils/logger";
+import {
+  createEmptySearchFilters,
+  isFilterValueActive,
+  isSearchFiltering,
+} from "~/domain/search";
 
 const logger = createClientLogger("useSearchFilters");
 
@@ -64,14 +69,7 @@ export const useSearchFilters = () => {
   /**
    * Computed: whether any filters are active
    */
-  const isFiltering = computed(() => {
-    return Object.values(filters.value).some((filterGroup) =>
-      Object.values(filterGroup).some(
-        (value) =>
-          value !== "" && value !== 0 && value !== false && value !== null,
-      ),
-    );
-  });
+  const isFiltering = computed(() => isSearchFiltering(filters.value));
 
   /**
    * Apply a single filter
@@ -94,15 +92,7 @@ export const useSearchFilters = () => {
    * Clear all filters
    */
   const clearFilters = () => {
-    filters.value.schools = { division: "", state: "", verified: null };
-    filters.value.coaches = { sport: "", responseRate: 0, verified: null };
-    filters.value.interactions = {
-      sentiment: "",
-      direction: "",
-      dateFrom: "",
-      dateTo: "",
-    };
-    filters.value.metrics = { metricType: "", minValue: 0, maxValue: 100 };
+    filters.value = createEmptySearchFilters();
   };
 
   /**
@@ -127,7 +117,7 @@ export const useSearchFilters = () => {
    */
   const isFilterActive = (category: string, filterName: string): boolean => {
     const value = getFilterValue(category, filterName);
-    return value !== "" && value !== 0 && value !== false && value !== null;
+    return isFilterValueActive(value);
   };
 
   return {
