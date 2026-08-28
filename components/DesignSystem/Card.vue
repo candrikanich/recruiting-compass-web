@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { computed } from "vue";
+
 export type CardPadding = "none" | "sm" | "md" | "lg";
 
 interface Props {
@@ -14,7 +16,7 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const emit = defineEmits<{
-  click: [event: MouseEvent];
+  click: [event: MouseEvent | KeyboardEvent];
 }>();
 
 const paddingClasses: Record<CardPadding, string> = {
@@ -25,7 +27,8 @@ const paddingClasses: Record<CardPadding, string> = {
 };
 
 const cardClasses = computed(() => {
-  const base = "rounded-xl bg-white text-slate-900 border border-slate-200";
+  const base =
+    "rounded-xl bg-white text-brand-slate-900 border border-brand-slate-200";
   const shadow = "shadow-xs";
   const padding = paddingClasses[props.padding];
   const hoverEffect = props.hover
@@ -41,10 +44,24 @@ function handleClick(event: MouseEvent) {
     emit("click", event);
   }
 }
+
+function handleKeydown(event: KeyboardEvent) {
+  if (!props.clickable) return;
+  if (event.key === "Enter" || event.key === " ") {
+    event.preventDefault();
+    emit("click", event);
+  }
+}
 </script>
 
 <template>
-  <div :class="cardClasses" @click="handleClick">
+  <div
+    :class="cardClasses"
+    :role="clickable ? 'button' : undefined"
+    :tabindex="clickable ? 0 : undefined"
+    @click="handleClick"
+    @keydown="handleKeydown"
+  >
     <slot />
   </div>
 </template>

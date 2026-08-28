@@ -48,7 +48,7 @@ const focusRingClasses: Record<ButtonColor, string> = {
   orange: "focus:ring-brand-orange-500",
   indigo: "focus:ring-brand-indigo-500",
   slate: "focus:ring-brand-slate-500",
-  red: "focus:ring-red-500",
+  red: "focus:ring-brand-red-500",
 };
 
 const colorVariants: Record<ButtonColor, Record<ButtonVariant, string>> = {
@@ -101,13 +101,16 @@ const colorVariants: Record<ButtonColor, Record<ButtonVariant, string>> = {
     ghost: "text-brand-slate-700 hover:bg-brand-slate-100",
   },
   red: {
-    solid: "bg-red-600 text-white hover:bg-red-700",
+    solid: "bg-brand-red-600 text-white hover:bg-brand-red-700",
     gradient:
-      "bg-linear-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700",
-    outline: "border-2 border-red-500 text-red-600 hover:bg-red-50",
-    ghost: "text-red-600 hover:bg-red-50",
+      "bg-linear-to-r from-brand-red-500 to-brand-red-600 text-white hover:from-brand-red-600 hover:to-brand-red-700",
+    outline:
+      "border-2 border-brand-red-500 text-brand-red-600 hover:bg-brand-red-50",
+    ghost: "text-brand-red-600 hover:bg-brand-red-50",
   },
 };
+
+const isInactive = computed(() => props.disabled || props.loading);
 
 const buttonClasses = computed(() => {
   const base =
@@ -115,8 +118,7 @@ const buttonClasses = computed(() => {
   const size = sizeClasses[props.size];
   const colorVariant = colorVariants[props.color][props.variant];
   const width = props.fullWidth ? "w-full" : "";
-  const disabled =
-    props.disabled || props.loading ? "opacity-50 cursor-not-allowed" : "";
+  const disabled = isInactive.value ? "opacity-50 cursor-not-allowed" : "";
   const focusRing = focusRingClasses[props.color];
 
   return [base, size, colorVariant, width, disabled, focusRing]
@@ -125,9 +127,12 @@ const buttonClasses = computed(() => {
 });
 
 function handleClick(event: MouseEvent) {
-  if (!props.disabled && !props.loading) {
-    emit("click", event);
+  if (isInactive.value) {
+    event.preventDefault();
+    event.stopPropagation();
+    return;
   }
+  emit("click", event);
 }
 </script>
 
@@ -135,9 +140,12 @@ function handleClick(event: MouseEvent) {
   <component
     :is="tag"
     :type="to ? undefined : type"
-    :to="to"
+    :to="to && !isInactive ? to : undefined"
     :class="buttonClasses"
-    :disabled="to ? undefined : disabled || loading"
+    :disabled="to ? undefined : isInactive"
+    :aria-disabled="isInactive ? 'true' : undefined"
+    :aria-busy="loading ? 'true' : undefined"
+    :tabindex="to && isInactive ? -1 : undefined"
     @click="handleClick"
   >
     <svg
@@ -146,6 +154,7 @@ function handleClick(event: MouseEvent) {
       xmlns="http://www.w3.org/2000/svg"
       fill="none"
       viewBox="0 0 24 24"
+      aria-hidden="true"
     >
       <circle
         class="opacity-25"

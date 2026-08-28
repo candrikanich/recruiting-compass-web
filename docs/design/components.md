@@ -2,6 +2,40 @@
 
 Component source files live in `components/DesignSystem/`. All are auto-imported by Nuxt — no import needed.
 
+In templates use path-derived tags (`<DesignSystemButton>`), never `<DSButton>`. The `DS*` aliases in `components/DesignSystem/index.ts` are only for explicit imports.
+
+## Architecture
+
+Five layers. Compose down; don't reimplement a higher layer with primitives.
+
+| Layer | Components | Use for |
+|-------|------------|---------|
+| Primitives | Button, Badge, Input, Card, Alert | One control, one job |
+| Overlays | Modal, ConfirmDialog, Toast | Focus-trapping surfaces |
+| Async states | PageState → LoadingState / EmptyState / ErrorState + skeletons | Any fetch-backed view |
+| Navigation | Pagination, FilterChips | List chrome |
+| Forms | `DesignSystemForm*` | Labelled fields with errors |
+
+**PageState is the default wrapper** for list/detail pages:
+
+1. `loading` (exclusive)
+2. `error` (exclusive)
+3. `empty` (exclusive)
+4. default slot (ready)
+
+Do not hand-roll spinners, inline `role="alert"` boxes, or empty-copy blocks on those pages. Overlay chrome that isn't the primary view (filters, stats) stays outside PageState.
+
+**Accessibility baseline** every DS component owns:
+
+- Native elements (`button`, `a`, `dialog`, `input`) over ARIA-only widgets
+- Focus rings via `focus:ring-*` brand tokens
+- Loading → `aria-busy`, `aria-live="polite"`, decorative spinners `aria-hidden`
+- Errors → `role="alert"` / `aria-live="assertive"`
+- Unique `useId()` labels; never `Math.random()`
+- Disabled link-buttons set `aria-disabled` + `tabindex="-1"` and ignore clicks
+
+**Tokens:** brand utilities (`bg-brand-blue-600`) only. No raw hex / `rgba()` in `<style>` or inline style.
+
 ## Badge
 
 **File:** `components/DesignSystem/Badge.vue`
@@ -112,13 +146,63 @@ Applies: `w-full px-3 py-2 rounded-lg`, border, input-background, focus ring (bl
 
 ## Design System Vue Components
 
+### PageState
+
+**File:** `components/DesignSystem/PageState.vue`
+
+Composes loading / error / empty / ready. Prefer this over stacking the three state components by hand.
+
+```vue
+<DesignSystemPageState
+  :loading="loading"
+  :error="error"
+  :empty="schools.length === 0"
+  loading-message="Loading schools..."
+  empty-title="No schools yet"
+  empty-description="Add the schools you want to track."
+  empty-action-text="Add Your First School"
+  empty-action-href="/schools/new"
+  @retry="fetchSchools"
+>
+  <SchoolList :schools="schools" />
+</DesignSystemPageState>
+```
+
+| Prop | Type | Default |
+|------|------|---------|
+| `loading` | `boolean` | `false` |
+| `error` | `Error \| string \| null` | `null` |
+| `empty` | `boolean` | `false` |
+| `loadingMessage` | `string` | `"Loading..."` |
+| `loadingVariant` | `"spinner" \| "skeleton" \| "shimmer"` | `"spinner"` |
+| `emptyTitle` | `string` | `"Nothing here yet"` |
+| `emptyDescription` | `string` | `""` |
+| `emptyActionText` / `emptyActionHref` | `string` | — |
+| `errorTitle` | `string` | `"Something went wrong"` |
+| `retryable` | `boolean` | `true` |
+
+Slots: default (ready), `empty`, `empty-action`, `empty-icon`, `error`. Emits: `retry`, `empty-action`.
+
 ### EmptyState
 
 ```vue
-<DesignSystemEmptyState title="No schools yet" description="Add your first school to get started." />
+<DesignSystemEmptyState
+  title="No schools match your filters"
+  description="Try adjusting your filters or search terms"
+  action-text="Clear Filters"
+  @action="clearFilters"
+/>
 ```
 
-Use whenever a list or data view has zero items. Do not write inline empty state UI.
+Use whenever a list has zero items. Prefer `#action` when the CTA is not a link.
+
+| Prop | Type | Default |
+|------|------|---------|
+| `title` | `string` | required |
+| `description` | `string` | — |
+| `icon` | `Component` | inbox glyph |
+| `actionText` | `string` | — |
+| `actionHref` | `string` | — (renders a `DesignSystemButton` link when set) |
 
 ### ErrorState
 
@@ -126,15 +210,100 @@ Use whenever a list or data view has zero items. Do not write inline empty state
 <DesignSystemErrorState :error="error" @retry="refetch" />
 ```
 
-Use for async load errors in page-level data fetching. Always provide `@retry` if re-fetching is possible.
+Always provide `@retry` when a refetch is possible. Set `retryable` to `false` for terminal errors. Empty/`null` errors fall back to "An unexpected error occurred" — never render a blank alert.
 
 ### LoadingState / CardSkeleton / ListSkeleton / ChartSkeleton
 
-Use the appropriate skeleton for the content type while loading:
-- `<DesignSystemLoadingState>` — generic spinner
-- `<DesignSystemCardSkeleton>` — card grid loading
-- `<DesignSystemListSkeleton>` — list/table loading
-- `<DesignSystemChartSkeleton>` — chart loading
+- `<DesignSystemLoadingState message="Loading...">` — generic spinner (`role="status"`, `aria-busy`)
+- `<DesignSystemCardSkeleton>` — card grid
+- `<DesignSystemListSkeleton :lines="5">` — list/table
+- `<DesignSystemChartSkeleton>` — chart placeholder
+
+`LoadingState` variants: `spinner` (default), `skeleton`, `shimmer`.
+
+### Alert
+
+**File:** `components/DesignSystem/Alert.vue`
+
+Inline, in-flow status. Use Toast for transient global feedback; use Alert when the message must stay on the page.
+
+```vue
+<DesignSystemAlert variant="error" title="Error loading coaches" dismissible @dismiss="error = null">
+  {{ error }}
+</DesignSystemAlert>
+```
+
+| Prop | Type | Default |
+|------|------|---------|
+| `variant` | `"info" \| "success" \| "warning" \| "error"` | `"info"` |
+| `title` | `string` | — |
+| `dismissible` | `boolean` | `false` |
+| `compact` | `boolean` | `false` |
+
+`error`/`warning` → `role="alert"` + assertive live region. `info`/`success` → `role="status"` + polite.
+
+### Modal
+
+**File:** `components/DesignSystem/Modal.vue`
+
+Native `<dialog>` with `showModal()` (top layer, focus trap, Escape). Build feature modals on this shell instead of another `role="dialog"` div.
+
+```vue
+<DesignSystemModal :open="open" title="Assign coach" size="md" @close="open = false">
+  <AssignCoachForm />
+  <template #footer>
+    <DesignSystemButton variant="outline" color="slate" @click="open = false">Cancel</DesignSystemButton>
+    <DesignSystemButton :loading="saving" @click="save">Save</DesignSystemButton>
+  </template>
+</DesignSystemModal>
+```
+
+| Prop | Type | Default |
+|------|------|---------|
+| `open` | `boolean` | required |
+| `title` | `string` | — |
+| `ariaLabel` | `string` | required if `title` omitted |
+| `size` | `"sm" \| "md" \| "lg" \| "full"` | `"md"` |
+| `tone` | `"default" \| "danger" \| "warning"` | `"default"` |
+| `showClose` | `boolean` | `true` |
+| `closeOnBackdrop` | `boolean` | `true` |
+| `busy` | `boolean` | `false` (blocks dismiss) |
+
+Footer stacks `flex-col-reverse` on small screens so the primary action stays thumb-reachable.
+
+### Pagination
+
+**File:** `components/DesignSystem/Pagination.vue`
+
+```vue
+<DesignSystemPagination :page="currentPage" :total-pages="totalPages" @update:page="goToPage" />
+```
+
+| Prop | Type | Default |
+|------|------|---------|
+| `page` | `number` | required |
+| `totalPages` | `number` | required |
+| `disabled` | `boolean` | `false` |
+| `hideWhenSingle` | `boolean` | `true` |
+
+Compact on small viewports (Previous / "Page X of Y" / Next). From `sm` up, numbered buttons with ellipses. Hidden when `totalPages <= 1`.
+
+### ConfirmDialog
+
+```vue
+<DesignSystemConfirmDialog
+  :is-open="isDeleteDialogOpen"
+  title="Delete School"
+  message="This action cannot be undone."
+  confirm-text="Delete"
+  variant="danger"
+  :confirming="deleting"
+  @confirm="confirmDeleteSchool"
+  @cancel="cancelDeleteSchool"
+/>
+```
+
+Built on Modal. `confirming` disables cancel and puts the confirm button in a loading state.
 
 ### GradientCard
 
@@ -145,15 +314,23 @@ Use the appropriate skeleton for the content type while loading:
 </DesignSystemGradientCard>
 ```
 
-Use for stat/metric cards with gradient accent backgrounds. Gradient options match `--gradient-*` tokens.
+Use for stat/metric cards with gradient accent backgrounds.
 
 ### FilterChips
 
 ```vue
-<DesignSystemFilterChips :filters="activeFilters" @remove="removeFilter" />
+<DesignSystemFilterChips
+  :configs="filterConfigs"
+  :filter-values="filterValues"
+  :has-active-filters="hasActiveFilters"
+  :active-filter-count="activeFilterCount"
+  :get-display-value="getFilterDisplayValue"
+  @remove-filter="handleRemoveFilter"
+  @clear-all="clearFilters"
+/>
 ```
 
-Use to display active filter state above filtered lists.
+Each chip's remove control has a unique name (`Remove Status filter`). Use to display active filter state above filtered lists.
 
 ---
 
