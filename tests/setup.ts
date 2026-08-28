@@ -5,6 +5,13 @@ import { config } from "@vue/test-utils";
 import * as axeMatchers from "vitest-axe/matchers";
 import DesignSystemFormSegmentedControl from "~/components/DesignSystem/Form/FormSegmentedControl.vue";
 import DesignSystemButton from "~/components/DesignSystem/Button.vue";
+import DesignSystemModal from "~/components/DesignSystem/Modal.vue";
+import DesignSystemEmptyState from "~/components/DesignSystem/EmptyState.vue";
+import DesignSystemErrorState from "~/components/DesignSystem/ErrorState.vue";
+import DesignSystemLoadingState from "~/components/DesignSystem/LoadingState.vue";
+import DesignSystemAlert from "~/components/DesignSystem/Alert.vue";
+import DesignSystemPagination from "~/components/DesignSystem/Pagination.vue";
+import DesignSystemPageState from "~/components/DesignSystem/PageState.vue";
 expect.extend(axeMatchers);
 
 // Set up environment for Pinia
@@ -269,6 +276,13 @@ config.global.components = {
   ...(config.global.components ?? {}),
   DesignSystemFormSegmentedControl,
   DesignSystemButton,
+  DesignSystemModal,
+  DesignSystemEmptyState,
+  DesignSystemErrorState,
+  DesignSystemLoadingState,
+  DesignSystemAlert,
+  DesignSystemPagination,
+  DesignSystemPageState,
 };
 
 // Initialize Pinia for tests

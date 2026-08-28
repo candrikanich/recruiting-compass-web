@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { computed } from "vue";
+
 export type GradientColor = "blue" | "purple" | "emerald" | "orange" | "indigo";
 export type CardPadding = "none" | "sm" | "md" | "lg";
 
@@ -28,11 +30,11 @@ const paddingClasses: Record<CardPadding, string> = {
 };
 
 const gradientClasses: Record<GradientColor, string> = {
-  blue: "bg-linear-to-br from-blue-500 to-blue-600",
-  purple: "bg-linear-to-br from-purple-500 to-purple-600",
-  emerald: "bg-linear-to-br from-emerald-500 to-emerald-600",
-  orange: "bg-linear-to-br from-orange-500 to-orange-600",
-  indigo: "bg-linear-to-br from-indigo-500 to-indigo-600",
+  blue: "bg-linear-to-br from-brand-blue-500 to-brand-blue-600",
+  purple: "bg-linear-to-br from-brand-purple-500 to-brand-purple-600",
+  emerald: "bg-linear-to-br from-brand-emerald-500 to-brand-emerald-600",
+  orange: "bg-linear-to-br from-brand-orange-500 to-brand-orange-600",
+  indigo: "bg-linear-to-br from-brand-indigo-500 to-brand-indigo-600",
 };
 
 const cardClasses = computed(() => {

@@ -1,9 +1,40 @@
+<script setup lang="ts">
+export type LoadingStateVariant = "spinner" | "skeleton" | "shimmer";
+
+interface Props {
+  message?: string;
+  variant?: LoadingStateVariant;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  message: "Loading...",
+  variant: "spinner",
+});
+
+function variantLabel(variant: LoadingStateVariant): string {
+  switch (variant) {
+    case "spinner":
+    case "skeleton":
+    case "shimmer":
+      return props.message;
+    default: {
+      const _exhaustive: never = variant;
+      return _exhaustive;
+    }
+  }
+}
+</script>
+
 <template>
-  <div class="flex flex-col items-center justify-center py-12">
-    <!-- Spinner -->
-    <div v-if="variant === 'spinner'" class="animate-spin">
+  <div
+    class="flex flex-col items-center justify-center px-4 py-12"
+    role="status"
+    aria-live="polite"
+    aria-busy="true"
+  >
+    <div v-if="variant === 'spinner'" class="animate-spin" aria-hidden="true">
       <svg
-        class="h-12 w-12 text-blue-500"
+        class="h-12 w-12 text-brand-blue-500"
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
         viewBox="0 0 24 24"
@@ -24,41 +55,32 @@
       </svg>
     </div>
 
-    <!-- Skeleton -->
-    <div v-else-if="variant === 'skeleton'" class="w-full max-w-md space-y-3">
-      <div class="h-4 animate-pulse rounded-sm bg-slate-200" />
-      <div class="h-4 animate-pulse rounded-sm bg-slate-200" />
-      <div class="h-4 w-2/3 animate-pulse rounded-sm bg-slate-200" />
+    <div
+      v-else-if="variant === 'skeleton'"
+      class="w-full max-w-md space-y-3"
+      aria-hidden="true"
+    >
+      <div class="h-4 animate-pulse rounded-sm bg-brand-slate-200" />
+      <div class="h-4 animate-pulse rounded-sm bg-brand-slate-200" />
+      <div class="h-4 w-2/3 animate-pulse rounded-sm bg-brand-slate-200" />
     </div>
 
-    <!-- Shimmer -->
-    <div v-else-if="variant === 'shimmer'" class="w-full max-w-md">
-      <div
-        class="h-20 rounded-sm bg-linear-to-r from-slate-200 via-slate-100 to-slate-200"
-        style="background-size: 200% 100%; animation: shimmer 2s infinite"
-      />
+    <div v-else-if="variant === 'shimmer'" class="w-full max-w-md" aria-hidden="true">
+      <div class="shimmer h-20 rounded-md bg-linear-to-r from-brand-slate-200 via-brand-slate-100 to-brand-slate-200" />
     </div>
 
-    <!-- Message -->
-    <p class="mt-4 text-center text-slate-600">{{ message }}</p>
+    <p class="mt-4 text-center text-brand-slate-600">
+      {{ variantLabel(variant) }}
+    </p>
   </div>
 </template>
 
-<script setup lang="ts">
-export type LoadingStateVariant = "spinner" | "skeleton" | "shimmer";
-
-interface Props {
-  message?: string;
-  variant?: LoadingStateVariant;
+<style scoped>
+.shimmer {
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
 }
 
-withDefaults(defineProps<Props>(), {
-  message: "Loading...",
-  variant: "spinner",
-});
-</script>
-
-<style scoped>
 @keyframes shimmer {
   0% {
     background-position: -200% 0;
