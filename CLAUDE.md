@@ -18,6 +18,7 @@ Tier-0 (this file) is always loaded. Read the matching file FIRST before working
 | Commit blocked by hook, `.secrets.baseline` | `claude/git-hooks.md` |
 | iOS / SwiftUI (rare here) | `claude/ios.md` |
 | Any UI code | `docs/design/tokens.md`, `docs/design/components.md` |
+| Domain / application / infrastructure layers | `docs/architecture/clean-architecture.md` |
 
 ## Workflow
 
@@ -36,24 +37,33 @@ Tier-0 (this file) is always loaded. Read the matching file FIRST before working
 
 ## Architecture
 
+Presentation stays Nuxt. Business rules do not.
+
 ```
-Page → Composable (useXxx) → Pinia Store → Supabase/API
+Page → Composable (adapter) → domain/<context>        (pure rules)
+                            → application ports → infrastructure (Supabase/HTTP)
 ```
 
-1. **Composables** — fetch data, orchestrate logic, return refs/computed
-2. **Stores** — centralized state, getters, actions (mutate here only)
-3. **Components** — UI only, consume composables and stores
+1. **Composables** — Vue adapters: refs, inject, orchestrate. No duplicated math or query chains.
+2. **Domain** — pure functions (`domain/performance`, `domain/search`). No Vue, no I/O.
+3. **Stores** — canonical client state; mutate only inside actions.
+4. **Components** — UI only.
+
+Details and the migrate-next-domain checklist: `docs/architecture/clean-architecture.md`.
 
 ## Directories
 
 ```
 pages/             # File-based routing
 components/        # Auto-imported by domain
-composables/       # Domain-organized (useSchools, useInteractions, etc.)
+composables/       # Vue adapters (useSchools, useInteractions, etc.)
+domain/            # Pure business rules (no Vue, no I/O)
+application/       # Ports / use-case interfaces
+infrastructure/    # Adapters (Supabase, HTTP)
 stores/            # Pinia stores
 server/api/        # Nitro endpoints
 types/             # TypeScript definitions
-utils/             # Utilities and validators
+utils/             # Shared helpers that are not yet a bounded context
 ```
 
 ## API Endpoints

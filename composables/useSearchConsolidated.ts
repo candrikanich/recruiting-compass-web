@@ -5,6 +5,14 @@ import { querySelect } from "~/utils/supabaseQuery";
 import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
 import { useErrorHandler } from "./useErrorHandler";
+import {
+  createEmptySearchFilters,
+  createTtlCache,
+  isSearchFiltering,
+  mapCollegeSearchResults,
+  readFilterValue,
+  type SearchEntity,
+} from "~/domain/search";
 import type {
   School,
   Coach,
@@ -71,47 +79,19 @@ export const useSearchConsolidated = () => {
   // FILTER STATE
   // ═══════════════════════════════════════════════════════════════════════════
 
-  const filters = ref({
-    schools: {
-      division: "" as string,
-      state: "" as string,
-      verified: null as boolean | null,
-    },
-    coaches: {
-      sport: "" as string,
-      responseRate: 0 as number,
-      verified: null as boolean | null,
-    },
-    interactions: {
-      sentiment: "" as string,
-      direction: "" as string,
-      dateFrom: "" as string,
-      dateTo: "" as string,
-    },
-    metrics: {
-      metricType: "" as string,
-      minValue: 0 as number,
-      maxValue: 100 as number,
-    },
-  });
+  const filters = ref(createEmptySearchFilters());
 
   // ═══════════════════════════════════════════════════════════════════════════
   // CACHING STATE
   // ═══════════════════════════════════════════════════════════════════════════
 
-  const searchCache = new Map<
-    string,
-    {
-      results: {
-        schools: School[];
-        coaches: Coach[];
-        interactions: Interaction[];
-        metrics: PerformanceMetric[];
-      };
-      timestamp: number;
-    }
-  >();
   const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+  const searchCache = createTtlCache<{
+    schools: School[];
+    coaches: Coach[];
+    interactions: Interaction[];
+    metrics: PerformanceMetric[];
+  }>(CACHE_TTL);
 
   // ═══════════════════════════════════════════════════════════════════════════
   // COMPUTED PROPERTIES
@@ -137,14 +117,7 @@ export const useSearchConsolidated = () => {
   /**
    * Whether any filters are active
    */
-  const isFiltering = computed(() => {
-    return Object.values(filters.value).some((filterGroup) =>
-      Object.values(filterGroup).some(
-        (value) =>
-          value !== "" && value !== 0 && value !== false && value !== null,
-      ),
-    );
-  });
+  const isFiltering = computed(() => isSearchFiltering(filters.value));
 
   // ═══════════════════════════════════════════════════════════════════════════
   // FUZZY SEARCH UTILITIES
@@ -408,24 +381,9 @@ export const useSearchConsolidated = () => {
   /**
    * Generate cache key from query and filters
    */
-  const getCacheKey = (): string => {
-    const filterStr = JSON.stringify(filters.value);
-    return `${query.value}|${searchType.value}|${filterStr}`;
-  };
+  const getCacheKey = (): string =>
+    searchCache.makeKey(query.value, searchType.value, filters.value);
 
-  /**
-   * Check if cached results are valid (within TTL)
-   */
-  const isCacheValid = (
-    cacheEntry: { timestamp: number } | null | undefined,
-  ): boolean => {
-    if (!cacheEntry) return false;
-    return Date.now() - cacheEntry.timestamp < CACHE_TTL;
-  };
-
-  /**
-   * Clear cache
-   */
   const clearCache = () => {
     searchCache.clear();
   };
@@ -470,13 +428,10 @@ export const useSearchConsolidated = () => {
 
       // Cache results
       searchCache.set(cacheKey, {
-        results: {
-          schools: schoolResults.value,
-          coaches: coachResults.value,
-          interactions: interactionResults.value,
-          metrics: metricsResults.value,
-        },
-        timestamp: Date.now(),
+        schools: schoolResults.value,
+        coaches: coachResults.value,
+        interactions: interactionResults.value,
+        metrics: metricsResults.value,
       });
     } catch (err) {
       searchError.value = getErrorMessage(err, { context: "performSearch" });
@@ -504,11 +459,11 @@ export const useSearchConsolidated = () => {
     // Check cache first
     const cacheKey = getCacheKey();
     const cachedResult = searchCache.get(cacheKey);
-    if (cachedResult && isCacheValid(cachedResult)) {
-      schoolResults.value = cachedResult?.results.schools || [];
-      coachResults.value = cachedResult?.results.coaches || [];
-      interactionResults.value = cachedResult?.results.interactions || [];
-      metricsResults.value = cachedResult?.results.metrics || [];
+    if (cachedResult && searchCache.isValid(cachedResult)) {
+      schoolResults.value = cachedResult.value.schools || [];
+      coachResults.value = cachedResult.value.coaches || [];
+      interactionResults.value = cachedResult.value.interactions || [];
+      metricsResults.value = cachedResult.value.metrics || [];
       return;
     }
 
@@ -538,7 +493,7 @@ export const useSearchConsolidated = () => {
    * Apply a single filter and re-run search if active
    */
   const applyFilter = async (
-    category: "schools" | "coaches" | "interactions" | "metrics",
+    category: SearchEntity,
     filterName: string,
     value: unknown,
   ) => {
@@ -558,15 +513,7 @@ export const useSearchConsolidated = () => {
    * Clear all filters and optionally re-run search
    */
   const clearFilters = async () => {
-    filters.value.schools = { division: "", state: "", verified: null };
-    filters.value.coaches = { sport: "", responseRate: 0, verified: null };
-    filters.value.interactions = {
-      sentiment: "",
-      direction: "",
-      dateFrom: "",
-      dateTo: "",
-    };
-    filters.value.metrics = { metricType: "", minValue: 0, maxValue: 100 };
+    filters.value = createEmptySearchFilters();
 
     clearCache();
 
@@ -579,13 +526,9 @@ export const useSearchConsolidated = () => {
    * Get specific filter value
    */
   const getFilterValue = (
-    category: "schools" | "coaches" | "interactions" | "metrics",
+    category: SearchEntity,
     filterName: string,
-  ): unknown => {
-    return (
-      (filters.value[category] as Record<string, unknown>)?.[filterName] || null
-    );
-  };
+  ): unknown => readFilterValue(filters.value, category, filterName);
 
   // ═══════════════════════════════════════════════════════════════════════════
   // SUGGESTIONS (AUTOCOMPLETE)
@@ -690,32 +633,7 @@ export const useSearchConsolidated = () => {
         return [];
       }
 
-      // Deduplicate and transform results
-      const uniqueSchools = new Map<
-        string,
-        {
-          id: string;
-          name: string;
-          location: string;
-        }
-      >();
-
-      for (const school of data.results) {
-        const id = String(school.id);
-        if (!uniqueSchools.has(id)) {
-          const city = school["school.city"] || "";
-          const state = school["school.state"] || "";
-          const location = [city, state].filter(Boolean).join(", ");
-
-          uniqueSchools.set(id, {
-            id,
-            name: school["school.name"],
-            location,
-          });
-        }
-      }
-
-      return Array.from(uniqueSchools.values());
+      return mapCollegeSearchResults(data.results);
     } catch {
       return [];
     }
