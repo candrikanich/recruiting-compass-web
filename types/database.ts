@@ -2284,6 +2284,66 @@ export type Database = {
           },
         ];
       };
+      response_cache: {
+        Row: {
+          cache_key: string;
+          created_at: string;
+          expires_at: string;
+          payload: Json;
+        };
+        Insert: {
+          cache_key: string;
+          created_at?: string;
+          expires_at: string;
+          payload: Json;
+        };
+        Update: {
+          cache_key?: string;
+          created_at?: string;
+          expires_at?: string;
+          payload?: Json;
+        };
+        Relationships: [];
+      };
+      school_recommendation_dismissals: {
+        Row: {
+          athlete_user_id: string;
+          catalog_key: string;
+          created_at: string;
+          family_unit_id: string;
+          id: string;
+        };
+        Insert: {
+          athlete_user_id: string;
+          catalog_key: string;
+          created_at?: string;
+          family_unit_id: string;
+          id?: string;
+        };
+        Update: {
+          athlete_user_id?: string;
+          catalog_key?: string;
+          created_at?: string;
+          family_unit_id?: string;
+          id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "school_recommendation_dismissals_athlete_user_id_fkey";
+            columns: ["athlete_user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "school_recommendation_dismissals_family_unit_id_fkey";
+            columns: ["family_unit_id"];
+            isOneToOne: false;
+            referencedRelation: "family_units";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       school_status_history: {
         Row: {
           changed_at: string;

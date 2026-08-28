@@ -121,6 +121,15 @@
           Start building your recruiting list by adding the schools you're
           interested in.
         </p>
+        <RecommendedSchools
+          class="mb-8"
+          :items="recommendedSchools"
+          :loading="recommendationsLoading"
+          :error="recommendationsError || recommendationActionError"
+          :adding-key="addingRecommendationKey"
+          @add="handleAddRecommendation"
+          @dismiss="handleDismissRecommendation"
+        />
         <NuxtLink
           to="/schools/new"
           class="inline-block rounded-lg bg-linear-to-r from-blue-500 to-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:from-blue-600 hover:to-blue-700"
@@ -216,6 +225,7 @@ definePageMeta({ middleware: "auth" });
 import { ref, computed, onMounted, watch } from "vue";
 import { createClientLogger } from "~/utils/logger";
 import { useSchools } from "~/composables/useSchools";
+import { useSchoolRecommendations } from "~/composables/useSchoolRecommendations";
 import { useSchoolLogos } from "~/composables/useSchoolLogos";
 import { useSchoolMatching } from "~/composables/useSchoolMatching";
 import { useSchoolStats } from "~/composables/useSchoolStats";
@@ -232,6 +242,8 @@ import { useSchoolExport } from "~/composables/useSchoolExport";
 import { useSchoolDistance } from "~/composables/useSchoolDistance";
 import { useLiveRegion } from "~/composables/useLiveRegion";
 import type { School } from "~/types";
+import type { SchoolRecommendation } from "~/types/schoolRecommendations";
+import { recommendationToSchoolDraft } from "~/utils/schoolRecommendations";
 import type { FilterValue } from "~/types/filters";
 import type { Interaction, Coach, Event } from "~/types/models";
 import { createSchoolFilterConfigs } from "~/utils/schoolFilterConfigs";
@@ -261,8 +273,25 @@ const logger = createClientLogger("schools");
 const activeFamily = useFamilyCtx();
 const { activeFamilyId } = activeFamily;
 
-const { schools, loading, error, fetchSchools, toggleFavorite, smartDelete } =
-  useSchools();
+const {
+  schools,
+  loading,
+  error,
+  fetchSchools,
+  toggleFavorite,
+  smartDelete,
+  createSchool,
+} = useSchools();
+const {
+  recommendations: recommendedSchools,
+  loading: recommendationsLoading,
+  error: recommendationsError,
+  fetchRecommendations,
+  dismissRecommendation,
+  removeRecommendation,
+} = useSchoolRecommendations();
+const addingRecommendationKey = ref<string | null>(null);
+const recommendationActionError = ref<string | null>(null);
 const { fetchMultipleLogos } = useSchoolLogos();
 const { calculateMatchScore } = useSchoolMatching();
 const {
@@ -366,6 +395,44 @@ watch(
   },
   { immediate: true },
 );
+
+watch([loading, schools], ([isLoading, schoolList], previous) => {
+  if (isLoading || schoolList.length > 0) return;
+  const wasLoading = previous?.[0];
+  if (wasLoading === true) {
+    void fetchRecommendations();
+  }
+});
+
+async function handleAddRecommendation(school: SchoolRecommendation) {
+  addingRecommendationKey.value = school.catalogKey;
+  recommendationActionError.value = null;
+  try {
+    await createSchool(
+      recommendationToSchoolDraft(school) as Omit<
+        School,
+        "id" | "created_at" | "updated_at"
+      >,
+    );
+    removeRecommendation(school.catalogKey);
+    announce(`Added ${school.name} to your list`);
+  } catch (err) {
+    logger.warn("Failed to add recommended school", err);
+    recommendationActionError.value =
+      err instanceof Error ? err.message : "Failed to add school";
+  } finally {
+    addingRecommendationKey.value = null;
+  }
+}
+
+async function handleDismissRecommendation(school: SchoolRecommendation) {
+  try {
+    await dismissRecommendation(school.catalogKey);
+    announce(`Dismissed ${school.name}`);
+  } catch {
+    announce(`Could not dismiss ${school.name}`);
+  }
+}
 
 const userHomeLocation = computed(() => getHomeLocation.value);
 

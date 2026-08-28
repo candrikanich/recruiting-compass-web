@@ -141,6 +141,7 @@ See [`/planning/lessons.md`](../planning/lessons.md) for evolving patterns.
 
 ## Detailed Docs
 
+- [School recommendations](architecture/school-recommendations.md)
 - [Database Schema](technical/DATABASE_SCHEMA.md)
 - [Architecture Diagrams (extended)](technical/ARCHITECTURE_DIAGRAMS.md)
 - [Feature Flow Diagrams](technical/FEATURE_FLOW_DIAGRAMS.md)
