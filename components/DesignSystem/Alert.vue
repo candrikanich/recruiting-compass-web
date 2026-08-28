@@ -26,7 +26,8 @@ const isAssertive = computed(
 
 const toneClasses: Record<AlertVariant, string> = {
   info: "border-brand-blue-200 bg-brand-blue-50 text-brand-blue-900",
-  success: "border-brand-emerald-200 bg-brand-emerald-50 text-brand-emerald-900",
+  success:
+    "border-brand-emerald-200 bg-brand-emerald-50 text-brand-emerald-900",
   warning: "border-brand-orange-200 bg-brand-orange-50 text-brand-orange-900",
   error: "border-brand-red-200 bg-brand-red-50 text-brand-red-900",
 };

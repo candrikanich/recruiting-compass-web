@@ -1,5 +1,7 @@
 <template>
-  <div :class="[className, 'animate-pulse rounded-sm bg-brand-slate-200']"></div>
+  <div
+    :class="[className, 'animate-pulse rounded-sm bg-brand-slate-200']"
+  ></div>
 </template>
 
 <script setup lang="ts">

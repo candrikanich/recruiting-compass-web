@@ -20,7 +20,9 @@ const emit = defineEmits<{
 }>();
 
 const safeTotal = computed(() =>
-  Number.isFinite(props.totalPages) ? Math.max(0, Math.floor(props.totalPages)) : 0,
+  Number.isFinite(props.totalPages)
+    ? Math.max(0, Math.floor(props.totalPages))
+    : 0,
 );
 
 const visible = computed(
@@ -84,7 +86,9 @@ function itemKey(item: PaginationItem, index: number): string {
           size="sm"
           :disabled="disabled"
           :aria-current="item === page ? 'page' : undefined"
-          :aria-label="item === page ? `Page ${item}, current page` : `Page ${item}`"
+          :aria-label="
+            item === page ? `Page ${item}, current page` : `Page ${item}`
+          "
           @click="goTo(item)"
         >
           {{ item }}

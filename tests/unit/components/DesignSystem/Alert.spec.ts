@@ -34,7 +34,9 @@ describe("DesignSystemAlert", () => {
       props: { dismissible: true, variant: "warning" },
       slots: { default: "Hi" },
     });
-    expect(shown.get("button").attributes("aria-label")).toBe("Dismiss warning");
+    expect(shown.get("button").attributes("aria-label")).toBe(
+      "Dismiss warning",
+    );
   });
 
   it("emits dismiss when the close button is clicked", async () => {

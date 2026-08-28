@@ -26,11 +26,17 @@ describe("DesignSystemPagination", () => {
 
   it("disables previous on the first page and next on the last", () => {
     const first = mount(Pagination, { props: { page: 1, totalPages: 3 } });
-    expect(first.get('[aria-label="Previous page"]').attributes("disabled")).toBeDefined();
-    expect(first.get('[aria-label="Next page"]').attributes("disabled")).toBeUndefined();
+    expect(
+      first.get('[aria-label="Previous page"]').attributes("disabled"),
+    ).toBeDefined();
+    expect(
+      first.get('[aria-label="Next page"]').attributes("disabled"),
+    ).toBeUndefined();
 
     const last = mount(Pagination, { props: { page: 3, totalPages: 3 } });
-    expect(last.get('[aria-label="Next page"]').attributes("disabled")).toBeDefined();
+    expect(
+      last.get('[aria-label="Next page"]').attributes("disabled"),
+    ).toBeDefined();
   });
 
   it("emits the next page and ignores clicks past the ends", async () => {

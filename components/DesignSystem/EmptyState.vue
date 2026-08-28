@@ -19,7 +19,10 @@ const emit = defineEmits<{
 const slots = useSlots();
 
 const hasAction = computed(
-  () => Boolean(props.actionText) || Boolean(props.actionHref) || Boolean(slots.action),
+  () =>
+    Boolean(props.actionText) ||
+    Boolean(props.actionHref) ||
+    Boolean(slots.action),
 );
 </script>
 

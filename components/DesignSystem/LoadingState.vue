@@ -65,8 +65,14 @@ function variantLabel(variant: LoadingStateVariant): string {
       <div class="h-4 w-2/3 animate-pulse rounded-sm bg-brand-slate-200" />
     </div>
 
-    <div v-else-if="variant === 'shimmer'" class="w-full max-w-md" aria-hidden="true">
-      <div class="shimmer h-20 rounded-md bg-linear-to-r from-brand-slate-200 via-brand-slate-100 to-brand-slate-200" />
+    <div
+      v-else-if="variant === 'shimmer'"
+      class="w-full max-w-md"
+      aria-hidden="true"
+    >
+      <div
+        class="shimmer h-20 rounded-md bg-linear-to-r from-brand-slate-200 via-brand-slate-100 to-brand-slate-200"
+      />
     </div>
 
     <p class="mt-4 text-center text-brand-slate-600">
