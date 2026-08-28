@@ -3,7 +3,11 @@ import { z } from "zod";
 import { requireAuth } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import { useLogger } from "~/server/utils/logger";
-import { normalizeSectionConfig, backfillSectionConfig } from "~/utils/profile/sectionConfig";
+import { invalidatePublicProfileForUser } from "~/server/utils/publicProfileRead";
+import {
+  normalizeSectionConfig,
+  backfillSectionConfig,
+} from "~/utils/profile/sectionConfig";
 import type { ProfileSection } from "~/types/models";
 
 const RESERVED_SLUGS = new Set([
@@ -50,13 +54,25 @@ const UpdateProfileSchema = z.object({
   commitment_status: z.enum(["uncommitted", "committed"]).optional(),
   committed_school_id: z.string().uuid().nullable().optional(),
   awards: z
-    .array(z.object({ title: z.string().max(120), year: z.number().int().nullable() }))
+    .array(
+      z.object({
+        title: z.string().max(120),
+        year: z.number().int().nullable(),
+      }),
+    )
     .optional(),
   values_tags: z.array(z.string().max(60)).max(12).optional(),
   section_config: z
     .array(
       z.object({
-        key: z.enum(["metrics", "film", "academics", "values", "team_history", "awards"]),
+        key: z.enum([
+          "metrics",
+          "film",
+          "academics",
+          "values",
+          "team_history",
+          "awards",
+        ]),
         visible: z.boolean(),
       }),
     )
@@ -72,18 +88,27 @@ const LEGACY_KEYS = {
 
 export function reconcileVisibility(
   updates: Record<string, unknown>,
-  current: { section_config?: unknown; show_metrics?: boolean; show_film?: boolean; show_academics?: boolean },
+  current: {
+    section_config?: unknown;
+    show_metrics?: boolean;
+    show_film?: boolean;
+    show_academics?: boolean;
+  },
 ): Record<string, unknown> {
   const out = { ...updates };
   if (Array.isArray(updates.section_config)) {
     const sections = normalizeSectionConfig(updates.section_config);
     out.section_config = sections;
     for (const [key, col] of Object.entries(LEGACY_KEYS)) {
-      out[col] = sections.some((s) => s.key === (key as ProfileSection["key"]) && s.visible);
+      out[col] = sections.some(
+        (s) => s.key === (key as ProfileSection["key"]) && s.visible,
+      );
     }
     return out;
   }
-  const touchedLegacy = Object.entries(LEGACY_KEYS).filter(([, col]) => col in updates);
+  const touchedLegacy = Object.entries(LEGACY_KEYS).filter(
+    ([, col]) => col in updates,
+  );
   if (touchedLegacy.length) {
     const base =
       Array.isArray(current.section_config) && current.section_config.length
@@ -159,6 +184,12 @@ export default defineEventHandler(async (event) => {
         statusCode: 500,
         statusMessage: "Failed to update profile",
       });
+    }
+
+    try {
+      await invalidatePublicProfileForUser(userId);
+    } catch (invalidateErr) {
+      logger.warn("Public profile cache invalidation failed", invalidateErr);
     }
 
     logger.info("Player profile updated", { userId });
