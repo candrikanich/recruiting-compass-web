@@ -1,6 +1,6 @@
 # School Recommendation System
 
-**Status:** MVP in production code (empty-state surface)
+**Status:** MVP in code (PR #549). Schema applied live 2026-08-28 (`20260912000000_school_recommendations.sql`).
 **Issue:** #121 (product), #529 (system design)
 
 New users land on an empty school list. This system turns profile signals we already collect into a short, ranked set of NCAA programs they can add in one tap — without calling College Scorecard on every page view.
