@@ -4,7 +4,7 @@
  * Handles parallel fetching and family context
  */
 
-import { ref } from "vue";
+import { ref, shallowRef } from "vue";
 import { useSupabase } from "./useSupabase";
 import { createClientLogger } from "~/utils/logger";
 import type {
@@ -18,6 +18,52 @@ import type {
 
 const logger = createClientLogger("useDashboardData");
 
+/**
+ * Dashboard widgets only need recent interaction metadata (trend chart is
+ * 30d, contact frequency is 7–30d, last-contact is the newest row). Cap the
+ * payload so a family with years of email bodies cannot blow the dashboard
+ * heap. `count: "exact"` still reports the true total for the stats tile.
+ */
+export const DASHBOARD_INTERACTION_LIMIT = 500;
+
+/** Top-metrics widget only displays 3 rows; keep a small recency window. */
+export const DASHBOARD_METRIC_LIMIT = 20;
+
+/**
+ * List/map/pipeline widgets never render notes, philosophy, or social
+ * handles. Pulling those text columns for every school is wasted bytes on
+ * the hottest authenticated route.
+ */
+const DASHBOARD_SCHOOL_COLUMNS = [
+  "id",
+  "name",
+  "location",
+  "city",
+  "state",
+  "division",
+  "conference",
+  "is_favorite",
+  "status",
+  "status_changed_at",
+  "website",
+  "favicon_url",
+  "fit_tier",
+  "user_id",
+  "family_unit_id",
+  "created_at",
+  "updated_at",
+  "academic_info",
+].join(", ");
+
+const DASHBOARD_INTERACTION_COLUMNS = [
+  "id",
+  "school_id",
+  "type",
+  "direction",
+  "occurred_at",
+  "created_at",
+].join(", ");
+
 export interface DashboardCounts {
   coaches: number;
   schools: number;
@@ -27,13 +73,15 @@ export interface DashboardCounts {
 export const useDashboardData = () => {
   const supabase = useSupabase();
 
-  // Entity state
-  const allSchools = ref<School[]>([]);
-  const allCoaches = ref<Coach[]>([]);
-  const allInteractions = ref<Interaction[]>([]);
-  const allOffers = ref<Offer[]>([]);
-  const allEvents = ref<Event[]>([]);
-  const allMetrics = ref<PerformanceMetric[]>([]);
+  // Entity state — shallowRef: dashboard always replaces the whole array,
+  // so deep reactive proxies on every school/interaction row are wasted
+  // memory and a source of cascading re-renders on nested field writes.
+  const allSchools = shallowRef<School[]>([]);
+  const allCoaches = shallowRef<Coach[]>([]);
+  const allInteractions = shallowRef<Interaction[]>([]);
+  const allOffers = shallowRef<Offer[]>([]);
+  const allEvents = shallowRef<Event[]>([]);
+  const allMetrics = shallowRef<PerformanceMetric[]>([]);
 
   // Count state
   const coachCount = ref(0);
@@ -62,40 +110,7 @@ export const useDashboardData = () => {
     const requestSequence = ++schoolsSequence;
     const { data: schoolsData, error: schoolsError } = await supabase
       .from("schools")
-      .select(
-        `
-        id,
-        name,
-        location,
-        division,
-        conference,
-        is_favorite,
-        status,
-        status_changed_at,
-        website,
-        favicon_url,
-        twitter_handle,
-        instagram_handle,
-        notes,
-        pros,
-        cons,
-        fit_tier,
-        user_id,
-        family_unit_id,
-        created_at,
-        updated_at,
-        academic_info,
-        amenities,
-        coaching_philosophy,
-        coaching_style,
-        recruiting_approach,
-        communication_style,
-        success_metrics,
-        offer_details,
-        created_by,
-        updated_by
-      `,
-      )
+      .select(DASHBOARD_SCHOOL_COLUMNS)
       .eq("family_unit_id", familyId);
 
     if (schoolsError) {
@@ -184,8 +199,10 @@ export const useDashboardData = () => {
       error: interactionsError,
     } = await supabase
       .from("interactions")
-      .select("*", { count: "exact" })
-      .eq("family_unit_id", familyId);
+      .select(DASHBOARD_INTERACTION_COLUMNS, { count: "exact" })
+      .eq("family_unit_id", familyId)
+      .order("occurred_at", { ascending: false })
+      .limit(DASHBOARD_INTERACTION_LIMIT);
 
     if (interactionsError) {
       logger.error("Error fetching interactions:", interactionsError);
@@ -250,7 +267,9 @@ export const useDashboardData = () => {
         .select(
           "id, user_id, metric_type, value, unit, recorded_date, notes, verified, created_at",
         )
-        .eq("user_id", userId);
+        .eq("user_id", userId)
+        .order("recorded_date", { ascending: false })
+        .limit(DASHBOARD_METRIC_LIMIT);
 
       if (!metricsError && metricsData) {
         allMetrics.value = metricsData;

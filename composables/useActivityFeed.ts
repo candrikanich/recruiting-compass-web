@@ -6,6 +6,15 @@ import { createClientLogger } from "~/utils/logger";
 
 const logger = createClientLogger("useActivityFeed");
 
+/**
+ * Per-source row cap. Each of the three activity tables is fetched in
+ * parallel; the merged feed is then sliced to the caller's limit. Dashboard
+ * widgets request ~10 rows (so 10/source is enough). The activity page
+ * requests 500; 200/source is plenty for client-side filter + pagination
+ * without pulling unbounded history.
+ */
+export const ACTIVITY_SOURCE_FETCH_CAP = 200;
+
 interface InteractionPayload {
   id: string;
   school_id: string;
@@ -160,7 +169,6 @@ export const useActivityFeed = () => {
 
       const events: ActivityEvent[] = [];
 
-      // Fetch interactions with school names embedded
       type InteractionWithSchool = {
         id: string;
         school_id: string;
@@ -172,14 +180,50 @@ export const useActivityFeed = () => {
         schools:
           { id: string; name: string } | { id: string; name: string }[] | null;
       };
-      const interactionsResult = await supabase
-        .from("interactions")
-        .select(
-          "id, school_id, type, content, subject, occurred_at, created_at, schools(id, name)",
-        )
-        .eq("logged_by", userId)
-        .order("created_at", { ascending: false })
-        .limit(50);
+      type StatusChangeWithSchool = {
+        id: string;
+        school_id: string;
+        new_status: string;
+        notes: string | null;
+        changed_at: string;
+        schools:
+          { id: string; name: string } | { id: string; name: string }[] | null;
+      };
+
+      // Fetch enough rows from each source to fill the requested page after
+      // merge, but never more than ACTIVITY_SOURCE_FETCH_CAP. Run the three
+      // queries in parallel — they are independent and were previously
+      // awaited sequentially (~3 round-trips of latency).
+      const perSourceLimit = Math.min(
+        Math.max(fetchOffset + fetchLimit, 1),
+        ACTIVITY_SOURCE_FETCH_CAP,
+      );
+
+      const [interactionsResult, statusResult, documentsResponse] =
+        await Promise.all([
+          supabase
+            .from("interactions")
+            .select(
+              "id, school_id, type, content, subject, occurred_at, created_at, schools(id, name)",
+            )
+            .eq("logged_by", userId)
+            .order("created_at", { ascending: false })
+            .limit(perSourceLimit),
+          supabase
+            .from("school_status_history")
+            .select(
+              "id, school_id, new_status, notes, changed_at, schools(id, name)",
+            )
+            .eq("changed_by", userId)
+            .order("changed_at", { ascending: false })
+            .limit(perSourceLimit),
+          supabase
+            .from("documents")
+            .select("id, title, type, created_at")
+            .eq("user_id", userId)
+            .order("created_at", { ascending: false })
+            .limit(perSourceLimit),
+        ]);
 
       const interactionsError = interactionsResult.error;
       const interactionsWithSchools = interactionsResult.data as unknown as
@@ -216,25 +260,6 @@ export const useActivityFeed = () => {
         }
       }
 
-      // Fetch school status changes with school names embedded
-      type StatusChangeWithSchool = {
-        id: string;
-        school_id: string;
-        new_status: string;
-        notes: string | null;
-        changed_at: string;
-        schools:
-          { id: string; name: string } | { id: string; name: string }[] | null;
-      };
-      const statusResult = await supabase
-        .from("school_status_history")
-        .select(
-          "id, school_id, new_status, notes, changed_at, schools(id, name)",
-        )
-        .eq("changed_by", userId)
-        .order("changed_at", { ascending: false })
-        .limit(50);
-
       const statusError = statusResult.error;
       const statusChanges = statusResult.data as unknown as
         StatusChangeWithSchool[] | null;
@@ -262,14 +287,6 @@ export const useActivityFeed = () => {
           });
         }
       }
-
-      // Fetch documents
-      const documentsResponse = await supabase
-        .from("documents")
-        .select("id, title, type, created_at")
-        .eq("user_id", userId)
-        .order("created_at", { ascending: false })
-        .limit(50);
 
       const { data: documents } = documentsResponse as {
         data: Array<{
