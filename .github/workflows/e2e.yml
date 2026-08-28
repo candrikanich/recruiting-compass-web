@@ -129,7 +129,10 @@ jobs:
           NUXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.TEST_SUPABASE_ANON_KEY }}
 
       - name: Run E2E tests (WebKit only)
-        run: npm run test:e2e -- --project webkit
+        # WebKit is substantially less stable under parallel load in CI
+        # (timeouts + occasional “WebKit encountered an internal error”).
+        # Run serially to reduce flakes and keep the signal actionable.
+        run: npm run test:e2e -- --project webkit --workers=1
         env:
           CI: true
           FULL_TESTS: "1"
