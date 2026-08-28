@@ -27,6 +27,20 @@ vi.mock("~/utils/logger", () => ({
   }),
 }));
 
+/** Build a chainable mock query that resolves `result` when awaited. */
+function chainableQuery(result: { data: unknown; error: unknown }) {
+  const q: Record<string, unknown> = {};
+  const self = () => q;
+  q.select = vi.fn(self);
+  q.eq = vi.fn(self);
+  q.order = vi.fn(self);
+  q.not = vi.fn(self);
+  q.is = vi.fn(self);
+  q.limit = vi.fn(self);
+  q.then = (resolve: (v: unknown) => void) => resolve(result);
+  return q;
+}
+
 function createMockNotification(
   overrides: Partial<Notification> = {},
 ): Notification {
@@ -90,11 +104,9 @@ describe("useNotifications reactivity", () => {
     });
 
     // Seed the list via fetchNotifications
-    mockSupabase.from.mockReturnValueOnce({
-      select: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      order: vi.fn().mockResolvedValue({ data: [unread], error: null }),
-    });
+    mockSupabase.from.mockReturnValueOnce(
+      chainableQuery({ data: [unread], error: null }),
+    );
 
     const { notifications, unreadCount, fetchNotifications, markAsRead } =
       useNotifications();
@@ -175,13 +187,9 @@ describe("useNotifications reactivity", () => {
   });
 
   it("fetchNotifications: sets error.value and leaves notifications untouched on a Supabase error", async () => {
-    mockSupabase.from.mockReturnValue({
-      select: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      order: vi
-        .fn()
-        .mockResolvedValue({ data: null, error: new Error("network down") }),
-    });
+    mockSupabase.from.mockReturnValue(
+      chainableQuery({ data: null, error: new Error("network down") }),
+    );
 
     const { notifications, error, fetchNotifications } = useNotifications();
     await fetchNotifications();
@@ -209,17 +217,15 @@ describe("useNotifications reactivity", () => {
   });
 
   it("markAllAsRead: updates every unread notification and skips the API call when none are unread", async () => {
-    mockSupabase.from.mockReturnValueOnce({
-      select: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      order: vi.fn().mockResolvedValue({
+    mockSupabase.from.mockReturnValueOnce(
+      chainableQuery({
         data: [
           createMockNotification({ id: "n1", read_at: null }),
           createMockNotification({ id: "n2", read_at: "2026-01-01T00:00:00Z" }),
         ],
         error: null,
       }),
-    });
+    );
 
     const { notifications, unreadCount, fetchNotifications, markAllAsRead } =
       useNotifications();
@@ -239,16 +245,14 @@ describe("useNotifications reactivity", () => {
   });
 
   it("markAllAsRead: no-ops (never calls Supabase) when there is nothing unread", async () => {
-    mockSupabase.from.mockReturnValueOnce({
-      select: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      order: vi.fn().mockResolvedValue({
+    mockSupabase.from.mockReturnValueOnce(
+      chainableQuery({
         data: [
           createMockNotification({ id: "n1", read_at: "2026-01-01T00:00:00Z" }),
         ],
         error: null,
       }),
-    });
+    );
     const { fetchNotifications, markAllAsRead } = useNotifications();
     await fetchNotifications();
     mockSupabase.from.mockClear();
@@ -259,14 +263,9 @@ describe("useNotifications reactivity", () => {
   });
 
   it("deleteNotification: removes the notification from local state after a successful delete", async () => {
-    mockSupabase.from.mockReturnValueOnce({
-      select: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      order: vi.fn().mockResolvedValue({
-        data: [createMockNotification({ id: "n1" })],
-        error: null,
-      }),
-    });
+    mockSupabase.from.mockReturnValueOnce(
+      chainableQuery({ data: [createMockNotification({ id: "n1" })], error: null }),
+    );
     const { notifications, fetchNotifications, deleteNotification } =
       useNotifications();
     await fetchNotifications();
@@ -285,14 +284,9 @@ describe("useNotifications reactivity", () => {
   });
 
   it("deleteNotification: rejects and leaves local state untouched when the delete fails", async () => {
-    mockSupabase.from.mockReturnValueOnce({
-      select: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      order: vi.fn().mockResolvedValue({
-        data: [createMockNotification({ id: "n1" })],
-        error: null,
-      }),
-    });
+    mockSupabase.from.mockReturnValueOnce(
+      chainableQuery({ data: [createMockNotification({ id: "n1" })], error: null }),
+    );
     const { notifications, fetchNotifications, deleteNotification } =
       useNotifications();
     await fetchNotifications();
@@ -309,17 +303,15 @@ describe("useNotifications reactivity", () => {
   });
 
   it("deleteAllRead: removes only read notifications, and no-ops when nothing is read", async () => {
-    mockSupabase.from.mockReturnValueOnce({
-      select: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      order: vi.fn().mockResolvedValue({
+    mockSupabase.from.mockReturnValueOnce(
+      chainableQuery({
         data: [
           createMockNotification({ id: "n1", read_at: null }),
           createMockNotification({ id: "n2", read_at: "2026-01-01T00:00:00Z" }),
         ],
         error: null,
       }),
-    });
+    );
     const { notifications, fetchNotifications, deleteAllRead } =
       useNotifications();
     await fetchNotifications();
@@ -341,10 +333,8 @@ describe("useNotifications reactivity", () => {
   });
 
   it("highPriorityNotifications: includes only unread, high-priority notifications", async () => {
-    mockSupabase.from.mockReturnValueOnce({
-      select: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      order: vi.fn().mockResolvedValue({
+    mockSupabase.from.mockReturnValueOnce(
+      chainableQuery({
         data: [
           createMockNotification({ id: "n1", priority: "high", read_at: null }),
           createMockNotification({
@@ -356,7 +346,7 @@ describe("useNotifications reactivity", () => {
         ],
         error: null,
       }),
-    });
+    );
     const { fetchNotifications, highPriorityNotifications } =
       useNotifications();
     await fetchNotifications();
