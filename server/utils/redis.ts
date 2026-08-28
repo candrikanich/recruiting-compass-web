@@ -53,6 +53,7 @@ export const CACHE_KEYS = {
   NCAA_METADATA: "ncaa:metadata:all",
   NCES_SEARCH: (q: string, state: string) =>
     `nces:search:${q.toLowerCase().trim()}:${state.toLowerCase()}`,
+  SCHOOL_RECS: (athleteId: string) => `rec:v1:${athleteId}`,
   PUBLIC_PROFILE: (userId: string) => `pubprof:v1:${userId}`,
 } as const;
 
@@ -61,6 +62,7 @@ export const CACHE_KEYS = {
  */
 export const TTL = {
   ONE_HOUR: 3600,
+  TWO_MINUTES: 120,
   ONE_DAY: 86400,
   THIRTY_DAYS: 2592000,
 } as const;
