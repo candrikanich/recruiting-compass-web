@@ -26,7 +26,8 @@ const RUN_ID = Date.now();
 const PROFILE_PUT_PATTERN = (res: {
   url(): string;
   request(): { method(): string };
-}) => res.url().includes("/api/player/profile") && res.request().method() === "PUT";
+}) =>
+  res.url().includes("/api/player/profile") && res.request().method() === "PUT";
 
 async function waitForProfileSave(page: Page, action: () => Promise<void>) {
   await Promise.all([page.waitForResponse(PROFILE_PUT_PATTERN), action()]);
@@ -34,15 +35,22 @@ async function waitForProfileSave(page: Page, action: () => Promise<void>) {
 
 async function ensurePublishedAndGetSlug(page: Page): Promise<string> {
   await page.goto("/settings/player-details");
-  await page.waitForLoadState("networkidle");
+  await page.waitForLoadState("domcontentloaded");
+  await expect(page.getByText("Loading your profile...")).toHaveCount(0, {
+    timeout: 15000,
+  });
 
+  // Desktop tab strip (nav.mb-8). The mobile bar also has this label; clicking
+  // .first() can hit a hidden control before v-show reveals ProfileSetup.
   await page
-    .locator("button", { hasText: "Public Profile" })
-    .first()
+    .locator("nav.mb-8")
+    .getByRole("button", { name: "Public Profile" })
     .click();
 
   const publishToggle = page.locator('[data-test="publish-toggle"]');
-  await publishToggle.waitFor({ state: "visible", timeout: 15000 });
+  // ProfileSetup mounts only after profileLoading flips; that can outlast the
+  // page-level spinner, so wait on the toggle itself rather than networkidle.
+  await expect(publishToggle).toBeVisible({ timeout: 30000 });
 
   // Ensure published — an unpublished profile 410s on /p/:slug, which would
   // make the anonymous-visitor flow below unreachable.
@@ -54,7 +62,9 @@ async function ensurePublishedAndGetSlug(page: Page): Promise<string> {
   ) {
     await waitForProfileSave(page, () => publishToggle.click());
   }
-  await expect(page.getByText("Profile is live")).toBeVisible({ timeout: 15000 });
+  await expect(page.getByText("Profile is live")).toBeVisible({
+    timeout: 15000,
+  });
 
   // Read the published slug directly off the share panel — never hardcode a
   // slug, this account's profile may already exist from a prior run.
@@ -66,7 +76,10 @@ async function ensurePublishedAndGetSlug(page: Page): Promise<string> {
   await expect(shareUrl).toBeVisible();
   const urlText = (await shareUrl.textContent())?.trim() ?? "";
   const slug = urlText.split("/p/")[1];
-  expect(slug, `could not parse a slug out of share URL "${urlText}"`).toBeTruthy();
+  expect(
+    slug,
+    `could not parse a slug out of share URL "${urlText}"`,
+  ).toBeTruthy();
   return slug;
 }
 
@@ -88,16 +101,16 @@ async function submitContact(
     ).toBeVisible();
 
     await anonPage.locator('[data-test="coach-name"]').fill(fields.coachName);
-    await anonPage
-      .locator('[data-test="coach-email"]')
-      .fill(fields.coachEmail);
+    await anonPage.locator('[data-test="coach-email"]').fill(fields.coachEmail);
     await anonPage.locator('[data-test="note"]').fill(fields.note);
 
     // Honeypot (`hp`) intentionally left untouched — a real coach never
     // sees or fills it; a filled value would silently no-op the submit.
 
     await anonPage.getByRole("button", { name: "Send message" }).click();
-    await expect(anonPage.getByText("Message sent.")).toBeVisible({ timeout: 15000 });
+    await expect(anonPage.getByText("Message sent.")).toBeVisible({
+      timeout: 15000,
+    });
   } finally {
     await anonContext.close();
   }

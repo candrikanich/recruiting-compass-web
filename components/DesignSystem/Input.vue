@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { computed, useId } from "vue";
+
 export type InputSize = "sm" | "md" | "lg";
 
 interface Props {
@@ -28,9 +30,8 @@ const emit = defineEmits<{
   focus: [event: FocusEvent];
 }>();
 
-const inputId = computed(
-  () => props.id || `input-${Math.random().toString(36).slice(2, 9)}`,
-);
+const generatedId = useId();
+const inputId = computed(() => props.id || generatedId);
 
 const errorId = computed(() => `${inputId.value}-error`);
 const hintId = computed(() => `${inputId.value}-hint`);
@@ -48,17 +49,17 @@ const sizeClasses: Record<InputSize, string> = {
 
 const inputClasses = computed(() => {
   const base =
-    "w-full rounded-lg border bg-white text-slate-900 transition-colors duration-200";
+    "w-full rounded-lg border bg-white text-brand-slate-900 transition-colors duration-200";
   const size = sizeClasses[props.size];
   const border = props.error
-    ? "border-red-500 focus:border-red-500"
-    : "border-slate-300 focus:border-blue-500";
+    ? "border-brand-red-500 focus:border-brand-red-500"
+    : "border-brand-slate-300 focus:border-brand-blue-500";
   const focus = "focus:ring-2 focus:ring-offset-0";
   const focusRing = props.error
-    ? "focus:ring-red-500/20"
-    : "focus:ring-blue-500/20";
+    ? "focus:ring-brand-red-500/20"
+    : "focus:ring-brand-blue-500/20";
   const disabled = props.disabled
-    ? "opacity-50 cursor-not-allowed bg-slate-100"
+    ? "opacity-50 cursor-not-allowed bg-brand-slate-100"
     : "";
 
   return [base, size, border, focus, focusRing, disabled]
@@ -78,16 +79,19 @@ function handleInput(event: Event) {
     <label
       v-if="label"
       :for="inputId"
-      class="mb-1.5 block text-sm font-medium text-slate-900"
+      class="mb-1.5 block text-sm font-medium text-brand-slate-900"
     >
       {{ label }}
-      <span v-if="required" class="text-red-600">*</span>
+      <span v-if="required" class="text-brand-red-600" aria-hidden="true"
+        >*</span
+      >
+      <span v-if="required" class="sr-only">(required)</span>
     </label>
 
     <div class="relative">
       <div
         v-if="$slots.icon"
-        class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500"
+        class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-brand-slate-500"
       >
         <slot name="icon" />
       </div>
@@ -99,7 +103,8 @@ function handleInput(event: Event) {
         :placeholder="placeholder"
         :disabled="disabled"
         :required="required"
-        :aria-invalid="!!error"
+        :aria-invalid="error ? 'true' : undefined"
+        :aria-required="required || undefined"
         :aria-describedby="ariaDescribedBy"
         :class="[inputClasses, $slots.icon ? 'pl-10' : '']"
         @input="handleInput"
@@ -111,12 +116,16 @@ function handleInput(event: Event) {
     <p
       v-if="error"
       :id="errorId"
-      class="mt-1.5 text-sm text-red-600"
+      class="mt-1.5 text-sm text-brand-red-600"
       role="alert"
     >
       {{ error }}
     </p>
-    <p v-else-if="hint" :id="hintId" class="mt-1.5 text-sm text-slate-500">
+    <p
+      v-else-if="hint"
+      :id="hintId"
+      class="mt-1.5 text-sm text-brand-slate-500"
+    >
       {{ hint }}
     </p>
   </div>

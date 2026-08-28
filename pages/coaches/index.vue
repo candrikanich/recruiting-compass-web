@@ -98,124 +98,41 @@
         />
       </div>
 
-      <!-- Loading State -->
-      <div
+      <DesignSystemLoadingState
         v-if="loading && allCoaches.length === 0"
-        class="rounded-xl border border-slate-200 bg-white p-12 text-center shadow-xs"
-        role="status"
-        aria-live="polite"
-        aria-busy="true"
-      >
-        <div
-          class="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"
-          aria-hidden="true"
-        ></div>
-        <p class="text-slate-600">Loading coaches...</p>
-      </div>
+        message="Loading coaches..."
+      />
 
-      <!-- Error State -->
-      <div
+      <DesignSystemAlert
         v-else-if="error"
-        class="mb-6 border-l-4 border-red-600 bg-red-50 p-4"
-        role="alert"
-        aria-live="assertive"
+        variant="error"
+        title="Error loading coaches"
+        class="mb-6"
       >
-        <div class="flex items-start gap-3">
-          <svg
-            class="mt-0.5 h-5 w-5 shrink-0 text-red-600"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-            />
-          </svg>
-          <div>
-            <h3 class="mb-1 font-semibold text-red-800">
-              Error loading coaches
-            </h3>
-            <p class="text-red-700">{{ error }}</p>
-          </div>
-        </div>
-      </div>
+        {{ error }}
+      </DesignSystemAlert>
 
-      <!-- Empty State: No schools followed yet -->
-      <div
+      <DesignSystemEmptyState
         v-else-if="schools.length === 0"
-        class="rounded-xl border border-slate-200 bg-white p-12 text-center shadow-xs"
-        role="status"
-      >
-        <svg
-          class="mx-auto mb-4 h-12 w-12 text-slate-400"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="1.5"
-            d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75z"
-          />
-        </svg>
-        <h2 class="mb-2 font-semibold text-slate-900">Add schools first</h2>
-        <p class="mb-6 text-slate-600">
-          Coaches are added through school pages. Follow a school to start
-          tracking coaches there.
-        </p>
-        <NuxtLink
-          to="/schools/new"
-          class="inline-block rounded-lg bg-linear-to-r from-blue-500 to-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:from-blue-600 hover:to-blue-700"
-        >
-          Add a School
-        </NuxtLink>
-      </div>
+        title="Add schools first"
+        description="Coaches are added through school pages. Follow a school to start tracking coaches there."
+        action-text="Add a School"
+        action-href="/schools/new"
+      />
 
-      <!-- Empty State: Has schools but no coaches -->
-      <div
+      <DesignSystemEmptyState
         v-else-if="allCoaches.length === 0"
-        class="rounded-xl border border-slate-200 bg-white p-12 text-center shadow-xs"
-        role="status"
-      >
-        <UIcon
-          name="i-heroicons-user-group"
-          class="mx-auto mb-4 h-12 w-12 text-slate-400"
-          aria-hidden="true"
-        />
-        <h2 class="mb-2 font-semibold text-slate-900">No coaches yet</h2>
-        <p class="mb-6 text-slate-600">
-          Visit a school's page to add coaches from their staff.
-        </p>
-        <NuxtLink
-          to="/schools"
-          class="inline-block rounded-lg bg-linear-to-r from-blue-500 to-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:from-blue-600 hover:to-blue-700"
-        >
-          Go to Schools
-        </NuxtLink>
-      </div>
+        title="No coaches yet"
+        description="Visit a school's page to add coaches from their staff."
+        action-text="Go to Schools"
+        action-href="/schools"
+      />
 
-      <!-- No Results State -->
-      <div
+      <DesignSystemEmptyState
         v-else-if="filteredCoaches.length === 0"
-        class="rounded-xl border border-slate-200 bg-white p-12 text-center shadow-xs"
-        role="status"
-      >
-        <UIcon
-          name="i-heroicons-magnifying-glass"
-          class="mx-auto mb-4 h-12 w-12 text-slate-400"
-          aria-hidden="true"
-        />
-        <h2 class="mb-2 font-semibold text-slate-900">
-          No coaches match your filters
-        </h2>
-        <p class="text-slate-700">Try adjusting your search or filters</p>
-      </div>
+        title="No coaches match your filters"
+        description="Try adjusting your search or filters"
+      />
 
       <!-- Result Count Announcement -->
       <div
@@ -256,29 +173,13 @@
         </li>
       </ul>
 
-      <!-- Pagination Controls -->
-      <div
+      <DesignSystemPagination
         v-if="filteredCoaches.length > ITEMS_PER_PAGE"
-        class="mt-8 flex items-center justify-center gap-4"
-      >
-        <button
-          @click="goToPage(currentPage - 1)"
-          :disabled="!hasPrevPage"
-          class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          Previous
-        </button>
-        <span class="text-sm text-slate-600">
-          Page {{ currentPage }} of {{ totalPages }}
-        </span>
-        <button
-          @click="goToPage(currentPage + 1)"
-          :disabled="!hasNextPage"
-          class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          Next
-        </button>
-      </div>
+        class="mt-8"
+        :page="currentPage"
+        :total-pages="totalPages"
+        @update:page="goToPage"
+      />
     </main>
 
     <!-- Communication Panel Modal -->
@@ -384,9 +285,6 @@ const paginatedCoaches = computed(() => {
 const totalPages = computed(() =>
   Math.ceil(filteredCoaches.value.length / ITEMS_PER_PAGE),
 );
-
-const hasNextPage = computed(() => currentPage.value < totalPages.value);
-const hasPrevPage = computed(() => currentPage.value > 1);
 
 const goToPage = (page: number) => {
   if (page >= 1 && page <= totalPages.value) {

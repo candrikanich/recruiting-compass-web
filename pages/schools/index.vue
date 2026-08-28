@@ -72,134 +72,65 @@
         </p>
       </div>
 
-      <!-- Loading State -->
-      <div
-        v-if="loading"
-        class="py-12 text-center"
-        role="status"
-        aria-live="polite"
+      <DesignSystemPageState
+        :loading="loading"
+        :error="error"
+        :empty="!loading && schools.length === 0"
+        loading-message="Loading schools..."
+        @retry="fetchSchools"
       >
-        <div
-          class="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-4 border-blue-500 border-t-transparent"
-          aria-hidden="true"
-        ></div>
-        <p class="text-slate-600">Loading schools...</p>
-      </div>
-
-      <!-- Error State -->
-      <div
-        v-if="error"
-        role="alert"
-        class="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-red-700"
-      >
-        {{ error }}
-      </div>
-
-      <!-- Empty State: No schools at all -->
-      <div
-        v-if="!loading && schools.length === 0"
-        class="rounded-xl border border-slate-200 bg-white p-12 text-center shadow-xs"
-      >
-        <svg
-          class="mx-auto mb-4 h-16 w-16 text-slate-300"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="1.5"
-            d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75z"
+        <template #empty>
+          <DesignSystemEmptyState
+            title="No schools yet"
+            description="Start building your recruiting list by adding the schools you're interested in."
+          >
+            <template #action>
+              <RecommendedSchools
+                class="mb-8 w-full"
+                :items="recommendedSchools"
+                :loading="recommendationsLoading"
+                :error="recommendationsError || recommendationActionError"
+                :adding-key="addingRecommendationKey"
+                @add="handleAddRecommendation"
+                @dismiss="handleDismissRecommendation"
+              />
+              <DesignSystemButton
+                to="/schools/new"
+                color="blue"
+                variant="solid"
+              >
+                Add Your First School
+              </DesignSystemButton>
+            </template>
+          </DesignSystemEmptyState>
+        </template>
+        <DesignSystemEmptyState
+          v-if="filteredSchools.length === 0"
+          title="No schools match your filters"
+          description="Try adjusting your filters or search terms"
+          action-text="Clear Filters"
+          @action="clearFilters"
+        />
+        <template v-else>
+          <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <SchoolListCard
+              v-for="school in paginatedSchools"
+              :key="school.id"
+              v-memo="[school.updated_at, athleteProfile.school_state]"
+              :school="school"
+              :overall="overallFitFor(school)"
+              @toggle-favorite="toggleFavorite"
+              @delete="handleDeleteSchool"
+            />
+          </div>
+          <DesignSystemPagination
+            class="mt-8"
+            :page="currentPage"
+            :total-pages="totalPages"
+            @update:page="goToPage"
           />
-        </svg>
-        <h3 class="mb-2 text-lg font-semibold text-slate-900">
-          No schools yet
-        </h3>
-        <p class="mb-6 text-slate-600">
-          Start building your recruiting list by adding the schools you're
-          interested in.
-        </p>
-        <RecommendedSchools
-          class="mb-8"
-          :items="recommendedSchools"
-          :loading="recommendationsLoading"
-          :error="recommendationsError || recommendationActionError"
-          :adding-key="addingRecommendationKey"
-          @add="handleAddRecommendation"
-          @dismiss="handleDismissRecommendation"
-        />
-        <NuxtLink
-          to="/schools/new"
-          class="inline-block rounded-lg bg-linear-to-r from-blue-500 to-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:from-blue-600 hover:to-blue-700"
-        >
-          Add Your First School
-        </NuxtLink>
-      </div>
-
-      <!-- Empty State: Filters returned no results -->
-      <div
-        v-else-if="!loading && filteredSchools.length === 0"
-        class="rounded-xl border border-slate-200 bg-white p-12 text-center shadow-xs"
-      >
-        <UIcon
-          name="i-heroicons-magnifying-glass"
-          class="mx-auto mb-4 h-16 w-16 text-slate-300"
-        />
-        <h3 class="mb-2 text-lg font-semibold text-slate-900">
-          No schools match your filters
-        </h3>
-        <p class="mb-6 text-slate-600">
-          Try adjusting your filters or search terms
-        </p>
-        <button
-          @click="clearFilters"
-          class="rounded-lg bg-linear-to-r from-blue-500 to-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:from-blue-600 hover:to-blue-700"
-        >
-          Clear Filters
-        </button>
-      </div>
-
-      <!-- Schools Grid -->
-      <div
-        v-if="!loading && paginatedSchools.length > 0"
-        class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
-      >
-        <SchoolListCard
-          v-for="school in paginatedSchools"
-          :key="school.id"
-          v-memo="[school.updated_at, athleteProfile.school_state]"
-          :school="school"
-          :overall="overallFitFor(school)"
-          @toggle-favorite="toggleFavorite"
-          @delete="handleDeleteSchool"
-        />
-      </div>
-
-      <!-- Pagination Controls -->
-      <div
-        v-if="!loading && filteredSchools.length > ITEMS_PER_PAGE"
-        class="mt-8 flex items-center justify-center gap-4"
-      >
-        <button
-          @click="goToPage(currentPage - 1)"
-          :disabled="!hasPrevPage"
-          class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          Previous
-        </button>
-        <span class="text-sm text-slate-600">
-          Page {{ currentPage }} of {{ totalPages }}
-        </span>
-        <button
-          @click="goToPage(currentPage + 1)"
-          :disabled="!hasNextPage"
-          class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          Next
-        </button>
-      </div>
+        </template>
+      </DesignSystemPageState>
     </main>
 
     <!-- Live Region for Screen Reader Announcements -->
@@ -336,9 +267,6 @@ const paginatedSchools = computed(() => {
 const totalPages = computed(() =>
   Math.ceil(sortedFilteredSchools.value.length / ITEMS_PER_PAGE),
 );
-
-const hasNextPage = computed(() => currentPage.value < totalPages.value);
-const hasPrevPage = computed(() => currentPage.value > 1);
 
 const goToPage = (page: number) => {
   if (page >= 1 && page <= totalPages.value) {

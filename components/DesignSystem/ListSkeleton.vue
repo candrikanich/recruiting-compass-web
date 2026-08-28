@@ -1,5 +1,10 @@
 <template>
-  <div class="divide-y divide-gray-200 rounded-lg bg-white shadow-sm">
+  <div
+    class="divide-y divide-brand-slate-200 rounded-lg bg-white shadow-sm"
+    role="status"
+    aria-busy="true"
+    aria-label="Loading list"
+  >
     <div v-for="i in lines" :key="i" class="space-y-2 p-4">
       <div class="flex items-center justify-between">
         <LoadingSkeleton className="h-5 w-1/3" />
