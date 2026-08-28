@@ -142,4 +142,16 @@ Verified: full E2E suite post-migration, 454 passed / 1 flake (`auth.spec.ts` lo
 
 GET `/api/schools/recommendations` ranks without these tables; POST dismiss requires `school_recommendation_dismissals` (now live). Recorded in `schema_migrations` as version `20260912000000`. PR #549 (`cursor/school-recommendations-92b1` → develop).
 
-**Timestamp collision with #548:** develop landed `20260912000000_cache_snapshots.sql` (public-profile L2) under the same version this live apply already consumed. Repo resolution: keep this file as `20260912000000_school_recommendations.sql` (matches live), retime cache_snapshots to `20260913000000_cache_snapshots.sql`. `cache_snapshots` is **not** created by the school-recs apply — it still needs a live MCP apply of the 20260913 file before public-profile L2 fills. Two L3 tables on purpose: recs → `response_cache` (`sharedCache`); public profiles → `cache_snapshots` (`readThroughCache`).
+**Timestamp collision with #548:** #548 originally landed `20260912000000_cache_snapshots.sql`. Live `schema_migrations` already consumed that version for school recs, so the repo retimed cache_snapshots to `20260913000000_cache_snapshots.sql`. Two L3 tables on purpose: recs → `response_cache` (`sharedCache`); public profiles → `cache_snapshots` (`readThroughCache`).
+
+### 2026-08-28: `cache_snapshots` applied live (public-profile L2)
+
+Applied via Supabase MCP `apply_migration` name `cache_snapshots` to prod+QA project `xpxzhqghxecsjhvklsqg` (Chris confirmed applied; applying session had MCP, the Cloud Agent that shipped the code did not). Repo file is now `supabase/migrations/20260913000000_cache_snapshots.sql` (retimed after the #549 collision). SQL is `CREATE TABLE IF NOT EXISTS` — a later apply of the 20260913 file is a no-op on the table.
+
+What landed:
+
+- Table `public.cache_snapshots` — derived public JSON snapshots, **not** tenant data. RLS on, **no policies**, `REVOKE` from `anon`/`authenticated`, service-role only (same pattern as `admin_audit_log`).
+- Indexes: PK on `cache_key`, `cache_snapshots_namespace_idx`, `cache_snapshots_expires_at_idx`.
+- Function `public.invalidate_public_profile_snapshot()` (`SECURITY DEFINER`, `search_path = ''`) + trigger `player_profiles_invalidate_cache_snapshot` AFTER UPDATE OR DELETE on `player_profiles` — deletes `pubprof:v1:{user_id}`.
+
+Code path: `server/utils/publicProfileRead.ts` (L1 Redis 60s + L2 this table 300s, fail-open). `is_published` is still read from `player_profiles` on every GET.
