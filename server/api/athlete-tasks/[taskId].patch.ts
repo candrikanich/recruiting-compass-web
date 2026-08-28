@@ -88,29 +88,36 @@ export default defineEventHandler(async (event) => {
           });
         }
 
-        // Check completion status of each prerequisite
-        const incompletePrerequisites = [];
-        for (const prereq of prerequisiteTasks || []) {
-          const { data: athleteTaskData, error: athleteTaskError } =
-            await supabase
-              .from("athlete_task")
-              .select("status")
-              .eq("athlete_id", user.id)
-              .eq("task_id", prereq.id)
-              .maybeSingle();
+        // Check completion status of all prerequisites in one query.
+        // A per-row .maybeSingle() loop here is an N+1 on every complete/
+        // start, and a check-then-insert later races on double-click.
+        const { data: athleteTasks, error: athleteTaskError } = await supabase
+          .from("athlete_task")
+          .select("task_id, status")
+          .eq("athlete_id", user.id)
+          .in("task_id", dependencies);
 
-          if (athleteTaskError) {
-            logger.error(
-              "Error checking prerequisite status",
-              athleteTaskError,
-            );
-          }
-
-          const status = athleteTaskData?.status || "not_started";
-          if (status !== "completed") {
-            incompletePrerequisites.push(prereq.title);
-          }
+        if (athleteTaskError) {
+          logger.error("Error checking prerequisite status", athleteTaskError);
+          throw createError({
+            statusCode: 500,
+            statusMessage: "Failed to validate dependencies",
+          });
         }
+
+        const statusByTaskId = new Map(
+          (athleteTasks || []).map((row) => [row.task_id, row.status]),
+        );
+        const titleById = new Map(
+          (prerequisiteTasks || []).map((prereq) => [prereq.id, prereq.title]),
+        );
+
+        const incompletePrerequisites = dependencies
+          .filter(
+            (depId) =>
+              (statusByTaskId.get(depId) || "not_started") !== "completed",
+          )
+          .map((depId) => titleById.get(depId) || "Unknown task");
 
         // If any prerequisites incomplete, reject
         if (incompletePrerequisites.length > 0) {
@@ -187,16 +194,20 @@ export default defineEventHandler(async (event) => {
       result = data;
       action = "UPDATE";
     } else {
-      // Create new record
+      // Create new record. Unique (athlete_id, task_id) means a double-click
+      // race on insert becomes a unique-violation 500; upsert is atomic.
       const { data, error } = await supabase
         .from("athlete_task")
-        .insert({
-          athlete_id: user.id,
-          task_id: taskId,
-          status: updateData.status,
-          updated_at: updateData.updated_at,
-          completed_at: updateData.completed_at,
-        })
+        .upsert(
+          {
+            athlete_id: user.id,
+            task_id: taskId,
+            status: updateData.status,
+            updated_at: updateData.updated_at,
+            completed_at: updateData.completed_at,
+          },
+          { onConflict: "athlete_id,task_id" },
+        )
         .select()
         .single();
 

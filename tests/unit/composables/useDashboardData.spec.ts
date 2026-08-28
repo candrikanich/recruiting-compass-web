@@ -32,7 +32,8 @@ beforeEach(() => {
         const idx = inCallSizes.length;
         inCallSizes.push(vals.length);
         const errored =
-          chunkError ?? (failNthChunk === idx ? { message: "Bad Request" } : null);
+          chunkError ??
+          (failNthChunk === idx ? { message: "Bad Request" } : null);
         // One coach per school id so merged count == total ids.
         return Promise.resolve({
           data: errored ? null : vals.map((id) => ({ id: `coach-${id}` })),
@@ -97,15 +98,47 @@ describe("useDashboardData.fetchCoaches chunking", () => {
 
 describe("useDashboardData.fetchAll — no stale flash on athlete switch", () => {
   // Per-table canned responses, keyed by whichever entity table fetchAll's
-  // fetchX() hits. Every fetchX ends the chain with a single .eq() (or .in()
-  // for coaches), so a generic select().eq()/in() resolver covers all of them.
+  // fetchX() hits. Every fetchX ends the chain with .eq() (schools/offers/
+  // events), .in() (coaches), or .limit() (interactions/metrics). The chain
+  // is thenable so `await query.eq()` still works for terminals that don't
+  // call .limit().
   const tableResponses: Record<
     string,
     { data: unknown[] | null; error: unknown; count?: number }
   > = {};
+  const selectCalls: Array<{ table: string; args: unknown[] }> = [];
+  const orderCalls: Array<{ table: string; args: unknown[] }> = [];
+  const limitCalls: Array<{ table: string; args: unknown[] }> = [];
+
+  const makeResult = (table: string) =>
+    Promise.resolve({
+      data: tableResponses[table]?.data ?? [],
+      error: tableResponses[table]?.error ?? null,
+      count: tableResponses[table]?.count,
+    });
+
+  const makeChain = (table: string, result: Promise<unknown>) => {
+    const chain: Record<string, unknown> = {};
+    chain.eq = () => chain;
+    chain.in = () => result;
+    chain.order = (...args: unknown[]) => {
+      orderCalls.push({ table, args });
+      return chain;
+    };
+    chain.limit = (...args: unknown[]) => {
+      limitCalls.push({ table, args });
+      return result;
+    };
+    chain.then = (onFulfilled: unknown, onRejected: unknown) =>
+      result.then(onFulfilled as never, onRejected as never);
+    return chain;
+  };
 
   beforeEach(() => {
     Object.keys(tableResponses).forEach((k) => delete tableResponses[k]);
+    selectCalls.length = 0;
+    orderCalls.length = 0;
+    limitCalls.length = 0;
     tableResponses.schools = { data: [{ id: "school-old" }], error: null };
     tableResponses.coaches = { data: [{ id: "coach-old" }], error: null };
     tableResponses.interactions = {
@@ -120,21 +153,15 @@ describe("useDashboardData.fetchAll — no stale flash on athlete switch", () =>
       error: null,
     };
 
-    mockSupabase.from.mockImplementation((table: string) => ({
-      select: () => ({
-        eq: () =>
-          Promise.resolve({
-            data: tableResponses[table]?.data ?? [],
-            error: tableResponses[table]?.error ?? null,
-            count: tableResponses[table]?.count,
-          }),
-        in: () =>
-          Promise.resolve({
-            data: tableResponses[table]?.data ?? [],
-            error: tableResponses[table]?.error ?? null,
-          }),
-      }),
-    }));
+    mockSupabase.from.mockImplementation((table: string) => {
+      const result = makeResult(table);
+      return {
+        select: (...args: unknown[]) => {
+          selectCalls.push({ table, args });
+          return makeChain(table, result);
+        },
+      };
+    });
   });
 
   it("clears all entity arrays synchronously, before the new fetch resolves", async () => {
@@ -193,25 +220,25 @@ describe("useDashboardData.fetchAll — no stale flash on athlete switch", () =>
     const schoolResolvers: Array<
       (v: { data: unknown[]; error: null }) => void
     > = [];
-    mockSupabase.from.mockImplementation((table: string) => ({
-      select: () => ({
-        eq: () => {
-          if (table === "schools") {
-            return new Promise((resolve) => schoolResolvers.push(resolve));
-          }
-          return Promise.resolve({
-            data: tableResponses[table]?.data ?? [],
-            error: tableResponses[table]?.error ?? null,
-            count: tableResponses[table]?.count,
-          });
-        },
-        in: () =>
-          Promise.resolve({
-            data: tableResponses[table]?.data ?? [],
-            error: tableResponses[table]?.error ?? null,
-          }),
-      }),
-    }));
+    mockSupabase.from.mockImplementation((table: string) => {
+      const result =
+        table === "schools"
+          ? new Promise((resolve) => schoolResolvers.push(resolve))
+          : Promise.resolve({
+              data: tableResponses[table]?.data ?? [],
+              error: tableResponses[table]?.error ?? null,
+              count: tableResponses[table]?.count,
+            });
+      const chain: Record<string, unknown> = {
+        eq: () => chain,
+        in: () => result,
+        order: () => chain,
+        limit: () => result,
+        then: (onFulfilled: unknown, onRejected: unknown) =>
+          result.then(onFulfilled as never, onRejected as never),
+      };
+      return { select: () => chain };
+    });
 
     // Dispatch A (older), then dispatch B (newer) before A resolves.
     const fetchA = dashboardData.fetchAll("family-a", "athlete-a");
@@ -226,5 +253,53 @@ describe("useDashboardData.fetchAll — no stale flash on athlete switch", () =>
     await fetchA;
 
     expect(dashboardData.allSchools.value).toEqual([{ id: "school-b" }]);
+  });
+
+  it("does not select * for interactions — only widget columns, newest first, capped", async () => {
+    const { fetchAll } = useDashboardData();
+    await fetchAll("family-1", "athlete-1");
+
+    const interactionSelect = selectCalls.find(
+      (c) => c.table === "interactions",
+    );
+    expect(interactionSelect).toBeDefined();
+    expect(String(interactionSelect?.args[0])).not.toBe("*");
+    expect(String(interactionSelect?.args[0])).toContain("occurred_at");
+    expect(String(interactionSelect?.args[0])).not.toContain("content");
+    expect(interactionSelect?.args[1]).toEqual({ count: "exact" });
+
+    const interactionOrder = orderCalls.find((c) => c.table === "interactions");
+    expect(interactionOrder?.args[0]).toBe("occurred_at");
+    expect(interactionOrder?.args[1]).toEqual({ ascending: false });
+
+    const { DASHBOARD_INTERACTION_LIMIT } =
+      await import("~/composables/useDashboardData");
+    const interactionLimit = limitCalls.find((c) => c.table === "interactions");
+    expect(interactionLimit?.args[0]).toBe(DASHBOARD_INTERACTION_LIMIT);
+  });
+
+  it("omits heavy school text columns (notes, philosophy) from the dashboard fetch", async () => {
+    const { fetchAll } = useDashboardData();
+    await fetchAll("family-1", "athlete-1");
+
+    const schoolSelect = selectCalls.find((c) => c.table === "schools");
+    const cols = String(schoolSelect?.args[0]);
+    expect(cols).toContain("academic_info");
+    expect(cols).toContain("status");
+    expect(cols).not.toContain("coaching_philosophy");
+    expect(cols).not.toContain("notes");
+    expect(cols).not.toContain("amenities");
+  });
+
+  it("caps performance metrics to a recency window", async () => {
+    const { fetchAll } = useDashboardData();
+    await fetchAll("family-1", "athlete-1");
+
+    const { DASHBOARD_METRIC_LIMIT } =
+      await import("~/composables/useDashboardData");
+    const metricLimit = limitCalls.find(
+      (c) => c.table === "performance_metrics",
+    );
+    expect(metricLimit?.args[0]).toBe(DASHBOARD_METRIC_LIMIT);
   });
 });

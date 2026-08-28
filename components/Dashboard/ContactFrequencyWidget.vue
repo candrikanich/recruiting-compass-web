@@ -144,60 +144,70 @@ const recentContacts = computed((): ContactRecord[] => {
 
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  const sevenDaysAgoMs = sevenDaysAgo.getTime();
 
-  // Filter interactions from the last 7 days
-  const recentInteractions = props.interactions.filter((interaction) => {
+  const schoolById = new Map(
+    props.schools.map((school) => [school.id, school]),
+  );
+  const schoolContactMap = new Map<string, Interaction[]>();
+
+  for (const interaction of props.interactions) {
+    if (!interaction.school_id) continue;
     const interactionDate = new Date(
       interaction.occurred_at || interaction.created_at || "",
-    );
-    return interactionDate >= sevenDaysAgo;
-  });
+    ).getTime();
+    if (Number.isNaN(interactionDate) || interactionDate < sevenDaysAgoMs) {
+      continue;
+    }
+    const existing = schoolContactMap.get(interaction.school_id);
+    if (existing) {
+      existing.push(interaction);
+    } else {
+      schoolContactMap.set(interaction.school_id, [interaction]);
+    }
+  }
 
-  if (recentInteractions.length === 0) {
+  if (schoolContactMap.size === 0) {
     return [];
   }
 
-  // Create a map of school_id -> interactions
-  const schoolContactMap = new Map<string, Interaction[]>();
-
-  recentInteractions.forEach((interaction) => {
-    if (interaction.school_id) {
-      const existing = schoolContactMap.get(interaction.school_id) || [];
-      schoolContactMap.set(interaction.school_id, [...existing, interaction]);
-    }
-  });
-
-  // Build contact records
   const contacts: ContactRecord[] = [];
 
   schoolContactMap.forEach((interactions, schoolId) => {
-    const school = props.schools?.find((s) => s.id === schoolId);
-    if (school) {
-      // Get the most recent interaction for this school
-      const mostRecent = interactions.sort((a, b) => {
-        const dateA = new Date(a.occurred_at || a.created_at || "").getTime();
-        const dateB = new Date(b.occurred_at || b.created_at || "").getTime();
-        return dateB - dateA;
-      })[0];
+    const school = schoolById.get(schoolId);
+    if (!school) return;
 
-      const lastContactDate =
-        mostRecent.occurred_at || mostRecent.created_at || "";
-
-      contacts.push({
-        schoolId,
-        schoolName: school.name,
-        lastContactDate,
-        contactCount: interactions.length,
-        contactRecency: getContactRecency(lastContactDate),
-      });
+    let mostRecent = interactions[0];
+    let mostRecentTime = new Date(
+      mostRecent.occurred_at || mostRecent.created_at || "",
+    ).getTime();
+    for (let i = 1; i < interactions.length; i++) {
+      const candidateTime = new Date(
+        interactions[i].occurred_at || interactions[i].created_at || "",
+      ).getTime();
+      if (candidateTime > mostRecentTime) {
+        mostRecent = interactions[i];
+        mostRecentTime = candidateTime;
+      }
     }
+
+    const lastContactDate =
+      mostRecent.occurred_at || mostRecent.created_at || "";
+
+    contacts.push({
+      schoolId,
+      schoolName: school.name,
+      lastContactDate,
+      contactCount: interactions.length,
+      contactRecency: getContactRecency(lastContactDate),
+    });
   });
 
-  // Sort by most recent contact date
   return contacts.sort((a, b) => {
-    const dateA = new Date(a.lastContactDate).getTime();
-    const dateB = new Date(b.lastContactDate).getTime();
-    return dateB - dateA;
+    return (
+      new Date(b.lastContactDate).getTime() -
+      new Date(a.lastContactDate).getTime()
+    );
   });
 });
 
