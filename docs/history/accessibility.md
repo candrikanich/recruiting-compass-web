@@ -1,5 +1,14 @@
 # History: Accessibility
 
+## 2026-02-09 — Interactions Page A11y Audit
+Full WCAG 2.1 AA audit of interactions page: 16 issues (5 critical, 5 high) covering focus indicators, label associations, skip links, live regions.
+
+## ~2026-02 — Landing Page A11y Audit
+Landing page a11y audit: 4 critical, 5 high, 4 medium, 3 low issues (focus indicators, reduced-motion, color contrast, semantic markup). Landing page later redesigned.
+
+## ~2026-02 — School Detail A11y Audit Suite
+WCAG 2.1 AA audit of school detail page: ~70% compliant, 14 issues (7 critical, 6 high, 3 medium). Included README index, detailed findings, and fix tracker (14/23 completed at time of archival). Most issues since addressed.
+
 ## 2026-03-07 — Accessibility improvements
 vitest-axe form tests, SchoolLogo ARIA fallback fix, pa11y WCAG 2.2 upgrade + URL expansion, and keyboard-testing docs.
 

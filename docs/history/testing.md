@@ -1,5 +1,8 @@
 # History: Testing
 
+## 2026-03-19 — Coverage Improvement Plan (72→80%)
+Phased coverage plan from 72% to 80% targeting pure utilities, composables, stores. Baseline long surpassed (7998+ tests by Aug 2026).
+
 ## 2026-02-06 — Test coverage completion report
 Subagent-driven session added 295 test cases across 6 modules, raising coverage 62.91% → 66.29%.
 

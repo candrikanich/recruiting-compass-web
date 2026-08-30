@@ -1,5 +1,8 @@
 # History: UI
 
+## 2026-08 — Segmented Control Direction Migration
+FormSegmentedControl component built + migrated 6 sites (Direction, offers sort-dir, video platform). Shipped PR #406/#407.
+
 ## 2026-02 — Navigation UI updates
 Fixed broken Performance/Analytics "More" dropdown links, moved Search into a header icon beside Notifications, added icons+tooltips to the 6 main nav items. Shipped; later a11y audits confirm the header search button and nav-item icons exist.
 

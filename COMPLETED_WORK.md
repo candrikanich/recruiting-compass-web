@@ -372,3 +372,21 @@ Marked `@deprecated`, scheduled for removal:
 |--------|-----------|---------|
 | general | 4 | Public player-profile plan (/p/[slug], shipped), web-completeness parity misdiagnosis (#352/#353), social-tracking removal, stale tech-debt snapshot |
 | onboarding | 2 | Position-vocabulary normalization (canonical.ts, Phases 1-2), player onboarding + family linking plan (shipped) |
+
+## Doc Cleanup Run — 2026-08-30
+- Deleted: 32 files (4 session handoffs, 10 unproduced video scripts, 6 stale MVP-era technical docs, 4 stale user-facing docs, 4 stale a11y snippets/derivatives, 4 stale marketing/planning docs)
+- Compressed: 27 files → docs/history/*.md (10 domains)
+- Kept: 56 files (active specs, guides, runbooks, iOS handoff specs, design tokens, stakeholder docs, a11y audits)
+
+| Domain | Compressed | Summary |
+|--------|-----------|---------|
+| infrastructure | 9 | Admin suite plans (foundation/support/ops/growth), admin subdomain, Vercel consolidation, cron monitoring, CI/CD improvements, security fixes |
+| accessibility | 3 | Landing page audit, school detail audit suite (index+findings+tracker), interactions page audit |
+| ios | 3 | Family unit symmetric redesign, positions ordered specificity, page priority sequencing |
+| auth | 2 | RLS family consolidation 6-phase plan (complete), legal pages plan |
+| coaches | 2 | Coach tile unification, coach detail consolidation |
+| e2e | 1 | E2E reliability findings log |
+| onboarding | 1 | Bidirectional onboarding pre-fill |
+| performance | 1 | QA performance audit (bundle/CSS/TTFB baseline) |
+| testing | 1 | Coverage improvement plan 72→80% |
+| ui | 1 | Segmented control direction migration (PR #406/#407) |
