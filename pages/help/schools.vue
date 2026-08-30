@@ -8,7 +8,7 @@
       <HelpSectionHeader title="Adding a school to your list" />
       <p class="mb-4 text-sm text-gray-600">
         Your school list is the core of your recruiting compass. Add every
-        school you're considering, even ones you're unsure about — fit scores
+        school you're considering, even ones you're unsure about — fit signals
         will help you prioritize.
       </p>
       <HelpStepCard :step="1" title="Go to Search">

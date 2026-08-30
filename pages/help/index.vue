@@ -38,7 +38,7 @@ const helpSections = [
     icon: "i-heroicons-building-library",
     title: "Schools & Coaches",
     description:
-      "Add schools, understand fit scores, and track coach interactions.",
+      "Add schools, understand fit signals, and track coach interactions.",
   },
   {
     slug: "phases",

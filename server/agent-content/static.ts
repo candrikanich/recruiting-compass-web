@@ -33,7 +33,7 @@ Everything you need to use The Recruiting Compass.
 ## Sections
 
 - [Getting Started](https://myrecruitingcompass.com/help/getting-started) — set up your profile and learn the basics of the recruiting dashboard.
-- [Schools & Coaches](https://myrecruitingcompass.com/help/schools) — add schools, understand fit scores, and track coach interactions.
+- [Schools & Coaches](https://myrecruitingcompass.com/help/schools) — add schools, understand fit signals, and track coach interactions.
 - [Phases & Letters](https://myrecruitingcompass.com/help/phases) — navigate recruiting phases and manage recommendation letter requests.
 - [Account & Settings](https://myrecruitingcompass.com/help/account) — manage your family, notifications, profile, and account preferences.
 `;
@@ -53,7 +53,7 @@ The Recruiting Compass is a recruiting management tool built for student athlete
 Your athlete profile is the foundation of everything in the app. Complete it before adding schools or coaches.
 
 1. **Navigate to Settings** — from the dashboard, go to Settings → Athlete Profile.
-2. **Fill in your details** — enter your name, graduation year, sport, position(s), GPA, and test scores. All fields help generate accurate fit scores for schools.
+2. **Fill in your details** — enter your name, graduation year, sport, position(s), GPA, and test scores. All fields help generate accurate fit signals for schools.
 3. **Save your profile** — tap **Save changes**. Your profile is now visible to coaches who view your recruiting page.
 
 ## Adding family members
@@ -63,14 +63,14 @@ Parents and guardians can be added as family members to view and collaborate on 
 1. **Go to Family settings** — Settings → Family.
 2. **Invite a family member** — enter their email address and tap **Send invite**. They'll receive an email to create their account and join your family unit.
 
-> **Note:** Family members can view your school list, phases, and interactions — but only the athlete can make changes to the profile.
+> **Note:** Family members can view and edit your athlete profile, school list, and interactions — everyone in the family works together.
 
 ## Understanding the dashboard
 
 The dashboard gives you a snapshot of your recruiting progress at a glance.
 
 - **Current Phase** — where you are in the recruiting process (Freshman through Senior).
-- **School list** — your saved schools with fit scores and interaction counts.
+- **School list** — your saved schools with fit signals and interaction counts.
 - **Recent activity** — latest interactions and notifications.
 - **Tasks** — action items specific to your current phase.
 
@@ -80,7 +80,7 @@ Once your profile is set up, the most impactful first step is building your scho
 
 1. **Search for schools** — go to [Search](https://myrecruitingcompass.com/search) and filter by division, sport, location, or size. Add any school that interests you.
 
-> **Tip:** Start broad — you can always narrow your list later. Adding 20–30 schools gives the fit-score algorithm enough data to show meaningful patterns.
+> **Tip:** Start broad — you can always narrow your list later. Adding 20–30 schools gives the fit-signal calculations enough data to show meaningful patterns.
 `;
 
 const HELP_SCHOOLS = `# Schools & Coaches
@@ -89,7 +89,7 @@ const HELP_SCHOOLS = `# Schools & Coaches
 
 ## Adding a school to your list
 
-Your school list is the core of your recruiting compass. Add every school you're considering, even ones you're unsure about — fit scores will help you prioritize.
+Your school list is the core of your recruiting compass. Add every school you're considering, even ones you're unsure about — fit signals will help you prioritize.
 
 1. **Go to Search** — use the filters to find schools by division, sport, state, or enrollment size.
 2. **View the school profile** — click any school to see academic info, athletic program details, and location.
@@ -196,11 +196,11 @@ const HELP_ACCOUNT = `# Account & Settings
 
 ## Updating your athlete profile
 
-Keep your profile current — fit scores and recommendations update automatically when your profile changes.
+Keep your profile current — fit signals and recommendations update automatically when your profile changes.
 
 1. **Open Settings** — navigate to Settings and select **Athlete Profile**.
 2. **Edit your details** — update any field: graduation year, sport, positions, GPA, SAT/ACT, height, or weight.
-3. **Save changes** — tap **Save changes**. Fit scores for all your schools will recalculate within a few seconds.
+3. **Save changes** — tap **Save changes**. Fit signals for all your schools will update within a few seconds.
 
 ## Managing family members
 
@@ -210,7 +210,7 @@ Family members (parents, guardians) can view your recruiting profile and help co
 2. **Invite a member** — enter their email and tap **Send invite**. They'll receive an invitation to create a linked account.
 3. **Manage access** — to remove a family member, tap the three-dot menu next to their name and select **Remove**.
 
-> **Note:** A family member's account is linked to your athlete profile — they cannot log in as you or make changes on your behalf.
+> **Note:** A family member's account is linked to your athlete profile — they can view and edit profile information alongside the athlete.
 
 ## Notification preferences
 

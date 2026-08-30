@@ -7,7 +7,7 @@
     <section class="mb-10">
       <HelpSectionHeader title="Updating your athlete profile" />
       <p class="mb-4 text-sm text-gray-600">
-        Keep your profile current — fit scores and recommendations update
+        Keep your profile current — fit signals and recommendations update
         automatically when your profile changes.
       </p>
       <HelpStepCard :step="1" title="Open Settings">
@@ -24,8 +24,8 @@
         height, or weight.
       </HelpStepCard>
       <HelpStepCard :step="3" title="Save changes" :last="true">
-        Tap <strong>Save changes</strong>. Fit scores for all your schools will
-        recalculate within a few seconds.
+        Tap <strong>Save changes</strong>. Fit signals for all your schools will
+        update within a few seconds.
       </HelpStepCard>
     </section>
 
@@ -48,8 +48,8 @@
         select <strong>Remove</strong>.
       </HelpStepCard>
       <HelpCallout type="info">
-        A family member's account is linked to your athlete profile — they
-        cannot log in as you or make changes on your behalf.
+        A family member's account is linked to your athlete profile — they can
+        view and edit profile information alongside the athlete.
       </HelpCallout>
     </section>
 

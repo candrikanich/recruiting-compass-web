@@ -73,23 +73,23 @@ We intentionally do not show Athletic Fit or Opportunity Fit because we cannot r
 
   locationFit: {
     id: "location-fit",
-    title: "Location Fit (15%)",
-    shortDescription: "Geographic distance and regional preference",
-    fullDescription: `Location fit considers how far the school is from your home and whether it matches your location preferences. Some athletes don't care about distance; others really value being close to home. If a school's location matches your preferences, it boosts your location fit score.`,
+    title: "Location Fit",
+    shortDescription: "Geographic distance from home",
+    fullDescription: `Location fit considers how far the school is from your home and whether it matches your location preferences. Some athletes don't care about distance; others really value being close to home. Shows as a colored label (Strong, Good, Fair, or Limited) — not a numeric score.`,
   },
 
-  programFit: {
-    id: "program-fit",
-    title: "Program Fit (15%)",
-    shortDescription: "Coaching style and program reputation",
-    fullDescription: `Program fit is about the school's reputation, coaching style, and whether you align with how they play. Do you like the coach's approach? Is this a program you respect? Would you be happy playing there? This is more subjective but important for long-term satisfaction.`,
+  campusSizeFit: {
+    id: "campus-size-fit",
+    title: "Campus Size Fit",
+    shortDescription: "Enrollment size match with your preference",
+    fullDescription: `Campus size fit compares a school's enrollment against your preferred campus size (small, medium, or large). A school whose enrollment falls in your preferred range shows a stronger signal. Shows as a colored label (Strong, Good, Fair, or Limited) — not a numeric score.`,
   },
 
-  financialFit: {
-    id: "financial-fit",
-    title: "Financial Fit (10%)",
-    shortDescription: "Scholarship availability and financial aid",
-    fullDescription: `Financial fit looks at the school's likelihood to offer you a scholarship based on your profile and their budget. D1 schools offer more scholarships than D2 or D3. Some programs have more money than others. This component helps you understand the financial reality of recruiting at each school.`,
+  costFit: {
+    id: "cost-fit",
+    title: "Cost Fit",
+    shortDescription: "Tuition and cost alignment with your sensitivity",
+    fullDescription: `Cost fit evaluates a school's tuition and fees against your cost sensitivity preference. If you've indicated cost is a major factor, schools with lower tuition will show stronger signals. Shows as a colored label (Strong, Good, Fair, or Limited) — not a numeric score.`,
   },
 
   // Interest calibration
@@ -153,8 +153,8 @@ export const helpCategoryGroups = {
   fitSignals: [
     "school-fit-signals",
     "location-fit",
-    "program-fit",
-    "financial-fit",
+    "campus-size-fit",
+    "cost-fit",
   ],
   dashboard: ["dashboard-overview", "progress-bar", "suggestions-widget"],
   coaches: ["recovery-plan"],
