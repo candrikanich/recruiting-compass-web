@@ -68,3 +68,4 @@ tests/e2e/.auth/*.json
 # Python bytecode (was leaking from .agents skill scripts)
 __pycache__/
 *.py[cod]
+ELI5/
