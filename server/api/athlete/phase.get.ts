@@ -10,12 +10,13 @@ import { useLogger } from "~/server/utils/logger";
 import type { AthleteAPI } from "~/types/api/athlete";
 import type { Phase } from "~/types/timeline";
 import {
-  getMilestoneProgress,
   canAdvancePhase,
+  getYearCompletionMilestones,
 } from "~/utils/phaseCalculation";
 import {
   computePhaseFromGraduationYear,
   getTaskIdsBySlug,
+  getTaskCompletionByGrade,
 } from "~/server/utils/athletePhase";
 
 export default defineEventHandler(async (event) => {
@@ -129,14 +130,19 @@ export default defineEventHandler(async (event) => {
     // Resolve PHASE_MILESTONES slugs to real seeded task ids
     const taskIdsBySlug = await getTaskIdsBySlug(supabase);
 
-    // Get milestone progress for current phase
-    const progress = getMilestoneProgress(
-      currentPhase,
+    // Year-completion milestones: each year is a milestone when all its tasks are done
+    const gradeCounts = await getTaskCompletionByGrade(
+      supabase,
+      athleteId,
       completedTaskIds,
-      taskIdsBySlug,
+    );
+    const progress = getYearCompletionMilestones(
+      gradeCounts.totalByGrade,
+      gradeCounts.completedByGrade,
+      currentPhase,
     );
 
-    // Check if can advance
+    // Phase advancement still uses slug-based gateway milestones
     const canAdvance = canAdvancePhase(
       currentPhase,
       completedTaskIds,
