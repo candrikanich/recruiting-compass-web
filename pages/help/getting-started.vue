@@ -31,7 +31,7 @@
       </HelpStepCard>
       <HelpStepCard :step="2" title="Fill in your details">
         Enter your name, graduation year, sport, position(s), GPA, and test
-        scores. All fields help generate accurate fit scores for schools.
+        scores. All fields help generate accurate fit signals for schools.
       </HelpStepCard>
       <HelpStepCard :step="3" title="Save your profile" :last="true">
         Tap <strong>Save changes</strong>. Your profile is now visible to
@@ -54,8 +54,8 @@
         receive an email to create their account and join your family unit.
       </HelpStepCard>
       <HelpCallout type="info">
-        Family members can view your school list, phases, and interactions — but
-        only the athlete can make changes to the profile.
+        Family members can view and edit your athlete profile, school list, and
+        interactions — everyone in the family works together.
       </HelpCallout>
     </section>
 
@@ -75,7 +75,7 @@
           process (Freshman through Senior)
         </li>
         <li>
-          <strong>School list</strong> — your saved schools with fit scores and
+          <strong>School list</strong> — your saved schools with fit signals and
           interaction counts
         </li>
         <li>
@@ -107,7 +107,7 @@
       </HelpStepCard>
       <HelpCallout type="tip">
         Start broad — you can always narrow your list later. Adding 20–30
-        schools gives the fit score algorithm enough data to show meaningful
+        schools gives the fit signal calculations enough data to show meaningful
         patterns.
       </HelpCallout>
     </section>

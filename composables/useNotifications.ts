@@ -63,7 +63,8 @@ export const useNotifications = (): {
         .from("notifications")
         .select("*")
         .eq("user_id", getUserStore().user!.id)
-        .order("scheduled_for", { ascending: false });
+        .order("created_at", { ascending: false })
+        .order("id", { ascending: false });
 
       if (filters?.isRead !== undefined) {
         if (filters.isRead) {

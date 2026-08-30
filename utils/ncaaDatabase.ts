@@ -11,6 +11,18 @@ export type NcaaDivision = "D1" | "D2" | "D3";
 export interface SchoolInfo {
   name: string;
   conference?: string;
+  website?: string;
+  athleticWebsite?: string;
+  state?: string;
+}
+
+export interface NcaaCatalogSchool {
+  name: string;
+  division: NcaaDivision;
+  conference: string | null;
+  state: string | null;
+  website: string | null;
+  athleticWebsite: string | null;
 }
 
 /**
@@ -66,4 +78,25 @@ export const getSchoolsByConference = (conference: string): SchoolInfo[] => {
   return getAllSchools().filter(
     (s) => s.conference?.toLowerCase() === conference.toLowerCase(),
   );
+};
+
+/**
+ * Flatten the JSON catalog into a scored-recommendation source.
+ * Division is taken from the parent key — it is not stored on each JSON row.
+ */
+export const getCatalogSchools = (): NcaaCatalogSchool[] => {
+  const out: NcaaCatalogSchool[] = [];
+  for (const division of ["D1", "D2", "D3"] as NcaaDivision[]) {
+    for (const school of DIVISION_SCHOOLS[division]) {
+      out.push({
+        name: school.name,
+        division,
+        conference: school.conference ?? null,
+        state: school.state ? school.state.toUpperCase() : null,
+        website: school.website ?? null,
+        athleticWebsite: school.athleticWebsite ?? null,
+      });
+    }
+  }
+  return out;
 };

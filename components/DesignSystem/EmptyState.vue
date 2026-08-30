@@ -70,7 +70,7 @@ const hasAction = computed(
       {{ description }}
     </p>
 
-    <div v-if="hasAction" class="mt-2">
+    <div v-if="hasAction" class="mt-2 flex w-full flex-col items-center">
       <slot name="action">
         <DesignSystemButton
           v-if="actionText && actionHref"

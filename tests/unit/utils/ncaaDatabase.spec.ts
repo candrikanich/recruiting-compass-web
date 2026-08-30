@@ -97,4 +97,43 @@ describe("ncaaDatabase", () => {
     const results = getSchoolsByConference("");
     expect(results).toEqual([]);
   });
+
+  it("getCatalogSchools attaches the division from the parent key", async () => {
+    const { getCatalogSchools } = await import("~/utils/ncaaDatabase");
+    const catalog = getCatalogSchools();
+    expect(catalog).toEqual([
+      {
+        name: "Stanford",
+        division: "D1",
+        conference: "Pac-12",
+        state: null,
+        website: null,
+        athleticWebsite: null,
+      },
+      {
+        name: "Duke",
+        division: "D1",
+        conference: "ACC",
+        state: null,
+        website: null,
+        athleticWebsite: null,
+      },
+      {
+        name: "Rollins",
+        division: "D2",
+        conference: "SSC",
+        state: null,
+        website: null,
+        athleticWebsite: null,
+      },
+      {
+        name: "Williams",
+        division: "D3",
+        conference: null,
+        state: null,
+        website: null,
+        athleticWebsite: null,
+      },
+    ]);
+  });
 });

@@ -9,6 +9,7 @@
 | Document | Description |
 |---|---|
 | [Architecture](architecture.md) | System architecture, request flow, Mermaid diagrams |
+| [architecture/school-recommendations.md](architecture/school-recommendations.md) | School recommendation system (ranker, cache, API) |
 | [technical/ARCHITECTURE_DIAGRAMS.md](technical/ARCHITECTURE_DIAGRAMS.md) | Detailed architecture diagrams |
 | [technical/DATABASE_SCHEMA.md](technical/DATABASE_SCHEMA.md) | Full database schema and RLS policies |
 | [technical/FEATURE_FLOW_DIAGRAMS.md](technical/FEATURE_FLOW_DIAGRAMS.md) | Feature interaction flows |

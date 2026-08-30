@@ -83,6 +83,19 @@ vi.mock("~/server/utils/supabase", () => ({
           }),
         };
       }
+      if (table === "cache_snapshots") {
+        return {
+          select: () => ({
+            eq: () => ({
+              maybeSingle: () => Promise.resolve({ data: null, error: null }),
+            }),
+          }),
+          upsert: () => Promise.resolve({ error: null }),
+          delete: () => ({
+            in: () => Promise.resolve({ error: null }),
+          }),
+        };
+      }
       return {};
     },
   })),
@@ -90,6 +103,12 @@ vi.mock("~/server/utils/supabase", () => ({
 
 vi.mock("~/server/utils/logger", () => ({
   useLogger: () => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+  }),
+  createLogger: () => ({
     info: vi.fn(),
     warn: vi.fn(),
     error: vi.fn(),
@@ -103,6 +122,9 @@ vi.mock("h3", async (importOriginal) => {
     ...actual,
     defineEventHandler: (fn: Function) => fn,
     getRouterParam: vi.fn(() => "abc123"),
+    setHeader: vi.fn(),
+    getRequestHeader: vi.fn(() => undefined),
+    setResponseStatus: vi.fn(),
     createError: (cfg: { statusCode: number; statusMessage?: string }) => {
       const err = new Error(cfg.statusMessage) as Error & {
         statusCode: number;
@@ -117,7 +139,7 @@ const { default: handler } =
   await import("~/server/api/public/profile/[slug].get");
 
 describe("GET /api/public/profile/[slug]", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     mockState.profileRow = null;
     mockState.userRow = null;
     mockState.playerPrefsData = null;
@@ -125,6 +147,10 @@ describe("GET /api/public/profile/[slug]", () => {
     mockState.videoLinksRows = [];
     mockState.metricsRows = [];
     videoLinksEqSpy.mockClear();
+    const h3 = await import("h3");
+    vi.mocked(h3.getRequestHeader).mockReturnValue(undefined);
+    vi.mocked(h3.setHeader).mockClear();
+    vi.mocked(h3.setResponseStatus).mockClear();
   });
 
   it("throws 404 when slug not found", async () => {
@@ -265,5 +291,42 @@ describe("GET /api/public/profile/[slug]", () => {
 
     expect(result.schools).toHaveLength(2);
     expect(result.schools![0].name).toBe("State University");
+  });
+
+  it("sets private no-cache + ETag and returns 304 on If-None-Match", async () => {
+    mockState.profileRow = {
+      id: "p1",
+      is_published: true,
+      user_id: "u1",
+      family_unit_id: "f1",
+      show_academics: false,
+      show_athletic: false,
+      show_film: false,
+      show_schools: false,
+      bio: "etag-me",
+    };
+    mockState.userRow = { full_name: "Jane Doe" };
+
+    const h3 = await import("h3");
+    vi.mocked(h3.getRequestHeader).mockReturnValue(undefined);
+    vi.mocked(h3.setHeader).mockClear();
+    vi.mocked(h3.setResponseStatus).mockClear();
+
+    await handler({} as any);
+
+    const etagCall = vi
+      .mocked(h3.setHeader)
+      .mock.calls.find((call) => call[1] === "ETag");
+    expect(etagCall?.[2]).toEqual(expect.stringMatching(/^"[0-9a-f]+"$/));
+    expect(h3.setHeader).toHaveBeenCalledWith(
+      expect.anything(),
+      "Cache-Control",
+      "private, no-cache",
+    );
+
+    vi.mocked(h3.getRequestHeader).mockReturnValue(etagCall![2] as string);
+    const second = await handler({} as any);
+    expect(second).toBeNull();
+    expect(h3.setResponseStatus).toHaveBeenCalledWith(expect.anything(), 304);
   });
 });

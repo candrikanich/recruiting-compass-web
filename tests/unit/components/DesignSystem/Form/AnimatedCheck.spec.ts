@@ -9,10 +9,12 @@ describe("AnimatedCheck", () => {
     expect(input.exists()).toBe(true);
   });
 
-  it("keeps the native input in the DOM but visually hidden (sr-only + peer)", () => {
+  it("keeps the native input in the DOM but visually hidden (opacity-0 overlay + peer)", () => {
     const wrapper = mount(AnimatedCheck, { props: { modelValue: false } });
     const input = wrapper.find('input[type="checkbox"]');
-    expect(input.classes()).toContain("sr-only");
+    expect(input.classes()).toContain("opacity-0");
+    expect(input.classes()).toContain("absolute");
+    expect(input.classes()).toContain("inset-0");
     expect(input.classes()).toContain("peer");
   });
 

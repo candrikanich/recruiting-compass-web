@@ -1,7 +1,12 @@
 import * as Sentry from "@sentry/nuxt";
 
 Sentry.init({
-  dsn: process.env.NUXT_PUBLIC_SENTRY_DSN || "",
+  // Same fallback as server/utils/sentryContext.resolveSentryDsn — inlined
+  // because this file is loaded by the Sentry bundler before Nitro aliases.
+  dsn:
+    process.env.NUXT_PUBLIC_SENTRY_DSN?.trim() ||
+    process.env.SENTRY_DSN?.trim() ||
+    "",
 
   tracesSampleRate: process.env.NODE_ENV === "development" ? 1.0 : 0.2,
 

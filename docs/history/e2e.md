@@ -1,5 +1,8 @@
 # History: E2E
 
+## 2026-06 — E2E Reliability Findings Log
+E2E reliability findings: gate flake root-caused (global-setup auth capture), full-run results (418-438 pass), known issues cataloged. Suite later greened (177→0 fails).
+
 ## 2026-05-25 — Skipped-test triage tickets
 Triaged 232 skipped E2E tests across 8 tickets, all closed — rewrote analytics/settings/documents specs, added real recovery-token plumbing for password-reset, fixed a notes-refresh app bug. Result: 0 targeted skips left; ~125 conditional-data-guard skips deferred to seed infra.
 

@@ -44,6 +44,30 @@ describe("pages/index.vue (Landing Page)", () => {
       expect(logo.attributes("alt")).toContain("Recruiting Compass");
       expect(logo.attributes("alt")).toContain("recruiting tracker");
     });
+
+    it("renders headline and subheadline", () => {
+      const wrapper = mountPage();
+      expect(wrapper.text()).toContain(
+        "Your College Recruiting Command Center",
+      );
+      expect(wrapper.text()).toContain("No recruiting service required");
+    });
+
+    it("renders stats badge with product numbers", () => {
+      const wrapper = mountPage();
+      expect(wrapper.text()).toContain("19");
+      expect(wrapper.text()).toContain("Sports");
+      expect(wrapper.text()).toContain("33+");
+      expect(wrapper.text()).toContain("Templates");
+      expect(wrapper.text()).toContain("NCAA Calendars");
+    });
+
+    it("renders tagline", () => {
+      const wrapper = mountPage();
+      expect(wrapper.text()).toContain(
+        "Free for student athletes and families",
+      );
+    });
   });
 
   describe("Navigation Links", () => {
@@ -56,50 +80,50 @@ describe("pages/index.vue (Landing Page)", () => {
       expect(signInLink!.attributes("href")).toBe("/login");
     });
 
-    it('renders a "Create Account" link pointing to /signup', () => {
+    it('renders a "Get Started Free" link pointing to /signup', () => {
       const wrapper = mountPage();
       const signupLink = wrapper
         .findAll("a")
-        .find((a) => a.text().includes("Create Account"));
+        .find((a) => a.text().includes("Get Started Free"));
       expect(signupLink).toBeDefined();
       expect(signupLink!.attributes("href")).toBe("/signup");
     });
   });
 
   describe("Feature Cards", () => {
-    it("renders exactly 3 feature cards", () => {
+    it("renders exactly 3 feature cards with headings", () => {
       const wrapper = mountPage();
-      const cards = wrapper.findAll(".bg-white\\/10");
-      expect(cards).toHaveLength(3);
+      const featureHeadings = wrapper.findAll("h3");
+      expect(featureHeadings).toHaveLength(3);
     });
 
-    it('renders "Track Schools" feature card with description', () => {
+    it('renders "Track Schools & Coaches" feature card', () => {
       const wrapper = mountPage();
-      expect(wrapper.text()).toContain("Track Schools");
-      expect(wrapper.text()).toContain(
-        "Organize and manage your target colleges in one place",
-      );
+      expect(wrapper.text()).toContain("Track Schools & Coaches");
+      expect(wrapper.text()).toContain("5-stage pipeline");
     });
 
-    it('renders "Log Interactions" feature card with description', () => {
+    it('renders "Smart Outreach" feature card', () => {
       const wrapper = mountPage();
-      expect(wrapper.text()).toContain("Log Interactions");
-      expect(wrapper.text()).toContain(
-        "Keep track of every conversation with coaches",
-      );
+      expect(wrapper.text()).toContain("Smart Outreach");
+      expect(wrapper.text()).toContain("33+ templates");
     });
 
-    it('renders "Monitor Progress" feature card with description', () => {
+    it('renders "Calendars & Timeline" feature card', () => {
       const wrapper = mountPage();
-      expect(wrapper.text()).toContain("Monitor Progress");
-      expect(wrapper.text()).toContain(
-        "Visualize your recruiting journey with insights",
-      );
+      expect(wrapper.text()).toContain("Calendars & Timeline");
+      expect(wrapper.text()).toContain("22 NCAA recruiting calendars");
     });
 
     it("renders an SVG icon in each feature card", () => {
       const wrapper = mountPage();
-      const cards = wrapper.findAll(".bg-white\\/10");
+      const cards = wrapper
+        .findAll("div")
+        .filter(
+          (div) =>
+            div.classes().some((c) => c.includes("bg-white/10")) &&
+            div.find("h3").exists(),
+        );
       for (const card of cards) {
         expect(card.find("svg").exists()).toBe(true);
       }
@@ -163,10 +187,11 @@ describe("pages/index.vue (Landing Page)", () => {
 
     it("has a visually-hidden h2 for the features section", () => {
       const wrapper = mountPage();
-      const h2 = wrapper.find("h2");
-      expect(h2.exists()).toBe(true);
-      expect(h2.classes()).toContain("sr-only");
-      expect(h2.text()).toBe("Features");
+      const h2s = wrapper.findAll("h2");
+      const featuresH2 = h2s.find(
+        (h) => h.classes().includes("sr-only") && h.text() === "Features",
+      );
+      expect(featuresH2).toBeDefined();
     });
 
     it("has proper heading hierarchy (h1 > h2 > h3)", () => {
@@ -193,14 +218,6 @@ describe("pages/index.vue (Landing Page)", () => {
       expect(signInLink!.attributes("class")).toContain("focus:ring-white");
     });
 
-    it("feature card icons have aria-hidden", () => {
-      const wrapper = mountPage();
-      const cards = wrapper.findAll(".bg-white\\/10");
-      for (const card of cards) {
-        expect(card.find("svg").attributes("aria-hidden")).toBe("true");
-      }
-    });
-
     it("decorative circles have aria-hidden", () => {
       const wrapper = mountPage();
       const circles = wrapper.findAll(".animate-pulse");
@@ -221,6 +238,13 @@ describe("pages/index.vue (Landing Page)", () => {
       const wrapper = mountPage();
       const overlay = wrapper.find("[aria-hidden='true'].opacity-5");
       expect(overlay.exists()).toBe(true);
+    });
+
+    it("stats badge has aria role list", () => {
+      const wrapper = mountPage();
+      const statsBadge = wrapper.find('[role="list"]');
+      expect(statsBadge.exists()).toBe(true);
+      expect(statsBadge.attributes("aria-label")).toBe("Product highlights");
     });
   });
 });

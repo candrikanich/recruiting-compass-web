@@ -1,12 +1,12 @@
 /**
  * PATCH /api/user/preferences/player-details
  * Update athlete's player details with history tracking
- * Parents cannot perform this action (read-only view)
+ * Both athletes and parents can edit (family-shared profile, shipped 2026-08-09)
  */
 
 import { defineEventHandler, readBody, createError } from "h3";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
-import { requireAuth, assertNotParent } from "~/server/utils/auth";
+import { requireAuth } from "~/server/utils/auth";
 import { useLogger } from "~/server/utils/logger";
 import { logCRUD, logError } from "~/server/utils/auditLog";
 import { playerDetailsSchema } from "~/utils/validation/schemas";
@@ -48,21 +48,6 @@ export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "user/preferences/player-details");
   const user = await requireAuth(event);
   const supabase = createServerSupabaseClient();
-
-  // Check if user is a parent - they cannot perform this action
-  try {
-    await assertNotParent(user.id, supabase);
-  } catch (err) {
-    // assertNotParent throws 403 error if parent
-    if (err instanceof Error && "statusCode" in err) {
-      throw err;
-    }
-    throw createError({
-      statusCode: 403,
-      statusMessage:
-        "Parents cannot perform this action. This is a read-only view.",
-    });
-  }
 
   try {
     const body = await readBody<PlayerDetails>(event);

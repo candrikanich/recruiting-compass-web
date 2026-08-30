@@ -85,6 +85,7 @@ beforeEach(() => {
   mockUserState.user = { id: "user-abc" };
   resetTables();
   channelHandlers.length = 0;
+  fromSpy.mockImplementation((table: string) => buildBuilder(table));
 });
 
 describe("useActivityFeed — fetch branches", () => {
@@ -279,6 +280,41 @@ describe("useActivityFeed — fetch branches", () => {
     await feed.fetchActivities({ limit: 2, offset: 1 });
     const idsOffset = feed.activities.value.map((e) => e.id);
     expect(idsOffset).toEqual(["doc-doc-mid", "interaction-old"]);
+  });
+
+  it("queries interactions, status history, and documents in parallel", async () => {
+    const started: string[] = [];
+    const resolvers: Array<() => void> = [];
+    fromSpy.mockImplementation((table: string) => {
+      started.push(table);
+      const builder: Record<string, unknown> = {};
+      builder.select = vi.fn(() => builder);
+      builder.eq = vi.fn(() => builder);
+      builder.order = vi.fn(() => builder);
+      builder.limit = vi.fn(
+        () =>
+          new Promise((resolve) => {
+            resolvers.push(() =>
+              resolve(tableResults[table] ?? { data: [], error: null }),
+            );
+          }),
+      );
+      return builder;
+    });
+
+    const feed = useActivityFeed();
+    const pending = feed.fetchActivities();
+
+    // All three tables requested before any query resolves — sequential
+    // awaits would only have started "interactions" at this point.
+    expect(started).toEqual([
+      "interactions",
+      "school_status_history",
+      "documents",
+    ]);
+    expect(resolvers).toHaveLength(3);
+    resolvers.forEach((resolve) => resolve());
+    await pending;
   });
 
   it("sets error state when supabase.from throws synchronously", async () => {

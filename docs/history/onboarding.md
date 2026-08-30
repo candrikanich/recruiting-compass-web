@@ -1,5 +1,8 @@
 # History: Onboarding
 
+## 2026-08-16 — Bidirectional Onboarding Pre-fill
+Web Phases 1-3 built: persist playerDob, hydrateAthleteProfile on invite-accept, onboarding reads canonical prefs. Player-authoritative conflict resolution rule. iOS Phase 4 deferred to separate handoff.
+
 ## 2026-08-09 — Position vocabulary normalization
 Completed (Phases 1 & 2): consolidated six conflicting position vocabularies into one canonical full-name map (`utils/positions/canonical.ts`), removed "Infielder"/"Outfielder", backfilled the DB, and deleted the dead Screen2 wizard. Only optional vestigial-table drops remain.
 

@@ -62,7 +62,9 @@ async function ensurePublishedAndGetSlug(page: Page): Promise<string> {
   ) {
     await waitForProfileSave(page, () => publishToggle.click());
   }
-  await expect(page.getByText("Profile is live")).toBeVisible();
+  await expect(page.getByText("Profile is live")).toBeVisible({
+    timeout: 15000,
+  });
 
   // Read the published slug directly off the share panel — never hardcode a
   // slug, this account's profile may already exist from a prior run.
@@ -106,7 +108,9 @@ async function submitContact(
     // sees or fills it; a filled value would silently no-op the submit.
 
     await anonPage.getByRole("button", { name: "Send message" }).click();
-    await expect(anonPage.getByText("Message sent.")).toBeVisible();
+    await expect(anonPage.getByText("Message sent.")).toBeVisible({
+      timeout: 15000,
+    });
   } finally {
     await anonContext.close();
   }
@@ -114,7 +118,7 @@ async function submitContact(
 
 async function openInbox(page: Page): Promise<void> {
   await page.goto("/settings/player-details");
-  await page.waitForLoadState("domcontentloaded");
+  await page.waitForLoadState("networkidle");
   await page.locator("button", { hasText: "Public Profile" }).first().click();
   await page.locator("button", { hasText: "Inbox" }).first().click();
   // Inbox defaults to the "Open" filter, which excludes nothing relevant

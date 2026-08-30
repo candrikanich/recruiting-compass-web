@@ -7,18 +7,20 @@
 import * as Sentry from "@sentry/nuxt";
 import { isAppError } from "~/types/errors";
 import { createLogger } from "./logger";
+import { shouldCaptureInSentry } from "./sentryContext";
 
 const logger = createLogger("error-handler");
 
 /**
- * Capture error in Sentry with context (production only)
+ * Capture error in Sentry with context (production only).
+ * Reads NUXT_PUBLIC_SENTRY_DSN or SENTRY_DSN — matching SDK init.
  */
 function captureInSentry(
   error: unknown,
   level: "error" | "warning" = "error",
   context?: Record<string, unknown>,
 ): void {
-  if (process.env.NODE_ENV !== "production" || !process.env.SENTRY_DSN) {
+  if (!shouldCaptureInSentry()) {
     return;
   }
 
@@ -44,9 +46,13 @@ export interface SafeError {
 }
 
 /**
- * Convert any error to a safe, non-disclosive error response
- * In production: Returns generic messages
- * In development: Returns detailed error information for debugging
+ * Convert any error to a safe, non-disclosive error response.
+ * Pure mapping — callers (createSafeErrorResponse) own log + Sentry capture
+ * so a TypeError is not reported twice, then dropped as a 4xx.
+ *
+ * TypeError is a programming bug (undefined property access), not a client
+ * error. Mapping it to 400 made beforeSend drop the event after the handler
+ * rethrew createError({ statusCode: 400 }).
  */
 export function sanitizeError(error: unknown, defaultCode = 500): SafeError {
   const isDevelopment =
@@ -81,10 +87,8 @@ export function sanitizeError(error: unknown, defaultCode = 500): SafeError {
     };
   }
 
-  // Handle standard errors
+  // JSON / parse failures are the client's. Programming TypeErrors are not.
   if (error instanceof SyntaxError) {
-    logger.error("Syntax error", error);
-    captureInSentry(error, "error", { type: "syntax_error" });
     return {
       statusCode: 400,
       statusMessage: "Bad Request",
@@ -95,23 +99,17 @@ export function sanitizeError(error: unknown, defaultCode = 500): SafeError {
   }
 
   if (error instanceof TypeError) {
-    logger.error("Type error", error);
-    captureInSentry(error, "error", { type: "type_error" });
     return {
-      statusCode: 400,
-      statusMessage: "Bad Request",
+      statusCode: 500,
+      statusMessage: isProduction ? "Internal Server Error" : error.message,
       data: {
-        message: isDevelopment ? error.message : "Invalid request data",
+        message: isProduction ? "An error occurred" : error.message,
+        details: isDevelopment ? error.stack : undefined,
       },
     };
   }
 
   if (error instanceof Error) {
-    // Log full error for debugging
-    logger.error("Unhandled error", error);
-    captureInSentry(error, "error", { type: "unhandled_error" });
-
-    // Return sanitized response
     return {
       statusCode: defaultCode,
       statusMessage: isProduction ? "Internal Server Error" : error.message,
@@ -122,9 +120,6 @@ export function sanitizeError(error: unknown, defaultCode = 500): SafeError {
     };
   }
 
-  // Unknown error type
-  logger.error("Unknown error type", error);
-  captureInSentry(error, "error", { type: "unknown_error" });
   return {
     statusCode: defaultCode,
     statusMessage: "Internal Server Error",
@@ -144,7 +139,10 @@ export function createSafeErrorResponse(
   defaultCode = 500,
 ): SafeError {
   logger.error(`Error in ${context}`, error);
-  captureInSentry(error, "error", { context });
+  captureInSentry(error, "error", {
+    context,
+    error_name: error instanceof Error ? error.name : typeof error,
+  });
   return sanitizeError(error, defaultCode);
 }
 
