@@ -7,6 +7,7 @@
         <slot />
       </ErrorBoundary>
     </main>
+    <SiteFooter />
     <SpeedInsights v-if="isVercel" />
   </div>
 </template>

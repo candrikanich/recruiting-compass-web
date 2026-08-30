@@ -120,6 +120,8 @@
           Free for student athletes and families.
         </p>
       </div>
+
+      <SiteFooter variant="light" />
     </main>
 
     <!-- Decorative elements -->
