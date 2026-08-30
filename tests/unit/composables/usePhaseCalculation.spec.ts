@@ -143,15 +143,16 @@ describe("usePhaseCalculation Composable", () => {
   });
 
   describe("computed properties", () => {
-    it("should compute canAdvance as true when no remaining milestones", async () => {
-      const mockResponse: AthleteAPI.GetPhaseResponse = {
+    it("should compute canAdvance from server response", async () => {
+      const mockResponse = {
         phase: "freshman",
         milestoneProgress: {
-          required: ["task-1"],
-          completed: ["task-1"],
-          remaining: [], // Empty = can advance
-          percentComplete: 100,
+          required: ["freshman", "sophomore", "junior", "senior"],
+          completed: ["freshman"],
+          remaining: ["sophomore", "junior", "senior"],
+          percentComplete: 25,
         },
+        canAdvance: true,
       };
 
       const mockFetchAuth = vi.fn().mockResolvedValue(mockResponse);
@@ -165,15 +166,16 @@ describe("usePhaseCalculation Composable", () => {
       expect(canAdvance.value).toBe(true);
     });
 
-    it("should compute canAdvance as false when milestones remain", async () => {
-      const mockResponse: AthleteAPI.GetPhaseResponse = {
+    it("should compute canAdvance as false when server says false", async () => {
+      const mockResponse = {
         phase: "freshman",
         milestoneProgress: {
-          required: ["task-1", "task-2"],
-          completed: ["task-1"],
-          remaining: ["task-2"],
-          percentComplete: 50,
+          required: ["freshman", "sophomore", "junior", "senior"],
+          completed: [],
+          remaining: ["freshman", "sophomore", "junior", "senior"],
+          percentComplete: 0,
         },
+        canAdvance: false,
       };
 
       const mockFetchAuth = vi.fn().mockResolvedValue(mockResponse);
@@ -244,7 +246,7 @@ describe("usePhaseCalculation Composable", () => {
       const { fetchPhase, progressLabel } = usePhaseCalculation();
       await fetchPhase();
 
-      expect(progressLabel.value).toBe("2/3 milestones complete");
+      expect(progressLabel.value).toBe("2/3 years complete");
     });
   });
 

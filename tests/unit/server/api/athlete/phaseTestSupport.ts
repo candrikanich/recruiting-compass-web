@@ -161,9 +161,10 @@ export const REQUIRED_SLUGS = [
 ];
 
 /** `task` rows for the 4 freshmanToSophomore milestones, real UUID-shaped ids. */
-export function freshmanMilestoneTaskRows(): { id: string; slug: string }[] {
+export function freshmanMilestoneTaskRows(): { id: string; slug: string; grade_level: number }[] {
   return REQUIRED_SLUGS.map((slug, i) => ({
     id: `22222222-0000-4000-8000-${String(i).padStart(12, "0")}`,
     slug,
+    grade_level: 9,
   }));
 }
