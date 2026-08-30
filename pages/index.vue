@@ -19,121 +19,106 @@
 
     <!-- Content -->
     <main
-      class="relative z-10 flex min-h-screen flex-col items-center justify-center px-6"
+      class="relative z-10 flex min-h-screen flex-col items-center justify-center px-6 py-12"
     >
       <!-- Skip link target -->
       <SkipLink to="#cta-buttons" text="Skip to main content" />
 
       <!-- Hero Section -->
-      <div class="mx-auto mb-12 max-w-4xl text-center">
+      <div class="mx-auto mb-8 max-w-2xl text-center">
         <!-- Logo -->
-        <div class="mb-8 flex justify-center">
+        <div class="mb-6 flex justify-center">
           <img
             src="/assets/logos/recruiting-compass-stacked.svg"
             alt="Recruiting Compass — college athletic recruiting tracker"
-            class="h-96 w-auto drop-shadow-2xl"
+            class="h-64 w-auto drop-shadow-2xl sm:h-80"
           />
         </div>
 
         <h1 class="sr-only">Recruiting Compass</h1>
 
+        <!-- Headline -->
+        <h2
+          class="mb-3 text-2xl font-semibold text-white sm:text-3xl"
+        >
+          Your College Recruiting Command Center
+        </h2>
+
+        <!-- Subheadline -->
+        <p class="mx-auto mb-8 max-w-lg text-base text-white/90">
+          Navigate college recruiting from finding schools to signing day.
+          For 19 sports. No recruiting service required.
+        </p>
+
         <!-- CTA Buttons -->
         <div
           id="cta-buttons"
-          class="mb-16 flex flex-col items-center justify-center gap-4 sm:flex-row"
+          class="mb-10 flex flex-col items-center justify-center gap-4 sm:flex-row"
         >
           <NuxtLink
-            to="/login"
+            to="/signup"
             class="min-w-[200px] rounded-lg bg-blue-600 px-8 py-4 text-lg font-semibold text-white shadow-xl transition-all hover:bg-blue-700 hover:shadow-2xl focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-emerald-600"
+          >
+            Get Started Free
+          </NuxtLink>
+          <NuxtLink
+            to="/login"
+            class="min-w-[200px] rounded-lg bg-white px-8 py-4 text-lg font-semibold text-slate-900 shadow-xl transition-all hover:bg-slate-800 hover:text-white hover:shadow-2xl focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-emerald-600"
           >
             Sign In
           </NuxtLink>
-          <NuxtLink
-            to="/signup"
-            class="min-w-[200px] rounded-lg bg-white px-8 py-4 text-lg font-semibold text-slate-900 shadow-xl transition-all hover:bg-slate-800 hover:text-white hover:shadow-2xl focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-emerald-600"
-          >
-            Create Account
-          </NuxtLink>
         </div>
 
-        <!-- Features -->
+        <!-- Stats Badge -->
+        <div
+          class="mx-auto mb-10 flex max-w-md items-center justify-between rounded-xl border border-white/20 bg-white/10 px-6 py-3 backdrop-blur-xs"
+          role="list"
+          aria-label="Product highlights"
+        >
+          <div role="listitem" class="flex flex-col items-center">
+            <span class="text-xl font-bold text-white sm:text-2xl">19</span>
+            <span class="text-xs font-medium text-white/75">Sports</span>
+          </div>
+          <div
+            aria-hidden="true"
+            class="h-7 w-px bg-white/25"
+          ></div>
+          <div role="listitem" class="flex flex-col items-center">
+            <span class="text-xl font-bold text-white sm:text-2xl">33+</span>
+            <span class="text-xs font-medium text-white/75">Templates</span>
+          </div>
+          <div
+            aria-hidden="true"
+            class="h-7 w-px bg-white/25"
+          ></div>
+          <div role="listitem" class="flex flex-col items-center">
+            <span class="text-xl font-bold text-white sm:text-2xl">22</span>
+            <span class="text-xs font-medium text-white/75">NCAA Calendars</span>
+          </div>
+        </div>
+
+        <!-- Feature Cards -->
         <h2 class="sr-only">Features</h2>
-        <div class="mt-16 grid grid-cols-1 gap-6 md:grid-cols-3">
+        <div class="grid grid-cols-1 gap-5 md:grid-cols-3">
           <div
+            v-for="feature in features"
+            :key="feature.title"
             class="rounded-2xl border border-white/20 bg-white/10 p-6 backdrop-blur-xs transition-colors hover:bg-white/20"
           >
-            <div class="mx-auto mb-3 h-12 w-12">
-              <svg
-                aria-hidden="true"
-                class="h-12 w-12 text-white"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                stroke-width="2"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M12 2L4 6v6c0 5.55 3.84 10.74 8 12 4.16-1.26 8-6.45 8-12V6l-8-4z"
-                />
-              </svg>
-            </div>
-            <h3 class="mb-2 text-lg font-medium text-white">Track Schools</h3>
-            <p class="text-sm text-white">
-              Organize and manage your target colleges in one place
-            </p>
-          </div>
-
-          <div
-            class="rounded-2xl border border-white/20 bg-white/10 p-6 backdrop-blur-xs transition-colors hover:bg-white/20"
-          >
-            <div class="mx-auto mb-3 h-12 w-12">
-              <svg
-                aria-hidden="true"
-                class="h-12 w-12 text-white"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                stroke-width="2"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2v10z"
-                />
-              </svg>
-            </div>
+            <div class="mx-auto mb-3 h-12 w-12 text-white" v-html="feature.icon"></div>
             <h3 class="mb-2 text-lg font-medium text-white">
-              Log Interactions
+              {{ feature.title }}
             </h3>
-            <p class="text-sm text-white">
-              Keep track of every conversation with coaches
-            </p>
-          </div>
-
-          <div
-            class="rounded-2xl border border-white/20 bg-white/10 p-6 backdrop-blur-xs transition-colors hover:bg-white/20"
-          >
-            <div class="mx-auto mb-3 h-12 w-12">
-              <svg
-                aria-hidden="true"
-                class="h-12 w-12 text-white"
-                fill="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <rect x="4" y="14" width="4" height="8" rx="1" />
-                <rect x="10" y="9" width="4" height="13" rx="1" />
-                <rect x="16" y="4" width="4" height="18" rx="1" />
-              </svg>
-            </div>
-            <h3 class="mb-2 text-lg font-medium text-white">
-              Monitor Progress
-            </h3>
-            <p class="text-sm text-white">
-              Visualize your recruiting journey with insights
+            <p class="text-sm leading-relaxed text-white/85">
+              {{ feature.description }}
             </p>
           </div>
         </div>
+
+        <!-- Tagline -->
+        <p class="mt-8 text-sm font-medium text-white/60">
+          Free for student athletes and families.
+        </p>
       </div>
     </main>
 
@@ -166,4 +151,31 @@ import MultiSportFieldBackground from "~/components/Auth/MultiSportFieldBackgrou
 definePageMeta({
   layout: "public",
 });
+
+const features = [
+  {
+    title: "Track Schools & Coaches",
+    description:
+      "A 5-stage pipeline for your college list and a full coach CRM with response tracking and follow-up reminders.",
+    icon: `<svg aria-hidden="true" class="h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0 0 12 9.75c-2.551 0-5.056.2-7.5.582V21" />
+    </svg>`,
+  },
+  {
+    title: "Smart Outreach",
+    description:
+      "33+ templates with NCAA contact-window compliance. Your stats auto-fill into every message.",
+    icon: `<svg aria-hidden="true" class="h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
+    </svg>`,
+  },
+  {
+    title: "Calendars & Timeline",
+    description:
+      "22 NCAA recruiting calendars and a 4-year roadmap with milestones so you always know what to do next.",
+    icon: `<svg aria-hidden="true" class="h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
+    </svg>`,
+  },
+];
 </script>

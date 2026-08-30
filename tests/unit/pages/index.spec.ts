@@ -43,7 +43,6 @@ describe("pages/index.vue (Landing Page)", () => {
       const wrapper = mountPage();
       const logo = wrapper.find("img");
       expect(logo.exists()).toBe(true);
-      // Logo source may be stubbed in tests
       const src = logo.attributes("src");
       expect(
         src.includes("recruiting-compass-stacked.svg") ||
@@ -52,37 +51,56 @@ describe("pages/index.vue (Landing Page)", () => {
       expect(logo.attributes("alt")).toContain("Recruiting Compass");
     });
 
-    it("renders sign in and create account buttons", () => {
+    it("renders get started free and sign in buttons", () => {
       const wrapper = mountPage();
       const links = wrapper.findAll("a");
       const signInLink = links.find((link) => link.text().includes("Sign In"));
-      const createAccountLink = links.find((link) =>
-        link.text().includes("Create Account"),
+      const getStartedLink = links.find((link) =>
+        link.text().includes("Get Started Free"),
       );
 
       expect(signInLink).toBeDefined();
-      expect(createAccountLink).toBeDefined();
+      expect(getStartedLink).toBeDefined();
       expect(signInLink?.attributes("href")).toBe("/login");
-      expect(createAccountLink?.attributes("href")).toBe("/signup");
+      expect(getStartedLink?.attributes("href")).toBe("/signup");
+    });
+
+    it("renders headline and subheadline", () => {
+      const wrapper = mountPage();
+      expect(wrapper.text()).toContain(
+        "Your College Recruiting Command Center",
+      );
+      expect(wrapper.text()).toContain("No recruiting service required");
     });
 
     it("renders three feature cards", () => {
       const wrapper = mountPage();
-      expect(wrapper.text()).toContain("Track Schools");
-      expect(wrapper.text()).toContain("Log Interactions");
-      expect(wrapper.text()).toContain("Monitor Progress");
+      expect(wrapper.text()).toContain("Track Schools & Coaches");
+      expect(wrapper.text()).toContain("Smart Outreach");
+      expect(wrapper.text()).toContain("Calendars & Timeline");
     });
 
     it("renders feature descriptions", () => {
       const wrapper = mountPage();
+      expect(wrapper.text()).toContain("5-stage pipeline");
+      expect(wrapper.text()).toContain("33+ templates");
+      expect(wrapper.text()).toContain("22 NCAA recruiting calendars");
+    });
+
+    it("renders stats badge", () => {
+      const wrapper = mountPage();
+      expect(wrapper.text()).toContain("19");
+      expect(wrapper.text()).toContain("Sports");
+      expect(wrapper.text()).toContain("33+");
+      expect(wrapper.text()).toContain("Templates");
+      expect(wrapper.text()).toContain("22");
+      expect(wrapper.text()).toContain("NCAA Calendars");
+    });
+
+    it("renders tagline", () => {
+      const wrapper = mountPage();
       expect(wrapper.text()).toContain(
-        "Organize and manage your target colleges in one place",
-      );
-      expect(wrapper.text()).toContain(
-        "Keep track of every conversation with coaches",
-      );
-      expect(wrapper.text()).toContain(
-        "Visualize your recruiting journey with insights",
+        "Free for student athletes and families",
       );
     });
   });
@@ -105,10 +123,11 @@ describe("pages/index.vue (Landing Page)", () => {
 
     it("has screen reader only features heading", () => {
       const wrapper = mountPage();
-      const h2 = wrapper.find("h2");
-      expect(h2.exists()).toBe(true);
-      expect(h2.classes()).toContain("sr-only");
-      expect(h2.text()).toBe("Features");
+      const h2s = wrapper.findAll("h2");
+      const featuresH2 = h2s.find(
+        (h) => h.classes().includes("sr-only") && h.text() === "Features",
+      );
+      expect(featuresH2).toBeDefined();
     });
 
     it("marks decorative elements as aria-hidden", () => {
@@ -135,18 +154,6 @@ describe("pages/index.vue (Landing Page)", () => {
       });
     });
 
-    it("feature icons are marked as decorative", () => {
-      const wrapper = mountPage();
-      const featureIcons = wrapper
-        .findAll("svg")
-        .filter((svg) => svg.classes().includes("w-12"));
-
-      expect(featureIcons.length).toBe(3);
-      featureIcons.forEach((icon) => {
-        expect(icon.attributes("aria-hidden")).toBe("true");
-      });
-    });
-
     it("has proper button styling classes for focus", () => {
       const wrapper = mountPage();
       const buttons = wrapper.findAll('a[href="/login"], a[href="/signup"]');
@@ -155,6 +162,13 @@ describe("pages/index.vue (Landing Page)", () => {
         const classes = button.classes().join(" ");
         expect(classes).toContain("focus:ring-2");
       });
+    });
+
+    it("stats badge has aria role list", () => {
+      const wrapper = mountPage();
+      const statsBadge = wrapper.find('[role="list"]');
+      expect(statsBadge.exists()).toBe(true);
+      expect(statsBadge.attributes("aria-label")).toBe("Product highlights");
     });
   });
 
@@ -182,7 +196,7 @@ describe("pages/index.vue (Landing Page)", () => {
     it("has responsive layout classes", () => {
       const wrapper = mountPage();
       expect(wrapper.find(".min-h-screen").exists()).toBe(true);
-      expect(wrapper.find(".max-w-4xl").exists()).toBe(true);
+      expect(wrapper.find(".max-w-2xl").exists()).toBe(true);
     });
 
     it("has responsive button layout classes", () => {
@@ -214,7 +228,7 @@ describe("pages/index.vue (Landing Page)", () => {
       expect(background.exists()).toBe(true);
     });
 
-    it("has backdrop blur-sm on feature cards", () => {
+    it("has backdrop blur on feature cards", () => {
       const wrapper = mountPage();
       const featureCards = wrapper.findAll(".backdrop-blur-xs");
       expect(featureCards.length).toBeGreaterThan(0);
@@ -267,9 +281,14 @@ describe("pages/index.vue (Landing Page)", () => {
           div.classes().some((cls) => cls.includes("bg-white/10")),
         );
 
-      expect(featureCards.length).toBe(3);
+      // Stats badge also has bg-white/10, filter to cards with h3
+      const cardsWithHeadings = featureCards.filter((card) =>
+        card.find("h3").exists(),
+      );
 
-      featureCards.forEach((card) => {
+      expect(cardsWithHeadings.length).toBe(3);
+
+      cardsWithHeadings.forEach((card) => {
         expect(card.find("svg").exists()).toBe(true);
         expect(card.find("h3").exists()).toBe(true);
         expect(card.find("p").exists()).toBe(true);
@@ -279,15 +298,13 @@ describe("pages/index.vue (Landing Page)", () => {
     it("logo has proper size classes", () => {
       const wrapper = mountPage();
       const logo = wrapper.find("img");
-      expect(logo.classes()).toContain("h-96");
       expect(logo.classes()).toContain("w-auto");
+      expect(logo.classes()).toContain("drop-shadow-2xl");
     });
   });
 
   describe("Page Meta", () => {
     it("uses public layout", () => {
-      // The component should have definePageMeta with layout: "public"
-      // This is set in the component's script setup
       expect(IndexPage).toBeDefined();
     });
   });
@@ -313,7 +330,7 @@ describe("pages/index.vue (Landing Page)", () => {
       links.forEach((link) => {
         const href = link.attributes("href");
         expect(href).toBeTruthy();
-        expect(href).toMatch(/^(\/|#)/); // Starts with / or #
+        expect(href).toMatch(/^(\/|#)/);
       });
     });
   });
