@@ -20,6 +20,27 @@
     </div>
 
     <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6">
+      <!-- Contextual NUX Prompt -->
+      <div
+        v-if="activePrompt"
+        class="mb-4 flex items-center justify-between rounded-md border border-brand-blue-100 bg-brand-blue-50 px-4 py-2 text-sm dark:border-brand-blue-800 dark:bg-brand-blue-900/20"
+      >
+        <span
+          >{{ activePrompt.message }}
+          <NuxtLink
+            :to="activePrompt.link"
+            class="font-medium text-brand-blue-600 hover:underline"
+            >Update →</NuxtLink
+          ></span
+        >
+        <button
+          class="ml-2 text-brand-slate-400 hover:text-brand-slate-600"
+          @click="dismissActivePrompt"
+        >
+          Not now
+        </button>
+      </div>
+
       <!-- Loading State -->
       <div
         v-if="isInitializing || loading"
@@ -235,6 +256,7 @@ import { useSchoolStatusManagement } from "~/composables/useSchoolStatusManageme
 import { useLiveRegion } from "~/composables/useLiveRegion";
 import { useDeleteModal } from "~/composables/useDeleteModal";
 import { useSingleSchoolDistance } from "~/composables/useSchoolDistance";
+import { useNuxPrompts } from "~/composables/useNuxPrompts";
 import { createUpdateHandler } from "~/utils/updateHandler";
 import { getCarnegieSize } from "~/utils/schoolSize";
 import { createClientLogger } from "~/utils/logger";
@@ -298,6 +320,7 @@ const { statusUpdating, updateStatus, toggleFavorite } =
   useSchoolStatusManagement(id);
 
 const { activeFamilyId } = useFamilyCtx();
+const { activePrompt, evaluatePrompts, dismissActivePrompt } = useNuxPrompts();
 
 // State
 const school = ref<School | null>(null);
@@ -603,6 +626,11 @@ const loadPageData = async () => {
       school.value.division,
       null,
     );
+    evaluatePrompts({
+      context: "fit-score",
+      userGpa: athleteProfile.value.gpa,
+      schoolName: school.value.name,
+    });
   }
   isInitializing.value = false;
 };
