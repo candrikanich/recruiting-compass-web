@@ -90,7 +90,7 @@
     "@types/sortablejs": "^1.15.8",
     "@vitest/coverage-v8": "^4.1.11",
     "@vitest/ui": "^4.0.16",
-    "@vue/test-utils": "^2.4.11",
+    "@vue/test-utils": "^2.5.0",
     "eslint": "^9.39.5",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-vue": "^9.32.0",
