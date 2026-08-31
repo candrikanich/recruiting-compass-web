@@ -59,6 +59,9 @@
       <div class="grid grid-cols-1 gap-6 lg:grid-cols-6">
         <!-- Left: main content (4 cols) -->
         <div class="space-y-6 lg:col-span-4">
+          <!-- Getting-started checklist — self-hides when dismissed -->
+          <GettingStartedChecklist />
+
           <!-- Recommended schools nudge — always visible, self-hides when empty -->
           <SchoolRecommendationsWidget />
 
@@ -184,6 +187,7 @@ import DashboardTimelineCard from "~/components/Dashboard/DashboardTimelineCard.
 import DashboardStatsCards from "~/components/Dashboard/DashboardStatsCards.vue";
 import DashboardSuggestions from "~/components/Dashboard/DashboardSuggestions.vue";
 import SchoolRecommendationsWidget from "~/components/Dashboard/SchoolRecommendationsWidget.vue";
+import GettingStartedChecklist from "~/components/Dashboard/GettingStartedChecklist.vue";
 import DashboardPublicProfileLinkCard from "~/components/Dashboard/PublicProfileLinkCard.vue";
 import DashboardContactFrequencyWidget from "~/components/Dashboard/ContactFrequencyWidget.vue";
 import DashboardAthleteActivityWidget from "~/components/Dashboard/AthleteActivityWidget.vue";
