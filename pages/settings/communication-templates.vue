@@ -83,12 +83,20 @@
         </div>
 
         <!-- Empty State -->
-        <div
+        <DesignSystemEmptyState
           v-if="filteredTemplates.length === 0"
-          class="rounded-lg bg-white p-8 text-center shadow-sm"
+          title="No templates found"
+          description="Ready-to-send emails personalized with your recruiting data"
         >
-          <p class="text-gray-600">No templates found</p>
-        </div>
+          <template #icon>
+            <UIcon name="i-heroicons-document-text" class="h-8 w-8 text-brand-slate-400" />
+          </template>
+          <template #action>
+            <DesignSystemButton color="blue" variant="solid" @click="filterType = null">
+              Browse Coach Outreach Templates
+            </DesignSystemButton>
+          </template>
+        </DesignSystemEmptyState>
 
         <!-- Templates Grid -->
         <div v-if="filteredTemplates.length > 0" class="grid gap-4">

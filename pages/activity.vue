@@ -128,16 +128,31 @@
       </div>
 
       <!-- Empty State -->
-      <div v-else class="py-12 text-center">
-        <UIcon
-          name="i-heroicons-sparkles"
-          class="mx-auto mb-3 h-12 w-12 text-slate-300"
-        />
-        <p class="font-medium text-slate-600">No activities found</p>
-        <p class="mt-1 text-sm text-slate-400">
-          Try adjusting your filters or search query
-        </p>
-      </div>
+      <DesignSystemEmptyState
+        v-else-if="activities.length > 0"
+        title="No activities match your filters"
+        description="Try adjusting your filters or search query"
+      >
+        <template #icon>
+          <UIcon name="i-heroicons-sparkles" class="h-8 w-8 text-brand-slate-400" />
+        </template>
+      </DesignSystemEmptyState>
+
+      <!-- No activity at all -->
+      <DesignSystemEmptyState
+        v-else
+        title="No activity yet"
+        description="See all your recruiting activity in one timeline"
+      >
+        <template #icon>
+          <UIcon name="i-heroicons-sparkles" class="h-8 w-8 text-brand-slate-400" />
+        </template>
+        <template #action>
+          <p class="text-sm text-brand-slate-500">
+            Your activity feed starts when you begin tracking
+          </p>
+        </template>
+      </DesignSystemEmptyState>
     </main>
   </div>
 </template>

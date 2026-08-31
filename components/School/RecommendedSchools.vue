@@ -63,6 +63,28 @@
           </DesignSystemBadge>
         </div>
 
+        <div class="mb-3 flex flex-wrap gap-1.5">
+          <span
+            v-if="fitBadges(school).locationLabel"
+            class="inline-flex items-center rounded-full bg-brand-slate-100 px-2 py-0.5 text-xs font-medium text-brand-slate-700"
+          >
+            {{ fitBadges(school).locationLabel }}
+          </span>
+          <span
+            v-if="fitBadges(school).academicLabel"
+            class="inline-flex items-center rounded-full bg-brand-slate-100 px-2 py-0.5 text-xs font-medium text-brand-slate-700"
+          >
+            {{ fitBadges(school).academicLabel }}
+          </span>
+          <NuxtLink
+            v-if="fitBadges(school).academicPrompt"
+            to="/settings/player-details?tab=academics"
+            class="inline-flex items-center rounded-full bg-brand-blue-50 px-2 py-0.5 text-xs font-medium text-brand-blue-700 hover:bg-brand-blue-100"
+          >
+            {{ fitBadges(school).academicPrompt }}
+          </NuxtLink>
+        </div>
+
         <ul v-if="school.reasons.length" class="mb-4 list-none space-y-1">
           <li
             v-for="reason in school.reasons"
@@ -103,17 +125,21 @@
 <script setup lang="ts">
 import type { SchoolRecommendation } from "~/types/schoolRecommendations";
 
-withDefaults(
+const props = withDefaults(
   defineProps<{
     items: SchoolRecommendation[];
     loading?: boolean;
     error?: string | null;
     addingKey?: string | null;
+    homeState?: string | null;
+    userGpa?: number | null;
   }>(),
   {
     loading: false,
     error: null,
     addingKey: null,
+    homeState: null,
+    userGpa: null,
   },
 );
 
@@ -121,4 +147,44 @@ defineEmits<{
   add: [school: SchoolRecommendation];
   dismiss: [school: SchoolRecommendation];
 }>();
+
+// Rough division-average GPA defaults when no Scorecard enrichment is available.
+const DIVISION_AVG_GPA: Record<string, number> = {
+  D1: 3.4,
+  D2: 3.1,
+  D3: 3.0,
+};
+
+function fitBadges(school: SchoolRecommendation): {
+  locationLabel: string | null;
+  academicLabel: string | null;
+  academicPrompt: string | null;
+} {
+  const locationLabel = !props.homeState
+    ? null
+    : school.state === props.homeState
+      ? "In-state"
+      : school.state
+        ? "Out of state"
+        : null;
+
+  if (!props.userGpa) {
+    return {
+      locationLabel,
+      academicLabel: null,
+      academicPrompt: "Add your GPA to see academic fit →",
+    };
+  }
+
+  const schoolAvgGpa = DIVISION_AVG_GPA[school.division] ?? null;
+  const academicLabel = !schoolAvgGpa
+    ? null
+    : Math.abs(props.userGpa - schoolAvgGpa) <= 0.3
+      ? "Academic match"
+      : props.userGpa > schoolAvgGpa
+        ? "Academic safety"
+        : "Academic reach";
+
+  return { locationLabel, academicLabel, academicPrompt: null };
+}
 </script>

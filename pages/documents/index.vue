@@ -219,15 +219,20 @@
       </div>
 
       <!-- Empty State -->
-      <div
+      <DesignSystemEmptyState
         v-else-if="documents.length === 0"
-        class="rounded-lg bg-white p-12 text-center shadow-sm"
+        title="No documents yet"
+        description="Coaches expect transcripts, test scores, and highlight reels"
       >
-        <p class="mb-2 text-gray-600">No documents yet</p>
-        <p class="text-sm text-gray-500">
-          Upload videos, transcripts, and other documents to share with coaches
-        </p>
-      </div>
+        <template #icon>
+          <UIcon name="i-heroicons-document" class="h-8 w-8 text-brand-slate-400" />
+        </template>
+        <template #action>
+          <DesignSystemButton to="/documents/add" color="blue" variant="solid">
+            Upload Your First Document
+          </DesignSystemButton>
+        </template>
+      </DesignSystemEmptyState>
 
       <!-- Documents View -->
       <div v-else>

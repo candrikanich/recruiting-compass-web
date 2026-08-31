@@ -38,6 +38,10 @@ const db = vi.hoisted(() => ({
     data: [] as { catalog_key: string }[],
     error: null,
   } as QueryResult,
+  programs: {
+    data: [] as { school_catalog_key: string }[],
+    error: null,
+  } as QueryResult,
 }));
 
 function chain(result: QueryResult, maybeSingleData: unknown) {
@@ -62,6 +66,14 @@ vi.mock("~/server/utils/supabase", () => ({
   useSupabaseAdmin: vi.fn(),
 }));
 
+// Bypass the module-level cache so each test sees its own db.programs fixture.
+vi.mock("~/server/utils/cache", () => ({
+  getOrFetch: async (
+    _key: string,
+    fetchFn: () => Promise<unknown>,
+  ) => fetchFn(),
+}));
+
 import { assembleSchoolRecommendations } from "~/server/utils/assembleSchoolRecommendations";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "~/types/database";
@@ -80,6 +92,8 @@ function mockClient(): SupabaseClient<Database> {
           return chain(db.schools, null);
         case "school_recommendation_dismissals":
           return chain(db.dismissals, null);
+        case "college_programs":
+          return chain(db.programs, null);
         default:
           return chain({ data: null, error: null }, null);
       }
@@ -100,6 +114,7 @@ describe("assembleSchoolRecommendations", () => {
     db.user = { data: { hometown_state: "OH" }, error: null };
     db.schools = { data: [], error: null };
     db.dismissals = { data: [], error: null };
+    db.programs = { data: [], error: null };
   });
 
   it("ranks in-state schools first from player signals", async () => {
@@ -136,6 +151,54 @@ describe("assembleSchoolRecommendations", () => {
     );
     expect(result.recommendations.map((row) => row.name)).not.toContain(
       "Ohio State University",
+    );
+  });
+
+  it("falls back to unfiltered recommendations when no programs data exists", async () => {
+    db.prefs = {
+      data: [
+        {
+          category: "player",
+          data: { gpa: 3.7, school_state: "OH", primary_sport: "Baseball" },
+        },
+        { category: "location", data: { state: "OH" } },
+      ],
+      error: null,
+    };
+    db.programs = { data: [], error: null };
+    const result = await assembleSchoolRecommendations(
+      mockClient(),
+      "athlete-1",
+    );
+    expect(result.recommendations.map((row) => row.name)).toContain(
+      "Duke University",
+    );
+  });
+
+  it("filters recommendations to schools sponsoring the athlete's sport", async () => {
+    db.prefs = {
+      data: [
+        {
+          category: "player",
+          data: { gpa: 3.7, school_state: "OH", primary_sport: "Baseball" },
+        },
+        { category: "location", data: { state: "OH" } },
+      ],
+      error: null,
+    };
+    db.programs = {
+      data: [{ school_catalog_key: "ohio state university" }],
+      error: null,
+    };
+    const result = await assembleSchoolRecommendations(
+      mockClient(),
+      "athlete-1",
+    );
+    expect(result.recommendations.map((row) => row.name)).toContain(
+      "Ohio State University",
+    );
+    expect(result.recommendations.map((row) => row.name)).not.toContain(
+      "Duke University",
     );
   });
 });

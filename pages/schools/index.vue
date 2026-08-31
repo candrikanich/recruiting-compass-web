@@ -91,6 +91,8 @@
                 :loading="recommendationsLoading"
                 :error="recommendationsError || recommendationActionError"
                 :adding-key="addingRecommendationKey"
+                :home-state="userHomeLocation?.state"
+                :user-gpa="athleteProfile.gpa"
                 @add="handleAddRecommendation"
                 @dismiss="handleDismissRecommendation"
               />
@@ -131,6 +133,28 @@
           />
         </template>
       </DesignSystemPageState>
+
+      <section
+        v-if="schools.length > 0 && recommendedSchools.length > 0"
+        class="mt-8"
+      >
+        <h2 class="mb-4 text-lg font-semibold text-slate-900">
+          Discover More Schools
+        </h2>
+        <p class="mb-4 text-sm text-brand-slate-500">
+          Recommendations update as your profile grows
+        </p>
+        <RecommendedSchools
+          :items="recommendedSchools"
+          :loading="recommendationsLoading"
+          :error="recommendationsError || recommendationActionError"
+          :adding-key="addingRecommendationKey"
+          :home-state="userHomeLocation?.state"
+          :user-gpa="athleteProfile.gpa"
+          @add="handleAddRecommendation"
+          @dismiss="handleDismissRecommendation"
+        />
+      </section>
     </main>
 
     <!-- Live Region for Screen Reader Announcements -->
@@ -324,12 +348,9 @@ watch(
   { immediate: true },
 );
 
-watch([loading, schools], ([isLoading, schoolList], previous) => {
-  if (isLoading || schoolList.length > 0) return;
-  const wasLoading = previous?.[0];
-  if (wasLoading === true) {
-    void fetchRecommendations();
-  }
+watch(loading, (isLoading, wasLoading) => {
+  if (isLoading || wasLoading !== true) return;
+  void fetchRecommendations();
 });
 
 async function handleAddRecommendation(school: SchoolRecommendation) {

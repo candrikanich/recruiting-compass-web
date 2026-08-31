@@ -440,6 +440,39 @@ export type Database = {
         };
         Relationships: [];
       };
+      college_programs: {
+        Row: {
+          conference: string | null;
+          created_at: string | null;
+          division: string;
+          gender: string;
+          id: string;
+          school_catalog_key: string;
+          scorecard_id: number | null;
+          sport: string;
+        };
+        Insert: {
+          conference?: string | null;
+          created_at?: string | null;
+          division: string;
+          gender: string;
+          id?: string;
+          school_catalog_key: string;
+          scorecard_id?: number | null;
+          sport: string;
+        };
+        Update: {
+          conference?: string | null;
+          created_at?: string | null;
+          division?: string;
+          gender?: string;
+          id?: string;
+          school_catalog_key?: string;
+          scorecard_id?: number | null;
+          sport?: string;
+        };
+        Relationships: [];
+      };
       communication_templates: {
         Row: {
           body: string;
