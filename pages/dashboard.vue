@@ -59,6 +59,9 @@
       <div class="grid grid-cols-1 gap-6 lg:grid-cols-6">
         <!-- Left: main content (4 cols) -->
         <div class="space-y-6 lg:col-span-4">
+          <!-- Recommended schools nudge — always visible, self-hides when empty -->
+          <SchoolRecommendationsWidget />
+
           <!-- Action Items — always visible -->
           <section aria-labelledby="suggestions-heading">
             <h2 id="suggestions-heading" class="sr-only">
@@ -180,6 +183,7 @@ import ParentOnboardingBanner from "~/components/Dashboard/ParentOnboardingBanne
 import DashboardTimelineCard from "~/components/Dashboard/DashboardTimelineCard.vue";
 import DashboardStatsCards from "~/components/Dashboard/DashboardStatsCards.vue";
 import DashboardSuggestions from "~/components/Dashboard/DashboardSuggestions.vue";
+import SchoolRecommendationsWidget from "~/components/Dashboard/SchoolRecommendationsWidget.vue";
 import DashboardPublicProfileLinkCard from "~/components/Dashboard/PublicProfileLinkCard.vue";
 import DashboardContactFrequencyWidget from "~/components/Dashboard/ContactFrequencyWidget.vue";
 import DashboardAthleteActivityWidget from "~/components/Dashboard/AthleteActivityWidget.vue";
