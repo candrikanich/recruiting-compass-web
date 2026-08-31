@@ -57,6 +57,7 @@ export interface User {
   target_division?: string;
   created_at?: string;
   updated_at?: string;
+  nux_progress?: unknown;
 }
 
 export interface School {
