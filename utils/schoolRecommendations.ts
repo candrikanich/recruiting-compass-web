@@ -65,6 +65,11 @@ export interface RankSchoolRecommendationsInput {
   gpa: number | null;
   excludedKeys: ReadonlySet<string>;
   limit?: number;
+  /** Filter to schools that sponsor this sport. Requires `programsBySport`. */
+  sport?: string | null;
+  gender?: "male" | "female" | null;
+  /** catalogKey -> sports sponsored. Omit to skip sport filtering entirely. */
+  programsBySport?: ReadonlyMap<string, ReadonlySet<string>>;
 }
 
 function scoreSchool(
@@ -127,10 +132,16 @@ export function rankSchoolRecommendations(
   const weights = divisionWeights(input.gpa);
   const bucket = gpaBucket(input.gpa);
 
+  const sportFilter =
+    input.sport && input.programsBySport ? input.sport : null;
+
   const scored: SchoolRecommendation[] = [];
   for (const school of input.catalog) {
     const key = catalogKeyFor(school.name);
     if (!key || input.excludedKeys.has(key)) continue;
+    if (sportFilter && !input.programsBySport!.get(key)?.has(sportFilter)) {
+      continue;
+    }
     const { score, reasons } = scoreSchool(
       school,
       input.homeState,

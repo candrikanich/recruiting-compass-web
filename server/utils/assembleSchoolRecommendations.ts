@@ -11,6 +11,56 @@ import {
   rankSchoolRecommendations,
   resolveHomeState,
 } from "~/utils/schoolRecommendations";
+import { getOrFetch } from "~/server/utils/cache";
+
+const PROGRAMS_CACHE_TTL_SECONDS = 3600;
+
+function genderFilterFor(
+  gender: string | null,
+): "male" | "female" | null {
+  return gender === "male" || gender === "female" ? gender : null;
+}
+
+/**
+ * catalogKey -> sports sponsored, scoped to one sport + gender.
+ * Empty map (no rows for that sport/gender) means "no programs data yet" —
+ * the ranker treats that as unfiltered, not zero matches.
+ */
+async function loadProgramsBySport(
+  supabase: SupabaseClient<Database>,
+  sport: string | null,
+  gender: "male" | "female" | null,
+): Promise<Map<string, Set<string>>> {
+  if (!sport) return new Map();
+
+  const dbGender = gender === "male" ? "men" : gender === "female" ? "women" : null;
+  const cacheKey = `college-programs:${sport.toLowerCase()}:${dbGender ?? "any"}`;
+
+  return getOrFetch(
+    cacheKey,
+    async () => {
+      let query = supabase
+        .from("college_programs")
+        .select("school_catalog_key")
+        .eq("sport", sport);
+      if (dbGender) {
+        query = query.in("gender", [dbGender, "coed"]);
+      }
+      const { data, error } = await query.limit(2000);
+      if (error) throw error;
+
+      const map = new Map<string, Set<string>>();
+      for (const row of data ?? []) {
+        const key = row.school_catalog_key;
+        const set = map.get(key) ?? new Set<string>();
+        set.add(sport);
+        map.set(key, set);
+      }
+      return map;
+    },
+    PROGRAMS_CACHE_TTL_SECONDS,
+  );
+}
 
 export interface AssembledSchoolRecommendations {
   recommendations: SchoolRecommendation[];
@@ -103,11 +153,15 @@ export async function assembleSchoolRecommendations(
     hometownState: userResult.data?.hometown_state,
   });
   const gpa = asNumber(player.gpa);
+  const sport = asString(player.primary_sport);
+  const gender = genderFilterFor(asString(player.gender));
 
   const excludedKeys = new Set<string>([
     ...trackedNames.map(catalogKeyFor),
     ...dismissedKeys.map((key) => catalogKeyFor(key)),
   ]);
+
+  const programsBySport = await loadProgramsBySport(supabase, sport, gender);
 
   const recommendations = rankSchoolRecommendations({
     catalog: getCatalogSchools(),
@@ -115,6 +169,10 @@ export async function assembleSchoolRecommendations(
     gpa,
     excludedKeys,
     limit,
+    sport,
+    gender,
+    // Empty map means no programs data seeded yet — fall back to unfiltered.
+    programsBySport: programsBySport.size > 0 ? programsBySport : undefined,
   });
 
   return {
