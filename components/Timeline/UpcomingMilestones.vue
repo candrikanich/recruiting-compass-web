@@ -42,7 +42,10 @@
     </a>
   </div>
 
-  <div v-else class="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
+  <div
+    v-else
+    class="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs"
+  >
     <button
       type="button"
       data-testid="guidance-header"

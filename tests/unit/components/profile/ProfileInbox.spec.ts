@@ -34,15 +34,21 @@ vi.mock("~/composables/useProfileContacts", () => ({
 }));
 
 const stubs = {
-  DesignSystemEmptyState: { template: "<div>EMPTY: {{ title }}</div>", props: ["title", "description"] },
+  DesignSystemEmptyState: {
+    template: "<div>EMPTY: {{ title }}</div>",
+    props: ["title", "description"],
+  },
   DesignSystemLoadingState: { template: "<div>LOADING</div>" },
   DesignSystemErrorState: {
     template: "<div>ERROR: {{ error }}</div>",
     props: ["error"],
   },
-  DesignSystemBadge: { template: "<span><slot /></span>", props: ["color", "variant", "size"] },
+  DesignSystemBadge: {
+    template: "<span><slot /></span>",
+    props: ["color", "variant", "size"],
+  },
   AssignCoachModal: true,
-  NuxtLink: { template: "<a :href=\"to\"><slot /></a>", props: ["to"] },
+  NuxtLink: { template: '<a :href="to"><slot /></a>', props: ["to"] },
 };
 
 const sampleLead: ProfileLead = {
@@ -147,9 +153,7 @@ describe("ProfileInbox", () => {
   it("opens AssignCoachModal for the clicked lead when Assign coach is clicked", async () => {
     state.leads.value = [sampleLead];
     const w = mount(ProfileInbox, { global: { stubs } });
-    expect(w.findComponent({ name: "AssignCoachModal" }).exists()).toBe(
-      false,
-    );
+    expect(w.findComponent({ name: "AssignCoachModal" }).exists()).toBe(false);
 
     await w.get('[data-test="assign-coach-lead-1"]').trigger("click");
     expect(w.findComponent({ name: "AssignCoachModal" }).exists()).toBe(true);

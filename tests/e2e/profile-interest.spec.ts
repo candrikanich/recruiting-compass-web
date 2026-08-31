@@ -20,7 +20,10 @@ import { test, expect, type Browser, type Page } from "@playwright/test";
 const RUN_ID = Date.now();
 const COACH_NAME = `E2E Interest Coach ${RUN_ID}`;
 const COACH_NOTE = `E2E interest note ${RUN_ID} — would love to talk about your future.`;
-const PROFILE_PUT_PATTERN = (res: { url(): string; request(): { method(): string } }) =>
+const PROFILE_PUT_PATTERN = (res: {
+  url(): string;
+  request(): { method(): string };
+}) =>
   res.url().includes("/api/player/profile") && res.request().method() === "PUT";
 
 async function waitForProfileSave(page: Page, action: () => Promise<void>) {
@@ -31,28 +34,35 @@ async function ensurePublishedAndGetSlug(page: Page): Promise<string> {
   await page.goto("/settings/player-details");
   await page.waitForLoadState("domcontentloaded");
 
-  await page
-    .locator("button", { hasText: "Public Profile" })
-    .first()
-    .click();
+  await page.locator("button", { hasText: "Public Profile" }).first().click();
 
   const publishToggle = page.locator('[data-test="publish-toggle"]');
   await publishToggle.waitFor({ state: "visible", timeout: 15000 });
 
   // Ensure published — an unpublished profile 410s on /p/:slug, which would
   // make the anonymous-visitor flow below unreachable.
-  if (!(await page.getByText("Profile is live").isVisible().catch(() => false))) {
+  if (
+    !(await page
+      .getByText("Profile is live")
+      .isVisible()
+      .catch(() => false))
+  ) {
     await waitForProfileSave(page, () => publishToggle.click());
   }
   await expect(page.getByText("Profile is live")).toBeVisible();
 
   // Read the published slug directly off the share panel — never hardcode a
   // slug, this account's profile may already exist from a prior run.
-  const shareUrl = page.locator("[data-test='profile-share-url']", { hasText: "/p/" });
+  const shareUrl = page.locator("[data-test='profile-share-url']", {
+    hasText: "/p/",
+  });
   await expect(shareUrl).toBeVisible();
   const urlText = (await shareUrl.textContent())?.trim() ?? "";
   const slug = urlText.split("/p/")[1];
-  expect(slug, `could not parse a slug out of share URL "${urlText}"`).toBeTruthy();
+  expect(
+    slug,
+    `could not parse a slug out of share URL "${urlText}"`,
+  ).toBeTruthy();
   return slug;
 }
 
@@ -145,7 +155,9 @@ test.describe("Public profile — Express Interest", () => {
     await expect(interestBadge).toBeVisible();
 
     // Month-count tile reflects at least this run's lead.
-    const interestStat = page.locator('[data-testid="stat-interest-this-month"]');
+    const interestStat = page.locator(
+      '[data-testid="stat-interest-this-month"]',
+    );
     await expect(interestStat).toBeVisible();
   });
 });

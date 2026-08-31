@@ -24,7 +24,10 @@ export function backfillSectionConfig(flags: {
     team_history: true,
     awards: true,
   };
-  return DEFAULT_SECTION_ORDER.map((key) => ({ key, visible: visibleByKey[key] }));
+  return DEFAULT_SECTION_ORDER.map((key) => ({
+    key,
+    visible: visibleByKey[key],
+  }));
 }
 
 export function normalizeSectionConfig(raw: unknown): ProfileSection[] {
@@ -33,11 +36,15 @@ export function normalizeSectionConfig(raw: unknown): ProfileSection[] {
   const ordered: ProfileSection[] = [];
   for (const item of list) {
     const key = (item as { key?: unknown })?.key;
-    if (typeof key !== "string" || !KNOWN.has(key as ProfileSectionKey)) continue;
+    if (typeof key !== "string" || !KNOWN.has(key as ProfileSectionKey))
+      continue;
     const k = key as ProfileSectionKey;
     if (seen.has(k)) continue;
     seen.add(k);
-    ordered.push({ key: k, visible: !!(item as { visible?: unknown }).visible });
+    ordered.push({
+      key: k,
+      visible: !!(item as { visible?: unknown }).visible,
+    });
   }
   for (const key of DEFAULT_SECTION_ORDER) {
     if (!seen.has(key)) ordered.push({ key, visible: false });
@@ -89,9 +96,11 @@ export function resolveSections(input: {
  * drafts can keep those flags in agreement with a section_config edit before
  * the round trip to the server completes.
  */
-export function deriveLegacyVisibility(
-  sections: ProfileSection[],
-): { show_metrics: boolean; show_film: boolean; show_academics: boolean } {
+export function deriveLegacyVisibility(sections: ProfileSection[]): {
+  show_metrics: boolean;
+  show_film: boolean;
+  show_academics: boolean;
+} {
   const visible = (key: ProfileSectionKey) =>
     sections.some((s) => s.key === key && s.visible);
   return {

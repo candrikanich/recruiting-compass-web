@@ -14,9 +14,9 @@ vi.mock("~/server/utils/rules/index", async () => {
 });
 
 vi.mock("~/utils/recruitingCalendar", async () => {
-  const actual = await vi.importActual<typeof import("~/utils/recruitingCalendar")>(
-    "~/utils/recruitingCalendar",
-  );
+  const actual = await vi.importActual<
+    typeof import("~/utils/recruitingCalendar")
+  >("~/utils/recruitingCalendar");
   return {
     ...actual,
     isDeadPeriod: vi.fn(() => false),

@@ -19,7 +19,10 @@
  *    PBR is skipped rather than linked to a broken/guessed URL.
  */
 
-import { ALL_SERVICE_DEFS, serviceProfileUrl } from "~/utils/services/canonical";
+import {
+  ALL_SERVICE_DEFS,
+  serviceProfileUrl,
+} from "~/utils/services/canonical";
 import type { PublicProfileData } from "~/types/models";
 
 export type PublicAthletic = NonNullable<PublicProfileData["athletic"]>;

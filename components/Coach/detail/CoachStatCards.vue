@@ -26,7 +26,6 @@ const preferredChannelIcon = computed(() =>
     ? getTypeIcon(props.preferredChannel)
     : "i-heroicons-chat-bubble-left",
 );
-
 </script>
 
 <template>
@@ -34,7 +33,11 @@ const preferredChannelIcon = computed(() =>
     <!-- Days Since Contact -->
     <div
       class="flex h-[140px] flex-1 items-center justify-between gap-3 rounded-xl p-4"
-      :class="isOverdue ? 'border-2 border-red-300 bg-white' : 'border border-slate-200 bg-white'"
+      :class="
+        isOverdue
+          ? 'border-2 border-red-300 bg-white'
+          : 'border border-slate-200 bg-white'
+      "
     >
       <div class="min-w-0">
         <p
@@ -51,7 +54,7 @@ const preferredChannelIcon = computed(() =>
         </p>
         <span
           v-if="isOverdue"
-          class="mt-1 inline-block rounded px-[6px] py-[2px] text-[11px] font-bold text-red-500 bg-red-50"
+          class="mt-1 inline-block rounded bg-red-50 px-[6px] py-[2px] text-[11px] font-bold text-red-500"
         >
           OVERDUE
         </span>
@@ -74,7 +77,9 @@ const preferredChannelIcon = computed(() =>
         </svg>
         <div class="absolute inset-0 flex items-center justify-center">
           <UIcon
-            :name="isOverdue ? 'i-heroicons-exclamation-circle' : 'i-heroicons-clock'"
+            :name="
+              isOverdue ? 'i-heroicons-exclamation-circle' : 'i-heroicons-clock'
+            "
             class="h-5 w-5"
             :class="isOverdue ? 'text-red-500' : 'text-slate-400'"
             aria-hidden="true"
@@ -92,7 +97,9 @@ const preferredChannelIcon = computed(() =>
         <p class="text-[32px] leading-tight font-extrabold text-slate-900">
           {{ totalInteractions }}
         </p>
-        <p class="text-[11px] text-slate-600">{{ totalInteractions }} interactions logged</p>
+        <p class="text-[11px] text-slate-600">
+          {{ totalInteractions }} interactions logged
+        </p>
       </div>
       <div class="relative h-12 w-12 shrink-0">
         <svg viewBox="0 0 40 40" class="h-12 w-12">
@@ -111,7 +118,9 @@ const preferredChannelIcon = computed(() =>
           />
         </svg>
         <div class="absolute inset-0 flex items-center justify-center">
-          <span class="text-[12px] font-bold text-blue-500">{{ totalInteractions }}</span>
+          <span class="text-[12px] font-bold text-blue-500">{{
+            totalInteractions
+          }}</span>
         </div>
       </div>
     </div>
@@ -125,7 +134,9 @@ const preferredChannelIcon = computed(() =>
         <p class="text-xl font-extrabold text-slate-900">
           {{ preferredChannelLabel }}
         </p>
-        <p class="text-[11px] text-slate-600">{{ responseRate }}% response rate</p>
+        <p class="text-[11px] text-slate-600">
+          {{ responseRate }}% response rate
+        </p>
       </div>
       <span
         class="flex h-10 w-10 shrink-0 items-center justify-center rounded-[20px] bg-orange-500"

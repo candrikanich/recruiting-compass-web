@@ -60,7 +60,9 @@ async function onBannerChange(event: Event) {
           class="h-7 w-7 rounded-full transition-transform hover:scale-110 focus:ring-2 focus:ring-brand-slate-400 focus:ring-offset-2 focus:outline-none"
           :class="[
             color.swatch,
-            headerColor === color.key ? 'scale-110 ring-2 ring-brand-slate-600 ring-offset-2' : '',
+            headerColor === color.key
+              ? 'scale-110 ring-2 ring-brand-slate-600 ring-offset-2'
+              : '',
           ]"
           @click="emit('update:headerColor', color.key)"
         />
@@ -94,7 +96,11 @@ async function onBannerChange(event: Event) {
         class="hidden"
         @change="onBannerChange"
       />
-      <p v-if="uploading" data-test="banner-uploading" class="text-xs text-brand-slate-500">
+      <p
+        v-if="uploading"
+        data-test="banner-uploading"
+        class="text-xs text-brand-slate-500"
+      >
         Uploading…
       </p>
       <p v-if="error" data-test="banner-error" class="text-xs text-red-500">

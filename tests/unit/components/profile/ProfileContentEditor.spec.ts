@@ -25,7 +25,12 @@ describe("ProfileContentEditor", () => {
 
   it("does not add a duplicate or blank value tag", async () => {
     const w = mount(ProfileContentEditor, {
-      props: { bio: "", lookingFor: "", awards: [], valuesTags: ["Academics"] } as never,
+      props: {
+        bio: "",
+        lookingFor: "",
+        awards: [],
+        valuesTags: ["Academics"],
+      } as never,
     });
     const input = w.find("[data-test='values-input']");
     await input.setValue("   ");
@@ -40,7 +45,12 @@ describe("ProfileContentEditor", () => {
   it("caps value tags at 12", async () => {
     const twelve = Array.from({ length: 12 }, (_, i) => `Tag${i}`);
     const w = mount(ProfileContentEditor, {
-      props: { bio: "", lookingFor: "", awards: [], valuesTags: twelve } as never,
+      props: {
+        bio: "",
+        lookingFor: "",
+        awards: [],
+        valuesTags: twelve,
+      } as never,
     });
     const input = w.find("[data-test='values-input']");
     await input.setValue("Thirteenth");
@@ -50,7 +60,12 @@ describe("ProfileContentEditor", () => {
 
   it("removes a value tag on chip remove click", async () => {
     const w = mount(ProfileContentEditor, {
-      props: { bio: "", lookingFor: "", awards: [], valuesTags: ["Academics", "Speed"] } as never,
+      props: {
+        bio: "",
+        lookingFor: "",
+        awards: [],
+        valuesTags: ["Academics", "Speed"],
+      } as never,
     });
     const removeButtons = w.findAll("[data-test='remove-value-tag']");
     await removeButtons[0].trigger("click");
@@ -72,7 +87,9 @@ describe("ProfileContentEditor", () => {
     });
     const removeButtons = w.findAll("[data-test='remove-award']");
     await removeButtons[0].trigger("click");
-    const emitted = w.emitted("update:awards")?.at(-1)?.[0] as { title: string }[];
+    const emitted = w.emitted("update:awards")?.at(-1)?.[0] as {
+      title: string;
+    }[];
     expect(emitted).toEqual([{ title: "All-State", year: 2023 }]);
   });
 

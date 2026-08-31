@@ -36,9 +36,9 @@ describe("PublicProfileLinkCard", () => {
     it("shows the setup nudge, not a link", () => {
       const wrapper = mountCard();
       expect(wrapper.text()).toContain("Set up public profile");
-      expect(
-        wrapper.find('[data-testid="public-profile-url"]').exists(),
-      ).toBe(false);
+      expect(wrapper.find('[data-testid="public-profile-url"]').exists()).toBe(
+        false,
+      );
     });
 
     it("links the nudge to the public-profile settings tab", () => {
@@ -71,7 +71,9 @@ describe("PublicProfileLinkCard", () => {
       });
 
       const wrapper = mountCard();
-      await wrapper.find('[data-testid="copy-public-profile-link"]').trigger("click");
+      await wrapper
+        .find('[data-testid="copy-public-profile-link"]')
+        .trigger("click");
 
       expect(writeText).toHaveBeenCalledWith(
         "https://app.example.com/p/jane-doe",

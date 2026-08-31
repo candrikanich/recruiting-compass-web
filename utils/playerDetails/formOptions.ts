@@ -51,10 +51,29 @@ export const SOCIAL_INPUTS: {
   prefix?: string;
   placeholder: string;
 }[] = [
-  { key: "twitter_handle", label: "Twitter / X", prefix: "@", placeholder: "username" },
-  { key: "instagram_handle", label: "Instagram", prefix: "@", placeholder: "username" },
-  { key: "tiktok_handle", label: "TikTok", prefix: "@", placeholder: "username" },
-  { key: "facebook_url", label: "Facebook URL", placeholder: "https://facebook.com/..." },
+  {
+    key: "twitter_handle",
+    label: "Twitter / X",
+    prefix: "@",
+    placeholder: "username",
+  },
+  {
+    key: "instagram_handle",
+    label: "Instagram",
+    prefix: "@",
+    placeholder: "username",
+  },
+  {
+    key: "tiktok_handle",
+    label: "TikTok",
+    prefix: "@",
+    placeholder: "username",
+  },
+  {
+    key: "facebook_url",
+    label: "Facebook URL",
+    placeholder: "https://facebook.com/...",
+  },
 ];
 
 export const GRADE_LEVELS = [

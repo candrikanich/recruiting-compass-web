@@ -4,7 +4,9 @@ import CoachTagsCard from "~/components/Coach/detail/CoachTagsCard.vue";
 
 describe("CoachTagsCard", () => {
   it("renders each tag as a chip", () => {
-    const w = mount(CoachTagsCard, { props: { tags: ["Football", "Division I"] } });
+    const w = mount(CoachTagsCard, {
+      props: { tags: ["Football", "Division I"] },
+    });
     expect(w.text()).toContain("Football");
     expect(w.text()).toContain("Division I");
   });

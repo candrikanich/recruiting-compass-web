@@ -63,8 +63,7 @@ describe("turnstile", () => {
       process.env.NUXT_TURNSTILE_SECRET_KEY = "test-secret";
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
-        json: () =>
-          Promise.resolve({ success: true, action: "whatever" }),
+        json: () => Promise.resolve({ success: true, action: "whatever" }),
       });
 
       const result = await verifyTurnstile("token-123");
@@ -76,8 +75,7 @@ describe("turnstile", () => {
       process.env.NUXT_TURNSTILE_SECRET_KEY = "test-secret";
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
-        json: () =>
-          Promise.resolve({ success: true, action: "login" }),
+        json: () => Promise.resolve({ success: true, action: "login" }),
       });
 
       const result = await verifyTurnstile("token-123", {
@@ -104,8 +102,7 @@ describe("turnstile", () => {
       process.env.NUXT_TURNSTILE_HOSTNAMES = "example.com, other.com";
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
-        json: () =>
-          Promise.resolve({ success: true, hostname: "example.com" }),
+        json: () => Promise.resolve({ success: true, hostname: "example.com" }),
       });
 
       const result = await verifyTurnstile("token-123");
@@ -118,8 +115,7 @@ describe("turnstile", () => {
       process.env.NUXT_TURNSTILE_HOSTNAMES = "example.com";
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
-        json: () =>
-          Promise.resolve({ success: true, hostname: "evil.com" }),
+        json: () => Promise.resolve({ success: true, hostname: "evil.com" }),
       });
 
       const result = await verifyTurnstile("token-123");

@@ -10,18 +10,28 @@ const sections = [
 
 describe("SectionConfigEditor", () => {
   it("renders a row per section with a visibility toggle and emits on toggle", async () => {
-    const w = mount(SectionConfigEditor, { props: { modelValue: sections as never } });
+    const w = mount(SectionConfigEditor, {
+      props: { modelValue: sections as never },
+    });
     expect(w.text()).toMatch(/metrics/i);
     expect(w.text()).toMatch(/awards/i);
     const toggles = w.findAll("[data-test='section-visibility']");
     await toggles[1].trigger("click"); // flip awards
-    const emitted = w.emitted("update:modelValue")?.[0]?.[0] as { key: string; visible: boolean }[];
+    const emitted = w.emitted("update:modelValue")?.[0]?.[0] as {
+      key: string;
+      visible: boolean;
+    }[];
     expect(emitted.find((s) => s.key === "awards")?.visible).toBe(true);
   });
 
   it("skips section keys not present in SECTION_META (normalizeSectionConfig-backfilled to all known keys)", () => {
     const w = mount(SectionConfigEditor, {
-      props: { modelValue: [...sections, { key: "unknown_key", visible: true }] as never },
+      props: {
+        modelValue: [
+          ...sections,
+          { key: "unknown_key", visible: true },
+        ] as never,
+      },
     });
     expect(w.text()).not.toMatch(/unknown_key/i);
     const toggles = w.findAll("[data-test='section-visibility']");
@@ -35,7 +45,10 @@ describe("SectionConfigEditor", () => {
     });
     const toggles = w.findAll("[data-test='section-visibility']");
     await toggles[1].trigger("click"); // flip awards
-    const emitted = w.emitted("update:modelValue")?.[0]?.[0] as { key: string; visible: boolean }[];
+    const emitted = w.emitted("update:modelValue")?.[0]?.[0] as {
+      key: string;
+      visible: boolean;
+    }[];
     expect(emitted.find((s) => s.key === "unknown_key")).toEqual(unknown);
   });
 

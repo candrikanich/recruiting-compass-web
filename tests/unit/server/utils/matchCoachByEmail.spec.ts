@@ -13,7 +13,9 @@ function makeAdmin(matchRow: { id: string; school_id: string } | null) {
     return {
       ilike: vi.fn((col2: string, val2: string) => {
         calls.select.push([col2, val2]);
-        return { maybeSingle: () => Promise.resolve({ data: matchRow, error: null }) };
+        return {
+          maybeSingle: () => Promise.resolve({ data: matchRow, error: null }),
+        };
       }),
     };
   });
@@ -50,29 +52,47 @@ describe("matchCoachByEmail", () => {
   });
 
   it("returns null coachId and schoolId without querying when no email is given", async () => {
-    const admin = makeAdmin({ id: "should-not-be-returned", school_id: "should-not-be-returned" });
+    const admin = makeAdmin({
+      id: "should-not-be-returned",
+      school_id: "should-not-be-returned",
+    });
 
     const result = await matchCoachByEmail(admin, { familyUnitId: "fam-1" });
 
     expect(result).toEqual({ coachId: null, schoolId: null });
-    expect((admin as unknown as { select: ReturnType<typeof vi.fn> }).select).not.toHaveBeenCalled();
+    expect(
+      (admin as unknown as { select: ReturnType<typeof vi.fn> }).select,
+    ).not.toHaveBeenCalled();
   });
 
   it("returns null coachId and schoolId for an empty-string email without querying", async () => {
-    const admin = makeAdmin({ id: "should-not-be-returned", school_id: "should-not-be-returned" });
+    const admin = makeAdmin({
+      id: "should-not-be-returned",
+      school_id: "should-not-be-returned",
+    });
 
-    const result = await matchCoachByEmail(admin, { familyUnitId: "fam-1", email: "  " });
+    const result = await matchCoachByEmail(admin, {
+      familyUnitId: "fam-1",
+      email: "  ",
+    });
 
     expect(result).toEqual({ coachId: null, schoolId: null });
-    expect((admin as unknown as { select: ReturnType<typeof vi.fn> }).select).not.toHaveBeenCalled();
+    expect(
+      (admin as unknown as { select: ReturnType<typeof vi.fn> }).select,
+    ).not.toHaveBeenCalled();
   });
 
   it("scopes the match to the given family_unit_id", async () => {
     const admin = makeAdmin({ id: "existing-coach-id", school_id: "s1" });
 
-    await matchCoachByEmail(admin, { familyUnitId: "fam-42", email: "coach@x.com" });
+    await matchCoachByEmail(admin, {
+      familyUnitId: "fam-42",
+      email: "coach@x.com",
+    });
 
-    const calls = (admin as unknown as { calls: { select: Array<[string, string]> } }).calls;
+    const calls = (
+      admin as unknown as { calls: { select: Array<[string, string]> } }
+    ).calls;
     expect(calls.select).toContainEqual(["family_unit_id", "fam-42"]);
   });
 });

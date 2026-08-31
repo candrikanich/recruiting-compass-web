@@ -1,7 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { H3Event } from "h3";
 
-const mockState = { header: undefined as string | undefined, cookie: undefined as string | undefined };
+const mockState = {
+  header: undefined as string | undefined,
+  cookie: undefined as string | undefined,
+};
 
 vi.mock("h3", async (importOriginal) => {
   const actual = await importOriginal<typeof import("h3")>();

@@ -15,7 +15,9 @@ function submit(): void {
 
 <template>
   <section class="rounded-xl border border-slate-200 bg-white p-4">
-    <h3 class="mb-3 text-xs font-bold uppercase tracking-wide text-slate-400">Tags</h3>
+    <h3 class="mb-3 text-xs font-bold tracking-wide text-slate-400 uppercase">
+      Tags
+    </h3>
     <div class="flex flex-wrap gap-2">
       <span
         v-for="tag in tags"

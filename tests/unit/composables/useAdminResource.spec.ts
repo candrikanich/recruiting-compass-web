@@ -68,9 +68,16 @@ describe("useAdminResource", () => {
   });
 
   it("sets error to `${failLabel}: <status>` on a non-OK response", async () => {
-    mockFetch.mockResolvedValue({ ok: false, status: 503, json: async () => ({}) });
+    mockFetch.mockResolvedValue({
+      ok: false,
+      status: 503,
+      json: async () => ({}),
+    });
 
-    const { data, error, load } = useAdminResource(() => "/api/admin/thing", options);
+    const { data, error, load } = useAdminResource(
+      () => "/api/admin/thing",
+      options,
+    );
     await load();
 
     expect(error.value).toBe("Failed to load thing: 503");
@@ -98,7 +105,10 @@ describe("useAdminResource", () => {
   it("resets loading to false after a failure", async () => {
     mockFetch.mockRejectedValue(new Error("nope"));
 
-    const { loading, load } = useAdminResource(() => "/api/admin/thing", options);
+    const { loading, load } = useAdminResource(
+      () => "/api/admin/thing",
+      options,
+    );
     await load();
 
     expect(loading.value).toBe(false);

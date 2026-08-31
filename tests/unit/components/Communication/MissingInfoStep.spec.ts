@@ -125,8 +125,14 @@ describe("MissingInfoStep", () => {
 
   it("emits continue and back", async () => {
     const { wrapper } = mountStep([boolean]);
-    await wrapper.findAll("button").find((b) => b.text() === "Continue")!.trigger("click");
-    await wrapper.findAll("button").find((b) => b.text() === "Back")!.trigger("click");
+    await wrapper
+      .findAll("button")
+      .find((b) => b.text() === "Continue")!
+      .trigger("click");
+    await wrapper
+      .findAll("button")
+      .find((b) => b.text() === "Back")!
+      .trigger("click");
     expect(wrapper.emitted("continue")).toHaveLength(1);
     expect(wrapper.emitted("back")).toHaveLength(1);
   });

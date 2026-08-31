@@ -100,14 +100,18 @@ describe("MessageComposer", () => {
   it("starts on the compose stage with subject + a Continue button (email)", () => {
     const wrapper = mountComposer(buildController("email"));
     expect(wrapper.text()).toContain("Send Email to Dana");
-    expect(wrapper.find('input[placeholder="Email subject..."]').exists()).toBe(true);
+    expect(wrapper.find('input[placeholder="Email subject..."]').exists()).toBe(
+      true,
+    );
     expect(btn(wrapper, "Continue")).toBeTruthy();
     expect(btn(wrapper, "Send Email")).toBeFalsy();
   });
 
   it("hides the subject and shows the SMS counter for the text channel", () => {
     const wrapper = mountComposer(buildController("text"));
-    expect(wrapper.find('input[placeholder="Email subject..."]').exists()).toBe(false);
+    expect(wrapper.find('input[placeholder="Email subject..."]').exists()).toBe(
+      false,
+    );
     expect(wrapper.text()).toContain("/480");
   });
 
@@ -120,7 +124,9 @@ describe("MessageComposer", () => {
   });
 
   it("routes through the info stage when something is missing, then to preview", async () => {
-    const ch = buildController("email", { hasMissingInfo: computed(() => true) });
+    const ch = buildController("email", {
+      hasMissingInfo: computed(() => true),
+    });
     const wrapper = mountComposer(ch);
     await btn(wrapper, "Continue")!.trigger("click");
     expect(wrapper.find(".mi-step").exists()).toBe(true);
@@ -135,7 +141,9 @@ describe("MessageComposer", () => {
     );
     await btn(wrapper, "Continue")!.trigger("click");
     await wrapper.find(".mi-back").trigger("click");
-    expect(wrapper.find('input[placeholder="Email subject..."]').exists()).toBe(true);
+    expect(wrapper.find('input[placeholder="Email subject..."]').exists()).toBe(
+      true,
+    );
     expect(wrapper.find(".mi-step").exists()).toBe(false);
   });
 
@@ -158,7 +166,9 @@ describe("MessageComposer", () => {
   });
 
   it("does not close when send is blocked (returns false)", async () => {
-    const ch = buildController("email", { send: vi.fn().mockResolvedValue(false) });
+    const ch = buildController("email", {
+      send: vi.fn().mockResolvedValue(false),
+    });
     const wrapper = mountComposer(ch);
     await btn(wrapper, "Continue")!.trigger("click");
     await btn(wrapper, "Send Email")!.trigger("click");

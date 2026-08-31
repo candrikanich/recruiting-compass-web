@@ -14,7 +14,10 @@ const emit = defineEmits<{
 }>();
 
 function onStatusChange(event: Event) {
-  emit("update:status", (event.target as HTMLSelectElement).value as CommitmentStatus);
+  emit(
+    "update:status",
+    (event.target as HTMLSelectElement).value as CommitmentStatus,
+  );
 }
 
 function onSchoolChange(event: Event) {
@@ -26,7 +29,10 @@ function onSchoolChange(event: Event) {
 <template>
   <div class="flex flex-col gap-4">
     <div>
-      <label class="block text-sm font-medium text-brand-slate-700" for="commitment-status">
+      <label
+        class="block text-sm font-medium text-brand-slate-700"
+        for="commitment-status"
+      >
         Commitment Status
       </label>
       <p class="mt-0.5 mb-2 text-xs text-brand-slate-500">
@@ -45,7 +51,10 @@ function onSchoolChange(event: Event) {
     </div>
 
     <div v-if="status === 'committed'">
-      <label class="mb-2 block text-sm font-medium text-brand-slate-700" for="committed-school">
+      <label
+        class="mb-2 block text-sm font-medium text-brand-slate-700"
+        for="committed-school"
+      >
         Committed school
       </label>
       <select

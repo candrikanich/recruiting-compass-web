@@ -48,7 +48,9 @@ const physicals = computed(() => {
 
 const socialLinks = computed(() => buildSocialLinks(props.data.social));
 
-const headerBgClass = computed(() => heroBackgroundClass(props.data.headerColor));
+const headerBgClass = computed(() =>
+  heroBackgroundClass(props.data.headerColor),
+);
 </script>
 
 <template>
@@ -63,7 +65,9 @@ const headerBgClass = computed(() => heroBackgroundClass(props.data.headerColor)
           class="h-5 w-5"
           aria-hidden="true"
         />
-        <span class="text-sm font-semibold tracking-tight">RecruitingCompass</span>
+        <span class="text-sm font-semibold tracking-tight"
+          >RecruitingCompass</span
+        >
       </div>
       <span
         class="inline-flex items-center gap-1.5 rounded-full bg-brand-emerald-900/40 px-3 py-1 text-xs font-medium text-brand-emerald-300 ring-1 ring-brand-emerald-700/50"
@@ -146,7 +150,11 @@ const headerBgClass = computed(() => heroBackgroundClass(props.data.headerColor)
             class="inline-flex items-center justify-center gap-2 rounded-lg border border-white/25 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-white/10 focus:ring-2 focus:ring-white/40 focus:outline-none"
             @click="$emit('contact')"
           >
-            <UIcon name="i-heroicons-envelope" class="h-4 w-4" aria-hidden="true" />
+            <UIcon
+              name="i-heroicons-envelope"
+              class="h-4 w-4"
+              aria-hidden="true"
+            />
             Contact Player
           </button>
           <button

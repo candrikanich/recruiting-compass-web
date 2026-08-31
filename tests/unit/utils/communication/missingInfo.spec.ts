@@ -1,5 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { deriveMissingInfoFields, type MissingInfoInput } from "~/utils/communication/missingInfo";
+import {
+  deriveMissingInfoFields,
+  type MissingInfoInput,
+} from "~/utils/communication/missingInfo";
 
 const base: MissingInfoInput = {
   referencedKeys: [],
@@ -18,7 +21,10 @@ describe("deriveMissingInfoFields", () => {
   });
 
   it("adds a questionnaire boolean row when the body uses the note and it's incomplete", () => {
-    const rows = deriveMissingInfoFields({ ...base, body: "Hi {{questionnaireNote}}" });
+    const rows = deriveMissingInfoFields({
+      ...base,
+      body: "Hi {{questionnaireNote}}",
+    });
     expect(rows.map((r) => r.id)).toEqual(["questionnaireNote"]);
     expect(rows[0].editor).toEqual({ kind: "boolean" });
   });
@@ -67,7 +73,13 @@ describe("deriveMissingInfoFields", () => {
     const rows = deriveMissingInfoFields({
       ...base,
       body: "{{questionnaireNote}}",
-      referencedKeys: ["updateHook", "intendedMajor", "fitReason", "programNote", "metrics"],
+      referencedKeys: [
+        "updateHook",
+        "intendedMajor",
+        "fitReason",
+        "programNote",
+        "metrics",
+      ],
       authoredKeys: new Set(["updateHook", "programNote", "fitReason"]),
       labels: { updateHook: "Recent update" },
       hasMetric: false,
@@ -90,7 +102,11 @@ describe("deriveMissingInfoFields", () => {
     });
     expect(used.map((r) => r.id)).toEqual(["metrics"]);
     expect(used[0].editor).toEqual({ kind: "metricLink" });
-    const has = deriveMissingInfoFields({ ...base, referencedKeys: ["metrics"], hasMetric: true });
+    const has = deriveMissingInfoFields({
+      ...base,
+      referencedKeys: ["metrics"],
+      hasMetric: true,
+    });
     expect(has).toEqual([]);
   });
 

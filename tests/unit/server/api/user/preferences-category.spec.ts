@@ -177,8 +177,10 @@ describe("GET /api/user/preferences/[category]", () => {
                     error: null,
                   });
                   return {
-                    then: (res: (v: unknown) => unknown, rej: (e: unknown) => unknown) =>
-                      list.then(res, rej),
+                    then: (
+                      res: (v: unknown) => unknown,
+                      rej: (e: unknown) => unknown,
+                    ) => list.then(res, rej),
                   };
                 },
               }),
@@ -309,8 +311,10 @@ describe("POST /api/user/preferences/[category]", () => {
                     error: null,
                   });
                   return {
-                    then: (res: (v: unknown) => unknown, rej: (e: unknown) => unknown) =>
-                      list.then(res, rej),
+                    then: (
+                      res: (v: unknown) => unknown,
+                      rej: (e: unknown) => unknown,
+                    ) => list.then(res, rej),
                   };
                 },
               }),

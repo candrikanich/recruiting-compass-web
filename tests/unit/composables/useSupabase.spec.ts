@@ -3,9 +3,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 // Captures the callback useSupabase() registers via onAuthStateChange, since
 // the client is a module-level singleton — it's only ever constructed (and
 // onAuthStateChange only ever called) once across this whole test file.
-let authStateCallback:
-  | ((event: string, session: unknown) => void)
-  | undefined;
+let authStateCallback: ((event: string, session: unknown) => void) | undefined;
 const mockSignOut = vi.fn();
 
 // useServiceStatus is a Nuxt auto-import in the source (no explicit import

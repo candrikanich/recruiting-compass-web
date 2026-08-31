@@ -13,14 +13,21 @@ const ix = (over: Partial<Interaction> = {}): Interaction => ({
 
 const fixture: Interaction[] = [
   ix({ id: "1", type: "email", direction: "outbound", sentiment: "positive" }),
-  ix({ id: "2", type: "phone_call", direction: "inbound", sentiment: "neutral" }),
+  ix({
+    id: "2",
+    type: "phone_call",
+    direction: "inbound",
+    sentiment: "neutral",
+  }),
   ix({ id: "3", type: "email", direction: "outbound", sentiment: "negative" }),
   ix({ id: "4", type: "text", direction: "inbound", sentiment: "positive" }),
 ];
 
 describe("CoachInteractionsTable", () => {
   it("filters to sent-only via the Direction control and updates the Shown count", async () => {
-    const w = mount(CoachInteractionsTable, { props: { interactions: fixture } });
+    const w = mount(CoachInteractionsTable, {
+      props: { interactions: fixture },
+    });
 
     await w.get('input[value="outbound"]').setValue(true);
 
@@ -31,7 +38,9 @@ describe("CoachInteractionsTable", () => {
   });
 
   it("narrows rows via the Type filter", async () => {
-    const w = mount(CoachInteractionsTable, { props: { interactions: fixture } });
+    const w = mount(CoachInteractionsTable, {
+      props: { interactions: fixture },
+    });
 
     await w.get("select").setValue("text");
 
@@ -39,7 +48,9 @@ describe("CoachInteractionsTable", () => {
   });
 
   it("narrows rows via the Sentiment filter", async () => {
-    const w = mount(CoachInteractionsTable, { props: { interactions: fixture } });
+    const w = mount(CoachInteractionsTable, {
+      props: { interactions: fixture },
+    });
 
     const selects = w.findAll("select");
     // Type, Date range, Sentiment selects appear in that DOM order.
@@ -49,7 +60,9 @@ describe("CoachInteractionsTable", () => {
   });
 
   it("computes correct Sent/Received tallies for the fixture", () => {
-    const w = mount(CoachInteractionsTable, { props: { interactions: fixture } });
+    const w = mount(CoachInteractionsTable, {
+      props: { interactions: fixture },
+    });
 
     expect(w.text()).toMatch(/Sent\s*2/);
     expect(w.text()).toMatch(/Received\s*2/);

@@ -51,7 +51,7 @@ function onChange(event: Event) {
     <svg
       viewBox="0 0 24 24"
       aria-hidden="true"
-      class="shrink-0 rounded motion-reduce:[&_*]:!transition-none peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-blue-600 [&_.box]:transition-[stroke] [&_.box]:duration-200 peer-checked:[&_.box]:stroke-emerald-600 [&_.fill]:origin-center [&_.fill]:scale-0 [&_.fill]:transition-transform [&_.fill]:duration-300 [&_.fill]:[transition-timing-function:cubic-bezier(.34,1.56,.64,1)] peer-checked:[&_.fill]:scale-100 [&_.tick]:[stroke-dasharray:22] [&_.tick]:[stroke-dashoffset:22] [&_.tick]:transition-[stroke-dashoffset] [&_.tick]:delay-100 [&_.tick]:duration-300 peer-checked:[&_.tick]:[stroke-dashoffset:0]"
+      class="shrink-0 rounded peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-blue-600 motion-reduce:[&_*]:!transition-none [&_.box]:transition-[stroke] [&_.box]:duration-200 peer-checked:[&_.box]:stroke-emerald-600 [&_.fill]:origin-center [&_.fill]:scale-0 [&_.fill]:transition-transform [&_.fill]:duration-300 [&_.fill]:[transition-timing-function:cubic-bezier(.34,1.56,.64,1)] peer-checked:[&_.fill]:scale-100 [&_.tick]:transition-[stroke-dashoffset] [&_.tick]:delay-100 [&_.tick]:duration-300 [&_.tick]:[stroke-dasharray:22] [&_.tick]:[stroke-dashoffset:22] peer-checked:[&_.tick]:[stroke-dashoffset:0]"
       :class="sizeClass"
     >
       <rect

@@ -43,7 +43,7 @@ const buttonClass =
 
 <template>
   <section class="rounded-xl border border-slate-200 bg-white p-4">
-    <h3 class="mb-3 text-xs font-bold uppercase tracking-wide text-slate-400">
+    <h3 class="mb-3 text-xs font-bold tracking-wide text-slate-400 uppercase">
       Direct Channels
     </h3>
     <div class="grid grid-cols-2 gap-[10px]">
@@ -66,7 +66,11 @@ const buttonClass =
         :class="[buttonClass, 'bg-emerald-500']"
         @click="onText"
       >
-        <UIcon name="i-heroicons-chat-bubble-left" class="h-4 w-4" aria-hidden="true" />
+        <UIcon
+          name="i-heroicons-chat-bubble-left"
+          class="h-4 w-4"
+          aria-hidden="true"
+        />
         Text
       </button>
       <button
@@ -88,7 +92,11 @@ const buttonClass =
         :class="[buttonClass, 'bg-sky-500']"
         @click="onTwitter"
       >
-        <UIcon name="i-heroicons-at-symbol" class="h-4 w-4" aria-hidden="true" />
+        <UIcon
+          name="i-heroicons-at-symbol"
+          class="h-4 w-4"
+          aria-hidden="true"
+        />
         Twitter
       </button>
       <button

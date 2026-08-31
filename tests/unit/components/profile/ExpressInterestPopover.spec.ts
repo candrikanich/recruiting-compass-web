@@ -78,9 +78,7 @@ describe("ExpressInterestPopover", () => {
       }),
     );
 
-    expect(w.text()).toContain(
-      "The player has been notified of your interest",
-    );
+    expect(w.text()).toContain("The player has been notified of your interest");
     expect(w.emitted().submitted).toBeTruthy();
   });
 

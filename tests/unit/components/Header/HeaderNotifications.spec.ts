@@ -30,9 +30,12 @@ vi.mock("~/composables/useNotifications", () => ({
 
 const mockUser = ref<{ id: string } | null>({ id: "u1" });
 vi.mock("~/stores/user", () => ({
-  useUserStore: vi.fn(() => ({ get user() {
-    return mockUser.value;
-  }, isAuthenticated: true })),
+  useUserStore: vi.fn(() => ({
+    get user() {
+      return mockUser.value;
+    },
+    isAuthenticated: true,
+  })),
 }));
 vi.mock("~/composables/useAuthLifecycle", () => ({
   useAuthLifecycle: vi.fn(() => ({})),
@@ -82,7 +85,9 @@ describe("Header notifications wiring", () => {
   it("forwards the bell's mark-as-read to the composable", async () => {
     const wrapper = createWrapper();
     await flushPromises();
-    wrapper.findComponent(NotificationCenterStub).vm.$emit("mark-as-read", "n1");
+    wrapper
+      .findComponent(NotificationCenterStub)
+      .vm.$emit("mark-as-read", "n1");
     expect(mockMarkAsRead).toHaveBeenCalledWith("n1");
   });
 });

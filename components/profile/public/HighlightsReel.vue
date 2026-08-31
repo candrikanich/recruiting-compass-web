@@ -39,7 +39,7 @@ const PLATFORM_LABEL: Record<VideoLink["platform"], string> = {
             </svg>
           </span>
           <span
-            class="absolute bottom-2 right-2 rounded bg-black/50 px-1.5 py-0.5 text-[10px] font-medium text-white"
+            class="absolute right-2 bottom-2 rounded bg-black/50 px-1.5 py-0.5 text-[10px] font-medium text-white"
           >
             {{ PLATFORM_LABEL[link.platform] }}
           </span>

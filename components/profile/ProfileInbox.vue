@@ -31,10 +31,7 @@
       </button>
     </div>
 
-    <DesignSystemLoadingState
-      v-if="loading"
-      message="Loading your inbox..."
-    />
+    <DesignSystemLoadingState v-if="loading" message="Loading your inbox..." />
     <DesignSystemErrorState
       v-else-if="error"
       :error="error"
@@ -86,7 +83,10 @@
               <span v-if="lead.program && lead.school_name"> &middot; </span>
               <span v-if="lead.school_name">{{ lead.school_name }}</span>
             </p>
-            <p v-if="lead.note" class="mt-2 line-clamp-2 text-sm text-slate-500">
+            <p
+              v-if="lead.note"
+              class="mt-2 line-clamp-2 text-sm text-slate-500"
+            >
               {{ lead.note }}
             </p>
             <div
