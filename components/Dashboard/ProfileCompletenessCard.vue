@@ -70,7 +70,7 @@
                 {{ prompt.message }}
               </span>
               <NuxtLink
-                :to="`/settings?tab=${prompt.action}`"
+                :to="prompt.link"
                 class="ml-2 inline-flex shrink-0 items-center gap-1 text-xs font-medium text-brand-blue-600 hover:text-brand-blue-700"
                 :aria-label="`Add ${prompt.id}`"
               >
@@ -117,43 +117,37 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import { useProfileCompleteness, type ContextualPrompt } from '~/composables/useProfileCompleteness';
+import { useProfileCompleteness } from '~/composables/useProfileCompleteness';
 
 const { completeness, loading, updateCompleteness } = useProfileCompleteness();
 
 // Mock prompts list for demo purposes
 // In production, these would come from a more complete data source
-const allPrompts: ContextualPrompt[] = [
+const allPrompts = [
   {
     id: 'gpa',
     message: 'Add your GPA for better fit scores from colleges',
-    action: 'academics',
+    link: '/settings/player-details?tab=academics',
     priority: 'medium',
   },
   {
     id: 'test_scores',
     message: 'Add your SAT or ACT scores to improve visibility',
-    action: 'academics',
+    link: '/settings/player-details?tab=academics',
     priority: 'medium',
   },
   {
     id: 'highlight_video',
     message: 'Upload a highlight video to showcase your athletic abilities',
-    action: 'profile',
+    link: '/settings/player-details?tab=public-profile',
     priority: 'high',
   },
 ];
 
-// Compute top 3 missing fields ranked by priority
 const topThreePrompts = computed(() => {
-  // Sort by priority (high > medium > low) then by id
-  const priorityMap = { high: 0, medium: 1, low: 2 };
-  return allPrompts
-    .sort(
-      (a, b) =>
-        priorityMap[a.priority as 'high' | 'medium' | 'low'] -
-        priorityMap[b.priority as 'high' | 'medium' | 'low'],
-    )
+  const priorityMap: Record<string, number> = { high: 0, medium: 1, low: 2 };
+  return [...allPrompts]
+    .sort((a, b) => (priorityMap[a.priority] ?? 2) - (priorityMap[b.priority] ?? 2))
     .slice(0, 3);
 });
 

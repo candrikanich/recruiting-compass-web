@@ -186,6 +186,8 @@ import { useSchools } from "~/composables/useSchools";
 import { useSchoolRecommendations } from "~/composables/useSchoolRecommendations";
 import type { UseActiveFamilyReturn } from "~/composables/useActiveFamily";
 import { getGraduationYearOptions } from "~/utils/graduationYears";
+import { useOnboarding } from "~/composables/useOnboarding";
+import { useNuxProgress } from "~/composables/useNuxProgress";
 import { createClientLogger } from "~/utils/logger";
 import { recommendationToSchoolDraft } from "~/utils/schoolRecommendations";
 import type { School } from "~/types";
@@ -254,6 +256,8 @@ const {
   dismissRecommendation,
   removeRecommendation,
 } = useSchoolRecommendations();
+const { completeOnboarding } = useOnboarding();
+const { completeItem } = useNuxProgress();
 const addingRecommendationKey = ref<string | null>(null);
 const recommendationActionError = ref<string | null>(null);
 
@@ -277,6 +281,7 @@ async function savePlayerDetails() {
       sport: sport.value,
     },
   });
+  await completeItem("sport");
   step.value = 2;
   void fetchRecommendations();
 }
@@ -312,9 +317,22 @@ async function handleDismissRecommendation(school: SchoolRecommendation) {
   }
 }
 
-function goToDashboard() {
+async function goToDashboard() {
+  try {
+    const assessment = {
+      hasHighlightVideo: false,
+      hasContactedCoaches: false,
+      hasTargetSchools: false,
+      hasRegisteredEligibility: false,
+      hasTakenTestScores: false,
+    };
+    await completeOnboarding(assessment);
+  } catch (err) {
+    logger.warn("Failed to complete onboarding assessment", err);
+  }
+
   const { $posthog } = useNuxtApp();
   $posthog?.capture("onboarding_v2_complete");
-  navigateTo("/dashboard");
+  await navigateTo("/dashboard");
 }
 </script>

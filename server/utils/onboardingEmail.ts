@@ -17,20 +17,29 @@ interface OnboardingNudgeEmailData {
   dashboardUrl: string;
 }
 
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
 export function renderOnboardingNudgeEmail(
   data: OnboardingNudgeEmailData,
 ): string {
+  const safeUserName = escapeHtml(data.userName);
   const itemsHtml = data.topIncompleteItems
     .map(
       (item) =>
-        `<li style="margin-bottom: 8px;"><a href="${item.link}" style="color: #2563eb; text-decoration: none;">${item.label}</a></li>`,
+        `<li style="margin-bottom: 8px;"><a href="${escapeHtml(item.link)}" style="color: #2563eb; text-decoration: none;">${escapeHtml(item.label)}</a></li>`,
     )
     .join("");
 
   return `
     <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 560px; margin: 0 auto; padding: 24px;">
       <h2 style="color: #1e293b; font-size: 20px; margin-bottom: 8px;">
-        Hey ${data.userName}, your recruiting profile is waiting 👋
+        Hey ${safeUserName}, your recruiting profile is waiting 👋
       </h2>
       <p style="color: #475569; font-size: 15px; line-height: 1.6;">
         You've completed <strong>${data.completedCount} of ${data.totalCount}</strong> getting-started steps.
