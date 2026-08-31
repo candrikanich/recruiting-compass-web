@@ -20,21 +20,21 @@
     <div
       v-if="isStale"
       data-testid="calendar-staleness-banner"
-      class="rounded-xl p-3 mb-4 bg-amber-50 border border-amber-200 text-sm text-amber-900"
+      class="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900"
     >
       This calendar may be out of date — verify with your compliance office.
     </div>
 
     <!-- L6a: compliance disclaimer — cites the exact NCAA PDF this data was
          transcribed from and when it was last verified against it. -->
-    <p data-testid="calendar-disclaimer" class="text-xs text-slate-500 mb-4">
+    <p data-testid="calendar-disclaimer" class="mb-4 text-xs text-slate-500">
       Based on NCAA {{ SEASON }}, verified {{ resolvedCalendar.verifiedOn }} —
       confirm with your compliance office.
       <a
         :href="resolvedCalendar.source"
         target="_blank"
         rel="noopener"
-        class="text-blue-600 hover:text-blue-700 underline"
+        class="text-blue-600 underline hover:text-blue-700"
       >
         View official calendar
       </a>
@@ -42,14 +42,16 @@
 
     <!-- Self-select toggle: gender-split sports / Football subdivision, only
          shown when the stored profile doesn't already resolve one. -->
-    <div v-if="showGenderToggle" class="flex items-center gap-2 mb-4">
+    <div v-if="showGenderToggle" class="mb-4 flex items-center gap-2">
       <span class="text-xs font-medium text-slate-500">Calendar:</span>
-      <div class="inline-flex rounded-lg border border-slate-200 p-0.5 bg-slate-50">
+      <div
+        class="inline-flex rounded-lg border border-slate-200 bg-slate-50 p-0.5"
+      >
         <button
           type="button"
           data-testid="gender-toggle-men"
           :class="[
-            'px-3 py-1 text-xs font-medium rounded-md transition-colors',
+            'rounded-md px-3 py-1 text-xs font-medium transition-colors',
             genderOverride === 'male'
               ? 'bg-white text-slate-900 shadow-sm'
               : 'text-slate-500 hover:text-slate-700',
@@ -62,7 +64,7 @@
           type="button"
           data-testid="gender-toggle-women"
           :class="[
-            'px-3 py-1 text-xs font-medium rounded-md transition-colors',
+            'rounded-md px-3 py-1 text-xs font-medium transition-colors',
             genderOverride === 'female'
               ? 'bg-white text-slate-900 shadow-sm'
               : 'text-slate-500 hover:text-slate-700',
@@ -74,14 +76,16 @@
       </div>
     </div>
 
-    <div v-if="showSubdivisionToggle" class="flex items-center gap-2 mb-4">
+    <div v-if="showSubdivisionToggle" class="mb-4 flex items-center gap-2">
       <span class="text-xs font-medium text-slate-500">Calendar:</span>
-      <div class="inline-flex rounded-lg border border-slate-200 p-0.5 bg-slate-50">
+      <div
+        class="inline-flex rounded-lg border border-slate-200 bg-slate-50 p-0.5"
+      >
         <button
           type="button"
           data-testid="subdivision-toggle-fbs"
           :class="[
-            'px-3 py-1 text-xs font-medium rounded-md transition-colors',
+            'rounded-md px-3 py-1 text-xs font-medium transition-colors',
             subdivisionOverride === 'FBS'
               ? 'bg-white text-slate-900 shadow-sm'
               : 'text-slate-500 hover:text-slate-700',
@@ -94,7 +98,7 @@
           type="button"
           data-testid="subdivision-toggle-fcs"
           :class="[
-            'px-3 py-1 text-xs font-medium rounded-md transition-colors',
+            'rounded-md px-3 py-1 text-xs font-medium transition-colors',
             subdivisionOverride === 'FCS'
               ? 'bg-white text-slate-900 shadow-sm'
               : 'text-slate-500 hover:text-slate-700',
@@ -133,7 +137,7 @@
         <div class="mt-3 space-y-3 text-xs">
           <div class="rounded-xl border border-blue-200 bg-blue-50 p-3">
             <p class="font-semibold text-blue-900">Division I</p>
-            <p class="text-slate-700 mt-1">
+            <p class="mt-1 text-slate-700">
               Contact windows vary by sport — see the current period above for
               this athlete's calendar.
             </p>
@@ -198,7 +202,12 @@ const props = withDefaults(defineProps<Props>(), {
 // utils/recruitingCalendar/calendarData.ts `VERIFIED_ON`/`BUCKET`) and the
 // date it stops being current.
 
-const NEUTRAL_GENDERS = new Set(["other", "prefer_not_to_say", null, undefined]);
+const NEUTRAL_GENDERS = new Set([
+  "other",
+  "prefer_not_to_say",
+  null,
+  undefined,
+]);
 
 const genderOverride = ref<"male" | "female">("male");
 const subdivisionOverride = ref<"FBS" | "FCS">("FBS");
@@ -212,7 +221,9 @@ const effectiveGender = computed<string | null>(() =>
   showGenderToggle.value ? genderOverride.value : props.gender,
 );
 const effectiveFootballSubdivision = computed(() =>
-  showSubdivisionToggle.value ? subdivisionOverride.value : props.footballSubdivision,
+  showSubdivisionToggle.value
+    ? subdivisionOverride.value
+    : props.footballSubdivision,
 );
 
 const resolverOpts = computed(() => ({
@@ -279,14 +290,17 @@ const PERIOD_SEVERITY: Record<RecruitingPeriod["type"], number> = {
 };
 
 const periodSpanDays = (p: RecruitingPeriod): number =>
-  (parseLocalDateOnly(p.end).getTime() - parseLocalDateOnly(p.start).getTime()) / (1000 * 60 * 60 * 24);
+  (parseLocalDateOnly(p.end).getTime() -
+    parseLocalDateOnly(p.start).getTime()) /
+  (1000 * 60 * 60 * 24);
 
 // Current period: the MOST RESTRICTIVE of this sport's resolved calendar
 // periods covering today, if any (see PERIOD_SEVERITY above); ties broken by
 // shortest span.
 const currentPeriod = computed<CurrentPeriodDisplay | null>(() => {
   const matches = resolvedCalendar.value.periods.filter(
-    (p) => today >= parseLocalDateOnly(p.start) && today < exclusiveEndOfDay(p.end),
+    (p) =>
+      today >= parseLocalDateOnly(p.start) && today < exclusiveEndOfDay(p.end),
   );
   if (matches.length === 0) return null;
 

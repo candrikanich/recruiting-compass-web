@@ -193,7 +193,10 @@ import { computed, onMounted, ref, watch } from "vue";
 import { useCoachStore } from "~/stores/coaches";
 import { useSchoolStore } from "~/stores/schools";
 import { useInteractions } from "~/composables/useInteractions";
-import { useProfileContacts, type ProfileLead } from "~/composables/useProfileContacts";
+import {
+  useProfileContacts,
+  type ProfileLead,
+} from "~/composables/useProfileContacts";
 import { useFamilyContext } from "~/composables/useFamilyContext";
 import { createClientLogger } from "~/utils/logger";
 import type { Coach } from "~/types/models";
@@ -327,8 +330,7 @@ async function handleConfirm() {
     emit("resolved");
   } catch (err) {
     logger.error("Failed to assign coach and log interaction", err);
-    submitError.value =
-      "Couldn't assign this lead. Please try again.";
+    submitError.value = "Couldn't assign this lead. Please try again.";
   } finally {
     submitting.value = false;
   }

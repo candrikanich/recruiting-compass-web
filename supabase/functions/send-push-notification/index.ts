@@ -54,11 +54,11 @@ Deno.serve(async (req) => {
     // Fetch device tokens (with per-token APNs environment — sandbox-built and
     // production-built apps mint tokens under different APNs hosts; sending to
     // the wrong host is an unconditional BadDeviceToken rejection).
-    const { data: tokens } = await supabase
+    const { data: tokens } = (await supabase
       .from("device_tokens")
       .select("token, environment")
       .eq("user_id", notification.user_id)
-      .eq("platform", "ios") as { data: DeviceTokenRow[] | null };
+      .eq("platform", "ios")) as { data: DeviceTokenRow[] | null };
 
     if (!tokens?.length) {
       return new Response("no device tokens", { status: 200 });
@@ -99,7 +99,9 @@ Deno.serve(async (req) => {
         staleTokens.push(token);
       } else {
         const reason = await result.text().catch(() => "");
-        console.error(`APNs error ${result.status} for token ${token.slice(0, 8)}... host=${host} reason=${reason}`);
+        console.error(
+          `APNs error ${result.status} for token ${token.slice(0, 8)}... host=${host} reason=${reason}`,
+        );
       }
     }
 
@@ -130,7 +132,10 @@ Deno.serve(async (req) => {
 // MARK: - Email
 
 // deno-lint-ignore no-explicit-any
-async function sendEmail(supabase: any, notification: NotificationRow): Promise<void> {
+async function sendEmail(
+  supabase: any,
+  notification: NotificationRow,
+): Promise<void> {
   try {
     const webBase = Deno.env.get("WEB_BASE_URL");
     const cronSecret = Deno.env.get("CRON_SECRET");
@@ -147,16 +152,16 @@ async function sendEmail(supabase: any, notification: NotificationRow): Promise<
 
     if (!user?.email) return;
 
-    const actionUrl = notification.action_url &&
-        /^https?:\/\//.test(notification.action_url)
-      ? notification.action_url
-      : undefined;
+    const actionUrl =
+      notification.action_url && /^https?:\/\//.test(notification.action_url)
+        ? notification.action_url
+        : undefined;
 
     const resp = await fetch(`${webBase}/api/notifications/email`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${cronSecret}`,
+        Authorization: `Bearer ${cronSecret}`,
       },
       body: JSON.stringify({
         to: user.email,
@@ -175,7 +180,9 @@ async function sendEmail(supabase: any, notification: NotificationRow): Promise<
         .update({ email_sent: true, email_sent_at: new Date().toISOString() })
         .eq("id", notification.id);
     } else {
-      console.error(`email send failed ${resp.status}: ${await resp.text().catch(() => "")}`);
+      console.error(
+        `email send failed ${resp.status}: ${await resp.text().catch(() => "")}`,
+      );
     }
   } catch (err) {
     console.error("email step error:", err);
@@ -187,8 +194,13 @@ async function sendEmail(supabase: any, notification: NotificationRow): Promise<
 // Reconstruct a clean PKCS#8 PEM even if the stored secret had its base64
 // newlines replaced by spaces, escaped as \n, or wrapped in quotes.
 function normalizePkcs8(raw: string): string {
-  let s = raw.replace(/\\n/g, "\n").replace(/^["']|["']$/g, "").trim();
-  const m = s.match(/-----BEGIN PRIVATE KEY-----([\s\S]*?)-----END PRIVATE KEY-----/);
+  let s = raw
+    .replace(/\\n/g, "\n")
+    .replace(/^["']|["']$/g, "")
+    .trim();
+  const m = s.match(
+    /-----BEGIN PRIVATE KEY-----([\s\S]*?)-----END PRIVATE KEY-----/,
+  );
   if (m) {
     const b64 = m[1].replace(/\s+/g, "");
     const wrapped = b64.match(/.{1,64}/g)?.join("\n") ?? b64;
@@ -198,9 +210,9 @@ function normalizePkcs8(raw: string): string {
 }
 
 async function buildApnsJwt(): Promise<string> {
-  const keyId   = Deno.env.get("APNS_KEY_ID")!;
-  const teamId  = Deno.env.get("APNS_TEAM_ID")!;
-  const rawKey  = Deno.env.get("APNS_PRIVATE_KEY")!;
+  const keyId = Deno.env.get("APNS_KEY_ID")!;
+  const teamId = Deno.env.get("APNS_TEAM_ID")!;
+  const rawKey = Deno.env.get("APNS_PRIVATE_KEY")!;
 
   const privateKey = await importPKCS8(normalizePkcs8(rawKey), "ES256");
   return new SignJWT({})
@@ -234,7 +246,7 @@ async function sendApnsPush(opts: {
   return fetch(url, {
     method: "POST",
     headers: {
-      "authorization": `bearer ${opts.jwt}`,
+      authorization: `bearer ${opts.jwt}`,
       "apns-topic": bundleId,
       "apns-push-type": "alert",
       "content-type": "application/json",

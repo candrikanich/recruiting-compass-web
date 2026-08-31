@@ -20,9 +20,7 @@ describe("RecruitingCalendar merged milestones", () => {
     // At least one milestone row rendered as an external link (SAT/ACT/etc.
     // carry urls). Excludes the disclaimer's "View official calendar" link,
     // which we assert separately is not the only one.
-    const milestoneLinks = links.filter((l) =>
-      l.classes().includes("group"),
-    );
+    const milestoneLinks = links.filter((l) => l.classes().includes("group"));
     expect(milestoneLinks.length).toBeGreaterThan(0);
   });
 

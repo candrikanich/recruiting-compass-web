@@ -53,7 +53,8 @@ async function seedUser(
     role,
   });
   const userId = authUser?.id;
-  if (!userId) throw new Error(`seedUser: ${email} has no auth id after create`);
+  if (!userId)
+    throw new Error(`seedUser: ${email} has no auth id after create`);
   await supabase.from("users").upsert(
     {
       id: userId,
@@ -109,7 +110,9 @@ async function sendInviteViaUi(
   role: "player" | "parent",
 ): Promise<void> {
   await page.goto("/settings/family-management");
-  await expect(page.locator('[data-testid="invite-member-form"]')).toBeVisible();
+  await expect(
+    page.locator('[data-testid="invite-member-form"]'),
+  ).toBeVisible();
   await page.locator('[data-testid="invite-email-input"]').fill(invitedEmail);
   await page.locator('[data-testid="invite-role-select"]').selectOption(role);
   await expect(
@@ -152,7 +155,10 @@ test.describe("Family Invite Creation (UI)", () => {
         .from("family_invitations")
         .delete()
         .eq("family_unit_id", unitId);
-      await supabase.from("family_members").delete().eq("family_unit_id", unitId);
+      await supabase
+        .from("family_members")
+        .delete()
+        .eq("family_unit_id", unitId);
       await supabase.from("family_units").delete().eq("id", unitId);
     }
     for (const email of createdUserEmails) {
@@ -163,7 +169,12 @@ test.describe("Family Invite Creation (UI)", () => {
   test("parent invites a player (parent → player)", async ({ page }) => {
     const parentEmail = `inv-parent-p2c-${RUN}@example.com`;
     const invitedPlayer = `inv-player-target-${RUN}@example.com`;
-    const parent = await seedUser(supabase, parentEmail, "parent", "Parent P2C");
+    const parent = await seedUser(
+      supabase,
+      parentEmail,
+      "parent",
+      "Parent P2C",
+    );
     const unitId = await seedFamilyUnit(supabase, parent.userId, [
       { userId: parent.userId, role: "parent" },
     ]);
@@ -173,7 +184,9 @@ test.describe("Family Invite Creation (UI)", () => {
     await loginViaForm(page, parentEmail, PASSWORD, /\/(dashboard|schools)/);
     await sendInviteViaUi(page, invitedPlayer, "player");
 
-    await expect(page.getByText(/Invite sent/i)).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText(/Invite sent/i)).toBeVisible({
+      timeout: 15000,
+    });
     const invite = await findInvite(supabase, unitId, invitedPlayer);
     expect(invite).not.toBeNull();
     expect(invite?.role).toBe("player");
@@ -183,7 +196,12 @@ test.describe("Family Invite Creation (UI)", () => {
   test("player invites a parent (player → parent)", async ({ page }) => {
     const playerEmail = `inv-player-c2p-${RUN}@example.com`;
     const invitedParent = `inv-parent-target-${RUN}@example.com`;
-    const player = await seedUser(supabase, playerEmail, "player", "Player C2P");
+    const player = await seedUser(
+      supabase,
+      playerEmail,
+      "player",
+      "Player C2P",
+    );
     const unitId = await seedFamilyUnit(supabase, player.userId, [
       { userId: player.userId, role: "player" },
     ]);
@@ -193,7 +211,9 @@ test.describe("Family Invite Creation (UI)", () => {
     await loginViaForm(page, playerEmail, PASSWORD, /\/(dashboard|schools)/);
     await sendInviteViaUi(page, invitedParent, "parent");
 
-    await expect(page.getByText(/Invite sent/i)).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText(/Invite sent/i)).toBeVisible({
+      timeout: 15000,
+    });
     const invite = await findInvite(supabase, unitId, invitedParent);
     expect(invite).not.toBeNull();
     expect(invite?.role).toBe("parent");
@@ -216,7 +236,12 @@ test.describe("Family Invite Creation (UI)", () => {
       "Parent One",
     );
     const parent2Email = `inv-2p-parent2-${RUN}@example.com`;
-    const parent2 = await seedUser(supabase, parent2Email, "parent", "Parent Two");
+    const parent2 = await seedUser(
+      supabase,
+      parent2Email,
+      "parent",
+      "Parent Two",
+    );
     // A unit that ALREADY contains a player + one parent.
     const unitId = await seedFamilyUnit(supabase, parent1.userId, [
       { userId: player.userId, role: "player" },
@@ -228,7 +253,9 @@ test.describe("Family Invite Creation (UI)", () => {
     // parent1 invites a SECOND parent through the UI.
     await loginViaForm(page, parent1.email, PASSWORD, /\/(dashboard|schools)/);
     await sendInviteViaUi(page, parent2Email, "parent");
-    await expect(page.getByText(/Invite sent/i)).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText(/Invite sent/i)).toBeVisible({
+      timeout: 15000,
+    });
 
     const invite = await findInvite(supabase, unitId, parent2Email);
     expect(invite).not.toBeNull();

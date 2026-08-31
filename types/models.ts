@@ -451,12 +451,7 @@ export interface PlayerDetails {
 }
 
 export type ProfileSectionKey =
-  | "metrics"
-  | "film"
-  | "academics"
-  | "values"
-  | "team_history"
-  | "awards";
+  "metrics" | "film" | "academics" | "values" | "team_history" | "awards";
 
 export interface ProfileSection {
   key: ProfileSectionKey;

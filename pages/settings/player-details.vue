@@ -179,10 +179,7 @@
             :details="form as unknown as PlayerDetails"
             :schools="previewSchools"
           />
-          <div
-            v-else
-            class="animate-pulse rounded-xl bg-gray-50 p-4"
-          >
+          <div v-else class="animate-pulse rounded-xl bg-gray-50 p-4">
             <div class="mb-4 h-3 w-32 rounded bg-gray-200" />
             <div class="h-24 rounded-xl bg-gray-200" />
           </div>

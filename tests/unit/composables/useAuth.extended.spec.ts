@@ -443,7 +443,12 @@ describe("useAuth - Extended Error Handling for Login", () => {
       });
 
       const auth = useAuth();
-      await auth.signup("New@Example.com", "SecurePass123", "New Player", "player");
+      await auth.signup(
+        "New@Example.com",
+        "SecurePass123",
+        "New Player",
+        "player",
+      );
 
       expect(mockAuth.signUp).toHaveBeenCalledTimes(1);
       const params = mockAuth.signUp.mock.calls[0][0];

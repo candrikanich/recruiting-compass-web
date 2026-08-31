@@ -326,15 +326,11 @@ describe("POST /api/family/invite/[token]/accept", () => {
   ).toISOString();
 
   // A DOB ~15 years ago → a minor (13–17) whose acceptance must record consent.
-  const minorDob = new Date(
-    Date.now() - 15 * 365.25 * 24 * 60 * 60 * 1000,
-  )
+  const minorDob = new Date(Date.now() - 15 * 365.25 * 24 * 60 * 60 * 1000)
     .toISOString()
     .split("T")[0];
   // A DOB ~20 years ago → an adult; no guardian consent should be recorded.
-  const adultDob = new Date(
-    Date.now() - 20 * 365.25 * 24 * 60 * 60 * 1000,
-  )
+  const adultDob = new Date(Date.now() - 20 * 365.25 * 24 * 60 * 60 * 1000)
     .toISOString()
     .split("T")[0];
 

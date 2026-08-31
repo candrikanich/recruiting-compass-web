@@ -55,7 +55,9 @@ function updateAwardYear(index: number, rawYear: string) {
   emit(
     "update:awards",
     props.awards.map((award, i) =>
-      i === index ? { ...award, year: year === null || Number.isNaN(year) ? null : year } : award,
+      i === index
+        ? { ...award, year: year === null || Number.isNaN(year) ? null : year }
+        : award,
     ),
   );
 }
@@ -81,7 +83,11 @@ function removeValueTag(index: number) {
 <template>
   <div class="flex flex-col gap-6">
     <div>
-      <label class="mb-2 block text-sm font-medium text-brand-slate-700" for="profile-bio">Bio</label>
+      <label
+        class="mb-2 block text-sm font-medium text-brand-slate-700"
+        for="profile-bio"
+        >Bio</label
+      >
       <textarea
         id="profile-bio"
         data-test="bio-textarea"
@@ -92,11 +98,16 @@ function removeValueTag(index: number) {
         class="w-full resize-none rounded-xl border-2 border-brand-slate-300 bg-white px-4 py-3 focus:border-transparent focus:ring-2 focus:ring-brand-blue-500"
         @input="onBioInput"
       />
-      <p class="mt-1 text-xs text-brand-slate-500">{{ bio.length }}/{{ BIO_MAX }} characters</p>
+      <p class="mt-1 text-xs text-brand-slate-500">
+        {{ bio.length }}/{{ BIO_MAX }} characters
+      </p>
     </div>
 
     <div>
-      <label class="mb-2 block text-sm font-medium text-brand-slate-700" for="profile-looking-for">
+      <label
+        class="mb-2 block text-sm font-medium text-brand-slate-700"
+        for="profile-looking-for"
+      >
         What I'm Looking For
       </label>
       <textarea
@@ -109,7 +120,9 @@ function removeValueTag(index: number) {
         class="w-full resize-none rounded-xl border-2 border-brand-slate-300 bg-white px-4 py-3 focus:border-transparent focus:ring-2 focus:ring-brand-blue-500"
         @input="onLookingForInput"
       />
-      <p class="mt-1 text-xs text-brand-slate-500">{{ lookingFor.length }}/{{ LOOKING_FOR_MAX }} characters</p>
+      <p class="mt-1 text-xs text-brand-slate-500">
+        {{ lookingFor.length }}/{{ LOOKING_FOR_MAX }} characters
+      </p>
     </div>
 
     <div>
@@ -132,7 +145,10 @@ function removeValueTag(index: number) {
           </button>
         </span>
       </div>
-      <label class="mb-1 block text-xs font-medium text-brand-slate-700" for="profile-values-input">
+      <label
+        class="mb-1 block text-xs font-medium text-brand-slate-700"
+        for="profile-values-input"
+      >
         Add a value
       </label>
       <input
@@ -144,10 +160,15 @@ function removeValueTag(index: number) {
         :disabled="valuesTags.length >= VALUES_MAX_TAGS"
         placeholder="e.g. Academics"
         class="w-full rounded-xl border-2 border-brand-slate-300 bg-white px-3 py-2 disabled:cursor-not-allowed disabled:opacity-50"
-        @input="(event: Event) => (newValueTag = (event.target as HTMLInputElement).value)"
+        @input="
+          (event: Event) =>
+            (newValueTag = (event.target as HTMLInputElement).value)
+        "
         @keydown.enter.prevent="addValueTag"
       />
-      <p class="mt-1 text-xs text-brand-slate-500">{{ valuesTags.length }}/{{ VALUES_MAX_TAGS }} tags</p>
+      <p class="mt-1 text-xs text-brand-slate-500">
+        {{ valuesTags.length }}/{{ VALUES_MAX_TAGS }} tags
+      </p>
     </div>
 
     <div>
@@ -172,7 +193,10 @@ function removeValueTag(index: number) {
           class="flex items-end gap-3 rounded-lg border border-brand-slate-200 bg-white p-3"
         >
           <div class="min-w-0 flex-1">
-            <label class="mb-1 block text-xs font-medium text-brand-slate-700" :for="`award-title-${index}`">
+            <label
+              class="mb-1 block text-xs font-medium text-brand-slate-700"
+              :for="`award-title-${index}`"
+            >
               Title
             </label>
             <input
@@ -181,11 +205,20 @@ function removeValueTag(index: number) {
               :value="award.title"
               placeholder="e.g. All-Conference"
               class="w-full rounded-xl border-2 border-brand-slate-300 bg-white px-3 py-2"
-              @input="(event: Event) => updateAwardTitle(index, (event.target as HTMLInputElement).value)"
+              @input="
+                (event: Event) =>
+                  updateAwardTitle(
+                    index,
+                    (event.target as HTMLInputElement).value,
+                  )
+              "
             />
           </div>
           <div class="w-28 shrink-0">
-            <label class="mb-1 block text-xs font-medium text-brand-slate-700" :for="`award-year-${index}`">
+            <label
+              class="mb-1 block text-xs font-medium text-brand-slate-700"
+              :for="`award-year-${index}`"
+            >
               Year
             </label>
             <input
@@ -193,7 +226,13 @@ function removeValueTag(index: number) {
               type="number"
               :value="award.year === null ? '' : award.year"
               class="w-full rounded-xl border-2 border-brand-slate-300 bg-white px-3 py-2"
-              @input="(event: Event) => updateAwardYear(index, (event.target as HTMLInputElement).value)"
+              @input="
+                (event: Event) =>
+                  updateAwardYear(
+                    index,
+                    (event.target as HTMLInputElement).value,
+                  )
+              "
             />
           </div>
           <DesignSystemButton

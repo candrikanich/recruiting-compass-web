@@ -24,14 +24,23 @@ defineProps<{ entries: PublicTeamHistoryEntry[] | null }>();
               <p class="text-sm font-medium text-brand-slate-900">
                 {{ entry.name }}
               </p>
-              <DesignSystemBadge v-if="entry.level" color="slate" variant="light">
+              <DesignSystemBadge
+                v-if="entry.level"
+                color="slate"
+                variant="light"
+              >
                 {{ entry.level }}
               </DesignSystemBadge>
             </div>
-            <p v-if="entry.coach || entry.contact" class="mt-1 text-xs text-brand-slate-500">
+            <p
+              v-if="entry.coach || entry.contact"
+              class="mt-1 text-xs text-brand-slate-500"
+            >
               <span v-if="entry.coach">Coach: {{ entry.coach }}</span>
               <span v-if="entry.coach && entry.contact"> — </span>
-              <span v-if="entry.contact">Reference Contact: {{ entry.contact }}</span>
+              <span v-if="entry.contact"
+                >Reference Contact: {{ entry.contact }}</span
+              >
             </p>
           </div>
           <span

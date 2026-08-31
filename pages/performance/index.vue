@@ -327,10 +327,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, defineAsyncComponent } from "vue";
 import { formatMetricValue } from "~/utils/metricFormat";
-import {
-  metricTypesForSport,
-  getMetricDef,
-} from "~/utils/metrics/canonical";
+import { metricTypesForSport, getMetricDef } from "~/utils/metrics/canonical";
 import { computeMetricTrends } from "~/utils/metricTrends";
 import { usePerformance } from "~/composables/usePerformance";
 import { usePreferenceManager } from "~/composables/usePreferenceManager";

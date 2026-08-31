@@ -12,7 +12,11 @@ type PublicSocial = PublicProfileData["social"];
 
 const PLATFORM_META: Record<
   SocialPlatform,
-  { key: keyof NonNullable<PublicSocial>; icon: string; toUrl: (h: string) => string }
+  {
+    key: keyof NonNullable<PublicSocial>;
+    icon: string;
+    toUrl: (h: string) => string;
+  }
 > = {
   twitter: {
     key: "twitter_handle",
@@ -39,21 +43,22 @@ const PLATFORM_META: Record<
 export function buildSocialLinks(social: PublicSocial): SocialLink[] {
   if (!social) return [];
 
-  return (Object.keys(PLATFORM_META) as SocialPlatform[]).reduce<
-    SocialLink[]
-  >((links, platform) => {
-    const meta = PLATFORM_META[platform];
-    const raw = social[meta.key];
-    const trimmed = typeof raw === "string" ? raw.trim() : "";
-    if (!trimmed) return links;
+  return (Object.keys(PLATFORM_META) as SocialPlatform[]).reduce<SocialLink[]>(
+    (links, platform) => {
+      const meta = PLATFORM_META[platform];
+      const raw = social[meta.key];
+      const trimmed = typeof raw === "string" ? raw.trim() : "";
+      if (!trimmed) return links;
 
-    const bare = trimmed.replace(/^@/, "");
-    links.push({
-      platform,
-      handle: `@${bare}`,
-      url: meta.toUrl(bare),
-      icon: meta.icon,
-    });
-    return links;
-  }, []);
+      const bare = trimmed.replace(/^@/, "");
+      links.push({
+        platform,
+        handle: `@${bare}`,
+        url: meta.toUrl(bare),
+        icon: meta.icon,
+      });
+      return links;
+    },
+    [],
+  );
 }

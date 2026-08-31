@@ -4,7 +4,9 @@ import ShareProfilePanel from "../../../../components/profile/setup/ShareProfile
 
 describe("ShareProfilePanel", () => {
   it("builds share links from the url", async () => {
-    const w = mount(ShareProfilePanel, { props: { url: "https://x.test/p/abc" } });
+    const w = mount(ShareProfilePanel, {
+      props: { url: "https://x.test/p/abc" },
+    });
     await flushPromises();
     const mailto = w.find("a[href^='mailto:']");
     const sms = w.find("a[href^='sms:']");
@@ -18,7 +20,9 @@ describe("ShareProfilePanel", () => {
     const writeText = vi.fn().mockResolvedValue(undefined);
     vi.stubGlobal("navigator", { ...navigator, clipboard: { writeText } });
 
-    const w = mount(ShareProfilePanel, { props: { url: "https://x.test/p/abc" } });
+    const w = mount(ShareProfilePanel, {
+      props: { url: "https://x.test/p/abc" },
+    });
     await flushPromises();
 
     await w.find("[data-test='copy-link']").trigger("click");

@@ -41,12 +41,17 @@ const isResolved = (values: Record<string, string>, key: string): boolean =>
  * regardless of template authoring. Empty result → the compose flow skips the
  * info stage straight to preview. Pure; mirrors iOS `missingInfoFields`.
  */
-export function deriveMissingInfoFields(input: MissingInfoInput): MissingInfoField[] {
+export function deriveMissingInfoFields(
+  input: MissingInfoInput,
+): MissingInfoField[] {
   const rows: MissingInfoField[] = [];
   const referenced = new Set(input.referencedKeys);
 
   // 1. Questionnaire — computed scalar, detected off the raw body.
-  if (input.body.includes("{{questionnaireNote}}") && !input.questionnaireComplete) {
+  if (
+    input.body.includes("{{questionnaireNote}}") &&
+    !input.questionnaireComplete
+  ) {
     rows.push({
       id: "questionnaireNote",
       title: "Recruiting questionnaire",
@@ -57,7 +62,10 @@ export function deriveMissingInfoFields(input: MissingInfoInput): MissingInfoFie
   }
 
   // 2. Intended major.
-  if (referenced.has("intendedMajor") && !isResolved(input.values, "intendedMajor")) {
+  if (
+    referenced.has("intendedMajor") &&
+    !isResolved(input.values, "intendedMajor")
+  ) {
     rows.push({
       id: "intendedMajor",
       title: "Intended major",
@@ -119,7 +127,10 @@ export function deriveMissingInfoFields(input: MissingInfoInput): MissingInfoFie
   }
 
   // 7. Metric nudge.
-  if (input.referencedKeys.some((k) => METRIC_KEYS.has(k)) && !input.hasMetric) {
+  if (
+    input.referencedKeys.some((k) => METRIC_KEYS.has(k)) &&
+    !input.hasMetric
+  ) {
     rows.push({
       id: "metrics",
       title: "Add a performance metric",

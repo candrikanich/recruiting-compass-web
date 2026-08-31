@@ -9,8 +9,19 @@ describe("check-ncaa-calendar-cycle d1Urls", () => {
   it("builds all 13 calendar URLs for a season", () => {
     expect(urls).toHaveLength(13);
     for (const code of [
-      "MBA", "WSB", "MBB", "WBB", "XCTF", "WVB", "MGO", "MLA", "WLA",
-      "FBS", "FCS", "Other", "D2_ALL",
+      "MBA",
+      "WSB",
+      "MBB",
+      "WBB",
+      "XCTF",
+      "WVB",
+      "MGO",
+      "MLA",
+      "WLA",
+      "FBS",
+      "FCS",
+      "Other",
+      "D2_ALL",
     ]) {
       expect(byCode[code], code).toBeTruthy();
     }
@@ -36,6 +47,8 @@ describe("check-ncaa-calendar-cycle d1Urls", () => {
   });
 
   it("uses the D2 combined all-sports filename", () => {
-    expect(byCode.D2_ALL).toContain("2027-28D2Rec_RecruitingCalendar_AllSports.pdf");
+    expect(byCode.D2_ALL).toContain(
+      "2027-28D2Rec_RecruitingCalendar_AllSports.pdf",
+    );
   });
 });

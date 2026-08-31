@@ -15,7 +15,9 @@ describe("CoachCommunicationAnalytics", () => {
     const w = mount(CoachCommunicationAnalytics, {
       props: { sent: 3, received: 1, responseRate: 62 },
     });
-    expect(w.get('[data-testid="response-gauge-value"]').text()).toContain("62%");
+    expect(w.get('[data-testid="response-gauge-value"]').text()).toContain(
+      "62%",
+    );
   });
 
   it("shows a Great Progress caption at or above the 75 threshold", () => {

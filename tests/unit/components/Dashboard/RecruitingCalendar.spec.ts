@@ -21,14 +21,18 @@ describe("RecruitingCalendar Component", () => {
     const wrapper = mount(RecruitingCalendar, {
       props: { graduationYear: 2028, sport: "Baseball" },
     });
-    expect(wrapper.find("[data-testid='gender-toggle-men']").exists()).toBe(false);
+    expect(wrapper.find("[data-testid='gender-toggle-men']").exists()).toBe(
+      false,
+    );
   });
 
   it("hides the gender toggle for a gender-split sport when the stored gender is already known", () => {
     const wrapper = mount(RecruitingCalendar, {
       props: { graduationYear: 2028, sport: "Basketball", gender: "female" },
     });
-    expect(wrapper.find("[data-testid='gender-toggle-men']").exists()).toBe(false);
+    expect(wrapper.find("[data-testid='gender-toggle-men']").exists()).toBe(
+      false,
+    );
   });
 
   it("shows a Men's/Women's toggle, defaulted to Men's, for a gender-split sport with null stored gender", () => {
@@ -48,10 +52,16 @@ describe("RecruitingCalendar Component", () => {
       props: { graduationYear: 2028, sport: "Wrestling", gender: "other" },
     });
     const preferNot = mount(RecruitingCalendar, {
-      props: { graduationYear: 2028, sport: "Wrestling", gender: "prefer_not_to_say" },
+      props: {
+        graduationYear: 2028,
+        sport: "Wrestling",
+        gender: "prefer_not_to_say",
+      },
     });
     expect(other.find("[data-testid='gender-toggle-men']").exists()).toBe(true);
-    expect(preferNot.find("[data-testid='gender-toggle-men']").exists()).toBe(true);
+    expect(preferNot.find("[data-testid='gender-toggle-men']").exists()).toBe(
+      true,
+    );
   });
 
   it("the toggle overrides the resolved gender when clicked to Women's", async () => {
@@ -94,7 +104,9 @@ describe("RecruitingCalendar Component", () => {
     const wrapper = mount(RecruitingCalendar, {
       props: { graduationYear: 2028, sport: "Baseball" },
     });
-    expect(wrapper.find("[data-testid='subdivision-toggle-fbs']").exists()).toBe(false);
+    expect(
+      wrapper.find("[data-testid='subdivision-toggle-fbs']").exists(),
+    ).toBe(false);
   });
 
   describe("L6a: compliance disclaimer", () => {
@@ -106,7 +118,9 @@ describe("RecruitingCalendar Component", () => {
       const disclaimer = wrapper.find("[data-testid='calendar-disclaimer']");
       expect(disclaimer.exists()).toBe(true);
       expect(disclaimer.text()).toContain("Based on NCAA 2026-27");
-      expect(disclaimer.text()).toContain("confirm with your compliance office");
+      expect(disclaimer.text()).toContain(
+        "confirm with your compliance office",
+      );
       // Baseball's own resolved calendar's verifiedOn, not a hardcoded stub.
       expect(disclaimer.text()).toContain("2026-08-23");
 
@@ -163,7 +177,9 @@ describe("RecruitingCalendar Component", () => {
           now: new Date("2027-01-01"),
         },
       });
-      expect(wrapper.find("[data-testid='calendar-staleness-banner']").exists()).toBe(false);
+      expect(
+        wrapper.find("[data-testid='calendar-staleness-banner']").exists(),
+      ).toBe(false);
     });
 
     it("renders once `now` is past the season end and no newer data exists", () => {

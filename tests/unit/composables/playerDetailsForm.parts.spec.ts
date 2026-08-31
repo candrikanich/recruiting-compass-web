@@ -14,7 +14,11 @@ vi.mock("~/composables/useAppToast", () => ({
 }));
 
 const makeForm = (over: Partial<PlayerDetails> = {}) =>
-  ref<PlayerDetails>({ core_courses: [], travel_teams: [], ...over } as PlayerDetails);
+  ref<PlayerDetails>({
+    core_courses: [],
+    travel_teams: [],
+    ...over,
+  } as PlayerDetails);
 
 beforeEach(() => showToast.mockClear());
 
@@ -77,7 +81,9 @@ describe("useTravelTeams", () => {
     const save = vi.fn();
     const { removeTravelTeam } = useTravelTeams(form, save);
     removeTravelTeam(0);
-    expect(form.value.travel_teams).toEqual([{ year: 2025, name: "B", coach: "" }]);
+    expect(form.value.travel_teams).toEqual([
+      { year: 2025, name: "B", coach: "" },
+    ]);
     expect(save).toHaveBeenCalledOnce();
   });
 });

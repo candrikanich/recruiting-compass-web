@@ -12,7 +12,8 @@ export const SECTION_META: Record<
 > = {
   metrics: {
     label: "Athletic Metrics",
-    description: "Verified performance numbers — exit velocity, 60-yard dash, and more.",
+    description:
+      "Verified performance numbers — exit velocity, 60-yard dash, and more.",
   },
   film: {
     label: "Featured Videos & Highlights",

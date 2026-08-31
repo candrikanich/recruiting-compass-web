@@ -3,7 +3,9 @@ import { resolveBodySchema } from "~/server/api/player/profile/contacts/[id]/res
 
 describe("resolveBodySchema", () => {
   it("requires interactionId when status is resolved", () => {
-    expect(resolveBodySchema.safeParse({ status: "resolved" }).success).toBe(false);
+    expect(resolveBodySchema.safeParse({ status: "resolved" }).success).toBe(
+      false,
+    );
     expect(
       resolveBodySchema.safeParse({
         status: "resolved",
@@ -13,7 +15,9 @@ describe("resolveBodySchema", () => {
   });
 
   it("allows dismissed without an interactionId", () => {
-    expect(resolveBodySchema.safeParse({ status: "dismissed" }).success).toBe(true);
+    expect(resolveBodySchema.safeParse({ status: "dismissed" }).success).toBe(
+      true,
+    );
   });
 
   it("rejects unknown status", () => {

@@ -51,8 +51,13 @@ test.describe("Communication Templates CRUD — atomic lifecycle", () => {
     await expect(card.first()).toBeVisible({ timeout: 20_000 });
 
     // 3. UPDATE — open Edit, change the name, save
-    await card.first().getByRole("button", { name: "Edit", exact: true }).click();
-    await expect(page.getByRole("heading", { name: "Edit Template" })).toBeVisible();
+    await card
+      .first()
+      .getByRole("button", { name: "Edit", exact: true })
+      .click();
+    await expect(
+      page.getByRole("heading", { name: "Edit Template" }),
+    ).toBeVisible();
     await page.getByPlaceholder("e.g., Initial Outreach").fill(renamed);
     await page.getByRole("button", { name: "Save Template" }).click();
 
@@ -60,14 +65,16 @@ test.describe("Communication Templates CRUD — atomic lifecycle", () => {
     await expect(
       page.getByRole("heading", { name: renamed, exact: true }),
     ).toBeVisible();
-    await expect(
-      page.getByRole("heading", { name, exact: true }),
-    ).toHaveCount(0);
+    await expect(page.getByRole("heading", { name, exact: true })).toHaveCount(
+      0,
+    );
 
     // 5. DELETE — Delete lives inside the editor; open Edit, then delete
     const renamedCard = page
       .locator("div.rounded-lg.bg-white.p-6.shadow-sm")
-      .filter({ has: page.getByRole("heading", { name: renamed, exact: true }) });
+      .filter({
+        has: page.getByRole("heading", { name: renamed, exact: true }),
+      });
     await renamedCard
       .first()
       .getByRole("button", { name: "Edit", exact: true })

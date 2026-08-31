@@ -68,7 +68,12 @@ onBeforeUnmount(() => {
         role="img"
         aria-label="Drag to reorder"
       >
-        <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+        <svg
+          class="h-4 w-4"
+          fill="currentColor"
+          viewBox="0 0 20 20"
+          aria-hidden="true"
+        >
           <circle cx="6" cy="5" r="1.4" />
           <circle cx="6" cy="10" r="1.4" />
           <circle cx="6" cy="15" r="1.4" />
@@ -93,9 +98,13 @@ onBeforeUnmount(() => {
             ? `Hide ${SECTION_META[section.key].label}`
             : `Show ${SECTION_META[section.key].label}`
         "
-        :title="section.visible ? 'Visible — click to hide' : 'Hidden — click to show'"
+        :title="
+          section.visible ? 'Visible — click to hide' : 'Hidden — click to show'
+        "
         class="shrink-0 rounded-md p-1.5 transition-colors hover:bg-brand-slate-100"
-        :class="section.visible ? 'text-brand-slate-600' : 'text-brand-slate-300'"
+        :class="
+          section.visible ? 'text-brand-slate-600' : 'text-brand-slate-300'
+        "
         @click="toggleVisibility(section.key)"
       >
         <UIcon

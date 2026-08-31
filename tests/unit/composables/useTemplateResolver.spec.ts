@@ -187,9 +187,7 @@ describe("useTemplateResolver", () => {
         tables: { users: { id: "athlete1" } },
         locationPrefs: { city: "Dublin", state: "OH" },
         derived: {},
-      } as unknown as Awaited<
-        ReturnType<typeof resolver.buildAthleteContext>
-      >;
+      } as unknown as Awaited<ReturnType<typeof resolver.buildAthleteContext>>;
 
       const result = await resolver.resolveTemplate(
         { subject: "", body: "{{hometownCity}}, {{hometownState}}" },

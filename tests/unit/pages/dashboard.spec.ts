@@ -23,7 +23,10 @@ import {
   createVeryLargeSchool,
 } from "~/tests/fixtures/schools.fixture";
 import { getCarnegieSize } from "~/utils/schoolSize";
-import { getDeadPeriodMessage, type AppSport } from "~/utils/recruitingCalendar";
+import {
+  getDeadPeriodMessage,
+  type AppSport,
+} from "~/utils/recruitingCalendar";
 
 // Mock modules
 vi.mock("~/composables/useSupabase");
@@ -2258,7 +2261,12 @@ describe("Dashboard Page Logic", () => {
       const opts = { gender };
       const allInDeadPeriod = schools.every((school) => {
         const div = (school.division as string) || "D1";
-        return !!getDeadPeriodMessage(now, sport, div as "D1" | "D2" | "D3", opts);
+        return !!getDeadPeriodMessage(
+          now,
+          sport,
+          div as "D1" | "D2" | "D3",
+          opts,
+        );
       });
       return allInDeadPeriod
         ? (getDeadPeriodMessage(now, sport, "D1", opts) ?? null)

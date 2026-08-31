@@ -28,7 +28,11 @@ const credentials = computed(() =>
     />
     <MetricsCredentials :credentials="credentials" />
     <div class="grid grid-cols-2 gap-4 sm:grid-cols-3">
-      <DesignSystemCard v-for="metric in metrics" :key="metric.key" padding="md">
+      <DesignSystemCard
+        v-for="metric in metrics"
+        :key="metric.key"
+        padding="md"
+      >
         <p class="text-xs font-medium text-brand-slate-500">
           {{ metric.label }}
         </p>

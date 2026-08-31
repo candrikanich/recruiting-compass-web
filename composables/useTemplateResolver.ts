@@ -158,7 +158,8 @@ export const useTemplateResolver = () => {
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle()) as { data: { file_url: string | null } | null };
-    if (transcriptRow?.file_url) derived.transcriptLink = transcriptRow.file_url;
+    if (transcriptRow?.file_url)
+      derived.transcriptLink = transcriptRow.file_url;
 
     // Primary film link from the canonical video_links table (prefer a healthy
     // link, else the first), mirroring iOS.

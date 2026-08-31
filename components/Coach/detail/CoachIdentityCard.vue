@@ -59,8 +59,14 @@ const fullName = computed(
         :aria-label="`View ${fullName} on X`"
         class="flex items-center justify-center gap-2 text-slate-500 hover:text-slate-700"
       >
-        <UIcon name="i-heroicons-at-symbol" class="h-4 w-4" aria-hidden="true" />
-        <span class="text-[13px] text-slate-600">{{ coach.twitter_handle }}</span>
+        <UIcon
+          name="i-heroicons-at-symbol"
+          class="h-4 w-4"
+          aria-hidden="true"
+        />
+        <span class="text-[13px] text-slate-600">{{
+          coach.twitter_handle
+        }}</span>
         <UIcon
           name="i-heroicons-arrow-top-right-on-square"
           class="h-3 w-3"
@@ -76,7 +82,9 @@ const fullName = computed(
         class="flex items-center justify-center gap-2 text-slate-500 hover:text-slate-700"
       >
         <UIcon name="i-heroicons-camera" class="h-4 w-4" aria-hidden="true" />
-        <span class="text-[13px] text-slate-600">{{ coach.instagram_handle }}</span>
+        <span class="text-[13px] text-slate-600">{{
+          coach.instagram_handle
+        }}</span>
         <UIcon
           name="i-heroicons-arrow-top-right-on-square"
           class="h-3 w-3"

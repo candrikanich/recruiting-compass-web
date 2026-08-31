@@ -1,5 +1,5 @@
 <template>
-  <div class="p-6 space-y-5">
+  <div class="space-y-5 p-6">
     <div>
       <h3 class="text-lg font-semibold text-slate-900">Complete your info</h3>
       <p class="mt-1 text-sm text-slate-500">
@@ -19,10 +19,7 @@
         </p>
 
         <!-- Locked for a parent: the athlete must answer in their own voice. -->
-        <p
-          v-if="isLocked(field)"
-          class="mt-2 text-xs italic text-amber-700"
-        >
+        <p v-if="isLocked(field)" class="mt-2 text-xs text-amber-700 italic">
           Ask {{ athleteName }} to add this
         </p>
 
@@ -62,7 +59,9 @@
             rows="3"
             class="mt-3 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
             :placeholder="field.prompt || 'Write for this message…'"
-            @input="setText(field, ($event.target as HTMLTextAreaElement).value)"
+            @input="
+              setText(field, ($event.target as HTMLTextAreaElement).value)
+            "
           ></textarea>
           <input
             v-else-if="field.editor.kind === 'text'"

@@ -183,19 +183,22 @@ export default defineEventHandler(async (event): Promise<AdminGrowth> => {
   );
   // Activity rows, funnel counts, and adoption user-ids are three independent
   // reads — run them concurrently rather than in three sequential phases.
-  const [activityRows, [invitesSent, invitesAccepted, accounts, onboarded], featureUserIds] =
-    await Promise.all([
-      loadActivityRows(db, activityFloorStart, logger),
-      Promise.all([
-        countOf(db, "family_invitations", logger),
-        countOf(db, "family_invitations", logger, (q) =>
-          q.not("accepted_at", "is", null),
-        ),
-        countOf(db, "users", logger),
-        countOf(db, "users", logger, (q) => q.eq("onboarding_completed", true)),
-      ]),
-      loadAdoptionUserIds(db, logger),
-    ]);
+  const [
+    activityRows,
+    [invitesSent, invitesAccepted, accounts, onboarded],
+    featureUserIds,
+  ] = await Promise.all([
+    loadActivityRows(db, activityFloorStart, logger),
+    Promise.all([
+      countOf(db, "family_invitations", logger),
+      countOf(db, "family_invitations", logger, (q) =>
+        q.not("accepted_at", "is", null),
+      ),
+      countOf(db, "users", logger),
+      countOf(db, "users", logger, (q) => q.eq("onboarding_completed", true)),
+    ]),
+    loadAdoptionUserIds(db, logger),
+  ]);
 
   const activity = {
     dau: windowActiveCount(activityRows, dayAgo, now),

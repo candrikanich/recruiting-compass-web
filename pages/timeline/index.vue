@@ -333,7 +333,9 @@ const reassuranceMessages = computed(() =>
 // Mirrors the ruleEngine/dashboard fallback: an unset sport never falsely
 // surfaces sport-specific windows.
 const athleteSport = computed<AppSport>(
-  () => (getPlayerDetails()?.primary_sport as AppSport | undefined) ?? NO_SPORT_FALLBACK,
+  () =>
+    (getPlayerDetails()?.primary_sport as AppSport | undefined) ??
+    NO_SPORT_FALLBACK,
 );
 const athleteGender = computed<string | null>(
   () => getPlayerDetails()?.gender ?? null,

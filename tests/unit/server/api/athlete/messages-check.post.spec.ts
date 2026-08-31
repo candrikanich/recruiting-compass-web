@@ -76,9 +76,8 @@ vi.mock("h3", async () => {
   };
 });
 
-const { default: handler } = await import(
-  "~/server/api/athlete/messages/check.post"
-);
+const { default: handler } =
+  await import("~/server/api/athlete/messages/check.post");
 
 const ATHLETE_ID = "11111111-1111-4111-8111-111111111111";
 const SCHOOL_ID = "22222222-2222-4222-8222-222222222222";
@@ -124,9 +123,7 @@ describe("POST /api/athlete/messages/check", () => {
   });
 
   it("marks recentContact when last message to the program was < 7 days ago", async () => {
-    mockState.lastSentAt = new Date(
-      Date.now() - 2 * 86_400_000,
-    ).toISOString();
+    mockState.lastSentAt = new Date(Date.now() - 2 * 86_400_000).toISOString();
     mockState.countToSchool = 3;
 
     const result = await handler(
@@ -139,9 +136,7 @@ describe("POST /api/athlete/messages/check", () => {
   });
 
   it("does not mark recentContact when last message was >= 7 days ago", async () => {
-    mockState.lastSentAt = new Date(
-      Date.now() - 10 * 86_400_000,
-    ).toISOString();
+    mockState.lastSentAt = new Date(Date.now() - 10 * 86_400_000).toISOString();
 
     const result = await handler(
       makeEvent({ athleteUserId: ATHLETE_ID, schoolId: SCHOOL_ID }),

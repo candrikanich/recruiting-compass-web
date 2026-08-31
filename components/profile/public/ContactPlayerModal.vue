@@ -44,7 +44,11 @@ const coachEmail = ref("");
 const note = ref("");
 const hp = ref("");
 
-const fieldErrors = ref<{ coachName?: string; coachEmail?: string; note?: string }>({});
+const fieldErrors = ref<{
+  coachName?: string;
+  coachEmail?: string;
+  note?: string;
+}>({});
 const submitError = ref("");
 const submitting = ref(false);
 const submitted = ref(false);
@@ -214,8 +218,13 @@ function handleClose() {
     aria-labelledby="contact-player-title"
     @cancel.prevent="handleClose"
   >
-    <div class="flex items-center justify-between border-b border-brand-slate-200 px-6 py-4">
-      <h2 id="contact-player-title" class="text-lg font-semibold text-brand-slate-900">
+    <div
+      class="flex items-center justify-between border-b border-brand-slate-200 px-6 py-4"
+    >
+      <h2
+        id="contact-player-title"
+        class="text-lg font-semibold text-brand-slate-900"
+      >
         Contact {{ playerName }}
       </h2>
       <button
@@ -230,9 +239,7 @@ function handleClose() {
     </div>
 
     <div v-if="submitted" class="px-6 py-8 text-center">
-      <p class="text-base font-medium text-brand-slate-900">
-        Message sent.
-      </p>
+      <p class="text-base font-medium text-brand-slate-900">Message sent.</p>
       <p class="mt-2 text-sm text-brand-slate-600">
         The player will be notified and can respond directly.
       </p>
@@ -246,9 +253,16 @@ function handleClose() {
       </DesignSystemButton>
     </div>
 
-    <form v-else class="flex flex-col gap-4 px-6 py-5" @submit.prevent="handleSubmit">
+    <form
+      v-else
+      class="flex flex-col gap-4 px-6 py-5"
+      @submit.prevent="handleSubmit"
+    >
       <div>
-        <label class="mb-1 block text-sm font-medium text-brand-slate-700" for="contact-coach-name">
+        <label
+          class="mb-1 block text-sm font-medium text-brand-slate-700"
+          for="contact-coach-name"
+        >
           Your name
           <span aria-hidden="true" class="text-red-500">*</span>
         </label>
@@ -259,7 +273,9 @@ function handleClose() {
           v-model="coachName"
           required
           class="w-full rounded-xl border-2 bg-white px-3 py-2 focus:border-transparent focus:ring-2 focus:ring-brand-blue-500"
-          :class="fieldErrors.coachName ? 'border-red-500' : 'border-brand-slate-300'"
+          :class="
+            fieldErrors.coachName ? 'border-red-500' : 'border-brand-slate-300'
+          "
         />
         <p v-if="fieldErrors.coachName" class="mt-1 text-sm text-red-600">
           {{ fieldErrors.coachName }}
@@ -267,7 +283,10 @@ function handleClose() {
       </div>
 
       <div>
-        <label class="mb-1 block text-sm font-medium text-brand-slate-700" for="contact-coach-title">
+        <label
+          class="mb-1 block text-sm font-medium text-brand-slate-700"
+          for="contact-coach-title"
+        >
           Title
         </label>
         <input
@@ -281,7 +300,10 @@ function handleClose() {
       </div>
 
       <div>
-        <label class="mb-1 block text-sm font-medium text-brand-slate-700" for="contact-school-name">
+        <label
+          class="mb-1 block text-sm font-medium text-brand-slate-700"
+          for="contact-school-name"
+        >
           School
         </label>
         <input
@@ -294,12 +316,19 @@ function handleClose() {
           class="w-full rounded-xl border-2 border-brand-slate-300 bg-white px-3 py-2 focus:border-transparent focus:ring-2 focus:ring-brand-blue-500"
         />
         <datalist v-if="schools?.length" :id="schoolListId">
-          <option v-for="school in schools" :key="school.id" :value="school.name" />
+          <option
+            v-for="school in schools"
+            :key="school.id"
+            :value="school.name"
+          />
         </datalist>
       </div>
 
       <div>
-        <label class="mb-1 block text-sm font-medium text-brand-slate-700" for="contact-coach-email">
+        <label
+          class="mb-1 block text-sm font-medium text-brand-slate-700"
+          for="contact-coach-email"
+        >
           Email
         </label>
         <input
@@ -308,7 +337,9 @@ function handleClose() {
           type="email"
           v-model="coachEmail"
           class="w-full rounded-xl border-2 bg-white px-3 py-2 focus:border-transparent focus:ring-2 focus:ring-brand-blue-500"
-          :class="fieldErrors.coachEmail ? 'border-red-500' : 'border-brand-slate-300'"
+          :class="
+            fieldErrors.coachEmail ? 'border-red-500' : 'border-brand-slate-300'
+          "
         />
         <p v-if="fieldErrors.coachEmail" class="mt-1 text-sm text-red-600">
           {{ fieldErrors.coachEmail }}
@@ -316,7 +347,10 @@ function handleClose() {
       </div>
 
       <div>
-        <label class="mb-1 block text-sm font-medium text-brand-slate-700" for="contact-note">
+        <label
+          class="mb-1 block text-sm font-medium text-brand-slate-700"
+          for="contact-note"
+        >
           Message
           <span aria-hidden="true" class="text-red-500">*</span>
         </label>
@@ -328,7 +362,9 @@ function handleClose() {
           required
           maxlength="2000"
           class="w-full resize-none rounded-xl border-2 bg-white px-3 py-2 focus:border-transparent focus:ring-2 focus:ring-brand-blue-500"
-          :class="fieldErrors.note ? 'border-red-500' : 'border-brand-slate-300'"
+          :class="
+            fieldErrors.note ? 'border-red-500' : 'border-brand-slate-300'
+          "
         />
         <p v-if="fieldErrors.note" class="mt-1 text-sm text-red-600">
           {{ fieldErrors.note }}
@@ -348,17 +384,37 @@ function handleClose() {
         style="clip: rect(0, 0, 0, 0)"
       />
 
-      <div v-if="turnstileEnabled" data-test="turnstile-widget" ref="turnstileEl"></div>
+      <div
+        v-if="turnstileEnabled"
+        data-test="turnstile-widget"
+        ref="turnstileEl"
+      ></div>
 
-      <p v-if="submitError" data-test="submit-error" role="alert" class="text-sm text-red-600">
+      <p
+        v-if="submitError"
+        data-test="submit-error"
+        role="alert"
+        class="text-sm text-red-600"
+      >
         {{ submitError }}
       </p>
 
       <div class="mt-2 flex justify-end gap-3">
-        <DesignSystemButton type="button" variant="outline" color="slate" @click="handleClose">
+        <DesignSystemButton
+          type="button"
+          variant="outline"
+          color="slate"
+          @click="handleClose"
+        >
           Cancel
         </DesignSystemButton>
-        <DesignSystemButton type="submit" variant="solid" color="blue" :disabled="submitting" :loading="submitting">
+        <DesignSystemButton
+          type="submit"
+          variant="solid"
+          color="blue"
+          :disabled="submitting"
+          :loading="submitting"
+        >
           Send message
         </DesignSystemButton>
       </div>

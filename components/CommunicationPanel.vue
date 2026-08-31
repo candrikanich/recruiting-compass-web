@@ -90,7 +90,9 @@
             </div>
             <div class="text-left">
               <p class="font-medium text-slate-900">DM on Instagram</p>
-              <p class="text-sm text-slate-500">@{{ coach.instagram_handle }}</p>
+              <p class="text-sm text-slate-500">
+                @{{ coach.instagram_handle }}
+              </p>
             </div>
           </div>
           <span class="text-slate-400">→</span>
@@ -156,6 +158,9 @@ const showEmailComposer = ref(false);
 const showTextComposer = ref(false);
 
 const openInstagram = (): void => {
-  window.open(`https://instagram.com/${props.coach.instagram_handle}`, "_blank");
+  window.open(
+    `https://instagram.com/${props.coach.instagram_handle}`,
+    "_blank",
+  );
 };
 </script>

@@ -44,13 +44,19 @@ describe("pickHsCoach", () => {
   });
 
   it("falls back to the most-recent grade (12→9) when the current grade is empty", () => {
-    const prefs = { tenth_grade_coach: "Coach Ten", ninth_grade_coach: "Coach Nine" };
+    const prefs = {
+      tenth_grade_coach: "Coach Ten",
+      ninth_grade_coach: "Coach Nine",
+    };
     // Current grade 11 is empty → 12 empty → falls to 10th.
     expect(pickHsCoach(prefs, 2028)).toBe("Coach Ten");
   });
 
   it("trims whitespace and ignores blank strings", () => {
-    const prefs = { eleventh_grade_coach: "  ", twelfth_grade_coach: "  Dave Reilly  " };
+    const prefs = {
+      eleventh_grade_coach: "  ",
+      twelfth_grade_coach: "  Dave Reilly  ",
+    };
     expect(pickHsCoach(prefs, 2028)).toBe("Dave Reilly");
   });
 });
@@ -61,7 +67,9 @@ describe("derivePositions", () => {
   });
 
   it("abbreviates ordered positions into a coach-facing primary/secondary", () => {
-    const out = derivePositions("Baseball", { positions: ["Shortstop", "Second Base"] });
+    const out = derivePositions("Baseball", {
+      positions: ["Shortstop", "Second Base"],
+    });
     expect(out.position).toBe("SS/2B");
     expect(out.positionSecondary).toBe("2B");
   });

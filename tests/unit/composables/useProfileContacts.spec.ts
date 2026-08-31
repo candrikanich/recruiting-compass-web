@@ -45,9 +45,8 @@ describe("useProfileContacts", () => {
 
   it("initializes with empty leads and zeroed counts", async () => {
     mockFetchAuth.mockResolvedValue({ leads: [], counts: null });
-    const { useProfileContacts } = await import(
-      "~/composables/useProfileContacts"
-    );
+    const { useProfileContacts } =
+      await import("~/composables/useProfileContacts");
     const { leads, counts } = useProfileContacts();
     expect(leads.value).toEqual([]);
     expect(counts.value).toEqual({
@@ -62,9 +61,8 @@ describe("useProfileContacts", () => {
       leads: [sampleLead],
       counts: sampleCounts,
     });
-    const { useProfileContacts } = await import(
-      "~/composables/useProfileContacts"
-    );
+    const { useProfileContacts } =
+      await import("~/composables/useProfileContacts");
     const { leads, counts, fetchContacts, loading } = useProfileContacts();
     const promise = fetchContacts();
     expect(loading.value).toBe(true);
@@ -77,9 +75,8 @@ describe("useProfileContacts", () => {
 
   it("fetchContacts sets a user-friendly error and resets loading when the request rejects", async () => {
     mockFetchAuth.mockRejectedValue(new Error("Network error"));
-    const { useProfileContacts } = await import(
-      "~/composables/useProfileContacts"
-    );
+    const { useProfileContacts } =
+      await import("~/composables/useProfileContacts");
     const { fetchContacts, error, loading, leads } = useProfileContacts();
     await fetchContacts();
     expect(error.value).toBe("Failed to load your inbox. Please try again.");
@@ -90,9 +87,8 @@ describe("useProfileContacts", () => {
 
   it("resolveLead POSTs status=resolved with interactionId to the resolve endpoint and refetches", async () => {
     mockFetchAuth.mockResolvedValue({ leads: [], counts: sampleCounts });
-    const { useProfileContacts } = await import(
-      "~/composables/useProfileContacts"
-    );
+    const { useProfileContacts } =
+      await import("~/composables/useProfileContacts");
     const { resolveLead } = useProfileContacts();
     mockFetchAuth.mockClear();
     mockFetchAuth
@@ -102,7 +98,10 @@ describe("useProfileContacts", () => {
     expect(mockFetchAuth).toHaveBeenNthCalledWith(
       1,
       "/api/player/profile/contacts/lead-1/resolve",
-      { method: "POST", body: { status: "resolved", interactionId: "interaction-1" } },
+      {
+        method: "POST",
+        body: { status: "resolved", interactionId: "interaction-1" },
+      },
     );
     expect(mockFetchAuth).toHaveBeenNthCalledWith(
       2,
@@ -112,9 +111,8 @@ describe("useProfileContacts", () => {
 
   it("dismissLead POSTs status=dismissed to the resolve endpoint and refetches", async () => {
     mockFetchAuth.mockResolvedValue({ leads: [], counts: sampleCounts });
-    const { useProfileContacts } = await import(
-      "~/composables/useProfileContacts"
-    );
+    const { useProfileContacts } =
+      await import("~/composables/useProfileContacts");
     const { dismissLead } = useProfileContacts();
     mockFetchAuth.mockClear();
     mockFetchAuth

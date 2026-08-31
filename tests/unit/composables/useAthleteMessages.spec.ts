@@ -44,9 +44,9 @@ describe("useAthleteMessages", () => {
       mockFetchAuth.mockRejectedValue(new Error("Failed to log message"));
       const { logSend } = useAthleteMessages();
 
-      await expect(
-        logSend({ athleteUserId: ATHLETE_ID }),
-      ).rejects.toThrow("Failed to log message");
+      await expect(logSend({ athleteUserId: ATHLETE_ID })).rejects.toThrow(
+        "Failed to log message",
+      );
     });
   });
 

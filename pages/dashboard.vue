@@ -172,7 +172,11 @@ import { useViewLogging } from "~/composables/useViewLogging";
 import { useDashboardData } from "~/composables/useDashboardData";
 import { useDashboardCalculations } from "~/composables/useDashboardCalculations";
 import { usePreferenceManager } from "~/composables/usePreferenceManager";
-import { getDeadPeriodMessage, NO_SPORT_FALLBACK, type AppSport } from "~/utils/recruitingCalendar";
+import {
+  getDeadPeriodMessage,
+  NO_SPORT_FALLBACK,
+  type AppSport,
+} from "~/utils/recruitingCalendar";
 import { WIDGET_SIZES } from "~/types/models";
 import type { WidgetId, WidgetEntry } from "~/types/models";
 import ParentContextBanner from "~/components/Dashboard/ParentContextBanner.vue";
@@ -199,7 +203,9 @@ const dashboardLayout = computed(() => getDashboardLayout());
 // Mirrors the ruleEngine fallback (server/utils/ruleEngine.ts): an unset
 // sport never falsely reports a dead period.
 const athleteSport = computed<AppSport>(
-  () => (getPlayerDetails()?.primary_sport as AppSport | undefined) ?? NO_SPORT_FALLBACK,
+  () =>
+    (getPlayerDetails()?.primary_sport as AppSport | undefined) ??
+    NO_SPORT_FALLBACK,
 );
 const athleteGender = computed<string | null>(
   () => getPlayerDetails()?.gender ?? null,
@@ -509,6 +515,9 @@ watch(
 );
 
 onMounted(async () => {
-  await Promise.all([dashboardPrefs.loadPreferences(), playerPrefs.loadPreferences()]);
+  await Promise.all([
+    dashboardPrefs.loadPreferences(),
+    playerPrefs.loadPreferences(),
+  ]);
 });
 </script>

@@ -7,7 +7,9 @@ defineProps<{ coach: Coach }>();
 
 <template>
   <section class="rounded-xl border border-slate-200 bg-white p-4">
-    <h3 class="mb-3 text-xs font-bold uppercase tracking-wide text-slate-400">Profile Meta</h3>
+    <h3 class="mb-3 text-xs font-bold tracking-wide text-slate-400 uppercase">
+      Profile Meta
+    </h3>
     <dl class="space-y-2">
       <div class="flex items-center justify-between text-[13px]">
         <dt class="font-normal text-slate-400">Coach Since</dt>
