@@ -57,9 +57,8 @@ vi.mock("h3", async () => {
   };
 });
 
-const { default: handler } = await import(
-  "~/server/api/athlete/messages/index.post"
-);
+const { default: handler } =
+  await import("~/server/api/athlete/messages/index.post");
 
 const ATHLETE_ID = "11111111-1111-4111-8111-111111111111";
 const SCHOOL_ID = "22222222-2222-4222-8222-222222222222";
@@ -99,9 +98,7 @@ describe("POST /api/athlete/messages", () => {
   });
 
   it("nulls out an empty program note rather than storing whitespace", async () => {
-    await handler(
-      makeEvent({ athleteUserId: ATHLETE_ID, programNote: "   " }),
-    );
+    await handler(makeEvent({ athleteUserId: ATHLETE_ID, programNote: "   " }));
     expect(mockState.insertedRow?.program_note).toBeNull();
   });
 

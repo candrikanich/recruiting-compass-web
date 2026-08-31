@@ -18,7 +18,10 @@ defineProps<{
         class="flex h-7 w-7 shrink-0 items-center justify-center rounded-[14px] bg-red-500"
         aria-hidden="true"
       >
-        <UIcon name="i-heroicons-exclamation-triangle" class="h-4 w-4 text-white" />
+        <UIcon
+          name="i-heroicons-exclamation-triangle"
+          class="h-4 w-4 text-white"
+        />
       </span>
       <div>
         <p class="text-sm font-bold text-red-500">Urgent: Outreach Overdue</p>
@@ -36,10 +39,15 @@ defineProps<{
         class="flex h-7 w-7 shrink-0 items-center justify-center rounded-[14px] bg-blue-500"
         aria-hidden="true"
       >
-        <UIcon name="i-heroicons-information-circle" class="h-4 w-4 text-white" />
+        <UIcon
+          name="i-heroicons-information-circle"
+          class="h-4 w-4 text-white"
+        />
       </span>
       <div>
-        <p class="text-sm font-bold text-blue-500">Channel Preference detected</p>
+        <p class="text-sm font-bold text-blue-500">
+          Channel Preference detected
+        </p>
         <p class="text-xs text-slate-600">
           Prefers responding via {{ preferredChannel?.replace("_", " ") }}.
         </p>

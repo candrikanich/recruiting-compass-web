@@ -4,8 +4,20 @@ import { buildPublicMetrics, buildTeamHistory } from "./publicProfileBuilders";
 describe("buildPublicMetrics", () => {
   it("prefers primary then verified, caps at 6, formats value", () => {
     const rows = [
-      { metric_type: "sixty_yard_dash", display_value: "6.8", unit: "sec", verified: true, is_primary: true },
-      { metric_type: "exit_velocity", value: 91, unit: "mph", verified: true, is_primary: false },
+      {
+        metric_type: "sixty_yard_dash",
+        display_value: "6.8",
+        unit: "sec",
+        verified: true,
+        is_primary: true,
+      },
+      {
+        metric_type: "exit_velocity",
+        value: 91,
+        unit: "mph",
+        verified: true,
+        is_primary: false,
+      },
     ];
     const out = buildPublicMetrics(rows);
     expect(out[0].key).toBe("sixty_yard_dash");
@@ -35,7 +47,11 @@ describe("buildPublicMetrics", () => {
   it("prioritizes primary over verified when sorting", () => {
     const rows = [
       { metric_type: "primary_unverified", is_primary: true, verified: false },
-      { metric_type: "not_primary_verified", is_primary: false, verified: true },
+      {
+        metric_type: "not_primary_verified",
+        is_primary: false,
+        verified: true,
+      },
     ];
     const out = buildPublicMetrics(rows);
     expect(out[0].key).toBe("primary_unverified");

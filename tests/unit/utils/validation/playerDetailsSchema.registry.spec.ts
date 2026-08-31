@@ -34,7 +34,9 @@ describe("playerDetailsSchema ↔ registry parity", () => {
           graduation_year: 2027,
           [def.key]: token,
         });
-        expect(result.success, `${def.key}=${token} should be valid`).toBe(true);
+        expect(result.success, `${def.key}=${token} should be valid`).toBe(
+          true,
+        );
       }
       const bad = playerDetailsSchema.safeParse({
         graduation_year: 2027,

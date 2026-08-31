@@ -39,7 +39,11 @@ const coachName = ref("");
 const coachEmail = ref("");
 const hp = ref("");
 
-const fieldErrors = ref<{ program?: string; coachEmail?: string; note?: string }>({});
+const fieldErrors = ref<{
+  program?: string;
+  coachEmail?: string;
+  note?: string;
+}>({});
 const submitError = ref("");
 const submitting = ref(false);
 const submitted = ref(false);
@@ -197,8 +201,13 @@ function handleClose() {
     aria-labelledby="express-interest-title"
     @cancel.prevent="handleClose"
   >
-    <div class="flex items-center justify-between border-b border-brand-slate-200 px-5 py-3">
-      <h2 id="express-interest-title" class="text-base font-semibold text-brand-slate-900">
+    <div
+      class="flex items-center justify-between border-b border-brand-slate-200 px-5 py-3"
+    >
+      <h2
+        id="express-interest-title"
+        class="text-base font-semibold text-brand-slate-900"
+      >
         Express interest in {{ playerName }}
       </h2>
       <button
@@ -213,9 +222,7 @@ function handleClose() {
     </div>
 
     <div v-if="submitted" class="px-5 py-6 text-center">
-      <p class="text-base font-medium text-brand-slate-900">
-        Interest sent.
-      </p>
+      <p class="text-base font-medium text-brand-slate-900">Interest sent.</p>
       <p class="mt-2 text-sm text-brand-slate-600">
         The player has been notified of your interest.
       </p>
@@ -229,9 +236,16 @@ function handleClose() {
       </DesignSystemButton>
     </div>
 
-    <form v-else class="flex flex-col gap-4 px-5 py-4" @submit.prevent="handleSubmit">
+    <form
+      v-else
+      class="flex flex-col gap-4 px-5 py-4"
+      @submit.prevent="handleSubmit"
+    >
       <div>
-        <label class="mb-1 block text-sm font-medium text-brand-slate-700" for="interest-program">
+        <label
+          class="mb-1 block text-sm font-medium text-brand-slate-700"
+          for="interest-program"
+        >
           School / Program
           <span aria-hidden="true" class="text-red-500">*</span>
         </label>
@@ -244,7 +258,9 @@ function handleClose() {
           maxlength="80"
           placeholder="e.g. Ohio State University"
           class="w-full rounded-xl border-2 bg-white px-3 py-2 focus:border-transparent focus:ring-2 focus:ring-brand-blue-500"
-          :class="fieldErrors.program ? 'border-red-500' : 'border-brand-slate-300'"
+          :class="
+            fieldErrors.program ? 'border-red-500' : 'border-brand-slate-300'
+          "
         />
         <p v-if="fieldErrors.program" class="mt-1 text-sm text-red-600">
           {{ fieldErrors.program }}
@@ -252,7 +268,10 @@ function handleClose() {
       </div>
 
       <div>
-        <label class="mb-1 block text-sm font-medium text-brand-slate-700" for="interest-note">
+        <label
+          class="mb-1 block text-sm font-medium text-brand-slate-700"
+          for="interest-note"
+        >
           Note (optional)
         </label>
         <textarea
@@ -262,7 +281,9 @@ function handleClose() {
           rows="3"
           maxlength="1000"
           class="w-full resize-none rounded-xl border-2 bg-white px-3 py-2 focus:border-transparent focus:ring-2 focus:ring-brand-blue-500"
-          :class="fieldErrors.note ? 'border-red-500' : 'border-brand-slate-300'"
+          :class="
+            fieldErrors.note ? 'border-red-500' : 'border-brand-slate-300'
+          "
         />
         <p v-if="fieldErrors.note" class="mt-1 text-sm text-red-600">
           {{ fieldErrors.note }}
@@ -270,7 +291,10 @@ function handleClose() {
       </div>
 
       <div>
-        <label class="mb-1 block text-sm font-medium text-brand-slate-700" for="interest-coach-name">
+        <label
+          class="mb-1 block text-sm font-medium text-brand-slate-700"
+          for="interest-coach-name"
+        >
           Your name (optional)
         </label>
         <input
@@ -284,7 +308,10 @@ function handleClose() {
       </div>
 
       <div>
-        <label class="mb-1 block text-sm font-medium text-brand-slate-700" for="interest-coach-email">
+        <label
+          class="mb-1 block text-sm font-medium text-brand-slate-700"
+          for="interest-coach-email"
+        >
           Your email (optional)
         </label>
         <input
@@ -293,7 +320,9 @@ function handleClose() {
           type="email"
           v-model="coachEmail"
           class="w-full rounded-xl border-2 bg-white px-3 py-2 focus:border-transparent focus:ring-2 focus:ring-brand-blue-500"
-          :class="fieldErrors.coachEmail ? 'border-red-500' : 'border-brand-slate-300'"
+          :class="
+            fieldErrors.coachEmail ? 'border-red-500' : 'border-brand-slate-300'
+          "
         />
         <p v-if="fieldErrors.coachEmail" class="mt-1 text-sm text-red-600">
           {{ fieldErrors.coachEmail }}
@@ -313,14 +342,28 @@ function handleClose() {
         style="clip: rect(0, 0, 0, 0)"
       />
 
-      <div v-if="turnstileEnabled" data-test="turnstile-widget" ref="turnstileEl"></div>
+      <div
+        v-if="turnstileEnabled"
+        data-test="turnstile-widget"
+        ref="turnstileEl"
+      ></div>
 
-      <p v-if="submitError" data-test="submit-error" role="alert" class="text-sm text-red-600">
+      <p
+        v-if="submitError"
+        data-test="submit-error"
+        role="alert"
+        class="text-sm text-red-600"
+      >
         {{ submitError }}
       </p>
 
       <div class="mt-1 flex justify-end gap-3">
-        <DesignSystemButton type="button" variant="outline" color="slate" @click="handleClose">
+        <DesignSystemButton
+          type="button"
+          variant="outline"
+          color="slate"
+          @click="handleClose"
+        >
           Cancel
         </DesignSystemButton>
         <DesignSystemButton

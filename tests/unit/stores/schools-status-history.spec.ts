@@ -220,12 +220,10 @@ describe("Schools Store - Status History (Story 3.4)", () => {
             update: schoolsUpdate,
             select: vi.fn().mockReturnThis(),
             eq: vi.fn().mockReturnThis(),
-            single: vi
-              .fn()
-              .mockResolvedValue({
-                data: { status: "not_pursuing" },
-                error: null,
-              }),
+            single: vi.fn().mockResolvedValue({
+              data: { status: "not_pursuing" },
+              error: null,
+            }),
           };
         }
         if (table === "school_status_history") {

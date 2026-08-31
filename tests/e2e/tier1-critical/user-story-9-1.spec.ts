@@ -391,7 +391,9 @@ test.describe("User Story 9.1 - Athlete Views Their Task List", () => {
       // This mutates a real task on the shared player@test.com account --
       // restore it so other tests/workers reading completion % (Scenario 2,
       // Scenario 6) don't see state this test changed.
-      await firstCheckbox.setChecked(initialState, { force: true }).catch(() => null);
+      await firstCheckbox
+        .setChecked(initialState, { force: true })
+        .catch(() => null);
     }
   });
 

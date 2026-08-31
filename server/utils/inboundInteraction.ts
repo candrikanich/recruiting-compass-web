@@ -1,8 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "~/types/database";
 
-type InteractionInsert =
-  Database["public"]["Tables"]["interactions"]["Insert"];
+type InteractionInsert = Database["public"]["Tables"]["interactions"]["Insert"];
 
 export interface InboundLeadInput {
   kind: "contact" | "interest";

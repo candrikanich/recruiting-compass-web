@@ -146,7 +146,10 @@ describe("Coach Detail Page", () => {
     mockFetchInteractions.mockResolvedValue(undefined);
     mockFetchCoaches.mockResolvedValue(undefined);
     mockCreateInteraction.mockResolvedValue({ id: "interaction-1" });
-    mockUpdateCoachTags.mockResolvedValue({ ...mockCoach, tags: ["fastball", "new-tag"] });
+    mockUpdateCoachTags.mockResolvedValue({
+      ...mockCoach,
+      tags: ["fastball", "new-tag"],
+    });
   });
 
   afterEach(() => {
@@ -168,9 +171,9 @@ describe("Coach Detail Page", () => {
     it("displays coach data after loading", async () => {
       const wrapper = await mountPage();
 
-      expect(wrapper.findComponent({ name: "CoachIdentityCard" }).exists()).toBe(
-        true,
-      );
+      expect(
+        wrapper.findComponent({ name: "CoachIdentityCard" }).exists(),
+      ).toBe(true);
     });
 
     it("loads coach data on mount", async () => {
@@ -215,9 +218,9 @@ describe("Coach Detail Page", () => {
     it("renders the left rail and right column components", async () => {
       const wrapper = await mountPage();
 
-      expect(wrapper.findComponent({ name: "CoachIdentityCard" }).exists()).toBe(
-        true,
-      );
+      expect(
+        wrapper.findComponent({ name: "CoachIdentityCard" }).exists(),
+      ).toBe(true);
       expect(
         wrapper.findComponent({ name: "CoachChannelActions" }).exists(),
       ).toBe(true);
@@ -230,7 +233,9 @@ describe("Coach Detail Page", () => {
       expect(wrapper.findComponent({ name: "CoachProfileMeta" }).exists()).toBe(
         true,
       );
-      expect(wrapper.findComponent({ name: "CoachAlerts" }).exists()).toBe(true);
+      expect(wrapper.findComponent({ name: "CoachAlerts" }).exists()).toBe(
+        true,
+      );
       expect(wrapper.findComponent({ name: "CoachStatCards" }).exists()).toBe(
         true,
       );
@@ -416,7 +421,9 @@ describe("Coach Detail Page", () => {
 
       const wrapper = await mountPage();
 
-      await wrapper.find('[data-testid="coach-header-delete"]').trigger("click");
+      await wrapper
+        .find('[data-testid="coach-header-delete"]')
+        .trigger("click");
       await flushPromises();
 
       await wrapper.find('[data-test="confirm-delete-btn"]').trigger("click");
@@ -429,7 +436,9 @@ describe("Coach Detail Page", () => {
     it("closes delete modal when cancelled", async () => {
       const wrapper = await mountPage();
 
-      await wrapper.find('[data-testid="coach-header-delete"]').trigger("click");
+      await wrapper
+        .find('[data-testid="coach-header-delete"]')
+        .trigger("click");
       await flushPromises();
 
       const cancelBtn = wrapper.find('[data-test="cancel-delete-btn"]');
@@ -444,7 +453,9 @@ describe("Coach Detail Page", () => {
 
       const wrapper = await mountPage();
 
-      await wrapper.find('[data-testid="coach-header-delete"]').trigger("click");
+      await wrapper
+        .find('[data-testid="coach-header-delete"]')
+        .trigger("click");
       await flushPromises();
 
       await wrapper.find('[data-test="confirm-delete-btn"]').trigger("click");

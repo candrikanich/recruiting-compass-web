@@ -11,15 +11,21 @@ import {
 describe("sport-aware queries", () => {
   it("getSportCalendar returns the resolved sport's calendar (D1)", () => {
     expect(getSportCalendar("Softball", "D1").source).toContain("WSB");
-    expect(getSportCalendar("Basketball", "D1", { gender: "female" }).source).toContain("WBB");
+    expect(
+      getSportCalendar("Basketball", "D1", { gender: "female" }).source,
+    ).toContain("WBB");
   });
 
   it("D2 → all-sports calendar regardless of sport", () => {
-    expect(getSportCalendar("Baseball", "D2")).toEqual(getSportCalendar("Soccer", "D2"));
+    expect(getSportCalendar("Baseball", "D2")).toEqual(
+      getSportCalendar("Soccer", "D2"),
+    );
   });
 
   it("D3 → fallback calendar regardless of sport", () => {
-    expect(getSportCalendar("Baseball", "D3")).toEqual(getSportCalendar("Volleyball", "D3"));
+    expect(getSportCalendar("Baseball", "D3")).toEqual(
+      getSportCalendar("Volleyball", "D3"),
+    );
   });
 
   it("isDeadPeriod is sport-specific (regression: non-baseball ≠ baseball dates)", () => {
@@ -41,23 +47,37 @@ describe("sport-aware queries", () => {
   });
 
   it("getDeadPeriodMessage returns null outside any dead window", () => {
-    expect(getDeadPeriodMessage(new Date("2026-10-15T12:00:00Z"), "Softball", "D1")).toBeNull();
+    expect(
+      getDeadPeriodMessage(new Date("2026-10-15T12:00:00Z"), "Softball", "D1"),
+    ).toBeNull();
   });
 
   it("getDeadPeriodMessage returns a message inside a dead window", () => {
-    const msg = getDeadPeriodMessage(new Date("2027-07-04T12:00:00Z"), "Baseball", "D1");
+    const msg = getDeadPeriodMessage(
+      new Date("2027-07-04T12:00:00Z"),
+      "Baseball",
+      "D1",
+    );
     expect(msg).not.toBeNull();
     expect(msg).toContain("July 4th");
   });
 
   it("getNextDeadPeriod returns the next dead/shutdown period after the given date", () => {
-    const next = getNextDeadPeriod(new Date("2027-06-01T00:00:00Z"), "Baseball", "D1");
+    const next = getNextDeadPeriod(
+      new Date("2027-06-01T00:00:00Z"),
+      "Baseball",
+      "D1",
+    );
     expect(next).not.toBeNull();
     expect(next?.start).toBe("2027-06-19");
   });
 
   it("getNextDeadPeriod returns null when no future dead period exists", () => {
-    const next = getNextDeadPeriod(new Date("2028-01-01T00:00:00Z"), "Baseball", "D1");
+    const next = getNextDeadPeriod(
+      new Date("2028-01-01T00:00:00Z"),
+      "Baseball",
+      "D1",
+    );
     expect(next).toBeNull();
   });
 
@@ -69,7 +89,9 @@ describe("sport-aware queries", () => {
       limit: 50,
     });
     // MBA-specific signing milestone
-    expect(milestones.some((m) => m.title.includes("Early Signing Period"))).toBe(true);
+    expect(
+      milestones.some((m) => m.title.includes("Early Signing Period")),
+    ).toBe(true);
     // Generic SAT test date milestone
     expect(milestones.some((m) => m.title === "SAT Test Date")).toBe(true);
     // Sorted ascending by date
@@ -88,10 +110,14 @@ describe("sport-aware queries", () => {
       currentDate: new Date(2026, 7, 1), // local Aug 1 2026
       limit: 2,
     });
-    const generics = milestones.filter((m) => m.type === "test" || m.type === "deadline");
+    const generics = milestones.filter(
+      (m) => m.type === "test" || m.type === "deadline",
+    );
     expect(generics.length).toBeLessThanOrEqual(2);
     // MBA signing (2026-11-11) still present despite only 2 generic slots.
-    expect(milestones.some((m) => m.title.includes("Early Signing Period"))).toBe(true);
+    expect(
+      milestones.some((m) => m.title.includes("Early Signing Period")),
+    ).toBe(true);
   });
 
   it("getUpcomingMilestones surfaces a senior's signing date, uncrowded by nearer generic test dates", () => {
@@ -105,7 +131,9 @@ describe("sport-aware queries", () => {
       currentDate,
     });
     expect(milestones.some((m) => m.type === "signing")).toBe(true);
-    expect(milestones.some((m) => m.title.includes("Early Signing Period"))).toBe(true);
+    expect(
+      milestones.some((m) => m.title.includes("Early Signing Period")),
+    ).toBe(true);
   });
 
   it("getUpcomingMilestones surfaces the signing date with no graduationYear (unfiltered)", () => {

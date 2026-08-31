@@ -21,8 +21,10 @@ const { showToast } = useAppToast();
 
 // Prefill coach/school when arriving from a coach's "Log Interaction" action.
 const initialData = computed<Partial<Interaction>>(() => {
-  const coachId = typeof route.query.coachId === "string" ? route.query.coachId : "";
-  const schoolId = typeof route.query.schoolId === "string" ? route.query.schoolId : "";
+  const coachId =
+    typeof route.query.coachId === "string" ? route.query.coachId : "";
+  const schoolId =
+    typeof route.query.schoolId === "string" ? route.query.schoolId : "";
   return {
     ...(coachId ? { coach_id: coachId } : {}),
     ...(schoolId ? { school_id: schoolId } : {}),

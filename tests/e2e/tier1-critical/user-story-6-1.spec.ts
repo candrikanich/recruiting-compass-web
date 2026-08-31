@@ -106,7 +106,9 @@ test.describe("User Story 6.1: Parent Views Recruiting Stage Guidance", () => {
     page,
   }) => {
     // Milestones were folded into the Recruiting Calendar (rendered <UpcomingMilestones bare/>), so assert the calendar section heading.
-    const milestonesHeader = page.getByRole("heading", { name: "Recruiting Calendar" });
+    const milestonesHeader = page.getByRole("heading", {
+      name: "Recruiting Calendar",
+    });
     await expect(milestonesHeader).toBeVisible();
 
     // Verify calendar icon
@@ -160,7 +162,9 @@ test.describe("User Story 6.1: Parent Views Recruiting Stage Guidance", () => {
     await expect(page.locator("text=What Matters Right Now")).toBeVisible();
     await expect(page.locator("text=Common Worries")).toBeVisible();
     await expect(page.locator("text=What NOT to Stress About")).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Recruiting Calendar" })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Recruiting Calendar" }),
+    ).toBeVisible();
 
     // Verify sections stack vertically (not side-by-side). boundingBox() is
     // async — a missing await here previously made this an always-truthy
@@ -194,7 +198,9 @@ test.describe("User Story 6.1: Parent Views Recruiting Stage Guidance", () => {
     await expect(page.locator("text=What Matters Right Now")).toBeVisible();
     await expect(page.locator("text=Common Worries")).toBeVisible();
     await expect(page.locator("text=What NOT to Stress About")).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Recruiting Calendar" })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Recruiting Calendar" }),
+    ).toBeVisible();
   });
 
   test("Scenario 9: Timeline loads in under 1 second", async ({ page }) => {
@@ -218,7 +224,9 @@ test.describe("User Story 6.1: Parent Views Recruiting Stage Guidance", () => {
     // Verify "What Matters Now" has blue gradient
     const whatMattersCard = page
       .locator("text=What Matters Right Now")
-      .locator("xpath=ancestor::div[contains(concat(' ',@class,' '),' rounded-2xl ')][1]")
+      .locator(
+        "xpath=ancestor::div[contains(concat(' ',@class,' '),' rounded-2xl ')][1]",
+      )
       .first();
     const bgClass = await whatMattersCard.getAttribute("class");
     expect(bgClass).toContain("blue");
@@ -226,7 +234,9 @@ test.describe("User Story 6.1: Parent Views Recruiting Stage Guidance", () => {
     // Verify "Common Worries" has amber gradient
     const worriesCard = page
       .locator("text=Common Worries")
-      .locator("xpath=ancestor::div[contains(concat(' ',@class,' '),' rounded-2xl ')][1]")
+      .locator(
+        "xpath=ancestor::div[contains(concat(' ',@class,' '),' rounded-2xl ')][1]",
+      )
       .first();
     const worriesBgClass = await worriesCard.getAttribute("class");
     expect(worriesBgClass).toContain("amber");
@@ -234,7 +244,9 @@ test.describe("User Story 6.1: Parent Views Recruiting Stage Guidance", () => {
     // Verify "What NOT to Stress" has emerald gradient
     const reassuranceCard = page
       .locator("text=What NOT to Stress About")
-      .locator("xpath=ancestor::div[contains(concat(' ',@class,' '),' rounded-2xl ')][1]")
+      .locator(
+        "xpath=ancestor::div[contains(concat(' ',@class,' '),' rounded-2xl ')][1]",
+      )
       .first();
     const reassuranceBgClass = await reassuranceCard.getAttribute("class");
     expect(reassuranceBgClass).toContain("emerald");
@@ -242,7 +254,9 @@ test.describe("User Story 6.1: Parent Views Recruiting Stage Guidance", () => {
     // Recruiting Calendar card (houses milestones) has a white background
     const milestonesCard = page
       .getByRole("heading", { name: "Recruiting Calendar" })
-      .locator("xpath=ancestor::div[contains(concat(' ',@class,' '),' rounded-2xl ')][1]")
+      .locator(
+        "xpath=ancestor::div[contains(concat(' ',@class,' '),' rounded-2xl ')][1]",
+      )
       .first();
     const milestonesBgClass = await milestonesCard.getAttribute("class");
     expect(milestonesBgClass).toContain("bg-white");

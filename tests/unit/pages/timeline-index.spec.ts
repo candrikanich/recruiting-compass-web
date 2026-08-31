@@ -67,10 +67,13 @@ vi.mock("~/composables/usePreferenceManager", () => ({
 
 const getUpcomingMilestonesSpy = vi.fn();
 vi.mock("~/utils/recruitingCalendar", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("~/utils/recruitingCalendar")>();
+  const actual =
+    await importOriginal<typeof import("~/utils/recruitingCalendar")>();
   return {
     ...actual,
-    getUpcomingMilestones: (params: Parameters<typeof actual.getUpcomingMilestones>[0]) => {
+    getUpcomingMilestones: (
+      params: Parameters<typeof actual.getUpcomingMilestones>[0],
+    ) => {
       getUpcomingMilestonesSpy(params);
       return actual.getUpcomingMilestones(params);
     },

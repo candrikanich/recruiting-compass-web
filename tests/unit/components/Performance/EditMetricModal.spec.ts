@@ -46,15 +46,15 @@ describe("EditMetricModal", () => {
 
   it("populates fields from the bound metric", () => {
     const wrapper = mountModal();
-    expect(
-      (wrapper.find("#editValue").element as HTMLInputElement).value,
-    ).toBe("88");
+    expect((wrapper.find("#editValue").element as HTMLInputElement).value).toBe(
+      "88",
+    );
     expect(
       (wrapper.find("#editMetricType").element as HTMLSelectElement).value,
     ).toBe("velo");
-    expect(
-      (wrapper.find("#editUnit").element as HTMLInputElement).value,
-    ).toBe("mph");
+    expect((wrapper.find("#editUnit").element as HTMLInputElement).value).toBe(
+      "mph",
+    );
   });
 
   it("lists every metric-type option", () => {

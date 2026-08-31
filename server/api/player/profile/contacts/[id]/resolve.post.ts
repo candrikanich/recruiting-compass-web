@@ -14,7 +14,8 @@ import { useLogger } from "~/server/utils/logger";
 // A permissive UUID-shape check rather than Zod's strict `.uuid()`, which
 // enforces the RFC4122 version/variant nibbles and rejects otherwise
 // well-formed ids (e.g. test fixtures, some generators).
-const UUID_SHAPE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const UUID_SHAPE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export const resolveBodySchema = z
   .object({
@@ -52,10 +53,16 @@ export default defineEventHandler(async (event) => {
       .single();
     if (membershipError && membershipError.code !== "PGRST116") {
       logger.error("Failed to resolve family membership", membershipError);
-      throw createError({ statusCode: 500, statusMessage: "Failed to resolve lead" });
+      throw createError({
+        statusCode: 500,
+        statusMessage: "Failed to resolve lead",
+      });
     }
     if (!membership) {
-      throw createError({ statusCode: 403, statusMessage: "Not a family member" });
+      throw createError({
+        statusCode: 403,
+        statusMessage: "Not a family member",
+      });
     }
 
     const { data: lead, error: leadErr } = await admin
@@ -65,7 +72,10 @@ export default defineEventHandler(async (event) => {
       .maybeSingle();
     if (leadErr) {
       logger.error("Failed to load lead", leadErr);
-      throw createError({ statusCode: 500, statusMessage: "Failed to resolve lead" });
+      throw createError({
+        statusCode: 500,
+        statusMessage: "Failed to resolve lead",
+      });
     }
     if (!lead || lead.family_unit_id !== membership.family_unit_id) {
       throw createError({ statusCode: 404, statusMessage: "Lead not found" });
@@ -73,7 +83,11 @@ export default defineEventHandler(async (event) => {
 
     // Double-convert guard: never overwrite an existing resolution.
     if (lead.status === "resolved") {
-      return { ok: true, status: "resolved", interactionId: lead.interaction_id };
+      return {
+        ok: true,
+        status: "resolved",
+        interactionId: lead.interaction_id,
+      };
     }
 
     const { error: updErr } = await admin
@@ -85,7 +99,10 @@ export default defineEventHandler(async (event) => {
       .eq("id", leadId);
     if (updErr) {
       logger.error("Failed to update lead status", updErr);
-      throw createError({ statusCode: 500, statusMessage: "Failed to resolve lead" });
+      throw createError({
+        statusCode: 500,
+        statusMessage: "Failed to resolve lead",
+      });
     }
 
     return {
@@ -96,6 +113,9 @@ export default defineEventHandler(async (event) => {
   } catch (err) {
     if (err instanceof Error && "statusCode" in err) throw err;
     logger.error("Failed to resolve lead", err);
-    throw createError({ statusCode: 500, statusMessage: "Failed to resolve lead" });
+    throw createError({
+      statusCode: 500,
+      statusMessage: "Failed to resolve lead",
+    });
   }
 });

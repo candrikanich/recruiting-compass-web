@@ -26,14 +26,12 @@ vi.mock("../../../../../server/utils/supabase", () => ({
 vi.mock("../../../../../server/utils/auth", () => ({ requireAdmin }));
 vi.stubGlobal(
   "$fetch",
-  vi
-    .fn()
-    .mockResolvedValue({
-      dryRun: true,
-      perBucket: {},
-      expiredExports: 0,
-      totalObjects: 0,
-    }),
+  vi.fn().mockResolvedValue({
+    dryRun: true,
+    perBucket: {},
+    expiredExports: 0,
+    totalObjects: 0,
+  }),
 );
 
 import handler from "../../../../../server/api/admin/ops/db-health.get";

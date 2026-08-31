@@ -5,7 +5,11 @@ import CommitmentStatusControl from "../../../../components/profile/setup/Commit
 describe("CommitmentStatusControl", () => {
   it("emits status and reveals school select only when committed", async () => {
     const w = mount(CommitmentStatusControl, {
-      props: { status: "uncommitted", committedSchoolId: null, schools: [{ id: "s1", name: "Ohio State" }] } as never,
+      props: {
+        status: "uncommitted",
+        committedSchoolId: null,
+        schools: [{ id: "s1", name: "Ohio State" }],
+      } as never,
     });
     expect(w.find("[data-test='committed-school']").exists()).toBe(false);
     await w.find("[data-test='status-select']").setValue("committed");

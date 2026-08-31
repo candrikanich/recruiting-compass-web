@@ -73,7 +73,10 @@ export async function checkDeletionBlockers(
     .eq("id", id)
     .maybeSingle();
   if (existenceError) {
-    logger.error(`Failed to verify ${cfg.entityNoun} existence`, existenceError);
+    logger.error(
+      `Failed to verify ${cfg.entityNoun} existence`,
+      existenceError,
+    );
     throw createError({
       statusCode: 500,
       statusMessage: "Failed to check deletion blockers",

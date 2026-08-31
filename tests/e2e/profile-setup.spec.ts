@@ -1,4 +1,10 @@
-import { test, expect, type Browser, type Locator, type Page } from "@playwright/test";
+import {
+  test,
+  expect,
+  type Browser,
+  type Locator,
+  type Page,
+} from "@playwright/test";
 
 /**
  * Owner section-visibility toggle → public profile reflection.
@@ -22,7 +28,10 @@ import { test, expect, type Browser, type Locator, type Page } from "@playwright
  */
 const RUN_ID = Date.now();
 const LOOKING_FOR_TEXT = `E2E looking-for ${RUN_ID}`;
-const PROFILE_PUT_PATTERN = (res: { url(): string; request(): { method(): string } }) =>
+const PROFILE_PUT_PATTERN = (res: {
+  url(): string;
+  request(): { method(): string };
+}) =>
   res.url().includes("/api/player/profile") && res.request().method() === "PUT";
 
 async function waitForProfileSave(page: Page, action: () => Promise<void>) {
@@ -57,37 +66,50 @@ test.describe("Public Profile section-visibility toggle", () => {
     await page.goto("/settings/player-details");
     await page.waitForLoadState("domcontentloaded");
 
-    await page
-      .locator("button", { hasText: "Public Profile" })
-      .first()
-      .click();
+    await page.locator("button", { hasText: "Public Profile" }).first().click();
 
     const publishToggle = page.locator('[data-test="publish-toggle"]');
     await publishToggle.waitFor({ state: "visible", timeout: 15000 });
 
     // Ensure published — an unpublished profile 410s on /p/:slug regardless
     // of section_config, which would make the absence assertion meaningless.
-    if (!(await page.getByText("Profile is live").isVisible().catch(() => false))) {
+    if (
+      !(await page
+        .getByText("Profile is live")
+        .isVisible()
+        .catch(() => false))
+    ) {
       await waitForProfileSave(page, () => publishToggle.click());
     }
     await expect(page.getByText("Profile is live")).toBeVisible();
 
     // Seed the "values" section's own content on this tab (self-contained —
     // no dependency on other tabs' seeded player-detail rows).
-    const lookingForTextarea = page.locator('[data-test="looking-for-textarea"]');
+    const lookingForTextarea = page.locator(
+      '[data-test="looking-for-textarea"]',
+    );
     await lookingForTextarea.fill(LOOKING_FOR_TEXT);
     await waitForProfileSave(page, () => lookingForTextarea.blur());
 
     // Read the published slug directly off the share panel — never hardcode
     // a slug, this account's profile may already exist from a prior run.
-    const shareUrl = page.locator("[data-test='profile-share-url']", { hasText: "/p/" });
+    const shareUrl = page.locator("[data-test='profile-share-url']", {
+      hasText: "/p/",
+    });
     await expect(shareUrl).toBeVisible();
     const urlText = (await shareUrl.textContent())?.trim() ?? "";
     const slug = urlText.split("/p/")[1];
-    expect(slug, `could not parse a slug out of share URL "${urlText}"`).toBeTruthy();
+    expect(
+      slug,
+      `could not parse a slug out of share URL "${urlText}"`,
+    ).toBeTruthy();
 
-    const valuesRow = page.locator("li", { hasText: "Target Program & Values" });
-    const visibilityToggle = valuesRow.locator('[data-test="section-visibility"]');
+    const valuesRow = page.locator("li", {
+      hasText: "Target Program & Values",
+    });
+    const visibilityToggle = valuesRow.locator(
+      '[data-test="section-visibility"]',
+    );
     await expect(visibilityToggle).toBeVisible();
 
     // Start from a known state: visible, with content, and confirm the

@@ -111,7 +111,9 @@ describe("ProfileSetup", () => {
     await select.setValue("committed");
     await nextTick();
 
-    expect(updateProfile).toHaveBeenCalledWith({ commitment_status: "committed" });
+    expect(updateProfile).toHaveBeenCalledWith({
+      commitment_status: "committed",
+    });
   });
 
   it("changing header color persists header_color via updateProfile", async () => {

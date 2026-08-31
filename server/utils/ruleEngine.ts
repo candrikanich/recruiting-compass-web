@@ -5,7 +5,11 @@ const logger = createLogger("rule-engine");
 import { findExistingSuggestion } from "./rules/index";
 import type { SuggestionData, Suggestion, Urgency } from "~/types/timeline";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { isDeadPeriod, NO_SPORT_FALLBACK, type AppSport } from "~/utils/recruitingCalendar";
+import {
+  isDeadPeriod,
+  NO_SPORT_FALLBACK,
+  type AppSport,
+} from "~/utils/recruitingCalendar";
 import { escalateUrgency } from "./rules/ruleEngineHelpers";
 
 const CONTACT_RULES = [

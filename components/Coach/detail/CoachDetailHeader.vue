@@ -36,12 +36,7 @@ const subtitle = computed(() => {
     class="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-5 py-3"
   >
     <div class="flex items-center gap-3">
-      <SchoolLogo
-        v-if="school"
-        :school="school"
-        size="sm"
-        class="shrink-0"
-      />
+      <SchoolLogo v-if="school" :school="school" size="sm" class="shrink-0" />
       <div
         v-else
         class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-100 text-[13px] font-semibold text-slate-500"
@@ -62,8 +57,14 @@ const subtitle = computed(() => {
         class="flex items-center gap-1.5 rounded-lg bg-blue-50 px-4 py-2"
         @click="emit('edit')"
       >
-        <UIcon name="i-heroicons-pencil" class="h-3.5 w-3.5 text-blue-500" aria-hidden="true" />
-        <span class="text-[13px] font-semibold text-blue-500">Edit Profile</span>
+        <UIcon
+          name="i-heroicons-pencil"
+          class="h-3.5 w-3.5 text-blue-500"
+          aria-hidden="true"
+        />
+        <span class="text-[13px] font-semibold text-blue-500"
+          >Edit Profile</span
+        >
       </button>
       <button
         type="button"
@@ -71,7 +72,11 @@ const subtitle = computed(() => {
         class="flex items-center gap-1.5 rounded-lg border border-red-300 bg-red-50 px-4 py-2"
         @click="emit('delete')"
       >
-        <UIcon name="i-heroicons-trash" class="h-3.5 w-3.5 text-red-500" aria-hidden="true" />
+        <UIcon
+          name="i-heroicons-trash"
+          class="h-3.5 w-3.5 text-red-500"
+          aria-hidden="true"
+        />
         <span class="text-[13px] font-semibold text-red-500">Delete Coach</span>
       </button>
     </div>

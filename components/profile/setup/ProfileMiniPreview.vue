@@ -17,7 +17,10 @@ import type {
 } from "~/types/models";
 import { useUserStore } from "~/stores/user";
 import { usePerformance } from "~/composables/usePerformance";
-import { resolveSections, isSectionVisible } from "~/utils/profile/sectionConfig";
+import {
+  resolveSections,
+  isSectionVisible,
+} from "~/utils/profile/sectionConfig";
 import {
   buildTeamHistory,
   buildPublicMetrics,
@@ -79,8 +82,7 @@ const previewData = computed<PublicProfileData>(() => {
             act_score: details.act_score as number | undefined,
             graduation_year: details.graduation_year as number | undefined,
             high_school: (details.school_name ?? details.high_school) as
-              | string
-              | undefined,
+              string | undefined,
             intended_major: details.intended_major as string | undefined,
             core_courses: details.core_courses as string[] | undefined,
           }
@@ -148,7 +150,9 @@ watch(() => props.url, generateQr);
 <template>
   <div class="flex w-full flex-col gap-4">
     <div class="flex items-center justify-between">
-      <p class="text-xs font-semibold tracking-wide text-brand-slate-400 uppercase">
+      <p
+        class="text-xs font-semibold tracking-wide text-brand-slate-400 uppercase"
+      >
         Live Preview
       </p>
       <span

@@ -55,8 +55,18 @@ vi.mock("~/composables/useTemplateResolver", () => ({
       values: { coachName: "Coach Reed" },
     })),
     loadRegistry: vi.fn(async () => [
-      { key: "coachName", source_type: "column", source_path: "column:coaches.last_name", label: "Coach name" },
-      { key: "programNote", source_type: "authored", source_path: null, label: "Why this program?" },
+      {
+        key: "coachName",
+        source_type: "column",
+        source_path: "column:coaches.last_name",
+        label: "Coach name",
+      },
+      {
+        key: "programNote",
+        source_type: "authored",
+        source_path: null,
+        label: "Why this program?",
+      },
     ]),
   }),
 }));
@@ -98,7 +108,8 @@ function mountWith(school: Record<string, unknown> | undefined) {
   const Comp = defineComponent({
     setup() {
       const qc = useQuickCommunication({
-        coach: () => ({ id: "c1", first_name: "Dana", last_name: "Reed" }) as never,
+        coach: () =>
+          ({ id: "c1", first_name: "Dana", last_name: "Reed" }) as never,
         school: () => school as never,
         schoolName: () => "Ohio State",
         emit: vi.fn(),

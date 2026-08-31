@@ -1,4 +1,11 @@
-import { ref, computed, watch, onMounted, type Ref, type ComputedRef } from "vue";
+import {
+  ref,
+  computed,
+  watch,
+  onMounted,
+  type Ref,
+  type ComputedRef,
+} from "vue";
 import { useCommunicationTemplates } from "~/composables/useCommunicationTemplates";
 import { useFamilyCtx } from "~/composables/useFamilyCtx";
 import { useTemplateResolver } from "~/composables/useTemplateResolver";
@@ -90,7 +97,12 @@ export interface QuickCommunicationParams {
 
 /** Athlete-owned categories whose non-inline-editable vars link to the profile
  *  editor. program/event/system/authored come from elsewhere (no profile link). */
-const PROFILE_CATEGORIES = new Set(["player", "academics", "metrics", "contacts"]);
+const PROFILE_CATEGORIES = new Set([
+  "player",
+  "academics",
+  "metrics",
+  "contacts",
+]);
 export const PROFILE_EDIT_ROUTE = "/settings/player-details";
 
 /** Render a bare key as its literal {{key}} token (avoids brace nesting in markup). */
@@ -157,9 +169,7 @@ export function useQuickCommunication(params: QuickCommunicationParams) {
   const refreshContactWindow = async (): Promise<void> => {
     const ctx = await ensureAthleteContext();
     const gradYear = ctx.tables?.users?.graduation_year as
-      | number
-      | null
-      | undefined;
+      number | null | undefined;
     const { state } = await evaluateContactWindow({
       sport: ctx.derived?.sport ?? null,
       division: params.school()?.division ?? null,
@@ -171,20 +181,31 @@ export function useQuickCommunication(params: QuickCommunicationParams) {
   const composeFromTemplate = async (
     template: CommunicationTemplate,
     authored: Record<string, string> = {},
-  ): Promise<{ subject: string; body: string; values: Record<string, string> }> => {
+  ): Promise<{
+    subject: string;
+    body: string;
+    values: Record<string, string>;
+  }> => {
     const ctx = await ensureAthleteContext();
     const schoolProp = params.school();
     const schoolName = params.schoolName();
-    const baseSchool = schoolProp ?? (schoolName ? { name: schoolName } : undefined);
+    const baseSchool =
+      schoolProp ?? (schoolName ? { name: schoolName } : undefined);
     // Reflect an in-session questionnaire answer immediately (before the parent
     // refetches the school row) so the preview updates on Yes/Skip.
     const school =
       baseSchool && questionnaireOverride.value !== null
-        ? { ...baseSchool, questionnaire_completed: questionnaireOverride.value }
+        ? {
+            ...baseSchool,
+            questionnaire_completed: questionnaireOverride.value,
+          }
         : baseSchool;
     const { subject, body, values } = await resolveTemplate(
       template,
-      { coach: params.coach() as unknown as Row, school: school as Row | undefined },
+      {
+        coach: params.coach() as unknown as Row,
+        school: school as Row | undefined,
+      },
       ctx,
       authored,
     );
@@ -193,7 +214,9 @@ export function useQuickCommunication(params: QuickCommunicationParams) {
 
   /** Variables that appear in a template's raw subject+body, first-seen order. */
   const templateVarKeys = (tpl: CommunicationTemplate | null): string[] =>
-    tpl ? [...new Set(findUnresolved(`${tpl.subject ?? ""}\n${tpl.body ?? ""}`))] : [];
+    tpl
+      ? [...new Set(findUnresolved(`${tpl.subject ?? ""}\n${tpl.body ?? ""}`))]
+      : [];
 
   const seedInputs = (
     tpl: CommunicationTemplate | null,
@@ -208,12 +231,20 @@ export function useQuickCommunication(params: QuickCommunicationParams) {
     templateVarKeys(tpl).map((key) => {
       const sourcePath = varSourcePaths.value.get(key) ?? null;
       const editable = canEditProfile.value && !!editableColumnFor(sourcePath);
-      const authored = !editable && varSourceTypes.value.get(key) === "authored";
+      const authored =
+        !editable && varSourceTypes.value.get(key) === "authored";
       const linkToProfile =
         !editable &&
         !authored &&
         PROFILE_CATEGORIES.has(varCategories.value.get(key) ?? "");
-      return { key, value: values[key] ?? null, editable, sourcePath, authored, linkToProfile };
+      return {
+        key,
+        value: values[key] ?? null,
+        editable,
+        sourcePath,
+        authored,
+        linkToProfile,
+      };
     });
 
   /** Split rendered body into ordered text/{{unresolved}} segments (no v-html). */
@@ -348,7 +379,9 @@ export function useQuickCommunication(params: QuickCommunicationParams) {
       renderClean(composer.value.body, {}, varRequired.value),
     );
     const previewSegments = computed(() => toSegments(cleanBody.value));
-    const unresolved = computed(() => [...new Set(findUnresolved(cleanBody.value))]);
+    const unresolved = computed(() => [
+      ...new Set(findUnresolved(cleanBody.value)),
+    ]);
 
     // --- unified missing-info step (per channel) -----------------------------
     const questionnaireDraft = ref(false);
@@ -462,7 +495,10 @@ export function useQuickCommunication(params: QuickCommunicationParams) {
   const reresolveSelected = async (): Promise<void> => {
     for (const ch of channels) {
       if (!ch.selectedTemplateObj.value) continue;
-      const r = await composeFromTemplate(ch.selectedTemplateObj.value, ch.authored.value);
+      const r = await composeFromTemplate(
+        ch.selectedTemplateObj.value,
+        ch.authored.value,
+      );
       ch.composer.value = { subject: r.subject, body: r.body };
       ch.resolvedValues.value = r.values;
     }
@@ -477,7 +513,11 @@ export function useQuickCommunication(params: QuickCommunicationParams) {
     ch.savingKey.value = row.key;
     ch.saveErrors.value = { ...ch.saveErrors.value, [row.key]: "" };
     try {
-      await writeField(activeAthleteId.value, row.sourcePath, raw === "" ? null : raw);
+      await writeField(
+        activeAthleteId.value,
+        row.sourcePath,
+        raw === "" ? null : raw,
+      );
       invalidateAthleteContext(); // refetch on next ensureAthleteContext
       await reresolveSelected();
     } catch {
@@ -498,7 +538,11 @@ export function useQuickCommunication(params: QuickCommunicationParams) {
     ch.sendWarning.value = "";
     if (!(await passesSendGuardrails(ch))) return false;
 
-    const cleanBody = renderClean(ch.composer.value.body, {}, varRequired.value);
+    const cleanBody = renderClean(
+      ch.composer.value.body,
+      {},
+      varRequired.value,
+    );
     await logSentMessage(ch, cleanBody);
 
     const coach = params.coach();
@@ -528,7 +572,9 @@ export function useQuickCommunication(params: QuickCommunicationParams) {
 
   const activeTemplateUsesQuestionnaire = computed(() =>
     channels.some((ch) =>
-      (ch.selectedTemplateObj.value?.body ?? "").includes("{{questionnaireNote}}"),
+      (ch.selectedTemplateObj.value?.body ?? "").includes(
+        "{{questionnaireNote}}",
+      ),
     ),
   );
 
@@ -573,9 +619,15 @@ export function useQuickCommunication(params: QuickCommunicationParams) {
     onMounted(async () => {
       loadTemplates();
       const registry = await loadRegistry();
-      varSourcePaths.value = new Map(registry.map((v) => [v.key, v.source_path ?? ""]));
-      varCategories.value = new Map(registry.map((v) => [v.key, v.category ?? ""]));
-      varSourceTypes.value = new Map(registry.map((v) => [v.key, v.source_type]));
+      varSourcePaths.value = new Map(
+        registry.map((v) => [v.key, v.source_path ?? ""]),
+      );
+      varCategories.value = new Map(
+        registry.map((v) => [v.key, v.category ?? ""]),
+      );
+      varSourceTypes.value = new Map(
+        registry.map((v) => [v.key, v.source_type]),
+      );
       varLabels.value = new Map(registry.map((v) => [v.key, v.label ?? ""]));
       varRequired.value = new Set(
         registry.filter((v) => v.is_required_default).map((v) => v.key),

@@ -58,48 +58,52 @@
         />
 
         <div class="flex flex-col items-start gap-5 lg:flex-row">
-        <!-- Left rail -->
-        <div class="w-full shrink-0 space-y-5 lg:w-[340px]">
-          <CoachIdentityCard :coach="coach" :school="school" />
-          <CoachChannelActions
-            :coach="coach"
-            @log-interaction="openLogInteraction"
-            @open-social="handleOpenSocial"
-          />
-          <CoachInternalNotes :notes="coach.notes" @edit="editCoach" />
-          <CoachTagsCard :tags="coach.tags" @add="handleAddTag" @remove="handleRemoveTag" />
-          <CoachProfileMeta :coach="coach" />
-          <CoachProfileLink
-            :coach-id="coachId"
-            :coach-email="coach.email"
-            :coach-phone="coach.phone"
-            :coach-last-name="coach.last_name"
-            :school-id="coach.school_id ?? null"
-          />
-        </div>
+          <!-- Left rail -->
+          <div class="w-full shrink-0 space-y-5 lg:w-[340px]">
+            <CoachIdentityCard :coach="coach" :school="school" />
+            <CoachChannelActions
+              :coach="coach"
+              @log-interaction="openLogInteraction"
+              @open-social="handleOpenSocial"
+            />
+            <CoachInternalNotes :notes="coach.notes" @edit="editCoach" />
+            <CoachTagsCard
+              :tags="coach.tags"
+              @add="handleAddTag"
+              @remove="handleRemoveTag"
+            />
+            <CoachProfileMeta :coach="coach" />
+            <CoachProfileLink
+              :coach-id="coachId"
+              :coach-email="coach.email"
+              :coach-phone="coach.phone"
+              :coach-last-name="coach.last_name"
+              :school-id="coach.school_id ?? null"
+            />
+          </div>
 
-        <!-- Right column -->
-        <div class="min-w-0 w-full flex-1 space-y-5">
-          <CoachAlerts
-            :overdue="insights.overdueAlert.value"
-            :days-since-contact="insights.daysSinceContact.value"
-            :channel-preference="insights.channelPreferenceAlert.value"
-            :preferred-channel="insights.preferredChannel.value"
-          />
-          <CoachStatCards
-            :days-since-contact="insights.daysSinceContact.value"
-            :is-overdue="insights.isOverdue.value"
-            :total-interactions="insights.totalInteractions.value"
-            :preferred-channel="insights.preferredChannel.value"
-            :response-rate="insights.responseRate.value"
-          />
-          <CoachCommunicationAnalytics
-            :sent="insights.sentReceived.value.sent"
-            :received="insights.sentReceived.value.received"
-            :response-rate="insights.responseRate.value"
-          />
-          <CoachInteractionsTable :interactions="recentInteractions" />
-        </div>
+          <!-- Right column -->
+          <div class="w-full min-w-0 flex-1 space-y-5">
+            <CoachAlerts
+              :overdue="insights.overdueAlert.value"
+              :days-since-contact="insights.daysSinceContact.value"
+              :channel-preference="insights.channelPreferenceAlert.value"
+              :preferred-channel="insights.preferredChannel.value"
+            />
+            <CoachStatCards
+              :days-since-contact="insights.daysSinceContact.value"
+              :is-overdue="insights.isOverdue.value"
+              :total-interactions="insights.totalInteractions.value"
+              :preferred-channel="insights.preferredChannel.value"
+              :response-rate="insights.responseRate.value"
+            />
+            <CoachCommunicationAnalytics
+              :sent="insights.sentReceived.value.sent"
+              :received="insights.sentReceived.value.received"
+              :response-rate="insights.responseRate.value"
+            />
+            <CoachInteractionsTable :interactions="recentInteractions" />
+          </div>
         </div>
       </div>
     </main>

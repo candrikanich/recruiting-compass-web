@@ -117,7 +117,11 @@ describe("admin composable migration to useAdminResource", () => {
   });
 
   it("useAdminStats surfaces the status error string on non-OK", async () => {
-    mockFetch.mockResolvedValue({ ok: false, status: 500, json: async () => ({}) });
+    mockFetch.mockResolvedValue({
+      ok: false,
+      status: 500,
+      json: async () => ({}),
+    });
     const { statsError, loadStats } = useAdminStats();
     await loadStats();
     expect(statsError.value).toBe("Failed to load stats: 500");

@@ -4,7 +4,9 @@ import AssignCoachModal from "~/components/profile/AssignCoachModal.vue";
 import type { ProfileLead } from "~/composables/useProfileContacts";
 import type { Coach, School } from "~/types/models";
 
-const createCoach = vi.fn().mockResolvedValue({ id: "coach-new", school_id: "s1" });
+const createCoach = vi
+  .fn()
+  .mockResolvedValue({ id: "coach-new", school_id: "s1" });
 const createInteraction = vi.fn().mockResolvedValue({ id: "int-1" });
 const resolveLead = vi.fn().mockResolvedValue(undefined);
 const fetchCoaches = vi.fn().mockResolvedValue(undefined);

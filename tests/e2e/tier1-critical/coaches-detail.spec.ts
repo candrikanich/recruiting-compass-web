@@ -139,9 +139,7 @@ test.describe("Coach detail page", () => {
     const optionValues = await select
       .locator("option")
       .evaluateAll((opts) =>
-        opts
-          .map((o) => (o as HTMLOptionElement).value)
-          .filter((v) => v !== ""),
+        opts.map((o) => (o as HTMLOptionElement).value).filter((v) => v !== ""),
       );
     if (optionValues.length > 0) {
       await select.selectOption(optionValues[0]);

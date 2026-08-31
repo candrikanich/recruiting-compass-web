@@ -28,7 +28,13 @@ const baseData = {
   schools: null,
   social: null,
   metrics: [
-    { key: "exit_velocity", label: "Exit Velocity", value: "91", unit: "mph", verified: true },
+    {
+      key: "exit_velocity",
+      label: "Exit Velocity",
+      value: "91",
+      unit: "mph",
+      verified: true,
+    },
   ],
   teamHistory: [],
 };
