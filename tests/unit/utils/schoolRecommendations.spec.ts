@@ -217,3 +217,69 @@ describe("rankSchoolRecommendations", () => {
     expect(draft.division).toBe(first!.division);
   });
 });
+
+describe("sport-filtered ranking", () => {
+  const threeSchools: NcaaCatalogSchool[] = [
+    {
+      name: "Ohio State University",
+      division: "D1",
+      conference: "Big Ten",
+      state: "OH",
+      website: "osu.edu",
+      athleticWebsite: null,
+    },
+    {
+      name: "Kent State University",
+      division: "D1",
+      conference: "MAC",
+      state: "OH",
+      website: "kent.edu",
+      athleticWebsite: null,
+    },
+    {
+      name: "University of Michigan",
+      division: "D1",
+      conference: "Big Ten",
+      state: "MI",
+      website: "umich.edu",
+      athleticWebsite: null,
+    },
+  ];
+
+  it("excludes schools without the specified sport", () => {
+    const programs = new Map([
+      ["ohio state university", new Set(["baseball", "football"])],
+      ["kent state university", new Set(["baseball"])],
+      // michigan NOT in programs → filtered out
+    ]);
+
+    const result = rankSchoolRecommendations({
+      catalog: threeSchools,
+      homeState: "OH",
+      gpa: 3.5,
+      excludedKeys: new Set(),
+      sport: "baseball",
+      programsBySport: programs,
+    });
+
+    expect(
+      result.find((r) => r.catalogKey === "university of michigan"),
+    ).toBeUndefined();
+    expect(
+      result.find((r) => r.catalogKey === "ohio state university"),
+    ).toBeTruthy();
+  });
+
+  it("falls back to unfiltered when no programs data", () => {
+    const result = rankSchoolRecommendations({
+      catalog: threeSchools,
+      homeState: "OH",
+      gpa: 3.5,
+      excludedKeys: new Set(),
+      sport: "baseball",
+      // No programsBySport → no filter
+    });
+
+    expect(result.length).toBe(3); // All schools included
+  });
+});

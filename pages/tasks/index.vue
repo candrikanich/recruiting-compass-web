@@ -475,14 +475,20 @@ const onUrgencyFilterChange = () => {
       </div>
 
       <!-- Empty State -->
-      <div
+      <DesignSystemEmptyState
         v-else-if="filteredTasks.length === 0"
-        class="rounded-lg border border-slate-200 bg-white p-8 text-center"
+        title="No tasks yet"
+        description="Phase-based recruiting tasks guide your next steps"
       >
-        <p class="text-lg text-slate-600">
-          No tasks available for this grade level
-        </p>
-      </div>
+        <template #icon>
+          <UIcon name="i-heroicons-check-circle" class="h-8 w-8 text-brand-slate-400" />
+        </template>
+        <template #action>
+          <p class="text-sm text-brand-slate-500">
+            Your tasks appear as you progress
+          </p>
+        </template>
+      </DesignSystemEmptyState>
 
       <!-- Tasks -->
       <div v-else class="space-y-3">

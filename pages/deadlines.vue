@@ -19,15 +19,20 @@
     <div v-else-if="error" class="py-8 text-center text-red-600">
       {{ error }}
     </div>
-    <div
+    <DesignSystemEmptyState
       v-else-if="sortedDeadlines.length === 0"
-      class="py-16 text-center text-gray-400"
+      title="No deadlines yet"
+      description="Key dates for your sport, division, and graduation year"
     >
-      <p class="text-lg">No deadlines yet.</p>
-      <p class="mt-2 text-sm">
-        Add application deadlines, offer decisions, and other key dates.
-      </p>
-    </div>
+      <template #icon>
+        <UIcon name="i-heroicons-calendar-days" class="h-8 w-8 text-brand-slate-400" />
+      </template>
+      <template #action>
+        <DesignSystemButton color="blue" variant="solid" @click="showAdd = true">
+          View Recruiting Deadlines
+        </DesignSystemButton>
+      </template>
+    </DesignSystemEmptyState>
     <ul v-else class="space-y-3">
       <li
         v-for="d in sortedDeadlines"

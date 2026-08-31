@@ -122,19 +122,20 @@
       </div>
 
       <!-- Empty State -->
-      <div
+      <DesignSystemEmptyState
         v-else-if="events.length === 0"
-        class="rounded-xl border border-slate-200 bg-white p-12 text-center shadow-xs"
+        title="No events yet"
+        description="Coaches want to see you compete — track camps, showcases, and visits"
       >
-        <UIcon
-          name="i-heroicons-calendar"
-          class="mx-auto mb-4 h-12 w-12 text-slate-400"
-        />
-        <p class="mb-2 text-slate-600">No events yet</p>
-        <p class="text-sm text-slate-500">
-          Create your first event to start tracking camps and showcases
-        </p>
-      </div>
+        <template #icon>
+          <UIcon name="i-heroicons-calendar" class="h-8 w-8 text-brand-slate-400" />
+        </template>
+        <template #action>
+          <DesignSystemButton to="/events/create" color="blue" variant="solid">
+            Schedule Your First Event
+          </DesignSystemButton>
+        </template>
+      </DesignSystemEmptyState>
 
       <div v-else>
         <!-- Calendar View -->

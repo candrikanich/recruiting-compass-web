@@ -38,14 +38,16 @@
         <h1 class="sr-only">Recruiting Compass</h1>
 
         <!-- Headline -->
-        <h2 class="mb-3 text-2xl font-semibold text-white sm:text-3xl">
+        <h2
+          class="mb-3 text-2xl font-semibold text-white sm:text-3xl"
+        >
           Your College Recruiting Command Center
         </h2>
 
         <!-- Subheadline -->
         <p class="mx-auto mb-8 max-w-lg text-base text-white/90">
-          Navigate college recruiting from finding schools to signing day. For
-          19 sports. No recruiting service required.
+          Navigate college recruiting from finding schools to signing day.
+          For 19 sports. No recruiting service required.
         </p>
 
         <!-- CTA Buttons -->
@@ -77,17 +79,21 @@
             <span class="text-xl font-bold text-white sm:text-2xl">19</span>
             <span class="text-xs font-medium text-white/75">Sports</span>
           </div>
-          <div aria-hidden="true" class="h-7 w-px bg-white/25"></div>
+          <div
+            aria-hidden="true"
+            class="h-7 w-px bg-white/25"
+          ></div>
           <div role="listitem" class="flex flex-col items-center">
             <span class="text-xl font-bold text-white sm:text-2xl">33+</span>
             <span class="text-xs font-medium text-white/75">Templates</span>
           </div>
-          <div aria-hidden="true" class="h-7 w-px bg-white/25"></div>
+          <div
+            aria-hidden="true"
+            class="h-7 w-px bg-white/25"
+          ></div>
           <div role="listitem" class="flex flex-col items-center">
             <span class="text-xl font-bold text-white sm:text-2xl">22</span>
-            <span class="text-xs font-medium text-white/75"
-              >NCAA Calendars</span
-            >
+            <span class="text-xs font-medium text-white/75">NCAA Calendars</span>
           </div>
         </div>
 
@@ -99,10 +105,7 @@
             :key="feature.title"
             class="rounded-2xl border border-white/20 bg-white/10 p-6 backdrop-blur-xs transition-colors hover:bg-white/20"
           >
-            <div
-              class="mx-auto mb-3 h-12 w-12 text-white"
-              v-html="feature.icon"
-            ></div>
+            <div class="mx-auto mb-3 h-12 w-12 text-white" v-html="feature.icon"></div>
             <h3 class="mb-2 text-lg font-medium text-white">
               {{ feature.title }}
             </h3>
@@ -117,6 +120,8 @@
           Free for student athletes and families.
         </p>
       </div>
+
+      <SiteFooter variant="light" />
     </main>
 
     <!-- Decorative elements -->

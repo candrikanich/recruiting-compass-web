@@ -49,6 +49,27 @@
 
         <!-- Message Customization Step -->
         <div v-if="step === 'customize'" class="space-y-4">
+          <!-- Contextual NUX Prompt -->
+          <div
+            v-if="activePrompt"
+            class="flex items-center justify-between rounded-md border border-brand-blue-100 bg-brand-blue-50 px-4 py-2 text-sm dark:border-brand-blue-800 dark:bg-brand-blue-900/20"
+          >
+            <span
+              >{{ activePrompt.message }}
+              <NuxtLink
+                :to="activePrompt.link"
+                class="font-medium text-brand-blue-600 hover:underline"
+                >Update →</NuxtLink
+              ></span
+            >
+            <button
+              class="ml-2 text-brand-slate-400 hover:text-brand-slate-600"
+              @click="dismissActivePrompt"
+            >
+              Not now
+            </button>
+          </div>
+
           <!-- Subject (Email only) -->
           <div v-if="messageType === 'Email'">
             <label
@@ -133,6 +154,8 @@ import {
   type CommunicationTemplate,
 } from "~/composables/useCommunicationTemplates";
 import { useVideoLinks } from "~/composables/useVideoLinks";
+import { useNuxPrompts } from "~/composables/useNuxPrompts";
+import { usePreferenceManager } from "~/composables/usePreferenceManager";
 
 interface Props {
   isOpen: boolean;
@@ -159,6 +182,8 @@ const emit = defineEmits<{
 const { allTemplates, loadUserTemplates, interpolateTemplate } =
   useCommunicationTemplates();
 const { links: videoLinks, load: loadVideoLinks } = useVideoLinks();
+const { activePrompt, evaluatePrompts, dismissActivePrompt } = useNuxPrompts();
+const { getPlayerDetails } = usePreferenceManager();
 
 const step = ref<"select" | "customize">("select");
 const selectedTemplate = ref<CommunicationTemplate | null>(null);
@@ -220,6 +245,11 @@ watch(
 
 const selectTemplate = (template: CommunicationTemplate) => {
   selectedTemplate.value = template;
+
+  evaluatePrompts({
+    context: "template",
+    userPosition: getPlayerDetails()?.primary_position ?? null,
+  });
 
   // Interpolate variables
   const variables: Record<string, string> = {

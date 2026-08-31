@@ -65,3 +65,42 @@ export async function getTaskIdsBySlug(
   }
   return taskIdsBySlug;
 }
+
+/**
+ * Count total tasks per grade level, and which of those the athlete has completed.
+ * Used by year-completion milestones: a year is "milestone done" when all its tasks
+ * are completed.
+ */
+export interface GradeTaskCounts {
+  /** grade_level -> total task count */
+  totalByGrade: Record<number, number>;
+  /** grade_level -> completed task count for this athlete */
+  completedByGrade: Record<number, number>;
+}
+
+export async function getTaskCompletionByGrade(
+  supabase: SupabaseClient<Database>,
+  athleteId: string,
+  completedTaskIds: string[],
+): Promise<GradeTaskCounts> {
+  const { data, error } = await supabase
+    .from("task")
+    .select("id, grade_level");
+
+  if (error) throw error;
+
+  const totalByGrade: Record<number, number> = {};
+  const completedByGrade: Record<number, number> = {};
+
+  for (const row of data ?? []) {
+    const { id, grade_level } = row as { id: string; grade_level: number };
+    if (!grade_level) continue;
+
+    totalByGrade[grade_level] = (totalByGrade[grade_level] ?? 0) + 1;
+    if (completedTaskIds.includes(id)) {
+      completedByGrade[grade_level] = (completedByGrade[grade_level] ?? 0) + 1;
+    }
+  }
+
+  return { totalByGrade, completedByGrade };
+}

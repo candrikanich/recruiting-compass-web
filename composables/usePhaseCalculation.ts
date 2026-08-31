@@ -29,6 +29,7 @@ export const usePhaseCalculation = (): {
 } => {
   const currentPhase = ref<Phase>("freshman");
   const milestoneProgress = ref<MilestoneProgress | null>(null);
+  const serverCanAdvance = ref(false);
   const loading = ref(false);
   const error = ref<string | null>(null);
 
@@ -44,10 +45,12 @@ export const usePhaseCalculation = (): {
       const response = (await $fetchAuth("/api/athlete/phase")) as {
         phase: Phase;
         milestoneProgress: MilestoneProgress | null;
+        canAdvance: boolean;
       };
 
       currentPhase.value = response?.phase || "freshman";
       milestoneProgress.value = response?.milestoneProgress || null;
+      serverCanAdvance.value = response?.canAdvance ?? false;
 
       return response as AthleteAPI.GetPhaseResponse;
     } catch (err) {
@@ -101,11 +104,11 @@ export const usePhaseCalculation = (): {
   };
 
   /**
-   * Check if phase advancement is possible
+   * Check if phase advancement is possible (server-derived from gateway milestones,
+   * NOT from year-completion milestones which drive the display counter).
    */
   const canAdvance = computed((): boolean => {
-    if (!milestoneProgress.value) return false;
-    return milestoneProgress.value.remaining.length === 0;
+    return serverCanAdvance.value;
   });
 
   /**
@@ -143,7 +146,7 @@ export const usePhaseCalculation = (): {
     if (!milestoneProgress.value) return "";
     const completed = milestoneProgress.value.completed.length;
     const total = milestoneProgress.value.required.length;
-    return `${completed}/${total} milestones complete`;
+    return `${completed}/${total} years complete`;
   });
 
   return {

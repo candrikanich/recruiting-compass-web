@@ -92,6 +92,7 @@ export const useRecruitingStatus = (): {
   // ============================================================================
   const currentPhase = ref<Phase>("freshman");
   const milestoneProgress = ref<MilestoneProgress | null>(null);
+  const serverCanAdvance = ref(false);
 
   // ============================================================================
   // SHARED STATE
@@ -201,10 +202,12 @@ export const useRecruitingStatus = (): {
       const response = (await fetchAuth("/api/athlete/phase")) as {
         phase: Phase;
         milestoneProgress: MilestoneProgress | null;
+        canAdvance: boolean;
       };
 
       currentPhase.value = response?.phase || "freshman";
       milestoneProgress.value = response?.milestoneProgress || null;
+      serverCanAdvance.value = response?.canAdvance ?? false;
 
       return response as AthleteAPI.GetPhaseResponse;
     } catch (err) {
@@ -342,8 +345,7 @@ export const useRecruitingStatus = (): {
   // ============================================================================
 
   const canAdvance = computed((): boolean => {
-    if (!milestoneProgress.value) return false;
-    return milestoneProgress.value.remaining.length === 0;
+    return serverCanAdvance.value;
   });
 
   const nextPhase = computed((): Phase | null => {
@@ -366,7 +368,7 @@ export const useRecruitingStatus = (): {
     if (!milestoneProgress.value) return "";
     const completed = milestoneProgress.value.completed.length;
     const total = milestoneProgress.value.required.length;
-    return `${completed}/${total} milestones complete`;
+    return `${completed}/${total} years complete`;
   });
 
   // ============================================================================

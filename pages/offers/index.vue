@@ -343,19 +343,20 @@
       </div>
 
       <!-- Empty State -->
-      <div
+      <DesignSystemEmptyState
         v-else-if="offers.length === 0"
-        class="rounded-xl border border-slate-200 bg-white p-12 text-center shadow-xs"
+        title="No offers tracked"
+        description="Record offers, preferred walk-ons, and recruiting interest levels"
       >
-        <UIcon
-          name="i-heroicons-gift"
-          class="mx-auto mb-4 h-12 w-12 text-slate-300"
-        />
-        <p class="mb-2 font-medium text-slate-900">No offers logged yet</p>
-        <p class="text-sm text-slate-500">
-          Log scholarship offers as you receive them
-        </p>
-      </div>
+        <template #icon>
+          <UIcon name="i-heroicons-gift" class="h-8 w-8 text-brand-slate-400" />
+        </template>
+        <template #action>
+          <DesignSystemButton color="blue" variant="solid" @click="showAddForm = true">
+            Track Your First Offer
+          </DesignSystemButton>
+        </template>
+      </DesignSystemEmptyState>
 
       <!-- No Results State -->
       <div

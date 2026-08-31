@@ -295,6 +295,38 @@ export function getPreviousPhase(currentPhase: Phase): Phase | null {
 }
 
 /**
+ * Year-completion milestones: each of the 4 high-school years counts as one
+ * milestone, completed when ALL tasks for that grade_level are done.
+ * Replaces the old per-phase gateway-task milestones for display purposes.
+ */
+export function getYearCompletionMilestones(
+  totalByGrade: Record<number, number>,
+  completedByGrade: Record<number, number>,
+  currentPhase: Phase,
+): MilestoneProgress {
+  const YEAR_PHASES: { grade: number; label: string }[] = [
+    { grade: 9, label: "freshman" },
+    { grade: 10, label: "sophomore" },
+    { grade: 11, label: "junior" },
+    { grade: 12, label: "senior" },
+  ];
+
+  const required = YEAR_PHASES.map((y) => y.label);
+  const completed = YEAR_PHASES
+    .filter((y) => {
+      const total = totalByGrade[y.grade] ?? 0;
+      const done = completedByGrade[y.grade] ?? 0;
+      return total > 0 && done >= total;
+    })
+    .map((y) => y.label);
+  const remaining = required.filter((label) => !completed.includes(label));
+  const percentComplete =
+    required.length > 0 ? (completed.length / required.length) * 100 : 0;
+
+  return { phase: currentPhase, required, completed, remaining, percentComplete };
+}
+
+/**
  * Get milestone data to store in profile
  */
 export interface PhaseMilestoneData {

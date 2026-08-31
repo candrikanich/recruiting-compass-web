@@ -292,26 +292,24 @@ describe("useRecruitingStatus", () => {
   });
 
   describe("Computed Properties - Phase", () => {
-    it("should determine if can advance", () => {
-      const { milestoneProgress, canAdvance } = useRecruitingStatus();
+    it("should determine if can advance from server response", async () => {
+      const mockFetchAuth = vi.fn().mockResolvedValue({
+        phase: "freshman",
+        milestoneProgress: {
+          required: ["freshman", "sophomore", "junior", "senior"],
+          completed: ["freshman"],
+          remaining: ["sophomore", "junior", "senior"],
+          percentComplete: 25,
+        },
+        canAdvance: true,
+      });
 
-      milestoneProgress.value = {
-        required: ["m1"],
-        completed: ["m1"],
-        remaining: [],
-        percentComplete: 100,
-      };
+      vi.mocked(fetchAuth).mockImplementation(mockFetchAuth);
+
+      const { fetchPhase, canAdvance } = useRecruitingStatus();
+      await fetchPhase();
 
       expect(canAdvance.value).toBe(true);
-
-      milestoneProgress.value = {
-        required: ["m1", "m2"],
-        completed: ["m1"],
-        remaining: ["m2"],
-        percentComplete: 50,
-      };
-
-      expect(canAdvance.value).toBe(false);
     });
 
     it("should compute next phase", () => {
@@ -360,7 +358,7 @@ describe("useRecruitingStatus", () => {
         percentComplete: 66,
       };
 
-      expect(progressLabel.value).toBe("2/3 milestones complete");
+      expect(progressLabel.value).toBe("2/3 years complete");
     });
   });
 

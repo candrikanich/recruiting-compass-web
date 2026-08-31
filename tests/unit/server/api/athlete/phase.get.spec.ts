@@ -250,7 +250,7 @@ describe("/api/athlete/phase.get", () => {
       expect(response.phase).toBe("sophomore");
     });
 
-    it("reports nonzero milestone progress for a partially-complete athlete", async () => {
+    it("reports zero year-completion milestones when only some grade-9 tasks are done", async () => {
       vi.setSystemTime(new Date("2026-02-14T12:00:00Z"));
 
       const { createServerSupabaseClient } =
@@ -268,9 +268,8 @@ describe("/api/athlete/phase.get", () => {
       vi.mocked(createServerSupabaseClient).mockReturnValue(
         createMockSupabase({
           user: { data: { current_phase: null }, error: null },
-          userPreferences: { data: null, error: null }, // -> freshman default
+          userPreferences: { data: null, error: null },
           tasks: { data: taskRows, error: null },
-          // Athlete has completed 1 of 4 required freshman milestone tasks
           athleteTasks: {
             data: [{ task_id: taskRows[0].id }],
             error: null,
@@ -281,12 +280,13 @@ describe("/api/athlete/phase.get", () => {
       const response = await handler(mockEvent());
 
       expect(response.phase).toBe("freshman");
-      expect(response.milestoneProgress.percentComplete).toBeGreaterThan(0);
-      expect(response.milestoneProgress.percentComplete).toBeLessThan(100);
+      // Year-completion: 1/4 grade-9 tasks done → freshman year incomplete → 0/4 milestones
+      expect(response.milestoneProgress.completed).toEqual([]);
+      expect(response.milestoneProgress.percentComplete).toBe(0);
       expect(response.canAdvance).toBe(false);
     });
 
-    it("reports canAdvance true once all required milestone tasks are complete", async () => {
+    it("reports canAdvance true and 1/4 year milestones when all grade-9 tasks are done", async () => {
       vi.setSystemTime(new Date("2026-02-14T12:00:00Z"));
 
       const { createServerSupabaseClient } =
@@ -315,7 +315,10 @@ describe("/api/athlete/phase.get", () => {
 
       const response = await handler(mockEvent());
 
-      expect(response.milestoneProgress.percentComplete).toBe(100);
+      // All grade-9 tasks done → freshman year complete → 1/4 milestones
+      expect(response.milestoneProgress.completed).toEqual(["freshman"]);
+      expect(response.milestoneProgress.percentComplete).toBe(25);
+      // canAdvance still uses slug-based gateway milestones (all 4 done)
       expect(response.canAdvance).toBe(true);
     });
   });
