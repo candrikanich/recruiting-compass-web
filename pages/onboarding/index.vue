@@ -505,6 +505,9 @@ const prefillFromCanonical = () => {
 };
 
 onMounted(async () => {
+  const { $posthog } = useNuxtApp();
+  $posthog?.capture("onboarding_v2_started");
+
   // Pre-populate from parent-entered player details passed as query params
   if (route.query.graduationYear) {
     onboardingData.value.graduation_year = Number(route.query.graduationYear);

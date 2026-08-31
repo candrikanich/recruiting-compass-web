@@ -83,15 +83,20 @@ export function useNuxPrompts() {
       if (sessionDismissed.has(candidate.field)) continue;
       if (isPromptDismissed(candidate.id, COOLDOWN_DAYS)) continue;
       activePrompt.value = candidate;
+      useNuxtApp().$posthog?.capture("nux_prompt_shown", {
+        promptId: candidate.id,
+      });
       return;
     }
   }
 
   async function dismissActivePrompt() {
     if (!activePrompt.value) return;
+    const promptId = activePrompt.value.id;
     sessionDismissed.add(activePrompt.value.field);
-    await dismissPrompt(activePrompt.value.id);
+    await dismissPrompt(promptId);
     activePrompt.value = null;
+    useNuxtApp().$posthog?.capture("nux_prompt_dismissed", { promptId });
   }
 
   return { activePrompt, evaluatePrompts, dismissActivePrompt };

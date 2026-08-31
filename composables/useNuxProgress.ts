@@ -42,12 +42,14 @@ export function useNuxProgress() {
       completedAt: new Date().toISOString(),
     };
     await persistProgress(current);
+    useNuxtApp().$posthog?.capture("checklist_item_completed", { item: key });
   }
 
   async function dismissChecklist() {
     const current = parseNuxProgress(userStore.user?.nux_progress);
     current.checklist.dismissedAt = new Date().toISOString();
     await persistProgress(current);
+    useNuxtApp().$posthog?.capture("checklist_dismissed");
   }
 
   async function recordFirstVisit(pageKey: string) {
