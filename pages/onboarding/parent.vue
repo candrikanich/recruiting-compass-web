@@ -28,11 +28,11 @@
         <div v-if="step === 1" data-testid="step-1" class="space-y-6">
           <div>
             <h2 class="mb-1 text-2xl font-bold text-slate-900">
-              Tell us about your player
+              Tell us about your athlete
             </h2>
             <p class="text-sm text-slate-500">
               We'll pre-fill their profile so they can hit the ground running.
-              Name and position are optional.
+              Name is optional.
             </p>
           </div>
 
@@ -91,7 +91,7 @@
                 for="graduationYear"
                 class="mb-1 block text-sm font-medium text-slate-700"
               >
-                Graduation year
+                Graduation year <span class="text-red-600">*</span>
               </label>
               <select
                 id="graduationYear"
@@ -122,35 +122,10 @@
                 v-model="sport"
                 data-testid="sport"
                 class="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
-                @change="position = ''"
               >
                 <option value="">Select sport</option>
                 <option v-for="s in commonSports" :key="s" :value="s">
                   {{ s }}
-                </option>
-              </select>
-            </div>
-
-            <div v-if="sport">
-              <label
-                for="position"
-                class="mb-1 block text-sm font-medium text-slate-700"
-              >
-                Position
-              </label>
-              <select
-                id="position"
-                v-model="position"
-                data-testid="position"
-                class="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">Select position</option>
-                <option
-                  v-for="pos in availablePositions"
-                  :key="pos"
-                  :value="pos"
-                >
-                  {{ pos }}
                 </option>
               </select>
             </div>
@@ -160,7 +135,7 @@
             <button
               data-testid="next-button"
               type="button"
-              :disabled="!playerDob || playerTooYoung || !sport"
+              :disabled="!playerDob || playerTooYoung || !sport || !graduationYear"
               class="w-full rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
               @click="savePlayerDetails"
             >
@@ -169,111 +144,33 @@
           </div>
         </div>
 
-        <!-- Step 2: Invite Player -->
+        <!-- Step 2: Schools to explore -->
         <div v-if="step === 2" data-testid="step-2" class="space-y-6">
           <div>
             <h2 class="mb-1 text-2xl font-bold text-slate-900">
-              Invite your player
+              Schools to explore
             </h2>
             <p class="text-sm text-slate-500">
-              Send them an email invite or share your family code.
+              Based on what you told us, here are a few schools to start with.
             </p>
           </div>
 
-          <div>
-            <label
-              for="inviteEmail"
-              class="mb-1 block text-sm font-medium text-slate-700"
-            >
-              Player's email address
-            </label>
-            <input
-              id="inviteEmail"
-              v-model="inviteEmail"
-              data-testid="invite-email"
-              type="email"
-              autocomplete="email"
-              placeholder="player@example.com"
-              class="w-full rounded-lg border border-slate-300 px-4 py-2 focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-blue-500"
-            />
-          </div>
+          <RecommendedSchools
+            :items="recommendations"
+            :loading="recommendationsLoading"
+            :error="recommendationsError || recommendationActionError"
+            :adding-key="addingRecommendationKey"
+            @add="handleAddRecommendation"
+            @dismiss="handleDismissRecommendation"
+          />
 
           <button
-            data-testid="send-invite-button"
+            data-testid="go-to-dashboard"
             type="button"
-            :disabled="!inviteEmail || inviteLoading"
-            class="w-full rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-            @click="sendPlayerInvite"
+            class="w-full rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700"
+            @click="goToDashboard"
           >
-            {{ inviteLoading ? "Sending\u2026" : "Send invite" }}
-          </button>
-
-          <div v-if="inviteError" class="text-sm text-red-600">
-            {{ inviteError }}
-          </div>
-
-          <!-- Family code display -->
-          <div class="border-t border-slate-200 pt-4">
-            <p class="mb-2 text-sm text-slate-500">Or share your family code</p>
-            <div
-              class="flex items-center gap-3 rounded-lg bg-slate-50 px-4 py-3"
-            >
-              <span
-                data-testid="family-code-display"
-                class="flex-1 font-mono text-lg font-bold tracking-wider text-slate-900"
-              >
-                {{
-                  familyCodeLoading
-                    ? "Loading\u2026"
-                    : (myFamilyCode ?? "\u2014")
-                }}
-              </span>
-              <button
-                v-if="myFamilyCode && !familyCodeLoading"
-                type="button"
-                class="text-slate-400 transition-colors hover:text-slate-700"
-                :title="codeCopied ? 'Copied!' : 'Copy code'"
-                @click="copyCode"
-              >
-                <svg
-                  v-if="!codeCopied"
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="h-5 w-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                  <path
-                    d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
-                  />
-                </svg>
-                <svg
-                  v-else
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="h-5 w-5 text-green-500"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-              </button>
-            </div>
-            <p class="mt-1 text-xs text-slate-400">
-              Your player enters this code during their signup.
-            </p>
-          </div>
-
-          <button
-            data-testid="skip-invite"
-            type="button"
-            class="w-full rounded-lg border border-slate-300 px-4 py-2 text-slate-600 transition-colors hover:bg-slate-50"
-            @click="skipInvite"
-          >
-            I'll invite them later
+            Go to your dashboard →
           </button>
         </div>
       </div>
@@ -285,10 +182,16 @@
 import { ref, computed, onMounted, inject } from "vue";
 import { useAuthFetch } from "~/composables/useAuthFetch";
 import { useFamilyCode } from "~/composables/useFamilyCode";
-import { useFamilyInvite } from "~/composables/useFamilyInvite";
+import { useSchools } from "~/composables/useSchools";
+import { useSchoolRecommendations } from "~/composables/useSchoolRecommendations";
 import type { UseActiveFamilyReturn } from "~/composables/useActiveFamily";
-import { getCanonicalPositions } from "~/utils/positions/canonical";
 import { getGraduationYearOptions } from "~/utils/graduationYears";
+import { createClientLogger } from "~/utils/logger";
+import { recommendationToSchoolDraft } from "~/utils/schoolRecommendations";
+import type { School } from "~/types";
+import type { SchoolRecommendation } from "~/types/schoolRecommendations";
+
+const logger = createClientLogger("ParentOnboarding");
 
 definePageMeta({ layout: "default", middleware: "auth" });
 
@@ -300,7 +203,6 @@ const playerName = ref("");
 const playerDob = ref("");
 const graduationYear = ref("");
 const sport = ref("");
-const position = ref("");
 
 const today = new Date().toISOString().split("T")[0];
 
@@ -337,37 +239,23 @@ const commonSports = [
   "Water Polo",
 ];
 
-const availablePositions = computed(() => getCanonicalPositions(sport.value));
-
 const graduationYears = computed(() => getGraduationYearOptions());
 
-// Step 2 — Invite
-const inviteEmail = ref("");
+// Step 2 — Schools to explore
 const { $fetchAuth } = useAuthFetch();
 const activeFamilyCtx = inject<UseActiveFamilyReturn>("activeFamily");
+const { fetchMyCode, myFamilyCode, createFamily } = useFamilyCode();
+const { createSchool } = useSchools();
 const {
-  myFamilyCode,
-  fetchMyCode,
-  createFamily,
-  loading: familyCodeLoading,
-  copyCodeToClipboard,
-} = useFamilyCode();
-const {
-  sendInvite,
-  loading: inviteLoading,
-  error: inviteError,
-} = useFamilyInvite();
-
-const codeCopied = ref(false);
-
-async function copyCode() {
-  if (!myFamilyCode.value) return;
-  await copyCodeToClipboard(myFamilyCode.value);
-  codeCopied.value = true;
-  setTimeout(() => {
-    codeCopied.value = false;
-  }, 2000);
-}
+  recommendations,
+  loading: recommendationsLoading,
+  error: recommendationsError,
+  fetchRecommendations,
+  dismissRecommendation,
+  removeRecommendation,
+} = useSchoolRecommendations();
+const addingRecommendationKey = ref<string | null>(null);
+const recommendationActionError = ref<string | null>(null);
 
 onMounted(async () => {
   await fetchMyCode();
@@ -387,19 +275,46 @@ async function savePlayerDetails() {
       playerDob: playerDob.value,
       graduationYear: graduationYear.value,
       sport: sport.value,
-      position: position.value,
     },
   });
   step.value = 2;
+  void fetchRecommendations();
 }
 
-async function sendPlayerInvite() {
-  if (!inviteEmail.value) return;
-  await sendInvite({ email: inviteEmail.value, role: "player" });
-  await navigateTo("/dashboard");
+async function handleAddRecommendation(school: SchoolRecommendation) {
+  addingRecommendationKey.value = school.catalogKey;
+  recommendationActionError.value = null;
+  try {
+    await createSchool(
+      recommendationToSchoolDraft(school) as Omit<
+        School,
+        "id" | "created_at" | "updated_at"
+      >,
+    );
+    removeRecommendation(school.catalogKey);
+
+    const { $posthog } = useNuxtApp();
+    $posthog?.capture("onboarding_v2_school_added");
+  } catch (err) {
+    logger.warn("Failed to add recommended school", err);
+    recommendationActionError.value =
+      err instanceof Error ? err.message : "Failed to add school";
+  } finally {
+    addingRecommendationKey.value = null;
+  }
 }
 
-function skipInvite() {
+async function handleDismissRecommendation(school: SchoolRecommendation) {
+  try {
+    await dismissRecommendation(school.catalogKey);
+  } catch {
+    // dismissRecommendation already restores state and sets its own error.
+  }
+}
+
+function goToDashboard() {
+  const { $posthog } = useNuxtApp();
+  $posthog?.capture("onboarding_v2_complete");
   navigateTo("/dashboard");
 }
 </script>

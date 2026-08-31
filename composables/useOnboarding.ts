@@ -288,8 +288,8 @@ export const useOnboarding = () => {
         }
       }
 
-      // 5 total onboarding screens (1-5)
-      const totalSteps = 5;
+      // 2 total onboarding screens (1-2)
+      const totalSteps = 2;
       const progress = Math.min(
         100,
         Math.round((currentStep / totalSteps) * 100),

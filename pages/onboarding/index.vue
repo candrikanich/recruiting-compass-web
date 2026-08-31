@@ -9,7 +9,7 @@
           Welcome to The Recruiting Compass
         </h1>
         <p class="mb-6 text-slate-600">
-          Let's get you set up in just a few steps
+          Let's get you set up in just two steps
         </p>
 
         <!-- Progress Indicator -->
@@ -23,7 +23,7 @@
             </div>
           </div>
           <span class="ml-4 text-sm font-medium text-slate-700"
-            >{{ currentStep }}/5</span
+            >{{ currentStep }}/{{ totalSteps }}</span
           >
         </div>
       </div>
@@ -37,21 +37,10 @@
         :aria-busy="loading"
         class="mb-8 rounded-lg bg-white p-8 shadow-lg focus:outline-none"
       >
-        <!-- Screen 1: Welcome -->
+        <!-- Screen 1: Tell us about you -->
         <div v-if="currentStep === 1" class="space-y-6">
-          <div class="text-center">
-            <h2 class="mb-4 text-2xl font-bold text-slate-900">Welcome!</h2>
-            <p class="mb-6 text-slate-600">
-              This onboarding will help us understand your recruiting goals and
-              preferences. It should take about 5 minutes.
-            </p>
-          </div>
-        </div>
-
-        <!-- Screen 2: Basic Info -->
-        <div v-if="currentStep === 2" class="space-y-6">
           <h2 class="mb-4 text-2xl font-bold text-slate-900">
-            Basic Information
+            Tell us about you
           </h2>
 
           <!-- Graduation Year -->
@@ -73,6 +62,9 @@
                 {{ year }}
               </option>
             </select>
+            <p v-if="graduationYearError" class="mt-1 text-sm text-red-600">
+              {{ graduationYearError }}
+            </p>
           </div>
 
           <!-- Primary Sport -->
@@ -100,8 +92,8 @@
             </p>
           </div>
 
-          <!-- Gender -->
-          <div>
+          <!-- Gender — only asked when it can't be derived from sport -->
+          <div v-if="!genderIsAutoDerived">
             <label
               for="onboarding-gender"
               class="mb-2 block text-sm font-medium text-slate-700"
@@ -121,41 +113,16 @@
             </select>
           </div>
 
-          <!-- Position -->
-          <div v-if="onboardingData.primary_sport">
-            <label
-              for="onboarding-primary-position"
-              class="mb-2 block text-sm font-medium text-slate-700"
-            >
-              Primary Position *
-            </label>
-            <select
-              id="onboarding-primary-position"
-              v-model="onboardingData.primary_position"
-              class="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
-              required
-            >
-              <option value="">Select position</option>
-              <option v-for="pos in positions" :key="pos" :value="pos">
-                {{ pos }}
-              </option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Screen 3: Location -->
-        <div v-if="currentStep === 3" class="space-y-6">
-          <h2 class="mb-4 text-2xl font-bold text-slate-900">Your Location</h2>
-          <p class="mb-4 text-slate-600">
-            Tell us your zip code so we can find nearby schools.
-          </p>
-
           <!-- Zip Code -->
           <div>
-            <label class="mb-2 block text-sm font-medium text-slate-700">
-              Zip Code *
+            <label
+              for="onboarding-zip-code"
+              class="mb-2 block text-sm font-medium text-slate-700"
+            >
+              Zip Code (Optional)
             </label>
             <input
+              id="onboarding-zip-code"
               v-model="onboardingData.zip_code"
               type="text"
               autocomplete="postal-code"
@@ -163,161 +130,35 @@
               maxlength="5"
               class="w-full rounded-lg border border-slate-300 px-4 py-2 focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-blue-500"
               @keypress="restrictToNumbers"
-              required
             />
+            <p class="mt-1 text-xs text-slate-500">
+              Helps us recommend schools near you.
+            </p>
             <p v-if="zipCodeError" class="mt-1 text-sm text-red-600">
               {{ zipCodeError }}
             </p>
           </div>
         </div>
 
-        <!-- Screen 4: Academic Info -->
-        <div v-if="currentStep === 4" class="space-y-6">
-          <h2 class="mb-4 text-2xl font-bold text-slate-900">Academic Info</h2>
-          <p class="mb-4 text-slate-600">
-            Share your GPA and test scores (optional) for better
-            recommendations.
-          </p>
-
-          <!-- GPA -->
-          <div>
-            <label class="mb-2 block text-sm font-medium text-slate-700">
-              GPA (Optional)
-            </label>
-            <input
-              v-model.number="onboardingData.gpa"
-              type="number"
-              autocomplete="off"
-              step="0.01"
-              min="0"
-              max="4.0"
-              placeholder="e.g., 3.8"
-              class="w-full rounded-lg border border-slate-300 px-4 py-2 focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-blue-500"
-            />
-            <p class="mt-1 text-xs text-slate-500">Scale of 0.0 - 4.0</p>
-          </div>
-
-          <!-- SAT Score -->
-          <div>
-            <label class="mb-2 block text-sm font-medium text-slate-700">
-              SAT Score (Optional)
-            </label>
-            <input
-              v-model.number="onboardingData.sat_score"
-              type="number"
-              autocomplete="off"
-              min="400"
-              max="1600"
-              placeholder="e.g., 1500"
-              class="w-full rounded-lg border border-slate-300 px-4 py-2 focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-blue-500"
-            />
-            <p class="mt-1 text-xs text-slate-500">Score between 400-1600</p>
-          </div>
-
-          <!-- ACT Score -->
-          <div>
-            <label class="mb-2 block text-sm font-medium text-slate-700">
-              ACT Score (Optional)
-            </label>
-            <input
-              v-model.number="onboardingData.act_score"
-              type="number"
-              autocomplete="off"
-              min="1"
-              max="36"
-              placeholder="e.g., 35"
-              class="w-full rounded-lg border border-slate-300 px-4 py-2 focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-blue-500"
-            />
-            <p class="mt-1 text-xs text-slate-500">Score between 1-36</p>
-          </div>
-        </div>
-
-        <!-- Screen 5: Invite Parent -->
-        <div
-          v-if="currentStep === 5"
-          class="space-y-6"
-          data-testid="step-5-invite"
-        >
-          <div class="mb-4 text-center">
+        <!-- Screen 2: Schools to explore -->
+        <div v-if="currentStep === 2" class="space-y-6">
+          <div class="mb-2 text-center">
             <h2 class="mb-2 text-2xl font-bold text-slate-900">
-              Invite a parent
+              Schools to explore
             </h2>
             <p class="text-slate-600">
-              Add a parent so they can follow your recruiting journey with you.
+              Based on what you told us, here are a few schools to start with.
             </p>
           </div>
 
-          <div class="space-y-3">
-            <label class="block text-sm font-medium text-slate-700">
-              Parent's email address
-            </label>
-            <input
-              v-model="parentInviteEmail"
-              data-testid="parent-invite-email"
-              type="email"
-              autocomplete="email"
-              placeholder="parent@example.com"
-              class="w-full rounded-lg border border-slate-200 px-4 py-3 focus-visible:border-blue-500 focus-visible:ring-2 focus-visible:ring-blue-500"
-            />
-          </div>
-
-          <button
-            data-testid="send-parent-invite-button"
-            :disabled="!parentInviteEmail || inviteLoading"
-            class="w-full rounded-lg bg-blue-500 px-6 py-3 font-medium text-white transition-colors hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
-            @click="sendParentInvite"
-          >
-            {{ inviteLoading ? "Sending..." : "Send invite" }}
-          </button>
-
-          <div class="mt-6 border-t border-slate-200 pt-4">
-            <p class="mb-3 text-sm text-slate-500">Or share your family code</p>
-            <div
-              class="flex items-center gap-3 rounded-lg bg-slate-50 px-4 py-3"
-            >
-              <span
-                class="flex-1 font-mono font-semibold tracking-widest text-slate-900"
-              >
-                {{ myFamilyCode ?? "..." }}
-              </span>
-              <button
-                v-if="myFamilyCode"
-                type="button"
-                class="text-slate-400 transition-colors hover:text-slate-700"
-                :aria-label="codeCopied ? 'Code copied' : 'Copy family code'"
-                :title="codeCopied ? 'Copied!' : 'Copy code'"
-                @click="copyCode"
-              >
-                <svg
-                  v-if="!codeCopied"
-                  xmlns="http://www.w3.org/2000/svg"
-                  aria-hidden="true"
-                  class="h-5 w-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                  <path
-                    d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
-                  />
-                </svg>
-                <svg
-                  v-else
-                  xmlns="http://www.w3.org/2000/svg"
-                  aria-hidden="true"
-                  class="h-5 w-5 text-green-500"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-              </button>
-            </div>
-          </div>
+          <RecommendedSchools
+            :items="recommendations"
+            :loading="recommendationsLoading"
+            :error="recommendationsError || recommendationActionError"
+            :adding-key="addingRecommendationKey"
+            @add="handleAddRecommendation"
+            @dismiss="handleDismissRecommendation"
+          />
         </div>
 
         <!-- Loading state -->
@@ -362,28 +203,13 @@
           Back
         </button>
 
-        <div class="flex gap-4">
-          <button
-            v-if="currentStep < 5 && currentStep !== 2"
-            @click="skipStep"
-            class="rounded-lg bg-slate-100 px-6 py-3 font-medium text-slate-600 transition-colors hover:bg-slate-200"
-          >
-            Skip
-          </button>
-          <button
-            @click="nextScreen"
-            :disabled="loading"
-            class="rounded-lg bg-blue-500 px-6 py-3 font-medium text-white transition-colors hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {{
-              currentStep === 5
-                ? "I'll invite them later"
-                : currentStep === 4
-                  ? "Review"
-                  : "Next"
-            }}
-          </button>
-        </div>
+        <button
+          @click="nextScreen"
+          :disabled="loading"
+          class="rounded-lg bg-blue-500 px-6 py-3 font-medium text-white transition-colors hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {{ currentStep === totalSteps ? "Go to your dashboard →" : "Next" }}
+        </button>
       </div>
     </div>
   </div>
@@ -393,13 +219,15 @@
 import { ref, computed, onMounted, watch, nextTick } from "vue";
 import { useOnboarding } from "~/composables/useOnboarding";
 import { usePreferenceManager } from "~/composables/usePreferenceManager";
-import { useFamilyCode } from "~/composables/useFamilyCode";
-import { useFamilyInvite } from "~/composables/useFamilyInvite";
-import { useAppToast } from "~/composables/useAppToast";
+import { useSchools } from "~/composables/useSchools";
+import { useSchoolRecommendations } from "~/composables/useSchoolRecommendations";
+import { useNuxProgress } from "~/composables/useNuxProgress";
 import { createClientLogger } from "~/utils/logger";
-import { getCanonicalPositions } from "~/utils/positions/canonical";
 import { getGraduationYearOptions } from "~/utils/graduationYears";
+import { recommendationToSchoolDraft } from "~/utils/schoolRecommendations";
 import type { PlayerDetails } from "~/types/models";
+import type { School } from "~/types";
+import type { SchoolRecommendation } from "~/types/schoolRecommendations";
 
 const logger = createClientLogger("Onboarding");
 
@@ -414,20 +242,16 @@ const {
   getPlayerDetails,
   getHomeLocation,
 } = usePreferenceManager();
-const { myFamilyCode, fetchMyCode, copyCodeToClipboard } = useFamilyCode();
-const { sendInvite, loading: inviteLoading } = useFamilyInvite();
-const { showToast } = useAppToast();
-
-const codeCopied = ref(false);
-
-async function copyCode() {
-  if (!myFamilyCode.value) return;
-  await copyCodeToClipboard(myFamilyCode.value);
-  codeCopied.value = true;
-  setTimeout(() => {
-    codeCopied.value = false;
-  }, 2000);
-}
+const { createSchool } = useSchools();
+const {
+  recommendations,
+  loading: recommendationsLoading,
+  error: recommendationsError,
+  fetchRecommendations,
+  dismissRecommendation,
+  removeRecommendation,
+} = useSchoolRecommendations();
+const { completeItem } = useNuxProgress();
 
 const currentStep = ref(1);
 const stepContainer = ref<HTMLElement | null>(null);
@@ -444,9 +268,11 @@ const loading = ref(false);
 const error = ref<string | null>(null);
 const zipCodeError = ref<string | null>(null);
 const sportError = ref<string | null>(null);
-const parentInviteEmail = ref("");
+const graduationYearError = ref<string | null>(null);
+const addingRecommendationKey = ref<string | null>(null);
+const recommendationActionError = ref<string | null>(null);
 
-const totalSteps = 5;
+const totalSteps = 2;
 
 // Common high school sports and their positions
 const commonSports = [
@@ -469,9 +295,19 @@ const commonSports = [
   "Water Polo",
 ];
 
-const positions = computed(() =>
-  getCanonicalPositions(onboardingData.value.primary_sport as string),
-);
+// Sports whose gender isn't ambiguous — skip asking and derive it silently.
+const SPORT_GENDER_MAP: Record<string, "male" | "female"> = {
+  softball: "female",
+  "field hockey": "female",
+  baseball: "male",
+  football: "male",
+  wrestling: "male",
+};
+
+const genderIsAutoDerived = computed(() => {
+  const sport = (onboardingData.value.primary_sport as string) || "";
+  return sport.toLowerCase() in SPORT_GENDER_MAP;
+});
 
 const graduationYears = computed(() => getGraduationYearOptions());
 
@@ -480,8 +316,11 @@ const progressPercentage = computed(() => {
 });
 
 const onSportChange = () => {
-  // Reset position when sport changes
-  onboardingData.value.primary_position = "";
+  const sport = ((onboardingData.value.primary_sport as string) || "").toLowerCase();
+  const derivedGender = SPORT_GENDER_MAP[sport];
+  if (derivedGender) {
+    onboardingData.value.gender = derivedGender;
+  }
 };
 
 const restrictToNumbers = (event: KeyboardEvent) => {
@@ -490,122 +329,108 @@ const restrictToNumbers = (event: KeyboardEvent) => {
   }
 };
 
-// Primary sport is required as of Phase 2 (empty string counts as unset).
 const hasSport = (): boolean => {
   const sport = onboardingData.value.primary_sport;
   return typeof sport === "string" && sport.trim() !== "";
 };
 
-const validateStep = (): boolean => {
+const hasGraduationYear = (): boolean => {
+  const year = onboardingData.value.graduation_year;
+  return year !== undefined && year !== null && year !== "";
+};
+
+const validateStep1 = (): boolean => {
   zipCodeError.value = null;
   sportError.value = null;
+  graduationYearError.value = null;
 
-  // Validate step 2 (basic info) — primary sport is required
-  if (currentStep.value === 2 && !hasSport()) {
+  let isValid = true;
+
+  if (!hasSport()) {
     sportError.value = "Primary sport is required";
-    return false;
+    isValid = false;
   }
 
-  // Validate step 3 (location)
-  if (currentStep.value === 3) {
-    const zipCode = onboardingData.value.zip_code as string;
-    if (!zipCode) {
-      zipCodeError.value = "Zip code is required";
-      return false;
-    }
-    if (!/^\d{5}$/.test(zipCode)) {
-      zipCodeError.value = "Please enter a valid 5-digit zip code";
-      return false;
-    }
+  if (!hasGraduationYear()) {
+    graduationYearError.value = "Graduation year is required";
+    isValid = false;
   }
 
-  return true;
+  // Zip is optional, but if entered it must be a valid 5-digit code.
+  const zipCode = onboardingData.value.zip_code as string;
+  if (zipCode && !/^\d{5}$/.test(zipCode)) {
+    zipCodeError.value = "Please enter a valid 5-digit zip code";
+    isValid = false;
+  }
+
+  return isValid;
 };
 
 const clearError = () => {
   error.value = null;
 };
 
-const nextScreen = async () => {
-  // Validate current step before proceeding
-  if (!validateStep()) {
-    return;
+const saveStep1 = async () => {
+  const onboardingGender = onboardingData.value.gender as
+    | PlayerDetails["gender"]
+    | undefined;
+  await setPlayerDetails({
+    graduation_year: onboardingData.value.graduation_year as number,
+    primary_sport: onboardingData.value.primary_sport as string,
+    ...(onboardingGender ? { gender: onboardingGender } : {}),
+  });
+
+  if (onboardingData.value.zip_code) {
+    await setHomeLocation({ zip: onboardingData.value.zip_code as string });
   }
 
-  if (currentStep.value === totalSteps) {
-    // Final guard: step-jumping must not let onboarding complete with no sport.
-    if (!hasSport()) {
-      sportError.value = "Primary sport is required";
-      currentStep.value = 2;
+  await saveOnboardingStep(1, onboardingData.value);
+  await completeItem("sport");
+
+  const { $posthog } = useNuxtApp();
+  $posthog?.capture("onboarding_v2_step1_complete");
+};
+
+const nextScreen = async () => {
+  if (currentStep.value === 1) {
+    if (!validateStep1()) {
       return;
     }
-    // Complete onboarding
     loading.value = true;
     try {
-      // completeOnboarding expects assessment object
-      const assessment = {
-        hasHighlightVideo: false,
-        hasContactedCoaches: false,
-        hasTargetSchools: false,
-        hasRegisteredEligibility: false,
-        hasTakenTestScores: false,
-      };
-      await completeOnboarding(assessment);
-      // Redirect to dashboard or family invite screen
-      await navigateTo("/dashboard");
-    } catch (err) {
-      error.value =
-        err instanceof Error ? err.message : "Failed to complete onboarding";
-    } finally {
-      loading.value = false;
-    }
-  } else {
-    // Save current step and move to next
-    loading.value = true;
-    try {
-      // Step 2: Save graduation year, sport, and position to player details
-      if (currentStep.value === 2) {
-        // Seed the ordered positions[] from the onboarding pick so the array
-        // (source of truth for coach-facing output) and primary_position agree
-        // from account creation — prevents the two stores drifting apart.
-        const onboardingPosition = onboardingData.value
-          .primary_position as string;
-        await setPlayerDetails({
-          graduation_year: onboardingData.value.graduation_year as number,
-          primary_sport: onboardingData.value.primary_sport as string,
-          primary_position: onboardingPosition,
-          positions: onboardingPosition ? [onboardingPosition] : [],
-          gender: onboardingData.value.gender as PlayerDetails["gender"],
-        });
-      }
-
-      // Step 3: Save zip code as home location
-      if (currentStep.value === 3 && onboardingData.value.zip_code) {
-        await setHomeLocation({
-          zip: onboardingData.value.zip_code as string,
-        });
-      }
-
-      // Step 4: Save academics to player details (merges with step 2 data)
-      if (currentStep.value === 4) {
-        await setPlayerDetails({
-          gpa: onboardingData.value.gpa as number,
-          sat_score: onboardingData.value.sat_score as number,
-          act_score: onboardingData.value.act_score as number,
-        });
-      }
-
-      await saveOnboardingStep(currentStep.value, onboardingData.value);
-      currentStep.value++;
-      if (currentStep.value === totalSteps) {
-        fetchMyCode().catch(() => {});
-      }
+      await saveStep1();
+      currentStep.value = 2;
+      void fetchRecommendations();
     } catch (err) {
       error.value =
         err instanceof Error ? err.message : "Failed to save progress";
     } finally {
       loading.value = false;
     }
+    return;
+  }
+
+  // Step 2: "Go to your dashboard"
+  loading.value = true;
+  try {
+    const assessment = {
+      hasHighlightVideo: false,
+      hasContactedCoaches: false,
+      hasTargetSchools: false,
+      hasRegisteredEligibility: false,
+      hasTakenTestScores: false,
+    };
+    await completeOnboarding(assessment);
+
+    const { $posthog } = useNuxtApp();
+    $posthog?.capture("onboarding_v2_complete");
+
+    await navigateTo("/dashboard");
+  } catch (err) {
+    error.value =
+      err instanceof Error ? err.message : "Failed to complete onboarding";
+  } finally {
+    loading.value = false;
   }
 };
 
@@ -615,50 +440,36 @@ const previousScreen = async () => {
   }
 };
 
-const skipStep = async () => {
-  // Skip must never bypass a required step (e.g. primary sport on step 2).
-  if (!validateStep()) {
-    return;
-  }
-  loading.value = true;
+async function handleAddRecommendation(school: SchoolRecommendation) {
+  addingRecommendationKey.value = school.catalogKey;
+  recommendationActionError.value = null;
   try {
-    await saveOnboardingStep(currentStep.value, onboardingData.value);
-    currentStep.value++;
-  } catch (err) {
-    error.value =
-      err instanceof Error ? err.message : "Failed to save progress";
-  } finally {
-    loading.value = false;
-  }
-};
+    await createSchool(
+      recommendationToSchoolDraft(school) as Omit<
+        School,
+        "id" | "created_at" | "updated_at"
+      >,
+    );
+    removeRecommendation(school.catalogKey);
 
-const sendParentInvite = async () => {
-  if (!parentInviteEmail.value) return;
-  // Final guard: don't complete onboarding without a primary sport.
-  if (!hasSport()) {
-    sportError.value = "Primary sport is required";
-    currentStep.value = 2;
-    return;
-  }
-  loading.value = true;
-  try {
-    await sendInvite({ email: parentInviteEmail.value, role: "parent" });
-    const assessment = {
-      hasHighlightVideo: false,
-      hasContactedCoaches: false,
-      hasTargetSchools: false,
-      hasRegisteredEligibility: false,
-      hasTakenTestScores: false,
-    };
-    await completeOnboarding(assessment);
-    showToast("Invite sent! Taking you to your dashboard.", "success");
-    await navigateTo("/dashboard");
+    const { $posthog } = useNuxtApp();
+    $posthog?.capture("onboarding_v2_school_added");
   } catch (err) {
-    error.value = err instanceof Error ? err.message : "Failed to send invite";
+    logger.warn("Failed to add recommended school", err);
+    recommendationActionError.value =
+      err instanceof Error ? err.message : "Failed to add school";
   } finally {
-    loading.value = false;
+    addingRecommendationKey.value = null;
   }
-};
+}
+
+async function handleDismissRecommendation(school: SchoolRecommendation) {
+  try {
+    await dismissRecommendation(school.catalogKey);
+  } catch {
+    // dismissRecommendation already restores state and sets its own error.
+  }
+}
 
 const route = useRoute();
 
@@ -684,11 +495,7 @@ const prefillFromCanonical = () => {
   if (details) {
     seedIfEmpty("graduation_year", details.graduation_year);
     seedIfEmpty("primary_sport", details.primary_sport);
-    seedIfEmpty("primary_position", details.primary_position);
     seedIfEmpty("gender", details.gender);
-    seedIfEmpty("gpa", details.gpa);
-    seedIfEmpty("sat_score", details.sat_score);
-    seedIfEmpty("act_score", details.act_score);
   }
 
   const location = getHomeLocation.value;
@@ -705,19 +512,19 @@ onMounted(async () => {
   if (route.query.sport) {
     onboardingData.value.primary_sport = route.query.sport as string;
   }
-  if (route.query.position) {
-    onboardingData.value.primary_position = route.query.position as string;
-  }
 
   try {
-    // Load preferences so partial saves (e.g. step 2 then step 4) merge correctly
+    // Load preferences so a partial save from a previous session merges correctly
     await loadAllPreferences();
     prefillFromCanonical();
+    // getOnboardingProgress reflects the last-*saved* step, not the step the
+    // user should land on next — step 1 doesn't record a save until it's
+    // done, so resuming after it must move to step 2, not redisplay step 1.
     const progress = await getOnboardingProgress();
-    const step = Math.ceil((progress / 100) * totalSteps) || 1;
+    const step = Math.floor((progress / 100) * totalSteps) + 1;
     currentStep.value = Math.min(step, totalSteps);
     if (currentStep.value === totalSteps) {
-      await fetchMyCode();
+      void fetchRecommendations();
     }
   } catch (err) {
     logger.error("Failed to restore progress", err);
