@@ -296,27 +296,29 @@ This phase is a meaningful effort (data sourcing + new table + ranker rewrite). 
 - Old 5-step wizard code remains but is dead-path for new signups; remove after 30 days
 
 ### Feature flags:
-- `ONBOARDING_V2` runtime flag — enables new 2-step wizard + checklist for new signups
-- Allows A/B testing old vs new flow if desired
-- Flag check in `middleware/onboarding.global.ts` and dashboard layout
+- No A/B testing — not live yet, ship to all new users
+- No `ONBOARDING_V2` flag needed; old wizard code stays as dead path for 30 days then remove
 
 ---
 
 ## Out of Scope
 
 - ML/collaborative filtering for recommendations ("athletes like you also added...")
-- Email/push onboarding drip campaigns (valuable but separate effort)
 - In-app video tutorials or animated walkthroughs
 - Demo mode / pre-signup exploration (Approach C — revisit at scale)
 - Gamification beyond checklist progress (badges, streaks, etc.)
 - Coach-side onboarding (no coach accounts in current system)
-- Analytics/tracking infrastructure (define activation metrics → separate instrumentation effort)
 
 ---
 
+## Resolved Decisions
+
+1. **Analytics:** PostHog (already integrated) + Sentry for error tracking. Add PostHog events for onboarding funnel steps, checklist completions, and activation metrics.
+2. **A/B testing:** No — not live yet, ship new flow to all new users. No feature flag needed.
+3. **Existing user backfill:** Yes — existing users get the checklist on next dashboard visit, items auto-evaluated from existing data. Few users, low risk.
+4. **Email nudges:** Yes — re-engagement email at Day 3 if checklist < 50% complete. Part of Phase 3 (progressive value reveals). Uses existing Resend email infrastructure (`server/utils/emailService.ts`). Triggered by a cron job checking `nux_progress` + `created_at`.
+
 ## Open Questions
 
-1. **Activation tracking:** We need analytics to measure the success metrics. Is there an existing analytics setup (PostHog, Mixpanel, etc.) or do we need to add one? Without measurement, we can't prove the redesign works.
-2. **A/B testing:** Do we want to A/B test old vs new onboarding, or ship new to all new users? A/B requires the feature flag infra but gives confidence.
-3. **Existing user backfill:** Should existing users who completed the old wizard get the checklist on their next login? (Recommended: yes, with items auto-evaluated from existing data.)
-4. **Email nudges:** If a user signs up but doesn't complete the checklist within 3 days, should we send a re-engagement email? This is out of scope but worth deciding timing-wise.
+1. **Email content:** What tone/brand voice for re-engagement emails? Need copy direction before Phase 3.
+2. **Push notifications (iOS):** Beyond the post-first-school permission priming, should we send push nudges for stalled checklists? Or email only?
