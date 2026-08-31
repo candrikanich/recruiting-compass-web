@@ -62,6 +62,9 @@
           <!-- Getting-started checklist — self-hides when dismissed -->
           <GettingStartedChecklist />
 
+          <!-- Profile completeness card — shows progress + missing fields -->
+          <ProfileCompletenessCard />
+
           <!-- Recommended schools nudge — always visible, self-hides when empty -->
           <SchoolRecommendationsWidget />
 
@@ -188,6 +191,7 @@ import DashboardStatsCards from "~/components/Dashboard/DashboardStatsCards.vue"
 import DashboardSuggestions from "~/components/Dashboard/DashboardSuggestions.vue";
 import SchoolRecommendationsWidget from "~/components/Dashboard/SchoolRecommendationsWidget.vue";
 import GettingStartedChecklist from "~/components/Dashboard/GettingStartedChecklist.vue";
+import ProfileCompletenessCard from "~/components/Dashboard/ProfileCompletenessCard.vue";
 import DashboardPublicProfileLinkCard from "~/components/Dashboard/PublicProfileLinkCard.vue";
 import DashboardContactFrequencyWidget from "~/components/Dashboard/ContactFrequencyWidget.vue";
 import DashboardAthleteActivityWidget from "~/components/Dashboard/AthleteActivityWidget.vue";
