@@ -8,13 +8,30 @@
     />
 
     <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6">
-      <!-- Date Range Controls -->
-      <DateRangeToolbar
-        :date-range="dateRange"
-        @update:dateRange="handleDateRangeChange"
-      />
+      <!-- Empty State -->
+      <DesignSystemEmptyState
+        v-if="stats.totalSchools === 0"
+        title="No analytics yet"
+        description="Track engagement, fit trends, and recruiting momentum"
+      >
+        <template #icon>
+          <UIcon name="i-heroicons-chart-pie" class="h-8 w-8 text-brand-slate-400" />
+        </template>
+        <template #action>
+          <DesignSystemButton to="/schools/new" color="blue" variant="solid">
+            Add a school to see recruiting analytics
+          </DesignSystemButton>
+        </template>
+      </DesignSystemEmptyState>
 
-      <!-- Summary Stats Row -->
+      <template v-else>
+        <!-- Date Range Controls -->
+        <DateRangeToolbar
+          :date-range="dateRange"
+          @update:dateRange="handleDateRangeChange"
+        />
+
+        <!-- Summary Stats Row -->
       <div class="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
           label="Total Schools"
@@ -133,6 +150,7 @@
           </div>
         </div>
       </div>
+      </template>
     </main>
   </div>
 </template>

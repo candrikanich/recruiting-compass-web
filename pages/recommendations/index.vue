@@ -259,15 +259,20 @@
       </div>
 
       <!-- Empty State -->
-      <div
+      <DesignSystemEmptyState
         v-else-if="letters.length === 0"
-        class="rounded-lg bg-white p-12 text-center shadow-sm"
+        title="No recommendations"
+        description="Letters from coaches and teachers strengthen your recruiting profile"
       >
-        <p class="mb-2 text-gray-600">No recommendation letters tracked yet</p>
-        <p class="text-sm text-gray-500">
-          Start requesting letters from coaches and teachers
-        </p>
-      </div>
+        <template #icon>
+          <UIcon name="i-heroicons-envelope-open" class="h-8 w-8 text-brand-slate-400" />
+        </template>
+        <template #action>
+          <DesignSystemButton color="blue" variant="solid" @click="showAddForm = true">
+            Request a Recommendation
+          </DesignSystemButton>
+        </template>
+      </DesignSystemEmptyState>
 
       <!-- No Results -->
       <div

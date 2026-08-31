@@ -187,15 +187,20 @@
       </div>
 
       <!-- Empty State -->
-      <div
+      <DesignSystemEmptyState
         v-else-if="metrics.length === 0"
-        class="rounded-lg bg-white p-12 text-center shadow-sm"
+        title="No stats logged"
+        description="Your stats auto-fill coach outreach templates"
       >
-        <p class="mb-2 text-gray-600">No metrics logged yet</p>
-        <p class="text-sm text-gray-500">
-          Start tracking your performance to build a historical record
-        </p>
-      </div>
+        <template #icon>
+          <UIcon name="i-heroicons-chart-bar" class="h-8 w-8 text-brand-slate-400" />
+        </template>
+        <template #action>
+          <DesignSystemButton color="blue" variant="solid" @click="showLogMetricModal = true">
+            Log Your First Stats
+          </DesignSystemButton>
+        </template>
+      </DesignSystemEmptyState>
 
       <!-- Metrics Timeline -->
       <div v-else class="space-y-4">
