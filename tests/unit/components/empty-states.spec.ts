@@ -71,11 +71,21 @@ vi.mock("~/composables/usePreferenceManager", () => ({
 // statement), so it must be stubbed as a global rather than via vi.mock.
 (global as unknown as { useDeadlines: () => unknown }).useDeadlines = () => ({
   deadlines: ref([]),
+  unifiedDeadlines: computed(() => []),
+  upcomingDeadlines: computed(() => []),
+  pastDeadlines: computed(() => []),
+  groupedByMonth: computed(() => new Map()),
+  systemDeadlines: computed(() => []),
+  isStale: computed(() => false),
   loading: ref(false),
   error: ref(null),
   fetchDeadlines: vi.fn(),
   createDeadline: vi.fn(),
   removeDeadline: vi.fn(),
+});
+(global as unknown as { useSchools: () => unknown }).useSchools = () => ({
+  schools: ref([]),
+  fetchSchools: vi.fn(),
 });
 
 vi.mock("~/composables/useRecommendationLetters", () => ({
@@ -215,7 +225,7 @@ describe("Empty states — DesignSystemEmptyState adoption", () => {
       wrapper.findComponent(DesignSystemEmptyState).exists(),
     ).toBe(true);
     expect(wrapper.text()).toContain("No deadlines yet");
-    expect(wrapper.text()).toContain("View Recruiting Deadlines");
+    expect(wrapper.text()).toContain("Add Deadline");
   });
 
   it("Recommendations page renders DesignSystemEmptyState with CTA when no letters", async () => {
