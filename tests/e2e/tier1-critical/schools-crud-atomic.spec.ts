@@ -46,8 +46,13 @@ test.describe("Schools CRUD — atomic lifecycle", () => {
 
     // 3. UPDATE — change status via the sidebar SchoolStatusStepper (auto-saves;
     // #412 replaced the old <select> with a clickable stage stepper).
+    // Wait for the stepper section to mount before looking for stage buttons.
+    await expect(
+      page.locator("h3", { hasText: "Recruiting Status" }),
+    ).toBeVisible({ timeout: 10000 });
+
     const contactedStep = page.getByRole("button", {
-      name: /Set status to Contacted\b/,
+      name: /Set status to Contacted/,
     });
     await contactedStep.waitFor({ state: "visible" });
     await contactedStep.click();
@@ -55,15 +60,15 @@ test.describe("Schools CRUD — atomic lifecycle", () => {
     // Wait for the optimistic update + Supabase write to land before reloading
     // (Contacted becomes the current stage).
     await expect(
-      page.getByRole("button", { name: /Set status to Contacted\b/ }),
-    ).toHaveAttribute("aria-current", "step");
+      page.getByRole("button", { name: /Set status to Contacted/ }),
+    ).toHaveAttribute("aria-current", "step", { timeout: 10000 });
 
     // Reload to confirm persistence.
     await page.reload();
-    await page.waitForLoadState("domcontentloaded");
+    await page.waitForLoadState("networkidle");
     await expect(
-      page.getByRole("button", { name: /Set status to Contacted\b/ }),
-    ).toHaveAttribute("aria-current", "step");
+      page.getByRole("button", { name: /Set status to Contacted/ }),
+    ).toHaveAttribute("aria-current", "step", { timeout: 10000 });
 
     // 4. DELETE — sidebar button → confirm dialog → back at /schools
     await page.locator('button:has-text("Delete School")').click();

@@ -192,9 +192,17 @@ test.describe("Public profile — inbound lead becomes a tracked interaction", (
 
     // Interaction appears on the interactions page — auto-minted server-side
     // because the coach email matched an existing coach in the family.
+    // The server-side auto-match is async; the interaction may not exist yet
+    // on first load — reload once after a short delay if not found.
     await page.goto("/interactions");
     await page.waitForLoadState("networkidle");
-    await expect(page.getByText(note)).toBeVisible({ timeout: 15000 });
+    const matchedNote = page.getByText(note);
+    if (!(await matchedNote.isVisible().catch(() => false))) {
+      await page.waitForTimeout(2000);
+      await page.reload();
+      await page.waitForLoadState("networkidle");
+    }
+    await expect(matchedNote).toBeVisible({ timeout: 15000 });
 
     // The inbox lead for this coach shows "Tracked".
     await openInbox(page);

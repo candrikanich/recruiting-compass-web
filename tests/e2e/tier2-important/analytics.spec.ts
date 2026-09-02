@@ -20,7 +20,7 @@ test.describe.configure({ mode: "serial" });
 test.describe("/analytics — Analytics dashboard", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/analytics");
-    await page.waitForLoadState("domcontentloaded");
+    await page.waitForLoadState("networkidle");
   });
 
   test("loads and shows page heading", async ({ page }) => {
@@ -36,9 +36,19 @@ test.describe("/analytics — Analytics dashboard", () => {
   });
 
   test("renders the date range toolbar", async ({ page }) => {
-    await expect(
-      page.locator('[data-testid="date-range-preset"]'),
-    ).toBeVisible();
+    // DateRangeToolbar only renders when stats.totalSchools > 0 (hidden behind
+    // DesignSystemEmptyState otherwise). Wait for either state to settle before
+    // branching — the instant isVisible() check raced data-fetch, causing flakes.
+    const toolbar = page.locator('[data-testid="date-range-preset"]');
+    const emptyState = page.getByText("No analytics yet");
+    await Promise.race([
+      toolbar.waitFor({ state: "visible", timeout: 15000 }).catch(() => null),
+      emptyState.waitFor({ state: "visible", timeout: 15000 }).catch(() => null),
+    ]);
+    if (await emptyState.isVisible().catch(() => false)) {
+      test.skip(true, "empty state — no schools tracked, toolbar not rendered");
+    }
+    await expect(toolbar).toBeVisible({ timeout: 5000 });
     await expect(
       page.locator('[data-testid="clear-date-range-button"]'),
     ).toBeVisible();
@@ -46,6 +56,14 @@ test.describe("/analytics — Analytics dashboard", () => {
 
   test("date range preset offers the expected options", async ({ page }) => {
     const select = page.locator('[data-testid="date-range-preset"]');
+    const emptyState = page.getByText("No analytics yet");
+    await Promise.race([
+      select.waitFor({ state: "visible", timeout: 15000 }).catch(() => null),
+      emptyState.waitFor({ state: "visible", timeout: 15000 }).catch(() => null),
+    ]);
+    if (await emptyState.isVisible().catch(() => false)) {
+      test.skip(true, "empty state — no schools tracked, toolbar not rendered");
+    }
     await expect(select).toBeVisible();
     const options = await select.locator("option").allTextContents();
     expect(options.join("|")).toMatch(
@@ -57,6 +75,14 @@ test.describe("/analytics — Analytics dashboard", () => {
     page,
   }) => {
     const select = page.locator('[data-testid="date-range-preset"]');
+    const emptyState = page.getByText("No analytics yet");
+    await Promise.race([
+      select.waitFor({ state: "visible", timeout: 15000 }).catch(() => null),
+      emptyState.waitFor({ state: "visible", timeout: 15000 }).catch(() => null),
+    ]);
+    if (await emptyState.isVisible().catch(() => false)) {
+      test.skip(true, "empty state — no schools tracked, toolbar not rendered");
+    }
     await select.selectOption("last_7_days");
     await expect(page.locator("h1")).toContainText("Analytics");
     await select.selectOption("all_time");

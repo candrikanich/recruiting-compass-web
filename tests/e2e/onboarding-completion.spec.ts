@@ -113,7 +113,7 @@ test.describe("Onboarding v2 — Full Entry Journey", () => {
     ).toBeVisible({ timeout: 10000 });
 
     // Go back
-    await page.getByRole("button", { name: "Back" }).click();
+    await page.getByRole("button", { name: "Back", exact: true }).click();
 
     // Should see step 1 content again
     await expect(
