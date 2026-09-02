@@ -1,7 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-// Mock $fetch
-vi.stubGlobal("$fetch", vi.fn());
+const mockFetchAuth = vi.fn();
+
+vi.mock("~/composables/useAuthFetch", () => ({
+  useAuthFetch: () => ({ $fetchAuth: mockFetchAuth }),
+}));
 
 const mockLogger = {
   info: vi.fn(),
@@ -29,12 +32,11 @@ describe("useDeadlines", () => {
   });
 
   it("fetchDeadlines calls GET /api/deadlines", async () => {
-    const mockFetch = vi.fn().mockResolvedValue({ deadlines: [] });
-    vi.stubGlobal("$fetch", mockFetch);
+    mockFetchAuth.mockResolvedValue({ deadlines: [] });
     const { useDeadlines } = await import("~/composables/useDeadlines");
     const { fetchDeadlines } = useDeadlines();
     await fetchDeadlines();
-    expect(mockFetch).toHaveBeenCalledWith("/api/deadlines");
+    expect(mockFetchAuth).toHaveBeenCalledWith("/api/deadlines");
   });
 
   it("fetchDeadlines unwraps the { deadlines: [...] } envelope the real endpoint returns (server/api/deadlines/index.get.ts) into a plain array", async () => {
@@ -44,8 +46,7 @@ describe("useDeadlines", () => {
       deadline_date: "2026-11-01",
       category: "application",
     };
-    const mockFetch = vi.fn().mockResolvedValue({ deadlines: [item] });
-    vi.stubGlobal("$fetch", mockFetch);
+    mockFetchAuth.mockResolvedValue({ deadlines: [item] });
     const { useDeadlines } = await import("~/composables/useDeadlines");
     const { fetchDeadlines, deadlines } = useDeadlines();
     await fetchDeadlines();
@@ -54,9 +55,8 @@ describe("useDeadlines", () => {
     expect(deadlines.value).toEqual([item]);
   });
 
-  it("fetchDeadlines sets error when $fetch rejects and resets loading to false", async () => {
-    const mockFetch = vi.fn().mockRejectedValue(new Error("Network error"));
-    vi.stubGlobal("$fetch", mockFetch);
+  it("fetchDeadlines sets error when $fetchAuth rejects and resets loading to false", async () => {
+    mockFetchAuth.mockRejectedValue(new Error("Network error"));
     const { useDeadlines } = await import("~/composables/useDeadlines");
     const { fetchDeadlines, error, loading } = useDeadlines();
     await fetchDeadlines();
@@ -71,11 +71,9 @@ describe("useDeadlines", () => {
       deadline_date: "2026-12-01",
       category: "visit",
     };
-    const mockFetch = vi
-      .fn()
+    mockFetchAuth
       .mockResolvedValueOnce({ success: true, deadline: newDeadline }) // POST
       .mockResolvedValueOnce({ deadlines: [newDeadline] }); // re-fetch GET
-    vi.stubGlobal("$fetch", mockFetch);
     const { useDeadlines } = await import("~/composables/useDeadlines");
     const { createDeadline } = useDeadlines();
     const result = await createDeadline({
@@ -83,18 +81,17 @@ describe("useDeadlines", () => {
       deadline_date: "2026-12-01",
       category: "visit",
     });
-    expect(mockFetch).toHaveBeenCalledWith("/api/deadlines", {
+    expect(mockFetchAuth).toHaveBeenCalledWith("/api/deadlines", {
       method: "POST",
       body: { label: "Visit", deadline_date: "2026-12-01", category: "visit" },
     });
-    expect(mockFetch).toHaveBeenCalledWith("/api/deadlines");
+    expect(mockFetchAuth).toHaveBeenCalledWith("/api/deadlines");
     expect(result).toEqual(newDeadline);
   });
 
-  it("createDeadline logs error and re-throws when $fetch rejects", async () => {
+  it("createDeadline logs error and re-throws when $fetchAuth rejects", async () => {
     const fetchError = new Error("Create failed");
-    const mockFetch = vi.fn().mockRejectedValue(fetchError);
-    vi.stubGlobal("$fetch", mockFetch);
+    mockFetchAuth.mockRejectedValue(fetchError);
     const { useDeadlines } = await import("~/composables/useDeadlines");
     const { createDeadline } = useDeadlines();
     await expect(
@@ -111,8 +108,7 @@ describe("useDeadlines", () => {
   });
 
   it("removeDeadline removes item from local state optimistically", async () => {
-    const mockFetch = vi
-      .fn()
+    mockFetchAuth
       .mockResolvedValueOnce({
         deadlines: [
           {
@@ -124,22 +120,20 @@ describe("useDeadlines", () => {
         ],
       })
       .mockResolvedValue(undefined);
-    vi.stubGlobal("$fetch", mockFetch);
     const { useDeadlines } = await import("~/composables/useDeadlines");
     const { fetchDeadlines, removeDeadline, deadlines } = useDeadlines();
     await fetchDeadlines();
     expect(deadlines.value).toHaveLength(1);
     await removeDeadline("dead-1");
     expect(deadlines.value).toHaveLength(0);
-    expect(mockFetch).toHaveBeenCalledWith("/api/deadlines/dead-1", {
+    expect(mockFetchAuth).toHaveBeenCalledWith("/api/deadlines/dead-1", {
       method: "DELETE",
     });
   });
 
-  it("removeDeadline logs error and re-throws when $fetch rejects", async () => {
+  it("removeDeadline logs error and re-throws when $fetchAuth rejects", async () => {
     const fetchError = new Error("Delete failed");
-    const mockFetch = vi.fn().mockRejectedValue(fetchError);
-    vi.stubGlobal("$fetch", mockFetch);
+    mockFetchAuth.mockRejectedValue(fetchError);
     const { useDeadlines } = await import("~/composables/useDeadlines");
     const { removeDeadline } = useDeadlines();
     await expect(removeDeadline("dead-99")).rejects.toThrow("Delete failed");

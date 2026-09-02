@@ -1,9 +1,11 @@
 import { ref } from "vue";
 import { createClientLogger } from "~/utils/logger";
+import { useAuthFetch } from "~/composables/useAuthFetch";
 
 const logger = createClientLogger("deadlines");
 
 export function useDeadlines() {
+  const { $fetchAuth } = useAuthFetch();
   const deadlines = ref<
     Array<{
       id: string;
@@ -20,7 +22,7 @@ export function useDeadlines() {
     loading.value = true;
     error.value = null;
     try {
-      const response = await $fetch<{ deadlines: typeof deadlines.value }>(
+      const response = await $fetchAuth<{ deadlines: typeof deadlines.value }>(
         "/api/deadlines",
       );
       deadlines.value = response.deadlines;
@@ -44,7 +46,7 @@ export function useDeadlines() {
     school_id?: string;
   }> {
     try {
-      const result = await $fetch<{
+      const result = await $fetchAuth<{
         success: boolean;
         deadline: {
           id: string;
@@ -64,7 +66,7 @@ export function useDeadlines() {
 
   async function removeDeadline(id: string) {
     try {
-      await $fetch(`/api/deadlines/${id}`, { method: "DELETE" });
+      await $fetchAuth(`/api/deadlines/${id}`, { method: "DELETE" });
       deadlines.value = deadlines.value.filter((d) => d.id !== id);
     } catch (err) {
       logger.error("Failed to remove deadline", err);
