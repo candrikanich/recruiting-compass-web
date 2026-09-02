@@ -427,6 +427,7 @@ export interface PlayerDetails {
   school_address?: string;
   school_city?: string;
   school_state?: string;
+  school_zip?: string;
   campus_size_preference?: "small" | "medium" | "large";
   cost_sensitivity?: "high" | "medium" | "low";
   // High School Team Levels
