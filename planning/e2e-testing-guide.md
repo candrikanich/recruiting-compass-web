@@ -269,6 +269,31 @@ After tests run, HTML report is generated:
 
 ## Writing New Tests
 
+### Annotated-Recording Workflow
+
+Generate better E2E specs by recording before generating. Prevents fragile selectors and implementation bleed-through.
+
+**Step 1 — Record the flow manually.** Walk the path yourself in the browser. Note every click, type, wait, and assertion point. Don't use the codebase — pretend you're a user.
+
+**Step 2 — Annotate the recording.** Add context a code generator needs:
+
+```
+1. Navigate to /schools
+2. Click "Add School" button          # Primary CTA, top-right
+3. Fill school name                    # Wait: form renders after route transition
+4. Fill city, state                    # State is a <select>, not free text
+5. Select division "D1"               # Segmented control, not dropdown
+6. Click "Save"                       # Wait: toast appears on success
+7. Assert: redirected to school detail # URL pattern: /schools/{uuid}
+8. Assert: school name visible in h1   # Not in sidebar — main content area
+```
+
+**Step 3 — Generate against annotations + fixtures.** Feed the annotated steps to Claude with the existing fixture imports. The annotations tell it which waits are real, which selectors are stable, and which existing helpers to reuse.
+
+**Step 4 — Run `/e2e-qa-gate` before commit.** The QA gate skill checks selector fragility, credential leaks, fixture reuse, and black-box integrity. Fix blockers before merge.
+
+**Why this works:** Without annotations, the generator reads component source and picks selectors it "knows" from implementation. Those selectors break on refactor. Annotations force selectors to come from user-visible UI, not from `.vue` template internals.
+
 ### Template
 
 ```typescript
