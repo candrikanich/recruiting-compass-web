@@ -48,7 +48,7 @@
       <template v-else>
         <section v-for="[monthKey, items] in upcomingByMonth" :key="monthKey" class="mb-6">
           <h2
-            class="sticky top-0 z-10 bg-white py-2 text-xs font-semibold uppercase tracking-wide text-brand-slate-500"
+            class="sticky top-0 z-10 bg-[var(--background)] py-2 text-xs font-semibold uppercase tracking-wide text-brand-slate-500"
           >
             {{ formatMonthHeader(monthKey) }}
           </h2>
@@ -56,7 +56,7 @@
             <li
               v-for="d in items"
               :key="d.id"
-              class="flex items-center justify-between rounded-lg border border-brand-slate-200 bg-white p-4"
+              class="flex items-center justify-between rounded-lg border border-brand-slate-200 bg-[var(--card)] p-4"
             >
               <div>
                 <p class="font-medium text-brand-slate-900">{{ d.label }}</p>
@@ -106,7 +106,7 @@
                 <li
                   v-for="d in items"
                   :key="d.id"
-                  class="flex items-center justify-between rounded-lg border border-brand-slate-200 bg-white p-4"
+                  class="flex items-center justify-between rounded-lg border border-brand-slate-200 bg-[var(--card)] p-4"
                 >
                   <div>
                     <p class="font-medium text-brand-slate-900">{{ d.label }}</p>
