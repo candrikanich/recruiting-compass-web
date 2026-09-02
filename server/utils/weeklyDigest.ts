@@ -146,6 +146,21 @@ async function fetchUpcomingDeadlines(
     });
   }
 
+  const { data: userDeadlines } = await supabase
+    .from("user_deadlines")
+    .select("label, deadline_date")
+    .eq("user_id", userId)
+    .gte("deadline_date", nowIso)
+    .lte("deadline_date", horizonIso);
+
+  for (const ud of userDeadlines ?? []) {
+    if (!ud.deadline_date) continue;
+    deadlines.push({
+      label: ud.label,
+      deadline_date: ud.deadline_date,
+    });
+  }
+
   return deadlines.sort((a, b) =>
     a.deadline_date.localeCompare(b.deadline_date),
   );

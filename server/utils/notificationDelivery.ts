@@ -5,6 +5,7 @@ import {
   generateRecommendationNotifications,
   generateEventNotifications,
   generateCoachFollowupNotifications,
+  generateUserDeadlineNotifications,
 } from "~/server/utils/notificationGenerator";
 import {
   getNotificationPrefs,
@@ -22,7 +23,7 @@ export const DEADLINE_EMAIL_MILESTONES = [14, 7, 3, 1] as const;
 
 export interface DeadlineItem {
   entityId: string;
-  entityType: "offer" | "recommendation";
+  entityType: "offer" | "recommendation" | "user_deadline";
   label: string;
   deadlineDate: string;
 }
@@ -53,8 +54,8 @@ export function selectDeadlineEmails(
   });
 }
 
-/** Gather a user's pending offer + requested-recommendation deadlines for email. */
-async function fetchDeadlineItems(
+/** Gather a user's pending offer + requested-recommendation + user-created deadlines for email. */
+export async function fetchDeadlineItems(
   userId: string,
   supabase: SupabaseClient,
 ): Promise<DeadlineItem[]> {
@@ -97,6 +98,21 @@ async function fetchDeadlineItems(
       entityType: "recommendation",
       label: `Recommendation from ${rec.requested_from ?? "a coach"}`,
       deadlineDate: rec.deadline_date,
+    });
+  }
+
+  const { data: userDeadlines } = await supabase
+    .from("user_deadlines")
+    .select("id, label, deadline_date")
+    .eq("user_id", userId);
+
+  for (const ud of userDeadlines ?? []) {
+    if (!ud.deadline_date) continue;
+    items.push({
+      entityId: ud.id,
+      entityType: "user_deadline",
+      label: ud.label,
+      deadlineDate: ud.deadline_date,
     });
   }
 
@@ -167,6 +183,8 @@ export async function deliverNotificationsForUser(
   if (prefFor(prefs, "deadline_alert").push_enabled) {
     inApp += (await generateOfferNotifications(userId, supabase)).count;
     inApp += (await generateRecommendationNotifications(userId, supabase))
+      .count;
+    inApp += (await generateUserDeadlineNotifications(userId, supabase))
       .count;
   }
   if (prefFor(prefs, "event").push_enabled) {
