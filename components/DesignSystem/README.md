@@ -118,7 +118,7 @@ Flexible button component with multiple variants, colors, and sizes.
 
 <!-- Gradient CTA button -->
 <DSButton variant="gradient" color="blue" size="lg" full-width>
-  Get Started Free
+  Start Now
 </DSButton>
 
 <!-- Outline secondary button -->
