@@ -618,6 +618,7 @@ describe("signup.vue", () => {
         "Password123",
         "Test User",
         "player",
+        undefined, // captchaToken (Turnstile disabled in test)
       );
     });
 
@@ -699,6 +700,7 @@ describe("signup.vue", () => {
         "Password123",
         "Parent User",
         "parent",
+        undefined, // captchaToken (Turnstile disabled in test)
       );
     });
 

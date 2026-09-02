@@ -36,6 +36,7 @@ interface _AuthActions {
     password: string,
     fullName?: string,
     role?: string,
+    captchaToken?: string,
   ) => Promise<{
     data: { user: User | null; session: Session | null } | null;
     error: { message: string; status?: number } | null;
@@ -224,13 +225,17 @@ export const useAuth = () => {
   };
 
   /**
-   * Sign up new user with optional full name and role
+   * Sign up new user with optional full name, role, and CAPTCHA token.
+   * When `captchaToken` is provided it is forwarded to Supabase Auth's
+   * built-in Turnstile verification (requires CAPTCHA enabled in the
+   * Supabase Dashboard → Authentication → Bot Protection).
    */
   const signup = async (
     email: string,
     password: string,
     fullName?: string,
     role?: string,
+    captchaToken?: string,
   ) => {
     loading.value = true;
     error.value = null;
@@ -243,6 +248,7 @@ export const useAuth = () => {
         password: string;
         options?: {
           data: Record<string, string | boolean>;
+          captchaToken?: string;
         };
       } = {
         email: trimmedEmail,
@@ -260,10 +266,11 @@ export const useAuth = () => {
         metadata.role = role;
       }
 
-      // Add metadata if any values present
-      if (Object.keys(metadata).length > 0) {
+      // Add metadata + captcha token if present
+      if (Object.keys(metadata).length > 0 || captchaToken) {
         signUpParams.options = {
           data: metadata,
+          ...(captchaToken && { captchaToken }),
         };
       }
 

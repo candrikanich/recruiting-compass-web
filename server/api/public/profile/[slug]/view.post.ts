@@ -7,6 +7,11 @@ import {
 } from "h3";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
 import { useLogger } from "~/server/utils/logger";
+import {
+  rateLimitByIp,
+  rateLimitByKey,
+  throwIfRateLimited,
+} from "~/server/utils/rateLimit";
 
 const HASH_SLUG_RE = /^[a-z0-9]{6}$/;
 const VANITY_SLUG_RE = /^[a-z0-9][a-z0-9-]{0,28}[a-z0-9]$/;
@@ -22,6 +27,29 @@ export default defineEventHandler(async (event) => {
         statusMessage: "Profile not found",
       });
     }
+
+    // Trusted client IP (same chain as contact.post.ts)
+    const clientIp =
+      getRequestHeader(event, "x-vercel-forwarded-for")?.split(",")[0]?.trim() ||
+      getRequestHeader(event, "x-real-ip") ||
+      undefined;
+
+    // Per-IP: 30 views / minute (generous — passive analytics, not a form)
+    throwIfRateLimited(
+      await rateLimitByIp(event, {
+        requests: 30,
+        window: "1 m",
+        ip: clientIp,
+      }),
+    );
+
+    // Per-slug: 120 views / hour (prevents single-profile inflation)
+    throwIfRateLimited(
+      await rateLimitByKey(event, `view:${slug}`, {
+        requests: 120,
+        window: "1 h",
+      }),
+    );
 
     const { ref } = getQuery(event) as { ref?: string };
     const rawUserAgent = getRequestHeader(event, "user-agent") ?? null;
