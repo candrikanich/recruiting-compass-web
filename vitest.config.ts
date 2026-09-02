@@ -49,15 +49,13 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       reporter: ["text", "json", "html", "lcov"],
-      // Recalibrated 2026-09-02 after deadlines buildout (#573) added new server
-      // utils + API endpoints. CI-equivalent measurement: lines ~83% / functions
-      // ~74.9% / branches ~70% / statements ~82%. Functions dropped from 76→74.9%
-      // due to new notification delivery orchestrators; coverage tests added for
-      // sendDeadlineAlertEmails + deliverNotificationsForUser but threshold
-      // adjusted to match current measured baseline (~1pt below CI measurement).
+      // Thresholds set ~1pt below CI-equivalent measurement. Local runs
+      // (live Supabase, 9 integration specs) measure slightly higher than CI
+      // (no Supabase credentials, those specs skip). 2026-09-02 measurement:
+      // functions 75.05% (3897/5192), lines 83.2%, branches 71.2%, stmts 82.2%.
       thresholds: {
         lines: 82,
-        functions: 74,
+        functions: 75,
         branches: 69,
         statements: 81,
       },
