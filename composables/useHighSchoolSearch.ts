@@ -9,11 +9,15 @@ export interface NcesSchool {
   name: string;
   city: string | null;
   state: string | null;
+  zip: string | null;
 }
 
 export interface HighSchoolSelection {
   name: string;
   nces_school_id: string | null;
+  city: string | null;
+  state: string | null;
+  zip: string | null;
 }
 
 export const useHighSchoolSearch = (stateHint?: string) => {
@@ -58,6 +62,9 @@ export const useHighSchoolSearch = (stateHint?: string) => {
   const selectSchool = (school: NcesSchool): HighSchoolSelection => ({
     name: school.name,
     nces_school_id: school.nces_id,
+    city: school.city,
+    state: school.state,
+    zip: school.zip,
   });
 
   const clearResults = () => {

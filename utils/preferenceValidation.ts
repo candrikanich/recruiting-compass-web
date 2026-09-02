@@ -135,6 +135,7 @@ export function validatePlayerDetails(data: unknown): PlayerDetails | null {
     school_address: toString(obj.school_address),
     school_city: toString(obj.school_city),
     school_state: toString(obj.school_state),
+    school_zip: toString(obj.school_zip),
     ninth_grade_team: toString(obj.ninth_grade_team),
     ninth_grade_coach: toString(obj.ninth_grade_coach),
     tenth_grade_team: toString(obj.tenth_grade_team),

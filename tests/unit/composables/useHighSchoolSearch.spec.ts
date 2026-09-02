@@ -34,6 +34,7 @@ describe("useHighSchoolSearch", () => {
         name: "Lincoln High School",
         city: "Des Moines",
         state: "IA",
+        zip: "50309",
       },
     ];
     mockFetch.mockResolvedValue(schools);
@@ -44,7 +45,7 @@ describe("useHighSchoolSearch", () => {
     expect(results.value).toEqual(schools);
   });
 
-  it("selectSchool returns name and nces_school_id", async () => {
+  it("selectSchool returns name, nces_school_id, and city/state/zip", async () => {
     const { useHighSchoolSearch } =
       await import("~/composables/useHighSchoolSearch");
     const { selectSchool } = useHighSchoolSearch();
@@ -53,10 +54,14 @@ describe("useHighSchoolSearch", () => {
       name: "Lincoln High School",
       city: "Des Moines",
       state: "IA",
+      zip: "50309",
     });
     expect(result).toEqual({
       name: "Lincoln High School",
       nces_school_id: "100001",
+      city: "Des Moines",
+      state: "IA",
+      zip: "50309",
     });
   });
 

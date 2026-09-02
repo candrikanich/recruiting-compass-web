@@ -14,6 +14,9 @@
             :model-value="{
               name: form.school_name ?? '',
               nces_school_id: form.nces_school_id || null,
+              city: form.school_city || null,
+              state: form.school_state || null,
+              zip: form.school_zip || null,
             }"
             :state-hint="form.school_state || ''"
             :disabled="isParentRole"
@@ -22,9 +25,26 @@
                 form.school_name = v.name;
                 form.high_school = v.name;
                 form.nces_school_id = v.nces_school_id ?? '';
+                if (v.city) form.school_city = v.city;
+                if (v.state) form.school_state = v.state;
+                if (v.zip) form.school_zip = v.zip;
                 triggerSave();
               }
             "
+          />
+        </div>
+        <div class="md:col-span-2">
+          <label
+            class="mb-1.5 ml-1 block text-[10px] font-bold tracking-widest text-slate-400 uppercase"
+            >School Address</label
+          >
+          <input
+            v-model="form.school_address"
+            :disabled="isParentRole"
+            type="text"
+            placeholder="123 Main St"
+            @blur="triggerSave"
+            class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 font-medium text-slate-700 transition focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div>
@@ -54,6 +74,21 @@
             maxlength="2"
             @blur="triggerSave"
             class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 font-medium text-slate-700 uppercase transition focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+        <div>
+          <label
+            class="mb-1.5 ml-1 block text-[10px] font-bold tracking-widest text-slate-400 uppercase"
+            >School Zip</label
+          >
+          <input
+            v-model="form.school_zip"
+            :disabled="isParentRole"
+            type="text"
+            placeholder="30301"
+            maxlength="10"
+            @blur="triggerSave"
+            class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 font-medium text-slate-700 transition focus:ring-2 focus:ring-blue-500"
           />
         </div>
       </div>

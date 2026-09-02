@@ -54,7 +54,13 @@ function onSelect(school: NcesSchool) {
 
 function onManualBlur() {
   if (isManualMode.value) {
-    emit("update:modelValue", { name: inputValue.value, nces_school_id: null });
+    emit("update:modelValue", {
+      name: inputValue.value,
+      nces_school_id: null,
+      city: null,
+      state: null,
+      zip: null,
+    });
   }
 }
 
@@ -67,7 +73,13 @@ function enableManualMode() {
 function disableManualMode() {
   isManualMode.value = false;
   inputValue.value = "";
-  emit("update:modelValue", { name: "", nces_school_id: null });
+  emit("update:modelValue", {
+    name: "",
+    nces_school_id: null,
+    city: null,
+    state: null,
+    zip: null,
+  });
 }
 
 function onBlur() {

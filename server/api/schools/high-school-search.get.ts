@@ -40,7 +40,7 @@ export default defineEventHandler(async (event) => {
 
   let dbQuery = supabase
     .from("nces_schools")
-    .select("nces_id, name, city, state")
+    .select("nces_id, name, city, state, zip")
     .ilike("name", `%${escapedQuery}%`);
 
   dbQuery = dbQuery.order("name", { ascending: true });
