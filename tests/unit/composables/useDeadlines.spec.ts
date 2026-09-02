@@ -26,19 +26,32 @@ vi.mock("~/composables/usePreferenceManager", () => ({
   }),
 }));
 
+let capturedGetters: {
+  getSport: () => unknown;
+  getDivisions: () => unknown;
+  getGradYear: () => unknown;
+} | null = null;
+
 vi.mock("~/composables/useRecruitingDeadlines", () => ({
-  useRecruitingDeadlines: () => ({
-    systemDeadlines: computed(() => [
-      {
-        id: "system-sat-1",
-        label: "SAT Test Date",
-        date: "2026-10-03",
-        category: "test",
-        source: "system",
-      },
-    ]),
-    isStale: computed(() => false),
-  }),
+  useRecruitingDeadlines: (
+    getSport: () => unknown,
+    getDivisions: () => unknown,
+    getGradYear: () => unknown,
+  ) => {
+    capturedGetters = { getSport, getDivisions, getGradYear };
+    return {
+      systemDeadlines: computed(() => [
+        {
+          id: "system-sat-1",
+          label: "SAT Test Date",
+          date: "2026-10-03",
+          category: "test",
+          source: "system",
+        },
+      ]),
+      isStale: computed(() => false),
+    };
+  },
 }));
 
 describe("useDeadlines", () => {
@@ -216,5 +229,49 @@ describe("unified view", () => {
     expect(upcomingDeadlines.value.some((d) => d.label === "Old")).toBe(
       false,
     );
+  });
+});
+
+describe("useRecruitingDeadlines getter callbacks", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    setActivePinia(createPinia());
+    capturedGetters = null;
+    mockPlayerDetails.value = null;
+  });
+
+  it("getSport returns player primary_sport or null", async () => {
+    const { useDeadlines } = await import("~/composables/useDeadlines");
+    useDeadlines();
+    expect(capturedGetters).not.toBeNull();
+    expect(capturedGetters!.getSport()).toBeNull();
+
+    mockPlayerDetails.value = { primary_sport: "baseball" } as PlayerDetails;
+    expect(capturedGetters!.getSport()).toBe("baseball");
+  });
+
+  it("getDivisions returns unique divisions from school store", async () => {
+    const { useSchoolStore } = await import("~/stores/schools");
+    const store = useSchoolStore();
+    store.schools = [
+      { division: "D1" },
+      { division: "D1" },
+      { division: "D2" },
+      { division: null },
+    ] as typeof store.schools;
+
+    const { useDeadlines } = await import("~/composables/useDeadlines");
+    useDeadlines();
+    const result = capturedGetters!.getDivisions() as string[];
+    expect(result).toEqual(["D1", "D2"]);
+  });
+
+  it("getGradYear returns graduation_year or null", async () => {
+    const { useDeadlines } = await import("~/composables/useDeadlines");
+    useDeadlines();
+    expect(capturedGetters!.getGradYear()).toBeNull();
+
+    mockPlayerDetails.value = { graduation_year: 2028 } as PlayerDetails;
+    expect(capturedGetters!.getGradYear()).toBe(2028);
   });
 });

@@ -51,7 +51,7 @@ test.describe("Profile Edit Restrictions (User Story 2.2)", () => {
 
     test("parent sees position buttons ENABLED", async ({ page }) => {
       await page.goto("/settings/player-details");
-      await page.waitForLoadState("domcontentloaded");
+      await page.waitForLoadState("networkidle");
 
       // Selects appear only once isLoading flips false. Wait for the seeded
       // sport too — availablePositions is empty until primary_sport is set, and
@@ -61,6 +61,9 @@ test.describe("Profile Edit Restrictions (User Story 2.2)", () => {
         .filter({ hasText: "Primary Sport" })
         .locator("xpath=following-sibling::select");
       await expect(sportSelect).toBeVisible({ timeout: 15000 });
+      // The select renders with a placeholder before data loads — wait for any
+      // real value before asserting the exact sport.
+      await expect(sportSelect).not.toHaveValue("", { timeout: 15000 });
       await expect(sportSelect).toHaveValue("Baseball", { timeout: 15000 });
 
       await page

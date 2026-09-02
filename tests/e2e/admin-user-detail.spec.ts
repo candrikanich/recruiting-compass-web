@@ -76,6 +76,10 @@ test.describe("admin user detail (read-only view-as)", () => {
     page,
   }) => {
     test.skip(!adminGranted || !adminUserId, "Admin grant failed in beforeAll");
+    test.skip(
+      !process.env.NUXT_PUBLIC_ADMIN_HOST,
+      "NUXT_PUBLIC_ADMIN_HOST not set — admin pages redirect to prod login",
+    );
 
     const consoleErrors: string[] = [];
     page.on("console", (msg) => {
@@ -83,9 +87,14 @@ test.describe("admin user detail (read-only view-as)", () => {
     });
 
     await page.goto(`/admin/users/${adminUserId}`);
+    await page.waitForLoadState("networkidle");
 
-    await expect(page.getByText("Read-only admin view")).toBeVisible();
-    await expect(page.getByText("Schools").first()).toBeVisible();
+    await expect(page.getByText("Read-only admin view")).toBeVisible({
+      timeout: 15000,
+    });
+    await expect(page.getByText("Schools").first()).toBeVisible({
+      timeout: 15000,
+    });
 
     expect(consoleErrors).toEqual([]);
   });

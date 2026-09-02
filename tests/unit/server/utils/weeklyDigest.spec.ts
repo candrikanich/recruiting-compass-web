@@ -73,6 +73,55 @@ describe("fetchUpcomingDeadlines with user_deadlines", () => {
     });
   });
 
+  it("includes offer deadlines with school names", async () => {
+    const now = new Date("2026-08-16T12:00:00.000Z");
+    const inRange = new Date(now.getTime() + 5 * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .slice(0, 10);
+
+    const fromMock = vi.fn((table: string) => {
+      if (table === "offers") {
+        return buildChain([
+          { school_id: "s-1", deadline_date: inRange, status: "pending" },
+        ]);
+      }
+      if (table === "schools") {
+        return buildChain([{ id: "s-1", name: "Alabama" }]);
+      }
+      return buildChain([]);
+    });
+    const supabase = { from: fromMock } as unknown as SupabaseClient;
+
+    const data = await buildWeeklyDigestData("u-1", supabase, now);
+
+    expect(data?.upcomingDeadlines).toContainEqual(
+      expect.objectContaining({ label: "Offer from Alabama" }),
+    );
+  });
+
+  it("includes upcoming events as deadlines", async () => {
+    const now = new Date("2026-08-16T12:00:00.000Z");
+    const inRange = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .slice(0, 10);
+
+    const fromMock = vi.fn((table: string) => {
+      if (table === "events") {
+        return buildChain([
+          { name: "Summer Camp", start_date: inRange, attended: false },
+        ]);
+      }
+      return buildChain([]);
+    });
+    const supabase = { from: fromMock } as unknown as SupabaseClient;
+
+    const data = await buildWeeklyDigestData("u-1", supabase, now);
+
+    expect(data?.upcomingDeadlines).toContainEqual(
+      expect.objectContaining({ label: "Summer Camp" }),
+    );
+  });
+
   it("excludes user deadlines outside the 14-day horizon", async () => {
     const now = new Date("2026-08-16T12:00:00.000Z");
     const outOfRange = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)
