@@ -14,10 +14,23 @@ export default defineEventHandler(async (event) => {
     const user = await requireAuth(event);
     const supabase = createServerSupabaseClient();
 
+    const { data: membership } = await supabase
+      .from("family_members")
+      .select("family_unit_id")
+      .eq("user_id", user.id)
+      .single();
+
+    if (!membership?.family_unit_id) {
+      throw createError({
+        statusCode: 500,
+        statusMessage: "No family membership found",
+      });
+    }
+
     const { data, error } = await supabase
       .from("user_deadlines")
       .select("*")
-      .eq("user_id", user.id)
+      .eq("family_unit_id", membership.family_unit_id)
       .order("deadline_date", { ascending: true });
 
     if (error) {

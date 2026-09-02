@@ -2928,6 +2928,7 @@ export type Database = {
           category: string;
           created_at: string;
           deadline_date: string;
+          family_unit_id: string | null;
           id: string;
           label: string;
           school_id: string | null;
@@ -2938,6 +2939,7 @@ export type Database = {
           category: string;
           created_at?: string;
           deadline_date: string;
+          family_unit_id?: string | null;
           id?: string;
           label: string;
           school_id?: string | null;
@@ -2948,6 +2950,7 @@ export type Database = {
           category?: string;
           created_at?: string;
           deadline_date?: string;
+          family_unit_id?: string | null;
           id?: string;
           label?: string;
           school_id?: string | null;
@@ -2955,6 +2958,13 @@ export type Database = {
           user_id?: string;
         };
         Relationships: [
+          {
+            foreignKeyName: "user_deadlines_family_unit_id_fkey";
+            columns: ["family_unit_id"];
+            isOneToOne: false;
+            referencedRelation: "family_units";
+            referencedColumns: ["id"];
+          },
           {
             foreignKeyName: "user_deadlines_school_id_fkey";
             columns: ["school_id"];
