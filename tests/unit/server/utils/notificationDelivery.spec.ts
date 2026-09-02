@@ -123,7 +123,7 @@ describe("selectDeadlineEmails", () => {
         entityId: "ud1",
         entityType: "user_deadline",
         label: "Stanford App",
-        deadlineDate: "2026-10-16",
+        deadlineDate: "2026-10-16", // 14 days from "now"
       },
     ];
     const result = selectDeadlineEmails(items, new Date("2026-10-02"));

@@ -59,7 +59,7 @@
             to="/signup"
             class="min-w-[200px] rounded-lg bg-blue-600 px-8 py-4 text-lg font-semibold text-white shadow-xl transition-all hover:bg-blue-700 hover:shadow-2xl focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-emerald-600"
           >
-            Get Started Free
+            Start Now
           </NuxtLink>
           <NuxtLink
             to="/login"
@@ -117,7 +117,7 @@
 
         <!-- Tagline -->
         <p class="mt-8 text-sm font-medium text-white/60">
-          Free for student athletes and families.
+          Built for student athletes and their families.
         </p>
       </div>
 
