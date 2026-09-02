@@ -63,6 +63,22 @@ const TEMPLATES: Record<string, NotificationTemplate> = {
     message: (coachName: string, daysSince?: number) =>
       `It's been ${daysSince ?? 0} days since last contact with ${coachName}. Reach out to maintain the relationship.`,
   },
+  user_deadline_14: {
+    title: (label: string) => `Deadline in 14 days: ${label}`,
+    message: (label: string) => `Your deadline "${label}" is in two weeks.`,
+  },
+  user_deadline_7: {
+    title: (label: string) => `Deadline in 7 days: ${label}`,
+    message: (label: string) => `Your deadline "${label}" is in one week.`,
+  },
+  user_deadline_3: {
+    title: (label: string) => `Deadline in 3 days: ${label}`,
+    message: (label: string) => `Your deadline "${label}" is in 3 days.`,
+  },
+  user_deadline_1: {
+    title: (label: string) => `Deadline tomorrow: ${label}`,
+    message: (label: string) => `Your deadline "${label}" is tomorrow!`,
+  },
 };
 
 /**
@@ -377,6 +393,75 @@ export async function generateCoachFollowupNotifications(
   } catch (err) {
     logger.error("Error generating coach follow-up notifications:", err);
     return { count: 0, type: "coaches" };
+  }
+}
+
+/**
+ * Generate notifications for upcoming user-created deadlines (14/7/3/1 days out)
+ */
+export async function generateUserDeadlineNotifications(
+  userId: string,
+  supabase: SupabaseClient,
+): Promise<NotificationGenerationResult> {
+  try {
+    const { data: deadlines, error: deadlinesError } = await supabase
+      .from("user_deadlines")
+      .select("id, label, deadline_date")
+      .eq("user_id", userId);
+
+    if (deadlinesError) throw deadlinesError;
+    if (!deadlines || deadlines.length === 0)
+      return { count: 0, type: "user_deadline" };
+
+    // eslint-disable-next-line local/no-date-only-string-constructor -- date-only comparison against a `date` column, mirrors the offer/rec/event generators above.
+    const today = new Date().toISOString().split("T")[0];
+    let createdCount = 0;
+
+    for (const dl of deadlines) {
+      if (!dl.deadline_date || dl.deadline_date < today) continue;
+
+      const daysUntil = Math.round(
+        (new Date(`${dl.deadline_date}T00:00:00`).getTime() -
+          new Date(`${today}T00:00:00`).getTime()) /
+          (1000 * 60 * 60 * 24),
+      );
+      if (![14, 7, 3, 1].includes(daysUntil)) continue;
+
+      const templateKey =
+        `user_deadline_${daysUntil}` as keyof typeof TEMPLATES;
+      const template = TEMPLATES[templateKey];
+      if (!template) continue;
+
+      const { data: existing, error: checkError } = await supabase
+        .from("notifications")
+        .select("id")
+        .eq("user_id", userId)
+        .eq("related_entity_id", dl.id)
+        .eq("related_entity_type", "user_deadline")
+        .eq("type", "deadline_alert")
+        .eq("scheduled_for", today)
+        .maybeSingle();
+
+      if (checkError) throw checkError;
+      if (existing) continue;
+
+      await supabase.from("notifications").insert({
+        user_id: userId,
+        type: "deadline_alert",
+        title: template.title(dl.label),
+        message: template.message(dl.label),
+        priority: daysUntil <= 3 ? "high" : "normal",
+        related_entity_type: "user_deadline",
+        related_entity_id: dl.id,
+        scheduled_for: today,
+      });
+      createdCount++;
+    }
+
+    return { count: createdCount, type: "user_deadline" };
+  } catch (err) {
+    logger.error("Error generating user deadline notifications:", err);
+    return { count: 0, type: "user_deadline" };
   }
 }
 

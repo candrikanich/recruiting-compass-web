@@ -1,6 +1,8 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   selectDeadlineEmails,
+  fetchDeadlineItems,
   DEADLINE_EMAIL_MILESTONES,
   type DeadlineItem,
 } from "~/server/utils/notificationDelivery";
@@ -59,6 +61,59 @@ describe("selectDeadlineEmails", () => {
       entityId: "off-9",
       entityType: "offer",
       daysUntil: 7,
+    });
+  });
+
+  it("selects user_deadline items at milestone days", () => {
+    const items: DeadlineItem[] = [
+      {
+        entityId: "ud1",
+        entityType: "user_deadline",
+        label: "Stanford App",
+        deadlineDate: "2026-10-16", // 14 days from "now"
+      },
+    ];
+    const result = selectDeadlineEmails(items, new Date("2026-10-02"));
+    expect(result).toHaveLength(1);
+    expect(result[0].daysUntil).toBe(14);
+  });
+});
+
+describe("fetchDeadlineItems with user_deadlines", () => {
+  function buildChain(data: unknown[] | null) {
+    const chain: Record<string, unknown> = {};
+    const passthrough = () => chain;
+    chain.select = vi.fn(passthrough);
+    chain.eq = vi.fn(passthrough);
+    chain.in = vi.fn(passthrough);
+    chain.then = (resolve: (v: unknown) => void) =>
+      resolve({ data, error: null });
+    return chain;
+  }
+
+  it("includes user_deadlines in the returned items", async () => {
+    const fromMock = vi.fn((table: string) => {
+      if (table === "offers") return buildChain([]);
+      if (table === "recommendation_letters") return buildChain([]);
+      if (table === "user_deadlines")
+        return buildChain([
+          {
+            id: "ud-1",
+            label: "Stanford App",
+            deadline_date: "2026-10-16",
+          },
+        ]);
+      return buildChain([]);
+    });
+    const supabase = { from: fromMock } as unknown as SupabaseClient;
+
+    const items = await fetchDeadlineItems("u-1", supabase);
+
+    expect(items).toContainEqual({
+      entityId: "ud-1",
+      entityType: "user_deadline",
+      label: "Stanford App",
+      deadlineDate: "2026-10-16",
     });
   });
 });
