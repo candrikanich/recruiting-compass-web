@@ -1,4 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { computed } from "vue";
+import { setActivePinia, createPinia } from "pinia";
+import type { PlayerDetails } from "~/types/models";
 
 const mockFetchAuth = vi.fn();
 
@@ -16,9 +19,33 @@ vi.mock("~/utils/logger", () => ({
   createClientLogger: () => mockLogger,
 }));
 
+const mockPlayerDetails = { value: null as PlayerDetails | null };
+vi.mock("~/composables/usePreferenceManager", () => ({
+  usePreferenceManager: () => ({
+    getPlayerDetails: () => mockPlayerDetails.value,
+  }),
+}));
+
+vi.mock("~/composables/useRecruitingDeadlines", () => ({
+  useRecruitingDeadlines: () => ({
+    systemDeadlines: computed(() => [
+      {
+        id: "system-sat-1",
+        label: "SAT Test Date",
+        date: "2026-10-03",
+        category: "test",
+        source: "system",
+      },
+    ]),
+    isStale: computed(() => false),
+  }),
+}));
+
 describe("useDeadlines", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    setActivePinia(createPinia());
+    mockPlayerDetails.value = null;
   });
 
   it("exports fetchDeadlines, createDeadline, and removeDeadline", async () => {
@@ -140,6 +167,54 @@ describe("useDeadlines", () => {
     expect(mockLogger.error).toHaveBeenCalledWith(
       "Failed to remove deadline",
       fetchError,
+    );
+  });
+});
+
+describe("unified view", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    setActivePinia(createPinia());
+    mockPlayerDetails.value = null;
+  });
+
+  it("merges user + system deadlines into unifiedDeadlines sorted by date", async () => {
+    mockFetchAuth.mockResolvedValue({
+      deadlines: [
+        {
+          id: "u1",
+          label: "Stanford App",
+          deadline_date: "2026-11-01",
+          category: "application",
+        },
+      ],
+    });
+    const { useDeadlines } = await import("~/composables/useDeadlines");
+    const { fetchDeadlines, unifiedDeadlines } = useDeadlines();
+    await fetchDeadlines();
+    expect(unifiedDeadlines.value).toHaveLength(2);
+    expect(unifiedDeadlines.value[0].id).toBe("system-sat-1"); // Oct before Nov
+    expect(unifiedDeadlines.value[1].label).toBe("Stanford App");
+  });
+
+  it("upcomingDeadlines excludes past items", async () => {
+    mockFetchAuth.mockResolvedValue({
+      deadlines: [
+        {
+          id: "u1",
+          label: "Old",
+          deadline_date: "2020-01-01",
+          category: "custom",
+        },
+      ],
+    });
+    const { useDeadlines } = await import("~/composables/useDeadlines");
+    const { fetchDeadlines, upcomingDeadlines, pastDeadlines } =
+      useDeadlines();
+    await fetchDeadlines();
+    expect(pastDeadlines.value.some((d) => d.label === "Old")).toBe(true);
+    expect(upcomingDeadlines.value.some((d) => d.label === "Old")).toBe(
+      false,
     );
   });
 });
