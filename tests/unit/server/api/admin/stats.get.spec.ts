@@ -92,6 +92,46 @@ describe("GET /api/admin/stats", () => {
     expect(response.family_units).toBe(0);
   });
 
+  it("computes byPrimarySport from player rows joined to sport names", async () => {
+    const usersData = [
+      { role: "player", primary_sport_id: "s1" },
+      { role: "player", primary_sport_id: "s1" },
+      { role: "player", primary_sport_id: "s2" },
+      { role: "player", primary_sport_id: null },
+      { role: "parent", primary_sport_id: "s1" }, // non-player, excluded
+    ];
+    const sportsData = [
+      { id: "s1", name: "Baseball" },
+      { id: "s2", name: "Softball" },
+    ];
+
+    mockFrom.mockImplementation((table: string) => ({
+      select: vi.fn(
+        (cols: string, opts?: { count?: string; head?: boolean }) => {
+          if (opts?.head) return Promise.resolve({ count: 0, error: null });
+          if (table === "users" && cols === "role, primary_sport_id") {
+            return Promise.resolve({ data: usersData, error: null });
+          }
+          if (table === "sports") {
+            return Promise.resolve({ data: sportsData, error: null });
+          }
+          return Promise.resolve({ data: [], error: null });
+        },
+      ),
+    }));
+
+    const { default: handler } = await import("~/server/api/admin/stats.get");
+    const mockEvent = { context: {}, node: { req: {}, res: {} } } as any;
+
+    const response = await handler(mockEvent);
+
+    expect(response.byPrimarySport).toEqual([
+      { value: "Baseball", count: 2 },
+      { value: "Softball", count: 1 },
+      { value: "Not set", count: 1 },
+    ]);
+  });
+
   it("re-throws H3Error from requireAdmin without wrapping in 500", async () => {
     const h3Error = new Error("Forbidden") as Error & { statusCode: number };
     h3Error.statusCode = 403;

@@ -26,6 +26,7 @@ export interface AdminStatsResponse {
   byDivision: BreakdownSlice[];
   byCoachRole: BreakdownSlice[];
   byUserRole: BreakdownSlice[];
+  byPrimarySport: BreakdownSlice[];
   newUsersWeekly: WeekBucket[];
 }
 
@@ -46,6 +47,8 @@ export default defineEventHandler(
         coachRoleRows,
         userRoleRows,
         signupRows,
+        playerSportRows,
+        sportsRows,
       ] = await Promise.all([
         supabaseAdmin.from("users").select("*", { count: "exact", head: true }),
         supabaseAdmin
@@ -64,10 +67,26 @@ export default defineEventHandler(
         supabaseAdmin.from("coaches").select("role"),
         supabaseAdmin.from("users").select("role"),
         supabaseAdmin.from("users").select("created_at"),
+        supabaseAdmin.from("users").select("role, primary_sport_id"),
+        supabaseAdmin.from("sports").select("id, name"),
       ]);
 
       const asRows = (data: unknown): Record<string, unknown>[] =>
         (data ?? []) as Record<string, unknown>[];
+
+      const sportNameById = new Map<string, string>(
+        asRows(sportsRows.data).map((row) => [
+          row.id as string,
+          row.name as string,
+        ]),
+      );
+      const playerSportSlices = asRows(playerSportRows.data)
+        .filter((row) => row.role === "player")
+        .map((row) => ({
+          sport: row.primary_sport_id
+            ? (sportNameById.get(row.primary_sport_id as string) ?? null)
+            : null,
+        }));
 
       return {
         users: usersRes.count ?? 0,
@@ -78,6 +97,7 @@ export default defineEventHandler(
         byDivision: groupCounts(asRows(divisionRows.data), "division"),
         byCoachRole: groupCounts(asRows(coachRoleRows.data), "role"),
         byUserRole: groupCounts(asRows(userRoleRows.data), "role"),
+        byPrimarySport: groupCounts(playerSportSlices, "sport", "Not set"),
         newUsersWeekly: weeklyCounts(
           asRows(signupRows.data),
           "created_at",

@@ -10,6 +10,7 @@ interface AdminStats {
   byDivision: BreakdownSlice[];
   byCoachRole: BreakdownSlice[];
   byUserRole: BreakdownSlice[];
+  byPrimarySport: BreakdownSlice[];
   newUsersWeekly: WeekBucket[];
 }
 
