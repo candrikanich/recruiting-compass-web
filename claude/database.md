@@ -155,3 +155,12 @@ What landed:
 - Function `public.invalidate_public_profile_snapshot()` (`SECURITY DEFINER`, `search_path = ''`) + trigger `player_profiles_invalidate_cache_snapshot` AFTER UPDATE OR DELETE on `player_profiles` — deletes `pubprof:v1:{user_id}`.
 
 Code path: `server/utils/publicProfileRead.ts` (L1 Redis 60s + L2 this table 300s, fail-open). `is_published` is still read from `player_profiles` on every GET.
+
+## Helper Functions
+
+- `family_can_write(p_family_unit_id uuid) → boolean` — entitlement gate; STABLE SECURITY DEFINER; used by `*_requires_entitlement` RESTRICTIVE policies on family content tables. NULL → true. Mirror in `composables/useEntitlement.ts` and iOS `FamilySubscription.canWrite`.
+
+## Key Tables (Entitlement)
+
+- `family_subscriptions` — 1:1 with `family_units`, service-role writes only. Tracks subscription status, trial dates, billing period end.
+- `app_config` — single row; `pricing_flip_at` NULL = pre-flip (all families founding); once set, new families trial 30d then read-only.
