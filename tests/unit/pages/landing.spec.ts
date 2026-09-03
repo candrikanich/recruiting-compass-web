@@ -65,7 +65,7 @@ describe("pages/index.vue (Landing Page)", () => {
     it("renders tagline", () => {
       const wrapper = mountPage();
       expect(wrapper.text()).toContain(
-        "Free for student athletes and families",
+        "Built for student athletes and their families",
       );
     });
   });
@@ -80,11 +80,11 @@ describe("pages/index.vue (Landing Page)", () => {
       expect(signInLink!.attributes("href")).toBe("/login");
     });
 
-    it('renders a "Get Started Free" link pointing to /signup', () => {
+    it('renders a "Start Now" link pointing to /signup', () => {
       const wrapper = mountPage();
       const signupLink = wrapper
         .findAll("a")
-        .find((a) => a.text().includes("Get Started Free"));
+        .find((a) => a.text().includes("Start Now"));
       expect(signupLink).toBeDefined();
       expect(signupLink!.attributes("href")).toBe("/signup");
     });

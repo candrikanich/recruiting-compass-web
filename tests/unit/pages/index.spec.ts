@@ -51,18 +51,18 @@ describe("pages/index.vue (Landing Page)", () => {
       expect(logo.attributes("alt")).toContain("Recruiting Compass");
     });
 
-    it("renders get started free and sign in buttons", () => {
+    it("renders start now and sign in buttons", () => {
       const wrapper = mountPage();
       const links = wrapper.findAll("a");
       const signInLink = links.find((link) => link.text().includes("Sign In"));
-      const getStartedLink = links.find((link) =>
-        link.text().includes("Get Started Free"),
+      const startNowLink = links.find((link) =>
+        link.text().includes("Start Now"),
       );
 
       expect(signInLink).toBeDefined();
-      expect(getStartedLink).toBeDefined();
+      expect(startNowLink).toBeDefined();
       expect(signInLink?.attributes("href")).toBe("/login");
-      expect(getStartedLink?.attributes("href")).toBe("/signup");
+      expect(startNowLink?.attributes("href")).toBe("/signup");
     });
 
     it("renders headline and subheadline", () => {
@@ -100,7 +100,7 @@ describe("pages/index.vue (Landing Page)", () => {
     it("renders tagline", () => {
       const wrapper = mountPage();
       expect(wrapper.text()).toContain(
-        "Free for student athletes and families",
+        "Built for student athletes and their families",
       );
     });
   });
