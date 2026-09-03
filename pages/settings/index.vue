@@ -11,6 +11,24 @@
     />
 
     <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6">
+      <!-- Plan Section -->
+      <div class="mb-8">
+        <h2
+          class="mb-3 text-sm font-semibold tracking-wide text-slate-500 uppercase"
+        >
+          Plan
+        </h2>
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <SettingsCard
+            to="/settings/plan"
+            icon="⭐"
+            title="Plan"
+            :description="planLabel"
+            variant="blue"
+          />
+        </div>
+      </div>
+
       <!-- Profile Section -->
       <div class="mb-8">
         <h2
@@ -160,6 +178,7 @@
 <script setup lang="ts">
 import { computed, onMounted } from "vue";
 import { usePreferenceManager } from "~/composables/usePreferenceManager";
+import { useEntitlement } from "~/composables/useEntitlement";
 import SettingsCard from "~/components/Settings/SettingsCard.vue";
 
 definePageMeta({
@@ -172,6 +191,8 @@ const {
   getSchoolPreferences,
   loadAllPreferences,
 } = usePreferenceManager();
+
+const { planLabel, load: loadEntitlement } = useEntitlement();
 
 const hasHomeLocation = computed(() => {
   const loc = getHomeLocation.value;
@@ -190,6 +211,6 @@ const hasSchoolPreferences = computed(() => {
 
 // Load all preferences when the page mounts to ensure reactive updates
 onMounted(async () => {
-  await loadAllPreferences();
+  await Promise.all([loadAllPreferences(), loadEntitlement()]);
 });
 </script>
