@@ -27,11 +27,25 @@ export default defineEventHandler(async (event) => {
 
     const supabase = createServerSupabaseClient();
 
+    const { data: membership } = await supabase
+      .from("family_members")
+      .select("family_unit_id")
+      .eq("user_id", user.id)
+      .single();
+
+    if (!membership?.family_unit_id) {
+      throw createError({
+        statusCode: 500,
+        statusMessage: "No family membership found",
+      });
+    }
+
     const { data, error } = await supabase
       .from("user_deadlines")
       .insert([
         {
           user_id: user.id,
+          family_unit_id: membership.family_unit_id,
           label,
           deadline_date,
           category,

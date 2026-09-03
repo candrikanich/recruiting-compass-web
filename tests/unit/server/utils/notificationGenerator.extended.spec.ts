@@ -15,6 +15,7 @@ import {
   generateRecommendationNotifications,
   generateEventNotifications,
   generateCoachFollowupNotifications,
+  generateUserDeadlineNotifications,
   generateDailyDigest,
 } from "~/server/utils/notificationGenerator";
 
@@ -114,6 +115,14 @@ function daysAgo(days: number): string {
   const d = new Date();
   d.setDate(d.getDate() - days);
   return d.toISOString();
+}
+
+// Helper: date-only (YYYY-MM-DD) string `daysAhead` days from now — matches
+// the `date` column type user_deadlines.deadline_date is stored as.
+function dateStringFromNow(daysAhead: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() + daysAhead);
+  return d.toISOString().slice(0, 10);
 }
 
 beforeEach(() => {
@@ -756,6 +765,186 @@ describe("generateCoachFollowupNotifications", () => {
     });
     const result = await generateCoachFollowupNotifications("u-1", supabase);
     expect(result.count).toBe(0);
+  });
+});
+
+describe("generateUserDeadlineNotifications", () => {
+  it("creates notification at 14-day milestone for upcoming user deadline", async () => {
+    const inserts = { calls: [] as Array<{ table: string; rows: unknown }> };
+    const { supabase } = makeSupabase(
+      {
+        user_deadlines: {
+          list: {
+            data: [
+              {
+                id: "ud-1",
+                label: "Stanford App",
+                deadline_date: dateStringFromNow(14),
+              },
+            ],
+            error: null,
+          },
+        },
+        notifications: { maybeSingle: { data: null, error: null } },
+      },
+      inserts,
+    );
+    const result = await generateUserDeadlineNotifications("u-1", supabase);
+    expect(result).toEqual({ count: 1, type: "user_deadline" });
+    const row = (inserts.calls[0].rows as Row) as Row;
+    expect(row.user_id).toBe("u-1");
+    expect(row.type).toBe("deadline_alert");
+    expect(row.related_entity_type).toBe("user_deadline");
+    expect(row.related_entity_id).toBe("ud-1");
+    expect(row.priority).toBe("normal");
+    expect(row.title).toContain("Stanford App");
+  });
+
+  it("creates high-priority notification at 1-day milestone", async () => {
+    const inserts = { calls: [] as Array<{ table: string; rows: unknown }> };
+    const { supabase } = makeSupabase(
+      {
+        user_deadlines: {
+          list: {
+            data: [
+              {
+                id: "ud-1",
+                label: "Stanford App",
+                deadline_date: dateStringFromNow(1),
+              },
+            ],
+            error: null,
+          },
+        },
+        notifications: { maybeSingle: { data: null, error: null } },
+      },
+      inserts,
+    );
+    const result = await generateUserDeadlineNotifications("u-1", supabase);
+    expect(result.count).toBe(1);
+    const row = (inserts.calls[0].rows as Row) as Row;
+    expect(row.priority).toBe("high");
+    expect(row.title).toContain("tomorrow");
+  });
+
+  it("creates normal-priority notification at 7-day milestone", async () => {
+    const inserts = { calls: [] as Array<{ table: string; rows: unknown }> };
+    const { supabase } = makeSupabase(
+      {
+        user_deadlines: {
+          list: {
+            data: [
+              {
+                id: "ud-7",
+                label: "Michigan App",
+                deadline_date: dateStringFromNow(7),
+              },
+            ],
+            error: null,
+          },
+        },
+        notifications: { maybeSingle: { data: null, error: null } },
+      },
+      inserts,
+    );
+    const result = await generateUserDeadlineNotifications("u-1", supabase);
+    expect(result).toEqual({ count: 1, type: "user_deadline" });
+    const row = (inserts.calls[0].rows as Row) as Row;
+    expect(row.user_id).toBe("u-1");
+    expect(row.type).toBe("deadline_alert");
+    expect(row.related_entity_type).toBe("user_deadline");
+    expect(row.related_entity_id).toBe("ud-7");
+    expect(row.priority).toBe("normal");
+    expect(row.title).toBe("Deadline in 7 days: Michigan App");
+    expect(row.message).toContain("one week");
+  });
+
+  it("creates high-priority notification at 3-day milestone", async () => {
+    const inserts = { calls: [] as Array<{ table: string; rows: unknown }> };
+    const { supabase } = makeSupabase(
+      {
+        user_deadlines: {
+          list: {
+            data: [
+              {
+                id: "ud-3",
+                label: "Ohio State App",
+                deadline_date: dateStringFromNow(3),
+              },
+            ],
+            error: null,
+          },
+        },
+        notifications: { maybeSingle: { data: null, error: null } },
+      },
+      inserts,
+    );
+    const result = await generateUserDeadlineNotifications("u-1", supabase);
+    expect(result).toEqual({ count: 1, type: "user_deadline" });
+    const row = (inserts.calls[0].rows as Row) as Row;
+    expect(row.user_id).toBe("u-1");
+    expect(row.type).toBe("deadline_alert");
+    expect(row.related_entity_type).toBe("user_deadline");
+    expect(row.related_entity_id).toBe("ud-3");
+    expect(row.priority).toBe("high");
+    expect(row.title).toBe("Deadline in 3 days: Ohio State App");
+    expect(row.message).toContain("3 days");
+  });
+
+  it("skips deadlines not on a milestone day (e.g. 10 days out)", async () => {
+    const inserts = { calls: [] as Array<{ table: string; rows: unknown }> };
+    const { supabase } = makeSupabase(
+      {
+        user_deadlines: {
+          list: {
+            data: [
+              {
+                id: "ud-1",
+                label: "Stanford App",
+                deadline_date: dateStringFromNow(10),
+              },
+            ],
+            error: null,
+          },
+        },
+        notifications: { maybeSingle: { data: null, error: null } },
+      },
+      inserts,
+    );
+    const result = await generateUserDeadlineNotifications("u-1", supabase);
+    expect(result.count).toBe(0);
+    expect(
+      inserts.calls.filter((c) => c.table === "notifications"),
+    ).toHaveLength(0);
+  });
+
+  it("deduplicates — does not re-create notification for same deadline+milestone", async () => {
+    const inserts = { calls: [] as Array<{ table: string; rows: unknown }> };
+    const { supabase } = makeSupabase(
+      {
+        user_deadlines: {
+          list: {
+            data: [
+              {
+                id: "ud-1",
+                label: "Stanford App",
+                deadline_date: dateStringFromNow(14),
+              },
+            ],
+            error: null,
+          },
+        },
+        notifications: {
+          maybeSingle: { data: { id: "n-existing" }, error: null },
+        },
+      },
+      inserts,
+    );
+    const result = await generateUserDeadlineNotifications("u-1", supabase);
+    expect(result.count).toBe(0);
+    expect(
+      inserts.calls.filter((c) => c.table === "notifications"),
+    ).toHaveLength(0);
   });
 });
 

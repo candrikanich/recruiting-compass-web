@@ -1,109 +1,166 @@
 <template>
-  <div class="mx-auto max-w-4xl px-4 py-8">
-    <div class="mb-6 flex items-center justify-between">
-      <div>
-        <h1 class="text-2xl font-bold text-gray-900">Deadlines</h1>
-        <p class="mt-1 text-sm text-gray-500">
-          Track application, offer, and recruiting deadlines
-        </p>
-      </div>
-      <button
-        @click="showAdd = true"
-        class="rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition hover:bg-blue-700"
-      >
-        + Add Deadline
-      </button>
-    </div>
-
-    <div v-if="loading" class="py-12 text-center text-gray-400">Loading...</div>
-    <div v-else-if="error" class="py-8 text-center text-red-600">
-      {{ error }}
-    </div>
-    <DesignSystemEmptyState
-      v-else-if="sortedDeadlines.length === 0"
-      title="No deadlines yet"
-      description="Key dates for your sport, division, and graduation year"
-    >
-      <template #icon>
-        <UIcon name="i-heroicons-calendar-days" class="h-8 w-8 text-brand-slate-400" />
-      </template>
-      <template #action>
-        <DesignSystemButton color="blue" variant="solid" @click="showAdd = true">
-          View Recruiting Deadlines
-        </DesignSystemButton>
-      </template>
-    </DesignSystemEmptyState>
-    <ul v-else class="space-y-3">
-      <li
-        v-for="d in sortedDeadlines"
-        :key="d.id"
-        class="flex items-center justify-between rounded-lg border border-gray-200 bg-white p-4"
-      >
+  <DesignSystemPageState
+    :loading="loading"
+    :error="error"
+    loading-message="Loading deadlines..."
+    @retry="fetchDeadlines"
+  >
+    <div class="mx-auto max-w-4xl px-4 py-8">
+      <div class="mb-6 flex items-center justify-between">
         <div>
-          <p class="font-medium text-gray-900">{{ d.label }}</p>
-          <p class="mt-0.5 text-sm text-gray-500">
-            {{ d.deadline_date }} ·
-            <span class="capitalize">{{
-              d.category.replaceAll("_", " ")
-            }}</span>
+          <h1 class="text-2xl font-bold text-brand-slate-900">Deadlines</h1>
+          <p class="mt-1 text-sm text-brand-slate-500">
+            Key dates for your sport, division, and graduation year — plus
+            your own deadlines
           </p>
         </div>
-        <button
-          @click="removeDeadline(d.id)"
-          class="text-sm font-medium text-red-500 hover:text-red-700"
-          :aria-label="`Remove ${d.label}`"
-        >
-          Remove
-        </button>
-      </li>
-    </ul>
+        <DesignSystemButton color="blue" variant="solid" @click="showAdd = true">
+          + Add Deadline
+        </DesignSystemButton>
+      </div>
 
-    <!-- Add deadline modal -->
-    <div
-      v-if="showAdd"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
-      @click.self="showAdd = false"
-    >
-      <form
-        @submit.prevent="submitAdd"
-        class="mx-4 w-full max-w-md space-y-4 rounded-xl bg-white p-6 shadow-xl"
+      <DesignSystemAlert
+        v-if="isStale"
+        variant="warning"
+        title="Recruiting calendar may be out of date"
+        compact
+        class="mb-6"
       >
-        <h2 class="text-lg font-bold">Add Deadline</h2>
+        The current NCAA recruiting season has ended. Dates shown may need an
+        update for the upcoming season.
+      </DesignSystemAlert>
 
-        <div>
-          <label class="mb-1 block text-sm font-medium text-gray-700"
-            >Label</label
+      <DesignSystemEmptyState
+        v-if="unifiedDeadlines.length === 0"
+        title="No deadlines yet"
+        description="Key dates for your sport, division, and graduation year"
+      >
+        <template #icon>
+          <UIcon name="i-heroicons-calendar-days" class="h-8 w-8 text-brand-slate-400" />
+        </template>
+        <template #action>
+          <DesignSystemButton color="blue" variant="solid" @click="showAdd = true">
+            Add Deadline
+          </DesignSystemButton>
+        </template>
+      </DesignSystemEmptyState>
+
+      <template v-else>
+        <section v-for="[monthKey, items] in upcomingByMonth" :key="monthKey" class="mb-6">
+          <h2
+            class="sticky top-0 z-10 bg-[var(--background)] py-2 text-xs font-semibold uppercase tracking-wide text-brand-slate-500"
           >
+            {{ formatMonthHeader(monthKey) }}
+          </h2>
+          <ul class="space-y-3">
+            <li
+              v-for="d in items"
+              :key="d.id"
+              class="flex items-center justify-between rounded-lg border border-brand-slate-200 bg-[var(--card)] p-4"
+            >
+              <div>
+                <p class="font-medium text-brand-slate-900">{{ d.label }}</p>
+                <div class="mt-1 flex flex-wrap items-center gap-2 text-sm text-brand-slate-500">
+                  <span>{{ formatDate(d.date, d.endDate) }}</span>
+                  <DesignSystemBadge :color="categoryColor(d.category)" size="sm">
+                    {{ categoryLabel(d.category) }}
+                  </DesignSystemBadge>
+                  <DesignSystemBadge v-if="d.source === 'system'" color="slate" size="sm">
+                    NCAA Calendar
+                  </DesignSystemBadge>
+                </div>
+              </div>
+              <button
+                v-if="d.source === 'user'"
+                type="button"
+                class="text-sm font-medium text-brand-red-600 hover:text-brand-red-700"
+                :aria-label="`Remove ${d.label}`"
+                @click="removeDeadline(d.id)"
+              >
+                Remove
+              </button>
+            </li>
+          </ul>
+        </section>
+
+        <section v-if="pastDeadlines.length > 0" class="mt-8">
+          <DesignSystemButton
+            variant="ghost"
+            color="slate"
+            size="sm"
+            @click="showPast = !showPast"
+          >
+            {{ showPast ? "Hide" : "Show" }} {{ pastDeadlines.length }} past deadline{{
+              pastDeadlines.length === 1 ? "" : "s"
+            }}
+          </DesignSystemButton>
+
+          <div v-if="showPast" class="mt-4 opacity-50">
+            <section v-for="[monthKey, items] in pastByMonth" :key="monthKey" class="mb-6">
+              <h2
+                class="py-2 text-xs font-semibold uppercase tracking-wide text-brand-slate-500"
+              >
+                {{ formatMonthHeader(monthKey) }}
+              </h2>
+              <ul class="space-y-3">
+                <li
+                  v-for="d in items"
+                  :key="d.id"
+                  class="flex items-center justify-between rounded-lg border border-brand-slate-200 bg-[var(--card)] p-4"
+                >
+                  <div>
+                    <p class="font-medium text-brand-slate-900">{{ d.label }}</p>
+                    <div
+                      class="mt-1 flex flex-wrap items-center gap-2 text-sm text-brand-slate-500"
+                    >
+                      <span>{{ formatDate(d.date, d.endDate) }}</span>
+                      <DesignSystemBadge :color="categoryColor(d.category)" size="sm">
+                        {{ categoryLabel(d.category) }}
+                      </DesignSystemBadge>
+                      <DesignSystemBadge v-if="d.source === 'system'" color="slate" size="sm">
+                        NCAA Calendar
+                      </DesignSystemBadge>
+                    </div>
+                  </div>
+                  <button
+                    v-if="d.source === 'user'"
+                    type="button"
+                    class="text-sm font-medium text-brand-red-600 hover:text-brand-red-700"
+                    :aria-label="`Remove ${d.label}`"
+                    @click="removeDeadline(d.id)"
+                  >
+                    Remove
+                  </button>
+                </li>
+              </ul>
+            </section>
+          </div>
+        </section>
+      </template>
+    </div>
+
+    <DesignSystemModal :open="showAdd" title="Add Deadline" size="md" @close="showAdd = false">
+      <form id="add-deadline-form" class="space-y-4" @submit.prevent="submitAdd">
+        <div>
+          <label class="mb-1 block text-sm font-medium text-brand-slate-700">Label</label>
           <input
             v-model="newDeadline.label"
             type="text"
             required
             maxlength="200"
             placeholder="e.g. Application Deadline — Stanford"
-            class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
+            class="input-field"
           />
         </div>
 
         <div>
-          <label class="mb-1 block text-sm font-medium text-gray-700"
-            >Date</label
-          >
-          <input
-            v-model="newDeadline.deadline_date"
-            type="date"
-            required
-            class="w-full rounded-lg border border-gray-300 px-3 py-2"
-          />
+          <label class="mb-1 block text-sm font-medium text-brand-slate-700">Date</label>
+          <input v-model="newDeadline.deadline_date" type="date" required class="input-field" />
         </div>
 
         <div>
-          <label class="mb-1 block text-sm font-medium text-gray-700"
-            >Category</label
-          >
-          <select
-            v-model="newDeadline.category"
-            class="w-full rounded-lg border border-gray-300 px-3 py-2"
-          >
+          <label class="mb-1 block text-sm font-medium text-brand-slate-700">Category</label>
+          <select v-model="newDeadline.category" class="input-field">
             <option value="application">Application</option>
             <option value="decision">Decision</option>
             <option value="financial_aid">Financial Aid</option>
@@ -112,66 +169,128 @@
           </select>
         </div>
 
-        <div class="flex justify-end gap-3 pt-2">
-          <button
-            type="button"
-            @click="showAdd = false"
-            class="rounded-lg border border-gray-300 px-4 py-2 text-gray-700 hover:bg-gray-50"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            :disabled="addingDeadline"
-            class="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:opacity-50"
-          >
-            {{ addingDeadline ? "Adding…" : "Add Deadline" }}
-          </button>
+        <div>
+          <label class="mb-1 block text-sm font-medium text-brand-slate-700">
+            School (optional)
+          </label>
+          <select v-model="newDeadline.school_id" class="input-field">
+            <option value="">No school</option>
+            <option v-for="school in schools" :key="school.id" :value="school.id">
+              {{ school.name }}
+            </option>
+          </select>
         </div>
       </form>
-    </div>
-  </div>
+
+      <template #footer>
+        <DesignSystemButton variant="outline" color="slate" @click="showAdd = false">
+          Cancel
+        </DesignSystemButton>
+        <DesignSystemButton type="submit" form="add-deadline-form" :loading="addingDeadline">
+          {{ addingDeadline ? "Adding…" : "Add Deadline" }}
+        </DesignSystemButton>
+      </template>
+    </DesignSystemModal>
+  </DesignSystemPageState>
 </template>
 
 <script setup lang="ts">
+import { groupByMonth } from "~/utils/deadlines";
+import type {
+  SystemDeadlineCategory,
+  UserDeadlineCategory,
+} from "~/types/deadline";
+import type { BadgeColor } from "~/components/DesignSystem/Badge.vue";
+
 const {
-  deadlines,
+  unifiedDeadlines,
+  upcomingDeadlines,
+  pastDeadlines,
+  isStale,
   loading,
   error,
   fetchDeadlines,
   createDeadline,
   removeDeadline,
 } = useDeadlines();
+const { schools, fetchSchools } = useSchools();
+
 const showAdd = ref(false);
+const showPast = ref(false);
 const addingDeadline = ref(false);
 const newDeadline = reactive({
   label: "",
   deadline_date: "",
   category: "application",
+  school_id: "",
 });
 
-onMounted(fetchDeadlines);
+onMounted(() => {
+  fetchDeadlines();
+  fetchSchools();
+});
 
-const sortedDeadlines = computed(() =>
-  [...deadlines.value].sort((a, b) =>
-    a.deadline_date.localeCompare(b.deadline_date),
-  ),
-);
+const upcomingByMonth = computed(() => groupByMonth(upcomingDeadlines.value));
+const pastByMonth = computed(() => groupByMonth(pastDeadlines.value));
+
+const CATEGORY_COLORS: Record<UserDeadlineCategory | SystemDeadlineCategory, BadgeColor> = {
+  test: "purple",
+  signing: "emerald",
+  "ncaa-period": "blue",
+  deadline: "orange",
+  application: "blue",
+  decision: "emerald",
+  financial_aid: "orange",
+  visit: "purple",
+  custom: "slate",
+};
+
+function categoryColor(category: UserDeadlineCategory | SystemDeadlineCategory): BadgeColor {
+  return CATEGORY_COLORS[category] ?? "slate";
+}
+
+function categoryLabel(category: UserDeadlineCategory | SystemDeadlineCategory): string {
+  return category.replaceAll("_", " ").replaceAll("-", " ");
+}
+
+function formatDate(date: string, endDate?: string): string {
+  const fmt = new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+  const start = fmt.format(new Date(date + "T00:00:00"));
+  if (!endDate) return start;
+  const end = fmt.format(new Date(endDate + "T00:00:00"));
+  return `${start} – ${end}`;
+}
+
+function formatMonthHeader(yearMonth: string): string {
+  const [year, month] = yearMonth.split("-");
+  return new Intl.DateTimeFormat("en-US", { month: "long", year: "numeric" }).format(
+    new Date(+year, +month - 1),
+  );
+}
 
 async function submitAdd() {
   if (!newDeadline.label || !newDeadline.deadline_date) return;
   addingDeadline.value = true;
   try {
-    await createDeadline({ ...newDeadline });
+    await createDeadline({
+      label: newDeadline.label,
+      deadline_date: newDeadline.deadline_date,
+      category: newDeadline.category,
+      school_id: newDeadline.school_id || undefined,
+    });
     showAdd.value = false;
     Object.assign(newDeadline, {
       label: "",
       deadline_date: "",
       category: "application",
+      school_id: "",
     });
   } catch (err) {
-    error.value =
-      err instanceof Error ? err.message : "Failed to create deadline";
+    error.value = err instanceof Error ? err.message : "Failed to create deadline";
   } finally {
     addingDeadline.value = false;
   }

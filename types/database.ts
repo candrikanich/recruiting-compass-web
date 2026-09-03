@@ -14,6 +14,27 @@ export type Database = {
   };
   public: {
     Tables: {
+      app_config: {
+        Row: {
+          id: boolean;
+          pricing_flip_at: string | null;
+          trial_days: number;
+          updated_at: string;
+        };
+        Insert: {
+          id?: boolean;
+          pricing_flip_at?: string | null;
+          trial_days?: number;
+          updated_at?: string;
+        };
+        Update: {
+          id?: boolean;
+          pricing_flip_at?: string | null;
+          trial_days?: number;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       account_links: {
         Row: {
           accepted_at: string | null;
@@ -1247,6 +1268,50 @@ export type Database = {
             columns: ["user_id"];
             isOneToOne: false;
             referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      family_subscriptions: {
+        Row: {
+          created_at: string;
+          current_period_end: string | null;
+          family_unit_id: string;
+          provider_customer_id: string | null;
+          provider_product_id: string | null;
+          source: Database["public"]["Enums"]["subscription_source"];
+          status: Database["public"]["Enums"]["subscription_status"];
+          trial_ends_at: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          current_period_end?: string | null;
+          family_unit_id: string;
+          provider_customer_id?: string | null;
+          provider_product_id?: string | null;
+          source: Database["public"]["Enums"]["subscription_source"];
+          status: Database["public"]["Enums"]["subscription_status"];
+          trial_ends_at?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          current_period_end?: string | null;
+          family_unit_id?: string;
+          provider_customer_id?: string | null;
+          provider_product_id?: string | null;
+          source?: Database["public"]["Enums"]["subscription_source"];
+          status?: Database["public"]["Enums"]["subscription_status"];
+          trial_ends_at?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "family_subscriptions_family_unit_id_fkey";
+            columns: ["family_unit_id"];
+            isOneToOne: true;
+            referencedRelation: "family_units";
             referencedColumns: ["id"];
           },
         ];
@@ -2928,6 +2993,7 @@ export type Database = {
           category: string;
           created_at: string;
           deadline_date: string;
+          family_unit_id: string | null;
           id: string;
           label: string;
           school_id: string | null;
@@ -2938,6 +3004,7 @@ export type Database = {
           category: string;
           created_at?: string;
           deadline_date: string;
+          family_unit_id?: string | null;
           id?: string;
           label: string;
           school_id?: string | null;
@@ -2948,6 +3015,7 @@ export type Database = {
           category?: string;
           created_at?: string;
           deadline_date?: string;
+          family_unit_id?: string | null;
           id?: string;
           label?: string;
           school_id?: string | null;
@@ -2955,6 +3023,13 @@ export type Database = {
           user_id?: string;
         };
         Relationships: [
+          {
+            foreignKeyName: "user_deadlines_family_unit_id_fkey";
+            columns: ["family_unit_id"];
+            isOneToOne: false;
+            referencedRelation: "family_units";
+            referencedColumns: ["id"];
+          },
           {
             foreignKeyName: "user_deadlines_school_id_fkey";
             columns: ["school_id"];
@@ -3339,6 +3414,7 @@ export type Database = {
         Returns: undefined;
       };
       expire_old_invitations: { Args: never; Returns: undefined };
+      family_can_write: { Args: { p_family_unit_id: string }; Returns: boolean };
       family_unit_created_by: {
         Args: { p_family_unit_id: string };
         Returns: string;
@@ -3451,6 +3527,8 @@ export type Database = {
         | "official_visit_invited"
         | "official_visit_scheduled"
         | "not_pursuing";
+      subscription_source: "founding" | "comp" | "apple" | "stripe";
+      subscription_status: "founding" | "trialing" | "active" | "read_only" | "comp";
       user_role: "admin" | "parent" | "player";
     };
     CompositeTypes: {
@@ -3646,6 +3724,8 @@ export const Constants = {
         "official_visit_scheduled",
         "not_pursuing",
       ],
+      subscription_source: ["founding", "comp", "apple", "stripe"],
+      subscription_status: ["founding", "trialing", "active", "read_only", "comp"],
       user_role: ["admin", "parent", "player"],
     },
   },

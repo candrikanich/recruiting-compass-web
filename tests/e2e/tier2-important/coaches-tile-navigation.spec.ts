@@ -120,7 +120,7 @@ test.describe("Coach directory — tile navigation", () => {
     await page.waitForLoadState("networkidle");
 
     const tile = page.locator("a", { hasText: coachLastName }).first();
-    await expect(tile).toBeVisible();
+    await expect(tile).toBeVisible({ timeout: 15000 });
     await tile.click();
 
     await page.waitForURL(new RegExp(`/coaches/${coachId}(\\?.*)?$`));

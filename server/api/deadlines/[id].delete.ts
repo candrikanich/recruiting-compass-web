@@ -23,13 +23,26 @@ export default defineEventHandler(async (event) => {
 
     const supabase = createServerSupabaseClient();
 
+    const { data: membership } = await supabase
+      .from("family_members")
+      .select("family_unit_id")
+      .eq("user_id", user.id)
+      .single();
+
+    if (!membership?.family_unit_id) {
+      throw createError({
+        statusCode: 500,
+        statusMessage: "No family membership found",
+      });
+    }
+
     // Verify ownership before deleting — RLS is the authoritative guard but we
     // return a 404 (not 403) to avoid leaking whether the row exists.
     const { data: existing, error: fetchError } = await supabase
       .from("user_deadlines")
       .select("id")
       .eq("id", id)
-      .eq("user_id", user.id)
+      .eq("family_unit_id", membership.family_unit_id)
       .maybeSingle();
 
     if (fetchError) {
@@ -51,7 +64,7 @@ export default defineEventHandler(async (event) => {
       .from("user_deadlines")
       .delete()
       .eq("id", id)
-      .eq("user_id", user.id);
+      .eq("family_unit_id", membership.family_unit_id);
 
     if (deleteError) {
       logger.error("Failed to delete deadline", deleteError);
