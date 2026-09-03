@@ -42,6 +42,7 @@ beforeEach(() => {
             byDivision: [{ value: "D1", count: 6 }],
             byCoachRole: [{ value: "head", count: 12 }],
             byUserRole: [{ value: "player", count: 3 }],
+            byPrimarySport: [{ value: "Baseball", count: 3 }],
             newUsersWeekly: [{ weekStart: "2026-08-17", count: 4 }],
           }),
           { status: 200 },

@@ -104,6 +104,20 @@
           <span class="text-sm text-slate-500">total interactions logged</span>
         </div>
       </section>
+
+      <section class="rounded-lg bg-white p-6 shadow-md lg:col-span-2">
+        <h2 class="text-lg font-semibold text-slate-900">Players by sport</h2>
+        <p class="mb-4 text-sm text-slate-500">
+          Primary sport split across players.
+        </p>
+        <div class="h-64">
+          <AdminChart
+            type="bar"
+            :data="primarySportData"
+            :options="hBarOptions"
+          />
+        </div>
+      </section>
     </div>
   </div>
 </template>
@@ -156,6 +170,9 @@ const divisionData = computed(() =>
 );
 const coachRoleData = computed(() =>
   barData(stats.value?.byCoachRole ?? [], SERIES[1]),
+);
+const primarySportData = computed(() =>
+  barData(stats.value?.byPrimarySport ?? [], SERIES[2]),
 );
 
 const userRoleData = computed<ChartData>(() => {

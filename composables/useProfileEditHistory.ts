@@ -41,6 +41,7 @@ const FIELD_LABELS: Record<string, string> = {
   school_address: "School Address",
   school_city: "School City",
   school_state: "School State",
+  school_zip: "School Zip",
   ninth_grade_team: "9th Grade Team",
   ninth_grade_coach: "9th Grade Coach",
   tenth_grade_team: "10th Grade Team",

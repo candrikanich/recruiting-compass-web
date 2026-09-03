@@ -50,4 +50,4 @@ jobs:
           # Allow Claude to manage issues (create/close/comment/view) and read auth/PR state.
           # Without these, gh issue create/close come back "requires approval" in the
           # non-interactive job and get blocked.
-          claude_args: '--allowed-tools "Bash(gh issue create:*),Bash(gh issue close:*),Bash(gh issue comment:*),Bash(gh issue view:*),Bash(gh issue edit:*),Bash(gh pr:*),Bash(gh auth status:*)"'
+          claude_args: '--allowed-tools "Bash(gh issue create:*),Bash(gh issue close:*),Bash(gh issue comment:*),Bash(gh issue view:*),Bash(gh issue edit:*),Bash(gh pr:*),Bash(gh auth status:*),Bash(npm run type-check:*),Bash(npm run lint:*),Bash(npm test:*),Bash(npx vitest:*),Bash(npx tsc:*)"'

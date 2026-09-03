@@ -78,6 +78,7 @@ export function usePlayerDetailsForm() {
     school_address: "",
     school_city: "",
     school_state: "",
+    school_zip: "",
     campus_size_preference: undefined,
     cost_sensitivity: undefined,
     ninth_grade_team: "",
