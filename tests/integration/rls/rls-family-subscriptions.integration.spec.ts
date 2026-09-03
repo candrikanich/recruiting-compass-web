@@ -89,6 +89,37 @@ describe.skipIf(!hasLiveSupabase)(
         .single();
     };
 
+    const insertEventAsPlayer = async () => {
+      const client = await signIn(email, PASSWORD);
+      return client
+        .from("events")
+        .insert({
+          user_id: playerId,
+          family_unit_id: familyId,
+          name: `[e2e-subs-${RUN_ID}] ${Math.random()}`,
+          type: "showcase",
+          start_date: new Date().toISOString().slice(0, 10),
+        })
+        .select("id")
+        .single();
+    };
+
+    const insertOfferAsPlayer = async () => {
+      const client = await signIn(email, PASSWORD);
+      return client
+        .from("offers")
+        .insert({
+          user_id: playerId,
+          family_unit_id: familyId,
+          school_id: offerSchoolId,
+          offer_type: "athletic",
+        })
+        .select("id")
+        .single();
+    };
+
+    let offerSchoolId: string;
+
     beforeAll(async () => {
       if (!hasLiveSupabase) return;
       email = `e2e-rls-subs-${RUN_ID}-player@example.com`;
@@ -112,10 +143,26 @@ describe.skipIf(!hasLiveSupabase)(
       await admin
         .from("family_members")
         .insert({ family_unit_id: familyId, user_id: playerId, role: "player" });
+
+      // offers.school_id is NOT NULL; seed a school as admin (bypasses RLS)
+      // purely as an FK target for the offers RLS tests below.
+      const { data: offerSchool, error: offerSchoolErr } = await admin
+        .from("schools")
+        .insert({
+          user_id: playerId,
+          family_unit_id: familyId,
+          name: `[e2e-subs-${RUN_ID}] offer-school`,
+        })
+        .select("id")
+        .single();
+      if (offerSchoolErr || !offerSchool) throw new Error(offerSchoolErr?.message);
+      offerSchoolId = offerSchool.id as string;
     }, 30000);
 
     afterAll(async () => {
       if (!hasLiveSupabase) return;
+      await admin.from("offers").delete().eq("family_unit_id", familyId);
+      await admin.from("events").delete().eq("family_unit_id", familyId);
       await admin.from("schools").delete().eq("family_unit_id", familyId);
       await admin.from("family_units").delete().eq("id", familyId);
       await admin.auth.admin.deleteUser(playerId);
@@ -199,6 +246,72 @@ describe.skipIf(!hasLiveSupabase)(
         .from("schools")
         .update({ name: "renamed" })
         .eq("id", schoolId)
+        .select("id");
+      expect(updated ?? []).toHaveLength(0);
+
+      const { data: deleted } = await client
+        .from("schools")
+        .delete()
+        .eq("id", schoolId)
+        .select("id");
+      expect(deleted ?? []).toHaveLength(0);
+      const { data: stillThere } = await admin
+        .from("schools")
+        .select("id")
+        .eq("id", schoolId);
+      expect(stillThere).toHaveLength(1);
+
+      await setStatus("founding");
+    });
+
+    it("read_only family: INSERT denied, SELECT allowed, UPDATE denied (events)", async () => {
+      await setStatus("founding");
+      const seeded = await insertEventAsPlayer();
+      expect(seeded.error).toBeNull();
+      const eventId = seeded.data!.id as string;
+
+      await setStatus("read_only");
+      const denied = await insertEventAsPlayer();
+      expect(denied.error).not.toBeNull();
+
+      const client = await signIn(email, PASSWORD);
+      const { data: rows } = await client
+        .from("events")
+        .select("id")
+        .eq("id", eventId);
+      expect(rows).toHaveLength(1);
+
+      const { data: updated } = await client
+        .from("events")
+        .update({ name: "renamed" })
+        .eq("id", eventId)
+        .select("id");
+      expect(updated ?? []).toHaveLength(0);
+
+      await setStatus("founding");
+    });
+
+    it("read_only family: INSERT denied, SELECT allowed, UPDATE denied (offers)", async () => {
+      await setStatus("founding");
+      const seeded = await insertOfferAsPlayer();
+      expect(seeded.error).toBeNull();
+      const offerId = seeded.data!.id as string;
+
+      await setStatus("read_only");
+      const denied = await insertOfferAsPlayer();
+      expect(denied.error).not.toBeNull();
+
+      const client = await signIn(email, PASSWORD);
+      const { data: rows } = await client
+        .from("offers")
+        .select("id")
+        .eq("id", offerId);
+      expect(rows).toHaveLength(1);
+
+      const { data: updated } = await client
+        .from("offers")
+        .update({ notes: "renamed" })
+        .eq("id", offerId)
         .select("id");
       expect(updated ?? []).toHaveLength(0);
 

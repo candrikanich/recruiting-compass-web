@@ -211,7 +211,6 @@ const hasSchoolPreferences = computed(() => {
 
 // Load all preferences when the page mounts to ensure reactive updates
 onMounted(async () => {
-  await loadAllPreferences();
-  await loadEntitlement();
+  await Promise.all([loadAllPreferences(), loadEntitlement()]);
 });
 </script>
