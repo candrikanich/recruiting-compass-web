@@ -1,0 +1,69 @@
+#!/bin/sh
+# post-merge: clean up stale local branches, orphaned worktrees, and obsolete stashes
+# Runs automatically after every git pull / git merge.
+set -e
+
+CURRENT=$(git branch --show-current)
+PROTECTED="main|develop|${CURRENT}"
+
+# --- Orphaned worktrees ---
+WORKTREES_REMOVED=0
+for wt_line in $(git worktree list --porcelain | grep '^worktree ' | sed 's/^worktree //'); do
+  # Skip the main checkout
+  [ "$wt_line" = "$(git rev-parse --show-toplevel)" ] && continue
+  # If the worktree directory doesn't exist or is empty, prune it
+  if [ ! -d "$wt_line" ] || [ ! -f "$wt_line/.git" ]; then
+    WORKTREES_REMOVED=$((WORKTREES_REMOVED + 1))
+  fi
+done
+if [ "$WORKTREES_REMOVED" -gt 0 ]; then
+  git worktree prune
+  echo "post-merge: pruned $WORKTREES_REMOVED orphaned worktree(s)"
+fi
+
+# Force-remove .claude/worktrees/* that git worktree list still tracks
+for wt_dir in .claude/worktrees/*/; do
+  [ -d "$wt_dir" ] || continue
+  git worktree remove --force "$wt_dir" 2>/dev/null && {
+    WORKTREES_REMOVED=$((WORKTREES_REMOVED + 1))
+    echo "post-merge: removed leftover worktree $wt_dir"
+  } || true
+done
+
+# --- Merged branches ---
+BRANCHES_DELETED=0
+for branch in $(git branch --merged main | grep -v '^\*' | grep -vE "^\\s*(${PROTECTED})$"); do
+  branch=$(echo "$branch" | xargs) # trim whitespace
+  [ -z "$branch" ] && continue
+  git branch -d "$branch" 2>/dev/null && {
+    BRANCHES_DELETED=$((BRANCHES_DELETED + 1))
+  } || true
+done
+
+# --- Stashes with merged parent branches ---
+STASHES_DROPPED=0
+STASH_COUNT=$(git stash list | wc -l | xargs)
+if [ "$STASH_COUNT" -gt 0 ]; then
+  # Walk stashes in reverse order (highest index first) so drops don't shift indices
+  i=$((STASH_COUNT - 1))
+  while [ "$i" -ge 0 ]; do
+    STASH_BRANCH=$(git stash list | sed -n "$((i + 1))p" | sed -n 's/.*on \([^:]*\):.*/\1/p')
+    if [ -n "$STASH_BRANCH" ]; then
+      # Check if the branch is merged into main (or doesn't exist locally anymore)
+      if ! git rev-parse --verify "refs/heads/$STASH_BRANCH" >/dev/null 2>&1; then
+        # Branch no longer exists — stash is orphaned
+        git stash drop "stash@{$i}" 2>/dev/null && STASHES_DROPPED=$((STASHES_DROPPED + 1)) || true
+      elif git branch --merged main | grep -qE "^\\s*${STASH_BRANCH}$"; then
+        # Branch exists but is fully merged
+        git stash drop "stash@{$i}" 2>/dev/null && STASHES_DROPPED=$((STASHES_DROPPED + 1)) || true
+      fi
+    fi
+    i=$((i - 1))
+  done
+fi
+
+# --- Summary ---
+TOTAL=$((WORKTREES_REMOVED + BRANCHES_DELETED + STASHES_DROPPED))
+if [ "$TOTAL" -gt 0 ]; then
+  echo "post-merge: cleaned up ${BRANCHES_DELETED} branch(es), ${WORKTREES_REMOVED} worktree(s), ${STASHES_DROPPED} stash(es)"
+fi
