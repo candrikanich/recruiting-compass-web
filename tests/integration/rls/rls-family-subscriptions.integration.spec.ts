@@ -204,5 +204,53 @@ describe.skipIf(!hasLiveSupabase)(
 
       await setStatus("founding");
     });
+
+    it("trigger creates a trialing row post-flip, using default trial_days", async () => {
+      const { data: configBefore, error: configReadErr } = await admin
+        .from("app_config")
+        .select("pricing_flip_at, trial_days")
+        .eq("id", true)
+        .single();
+      if (configReadErr) throw new Error(configReadErr.message);
+      expect(configBefore?.trial_days).toBe(30);
+
+      let secondFamilyId: string | null = null;
+      try {
+        const { error: flipErr } = await admin
+          .from("app_config")
+          .update({ pricing_flip_at: new Date(Date.now() - 86_400_000).toISOString() })
+          .eq("id", true);
+        if (flipErr) throw new Error(flipErr.message);
+
+        const { data: family, error: familyErr } = await admin
+          .from("family_units")
+          .insert({ created_by_user_id: playerId, family_name: "Post-Flip Fam" })
+          .select("id")
+          .single();
+        if (familyErr || !family) throw new Error(familyErr?.message);
+        secondFamilyId = family.id as string;
+
+        const { data, error } = await admin
+          .from("family_subscriptions")
+          .select("status, source, trial_ends_at")
+          .eq("family_unit_id", secondFamilyId)
+          .single();
+        if (error) throw new Error(error.message);
+
+        expect(data?.status).toBe("trialing");
+        expect(data?.source).toBe("founding");
+
+        const trialEndsAt = new Date(data!.trial_ends_at as string).getTime();
+        const minExpected = Date.now() + 29 * 86_400_000;
+        const maxExpected = Date.now() + 31 * 86_400_000;
+        expect(trialEndsAt).toBeGreaterThan(minExpected);
+        expect(trialEndsAt).toBeLessThan(maxExpected);
+      } finally {
+        if (secondFamilyId) {
+          await admin.from("family_units").delete().eq("id", secondFamilyId);
+        }
+        await admin.from("app_config").update({ pricing_flip_at: null }).eq("id", true);
+      }
+    });
   },
 );
