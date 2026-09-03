@@ -25,7 +25,7 @@
       >
         <!-- UPDATE THIS DATE WHENEVER TERMS ARE MODIFIED -->
         <p class="mb-4 text-slate-600">
-          <strong>Last Updated:</strong> August 16, 2026
+          <strong>Last Updated:</strong> September 3, 2026
         </p>
 
         <p class="mb-8 text-slate-600">
@@ -531,7 +531,54 @@
         </section>
 
         <section class="mb-8">
-          <h2>22. Contact Information</h2>
+          <h2>22. Subscriptions and Payments</h2>
+          <p>
+            <strong>(a) Free access.</strong> The Service is currently offered
+            at no charge. Families who create an account before we begin
+            charging ("Founding Families") keep full access at no charge for
+            as long as their family account remains active.
+          </p>
+          <p>
+            <strong>(b) Paid plans.</strong> We may introduce paid
+            subscription plans. Where offered, a subscription is billed per
+            family account, covers every member of that family, and renews
+            automatically at the end of each billing period until cancelled.
+            The price and billing period are shown before you subscribe.
+          </p>
+          <p>
+            <strong>(c) Billing and cancellation.</strong> Subscriptions
+            purchased through the Apple App Store are billed and managed by
+            Apple; cancel through your Apple ID subscription settings.
+            Subscriptions purchased on our website are billed by our payment
+            processor; cancel from your account settings. Cancellation takes
+            effect at the end of the current billing period.
+          </p>
+          <p>
+            <strong>(d) Refunds.</strong> Refunds for App Store purchases are
+            governed by Apple's policies. For website purchases, contact us
+            at the address in Section 23; refunds are at our discretion
+            except where required by law.
+          </p>
+          <p>
+            <strong>(e) Free trials and read-only access.</strong> We may
+            offer a free trial. When a trial or subscription ends, your
+            family account becomes read-only: you can view and export your
+            data but cannot add or change it, and your public athlete
+            profile is not available until a subscription is active.
+          </p>
+          <p>
+            <strong>(f) Price changes.</strong> We will give existing
+            subscribers at least 30 days' notice before a price change takes
+            effect.
+          </p>
+          <p>
+            <strong>(g) Your data.</strong> We do not delete your data when a
+            subscription lapses. Section 14 continues to apply.
+          </p>
+        </section>
+
+        <section class="mb-8">
+          <h2>23. Contact Information</h2>
           <p>
             If you have any questions about these Terms and Conditions, please
             contact us:
