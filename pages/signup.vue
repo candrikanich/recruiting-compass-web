@@ -124,7 +124,7 @@ import { useUserStore } from "~/stores/user";
 import { useFormValidation } from "~/composables/useFormValidation";
 import { useFormErrorFocus } from "~/composables/useFormErrorFocus";
 import { signupSchema } from "~/utils/validation/schemas";
-import { isUnderMinimumAge, requiresGuardianInvite } from "~/utils/age";
+import { isUnderMinimumAge } from "~/utils/age";
 import {
   SIGNUP_EMAIL_SCHEMA,
   SIGNUP_PASSWORD_SCHEMA,
@@ -292,18 +292,6 @@ const handleSignup = async () => {
           field: "form",
           message:
             "Recruiting Compass is not available for players under 13. If you're a parent, please register with your own information.",
-        },
-      ]);
-      await focusErrorSummary();
-      return;
-    }
-    // Minor consent: players 13–17 join only via a parent/guardian family invite
-    if (requiresGuardianInvite(dateOfBirth.value)) {
-      setErrors([
-        {
-          field: "form",
-          message:
-            "Players under 18 join through a parent or guardian. Ask your parent to create an account and invite you to their family.",
         },
       ]);
       await focusErrorSummary();
