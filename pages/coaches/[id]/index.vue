@@ -138,6 +138,7 @@ import { useCoachStore } from "~/stores/coaches";
 import { useSchools } from "~/composables/useSchools";
 import { useInteractions } from "~/composables/useInteractions";
 import { useCoachInsights } from "~/composables/useCoachInsights";
+import { useRealtimeCoachDetail } from "~/composables/useRealtimeCoachDetail";
 import { useDeleteModal } from "~/composables/useDeleteModal";
 import { deriveBackLink } from "~/composables/useBackLink";
 import DeleteConfirmationModal from "~/components/DeleteConfirmationModal.vue";
@@ -223,6 +224,18 @@ const refreshSchoolInteractions = async (): Promise<void> => {
     await fetchInteractions({ schoolId: coach.value.school_id });
   }
 };
+
+// Live-update coach detail when data changes from another device/session.
+const coachSchoolId = computed(() => coach.value?.school_id ?? null);
+useRealtimeCoachDetail({
+  coachId,
+  schoolId: coachSchoolId,
+  onInteractionChange: refreshSchoolInteractions,
+  onCoachChange: async () => {
+    const updated = await getCoach(coachId);
+    if (updated) coach.value = updated;
+  },
+});
 
 // Best-effort: opening a social profile is a hand-off, so like mailto/sms this logs
 // on click. createInteraction is player-role + family gated, so a parent-viewed

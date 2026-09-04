@@ -116,6 +116,8 @@ export default [
       ".vercel/**/*",
       ".worktrees",
       ".worktrees/**/*",
+      ".playwright-mcp",
+      ".playwright-mcp/**/*",
       ".claude/worktrees",
       ".claude/worktrees/**/*",
       "coverage",
