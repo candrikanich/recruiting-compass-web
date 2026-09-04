@@ -97,86 +97,95 @@ const NCES_SAMPLE_SCHOOLS = [
   },
 ] as const;
 
-// Deadline offsets (months from the plan anchor) keyed by task slug — the
-// values production carries. A fresh project seeds tasks with NULL offsets.
-const TASK_DEADLINE_OFFSETS: Record<string, number> = {
-  "attend-final-recruiting-camps-showcases": 6,
-  "attend-official-visits": 6,
-  "attend-premium-summer-tournaments": 30,
-  "attend-recruiting-camps-at-target-schools": 18,
-  "attend-summer-camps-multiple": 30,
-  "attend-summer-camps-optional-but-beneficial": 42,
-  "build-media-presence-highlights-online": 18,
-  "build-relationship-with-preferred-coaches": 18,
-  "build-target-school-list-20": 30,
-  "celebrate-the-journey": 6,
-  "communicate-decision-to-other-coaches": 6,
-  "complete-college-applications": 6,
-  "continue-development-training": 30,
-  "create-basic-athletic-resume": 42,
-  "create-highlight-video": 30,
-  "create-social-media-presence": 42,
-  "develop-resilience-for-rejection": 18,
-  "document-and-share-performance-data": 18,
-  "document-stats-and-achievements": 42,
-  "establish-communication-with-parents": 42,
-  "establish-development-routine": 42,
-  "evaluate-interest-level-from-coaches": 18,
-  "evaluate-school-fit-beyond-baseball": 18,
-  "film-multiple-game-performances": 18,
-  "film-responses-to-coach-requests": 30,
-  "finalize-medical-information": 6,
-  "finalize-player-video-for-college": 6,
-  "finalize-test-scores": 6,
-  "get-athletic-testing-baseline": 42,
-  "get-evaluated-by-outside-scouts": 18,
-  "get-updated-athletic-testing-10": 30,
-  "get-updated-athletic-testing-11": 18,
-  "handle-recruiting-pressure": 30,
-  "increase-coach-communication": 18,
-  "maintain-gpa-3-0-target": 18,
-  "maintain-professional-social-media-through-commitment": 6,
-  "maintain-strong-gpa-10": 30,
-  "maintain-strong-grades-college-ready": 6,
-  "make-final-school-decision": 6,
-  "manage-multiple-offers-if-applicable": 6,
-  "meet-with-academic-counselor": 42,
-  "meet-with-college-counselor": 18,
-  "participate-in-recruiting-events": 30,
-  "peak-athletic-performance-11": 18,
-  "peak-senior-year-performance": 6,
-  "pitch-your-strengths": 18,
-  "play-in-national-showcases": 18,
-  "play-travel-ball": 42,
-  "prepare-for-college-transition": 6,
-  "prepare-for-offer-conversations": 18,
-  "register-with-naia-eligibility-center": 18,
-  "register-with-ncaa-eligibility": 18,
-  "research-coach-information": 30,
-  "research-college-academics": 30,
-  "research-division-levels": 42,
-  "research-showcases-for-summer": 42,
-  "schedule-unofficial-visits": 18,
-  "send-first-introductory-emails": 30,
-  "send-junior-year-highlight-video-update": 18,
-  "set-recruiting-goals": 42,
-  "sign-nli": 6,
-  "specialize-position-focus": 30,
-  "start-building-target-school-list": 42,
-  "start-game-film-collection": 42,
-  "stay-grounded-and-humble": 30,
-  "submit-final-highlight-video": 6,
-  "take-official-sat-or-act": 18,
-  "take-psat-again": 30,
-  "take-psat-or-practice-tests": 42,
-  "take-sat-or-act-again-if-needed": 18,
-  "take-sat-or-act-prep-course": 30,
-  "track-gpa-and-grades": 42,
-  "understand-academic-requirements": 42,
-  "understand-recruiting-evaluation-process": 30,
-  "understand-recruiting-reality": 42,
-  "update-athletic-resume": 30,
-  "update-social-media-with-highlight-content": 30,
+// Deadline offsets (months from the plan anchor) grouped by offset value.
+// A fresh project seeds tasks with NULL offsets; this backfills them.
+// Grouped so we can batch-update per offset (4 queries instead of 77).
+const TASK_DEADLINE_OFFSETS_BY_MONTHS: Record<number, string[]> = {
+  6: [
+    "attend-final-recruiting-camps-showcases",
+    "attend-official-visits",
+    "celebrate-the-journey",
+    "communicate-decision-to-other-coaches",
+    "complete-college-applications",
+    "finalize-medical-information",
+    "finalize-player-video-for-college",
+    "finalize-test-scores",
+    "maintain-professional-social-media-through-commitment",
+    "maintain-strong-grades-college-ready",
+    "make-final-school-decision",
+    "manage-multiple-offers-if-applicable",
+    "peak-senior-year-performance",
+    "prepare-for-college-transition",
+    "sign-nli",
+    "submit-final-highlight-video",
+  ],
+  18: [
+    "attend-recruiting-camps-at-target-schools",
+    "build-media-presence-highlights-online",
+    "build-relationship-with-preferred-coaches",
+    "develop-resilience-for-rejection",
+    "document-and-share-performance-data",
+    "evaluate-interest-level-from-coaches",
+    "evaluate-school-fit-beyond-baseball",
+    "film-multiple-game-performances",
+    "get-evaluated-by-outside-scouts",
+    "get-updated-athletic-testing-11",
+    "increase-coach-communication",
+    "maintain-gpa-3-0-target",
+    "meet-with-college-counselor",
+    "peak-athletic-performance-11",
+    "pitch-your-strengths",
+    "play-in-national-showcases",
+    "prepare-for-offer-conversations",
+    "register-with-naia-eligibility-center",
+    "register-with-ncaa-eligibility",
+    "schedule-unofficial-visits",
+    "send-junior-year-highlight-video-update",
+    "take-official-sat-or-act",
+    "take-sat-or-act-again-if-needed",
+  ],
+  30: [
+    "attend-premium-summer-tournaments",
+    "attend-summer-camps-multiple",
+    "build-target-school-list-20",
+    "continue-development-training",
+    "create-highlight-video",
+    "film-responses-to-coach-requests",
+    "get-updated-athletic-testing-10",
+    "handle-recruiting-pressure",
+    "maintain-strong-gpa-10",
+    "participate-in-recruiting-events",
+    "research-coach-information",
+    "research-college-academics",
+    "send-first-introductory-emails",
+    "specialize-position-focus",
+    "stay-grounded-and-humble",
+    "take-psat-again",
+    "take-sat-or-act-prep-course",
+    "understand-recruiting-evaluation-process",
+    "update-athletic-resume",
+    "update-social-media-with-highlight-content",
+  ],
+  42: [
+    "attend-summer-camps-optional-but-beneficial",
+    "create-basic-athletic-resume",
+    "create-social-media-presence",
+    "document-stats-and-achievements",
+    "establish-communication-with-parents",
+    "establish-development-routine",
+    "get-athletic-testing-baseline",
+    "meet-with-academic-counselor",
+    "play-travel-ball",
+    "research-division-levels",
+    "research-showcases-for-summer",
+    "set-recruiting-goals",
+    "start-building-target-school-list",
+    "start-game-film-collection",
+    "take-psat-or-practice-tests",
+    "track-gpa-and-grades",
+    "understand-academic-requirements",
+    "understand-recruiting-reality",
+  ],
 };
 
 async function seedPlayerPreferences(
@@ -211,19 +220,22 @@ async function seedNcesSampleSchools(supabase: SupabaseAdmin): Promise<void> {
 }
 
 async function seedTaskDeadlineOffsets(supabase: SupabaseAdmin): Promise<void> {
-  const updates = Object.entries(TASK_DEADLINE_OFFSETS).map(([slug, months]) =>
-    supabase
-      .from("task")
-      .update({ deadline_offset_months: months })
-      .eq("slug", slug),
+  const entries = Object.entries(TASK_DEADLINE_OFFSETS_BY_MONTHS);
+  const results = await Promise.all(
+    entries.map(([months, slugs]) =>
+      supabase
+        .from("task")
+        .update({ deadline_offset_months: Number(months) })
+        .in("slug", slugs),
+    ),
   );
-  const results = await Promise.all(updates);
   const failed = results.filter((r) => r.error);
   if (failed.length > 0) {
     throw failed[0].error;
   }
+  const totalSlugs = entries.reduce((sum, [, slugs]) => sum + slugs.length, 0);
   console.log(
-    `✅ Backfilled deadline_offset_months on ${updates.length} task slugs`,
+    `✅ Backfilled deadline_offset_months on ${totalSlugs} task slugs (${entries.length} batched updates)`,
   );
 }
 
