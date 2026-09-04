@@ -302,26 +302,12 @@ describe("SignupForm", () => {
     });
   });
 
-  describe("Minor guardian gate (players 13–17)", () => {
+  describe("Players 13+ can sign up independently", () => {
     const yearsAgo = (years: number) =>
       `${new Date().getFullYear() - years}-06-15`;
 
-    it("shows the guardian notice for a 13–17 player", () => {
+    it("allows a 13–17 player to submit (no guardian gate)", () => {
       const wrapper = createWrapper({ dateOfBirth: yearsAgo(15) });
-      expect(
-        wrapper.find('[data-testid="minor-guardian-notice"]').exists(),
-      ).toBe(true);
-    });
-
-    it("disables submit for a 13–17 player even with all fields filled", () => {
-      const wrapper = createWrapper({ dateOfBirth: yearsAgo(15) });
-      expect(
-        wrapper.find('[data-testid="signup-button"]').attributes("disabled"),
-      ).toBeDefined();
-    });
-
-    it("does not show the notice or block an adult (18+) player", () => {
-      const wrapper = createWrapper({ dateOfBirth: yearsAgo(20) });
       expect(
         wrapper.find('[data-testid="minor-guardian-notice"]').exists(),
       ).toBe(false);
@@ -330,11 +316,14 @@ describe("SignupForm", () => {
       ).toBeUndefined();
     });
 
-    it("does not show the notice for a parent regardless of context", () => {
-      const wrapper = createWrapper({ userType: "parent", dateOfBirth: "" });
+    it("allows an adult (18+) player to submit", () => {
+      const wrapper = createWrapper({ dateOfBirth: yearsAgo(20) });
       expect(
         wrapper.find('[data-testid="minor-guardian-notice"]').exists(),
       ).toBe(false);
+      expect(
+        wrapper.find('[data-testid="signup-button"]').attributes("disabled"),
+      ).toBeUndefined();
     });
   });
 });
