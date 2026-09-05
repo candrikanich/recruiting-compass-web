@@ -80,4 +80,7 @@ only). Needed before Task 5.
 
 ## Prod Project
 
-Not yet created (Task 3 pending — requires cost confirmation from Chris).
+Created 2026-09-05: `lrzsenidegcqhwzwncve` (`recruiting-compass-prod`,
+org `mhumwplsikjuxdquwsri`, region `us-east-2`, Postgres 17). Org upgraded
+to Pro plan (from free-tier 2-project limit hit on first attempt) — actual
+cost $10/mo, not the originally-quoted $0/mo free-tier estimate.
