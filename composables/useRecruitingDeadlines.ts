@@ -5,7 +5,7 @@ import { getUpcomingMilestones, getSportCalendar } from "~/utils/recruitingCalen
 import { SEASON_END } from "~/utils/recruitingCalendar/calendarData";
 import { ALL_MILESTONES } from "~/utils/ncaaRecruitingCalendar";
 
-function milestoneToDeadline(m: CalendarMilestone): UnifiedDeadline {
+export function milestoneToDeadline(m: CalendarMilestone): UnifiedDeadline {
   const slug = m.title
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")

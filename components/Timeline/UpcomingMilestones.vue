@@ -21,8 +21,16 @@
         <div class="text-2xl">{{ getMilestoneIcon(milestone.type) }}</div>
       </div>
       <div class="min-w-0 flex-1">
-        <div class="font-medium text-slate-900 group-hover:text-slate-950">
-          {{ milestone.title }}
+        <div class="flex items-center gap-2">
+          <span class="font-medium text-slate-900 group-hover:text-slate-950">
+            {{ milestone.title }}
+          </span>
+          <span
+            v-if="milestone.source === 'user'"
+            class="shrink-0 rounded-full bg-blue-50 px-1.5 py-0.5 text-[10px] font-medium text-blue-600"
+          >
+            Your deadline
+          </span>
         </div>
         <div v-if="milestone.description" class="mt-1 text-xs text-slate-600">
           {{ milestone.description }}
@@ -130,7 +138,9 @@ import type { Milestone } from "~/utils/ncaaRecruitingCalendar";
 import { getMilestoneTypeIcon as getIcon } from "~/utils/ncaaRecruitingCalendar";
 
 interface Props {
-  milestones: Milestone[];
+  /** `source` is set when embedding merged NCAA + user deadlines (bare mode)
+   *  so a "Your deadline" badge can distinguish user-authored rows. */
+  milestones: Array<Milestone & { source?: "user" | "system" }>;
   collapsed?: boolean;
   /** List-only render (no card/header/subtitle) for embedding in another widget. */
   bare?: boolean;

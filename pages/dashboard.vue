@@ -136,6 +136,7 @@
             :graduation-year="getPlayerDetails()?.graduation_year"
             :sport="athleteSport"
             :gender="athleteGender"
+            merge-user-deadlines
           />
 
           <!-- Dynamic right column widgets -->
