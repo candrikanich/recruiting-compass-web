@@ -177,6 +177,7 @@ import { useAppToast } from "~/composables/useAppToast";
 import { useUserTasks } from "~/composables/useUserTasks";
 import { useSuggestions } from "~/composables/useSuggestions";
 import { useFamilyCtx } from "~/composables/useFamilyCtx";
+import { useRealtimeDashboard } from "~/composables/useRealtimeDashboard";
 import { useViewLogging } from "~/composables/useViewLogging";
 import { useDashboardData } from "~/composables/useDashboardData";
 import { useDashboardCalculations } from "~/composables/useDashboardCalculations";
@@ -483,6 +484,11 @@ const refreshDashboard = async () => {
     refreshInFlight = false;
   }
 };
+
+// Live-update dashboard when schools or interactions change from another device/session.
+useRealtimeDashboard(activeFamily.activeFamilyId, {
+  onDashboardChange: refreshDashboard,
+});
 
 // Consolidated: refresh when family or athlete context changes
 watch(
