@@ -65,10 +65,14 @@ Actions, Vercel, Supabase MCP tools, Vercel MCP tools.
 - [ ] **Step 1: Confirm migration count/order matches the repo**
 
 Run MCP `list_migrations` against the staging project
-(`xpxzhqghxecsjhvklsqg`). Compare the returned list against
-`ls supabase/migrations/*.sql | sort`. Expected: identical count (93) and
-identical timestamps/names, in order. Any mismatch is a blocker — stop and
-report before continuing.
+(`xpxzhqghxecsjhvklsqg`). This will NOT match the 93 repo files 1:1 — a
+known drift issue (`schema_migrations dual-recording drift`, MCP-applied vs
+CLI-filename recording) means staging's migration table has ~106 entries
+with several duplicate names under different version stamps. That mismatch
+is expected, not a blocker. The real check is Task 3 Step 4's schema-parity
+diff (tables + generated types) after replaying the 93 repo files onto
+prod — that's what proves the schema is correct, not row-count parity in
+`schema_migrations`.
 
 - [ ] **Step 2: Capture current storage buckets**
 
@@ -80,8 +84,11 @@ from storage.buckets
 order by id;
 ```
 
-Expected result includes at least `documents`, `exports`, `profile_banners`.
-Paste the full result into the inventory doc under `## Storage Buckets`.
+Confirmed result (captured 2026-09-05): `documents` (public), `profile-photos`
+(public), `profile-banners` (public). No `exports` bucket exists — an
+earlier draft of this plan and issue #118 both assumed one did; disproven
+by this live query. Paste the full result into the inventory doc under
+`## Storage Buckets`.
 
 - [ ] **Step 3: Capture current storage RLS policies**
 
@@ -131,10 +138,10 @@ git commit -m "docs: capture staging project inventory before prod split"
 
 ---
 
-### Task 2: Write the documents/exports bucket migration
+### Task 2: Write the documents/profile-photos bucket migration
 
 **Files:**
-- Create: `supabase/migrations/20260906000000_documents_exports_buckets.sql`
+- Create: `supabase/migrations/20260906000000_documents_profile_photos_buckets.sql`
 
 **Interfaces:**
 - Consumes: Task 1's `## Storage Buckets` and `## Storage Policies`

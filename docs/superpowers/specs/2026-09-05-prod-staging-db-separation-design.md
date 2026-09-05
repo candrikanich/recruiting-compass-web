@@ -64,14 +64,18 @@ count of 19) in order via MCP `apply_migration`. Verify schema matches
 staging exactly via `list_tables` / `generate_typescript_types` diff.
 
 ### Phase 2 — Storage buckets + RLS on prod
-Only the `profile_banners` bucket has a checked-in migration
-(`20260908000000_profile_banners_bucket.sql`). The `documents` and `exports`
-buckets were created outside migration history (dashboard or ad hoc SQL,
-never committed) — Phase 1's migration replay will NOT recreate them. This
-phase audits their current bucket config + `storage.objects` RLS policies on
-staging (via SQL query, not dashboard) and writes a new, idempotent,
-checked-in migration for both buckets before Phase 1 runs on prod — closing
-the gap so future environments don't hit it again either.
+Staging has 3 buckets total: `documents`, `profile-photos`, `profile-banners`
+(all public). Only `profile-banners` has a checked-in migration
+(`20260908000000_profile_banners_bucket.sql`) — `documents` and
+`profile-photos` were created outside migration history (dashboard or ad
+hoc SQL, never committed) — Phase 1's migration replay will NOT recreate
+them. There is no `exports` bucket (an earlier draft of this spec, and
+issue #118, both assumed one existed — confirmed via live query it does
+not). This phase audits `documents`/`profile-photos`'s current bucket
+config + `storage.objects` RLS policies on staging (via SQL query, not
+dashboard) and writes a new, idempotent, checked-in migration for both
+before Phase 1 runs on prod — closing the gap so future environments don't
+hit it again either.
 
 ### Phase 3 — Auth config on prod (manual, Chris)
 Redirect URLs, email templates, SMTP provider copied from staging's current
