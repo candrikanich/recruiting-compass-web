@@ -58,13 +58,20 @@ buckets (`documents`, `exports`) + their RLS policies, current auth config
 env var values per environment.
 
 ### Phase 1 — Create prod project + apply schema
-MCP `create_project` → new empty prod project. Apply all 19 migrations in
-order via MCP `apply_migration`. Verify schema matches staging exactly via
-`list_tables` / `generate_typescript_types` diff.
+MCP `create_project` → new empty prod project. Apply all migrations in
+`supabase/migrations/` (93 as of this writing — corrects issue #118's stale
+count of 19) in order via MCP `apply_migration`. Verify schema matches
+staging exactly via `list_tables` / `generate_typescript_types` diff.
 
 ### Phase 2 — Storage buckets + RLS on prod
-Bucket creation (`storage.buckets` insert) and RLS policies are plain SQL —
-scriptable as part of the Phase 1 migration set, not manual dashboard work.
+Only the `profile_banners` bucket has a checked-in migration
+(`20260908000000_profile_banners_bucket.sql`). The `documents` and `exports`
+buckets were created outside migration history (dashboard or ad hoc SQL,
+never committed) — Phase 1's migration replay will NOT recreate them. This
+phase audits their current bucket config + `storage.objects` RLS policies on
+staging (via SQL query, not dashboard) and writes a new, idempotent,
+checked-in migration for both buckets before Phase 1 runs on prod — closing
+the gap so future environments don't hit it again either.
 
 ### Phase 3 — Auth config on prod (manual, Chris)
 Redirect URLs, email templates, SMTP provider copied from staging's current
