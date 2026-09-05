@@ -217,6 +217,7 @@ import { useSchools } from "~/composables/useSchools";
 import { useCoaches } from "~/composables/useCoaches";
 import { useLinkedAthletes } from "~/composables/useLinkedAthletes";
 import { useFamilyCtx } from "~/composables/useFamilyCtx";
+import { useRealtimeInteractionsList } from "~/composables/useRealtimeInteractionsList";
 import { useInteractionFilters } from "~/composables/useInteractionFilters";
 import { useInteractionAnalytics } from "~/composables/useInteractionAnalytics";
 import { useUserStore } from "~/stores/user";
@@ -324,6 +325,19 @@ watch(
   },
   { immediate: true },
 );
+
+// Live-update interactions list when data changes from another device/session.
+useRealtimeInteractionsList(activeFamilyId, {
+  onInteractionChange: async () => {
+    if (!userStore.user) return;
+    if (userStore.isAthlete) {
+      await fetchInteractions({ loggedBy: userStore.user.id });
+    } else {
+      await fetchInteractions({});
+    }
+    allInteractions.value = interactionsData.value;
+  },
+});
 
 // Load data
 onMounted(async () => {
