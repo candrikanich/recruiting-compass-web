@@ -257,6 +257,7 @@ import { useLiveRegion } from "~/composables/useLiveRegion";
 import { useDeleteModal } from "~/composables/useDeleteModal";
 import { useSingleSchoolDistance } from "~/composables/useSchoolDistance";
 import { useNuxPrompts } from "~/composables/useNuxPrompts";
+import { useRealtimeSchoolDetail } from "~/composables/useRealtimeSchoolDetail";
 import { createUpdateHandler } from "~/utils/updateHandler";
 import { getCarnegieSize } from "~/utils/schoolSize";
 import { createClientLogger } from "~/utils/logger";
@@ -634,6 +635,19 @@ const loadPageData = async () => {
   }
   isInitializing.value = false;
 };
+
+// Live-update school detail when data changes from another device/session.
+const realtimeReady = computed(() => !isInitializing.value);
+useRealtimeSchoolDetail(id, realtimeReady, {
+  onSchoolChange: async () => {
+    const updated = await getSchool(id);
+    if (updated) {
+      school.value = updated;
+      initializeForm(updated);
+    }
+  },
+  onCoachesChange: () => fetchCoaches(id),
+});
 
 onMounted(() => {
   if (activeFamilyId.value) {
