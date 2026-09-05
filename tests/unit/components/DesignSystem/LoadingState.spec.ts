@@ -20,4 +20,21 @@ describe("DesignSystemLoadingState", () => {
     const shimmer = mount(LoadingState, { props: { variant: "shimmer" } });
     expect(shimmer.find(".shimmer").exists()).toBe(true);
   });
+
+  it("renders the reasoning variant with three staggered dots", () => {
+    const wrapper = mount(LoadingState, {
+      props: { variant: "reasoning", message: "Analyzing fit..." },
+    });
+    expect(wrapper.findAll(".reasoning-dot")).toHaveLength(3);
+    expect(wrapper.text()).toContain("Analyzing fit...");
+  });
+
+  it("renders inline without the full-page centering wrapper", () => {
+    const wrapper = mount(LoadingState, {
+      props: { variant: "reasoning", inline: true },
+    });
+    const root = wrapper.get('[role="status"]');
+    expect(root.classes()).not.toContain("py-12");
+    expect(root.classes()).toContain("inline-flex");
+  });
 });

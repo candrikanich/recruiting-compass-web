@@ -220,8 +220,16 @@
           :disabled="collegeDataLoading"
           class="flex items-center gap-1 rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium transition hover:bg-slate-50 disabled:opacity-50"
         >
-          <UIcon name="i-heroicons-magnifying-glass" class="h-4 w-4" />
-          {{ collegeDataLoading ? "Looking up..." : "Lookup" }}
+          <DesignSystemLoadingState
+            v-if="collegeDataLoading"
+            variant="reasoning"
+            inline
+            message="Looking up..."
+          />
+          <template v-else>
+            <UIcon name="i-heroicons-magnifying-glass" class="h-4 w-4" />
+            Lookup
+          </template>
         </button>
       </div>
 

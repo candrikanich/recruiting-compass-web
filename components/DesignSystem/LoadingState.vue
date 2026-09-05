@@ -1,14 +1,21 @@
 <script setup lang="ts">
-export type LoadingStateVariant = "spinner" | "skeleton" | "shimmer";
+export type LoadingStateVariant =
+  | "spinner"
+  | "skeleton"
+  | "shimmer"
+  | "reasoning";
 
 interface Props {
   message?: string;
   variant?: LoadingStateVariant;
+  /** Compact horizontal layout for embedding next to a button/label instead of a full-page block. */
+  inline?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   message: "Loading...",
   variant: "spinner",
+  inline: false,
 });
 
 function variantLabel(variant: LoadingStateVariant): string {
@@ -16,6 +23,7 @@ function variantLabel(variant: LoadingStateVariant): string {
     case "spinner":
     case "skeleton":
     case "shimmer":
+    case "reasoning":
       return props.message;
     default: {
       const _exhaustive: never = variant;
@@ -27,7 +35,11 @@ function variantLabel(variant: LoadingStateVariant): string {
 
 <template>
   <div
-    class="flex flex-col items-center justify-center px-4 py-12"
+    :class="
+      inline
+        ? 'inline-flex items-center gap-2'
+        : 'flex flex-col items-center justify-center px-4 py-12'
+    "
     role="status"
     aria-live="polite"
     aria-busy="true"
@@ -75,7 +87,21 @@ function variantLabel(variant: LoadingStateVariant): string {
       />
     </div>
 
-    <p class="mt-4 text-center text-brand-slate-600">
+    <div
+      v-else-if="variant === 'reasoning'"
+      class="flex items-center gap-1.5"
+      aria-hidden="true"
+    >
+      <span class="reasoning-dot" />
+      <span class="reasoning-dot" />
+      <span class="reasoning-dot" />
+    </div>
+
+    <p
+      :class="
+        inline ? 'text-sm text-brand-slate-600' : 'mt-4 text-center text-brand-slate-600'
+      "
+    >
       {{ variantLabel(variant) }}
     </p>
   </div>
@@ -93,6 +119,39 @@ function variantLabel(variant: LoadingStateVariant): string {
   }
   100% {
     background-position: calc(200% + 20px) 0;
+  }
+}
+
+.reasoning-dot {
+  @apply h-2 w-2 rounded-full bg-brand-blue-500;
+  animation: reasoning-bounce 1.1s ease-in-out infinite;
+}
+
+.reasoning-dot:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.reasoning-dot:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes reasoning-bounce {
+  0%,
+  80%,
+  100% {
+    opacity: 0.35;
+    transform: scale(0.7);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reasoning-dot {
+    animation: none;
+    opacity: 0.85;
   }
 }
 </style>
