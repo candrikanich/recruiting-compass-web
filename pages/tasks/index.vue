@@ -3,6 +3,7 @@ import { ref, computed, watch, onMounted } from "vue";
 import { useTasks } from "~/composables/useTasks";
 import { useAuth } from "~/composables/useAuth";
 import { useFamilyCtx } from "~/composables/useFamilyCtx";
+import { useRealtimeTasksList } from "~/composables/useRealtimeTasksList";
 import { useAppToast } from "~/composables/useAppToast";
 import { calculateCurrentGrade } from "~/utils/gradeHelpers";
 import { calculateDeadlineInfo } from "~/utils/deadlineHelpers";
@@ -243,6 +244,21 @@ const handleAthleteChange = async (athleteId: string) => {
   await switchAthlete(athleteId);
   loadFilters();
 };
+
+// Live-update tasks when completion status changes from another device/session.
+const realtimeAthleteId = computed(
+  () => currentAthleteId.value || session.value?.user?.id || null,
+);
+useRealtimeTasksList(realtimeAthleteId, {
+  onTaskChange: async () => {
+    await fetchTasksWithStatus(
+      currentGradeLevel.value,
+      isViewingAsParent.value
+        ? currentAthleteId.value || undefined
+        : undefined,
+    );
+  },
+});
 
 // useActiveFamily resolves the parent's active athlete asynchronously after
 // mount; refetch the athlete's tasks once it lands (or changes). This is the
