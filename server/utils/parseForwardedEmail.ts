@@ -108,3 +108,60 @@ export function parseForwardedEmail(bodyText: string): ParsedForward | null {
 
   return null;
 }
+
+// Global variants of the quote-marker patterns above, used only to locate
+// every boundary in a multi-message thread (parseForwardedThread below) —
+// the single-shot parseForwardedEmail keeps using the non-global originals.
+const ON_WROTE_RE_G = /(?:On|El)\s+(.+)\s<([^<>\s]+@[^<>\s]+)>\s+(?:wrote|escribió):/gi;
+const FORWARDED_MESSAGE_HEADER_RE_G = /-{2,}\s*Forwarded message\s*-{2,}/gi;
+
+export interface ForwardedThreadSegment {
+  parsed: ParsedForward | null;
+  segmentText: string;
+}
+
+/**
+ * Splits a forwarded body into one segment per quoted message when a player
+ * bulk-forwards an entire thread rather than just the latest message — e.g.
+ * nested "On ... wrote:" blocks, each quoting everything below it (Gmail/
+ * Outlook's usual "newest on top, oldest quoted last" nesting).
+ *
+ * Boundaries are found FIRST (every quote-marker occurrence in the raw
+ * body), then each resulting slice is parsed independently via the regular
+ * single-shot parseForwardedEmail — never the whole un-sliced body — so a
+ * later message's From:/Date: line can never bleed into an earlier
+ * segment's parse (see Task 1's OUTLOOK_FROM_RE/FORWARDED_DATE_RE scoping
+ * caveat).
+ *
+ * Segment 0 absorbs any leading un-quoted intro text (the forwarder's own
+ * note) together with the first quoted message — exactly what
+ * parseForwardedEmail already returns for a single-message forward — so
+ * with 0 or 1 markers this returns exactly one segment whose `parsed` and
+ * `segmentText` match today's whole-body single-message behavior byte for
+ * byte.
+ */
+export function parseForwardedThread(bodyText: string): ForwardedThreadSegment[] {
+  // Hard-wrap collapsing is length-preserving (newline -> single space), so
+  // indices found on the collapsed copy still address the same offsets in
+  // the original bodyText used for slicing below.
+  const collapsed = collapseHardWraps(bodyText);
+  const markerIndices = [
+    ...Array.from(collapsed.matchAll(ON_WROTE_RE_G), (m) => m.index),
+    ...Array.from(collapsed.matchAll(FORWARDED_MESSAGE_HEADER_RE_G), (m) => m.index),
+  ].sort((a, b) => a - b);
+
+  if (markerIndices.length <= 1) {
+    return [{ parsed: parseForwardedEmail(bodyText), segmentText: bodyText }];
+  }
+
+  // Segment 0 runs from the start through the SECOND marker (absorbing the
+  // intro plus the first quoted message, same as today's whole-body parse);
+  // each later segment starts at its own marker and runs to the next one.
+  const boundaries = [0, ...markerIndices.slice(1), bodyText.length];
+  const segments: ForwardedThreadSegment[] = [];
+  for (let i = 0; i < boundaries.length - 1; i++) {
+    const segmentText = bodyText.slice(boundaries[i], boundaries[i + 1]);
+    segments.push({ parsed: parseForwardedEmail(segmentText), segmentText });
+  }
+  return segments;
+}
