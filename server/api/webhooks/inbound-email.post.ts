@@ -16,6 +16,7 @@
  * match or unresolved family — Resend retries on non-2xx, and a malformed
  * forward is not a delivery failure worth retrying.
  */
+import { Resend } from "resend";
 import { defineEventHandler, readRawBody, getHeaders, createError } from "h3";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import { useLogger } from "~/server/utils/logger";
@@ -25,15 +26,29 @@ import { parseForwardedEmail } from "~/server/utils/parseForwardedEmail";
 import { matchCoachByEmail } from "~/server/utils/matchCoachByEmail";
 import type { Database, Json } from "~/types/database";
 
+/**
+ * The `email.received` webhook payload carries metadata only — Resend never
+ * inlines the body (large attachments would blow serverless request-size
+ * limits). The full text/html has to be fetched separately via
+ * `resend.emails.receiving.get(email_id)` once the webhook lands.
+ */
 interface ResendInboundPayload {
   type: string;
   data: {
+    email_id: string;
     to: string[];
     from: string;
     subject: string;
-    text: string;
     created_at: string;
   };
+}
+
+let resendClient: Resend | null = null;
+function getResend(): Resend {
+  if (!resendClient) {
+    resendClient = new Resend(process.env.RESEND_API_KEY);
+  }
+  return resendClient;
 }
 
 function isResendInboundPayload(value: unknown): value is ResendInboundPayload {
@@ -93,7 +108,18 @@ export default defineEventHandler(async (event) => {
     logger.error("Failed to store raw inbound email", rawError);
   }
 
-  const parsed = parseForwardedEmail(payload.data.text ?? "");
+  let bodyText: string | null = null;
+  try {
+    const { data: fullEmail, error: fetchError } = await getResend().emails.receiving.get(
+      payload.data.email_id,
+    );
+    if (fetchError) throw new Error(fetchError.message);
+    bodyText = fullEmail?.text ?? null;
+  } catch (err) {
+    logger.error("Failed to fetch full inbound email body", err);
+  }
+
+  const parsed = bodyText ? parseForwardedEmail(bodyText) : null;
   const { coachId, schoolId } = await matchCoachByEmail(admin, {
     familyUnitId,
     email: parsed?.senderEmail,
@@ -107,7 +133,7 @@ export default defineEventHandler(async (event) => {
     sender_name: parsed?.senderName ?? null,
     sender_email: parsed?.senderEmail ?? null,
     subject: payload.data.subject ?? null,
-    body_text: payload.data.text ?? null,
+    body_text: bodyText,
     occurred_at: payload.data.created_at ?? new Date().toISOString(),
     status: "pending",
   };
