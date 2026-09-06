@@ -1,6 +1,11 @@
 import { defineConfig, devices } from "@playwright/test";
 import { resolve } from "path";
 
+// Specs that toggle the shared player.json account's own public-profile
+// publish state — see the "profile-publish-toggle" project below (issue #635).
+const PUBLISH_TOGGLE_SPECS =
+  /(profile-contact|profile-interest|profile-setup|public-profile-inbound-interaction)\.spec\.ts/;
+
 export default defineConfig({
   testDir: "./tests/e2e",
   fullyParallel: true,
@@ -25,7 +30,7 @@ export default defineConfig({
     // Always run Chromium
     {
       name: "chromium",
-      testIgnore: /cross-account-logout/,
+      testIgnore: [/cross-account-logout/, PUBLISH_TOGGLE_SPECS],
       use: { ...devices["Desktop Chrome"] },
     },
     // cross-account-logout.spec.ts drives a real UI login/logout as the
@@ -46,17 +51,34 @@ export default defineConfig({
       use: { ...devices["Desktop Chrome"] },
     },
 
+    // These four specs all drive the shared player.json account's own
+    // publish toggle/section-config on /settings/player-details (issue
+    // #635). fullyParallel workers running two of them concurrently race
+    // the same players row — one worker's PUT lands while another's page
+    // is mid-render/mid-read of the same profile, so
+    // `[data-test="publish-toggle"]` (or the "Profile is live" text it
+    // gates) intermittently never settles within the wait timeout. Same
+    // shared-account-mutation shape as cross-account-logout above: isolated
+    // into its own project and run as a strictly sequential, single-worker
+    // phase (scripts/run-e2e.sh) so no two of them ever touch the account
+    // at once.
+    {
+      name: "profile-publish-toggle",
+      testMatch: PUBLISH_TOGGLE_SPECS,
+      use: { ...devices["Desktop Chrome"] },
+    },
+
     // Only run Firefox/WebKit with FULL_TESTS=1 (not in standard CI — too slow with 1 worker)
     ...(process.env.FULL_TESTS
       ? [
           {
             name: "firefox",
-            testIgnore: /cross-account-logout/,
+            testIgnore: [/cross-account-logout/, PUBLISH_TOGGLE_SPECS],
             use: { ...devices["Desktop Firefox"] },
           },
           {
             name: "webkit",
-            testIgnore: /cross-account-logout/,
+            testIgnore: [/cross-account-logout/, PUBLISH_TOGGLE_SPECS],
             use: { ...devices["Desktop Safari"] },
           },
         ]
