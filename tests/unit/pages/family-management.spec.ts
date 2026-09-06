@@ -49,9 +49,16 @@ vi.mock("~/composables/useFamilyCode", () => ({
   }),
 }));
 
+const mockFetchAuth = vi.fn((url: string) => {
+  if (url === "/api/family/inbound-address") {
+    return Promise.resolve({ address: "family-abc123@inbound.example.com" });
+  }
+  return Promise.resolve({ members: [] });
+});
+
 vi.mock("~/composables/useAuthFetch", () => ({
   useAuthFetch: () => ({
-    $fetchAuth: vi.fn().mockResolvedValue({ members: [] }),
+    $fetchAuth: mockFetchAuth,
   }),
 }));
 
@@ -157,6 +164,22 @@ describe("family-management invite form", () => {
     const wrapper = mountPage("player");
     const button = wrapper.find('[data-testid="send-invite-submit"]');
     expect((button.element as HTMLButtonElement).disabled).toBe(true);
+  });
+});
+
+describe("family-management inbound email address", () => {
+  beforeEach(() => {
+    setActivePinia(createPinia());
+    vi.clearAllMocks();
+    mockUseFamilyInvitations.mockReturnValue(defaultInvitationsReturn());
+  });
+
+  it("fetches and renders the family's inbound-forwarding address", async () => {
+    const wrapper = mountPage("player");
+    await flushPromises();
+
+    expect(mockFetchAuth).toHaveBeenCalledWith("/api/family/inbound-address");
+    expect(wrapper.text()).toContain("family-abc123@inbound.example.com");
   });
 });
 
