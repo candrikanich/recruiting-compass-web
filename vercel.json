@@ -48,6 +48,10 @@
     {
       "path": "/api/cron/onboarding-nudge",
       "schedule": "0 9 * * *"
+    },
+    {
+      "path": "/api/cron/inbound-email-purge",
+      "schedule": "0 10 * * 0"
     }
   ]
 }
