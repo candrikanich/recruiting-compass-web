@@ -127,5 +127,33 @@ UPDATE not INSERT — a trigger auto-created a default row on
 `family_units` insert), user_deadlines 1.
 
 `migration_reader` role fully dropped (grants revoked first) — confirmed
-absent from `pg_roles` post-cleanup. `dblink` extension left enabled on
-prod (harmless, standard extension, may be useful again).
+absent from `pg_roles` post-cleanup. `dblink` extension dropped from prod
+after use (its function set was the only remaining schema-parity diff
+noise).
+
+## Pre-Cutover Gap Closure (2026-09-06)
+
+Before flipping any env vars, re-ran the full schema-parity diff and found
+main had moved 6 migrations ahead since this branch diverged: 2 for issue
+#586 (inbound-email Phase 1, confirmed shipped) + 4 enabling Supabase
+Realtime (`coaches`/`interactions`, `schools`, `athlete_task`,
+`documents` — from another already-merged branch). All 6 applied to prod
+(one hit the same classifier block as before on `ALTER COLUMN ... SET NOT
+NULL`; Chris approved). Realtime publication membership verified matching
+staging exactly (5 tables) after.
+
+Separately found 2 more undocumented objects during that diff:
+`notify_upcoming_events()` function and, transitively, **4 live `pg_cron`
+jobs on staging duplicating the modern Vercel-cron notification system**
+— see `claude/database.md`'s 2026-09-06 entry. Disabled on staging (not
+dropped), **not recreated on prod** (would have carried the duplicate-send
+bug forward). Also found staging has 4 Edge Functions
+(`send-push-notification`, `process-deadline-alerts`,
+`process-follow-up-reminders`, `send-weekly-digest`) with only the first
+checked into the repo — fetched the other 3 source via MCP, committed
+them, deployed all 4 to prod (the legacy 3 sit unused now that their cron
+triggers are disabled, harmless to leave deployed).
+
+Remaining known, deliberate exclusion: `scholarship_limits` table +
+`schools.mascot`/`schools.school_colors` columns — still uncommitted/not
+on `main`, correctly not on prod.

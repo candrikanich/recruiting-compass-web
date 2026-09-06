@@ -156,6 +156,31 @@ What landed:
 
 Code path: `server/utils/publicProfileRead.ts` (L1 Redis 60s + L2 this table 300s, fail-open). `is_published` is still read from `player_profiles` on every GET.
 
+### 2026-09-06: legacy `pg_cron` jobs disabled (duplicate notifications bug)
+
+Found live on `xpxzhqghxecsjhvklsqg` (serving prod+QA at the time) while
+auditing for the prod/staging DB split (issue #118): 4 `pg_cron` jobs
+(`notify-upcoming-events`, `process-deadline-alerts`,
+`process-follow-up-reminders`, `send-weekly-digest`, all `active=true`,
+firing daily/weekly at noon UTC) calling old Supabase Edge Functions
+directly via `net.http_post` or a plain `SELECT`. These are **fully
+superseded** by the modern Vercel-cron system
+(`server/api/cron/generate-notifications.get.ts` covers deadline alerts +
+follow-up reminders + event-tomorrow notifications;
+`server/api/cron/weekly-digest.get.ts` covers the digest — both monitored
+via `withCronRun`/`cron_runs`, see `cron-monitoring-applied` memory) which
+runs at different times (8am / Monday 1pm). Both mechanisms were active
+simultaneously — **real users were getting duplicate notifications/emails
+every day this was live.** Disabled (`cron.alter_job(..., active := false)`,
+not dropped — trivially reversible) on 2026-09-06. The underlying 4 Edge
+Functions (`process-deadline-alerts`, `process-follow-up-reminders`,
+`send-weekly-digest`, plus `send-push-notification` which is NOT legacy —
+still actively used by the current notification system) and the
+`notify_upcoming_events()` SQL function are left in place but now unused;
+not deleted in case something else references them. **Not yet re-verified
+whether the 4 legacy jobs should be dropped entirely — flagged, not
+fully closed.**
+
 ## Helper Functions
 
 - `family_can_write(p_family_unit_id uuid) → boolean` — entitlement gate; STABLE SECURITY DEFINER; used by `*_requires_entitlement` RESTRICTIVE policies on family content tables. NULL → true. Mirror in `composables/useEntitlement.ts` and iOS `FamilySubscription.canWrite`.
