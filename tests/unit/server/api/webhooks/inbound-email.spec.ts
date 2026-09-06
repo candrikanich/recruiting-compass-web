@@ -29,6 +29,13 @@ vi.mock("~/server/utils/logger", () => ({
   useLogger: () => ({ debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() }),
 }));
 
+const receivingGetMock = vi.fn();
+vi.mock("resend", () => ({
+  Resend: class {
+    emails = { receiving: { get: receivingGetMock } };
+  },
+}));
+
 const mockState = {
   rawInsertId: "raw-1",
   draftInsertRow: undefined as Record<string, unknown> | undefined,
@@ -78,6 +85,7 @@ describe("POST /api/webhooks/inbound-email", () => {
       "svix-signature": "v1,sig",
     });
     mockState.draftInsertRow = undefined;
+    receivingGetMock.mockReset();
   });
 
   it("rejects a bad signature with 401", async () => {
@@ -94,10 +102,10 @@ describe("POST /api/webhooks/inbound-email", () => {
     vi.mocked(verifyResendWebhook).mockReturnValue({
       type: "email.received",
       data: {
+        email_id: "email-1",
         to: ["family-deadbeef@inbound.therecruitingcompass.com"],
         from: "Coach Smith <smith@osu.edu>",
         subject: "Re: hi",
-        text: "no forward marker",
         created_at: "2026-09-02T15:15:00.000Z",
       },
     });
@@ -108,21 +116,26 @@ describe("POST /api/webhooks/inbound-email", () => {
     const result = await handler({} as Parameters<typeof handler>[0]);
     expect(result).toEqual({ ok: true, skipped: "unknown-family" });
     expect(mockState.draftInsertRow).toBeUndefined();
+    expect(receivingGetMock).not.toHaveBeenCalled();
   });
 
   it("creates a matched draft when the forwarded sender matches a coach", async () => {
     vi.mocked(verifyResendWebhook).mockReturnValue({
       type: "email.received",
       data: {
+        email_id: "email-1",
         to: ["family-ab3d9f2c@inbound.therecruitingcompass.com"],
         from: "Player <player@example.com>",
         subject: "Fwd: Camp invite",
-        text: "On Mon, Sep 2, 2026 at 3:15 PM Coach Smith <smith@osu.edu> wrote:\n> hi",
         created_at: "2026-09-02T15:15:00.000Z",
       },
     });
     vi.mocked(parseInboundToken).mockReturnValue("ab3d9f2c");
     vi.mocked(resolveFamilyByInboundToken).mockResolvedValue("family-1");
+    receivingGetMock.mockResolvedValue({
+      data: { text: "On Mon, Sep 2, 2026 at 3:15 PM Coach Smith <smith@osu.edu> wrote:\n> hi" },
+      error: null,
+    });
     vi.mocked(parseForwardedEmail).mockReturnValue({
       senderName: "Coach Smith",
       senderEmail: "smith@osu.edu",
@@ -133,6 +146,10 @@ describe("POST /api/webhooks/inbound-email", () => {
     const { default: handler } = await import("~/server/api/webhooks/inbound-email.post");
     const result = await handler({} as Parameters<typeof handler>[0]);
 
+    expect(receivingGetMock).toHaveBeenCalledWith("email-1");
+    expect(parseForwardedEmail).toHaveBeenCalledWith(
+      "On Mon, Sep 2, 2026 at 3:15 PM Coach Smith <smith@osu.edu> wrote:\n> hi",
+    );
     expect(result).toEqual({ ok: true });
     expect(mockState.draftInsertRow).toMatchObject({
       family_unit_id: "family-1",
@@ -140,6 +157,36 @@ describe("POST /api/webhooks/inbound-email", () => {
       matched_school_id: "school-1",
       sender_name: "Coach Smith",
       sender_email: "smith@osu.edu",
+      status: "pending",
+    });
+  });
+
+  it("still creates an unmatched draft when fetching the full email body fails", async () => {
+    vi.mocked(verifyResendWebhook).mockReturnValue({
+      type: "email.received",
+      data: {
+        email_id: "email-1",
+        to: ["family-ab3d9f2c@inbound.therecruitingcompass.com"],
+        from: "Player <player@example.com>",
+        subject: "Fwd: Camp invite",
+        created_at: "2026-09-02T15:15:00.000Z",
+      },
+    });
+    vi.mocked(parseInboundToken).mockReturnValue("ab3d9f2c");
+    vi.mocked(resolveFamilyByInboundToken).mockResolvedValue("family-1");
+    receivingGetMock.mockResolvedValue({ data: null, error: { message: "not found" } });
+    vi.mocked(matchCoachByEmail).mockResolvedValue({ coachId: null, schoolId: null });
+
+    const { default: handler } = await import("~/server/api/webhooks/inbound-email.post");
+    const result = await handler({} as Parameters<typeof handler>[0]);
+
+    expect(result).toEqual({ ok: true });
+    expect(parseForwardedEmail).not.toHaveBeenCalled();
+    expect(mockState.draftInsertRow).toMatchObject({
+      family_unit_id: "family-1",
+      matched_coach_id: null,
+      sender_name: null,
+      body_text: null,
       status: "pending",
     });
   });
