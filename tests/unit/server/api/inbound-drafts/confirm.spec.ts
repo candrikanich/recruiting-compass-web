@@ -19,6 +19,7 @@ vi.mock("~/server/utils/logger", () => ({
 const mockState = {
   membership: { family_unit_id: "family-1" } as { family_unit_id: string } | null,
   draft: undefined as Record<string, unknown> | null | undefined,
+  school: undefined as Record<string, unknown> | null | undefined,
   insertedInteraction: undefined as Record<string, unknown> | undefined,
   updatedDraft: undefined as Record<string, unknown> | undefined,
 };
@@ -40,6 +41,15 @@ vi.mock("~/server/utils/supabase", () => ({
             mockState.updatedDraft = row;
             return { eq: async () => ({ error: null }) };
           },
+        };
+      }
+      if (table === "schools") {
+        return {
+          select: () => ({
+            eq: () => ({
+              eq: () => ({ maybeSingle: async () => ({ data: mockState.school, error: null }) }),
+            }),
+          }),
         };
       }
       if (table === "interactions") {
@@ -66,6 +76,7 @@ describe("POST /api/inbound-drafts/:id/confirm", () => {
     vi.mocked(getRouterParam).mockReturnValue("draft-1");
     vi.mocked(readBody).mockResolvedValue({});
     mockState.membership = { family_unit_id: "family-1" };
+    mockState.school = undefined;
     mockState.insertedInteraction = undefined;
     mockState.updatedDraft = undefined;
   });
@@ -90,6 +101,25 @@ describe("POST /api/inbound-drafts/:id/confirm", () => {
     };
     const { default: handler } = await import("~/server/api/inbound-drafts/[id]/confirm.post");
     await expect(handler({} as Parameters<typeof handler>[0])).rejects.toMatchObject({ statusCode: 422 });
+  });
+
+  it("422s when the caller-supplied schoolId belongs to a different family", async () => {
+    mockState.draft = {
+      id: "draft-1",
+      family_unit_id: "family-1",
+      status: "pending",
+      matched_school_id: null,
+      matched_coach_id: null,
+      sender_name: "Coach Smith",
+      subject: "Fwd: Camp",
+      body_text: "hi",
+      occurred_at: "2026-09-02T15:15:00.000Z",
+    };
+    mockState.school = null; // schools query scoped to family-1 finds nothing
+    vi.mocked(readBody).mockResolvedValue({ schoolId: "11111111-1111-1111-1111-111111111111" });
+    const { default: handler } = await import("~/server/api/inbound-drafts/[id]/confirm.post");
+    await expect(handler({} as Parameters<typeof handler>[0])).rejects.toMatchObject({ statusCode: 422 });
+    expect(mockState.insertedInteraction).toBeUndefined();
   });
 
   it("creates the interaction and marks the draft confirmed", async () => {

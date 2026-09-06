@@ -54,12 +54,27 @@ export default defineEventHandler(async (event) => {
       return { ok: true, interactionId: draft.confirmed_interaction_id };
     }
 
-    const schoolId = draft.matched_school_id ?? parsed.data.schoolId;
+    let schoolId = draft.matched_school_id;
     if (!schoolId) {
-      throw createError({
-        statusCode: 422,
-        statusMessage: "schoolId is required — this draft has no matched school",
-      });
+      if (!parsed.data.schoolId) {
+        throw createError({
+          statusCode: 422,
+          statusMessage: "schoolId is required — this draft has no matched school",
+        });
+      }
+      // schools is family-scoped; the admin client bypasses RLS, so confirm
+      // the caller-supplied schoolId actually belongs to their own family
+      // before letting it into the interaction insert.
+      const { data: school } = await admin
+        .from("schools")
+        .select("id")
+        .eq("id", parsed.data.schoolId)
+        .eq("family_unit_id", draft.family_unit_id)
+        .maybeSingle();
+      if (!school) {
+        throw createError({ statusCode: 422, statusMessage: "Invalid schoolId" });
+      }
+      schoolId = school.id;
     }
 
     const { data: interaction, error: insertError } = await admin
