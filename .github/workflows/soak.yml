@@ -22,6 +22,7 @@ jobs:
     timeout-minutes: 45
 
     steps:
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-node-deps
         with:
           prepare-nuxt: "true"

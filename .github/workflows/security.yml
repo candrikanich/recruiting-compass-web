@@ -21,6 +21,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-node-deps
         with:
           install-deps: "false"
@@ -202,6 +203,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-node-deps
 
       - name: Check licenses
