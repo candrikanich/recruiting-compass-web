@@ -10,31 +10,10 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "13.0.5";
+    PostgrestVersion: "14.5";
   };
   public: {
     Tables: {
-      app_config: {
-        Row: {
-          id: boolean;
-          pricing_flip_at: string | null;
-          trial_days: number;
-          updated_at: string;
-        };
-        Insert: {
-          id?: boolean;
-          pricing_flip_at?: string | null;
-          trial_days?: number;
-          updated_at?: string;
-        };
-        Update: {
-          id?: boolean;
-          pricing_flip_at?: string | null;
-          trial_days?: number;
-          updated_at?: string;
-        };
-        Relationships: [];
-      };
       account_links: {
         Row: {
           accepted_at: string | null;
@@ -110,6 +89,54 @@ export type Database = {
             referencedColumns: ["id"];
           },
         ];
+      };
+      admin_audit_log: {
+        Row: {
+          action: string;
+          actor_admin_id: string;
+          created_at: string;
+          id: string;
+          meta: Json;
+          target_user_id: string | null;
+        };
+        Insert: {
+          action: string;
+          actor_admin_id: string;
+          created_at?: string;
+          id?: string;
+          meta?: Json;
+          target_user_id?: string | null;
+        };
+        Update: {
+          action?: string;
+          actor_admin_id?: string;
+          created_at?: string;
+          id?: string;
+          meta?: Json;
+          target_user_id?: string | null;
+        };
+        Relationships: [];
+      };
+      app_config: {
+        Row: {
+          id: boolean;
+          pricing_flip_at: string | null;
+          trial_days: number;
+          updated_at: string;
+        };
+        Insert: {
+          id?: boolean;
+          pricing_flip_at?: string | null;
+          trial_days?: number;
+          updated_at?: string;
+        };
+        Update: {
+          id?: boolean;
+          pricing_flip_at?: string | null;
+          trial_days?: number;
+          updated_at?: string;
+        };
+        Relationships: [];
       };
       athlete_messages: {
         Row: {
@@ -296,6 +323,36 @@ export type Database = {
         };
         Relationships: [];
       };
+      cache_snapshots: {
+        Row: {
+          cache_key: string;
+          created_at: string;
+          etag: string;
+          expires_at: string;
+          namespace: string;
+          payload: Json;
+          updated_at: string;
+        };
+        Insert: {
+          cache_key: string;
+          created_at?: string;
+          etag: string;
+          expires_at: string;
+          namespace: string;
+          payload: Json;
+          updated_at?: string;
+        };
+        Update: {
+          cache_key?: string;
+          created_at?: string;
+          etag?: string;
+          expires_at?: string;
+          namespace?: string;
+          payload?: Json;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       coaches: {
         Row: {
           created_at: string | null;
@@ -311,6 +368,8 @@ export type Database = {
           phone: string | null;
           role: Database["public"]["Enums"]["coach_role"];
           school_id: string;
+          source: string | null;
+          tags: string[];
           twitter_handle: string | null;
           updated_at: string | null;
           updated_by: string | null;
@@ -330,6 +389,8 @@ export type Database = {
           phone?: string | null;
           role: Database["public"]["Enums"]["coach_role"];
           school_id: string;
+          source?: string | null;
+          tags?: string[];
           twitter_handle?: string | null;
           updated_at?: string | null;
           updated_by?: string | null;
@@ -349,6 +410,8 @@ export type Database = {
           phone?: string | null;
           role?: Database["public"]["Enums"]["coach_role"];
           school_id?: string;
+          source?: string | null;
+          tags?: string[];
           twitter_handle?: string | null;
           updated_at?: string | null;
           updated_by?: string | null;
@@ -569,6 +632,13 @@ export type Database = {
         };
         Relationships: [
           {
+            foreignKeyName: "communication_templates_family_unit_id_fkey";
+            columns: ["family_unit_id"];
+            isOneToOne: false;
+            referencedRelation: "family_units";
+            referencedColumns: ["id"];
+          },
+          {
             foreignKeyName: "communication_templates_user_id_fkey";
             columns: ["user_id"];
             isOneToOne: false;
@@ -724,6 +794,7 @@ export type Database = {
       device_tokens: {
         Row: {
           created_at: string;
+          environment: string;
           id: string;
           platform: string;
           token: string;
@@ -732,6 +803,7 @@ export type Database = {
         };
         Insert: {
           created_at?: string;
+          environment?: string;
           id?: string;
           platform?: string;
           token: string;
@@ -740,6 +812,7 @@ export type Database = {
         };
         Update: {
           created_at?: string;
+          environment?: string;
           id?: string;
           platform?: string;
           token?: string;
@@ -1324,6 +1397,7 @@ export type Database = {
           family_code: string | null;
           family_name: string | null;
           id: string;
+          inbound_token: string;
           pending_player_details: Json | null;
           updated_at: string | null;
         };
@@ -1334,6 +1408,7 @@ export type Database = {
           family_code?: string | null;
           family_name?: string | null;
           id?: string;
+          inbound_token: string;
           pending_player_details?: Json | null;
           updated_at?: string | null;
         };
@@ -1344,6 +1419,7 @@ export type Database = {
           family_code?: string | null;
           family_name?: string | null;
           id?: string;
+          inbound_token?: string;
           pending_player_details?: Json | null;
           updated_at?: string | null;
         };
@@ -1463,6 +1539,90 @@ export type Database = {
           user_id?: string | null;
         };
         Relationships: [];
+      };
+      inbound_email_drafts: {
+        Row: {
+          body_text: string | null;
+          confirmed_interaction_id: string | null;
+          created_at: string;
+          family_unit_id: string;
+          id: string;
+          matched_coach_id: string | null;
+          matched_school_id: string | null;
+          occurred_at: string;
+          raw_email_id: string | null;
+          sender_email: string | null;
+          sender_name: string | null;
+          status: string;
+          subject: string | null;
+        };
+        Insert: {
+          body_text?: string | null;
+          confirmed_interaction_id?: string | null;
+          created_at?: string;
+          family_unit_id: string;
+          id?: string;
+          matched_coach_id?: string | null;
+          matched_school_id?: string | null;
+          occurred_at?: string;
+          raw_email_id?: string | null;
+          sender_email?: string | null;
+          sender_name?: string | null;
+          status?: string;
+          subject?: string | null;
+        };
+        Update: {
+          body_text?: string | null;
+          confirmed_interaction_id?: string | null;
+          created_at?: string;
+          family_unit_id?: string;
+          id?: string;
+          matched_coach_id?: string | null;
+          matched_school_id?: string | null;
+          occurred_at?: string;
+          raw_email_id?: string | null;
+          sender_email?: string | null;
+          sender_name?: string | null;
+          status?: string;
+          subject?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "inbound_email_drafts_confirmed_interaction_id_fkey";
+            columns: ["confirmed_interaction_id"];
+            isOneToOne: false;
+            referencedRelation: "interactions";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "inbound_email_drafts_family_unit_id_fkey";
+            columns: ["family_unit_id"];
+            isOneToOne: false;
+            referencedRelation: "family_units";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "inbound_email_drafts_matched_coach_id_fkey";
+            columns: ["matched_coach_id"];
+            isOneToOne: false;
+            referencedRelation: "coaches";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "inbound_email_drafts_matched_school_id_fkey";
+            columns: ["matched_school_id"];
+            isOneToOne: false;
+            referencedRelation: "schools";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "inbound_email_drafts_raw_email_id_fkey";
+            columns: ["raw_email_id"];
+            isOneToOne: false;
+            referencedRelation: "raw_inbound_emails";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       interactions: {
         Row: {
@@ -2067,6 +2227,13 @@ export type Database = {
         };
         Relationships: [
           {
+            foreignKeyName: "player_profiles_committed_school_id_fkey";
+            columns: ["committed_school_id"];
+            isOneToOne: false;
+            referencedRelation: "schools";
+            referencedColumns: ["id"];
+          },
+          {
             foreignKeyName: "player_profiles_family_unit_id_fkey";
             columns: ["family_unit_id"];
             isOneToOne: false;
@@ -2132,7 +2299,7 @@ export type Database = {
           family_unit_id: string;
           id: string;
           interaction_id: string | null;
-          ip: string | null;
+          ip: unknown;
           matched_coach_id: string | null;
           note: string | null;
           player_user_id: string | null;
@@ -2151,7 +2318,7 @@ export type Database = {
           family_unit_id: string;
           id?: string;
           interaction_id?: string | null;
-          ip?: string | null;
+          ip?: unknown;
           matched_coach_id?: string | null;
           note?: string | null;
           player_user_id?: string | null;
@@ -2170,7 +2337,7 @@ export type Database = {
           family_unit_id?: string;
           id?: string;
           interaction_id?: string | null;
-          ip?: string | null;
+          ip?: unknown;
           matched_coach_id?: string | null;
           note?: string | null;
           player_user_id?: string | null;
@@ -2201,13 +2368,6 @@ export type Database = {
             columns: ["matched_coach_id"];
             isOneToOne: false;
             referencedRelation: "coaches";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "profile_contacts_player_user_id_fkey";
-            columns: ["player_user_id"];
-            isOneToOne: false;
-            referencedRelation: "users";
             referencedColumns: ["id"];
           },
           {
@@ -2299,6 +2459,35 @@ export type Database = {
             columns: ["tracking_link_id"];
             isOneToOne: false;
             referencedRelation: "profile_tracking_links";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      raw_inbound_emails: {
+        Row: {
+          created_at: string;
+          family_unit_id: string | null;
+          id: string;
+          payload: Json;
+        };
+        Insert: {
+          created_at?: string;
+          family_unit_id?: string | null;
+          id?: string;
+          payload: Json;
+        };
+        Update: {
+          created_at?: string;
+          family_unit_id?: string | null;
+          id?: string;
+          payload?: Json;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "raw_inbound_emails_family_unit_id_fkey";
+            columns: ["family_unit_id"];
+            isOneToOne: false;
+            referencedRelation: "family_units";
             referencedColumns: ["id"];
           },
         ];
@@ -2403,6 +2592,36 @@ export type Database = {
         };
         Relationships: [];
       };
+      scholarship_limits: {
+        Row: {
+          division: string;
+          equivalency: number | null;
+          head_count: number | null;
+          id: string;
+          notes: string | null;
+          sport: string;
+          total: number | null;
+        };
+        Insert: {
+          division: string;
+          equivalency?: number | null;
+          head_count?: number | null;
+          id?: string;
+          notes?: string | null;
+          sport: string;
+          total?: number | null;
+        };
+        Update: {
+          division?: string;
+          equivalency?: number | null;
+          head_count?: number | null;
+          id?: string;
+          notes?: string | null;
+          sport?: string;
+          total?: number | null;
+        };
+        Relationships: [];
+      };
       school_recommendation_dismissals: {
         Row: {
           athlete_user_id: string;
@@ -2499,11 +2718,13 @@ export type Database = {
           division: Database["public"]["Enums"]["school_division"] | null;
           family_unit_id: string | null;
           favicon_url: string | null;
+          fit_reason: string | null;
           fit_tier: string | null;
           id: string;
           instagram_handle: string | null;
           is_favorite: boolean | null;
           location: string | null;
+          mascot: string | null;
           name: string;
           notes: string | null;
           offer_details: Json | null;
@@ -2512,6 +2733,7 @@ export type Database = {
           questionnaire_completed: boolean;
           questionnaire_completed_at: string | null;
           recruiting_approach: string | null;
+          school_colors: string[] | null;
           state: string | null;
           status: Database["public"]["Enums"]["school_status"] | null;
           status_changed_at: string | null;
@@ -2521,6 +2743,7 @@ export type Database = {
           updated_by: string | null;
           user_id: string;
           website: string | null;
+          why_program: string | null;
         };
         Insert: {
           academic_info?: Json | null;
@@ -2537,11 +2760,13 @@ export type Database = {
           division?: Database["public"]["Enums"]["school_division"] | null;
           family_unit_id?: string | null;
           favicon_url?: string | null;
+          fit_reason?: string | null;
           fit_tier?: string | null;
           id?: string;
           instagram_handle?: string | null;
           is_favorite?: boolean | null;
           location?: string | null;
+          mascot?: string | null;
           name: string;
           notes?: string | null;
           offer_details?: Json | null;
@@ -2550,6 +2775,7 @@ export type Database = {
           questionnaire_completed?: boolean;
           questionnaire_completed_at?: string | null;
           recruiting_approach?: string | null;
+          school_colors?: string[] | null;
           state?: string | null;
           status?: Database["public"]["Enums"]["school_status"] | null;
           status_changed_at?: string | null;
@@ -2559,6 +2785,7 @@ export type Database = {
           updated_by?: string | null;
           user_id: string;
           website?: string | null;
+          why_program?: string | null;
         };
         Update: {
           academic_info?: Json | null;
@@ -2575,11 +2802,13 @@ export type Database = {
           division?: Database["public"]["Enums"]["school_division"] | null;
           family_unit_id?: string | null;
           favicon_url?: string | null;
+          fit_reason?: string | null;
           fit_tier?: string | null;
           id?: string;
           instagram_handle?: string | null;
           is_favorite?: boolean | null;
           location?: string | null;
+          mascot?: string | null;
           name?: string;
           notes?: string | null;
           offer_details?: Json | null;
@@ -2588,6 +2817,7 @@ export type Database = {
           questionnaire_completed?: boolean;
           questionnaire_completed_at?: string | null;
           recruiting_approach?: string | null;
+          school_colors?: string[] | null;
           state?: string | null;
           status?: Database["public"]["Enums"]["school_status"] | null;
           status_changed_at?: string | null;
@@ -2597,6 +2827,7 @@ export type Database = {
           updated_by?: string | null;
           user_id?: string;
           website?: string | null;
+          why_program?: string | null;
         };
         Relationships: [
           {
@@ -3190,6 +3421,7 @@ export type Database = {
           is_admin: boolean | null;
           is_preview_mode: boolean;
           jersey_number: string | null;
+          nux_progress: Json | null;
           onboarding_completed: boolean;
           phase_milestone_data: Json | null;
           primary_position_custom: string | null;
@@ -3233,6 +3465,7 @@ export type Database = {
           is_admin?: boolean | null;
           is_preview_mode?: boolean;
           jersey_number?: string | null;
+          nux_progress?: Json | null;
           onboarding_completed?: boolean;
           phase_milestone_data?: Json | null;
           primary_position_custom?: string | null;
@@ -3276,6 +3509,7 @@ export type Database = {
           is_admin?: boolean | null;
           is_preview_mode?: boolean;
           jersey_number?: string | null;
+          nux_progress?: Json | null;
           onboarding_completed?: boolean;
           phase_milestone_data?: Json | null;
           primary_position_custom?: string | null;
@@ -3414,7 +3648,10 @@ export type Database = {
         Returns: undefined;
       };
       expire_old_invitations: { Args: never; Returns: undefined };
-      family_can_write: { Args: { p_family_unit_id: string }; Returns: boolean };
+      family_can_write: {
+        Args: { p_family_unit_id: string };
+        Returns: boolean;
+      };
       family_unit_created_by: {
         Args: { p_family_unit_id: string };
         Returns: string;
@@ -3465,11 +3702,16 @@ export type Database = {
         Returns: boolean;
       };
       notify_upcoming_events: { Args: never; Returns: undefined };
+      reactivate_school: {
+        Args: { p_actor: string; p_school_id: string };
+        Returns: Database["public"]["Enums"]["school_status"];
+      };
       safe_jsonb_extract: { Args: { key: string; obj: Json }; Returns: Json };
       set_athlete_profile_photo: {
         Args: { athlete_id: string; photo_url: string };
         Returns: undefined;
       };
+      set_primary_metric: { Args: { p_metric_id: string }; Returns: undefined };
       snapshot_data_ownership: {
         Args: { p_link_id: string; p_parent_id: string; p_player_id: string };
         Returns: undefined;
@@ -3526,9 +3768,11 @@ export type Database = {
         | "recruited"
         | "official_visit_invited"
         | "official_visit_scheduled"
-        | "not_pursuing";
+        | "not_pursuing"
+        | "visiting";
       subscription_source: "founding" | "comp" | "apple" | "stripe";
-      subscription_status: "founding" | "trialing" | "active" | "read_only" | "comp";
+      subscription_status:
+        "founding" | "trialing" | "active" | "read_only" | "comp";
       user_role: "admin" | "parent" | "player";
     };
     CompositeTypes: {
@@ -3723,9 +3967,16 @@ export const Constants = {
         "official_visit_invited",
         "official_visit_scheduled",
         "not_pursuing",
+        "visiting",
       ],
       subscription_source: ["founding", "comp", "apple", "stripe"],
-      subscription_status: ["founding", "trialing", "active", "read_only", "comp"],
+      subscription_status: [
+        "founding",
+        "trialing",
+        "active",
+        "read_only",
+        "comp",
+      ],
       user_role: ["admin", "parent", "player"],
     },
   },
