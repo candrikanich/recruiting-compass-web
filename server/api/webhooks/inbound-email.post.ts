@@ -138,7 +138,7 @@ export default defineEventHandler(async (event) => {
     status: "pending",
   };
 
-  const { error: draftError } = await admin
+  const { data: newDraft, error: draftError } = await admin
     .from("inbound_email_drafts")
     .insert(draftInsert)
     .select("id")
@@ -146,6 +146,31 @@ export default defineEventHandler(async (event) => {
   if (draftError) {
     logger.error("Failed to create inbound email draft", draftError);
     throw createError({ statusCode: 500, statusMessage: "Failed to store draft" });
+  }
+
+  const { data: familyMembers } = await admin
+    .from("family_members")
+    .select("user_id")
+    .eq("family_unit_id", familyUnitId);
+  if (familyMembers && familyMembers.length > 0) {
+    const { error: notifyError } = await admin.from("notifications").insert(
+      familyMembers.map((member) => ({
+        user_id: member.user_id,
+        type: "inbound_interaction",
+        title: "New coach email detected",
+        message: parsed?.senderName
+          ? `A forwarded email from ${parsed.senderName} is ready to review.`
+          : "A forwarded email is ready to review.",
+        action_url: "/inbox/inbound-drafts",
+        related_entity_id: newDraft?.id ?? null,
+        related_entity_type: "inbound_email_draft",
+      })),
+    );
+    if (notifyError) {
+      // Never fail the webhook over a notification — Resend already
+      // delivered successfully and the draft already exists.
+      logger.error("Failed to notify family of new inbound draft", notifyError);
+    }
   }
 
   logger.info("Inbound email draft created", { familyUnitId, matched: !!coachId });
