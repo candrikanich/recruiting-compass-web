@@ -84,3 +84,24 @@ Created 2026-09-05: `lrzsenidegcqhwzwncve` (`recruiting-compass-prod`,
 org `mhumwplsikjuxdquwsri`, region `us-east-2`, Postgres 17). Org upgraded
 to Pro plan (from free-tier 2-project limit hit on first attempt) — actual
 cost $10/mo, not the originally-quoted $0/mo free-tier estimate.
+
+All 94 repo migrations pushed via `supabase db push` (CLI, Chris's
+terminal) after fixing a real pre-existing bug: 5 sets of migration files
+shared exact duplicate timestamps, colliding on `schema_migrations`'s PK —
+never surfaced before because staging was always migrated via MCP
+(auto-generated unique versions), never via CLI. Fixed in
+`cd70a952` (repo-wide fix, not just this branch — worth landing on
+develop/main separately).
+
+Schema-parity diff (generated TS types, staging vs prod) after the full
+replay found 5 more undocumented objects on staging with no migration
+file: `device_tokens.environment` column, `set_primary_metric()` function
+(both backported via `20260919000000_...sql`, applied to both projects),
+plus `athlete_messages.inbound_token`, `inbound_email_drafts`,
+`raw_inbound_emails`, `scholarship_limits` — all created on staging
+*during this session* by a concurrent Claude session working a different
+issue. Confirmed with Chris — deliberately left off prod, not a gap to
+close; that work isn't committed/stable yet.
+
+Final diff after backporting: schema parity confirmed, modulo the
+concurrent session's in-flight, uncommitted work (expected exclusion).
