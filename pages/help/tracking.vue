@@ -129,7 +129,7 @@
         >
         page generates a summary of your recruiting activity over a date
         range you choose — pick a quick preset or a custom range, then export
-        it as a CSV for spreadsheets or a PDF for printing.
+        it as a CSV for spreadsheets.
       </p>
       <p class="mb-4 text-sm text-gray-600">
         A separate

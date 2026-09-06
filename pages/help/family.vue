@@ -25,10 +25,11 @@
         <strong>Send invite</strong>. They'll get an email invitation to join
         your family unit.
       </HelpStepCard>
-      <HelpStepCard :step="3" title="Or join with a Family Code" :last="true">
-        If you're a student joining a family that already exists, use the
-        <strong>Family Code</strong> shown on that family's account instead of
-        waiting for an email invite.
+      <HelpStepCard :step="3" title="Or share your Family Code" :last="true">
+        As the athlete, your Family Management page displays your own
+        <strong>Family Code</strong>. Share it with a parent or guardian who
+        already has an account and they can enter it to join your family
+        instantly, instead of waiting for an email invite.
       </HelpStepCard>
       <HelpCallout type="info">
         A parent linked to more than one athlete can switch between them using

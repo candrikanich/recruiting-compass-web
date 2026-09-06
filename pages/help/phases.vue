@@ -93,7 +93,7 @@
         phase. Parent/guardian family members can view progress but can't
         trigger or confirm it.
       </p>
-      <HelpStepCard :step="1" title="Complete your required tasks">
+      <HelpStepCard :step="1" title="Complete your required tasks" :last="true">
         Open
         <NuxtLink
           to="/timeline"
@@ -102,14 +102,11 @@
         >
         and finish the milestone tasks required for your current phase.
       </HelpStepCard>
-      <HelpStepCard :step="2" title="Advance" :last="true">
-        Once every required task is complete, tap
-        <strong>Advance</strong> on the Timeline page. It applies immediately —
-        no one else needs to confirm it.
-      </HelpStepCard>
       <HelpCallout type="warning">
-        Phase advancement cannot be reversed. Make sure you're ready before
-        advancing.
+        Phase advancement isn't yet automatic in the app — there's currently
+        no button that moves you to the next phase, even once every required
+        task is complete. If you believe you're ready to move up, check with
+        support.
       </HelpCallout>
     </section>
 

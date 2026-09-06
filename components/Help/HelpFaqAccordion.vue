@@ -4,6 +4,8 @@
       <button
         :data-testid="`faq-question-${entry.id}`"
         class="flex w-full items-center justify-between text-left font-medium text-gray-900"
+        :aria-expanded="openId === entry.id"
+        :aria-controls="`faq-answer-${entry.id}`"
         @click="toggle(entry.id)"
       >
         {{ entry.question }}
@@ -15,7 +17,12 @@
           "
         />
       </button>
-      <p v-if="openId === entry.id" class="mt-2 text-gray-600">
+      <p
+        v-if="openId === entry.id"
+        :id="`faq-answer-${entry.id}`"
+        role="region"
+        class="mt-2 text-gray-600"
+      >
         {{ entry.answer }}
       </p>
     </div>

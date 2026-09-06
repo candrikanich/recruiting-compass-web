@@ -1,7 +1,7 @@
 <template>
-  <p class="text-sm text-gray-500">
+  <p class="mb-8 text-sm text-gray-500">
     Last reviewed {{ formattedDate }}
-    <span v-if="isStale" class="text-brand-amber-600">
+    <span v-if="isStale" class="text-brand-orange-600">
       — this page may be out of date, let us know if something looks wrong
     </span>
   </p>
