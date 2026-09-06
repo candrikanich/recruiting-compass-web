@@ -224,6 +224,19 @@ not deleted in case something else references them. **Not yet re-verified
 whether the 4 legacy jobs should be dropped entirely — flagged, not
 fully closed.**
 
+### 2026-09-06: `email_events` migration written (Resend delivery log, Spec B2) — pending live apply
+
+`supabase/migrations/20260923000000_email_events.sql` — one row per Resend
+outbound lifecycle event (sent/delivered/bounced/complained/opened/clicked),
+keyed by Resend's `message_id` (their `data.email_id`), ingested by
+`POST /api/webhooks/resend-events`. Service-role only (RLS on, no policies,
+`anon`/`authenticated` revoked) — same pattern as `admin_audit_log` and
+`cache_snapshots`. Deliberately NOT linked to `family_unit_id`/`user_id`:
+that requires threading context through every `sendViaResend()` call site,
+out of scope for this table. 30-day retention via
+`server/api/cron/email-events-purge.get.ts`. (Migration written, pending live
+apply via Supabase MCP `apply_migration` + verification.)
+
 ## Helper Functions
 
 - `family_can_write(p_family_unit_id uuid) → boolean` — entitlement gate; STABLE SECURITY DEFINER; used by `*_requires_entitlement` RESTRICTIVE policies on family content tables. NULL → true. Mirror in `composables/useEntitlement.ts` and iOS `FamilySubscription.canWrite`.
