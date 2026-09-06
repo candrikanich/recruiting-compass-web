@@ -40,6 +40,9 @@ export const CSRF_EXEMPT_EXACT_PATHS = [
   // RFC 8058 one-click unsubscribe: mail clients POST with no cookies/CSRF token.
   // The HMAC unsubscribe token is the authorization.
   "/api/email/unsubscribe",
+  // Resend Inbound webhook: called server-to-server with no cookies/CSRF
+  // token. The Svix signature (verifyResendWebhook) is the authorization.
+  "/api/webhooks/inbound-email",
 ] as const;
 
 /** HTTP methods CSRF protection applies to; GET/HEAD are safe and exempt. */

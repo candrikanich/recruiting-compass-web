@@ -74,6 +74,9 @@ describe("CSRF middleware path exemptions", () => {
     it("exempts the RFC 8058 one-click email unsubscribe exact path", () => {
       expect(isCsrfExemptPath("/api/email/unsubscribe")).toBe(true);
     });
+    it("exempts the Resend inbound email webhook exact path", () => {
+      expect(isCsrfExemptPath("/api/webhooks/inbound-email")).toBe(true);
+    });
     it("exempts public share-page endpoints (contact/interest/view)", () => {
       expect(
         isCsrfExemptPath("/api/public/profile/owen-andrikanich-2028/contact"),
@@ -149,6 +152,7 @@ describe("exported constants match what the middleware actually enforces", () =>
     expect([...CSRF_EXEMPT_EXACT_PATHS]).toEqual([
       "/api/athlete/fit-scores/recalculate-all",
       "/api/email/unsubscribe",
+      "/api/webhooks/inbound-email",
     ]);
   });
 });
