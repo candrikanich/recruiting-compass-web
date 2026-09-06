@@ -830,6 +830,7 @@ export type Database = {
           file_url: string;
           health_status: string | null;
           id: string;
+          interaction_id: string | null;
           is_current: boolean | null;
           last_health_check: string | null;
           school_id: string | null;
@@ -849,6 +850,7 @@ export type Database = {
           file_url: string;
           health_status?: string | null;
           id?: string;
+          interaction_id?: string | null;
           is_current?: boolean | null;
           last_health_check?: string | null;
           school_id?: string | null;
@@ -868,6 +870,7 @@ export type Database = {
           file_url?: string;
           health_status?: string | null;
           id?: string;
+          interaction_id?: string | null;
           is_current?: boolean | null;
           last_health_check?: string | null;
           school_id?: string | null;
@@ -885,6 +888,13 @@ export type Database = {
             columns: ["family_unit_id"];
             isOneToOne: false;
             referencedRelation: "family_units";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "documents_interaction_id_fkey";
+            columns: ["interaction_id"];
+            isOneToOne: false;
+            referencedRelation: "interactions";
             referencedColumns: ["id"];
           },
           {
@@ -967,6 +977,39 @@ export type Database = {
           uploaded_by?: string | null;
           user_id?: string | null;
           version?: number | null;
+        };
+        Relationships: [];
+      };
+      email_events: {
+        Row: {
+          created_at: string;
+          event_type: string;
+          id: string;
+          message_id: string;
+          occurred_at: string;
+          raw_payload: Json;
+          recipient_email: string | null;
+          subject: string | null;
+        };
+        Insert: {
+          created_at?: string;
+          event_type: string;
+          id?: string;
+          message_id: string;
+          occurred_at: string;
+          raw_payload: Json;
+          recipient_email?: string | null;
+          subject?: string | null;
+        };
+        Update: {
+          created_at?: string;
+          event_type?: string;
+          id?: string;
+          message_id?: string;
+          occurred_at?: string;
+          raw_payload?: Json;
+          recipient_email?: string | null;
+          subject?: string | null;
         };
         Relationships: [];
       };
@@ -2463,6 +2506,51 @@ export type Database = {
           },
         ];
       };
+      raw_inbound_attachments: {
+        Row: {
+          content_type: string | null;
+          created_at: string;
+          draft_id: string;
+          family_unit_id: string;
+          filename: string;
+          id: string;
+          storage_path: string;
+        };
+        Insert: {
+          content_type?: string | null;
+          created_at?: string;
+          draft_id: string;
+          family_unit_id: string;
+          filename: string;
+          id?: string;
+          storage_path: string;
+        };
+        Update: {
+          content_type?: string | null;
+          created_at?: string;
+          draft_id?: string;
+          family_unit_id?: string;
+          filename?: string;
+          id?: string;
+          storage_path?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "raw_inbound_attachments_draft_id_fkey";
+            columns: ["draft_id"];
+            isOneToOne: false;
+            referencedRelation: "inbound_email_drafts";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "raw_inbound_attachments_family_unit_id_fkey";
+            columns: ["family_unit_id"];
+            isOneToOne: false;
+            referencedRelation: "family_units";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       raw_inbound_emails: {
         Row: {
           created_at: string;
@@ -3726,7 +3814,8 @@ export type Database = {
         | "resume"
         | "rec_letter"
         | "questionnaire"
-        | "stats_sheet";
+        | "stats_sheet"
+        | "coach_attachment";
       event_type:
         "showcase" | "camp" | "official_visit" | "unofficial_visit" | "game";
       interaction_direction: "outbound" | "inbound";
@@ -3909,6 +3998,7 @@ export const Constants = {
         "rec_letter",
         "questionnaire",
         "stats_sheet",
+        "coach_attachment",
       ],
       event_type: [
         "showcase",
