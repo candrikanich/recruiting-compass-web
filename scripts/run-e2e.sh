@@ -13,6 +13,15 @@
 # `dependencies` project option: that skips the dependent project entirely
 # if the depended-on project has ANY failing test, which would silently
 # stop cross-account-logout from running whenever an unrelated flake hits.
+#
+# Phase 3 (profile-publish-toggle, issue #635): profile-contact,
+# profile-interest, profile-setup, and public-profile-inbound-interaction
+# all toggle the same shared player.json account's own publish state on
+# /settings/player-details. Run against each other with more than one
+# worker, two of them race the same players row and
+# `[data-test="publish-toggle"]` never settles in time. `--workers=1`
+# forces them to run one at a time — same shared-account-mutation fix as
+# phase 2, different project.
 set -u
 
 # Playwright's --project flag is repeatable/unioned, not overridden — passing
@@ -66,8 +75,14 @@ main_status=$?
 playwright test --project=cross-account-logout "${NON_PROJECT_ARGS[@]+"${NON_PROJECT_ARGS[@]}"}"
 logout_status=$?
 
+playwright test --project=profile-publish-toggle --workers=1 "${NON_PROJECT_ARGS[@]+"${NON_PROJECT_ARGS[@]}"}"
+publish_toggle_status=$?
+
 exit_code=$main_status
 if [ "$logout_status" -gt "$exit_code" ]; then
   exit_code=$logout_status
+fi
+if [ "$publish_toggle_status" -gt "$exit_code" ]; then
+  exit_code=$publish_toggle_status
 fi
 exit "$exit_code"

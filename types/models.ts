@@ -72,6 +72,8 @@ export interface School {
   is_favorite: boolean;
   website: string | null;
   athletics_url?: string | null;
+  mascot?: string | null;
+  school_colors?: string[] | null;
   favicon_url: string | null;
   twitter_handle: string | null;
   instagram_handle: string | null;

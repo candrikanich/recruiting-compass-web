@@ -1,16 +1,32 @@
 <template>
   <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-xs">
     <div class="flex items-start gap-4">
-      <SchoolLogo
-        :school="school"
-        size="lg"
-        fetch-on-mount
-        :transition-name="`school-logo-${school.id}`"
-      />
+      <div class="flex shrink-0 flex-col items-center gap-1.5">
+        <SchoolLogo
+          :school="school"
+          size="lg"
+          fetch-on-mount
+          :transition-name="`school-logo-${school.id}`"
+        />
+        <span
+          v-if="school.school_colors?.length"
+          class="flex items-center gap-1"
+        >
+          <span
+            v-for="color in school.school_colors"
+            :key="color"
+            class="h-2.5 w-2.5 rounded-full border border-slate-300"
+            :style="{ backgroundColor: color }"
+          />
+        </span>
+      </div>
       <div class="min-w-0 flex-1">
         <h1 class="mb-1 text-2xl font-bold text-slate-900">
           {{ school.name }}
         </h1>
+        <p v-if="school.mascot" class="mb-1 text-sm text-slate-500">
+          {{ school.name }} {{ school.mascot }}
+        </p>
         <div
           v-if="displayLocation"
           class="mb-3 flex items-center gap-2 text-slate-600"

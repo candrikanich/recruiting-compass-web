@@ -216,6 +216,12 @@ export default defineNuxtConfig({
       isVercel: process.env.VERCEL === "1",
       adminHost:
         process.env.NUXT_PUBLIC_ADMIN_HOST || "admin.myrecruitingcompass.com",
+      // Free Resend subdomain for inbound email forwarding (Phase 1 manual setup).
+      // Update this (and the env var) if/when a custom inbound.myrecruitingcompass.com
+      // domain replaces it — parseInboundToken never checks the domain, so migration
+      // needs only this config change.
+      inboundEmailDomain:
+        process.env.NUXT_PUBLIC_INBOUND_EMAIL_DOMAIN || "belauso.resend.app",
     },
   },
 

@@ -1,9 +1,9 @@
 name: Security Scanning
 
 on:
-  # Only run on PRs to main (production gate)
+  # PRs to develop (QA gate) and main (production gate)
   pull_request:
-    branches: [main]
+    branches: [develop, main]
   # Run daily to catch newly disclosed vulnerabilities
   schedule:
     - cron: "0 6 * * *"
@@ -14,9 +14,6 @@ concurrency:
   group: security-${{ github.ref }}
   cancel-in-progress: true
 
-env:
-  NODE_VERSION: "24"
-
 jobs:
   # Job 1: Dependency vulnerability scanning
   dependency-scan:
@@ -24,14 +21,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v7
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v7
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-node-deps
         with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
+          install-deps: "false"
 
       - name: Upgrade npm
         run: npm install -g npm@latest
@@ -210,17 +203,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v7
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v7
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
-
-      - name: Install dependencies
-        run: npm ci
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-node-deps
 
       - name: Check licenses
         run: |

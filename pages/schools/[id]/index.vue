@@ -81,6 +81,7 @@
             :editing-basic-info="editingBasicInfo"
             :edited-basic-info="editedBasicInfo"
             :is-saving="loading"
+            :scholarship-line="scholarshipLine"
             @lookup-data="lookupCollegeData"
             @save="handleSaveBasicInfo"
             @toggle-edit="handleToggleEdit"
@@ -251,6 +252,7 @@ import { useAuthFetch } from "~/composables/useAuthFetch";
 import { useAppToast } from "~/composables/useAppToast";
 import { useUserStore } from "~/stores/user";
 import { useSchoolBasicInfo } from "~/composables/useSchoolBasicInfo";
+import { useScholarshipLimits } from "~/composables/useScholarshipLimits";
 import { useSchoolProsCons } from "~/composables/useSchoolProsCons";
 import { useSchoolStatusManagement } from "~/composables/useSchoolStatusManagement";
 import { useLiveRegion } from "~/composables/useLiveRegion";
@@ -353,6 +355,20 @@ const athleteProfile = computed<AthleteProfileForFit>(() => {
     campus_size_preference: null,
     cost_sensitivity: null,
   };
+});
+
+// Scholarship line — global reference config, loaded once, matched by
+// (athlete sport, school division). Hidden entirely if the table is
+// unseeded or no row matches (null-fill-only philosophy, never blocks).
+const { loadLimits, selectScholarshipLimit, formatScholarshipLine } =
+  useScholarshipLimits();
+const scholarshipLimits = ref<Awaited<ReturnType<typeof loadLimits>>>([]);
+const scholarshipLine = computed<string | null>(() => {
+  const sport = getPlayerDetails()?.primary_sport;
+  const division = school.value?.division;
+  if (!sport || !division) return null;
+  const limit = selectScholarshipLimit(scholarshipLimits.value, sport, division);
+  return limit ? formatScholarshipLine(limit, sport, division) : null;
 });
 
 const schoolAcademicInfo = computed<SchoolAcademicInfo>(() => {
@@ -650,6 +666,9 @@ useRealtimeSchoolDetail(id, realtimeReady, {
 });
 
 onMounted(() => {
+  loadLimits().then((limits) => {
+    scholarshipLimits.value = limits;
+  });
   if (activeFamilyId.value) {
     loadPageData();
   } else {

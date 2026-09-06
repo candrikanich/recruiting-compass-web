@@ -1,0 +1,40 @@
+name: "Setup Node & install deps"
+description: >
+  Shared setup-node + npm ci used by every workflow job. Single place to
+  bump the Node version instead of duplicated blocks. Callers must checkout
+  the repo BEFORE this action — a local composite action can't check itself
+  out (the runner needs action.yml on disk to resolve `uses:` in the first
+  place).
+
+inputs:
+  node-version:
+    description: "Node version to install"
+    required: false
+    default: "24"
+  install-deps:
+    description: "Run npm ci after setup-node"
+    required: false
+    default: "true"
+  prepare-nuxt:
+    description: "Run `npx nuxi prepare` after npm ci"
+    required: false
+    default: "false"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Node.js
+      uses: actions/setup-node@v7
+      with:
+        node-version: ${{ inputs.node-version }}
+        cache: "npm"
+
+    - name: Install dependencies
+      if: inputs.install-deps == 'true'
+      shell: bash
+      run: npm ci
+
+    - name: Prepare Nuxt
+      if: inputs.prepare-nuxt == 'true'
+      shell: bash
+      run: npx nuxi prepare

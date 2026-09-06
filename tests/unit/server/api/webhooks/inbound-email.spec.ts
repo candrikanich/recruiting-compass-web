@@ -39,6 +39,7 @@ vi.mock("resend", () => ({
 const mockState = {
   rawInsertId: "raw-1",
   draftInsertRow: undefined as Record<string, unknown> | undefined,
+  notificationRows: undefined as Record<string, unknown>[] | undefined,
 };
 
 vi.mock("~/server/utils/supabase", () => ({
@@ -65,6 +66,21 @@ vi.mock("~/server/utils/supabase", () => ({
           },
         };
       }
+      if (table === "family_members") {
+        return {
+          select: () => ({
+            eq: async () => ({ data: [{ user_id: "parent-1" }, { user_id: "player-1" }], error: null }),
+          }),
+        };
+      }
+      if (table === "notifications") {
+        return {
+          insert: (rows: Record<string, unknown>[]) => {
+            mockState.notificationRows = rows;
+            return Promise.resolve({ error: null });
+          },
+        };
+      }
       throw new Error(`unexpected table ${table}`);
     },
   }),
@@ -85,6 +101,7 @@ describe("POST /api/webhooks/inbound-email", () => {
       "svix-signature": "v1,sig",
     });
     mockState.draftInsertRow = undefined;
+    mockState.notificationRows = undefined;
     receivingGetMock.mockReset();
   });
 
@@ -159,6 +176,20 @@ describe("POST /api/webhooks/inbound-email", () => {
       sender_email: "smith@osu.edu",
       status: "pending",
     });
+    expect(mockState.notificationRows).toEqual([
+      expect.objectContaining({
+        user_id: "parent-1",
+        type: "inbound_interaction",
+        related_entity_id: "draft-1",
+        related_entity_type: "inbound_email_draft",
+      }),
+      expect.objectContaining({
+        user_id: "player-1",
+        type: "inbound_interaction",
+        related_entity_id: "draft-1",
+        related_entity_type: "inbound_email_draft",
+      }),
+    ]);
   });
 
   it("still creates an unmatched draft when fetching the full email body fails", async () => {

@@ -55,6 +55,8 @@ describe("SchoolInformationCard", () => {
     twitter_handle: "@testuniversity",
     instagram_handle: "@testuniversity_ig",
     phone: "(555) 111-2222",
+    mascot: "",
+    school_colors: ["", ""] as [string, string],
   };
 
   const defaultProps = {
@@ -65,6 +67,7 @@ describe("SchoolInformationCard", () => {
     editingBasicInfo: false,
     editedBasicInfo: mockFormData,
     isSaving: false,
+    scholarshipLine: null,
   };
 
   describe("rendering", () => {
@@ -231,10 +234,87 @@ describe("SchoolInformationCard", () => {
         props: { ...defaultProps, editingBasicInfo: true },
       });
       expect(wrapper.text()).not.toContain("Baseball Facility");
-      expect(wrapper.text()).not.toContain("Mascot");
       expect(wrapper.text()).not.toContain("Undergraduate Size");
     });
 
+    it("renders mascot and school-colors edit inputs", () => {
+      const wrapper = mount(SchoolInformationCard, {
+        props: { ...defaultProps, editingBasicInfo: true },
+      });
+      expect(wrapper.text()).toContain("Mascot");
+      expect(wrapper.text()).toContain("School Colors");
+      const inputs = wrapper.findAll("input[type='text']");
+      expect(
+        inputs.some((i) => i.attributes("placeholder") === "Eagles"),
+      ).toBe(true);
+    });
+  });
+
+  describe("mascot/colors/conference display", () => {
+    it("shows mascot when set", () => {
+      const wrapper = mount(SchoolInformationCard, {
+        props: {
+          ...defaultProps,
+          school: { ...mockSchool, mascot: "Eagles" },
+        },
+      });
+      expect(wrapper.text()).toContain("Mascot:");
+      expect(wrapper.text()).toContain("Eagles");
+    });
+
+    it("does not show a mascot row when unset", () => {
+      const wrapper = mount(SchoolInformationCard, { props: defaultProps });
+      expect(wrapper.text()).not.toContain("Mascot:");
+    });
+
+    it("shows color swatches when school_colors is set", () => {
+      const wrapper = mount(SchoolInformationCard, {
+        props: {
+          ...defaultProps,
+          school: { ...mockSchool, school_colors: ["#660000", "#FFFFFF"] },
+        },
+      });
+      expect(wrapper.text()).toContain("Colors:");
+    });
+
+    it("shows an auto-resolved conference link for a known conference", () => {
+      const wrapper = mount(SchoolInformationCard, {
+        props: {
+          ...defaultProps,
+          school: { ...mockSchool, conference: "Big Ten" },
+        },
+      });
+      const link = wrapper
+        .findAll("a")
+        .find((a) => a.text().includes("Big Ten"));
+      expect(link?.attributes("href")).toBe("https://bigten.org");
+    });
+
+    it("does not show a conference row for an unknown conference", () => {
+      const wrapper = mount(SchoolInformationCard, {
+        props: {
+          ...defaultProps,
+          school: { ...mockSchool, conference: "Some Unknown League" },
+        },
+      });
+      expect(wrapper.text()).not.toContain("Conference:");
+    });
+
+    it("shows the scholarship line when provided", () => {
+      const wrapper = mount(SchoolInformationCard, {
+        props: {
+          ...defaultProps,
+          scholarshipLine:
+            "Athletic Scholarships: 11.7 equivalency (D1 Baseball)",
+        },
+      });
+      expect(wrapper.text()).toContain(
+        "Athletic Scholarships: 11.7 equivalency (D1 Baseball)",
+      );
+    });
+  });
+
+  describe("edit form", () => {
     it("renders save button in edit mode", () => {
       const wrapper = mount(SchoolInformationCard, {
         props: { ...defaultProps, editingBasicInfo: true },

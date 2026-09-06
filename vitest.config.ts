@@ -77,6 +77,9 @@ export default defineConfig({
       "#app": fileURLToPath(
         new URL("./node_modules/nuxt/dist/app", import.meta.url),
       ),
+      "#imports": fileURLToPath(
+        new URL("./node_modules/nuxt/dist/app", import.meta.url),
+      ),
       "#": fileURLToPath(new URL("./", import.meta.url)),
     },
   },

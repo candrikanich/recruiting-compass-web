@@ -90,6 +90,42 @@
           </div>
           <div>
             <label class="mb-1 block text-sm font-medium text-slate-700"
+              >Mascot</label
+            >
+            <input
+              v-model="editedBasicInfo.mascot"
+              type="text"
+              placeholder="Eagles"
+              class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div>
+            <label class="mb-1 block text-sm font-medium text-slate-700"
+              >School Colors</label
+            >
+            <div class="flex gap-2">
+              <div
+                v-for="(_, index) in editedBasicInfo.school_colors"
+                :key="index"
+                class="flex flex-1 items-center gap-2"
+              >
+                <span
+                  class="h-6 w-6 shrink-0 rounded-full border border-slate-300"
+                  :style="{
+                    backgroundColor: editedBasicInfo.school_colors[index] || undefined,
+                  }"
+                />
+                <input
+                  v-model="editedBasicInfo.school_colors[index]"
+                  type="text"
+                  :placeholder="index === 0 ? '#660000' : '#FFFFFF'"
+                  class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+          </div>
+          <div>
+            <label class="mb-1 block text-sm font-medium text-slate-700"
               >Twitter Handle</label
             >
             <input
@@ -168,6 +204,41 @@
             class="flex items-center gap-1 text-sm break-all text-blue-600 hover:text-blue-700"
           >
             {{ school.athletics_url }}
+            <UIcon
+              name="i-heroicons-arrow-top-right-on-square"
+              class="h-3 w-3 shrink-0"
+            />
+          </a>
+        </div>
+        <div v-if="school.mascot" class="flex items-start gap-2">
+          <span class="w-24 shrink-0 text-sm text-slate-500">Mascot:</span>
+          <span class="text-sm text-slate-900">{{ school.mascot }}</span>
+        </div>
+        <div
+          v-if="school.school_colors?.length"
+          class="flex items-start gap-2"
+        >
+          <span class="w-24 shrink-0 text-sm text-slate-500">Colors:</span>
+          <span class="flex items-center gap-1.5">
+            <span
+              v-for="color in school.school_colors"
+              :key="color"
+              class="h-4 w-4 rounded-full border border-slate-300"
+              :style="{ backgroundColor: color }"
+            />
+          </span>
+        </div>
+        <div v-if="conferenceUrl" class="flex items-start gap-2">
+          <span class="w-24 shrink-0 text-sm text-slate-500"
+            >Conference:</span
+          >
+          <a
+            :href="conferenceUrl"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="flex items-center gap-1 text-sm break-all text-blue-600 hover:text-blue-700"
+          >
+            {{ school.conference }}
             <UIcon
               name="i-heroicons-arrow-top-right-on-square"
               class="h-3 w-3 shrink-0"
@@ -310,6 +381,12 @@
             }}%</span
           >
         </div>
+        <div
+          v-if="scholarshipLine"
+          class="col-span-2 flex justify-between rounded-sm bg-slate-50 p-2"
+        >
+          <span class="font-medium text-slate-900">{{ scholarshipLine }}</span>
+        </div>
       </div>
       <p v-else class="text-sm text-slate-500">
         No college data yet. Use Lookup to pull it from the College Scorecard.
@@ -346,6 +423,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from "vue";
 import type { School } from "~/types/models";
 import type { BasicInfoFormData } from "~/composables/useSchoolBasicInfo";
 import {
@@ -358,9 +436,10 @@ import {
   hasContactInfo,
   hasCollegeScorecardData,
 } from "~/utils/schoolHelpers";
+import { getConferenceUrl } from "~/utils/conferenceUrls";
 import SchoolMap from "~/components/School/SchoolMap.vue";
 
-defineProps<{
+const props = defineProps<{
   school: School;
   calculatedDistance: string | null;
   collegeDataLoading: boolean;
@@ -368,7 +447,10 @@ defineProps<{
   editingBasicInfo: boolean;
   editedBasicInfo: BasicInfoFormData;
   isSaving: boolean;
+  scholarshipLine: string | null;
 }>();
+
+const conferenceUrl = computed(() => getConferenceUrl(props.school.conference));
 
 const emit = defineEmits<{
   "lookup-data": [];

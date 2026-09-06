@@ -1,18 +1,15 @@
 name: E2E Tests
 
 on:
-  # Only run on PRs to main (production gate)
+  # PRs to develop (QA gate) and main (production gate)
   pull_request:
-    branches: [main]
+    branches: [develop, main]
   # Allow manual triggering from Actions tab
   workflow_dispatch:
 
 concurrency:
   group: e2e-${{ github.ref }}
   cancel-in-progress: true
-
-env:
-  NODE_VERSION: "24"
 
 jobs:
   e2e-tests:
@@ -28,23 +25,13 @@ jobs:
     if: github.actor != 'dependabot[bot]'
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v7
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v7
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-node-deps
         with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
-
-      - name: Install dependencies
-        run: npm ci
+          prepare-nuxt: "true"
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
-
-      - name: Prepare Nuxt
-        run: npx nuxi prepare
 
       - name: Build application
         run: npm run build
@@ -108,17 +95,8 @@ jobs:
     if: always() && github.actor != 'dependabot[bot]'
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v7
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v7
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
-
-      - name: Install dependencies
-        run: npm ci
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-node-deps
 
       - name: Install Playwright WebKit browser
         # chromium is also required: global-setup.ts captures auth storageState
