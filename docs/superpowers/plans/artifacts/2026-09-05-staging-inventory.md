@@ -131,6 +131,44 @@ absent from `pg_roles` post-cleanup. `dblink` extension dropped from prod
 after use (its function set was the only remaining schema-parity diff
 noise).
 
+## Full Database Data Migration (2026-09-06, supersedes family-only scope)
+
+Chris decided ("not a ton of data, port all of it over") to expand Task 7
+from "just my family" to a genuine whole-database copy — all 19 users, 14
+family_units, 70 schools, 83 coaches, 27,555 `nces_schools` reference rows,
+etc. Mechanism: `pg_dump`/`psql` run directly by Chris (Supabase CLI
+bundles `pg_dump`; `psql` installed via `brew install libpq`), connecting
+through the **Session pooler** hostname (direct-connection hostnames need
+IPv6, which Chris's network can't resolve — pooler uses a different,
+IPv4-reachable host). Real problems hit and fixed along the way:
+
+- **`COPY`-format dumps are all-or-nothing per table** — hitting a single
+  duplicate-key row (from data already migrated earlier for Chris's
+  family) aborted the entire table's load, silently skipping every other
+  genuinely-new row too. Fixed by redumping with `--inserts` (row-by-row
+  `INSERT`s — one bad row fails alone, the rest still land).
+- **`public.users.id` FK's to `auth.users.id`, which a `--schema=public`
+  dump never covers** — only Chris/Owen had an `auth.users` row (from the
+  original family-only migration), so all 17 other real users failed at
+  the first table, cascading into every table referencing them. Fixed by
+  also dumping/restoring `auth.users` specifically (`--schema=auth
+  --table=auth.users`), preserving password hashes — no one needs a
+  password reset.
+- **`task` table rows have different UUIDs per environment** (independently
+  seeded, not copied) despite matching row counts — broke
+  `athlete_task.task_id` FKs. Fixed with a one-off remap by `task.slug`
+  instead of `task.id`.
+- Closed the last schema exclusion too: applied the in-flight
+  `school_mascot_colors_scholarship_limits` migration (2 nullable
+  `schools` columns + an empty `scholarship_limits` table) to prod so the
+  dump needed zero table/column exclusions going forward.
+
+**Verified: exact `COUNT(*)` match across all 55 public tables** between
+staging and prod (the one intentional difference — `notifications`
+588 staging vs prod's own count running slightly ahead — is prod's own
+post-cutover activity, not a gap). Temp role and `dblink` extension
+cleaned up afterward on both projects.
+
 ## Pre-Cutover Gap Closure (2026-09-06)
 
 Before flipping any env vars, re-ran the full schema-parity diff and found
