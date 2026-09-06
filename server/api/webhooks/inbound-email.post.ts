@@ -52,6 +52,22 @@ function getResend(): Resend {
   return resendClient;
 }
 
+/**
+ * A segment's own `originalDate` (free text lifted from its "On ... wrote:"
+ * / "Sent:" / "Date:" line, e.g. "Mon, Sep 2, 2026 at 3:15 PM") is the true
+ * timestamp for THAT message — using the webhook-receipt timestamp for
+ * every segment in a bulk-forwarded thread would stamp every draft with the
+ * same (wrong) date. Best-effort `Date` parse with a fallback to the
+ * webhook's own `created_at` when the free text doesn't parse, mirroring
+ * how the single-message path already falls back to `created_at` when
+ * nothing was parsed at all.
+ */
+function resolveOccurredAt(originalDate: string | null | undefined, fallback: string): string {
+  if (!originalDate) return fallback;
+  const parsed = new Date(originalDate);
+  return Number.isNaN(parsed.getTime()) ? fallback : parsed.toISOString();
+}
+
 function isResendInboundPayload(value: unknown): value is ResendInboundPayload {
   if (!value || typeof value !== "object") return false;
   const data = (value as { data?: unknown }).data;
@@ -134,8 +150,10 @@ export default defineEventHandler(async (event) => {
     .select("user_id")
     .eq("family_unit_id", familyUnitId);
 
+  const webhookReceivedAt = payload.data.created_at ?? new Date().toISOString();
   let matchedCount = 0;
   let autoCreatedCount = 0;
+  let failedCount = 0;
 
   for (const segment of segments) {
     const parsed = segment.parsed;
@@ -163,7 +181,7 @@ export default defineEventHandler(async (event) => {
       sender_email: parsed?.senderEmail ?? null,
       subject: payload.data.subject ?? null,
       body_text: segment.segmentText,
-      occurred_at: payload.data.created_at ?? new Date().toISOString(),
+      occurred_at: resolveOccurredAt(parsed?.originalDate, webhookReceivedAt),
       status: "pending",
     };
 
@@ -173,8 +191,14 @@ export default defineEventHandler(async (event) => {
       .select("id")
       .single();
     if (draftError) {
-      logger.error("Failed to create inbound email draft", draftError);
-      throw createError({ statusCode: 500, statusMessage: "Failed to store draft" });
+      // Continue with the remaining segments rather than 500ing partway
+      // through a multi-draft thread — Resend retries on non-2xx, and a
+      // retry here would reprocess the whole body and duplicate every
+      // segment already inserted above. One segment's insert failure isn't
+      // a delivery failure worth losing the rest of the thread over.
+      logger.error("Failed to create inbound email draft for one segment", draftError);
+      failedCount++;
+      continue;
     }
 
     if (familyMembers && familyMembers.length > 0) {
@@ -204,7 +228,8 @@ export default defineEventHandler(async (event) => {
 
   logger.info("Inbound email draft(s) created", {
     familyUnitId,
-    draftCount: segments.length,
+    draftCount: segments.length - failedCount,
+    failedCount,
     matchedCount,
     autoCreatedCount,
   });

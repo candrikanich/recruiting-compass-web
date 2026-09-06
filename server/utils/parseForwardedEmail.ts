@@ -112,8 +112,11 @@ export function parseForwardedEmail(bodyText: string): ParsedForward | null {
 // Global variants of the quote-marker patterns above, used only to locate
 // every boundary in a multi-message thread (parseForwardedThread below) —
 // the single-shot parseForwardedEmail keeps using the non-global originals.
-const ON_WROTE_RE_G = /(?:On|El)\s+(.+)\s<([^<>\s]+@[^<>\s]+)>\s+(?:wrote|escribió):/gi;
-const FORWARDED_MESSAGE_HEADER_RE_G = /-{2,}\s*Forwarded message\s*-{2,}/gi;
+// Derived from ON_WROTE_RE/FORWARDED_MESSAGE_HEADER_RE's own .source rather
+// than re-typed as literals, so a future locale/verb addition to those
+// patterns is picked up here automatically.
+const ON_WROTE_RE_G = new RegExp(ON_WROTE_RE.source, "gi");
+const FORWARDED_MESSAGE_HEADER_RE_G = new RegExp(FORWARDED_MESSAGE_HEADER_RE.source, "gi");
 
 export interface ForwardedThreadSegment {
   parsed: ParsedForward | null;

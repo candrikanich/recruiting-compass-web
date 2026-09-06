@@ -350,6 +350,7 @@ describe("POST /api/webhooks/inbound-email", () => {
       body_text: "segment-1",
       matched_coach_id: "coach-a",
       matched_school_id: "school-a",
+      occurred_at: new Date("Sep 3, 2026").toISOString(),
     });
     expect(mockState.draftInsertRows[1]).toMatchObject({
       sender_name: "Coach B",
@@ -357,6 +358,7 @@ describe("POST /api/webhooks/inbound-email", () => {
       body_text: "segment-2",
       matched_coach_id: "coach-b",
       matched_school_id: "school-b",
+      occurred_at: new Date("Sep 2, 2026").toISOString(),
     });
     expect(mockState.draftInsertRows[2]).toMatchObject({
       sender_name: "Coach C",
@@ -364,7 +366,12 @@ describe("POST /api/webhooks/inbound-email", () => {
       body_text: "segment-3",
       matched_coach_id: "coach-c",
       matched_school_id: "school-c",
+      occurred_at: new Date("Sep 1, 2026").toISOString(),
     });
+    // Each draft's occurred_at comes from ITS OWN segment's parsed date, not
+    // the shared webhook-receipt timestamp — proves they're actually distinct.
+    const occurredAts = mockState.draftInsertRows.map((row) => row.occurred_at);
+    expect(new Set(occurredAts).size).toBe(3);
 
     // One notification per draft, not a single bundled summary.
     expect(mockState.notificationRowBatches).toHaveLength(3);
@@ -380,5 +387,123 @@ describe("POST /api/webhooks/inbound-email", () => {
       expect.objectContaining({ user_id: "parent-1", related_entity_id: "draft-3" }),
       expect.objectContaining({ user_id: "player-1", related_entity_id: "draft-3" }),
     ]);
+  });
+
+  it("falls back to the webhook-receipt timestamp when a segment's originalDate doesn't parse", async () => {
+    vi.mocked(verifyResendWebhook).mockReturnValue({
+      type: "email.received",
+      data: {
+        email_id: "email-1",
+        to: ["family-ab3d9f2c@inbound.therecruitingcompass.com"],
+        from: "Player <player@example.com>",
+        subject: "Fwd: Camp invite",
+        created_at: "2026-09-02T15:15:00.000Z",
+      },
+    });
+    vi.mocked(parseInboundToken).mockReturnValue("ab3d9f2c");
+    vi.mocked(resolveFamilyByInboundToken).mockResolvedValue("family-1");
+    receivingGetMock.mockResolvedValue({
+      data: { text: "On Mon, Sep 2, 2026 at 3:15 PM Coach Smith <smith@osu.edu> wrote:\n> hi" },
+      error: null,
+    });
+    // "at" between the date and the time is not reliably parseable by `Date`
+    // — this is the free-text shape parseForwardedEmail actually extracts
+    // from a real Gmail forward, so it's the realistic case, not a contrived
+    // one.
+    vi.mocked(parseForwardedThread).mockReturnValue([
+      {
+        parsed: {
+          senderName: "Coach Smith",
+          senderEmail: "smith@osu.edu",
+          originalDate: "Mon, Sep 2, 2026 at 3:15 PM",
+        },
+        segmentText: "On Mon, Sep 2, 2026 at 3:15 PM Coach Smith <smith@osu.edu> wrote:\n> hi",
+      },
+    ]);
+    vi.mocked(matchCoachByEmail).mockResolvedValue({ coachId: "coach-1", schoolId: "school-1" });
+
+    const { default: handler } = await import("~/server/api/webhooks/inbound-email.post");
+    await handler({} as Parameters<typeof handler>[0]);
+
+    expect(lastDraftInsertRow()).toMatchObject({
+      occurred_at: "2026-09-02T15:15:00.000Z",
+    });
+  });
+
+  it("continues to remaining segments and still returns 200 when one segment's draft insert fails", async () => {
+    vi.mocked(verifyResendWebhook).mockReturnValue({
+      type: "email.received",
+      data: {
+        email_id: "email-1",
+        to: ["family-ab3d9f2c@inbound.therecruitingcompass.com"],
+        from: "Player <player@example.com>",
+        subject: "Fwd: Thread",
+        created_at: "2026-09-02T15:15:00.000Z",
+      },
+    });
+    vi.mocked(parseInboundToken).mockReturnValue("ab3d9f2c");
+    vi.mocked(resolveFamilyByInboundToken).mockResolvedValue("family-1");
+    receivingGetMock.mockResolvedValue({ data: { text: "thread body" }, error: null });
+    vi.mocked(parseForwardedThread).mockReturnValue([
+      {
+        parsed: { senderName: "Coach A", senderEmail: "a@osu.edu", originalDate: "Sep 3, 2026" },
+        segmentText: "segment-1",
+      },
+      {
+        parsed: { senderName: "Coach B", senderEmail: "b@osu.edu", originalDate: "Sep 2, 2026" },
+        segmentText: "segment-2",
+      },
+    ]);
+    vi.mocked(matchCoachByEmail).mockResolvedValue({ coachId: "coach-1", schoolId: "school-1" });
+
+    let insertCall = 0;
+    vi.doMock("~/server/utils/supabase", () => ({
+      useSupabaseAdmin: () => ({
+        from: (table: string) => {
+          if (table === "raw_inbound_emails") {
+            return { insert: () => ({ select: () => ({ single: async () => ({ data: { id: "raw-1" }, error: null }) }) }) };
+          }
+          if (table === "inbound_email_drafts") {
+            return {
+              insert: (row: Record<string, unknown>) => {
+                insertCall++;
+                if (insertCall === 1) {
+                  // First segment's insert fails.
+                  return { select: () => ({ single: async () => ({ data: null, error: { message: "db error" } }) }) };
+                }
+                mockState.draftInsertRows.push(row);
+                const id = `draft-${insertCall}`;
+                return { select: () => ({ single: async () => ({ data: { id }, error: null }) }) };
+              },
+            };
+          }
+          if (table === "family_members") {
+            return { select: () => ({ eq: async () => ({ data: [{ user_id: "parent-1" }], error: null }) }) };
+          }
+          if (table === "notifications") {
+            return {
+              insert: (rows: Record<string, unknown>[]) => {
+                mockState.notificationRowBatches.push(rows);
+                return Promise.resolve({ error: null });
+              },
+            };
+          }
+          throw new Error(`unexpected table ${table}`);
+        },
+      }),
+    }));
+    vi.resetModules();
+
+    const { default: handler } = await import("~/server/api/webhooks/inbound-email.post");
+    const result = await handler({} as Parameters<typeof handler>[0]);
+
+    // Still 200 — Resend must not retry (a retry would re-insert segment 2's
+    // already-committed draft too).
+    expect(result).toEqual({ ok: true });
+    // Only the second segment's draft actually landed; the first's failure
+    // didn't abort the loop or throw.
+    expect(mockState.draftInsertRows).toHaveLength(1);
+    expect(mockState.draftInsertRows[0]).toMatchObject({ sender_name: "Coach B" });
+    expect(mockState.notificationRowBatches).toHaveLength(1);
   });
 });
