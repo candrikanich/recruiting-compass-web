@@ -6,11 +6,11 @@
 
 **Architecture:** A new Nitro webhook endpoint (`POST /api/webhooks/resend-events`) verifies Resend's Svix signature, then inserts one row per event into `email_events` (service-role only, no RLS policies — same pattern as `admin_audit_log`/`cache_snapshots`). A weekly cron prunes old rows. A new `GET /api/admin/email-events` endpoint + `useAdminEmailEvents` composable + `pages/admin/email.vue` page render the log, mirroring the existing `audit-log.get.ts` / `useAdminAuditLog` / `pages/admin/audit.vue` trio exactly.
 
-**Tech Stack:** Nitro (H3), Supabase Postgres, `svix` (already a dependency, used by nothing yet on this branch), Vitest, Vue 3 `<script setup>`.
+**Tech Stack:** Nitro (H3), Supabase Postgres, `svix` (already a dependency, used today only by the inbound-email feature), Vitest, Vue 3 `<script setup>`.
 
 **Spec:** `docs/superpowers/specs/2026-08-17-admin-support-design.md` (line 34: "Email delivery log | Deferred to Spec B2 (full net-new stack: Resend webhook + svix verify + `email_events` + messageId persistence + dashboard config)"). This plan implements that literally: a webhook writes rows to `email_events`, each row carrying Resend's `message_id` (their `data.email_id`) as a column — no retrofit of existing `sendViaResend()` call sites required; that's separate, larger scope (linking every outbound send to a user/family) and is explicitly NOT part of this plan.
 
-**Precedent (do not re-derive, copy the pattern):** the inbound-email feature (issue #586, commits `054cfa5b`/`f5acfc8a`/`d33569b3`/`d0fc46c5` — currently on `develop`, not yet on this branch's base) already solved "verify a Resend Svix webhook, exempt it from CSRF, prune it on a cron" for a *different* Resend webhook (inbound mail). This plan writes fresh, parallel files for the *outbound event* webhook — do not attempt to import or depend on the inbound-email files; they aren't on this branch.
+**Precedent (do not re-derive, copy the pattern):** the inbound-email feature (issue #586, commits `054cfa5b`/`f5acfc8a`/`d33569b3`/`d0fc46c5`) is already merged to `main` and solves "verify a Resend Svix webhook, exempt it from CSRF, prune it on a cron" for a *different* Resend webhook (inbound mail — `server/api/webhooks/inbound-email.post.ts`, `server/utils/verifyResendWebhook.ts`, the `/api/webhooks/inbound-email` CSRF exemption). This plan writes fresh, parallel files for the *outbound event* webhook rather than generalizing the existing `verifyResendWebhook`/`RESEND_INBOUND_WEBHOOK_SECRET` — Resend issues one signing secret per registered endpoint, so a second endpoint needs its own secret and verify call regardless; do not merge the two into a shared parameterized util for one call site each.
 
 ## Global Constraints
 
