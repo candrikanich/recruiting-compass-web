@@ -48,6 +48,20 @@ const helpSections = [
       "Navigate recruiting phases and manage recommendation letter requests.",
   },
   {
+    slug: "tracking",
+    icon: "i-heroicons-clipboard-document-list",
+    title: "Tracking Your Recruiting",
+    description:
+      "Documents, offers, events, performance, and reports in one place.",
+  },
+  {
+    slug: "family",
+    icon: "i-heroicons-user-group",
+    title: "Family & Profile",
+    description:
+      "Family accounts, notifications, your public profile, and preferences.",
+  },
+  {
     slug: "account",
     icon: "i-heroicons-cog-6-tooth",
     title: "Account & Settings",

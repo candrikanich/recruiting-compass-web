@@ -156,6 +156,41 @@
       </HelpCallout>
     </section>
 
+    <!-- Coach Outreach -->
+    <section class="mb-10">
+      <HelpSectionHeader title="Coach Outreach" />
+      <p class="mb-4 text-sm text-gray-600">
+        Ready-to-send email and message templates, personalized with your
+        recruiting data, so you don't have to write every outreach message
+        from scratch.
+      </p>
+      <HelpStepCard :step="1" title="Manage your templates">
+        Go to
+        <NuxtLink
+          to="/settings/communication-templates"
+          class="text-primary-600 font-medium hover:underline"
+          >Settings → Communication Templates</NuxtLink
+        >
+        to view, edit, or create email, text, and social message templates.
+      </HelpStepCard>
+      <HelpStepCard :step="2" title="Send from a coach's page">
+        Open a coach on a school's page to send a template and see that
+        coach's communication log — every message and interaction you've had
+        with them, in one timeline.
+      </HelpStepCard>
+      <HelpStepCard :step="3" title="Contact-window rules" :last="true">
+        Some sports and divisions restrict when coaches can respond to you.
+        When that applies, the standard intro template is silently swapped for
+        a pre-window version that sets the right expectation — you won't see
+        both, and it isn't an error if the usual template is missing.
+      </HelpStepCard>
+      <HelpCallout type="info">
+        If an intro template looks different than you expected, it's usually
+        the contact-window rule for your sport, division, and grad year — not
+        a bug.
+      </HelpCallout>
+    </section>
+
     <HelpFeedback />
   </div>
 </template>

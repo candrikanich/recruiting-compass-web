@@ -72,6 +72,16 @@ const sections = [
   },
   { slug: "phases", icon: "i-heroicons-chart-bar", title: "Phases & Letters" },
   {
+    slug: "tracking",
+    icon: "i-heroicons-clipboard-document-list",
+    title: "Tracking Your Recruiting",
+  },
+  {
+    slug: "family",
+    icon: "i-heroicons-user-group",
+    title: "Family & Profile",
+  },
+  {
     slug: "account",
     icon: "i-heroicons-cog-6-tooth",
     title: "Account & Settings",
