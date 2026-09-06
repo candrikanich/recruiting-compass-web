@@ -1,7 +1,7 @@
 <template>
   <div class="max-w-2xl">
     <h1 class="mb-1 text-2xl font-bold text-gray-900">Schools & Coaches</h1>
-    <p class="mb-8 text-gray-500">Last reviewed: February 2026</p>
+    <HelpReviewedDate reviewed-on="2026-09-06" />
 
     <!-- Adding a school -->
     <section class="mb-10">
@@ -126,55 +126,68 @@
       <p class="mb-4 text-sm text-gray-600">
         Choose the type that best describes how contact was made.
       </p>
-      <div class="space-y-3 text-sm">
-        <div class="flex gap-3">
-          <UIcon
-            name="i-heroicons-envelope"
-            class="mt-0.5 size-4 shrink-0 text-gray-400"
-          />
-          <div>
-            <strong>Email</strong> — written correspondence with a coach
-          </div>
+      <div class="space-y-4 text-sm">
+        <div>
+          <p class="mb-1 font-semibold text-gray-800">Contact</p>
+          <p class="text-gray-600">Email, text, phone call, virtual meeting</p>
         </div>
-        <div class="flex gap-3">
-          <UIcon
-            name="i-heroicons-phone"
-            class="mt-0.5 size-4 shrink-0 text-gray-400"
-          />
-          <div><strong>Phone call</strong> — direct conversation by phone</div>
+        <div>
+          <p class="mb-1 font-semibold text-gray-800">Visits</p>
+          <p class="text-gray-600">
+            In-person visit, unofficial visit, official visit
+          </p>
         </div>
-        <div class="flex gap-3">
-          <UIcon
-            name="i-heroicons-building-office"
-            class="mt-0.5 size-4 shrink-0 text-gray-400"
-          />
-          <div>
-            <strong>Campus visit</strong> — official or unofficial campus visit
-          </div>
+        <div>
+          <p class="mb-1 font-semibold text-gray-800">Events</p>
+          <p class="text-gray-600">Camp, showcase, game</p>
         </div>
-        <div class="flex gap-3">
-          <UIcon
-            name="i-heroicons-chat-bubble-left"
-            class="mt-0.5 size-4 shrink-0 text-gray-400"
-          />
-          <div>
-            <strong>Social media</strong> — DMs, follows, or replies on social
-            platforms
-          </div>
+        <div>
+          <p class="mb-1 font-semibold text-gray-800">Social</p>
+          <p class="text-gray-600">Tweet, DM</p>
         </div>
-        <div class="flex gap-3">
-          <UIcon
-            name="i-heroicons-document"
-            class="mt-0.5 size-4 shrink-0 text-gray-400"
-          />
-          <div>
-            <strong>Other</strong> — anything that doesn't fit the above
-          </div>
+        <div>
+          <p class="mb-1 font-semibold text-gray-800">Other</p>
+          <p class="text-gray-600">Interest, other</p>
         </div>
       </div>
       <HelpCallout type="tip">
         Log interactions on the same day they happen. Notes are easier to write
         while the details are fresh.
+      </HelpCallout>
+    </section>
+
+    <!-- Coach Outreach -->
+    <section class="mb-10">
+      <HelpSectionHeader title="Coach Outreach" />
+      <p class="mb-4 text-sm text-gray-600">
+        Ready-to-send email and message templates, personalized with your
+        recruiting data, so you don't have to write every outreach message
+        from scratch.
+      </p>
+      <HelpStepCard :step="1" title="Manage your templates">
+        Go to
+        <NuxtLink
+          to="/settings/communication-templates"
+          class="text-primary-600 font-medium hover:underline"
+          >Settings → Communication Templates</NuxtLink
+        >
+        to view, edit, or create email, text, and social message templates.
+      </HelpStepCard>
+      <HelpStepCard :step="2" title="Send from a coach's page">
+        Open a coach on a school's page to send a template and see that
+        coach's communication log — every message and interaction you've had
+        with them, in one timeline.
+      </HelpStepCard>
+      <HelpStepCard :step="3" title="Contact-window rules" :last="true">
+        Some sports and divisions restrict when coaches can respond to you.
+        When that applies, the standard intro template is silently swapped for
+        a pre-window version that sets the right expectation — you won't see
+        both, and it isn't an error if the usual template is missing.
+      </HelpStepCard>
+      <HelpCallout type="info">
+        If an intro template looks different than you expected, it's usually
+        the contact-window rule for your sport, division, and grad year — not
+        a bug.
       </HelpCallout>
     </section>
 
