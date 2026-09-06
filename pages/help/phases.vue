@@ -1,7 +1,7 @@
 <template>
   <div class="max-w-2xl">
     <h1 class="mb-1 text-2xl font-bold text-gray-900">Phases & Letters</h1>
-    <p class="mb-8 text-gray-500">Last reviewed: February 2026</p>
+    <HelpReviewedDate reviewed-on="2026-09-06" />
 
     <!-- Phase overview -->
     <section class="mb-10">
