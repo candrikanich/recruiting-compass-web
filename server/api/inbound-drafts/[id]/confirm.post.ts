@@ -11,6 +11,7 @@ import { z } from "zod";
 import { requireAuth } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import { useLogger } from "~/server/utils/logger";
+import { resolveFamilyUnitId } from "~/server/utils/familyMembership";
 
 const UUID_SHAPE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const confirmBodySchema = z.object({
@@ -22,6 +23,9 @@ export default defineEventHandler(async (event) => {
   try {
     const { id: userId } = await requireAuth(event);
     const draftId = getRouterParam(event, "id")!;
+    if (!UUID_SHAPE.test(draftId)) {
+      throw createError({ statusCode: 400, statusMessage: "Invalid draft id" });
+    }
     const parsed = confirmBodySchema.safeParse(await readBody(event));
     if (!parsed.success) {
       throw createError({
@@ -30,28 +34,23 @@ export default defineEventHandler(async (event) => {
       });
     }
 
+    const familyUnitId = await resolveFamilyUnitId(event, userId);
     const admin = useSupabaseAdmin();
-
-    const { data: membership } = await admin
-      .from("family_members")
-      .select("family_unit_id")
-      .eq("user_id", userId)
-      .single();
-    if (!membership) {
-      throw createError({ statusCode: 403, statusMessage: "Not a family member" });
-    }
 
     const { data: draft } = await admin
       .from("inbound_email_drafts")
       .select("*")
       .eq("id", draftId)
       .maybeSingle();
-    if (!draft || draft.family_unit_id !== membership.family_unit_id) {
+    if (!draft || draft.family_unit_id !== familyUnitId) {
       throw createError({ statusCode: 404, statusMessage: "Draft not found" });
     }
 
     if (draft.status === "confirmed") {
       return { ok: true, interactionId: draft.confirmed_interaction_id };
+    }
+    if (draft.status === "discarded") {
+      throw createError({ statusCode: 422, statusMessage: "Cannot confirm a discarded draft" });
     }
 
     let schoolId = draft.matched_school_id;
@@ -97,13 +96,30 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 500, statusMessage: "Failed to confirm draft" });
     }
 
-    const { error: updateError } = await admin
+    // Only flip status when it's still "pending" — closes the observable race
+    // where two concurrent confirms both pass the status check above and each
+    // try to claim this draft.
+    const { data: updatedRows, error: updateError } = await admin
       .from("inbound_email_drafts")
       .update({ status: "confirmed", confirmed_interaction_id: interaction.id })
-      .eq("id", draftId);
+      .eq("id", draftId)
+      .eq("status", "pending")
+      .select("id");
     if (updateError) {
       logger.error("Failed to mark draft confirmed", updateError);
       throw createError({ statusCode: 500, statusMessage: "Failed to confirm draft" });
+    }
+    if (!updatedRows || updatedRows.length === 0) {
+      // Another request already confirmed this draft first. Our own
+      // interaction insert above already landed — that's a residual
+      // duplicate-interaction risk on true concurrent confirms, not fully
+      // closed by this guard alone (see M2 in the final review).
+      const { data: current } = await admin
+        .from("inbound_email_drafts")
+        .select("confirmed_interaction_id")
+        .eq("id", draftId)
+        .maybeSingle();
+      return { ok: true, interactionId: current?.confirmed_interaction_id ?? interaction.id };
     }
 
     return { ok: true, interactionId: interaction.id };

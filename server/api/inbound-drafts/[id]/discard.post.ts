@@ -8,6 +8,7 @@ import { defineEventHandler, getRouterParam, createError } from "h3";
 import { requireAuth } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import { useLogger } from "~/server/utils/logger";
+import { resolveFamilyUnitId } from "~/server/utils/familyMembership";
 
 const UUID_SHAPE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -20,23 +21,15 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 400, statusMessage: "Invalid draft id" });
     }
 
+    const familyUnitId = await resolveFamilyUnitId(event, userId);
     const admin = useSupabaseAdmin();
-
-    const { data: membership } = await admin
-      .from("family_members")
-      .select("family_unit_id")
-      .eq("user_id", userId)
-      .single();
-    if (!membership) {
-      throw createError({ statusCode: 403, statusMessage: "Not a family member" });
-    }
 
     const { data: draft } = await admin
       .from("inbound_email_drafts")
       .select("id, family_unit_id, status")
       .eq("id", draftId)
       .maybeSingle();
-    if (!draft || draft.family_unit_id !== membership.family_unit_id) {
+    if (!draft || draft.family_unit_id !== familyUnitId) {
       throw createError({ statusCode: 404, statusMessage: "Draft not found" });
     }
 

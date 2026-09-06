@@ -22,6 +22,7 @@ const mockState = {
   school: undefined as Record<string, unknown> | null | undefined,
   insertedInteraction: undefined as Record<string, unknown> | undefined,
   updatedDraft: undefined as Record<string, unknown> | undefined,
+  updateAffectsRow: true,
 };
 
 vi.mock("~/server/utils/supabase", () => ({
@@ -39,7 +40,16 @@ vi.mock("~/server/utils/supabase", () => ({
           }),
           update: (row: Record<string, unknown>) => {
             mockState.updatedDraft = row;
-            return { eq: async () => ({ error: null }) };
+            return {
+              eq: () => ({
+                eq: () => ({
+                  select: async () => ({
+                    data: mockState.updateAffectsRow ? [{ id: "draft-1" }] : [],
+                    error: null,
+                  }),
+                }),
+              }),
+            };
           },
         };
       }
@@ -73,12 +83,13 @@ import { requireAuth } from "~/server/utils/auth";
 describe("POST /api/inbound-drafts/:id/confirm", () => {
   beforeEach(() => {
     vi.mocked(requireAuth).mockResolvedValue({ id: "user-1" } as never);
-    vi.mocked(getRouterParam).mockReturnValue("draft-1");
+    vi.mocked(getRouterParam).mockReturnValue("550e8400-e29b-41d4-a716-446655440000");
     vi.mocked(readBody).mockResolvedValue({});
     mockState.membership = { family_unit_id: "family-1" };
     mockState.school = undefined;
     mockState.insertedInteraction = undefined;
     mockState.updatedDraft = undefined;
+    mockState.updateAffectsRow = true;
   });
 
   it("404s when the draft isn't found or belongs to another family", async () => {
@@ -150,6 +161,41 @@ describe("POST /api/inbound-drafts/:id/confirm", () => {
       confirmed_interaction_id: "interaction-1",
     });
     expect(result).toEqual({ ok: true, interactionId: "interaction-1" });
+  });
+
+  it("400s for a malformed draft id", async () => {
+    vi.mocked(getRouterParam).mockReturnValue("not-a-uuid");
+    const { default: handler } = await import("~/server/api/inbound-drafts/[id]/confirm.post");
+    await expect(handler({} as Parameters<typeof handler>[0])).rejects.toMatchObject({ statusCode: 400 });
+  });
+
+  it("422s when confirming an already-discarded draft", async () => {
+    mockState.draft = {
+      id: "draft-1",
+      family_unit_id: "family-1",
+      status: "discarded",
+    };
+    const { default: handler } = await import("~/server/api/inbound-drafts/[id]/confirm.post");
+    await expect(handler({} as Parameters<typeof handler>[0])).rejects.toMatchObject({ statusCode: 422 });
+    expect(mockState.insertedInteraction).toBeUndefined();
+  });
+
+  it("still returns ok when a concurrent confirm already flipped the status (race guard)", async () => {
+    mockState.draft = {
+      id: "draft-1",
+      family_unit_id: "family-1",
+      status: "pending",
+      matched_school_id: "school-1",
+      matched_coach_id: "coach-1",
+      subject: "Fwd: Camp",
+      body_text: "hi",
+      occurred_at: "2026-09-02T15:15:00.000Z",
+      confirmed_interaction_id: null,
+    };
+    mockState.updateAffectsRow = false;
+    const { default: handler } = await import("~/server/api/inbound-drafts/[id]/confirm.post");
+    const result = await handler({} as Parameters<typeof handler>[0]);
+    expect(result).toMatchObject({ ok: true });
   });
 
   it("is idempotent: re-confirming returns the existing interactionId without a new insert", async () => {

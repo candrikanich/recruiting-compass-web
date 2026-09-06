@@ -81,4 +81,18 @@ describe("GET /api/inbound-drafts", () => {
     expect(result).toEqual({ drafts: [{ id: "draft-1", status: "all-statuses" }] });
     expect(mockState.queryCalled).toBe(false);
   });
+
+  it("400s on an unrecognized status value", async () => {
+    vi.mocked(getQuery).mockReturnValue({ status: "bogus" });
+    vi.mocked(requireAuth).mockResolvedValue({ id: "user-1" } as never);
+    const { default: handler } = await import("~/server/api/inbound-drafts/index.get");
+    await expect(handler({} as Parameters<typeof handler>[0])).rejects.toMatchObject({ statusCode: 400 });
+  });
+
+  it("400s when status is repeated as a query param (array, not a string)", async () => {
+    vi.mocked(getQuery).mockReturnValue({ status: ["pending", "confirmed"] });
+    vi.mocked(requireAuth).mockResolvedValue({ id: "user-1" } as never);
+    const { default: handler } = await import("~/server/api/inbound-drafts/index.get");
+    await expect(handler({} as Parameters<typeof handler>[0])).rejects.toMatchObject({ statusCode: 400 });
+  });
 });

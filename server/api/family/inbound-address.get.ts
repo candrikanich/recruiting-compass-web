@@ -8,26 +8,19 @@ import { useRuntimeConfig } from "#imports";
 import { requireAuth } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import { useLogger } from "~/server/utils/logger";
+import { resolveFamilyUnitId } from "~/server/utils/familyMembership";
 
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "family/inbound-address");
   try {
     const { id: userId } = await requireAuth(event);
+    const familyUnitId = await resolveFamilyUnitId(event, userId);
     const admin = useSupabaseAdmin();
-
-    const { data: membership } = await admin
-      .from("family_members")
-      .select("family_unit_id")
-      .eq("user_id", userId)
-      .single();
-    if (!membership) {
-      throw createError({ statusCode: 403, statusMessage: "Not a family member" });
-    }
 
     const { data: family, error: familyError } = await admin
       .from("family_units")
       .select("inbound_token")
-      .eq("id", membership.family_unit_id)
+      .eq("id", familyUnitId)
       .single();
     if (familyError || !family) {
       logger.error("Failed to load family inbound token", familyError);

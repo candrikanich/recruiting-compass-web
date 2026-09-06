@@ -7,31 +7,27 @@ import { defineEventHandler, getQuery, createError } from "h3";
 import { requireAuth } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import { useLogger } from "~/server/utils/logger";
+import { resolveFamilyUnitId } from "~/server/utils/familyMembership";
+
+const VALID_STATUSES = ["pending", "confirmed", "discarded", "all"] as const;
 
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "inbound-drafts/list");
   try {
     const { id: userId } = await requireAuth(event);
+    const familyUnitId = await resolveFamilyUnitId(event, userId);
     const admin = useSupabaseAdmin();
 
-    const { data: membership, error: membershipError } = await admin
-      .from("family_members")
-      .select("family_unit_id")
-      .eq("user_id", userId)
-      .single();
-    if (membershipError && membershipError.code !== "PGRST116") {
-      logger.error("Failed to resolve family membership", membershipError);
-      throw createError({ statusCode: 500, statusMessage: "Failed to load drafts" });
+    const rawStatus = getQuery(event).status;
+    if (rawStatus !== undefined && !VALID_STATUSES.includes(rawStatus as (typeof VALID_STATUSES)[number])) {
+      throw createError({ statusCode: 400, statusMessage: "Invalid status" });
     }
-    if (!membership) {
-      throw createError({ statusCode: 403, statusMessage: "Not a family member" });
-    }
+    const status = rawStatus as (typeof VALID_STATUSES)[number] | undefined;
 
-    const status = getQuery(event).status as string | undefined;
     let query = admin
       .from("inbound_email_drafts")
       .select("*")
-      .eq("family_unit_id", membership.family_unit_id);
+      .eq("family_unit_id", familyUnitId);
     if (status !== "all") {
       query = query.eq("status", status ?? "pending");
     }
