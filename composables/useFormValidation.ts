@@ -46,7 +46,11 @@ export interface FileValidationError extends Error {
  * File type validation configuration
  * Maps document types to allowed MIME types
  */
-const FILE_VALIDATION_RULES = {
+// Exported so server-side code (e.g. the inbound-email webhook, which has
+// no `File`/browser context to run `validateFile` against) can check
+// content-type/extension/size against the same allowlist instead of
+// duplicating it — see issue #586 Phase 3 Task 3.
+export const FILE_VALIDATION_RULES = {
   highlight_video: {
     mimeTypes: ["video/mp4", "video/quicktime", "video/x-msvideo"],
     extensions: [".mp4", ".mov", ".avi"],

@@ -96,6 +96,37 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 500, statusMessage: "Failed to confirm draft" });
     }
 
+    // Materialize any attachments staged with this draft (Phase 3 Task 3)
+    // into real `documents` rows now that an `interactions` row exists to
+    // hang them off of. No re-upload — same storage object the webhook
+    // already wrote, just a new DB row referencing it.
+    const { data: stagedAttachments, error: stagedAttachmentsError } = await admin
+      .from("raw_inbound_attachments")
+      .select("filename, content_type, storage_path")
+      .eq("draft_id", draftId);
+    if (stagedAttachmentsError) {
+      logger.error("Failed to load staged inbound attachments", stagedAttachmentsError);
+    } else if (stagedAttachments && stagedAttachments.length > 0) {
+      const documentInserts = stagedAttachments.map((attachment) => ({
+        type: "coach_attachment" as const,
+        interaction_id: interaction.id,
+        family_unit_id: draft.family_unit_id,
+        school_id: schoolId,
+        user_id: userId,
+        uploaded_by: userId,
+        file_url: attachment.storage_path,
+        file_type: attachment.content_type,
+        title: attachment.filename,
+      }));
+      const { error: documentsError } = await admin.from("documents").insert(documentInserts);
+      if (documentsError) {
+        // Attachments stay staged and are picked up by the retention purge;
+        // never fail confirm over a document-linking error — the
+        // interaction itself already exists and confirm is idempotent.
+        logger.error("Failed to create documents from staged inbound attachments", documentsError);
+      }
+    }
+
     // Only flip status when it's still "pending" — closes the observable race
     // where two concurrent confirms both pass the status check above and each
     // try to claim this draft.

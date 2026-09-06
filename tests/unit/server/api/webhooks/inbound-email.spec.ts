@@ -31,9 +31,10 @@ vi.mock("~/server/utils/logger", () => ({
 }));
 
 const receivingGetMock = vi.fn();
+const attachmentsGetMock = vi.fn();
 vi.mock("resend", () => ({
   Resend: class {
-    emails = { receiving: { get: receivingGetMock } };
+    emails = { receiving: { get: receivingGetMock, attachments: { get: attachmentsGetMock } } };
   },
 }));
 
@@ -41,6 +42,9 @@ const mockState = {
   rawInsertId: "raw-1",
   draftInsertRows: [] as Record<string, unknown>[],
   notificationRowBatches: [] as Record<string, unknown>[][],
+  attachmentInsertRows: [] as Record<string, unknown>[],
+  storageUploads: [] as { path: string; contentType?: string }[],
+  storageUploadResult: { error: null as { message: string } | null },
 };
 
 // Convenience accessors mirroring the pre-loop single-draft shape, for tests
@@ -94,7 +98,23 @@ vi.mock("~/server/utils/supabase", () => ({
           },
         };
       }
+      if (table === "raw_inbound_attachments") {
+        return {
+          insert: (row: Record<string, unknown>) => {
+            mockState.attachmentInsertRows.push(row);
+            return Promise.resolve({ error: null });
+          },
+        };
+      }
       throw new Error(`unexpected table ${table}`);
+    },
+    storage: {
+      from: (bucket: string) => ({
+        upload: (path: string, _body: unknown, options?: { contentType?: string }) => {
+          mockState.storageUploads.push({ path, contentType: options?.contentType });
+          return Promise.resolve({ data: { path: `${bucket}/${path}` }, error: mockState.storageUploadResult.error });
+        },
+      }),
     },
   }),
 }));
@@ -115,8 +135,16 @@ describe("POST /api/webhooks/inbound-email", () => {
     });
     mockState.draftInsertRows = [];
     mockState.notificationRowBatches = [];
+    mockState.attachmentInsertRows = [];
+    mockState.storageUploads = [];
+    mockState.storageUploadResult = { error: null };
     draftIdCounter = 0;
     receivingGetMock.mockReset();
+    attachmentsGetMock.mockReset();
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({ ok: true, arrayBuffer: async () => new ArrayBuffer(4) }),
+    );
     vi.mocked(parseForwardedThread).mockReset();
     vi.mocked(autoCreateCoachByEmailDomain).mockReset().mockResolvedValue({
       coachId: null,
@@ -428,6 +456,124 @@ describe("POST /api/webhooks/inbound-email", () => {
     expect(lastDraftInsertRow()).toMatchObject({
       occurred_at: "2026-09-02T15:15:00.000Z",
     });
+  });
+
+  function mockSingleSegmentEmail() {
+    vi.mocked(verifyResendWebhook).mockReturnValue({
+      type: "email.received",
+      data: {
+        email_id: "email-1",
+        to: ["family-ab3d9f2c@inbound.therecruitingcompass.com"],
+        from: "Player <player@example.com>",
+        subject: "Fwd: Camp invite",
+        created_at: "2026-09-02T15:15:00.000Z",
+      },
+    });
+    vi.mocked(parseInboundToken).mockReturnValue("ab3d9f2c");
+    vi.mocked(resolveFamilyByInboundToken).mockResolvedValue("family-1");
+    vi.mocked(parseForwardedThread).mockReturnValue([
+      {
+        parsed: { senderName: "Coach Smith", senderEmail: "smith@osu.edu", originalDate: null },
+        segmentText: "hi",
+      },
+    ]);
+    vi.mocked(matchCoachByEmail).mockResolvedValue({ coachId: "coach-1", schoolId: "school-1" });
+  }
+
+  it("stages a valid attachment to storage + raw_inbound_attachments on the created draft", async () => {
+    mockSingleSegmentEmail();
+    receivingGetMock.mockResolvedValue({
+      data: {
+        text: "hi",
+        attachments: [{ id: "att-1", filename: "camp-invite.pdf", size: 1024, content_type: "application/pdf" }],
+      },
+      error: null,
+    });
+    attachmentsGetMock.mockResolvedValue({
+      data: { download_url: "https://resend.example/signed/att-1" },
+      error: null,
+    });
+
+    const { default: handler } = await import("~/server/api/webhooks/inbound-email.post");
+    const result = await handler({} as Parameters<typeof handler>[0]);
+
+    expect(result).toEqual({ ok: true });
+    expect(attachmentsGetMock).toHaveBeenCalledWith({ emailId: "email-1", id: "att-1" });
+    expect(vi.mocked(fetch)).toHaveBeenCalledWith("https://resend.example/signed/att-1");
+    expect(mockState.storageUploads).toHaveLength(1);
+    expect(mockState.storageUploads[0].path).toBe("family-1/inbound/draft-1-camp-invite.pdf");
+    expect(mockState.storageUploads[0].contentType).toBe("application/pdf");
+    expect(mockState.attachmentInsertRows).toEqual([
+      {
+        draft_id: "draft-1",
+        family_unit_id: "family-1",
+        filename: "camp-invite.pdf",
+        content_type: "application/pdf",
+        storage_path: "family-1/inbound/draft-1-camp-invite.pdf",
+      },
+    ]);
+  });
+
+  it("skips an attachment whose type isn't on the coach_attachment allowlist, without failing the webhook", async () => {
+    mockSingleSegmentEmail();
+    receivingGetMock.mockResolvedValue({
+      data: {
+        text: "hi",
+        attachments: [
+          { id: "att-1", filename: "malware.exe", size: 1024, content_type: "application/x-msdownload" },
+        ],
+      },
+      error: null,
+    });
+
+    const { default: handler } = await import("~/server/api/webhooks/inbound-email.post");
+    const result = await handler({} as Parameters<typeof handler>[0]);
+
+    expect(result).toEqual({ ok: true });
+    expect(attachmentsGetMock).not.toHaveBeenCalled();
+    expect(mockState.storageUploads).toHaveLength(0);
+    expect(mockState.attachmentInsertRows).toHaveLength(0);
+    // The draft itself is unaffected by the skipped attachment.
+    expect(mockState.draftInsertRows).toHaveLength(1);
+  });
+
+  it("skips an attachment over the size cap, without failing the webhook", async () => {
+    mockSingleSegmentEmail();
+    receivingGetMock.mockResolvedValue({
+      data: {
+        text: "hi",
+        attachments: [
+          {
+            id: "att-1",
+            filename: "roster.pdf",
+            size: 50 * 1024 * 1024,
+            content_type: "application/pdf",
+          },
+        ],
+      },
+      error: null,
+    });
+
+    const { default: handler } = await import("~/server/api/webhooks/inbound-email.post");
+    const result = await handler({} as Parameters<typeof handler>[0]);
+
+    expect(result).toEqual({ ok: true });
+    expect(attachmentsGetMock).not.toHaveBeenCalled();
+    expect(mockState.storageUploads).toHaveLength(0);
+    expect(mockState.attachmentInsertRows).toHaveLength(0);
+  });
+
+  it("does not stage anything, and never touches the storage/attachments tables, when the email has no attachments", async () => {
+    mockSingleSegmentEmail();
+    receivingGetMock.mockResolvedValue({ data: { text: "hi", attachments: [] }, error: null });
+
+    const { default: handler } = await import("~/server/api/webhooks/inbound-email.post");
+    const result = await handler({} as Parameters<typeof handler>[0]);
+
+    expect(result).toEqual({ ok: true });
+    expect(attachmentsGetMock).not.toHaveBeenCalled();
+    expect(mockState.storageUploads).toHaveLength(0);
+    expect(mockState.attachmentInsertRows).toHaveLength(0);
   });
 
   it("continues to remaining segments and still returns 200 when one segment's draft insert fails", async () => {

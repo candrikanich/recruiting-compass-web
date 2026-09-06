@@ -12,6 +12,10 @@
  *   5. Matches that email against the family's coaches (never creates one).
  *   6. Inserts one `pending` draft per detected message (a bulk-forwarded
  *      thread yields several) — Phase 2 builds the confirm/discard UI.
+ *   7. Stages any attachments (questionnaires, camp invites) to storage +
+ *      `raw_inbound_attachments`, tied to the first draft created from this
+ *      call — Phase 3 Task 3. They become real `documents` rows only once
+ *      that draft is confirmed (see confirm.post.ts).
  *
  * Always returns 200 once past signature verification, even on a partial
  * match or unresolved family — Resend retries on non-2xx, and a malformed
@@ -25,6 +29,7 @@ import { verifyResendWebhook } from "~/server/utils/verifyResendWebhook";
 import { parseInboundToken, resolveFamilyByInboundToken } from "~/server/utils/familyInboundToken";
 import { parseForwardedThread, type ParsedForward } from "~/server/utils/parseForwardedEmail";
 import { matchCoachByEmail, autoCreateCoachByEmailDomain } from "~/server/utils/matchCoachByEmail";
+import { FILE_VALIDATION_RULES } from "~/composables/useFormValidation";
 import type { Database, Json } from "~/types/database";
 
 /**
@@ -81,6 +86,115 @@ function isResendInboundPayload(value: unknown): value is ResendInboundPayload {
 
 type RawEmailInsert = Database["public"]["Tables"]["raw_inbound_emails"]["Insert"];
 type DraftInsert = Database["public"]["Tables"]["inbound_email_drafts"]["Insert"];
+type AttachmentInsert = Database["public"]["Tables"]["raw_inbound_attachments"]["Insert"];
+
+/**
+ * Attachment metadata embedded directly in `receiving.get()`'s response
+ * (no separate `.attachments.list()` call needed — the installed Resend SDK
+ * (6.24.0)'s `GetReceivingEmailResponseSuccess.attachments` already carries
+ * this). Fetching the actual bytes still requires a second call per
+ * attachment: `receiving.attachments.get({ emailId, id })` returns a signed
+ * `download_url`, not inline content.
+ */
+interface InboundAttachmentMeta {
+  id: string;
+  filename: string | null;
+  size: number;
+  content_type: string;
+}
+
+/**
+ * Downloads, validates, and stages one webhook call's attachments to the
+ * `documents` storage bucket + `raw_inbound_attachments`, tied to
+ * `draftId`. Attachments arrive at the email level, not per forwarded-thread
+ * segment, so a bulk-forwarded thread (multiple drafts from one webhook
+ * call) ties them all to the first draft created — in practice the newest
+ * message in the chain, which is the one that actually carries them.
+ * Best-effort per attachment: a validation failure or download/upload error
+ * skips that one file (logged) rather than failing the whole webhook.
+ */
+async function stageAttachments(
+  admin: ReturnType<typeof useSupabaseAdmin>,
+  resend: Resend,
+  params: {
+    emailId: string;
+    familyUnitId: string;
+    draftId: string;
+    attachments: InboundAttachmentMeta[];
+  },
+  logger: ReturnType<typeof useLogger>,
+): Promise<number> {
+  const rules = FILE_VALIDATION_RULES.coach_attachment;
+  let stagedCount = 0;
+
+  for (const attachment of params.attachments) {
+    const filename = attachment.filename ?? `attachment-${attachment.id}`;
+    const ext = `.${filename.split(".").pop()?.toLowerCase() ?? ""}`;
+    const allowedType = (rules.mimeTypes as readonly string[]).includes(attachment.content_type);
+    const allowedExt = (rules.extensions as readonly string[]).includes(ext);
+    if (!allowedType || !allowedExt) {
+      logger.warn("Skipping inbound attachment: disallowed type", {
+        filename,
+        contentType: attachment.content_type,
+      });
+      continue;
+    }
+    if (attachment.size > rules.maxSize) {
+      logger.warn("Skipping inbound attachment: too large", { filename, size: attachment.size });
+      continue;
+    }
+
+    const { data: signed, error: signedError } = await resend.emails.receiving.attachments.get({
+      emailId: params.emailId,
+      id: attachment.id,
+    });
+    if (signedError || !signed?.download_url) {
+      logger.error("Failed to get inbound attachment download URL", signedError);
+      continue;
+    }
+
+    let fileBuffer: ArrayBuffer;
+    try {
+      const downloadResponse = await fetch(signed.download_url);
+      if (!downloadResponse.ok) {
+        throw new Error(`Attachment download failed with status ${downloadResponse.status}`);
+      }
+      fileBuffer = await downloadResponse.arrayBuffer();
+    } catch (err) {
+      logger.error("Failed to download inbound attachment", err);
+      continue;
+    }
+
+    const storagePath = `${params.familyUnitId}/inbound/${params.draftId}-${filename}`;
+    const { error: uploadError } = await admin.storage
+      .from("documents")
+      .upload(storagePath, Buffer.from(fileBuffer), {
+        contentType: attachment.content_type,
+        upsert: false,
+      });
+    if (uploadError) {
+      logger.error("Failed to upload inbound attachment to storage", uploadError);
+      continue;
+    }
+
+    const attachmentInsert: AttachmentInsert = {
+      draft_id: params.draftId,
+      family_unit_id: params.familyUnitId,
+      filename,
+      content_type: attachment.content_type,
+      storage_path: storagePath,
+    };
+    const { error: insertError } = await admin.from("raw_inbound_attachments").insert(attachmentInsert);
+    if (insertError) {
+      logger.error("Failed to stage raw_inbound_attachments row", insertError);
+      continue;
+    }
+
+    stagedCount++;
+  }
+
+  return stagedCount;
+}
 
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "webhooks/inbound-email");
@@ -126,12 +240,14 @@ export default defineEventHandler(async (event) => {
   }
 
   let bodyText: string | null = null;
+  let inboundAttachments: InboundAttachmentMeta[] = [];
   try {
     const { data: fullEmail, error: fetchError } = await getResend().emails.receiving.get(
       payload.data.email_id,
     );
     if (fetchError) throw new Error(fetchError.message);
     bodyText = fullEmail?.text ?? null;
+    inboundAttachments = fullEmail?.attachments ?? [];
   } catch (err) {
     logger.error("Failed to fetch full inbound email body", err);
   }
@@ -154,6 +270,7 @@ export default defineEventHandler(async (event) => {
   let matchedCount = 0;
   let autoCreatedCount = 0;
   let failedCount = 0;
+  let firstDraftId: string | null = null;
 
   for (const segment of segments) {
     const parsed = segment.parsed;
@@ -200,6 +317,7 @@ export default defineEventHandler(async (event) => {
       failedCount++;
       continue;
     }
+    if (!firstDraftId && newDraft?.id) firstDraftId = newDraft.id;
 
     if (familyMembers && familyMembers.length > 0) {
       const { error: notifyError } = await admin.from("notifications").insert(
@@ -226,12 +344,23 @@ export default defineEventHandler(async (event) => {
     if (!existingMatch.coachId && coachId) autoCreatedCount++;
   }
 
+  let stagedAttachmentCount = 0;
+  if (firstDraftId && inboundAttachments.length > 0) {
+    stagedAttachmentCount = await stageAttachments(
+      admin,
+      getResend(),
+      { emailId: payload.data.email_id, familyUnitId, draftId: firstDraftId, attachments: inboundAttachments },
+      logger,
+    );
+  }
+
   logger.info("Inbound email draft(s) created", {
     familyUnitId,
     draftCount: segments.length - failedCount,
     failedCount,
     matchedCount,
     autoCreatedCount,
+    stagedAttachmentCount,
   });
   return { ok: true };
 });

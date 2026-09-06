@@ -23,6 +23,8 @@ const mockState = {
   insertedInteraction: undefined as Record<string, unknown> | undefined,
   updatedDraft: undefined as Record<string, unknown> | undefined,
   updateAffectsRow: true,
+  stagedAttachments: [] as Record<string, unknown>[],
+  documentInsertRows: undefined as Record<string, unknown>[] | undefined,
 };
 
 vi.mock("~/server/utils/supabase", () => ({
@@ -72,6 +74,21 @@ vi.mock("~/server/utils/supabase", () => ({
           },
         };
       }
+      if (table === "raw_inbound_attachments") {
+        return {
+          select: () => ({
+            eq: async () => ({ data: mockState.stagedAttachments, error: null }),
+          }),
+        };
+      }
+      if (table === "documents") {
+        return {
+          insert: (rows: Record<string, unknown>[]) => {
+            mockState.documentInsertRows = rows;
+            return Promise.resolve({ error: null });
+          },
+        };
+      }
       throw new Error(`unexpected table ${table}`);
     },
   }),
@@ -90,6 +107,8 @@ describe("POST /api/inbound-drafts/:id/confirm", () => {
     mockState.insertedInteraction = undefined;
     mockState.updatedDraft = undefined;
     mockState.updateAffectsRow = true;
+    mockState.stagedAttachments = [];
+    mockState.documentInsertRows = undefined;
   });
 
   it("404s when the draft isn't found or belongs to another family", async () => {
@@ -161,6 +180,58 @@ describe("POST /api/inbound-drafts/:id/confirm", () => {
       confirmed_interaction_id: "interaction-1",
     });
     expect(result).toEqual({ ok: true, interactionId: "interaction-1" });
+    // No staged attachments on this draft — confirming must not write an
+    // empty-array `documents` insert.
+    expect(mockState.documentInsertRows).toBeUndefined();
+  });
+
+  it("creates a documents row per staged attachment, linked to the new interaction", async () => {
+    mockState.draft = {
+      id: "draft-1",
+      family_unit_id: "family-1",
+      status: "pending",
+      matched_school_id: "school-1",
+      matched_coach_id: "coach-1",
+      subject: "Fwd: Camp",
+      body_text: "hi",
+      occurred_at: "2026-09-02T15:15:00.000Z",
+      confirmed_interaction_id: null,
+    };
+    mockState.stagedAttachments = [
+      { filename: "camp-invite.pdf", content_type: "application/pdf", storage_path: "family-1/inbound/draft-1-camp-invite.pdf" },
+      { filename: "roster.docx", content_type: "application/msword", storage_path: "family-1/inbound/draft-1-roster.docx" },
+    ];
+
+    const { default: handler } = await import("~/server/api/inbound-drafts/[id]/confirm.post");
+    const result = await handler({} as Parameters<typeof handler>[0]);
+
+    expect(result).toEqual({ ok: true, interactionId: "interaction-1" });
+    expect(mockState.documentInsertRows).toEqual([
+      {
+        type: "coach_attachment",
+        interaction_id: "interaction-1",
+        family_unit_id: "family-1",
+        school_id: "school-1",
+        user_id: "user-1",
+        uploaded_by: "user-1",
+        file_url: "family-1/inbound/draft-1-camp-invite.pdf",
+        file_type: "application/pdf",
+        title: "camp-invite.pdf",
+      },
+      {
+        type: "coach_attachment",
+        interaction_id: "interaction-1",
+        family_unit_id: "family-1",
+        school_id: "school-1",
+        user_id: "user-1",
+        uploaded_by: "user-1",
+        file_url: "family-1/inbound/draft-1-roster.docx",
+        file_type: "application/msword",
+        title: "roster.docx",
+      },
+    ]);
+    // The draft still gets confirmed even though it carried attachments.
+    expect(mockState.updatedDraft).toMatchObject({ status: "confirmed" });
   });
 
   it("400s for a malformed draft id", async () => {
