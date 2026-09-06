@@ -74,5 +74,11 @@ const helpSections = [
     title: "Frequently Asked Questions",
     description: "Quick answers to the questions we hear most.",
   },
+  {
+    slug: "glossary",
+    icon: "i-heroicons-book-open",
+    title: "Glossary",
+    description: "Recruiting terms explained in plain language.",
+  },
 ] as const;
 </script>

@@ -91,5 +91,10 @@ const sections = [
     icon: "i-heroicons-question-mark-circle",
     title: "Frequently Asked Questions",
   },
+  {
+    slug: "glossary",
+    icon: "i-heroicons-book-open",
+    title: "Glossary",
+  },
 ] as const;
 </script>
