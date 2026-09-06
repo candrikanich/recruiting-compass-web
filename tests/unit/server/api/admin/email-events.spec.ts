@@ -60,4 +60,14 @@ describe("GET /api/admin/email-events", () => {
       handler({} as Parameters<typeof handler>[0]),
     ).resolves.toEqual({ rows, total: 1 });
   });
+
+  it("clamps negative limit to 1", async () => {
+    vi.mocked(getQuery).mockReturnValue({ limit: "-5" });
+    const { default: handler } = await import(
+      "~/server/api/admin/email-events.get"
+    );
+    await expect(
+      handler({} as Parameters<typeof handler>[0]),
+    ).resolves.toEqual({ rows, total: 1 });
+  });
 });
