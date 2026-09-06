@@ -1,0 +1,51 @@
+name: "Setup Node & install deps"
+description: >
+  Shared checkout + Node.js setup + npm ci used by every workflow job.
+  Single place to bump the Node version instead of 6+ duplicated blocks.
+
+inputs:
+  node-version:
+    description: "Node version to install"
+    required: false
+    default: "24"
+  ref:
+    description: "Git ref to checkout (empty = default event ref)"
+    required: false
+    default: ""
+  fetch-depth:
+    description: "Checkout fetch-depth (0 = full history)"
+    required: false
+    default: "1"
+  install-deps:
+    description: "Run npm ci after setup-node"
+    required: false
+    default: "true"
+  prepare-nuxt:
+    description: "Run `npx nuxi prepare` after npm ci"
+    required: false
+    default: "false"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout code
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ inputs.ref }}
+        fetch-depth: ${{ inputs.fetch-depth }}
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v7
+      with:
+        node-version: ${{ inputs.node-version }}
+        cache: "npm"
+
+    - name: Install dependencies
+      if: inputs.install-deps == 'true'
+      shell: bash
+      run: npm ci
+
+    - name: Prepare Nuxt
+      if: inputs.prepare-nuxt == 'true'
+      shell: bash
+      run: npx nuxi prepare

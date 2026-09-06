@@ -10,10 +10,6 @@ concurrency:
   group: test-${{ github.ref }}
   cancel-in-progress: true
 
-env:
-  # Coverage thresholds are enforced by vitest.config.ts.
-  NODE_VERSION: "24"
-
 jobs:
   # Step 1: Lint and type-check
   quality:
@@ -23,17 +19,7 @@ jobs:
       contents: read
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v7
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v7
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
-
-      - name: Install dependencies
-        run: npm ci
+      - uses: ./.github/actions/setup-node-deps
 
       - name: Type check
         run: npm run type-check
@@ -52,20 +38,9 @@ jobs:
       contents: read
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v7
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v7
+      - uses: ./.github/actions/setup-node-deps
         with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Prepare Nuxt
-        run: npx nuxi prepare
+          prepare-nuxt: "true"
 
       - name: Run tests with coverage (thresholds enforced by vitest.config.ts)
         run: npm run test:coverage
@@ -85,13 +60,9 @@ jobs:
     outputs:
       deployment-url: ${{ steps.deploy.outputs.deployment-url }}
     steps:
-      - uses: actions/checkout@v7
-
-      - uses: actions/setup-node@v7
+      - uses: ./.github/actions/setup-node-deps
         with:
-          # Pinned Node for the Vercel CLI deploy. Unit/lint jobs above still
-          # use NODE_VERSION.
-          node-version: "24"
+          install-deps: "false"
 
       - run: npm install -g vercel
 
@@ -137,17 +108,7 @@ jobs:
     timeout-minutes: 10
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v7
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v7
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
-
-      - name: Install dependencies
-        run: npm ci
+      - uses: ./.github/actions/setup-node-deps
 
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
@@ -183,17 +144,7 @@ jobs:
     timeout-minutes: 20
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v7
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v7
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
-
-      - name: Install dependencies
-        run: npm ci
+      - uses: ./.github/actions/setup-node-deps
 
       - name: Install Chrome for Lighthouse CI
         run: |
