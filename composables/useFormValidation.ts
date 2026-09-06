@@ -122,6 +122,37 @@ const FILE_VALIDATION_RULES = {
     maxSize: 10 * 1024 * 1024, // 10MB
     description: "Common document and image files",
   },
+  // Forwarded coach-email attachments (issue #586 Phase 3 Task 3):
+  // questionnaires, camp invites, flyers. Same allowlist as "attachment" —
+  // reused rather than duplicated, kept as its own entry only because it's
+  // a distinct document_type enum value (coach_attachment) once confirmed.
+  coach_attachment: {
+    mimeTypes: [
+      "application/pdf",
+      "image/jpeg",
+      "image/png",
+      "image/gif",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "application/vnd.ms-excel",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "text/plain",
+    ],
+    extensions: [
+      ".pdf",
+      ".jpg",
+      ".jpeg",
+      ".png",
+      ".gif",
+      ".doc",
+      ".docx",
+      ".xls",
+      ".xlsx",
+      ".txt",
+    ],
+    maxSize: 10 * 1024 * 1024, // 10MB
+    description: "Common document and image files",
+  },
 } as const;
 
 export type SupportedFileType = keyof typeof FILE_VALIDATION_RULES;
