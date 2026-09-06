@@ -224,6 +224,27 @@ not deleted in case something else references them. **Not yet re-verified
 whether the 4 legacy jobs should be dropped entirely — flagged, not
 fully closed.**
 
+### 2026-09-06: `email_events` applied to QA/dev; prod pending the CI gate (Resend delivery log, Spec B2)
+
+`supabase/migrations/20260923000000_email_events.sql` — one row per Resend
+outbound lifecycle event (sent/delivered/delivery_delayed/bounced/complained/
+opened/clicked/failed), keyed by Resend's `message_id` (their `data.email_id`),
+ingested by `POST /api/webhooks/resend-events`. Service-role only (RLS on, no
+policies, `anon`/`authenticated` revoked) — same pattern as `admin_audit_log`
+and `cache_snapshots`. Deliberately NOT linked to `family_unit_id`/`user_id`:
+that requires threading context through every `sendViaResend()` call site,
+out of scope for this table. 30-day retention via
+`server/api/cron/email-events-purge.get.ts`.
+
+Applied live to QA/dev (`xpxzhqghxecsjhvklsqg`) via Supabase MCP
+`apply_migration` and verified: table exists, RLS enabled, 0 policies, both
+`anon`/`authenticated` denied SELECT, all 4 indexes present. **Prod
+(`lrzsenidegcqhwzwncve`) was deliberately NOT applied via MCP** — since the
+2026-09-06 prod/QA split, prod migrations run through
+`.github/workflows/migrate-prod.yml` (`supabase db push`, gated behind the
+GitHub `production` environment's manual approval) triggered on push to
+`main`. Applies automatically, with approval, once this PR merges.
+
 ## Helper Functions
 
 - `family_can_write(p_family_unit_id uuid) → boolean` — entitlement gate; STABLE SECURITY DEFINER; used by `*_requires_entitlement` RESTRICTIVE policies on family content tables. NULL → true. Mirror in `composables/useEntitlement.ts` and iOS `FamilySubscription.canWrite`.

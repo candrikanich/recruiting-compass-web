@@ -7,6 +7,7 @@ const links = [
   { to: "/admin/health", label: "Health" },
   { to: "/admin/jobs", label: "Jobs" },
   { to: "/admin/audit", label: "Audit" },
+  { to: "/admin/email", label: "Email" },
   { to: "/admin/tools", label: "Tools" },
 ];
 const route = useRoute();
