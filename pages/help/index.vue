@@ -68,5 +68,11 @@ const helpSections = [
     description:
       "Manage your family, notifications, profile, and account preferences.",
   },
+  {
+    slug: "faq",
+    icon: "i-heroicons-question-mark-circle",
+    title: "Frequently Asked Questions",
+    description: "Quick answers to the questions we hear most.",
+  },
 ] as const;
 </script>

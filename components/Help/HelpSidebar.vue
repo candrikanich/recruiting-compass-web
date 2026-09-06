@@ -86,5 +86,10 @@ const sections = [
     icon: "i-heroicons-cog-6-tooth",
     title: "Account & Settings",
   },
+  {
+    slug: "faq",
+    icon: "i-heroicons-question-mark-circle",
+    title: "Frequently Asked Questions",
+  },
 ] as const;
 </script>
