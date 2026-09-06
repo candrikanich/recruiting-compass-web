@@ -38,10 +38,15 @@ function resolveSortTemplate(text) {
 
 /** Strips refs, HTML comments, and remaining templates (innermost-first, no nesting assumed) */
 function stripNoise(text) {
-  let out = text
-    .replace(/<ref[^>]*\/>/gs, "")
-    .replace(/<ref[^>]*>.*?<\/ref>/gs, "")
-    .replace(/<!--.*?-->/gs, "");
+  let out = text;
+  let prev;
+  do {
+    prev = out;
+    out = out
+      .replace(/<ref[^>]*\/>/gs, "")
+      .replace(/<ref[^>]*>.*?<\/ref>/gs, "")
+      .replace(/<!--.*?-->/gs, "");
+  } while (out !== prev);
   while (/\{\{[^{}]*\}\}/.test(out)) {
     out = out.replace(/\{\{[^{}]*\}\}/g, "");
   }
