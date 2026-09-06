@@ -74,6 +74,13 @@
               </button>
             </div>
           </div>
+
+          <NuxtLink
+            to="/inbox/inbound-drafts"
+            class="mt-4 inline-flex items-center gap-1 text-sm font-medium text-blue-700 hover:text-blue-900 hover:underline"
+          >
+            Review forwarded coach emails →
+          </NuxtLink>
         </div>
       </section>
 

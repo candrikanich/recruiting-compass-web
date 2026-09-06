@@ -1,16 +1,30 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import { useInboundDrafts } from "~/composables/useInboundDrafts";
+import { useAppToast } from "~/composables/useAppToast";
 
 definePageMeta({ middleware: "auth" });
 
 const { drafts, loading, error, fetchDrafts, confirmDraft, discardDraft } = useInboundDrafts();
 const schoolIdByDraft = ref<Record<string, string>>({});
+const { showToast } = useAppToast();
 
 onMounted(fetchDrafts);
 
 async function onConfirm(draftId: string, matchedSchoolId: string | null) {
-  await confirmDraft(draftId, matchedSchoolId ? undefined : schoolIdByDraft.value[draftId]);
+  try {
+    await confirmDraft(draftId, matchedSchoolId ? undefined : schoolIdByDraft.value[draftId]);
+  } catch {
+    showToast("Failed to confirm this draft. Please try again.", "error");
+  }
+}
+
+async function onDiscard(draftId: string) {
+  try {
+    await discardDraft(draftId);
+  } catch {
+    showToast("Failed to discard this draft. Please try again.", "error");
+  }
 }
 </script>
 
@@ -55,7 +69,7 @@ async function onConfirm(draftId: string, matchedSchoolId: string | null) {
             >
               Confirm
             </DesignSystemButton>
-            <DesignSystemButton variant="outline" color="slate" @click="discardDraft(draft.id)">
+            <DesignSystemButton variant="outline" color="slate" @click="onDiscard(draft.id)">
               Discard
             </DesignSystemButton>
           </div>

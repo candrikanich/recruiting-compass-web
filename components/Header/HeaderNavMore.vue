@@ -86,6 +86,11 @@ const moreItems = [
   { to: "/offers", label: "Offers", icon: "i-heroicons-gift" },
   { to: "/documents", label: "Documents", icon: "i-heroicons-document-text" },
   { to: "/analytics", label: "Analytics", icon: "i-heroicons-chart-pie" },
+  {
+    to: "/inbox/inbound-drafts",
+    label: "Coach Emails",
+    icon: "i-heroicons-inbox-arrow-down",
+  },
 ];
 
 const isActive = (path: string): boolean => {
