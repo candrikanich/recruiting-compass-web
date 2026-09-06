@@ -43,6 +43,40 @@
         <p class="text-sm text-red-700">{{ familyCodeError }}</p>
       </div>
 
+      <!-- Inbound Email Forwarding Address -->
+      <section
+        v-if="inboundAddress"
+        class="mb-6 rounded-xl border border-slate-200 bg-white p-6 shadow-xs"
+      >
+        <div class="rounded-lg border border-blue-200 bg-blue-50 p-4">
+          <h3 class="mb-2 text-lg font-semibold text-blue-900">
+            Forward Coach Emails
+          </h3>
+          <p class="mb-4 text-sm text-blue-700">
+            Forward or CC emails from coaches to this address to automatically
+            draft an interaction log entry for your family.
+          </p>
+
+          <div class="rounded-lg border border-blue-300 bg-white p-4">
+            <div class="flex items-center justify-between">
+              <div
+                class="truncate font-mono text-sm font-bold text-blue-900 sm:text-base"
+                data-testid="inbound-address"
+              >
+                {{ inboundAddress }}
+              </div>
+              <button
+                type="button"
+                class="ml-4 shrink-0 rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"
+                @click="handleCopyInboundAddress"
+              >
+                📋 Copy
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- Family Code Section for Students -->
       <section
         v-if="isPlayer && myFamilyCode"
@@ -350,6 +384,19 @@ const codeGeneratedAt = ref<string | null>(null);
 const error = ref<string | null>(null);
 const familyMembers = ref<FamilyMember[]>([]);
 const loadingMembers = ref(false);
+const inboundAddress = ref<string | null>(null);
+
+const fetchInboundAddress = async () => {
+  try {
+    const { $fetchAuth } = useAuthFetch();
+    const response = (await $fetchAuth("/api/family/inbound-address")) as {
+      address: string;
+    };
+    inboundAddress.value = response.address;
+  } catch {
+    // Non-critical display — a fetch failure here must never break the page.
+  }
+};
 
 const fetchFamilyMembers = async () => {
   if (!myFamilyId.value) return;
@@ -387,6 +434,7 @@ onMounted(async () => {
   }
 
   fetchInvitations().catch(() => {});
+  fetchInboundAddress();
 });
 
 const handleJoinFamily = async (code: string) => {
@@ -395,6 +443,16 @@ const handleJoinFamily = async (code: string) => {
 
 const handleCopyCode = async (code: string) => {
   await copyCodeToClipboard(code);
+};
+
+const handleCopyInboundAddress = async () => {
+  if (!inboundAddress.value) return;
+  try {
+    await navigator.clipboard.writeText(inboundAddress.value);
+    showToast("Address copied to clipboard", "success");
+  } catch {
+    showToast("Failed to copy address. Please try again.", "error");
+  }
 };
 
 const isRegenerateDialogOpen = ref(false);
