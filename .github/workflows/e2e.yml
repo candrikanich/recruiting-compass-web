@@ -1,18 +1,15 @@
 name: E2E Tests
 
 on:
-  # Only run on PRs to main (production gate)
+  # PRs to develop (QA gate) and main (production gate)
   pull_request:
-    branches: [main]
+    branches: [develop, main]
   # Allow manual triggering from Actions tab
   workflow_dispatch:
 
 concurrency:
   group: e2e-${{ github.ref }}
   cancel-in-progress: true
-
-env:
-  NODE_VERSION: "24"
 
 jobs:
   e2e-tests:
@@ -28,23 +25,13 @@ jobs:
     if: github.actor != 'dependabot[bot]'
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v7
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v7
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-node-deps
         with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
-
-      - name: Install dependencies
-        run: npm ci
+          prepare-nuxt: "true"
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
-
-      - name: Prepare Nuxt
-        run: npx nuxi prepare
 
       - name: Build application
         run: npm run build
@@ -56,6 +43,13 @@ jobs:
           # so the test project's URL/anon must be present here, not just at run.
           NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.TEST_SUPABASE_URL }}
           NUXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.TEST_SUPABASE_ANON_KEY }}
+
+      - name: Upload build output
+        uses: actions/upload-artifact@v7
+        with:
+          name: e2e-build-output
+          path: .output/
+          retention-days: 1
 
       - name: Run E2E tests
         run: npm run test:e2e
@@ -94,39 +88,26 @@ jobs:
   # WebKit (Safari) — non-blocking initially; failures are reported but don't gate the PR
   e2e-webkit:
     name: Playwright E2E Tests (WebKit/Safari)
+    needs: e2e-tests
     runs-on: ubuntu-latest
     timeout-minutes: 75
     continue-on-error: true
-    if: github.actor != 'dependabot[bot]'
+    if: always() && github.actor != 'dependabot[bot]'
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v7
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v7
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
-
-      - name: Install dependencies
-        run: npm ci
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-node-deps
 
       - name: Install Playwright WebKit browser
         # chromium is also required: global-setup.ts captures auth storageState
         # via chromium.launch() (portable across browsers) before the webkit run.
         run: npx playwright install --with-deps webkit chromium
 
-      - name: Prepare Nuxt
-        run: npx nuxi prepare
-
-      - name: Build application
-        run: npm run build
-        env:
-          NITRO_PRESET: node-server
-          # ssr:false bakes NUXT_PUBLIC_* into the client bundle at build time.
-          NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.TEST_SUPABASE_URL }}
-          NUXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.TEST_SUPABASE_ANON_KEY }}
+      - name: Download build output
+        uses: actions/download-artifact@v7
+        with:
+          name: e2e-build-output
+          path: .output/
 
       - name: Run E2E tests (WebKit only)
         # WebKit is substantially less stable under parallel load in CI

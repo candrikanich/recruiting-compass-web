@@ -1,5 +1,48 @@
 ## Supabase & Database
 
+### Prod/Staging Topology (2026-09-06, issue #118)
+
+Three separate Supabase projects, no longer one shared DB:
+
+- **`recruiting-compass-prod`** (`lrzsenidegcqhwzwncve`, region us-east-2) —
+  `main` branch, Vercel Production env. Full schema + full data copy of
+  staging as of 2026-09-06 (all 55 public tables verified exact
+  `COUNT(*)` match). Auth identities copied with original password hashes
+  — every staging login works unchanged on prod.
+- **`recruiting-compass-staging`** (`xpxzhqghxecsjhvklsqg`, unrenamed —
+  still shows as "Recruiting Tracker 2025" in the dashboard) — `develop`
+  branch + previews + local dev. This is the project that used to serve
+  prod+QA together; it now serves QA/dev only.
+- **`ahpethltxopkjxxzwmmb`** — dedicated E2E project, unchanged, untouched
+  by this split.
+
+**Migrations going forward:** write once, apply to staging as always via
+Supabase MCP `apply_migration`, then merge to `main` — `.github/workflows/migrate-prod.yml`
+picks it up automatically and pauses for manual approval (GitHub
+Environment `production`, reviewer required) before running
+`supabase db push` against prod. Never apply directly to prod outside that
+gate except for the kind of one-off pre-launch backfill this migration
+itself required.
+
+**Direct `psql`/`pg_dump` connections:** the plain `db.<ref>.supabase.co`
+hostname needs IPv6 — fails to resolve on IPv4-only networks. Use the
+**Session pooler** connection string instead (Dashboard → Connect →
+Direct → Connection Method: Session pooler), format
+`postgres.<project-ref>@aws-<N>-<region>.pooler.supabase.com:5432` — note
+the pooler node number (`aws-0` vs `aws-1` etc.) is per-project, not
+purely regional; always confirm from the dashboard rather than guessing.
+
+**Spec/plan/execution record:** `docs/superpowers/specs/2026-09-05-prod-staging-db-separation-design.md`,
+`docs/superpowers/plans/2026-09-05-prod-staging-db-separation.md`, and the
+inventory doc at `docs/superpowers/plans/artifacts/2026-09-05-staging-inventory.md`
+(the real narrative — several undocumented-in-migrations objects were
+found and closed along the way: `documents`/`profile-photos` storage
+buckets, `device_tokens.environment` + `set_primary_metric()`, 4 legacy
+`pg_cron` jobs duplicating the modern Vercel-cron notification system
+(disabled, not dropped), 3 of 4 Edge Function sources that only existed
+deployed, `nces_schools`'s 27,555-row seed, and `task`'s per-environment
+UUID regeneration breaking `athlete_task` FKs).
+
 **Client:** Use `useSupabase()` singleton — do NOT create new clients per request (wastes connections). Select specific columns, filter with `.eq()`.
 
 **Schema:** Add columns as nullable, separate migration. Use CHECK constraints for enums (not PG enums).
@@ -155,6 +198,31 @@ What landed:
 - Function `public.invalidate_public_profile_snapshot()` (`SECURITY DEFINER`, `search_path = ''`) + trigger `player_profiles_invalidate_cache_snapshot` AFTER UPDATE OR DELETE on `player_profiles` — deletes `pubprof:v1:{user_id}`.
 
 Code path: `server/utils/publicProfileRead.ts` (L1 Redis 60s + L2 this table 300s, fail-open). `is_published` is still read from `player_profiles` on every GET.
+
+### 2026-09-06: legacy `pg_cron` jobs disabled (duplicate notifications bug)
+
+Found live on `xpxzhqghxecsjhvklsqg` (serving prod+QA at the time) while
+auditing for the prod/staging DB split (issue #118): 4 `pg_cron` jobs
+(`notify-upcoming-events`, `process-deadline-alerts`,
+`process-follow-up-reminders`, `send-weekly-digest`, all `active=true`,
+firing daily/weekly at noon UTC) calling old Supabase Edge Functions
+directly via `net.http_post` or a plain `SELECT`. These are **fully
+superseded** by the modern Vercel-cron system
+(`server/api/cron/generate-notifications.get.ts` covers deadline alerts +
+follow-up reminders + event-tomorrow notifications;
+`server/api/cron/weekly-digest.get.ts` covers the digest — both monitored
+via `withCronRun`/`cron_runs`, see `cron-monitoring-applied` memory) which
+runs at different times (8am / Monday 1pm). Both mechanisms were active
+simultaneously — **real users were getting duplicate notifications/emails
+every day this was live.** Disabled (`cron.alter_job(..., active := false)`,
+not dropped — trivially reversible) on 2026-09-06. The underlying 4 Edge
+Functions (`process-deadline-alerts`, `process-follow-up-reminders`,
+`send-weekly-digest`, plus `send-push-notification` which is NOT legacy —
+still actively used by the current notification system) and the
+`notify_upcoming_events()` SQL function are left in place but now unused;
+not deleted in case something else references them. **Not yet re-verified
+whether the 4 legacy jobs should be dropped entirely — flagged, not
+fully closed.**
 
 ## Helper Functions
 

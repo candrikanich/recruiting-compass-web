@@ -123,8 +123,10 @@
       <p class="mt-1 text-sm text-slate-700">{{ currentPeriod.description }}</p>
     </div>
 
-    <!-- Next Key Dates — single milestone-row source, shared with Timeline -->
-    <UpcomingMilestones :milestones="upcomingMilestones" bare />
+    <!-- Next Key Dates — single milestone-row source, shared with Timeline.
+         When mergeUserDeadlines is on (dashboard only), this also folds in
+         the athlete's own deadlines from useDeadlines(). -->
+    <UpcomingMilestones :milestones="displayedUpcomingItems" bare />
 
     <!-- Division Rules Summary -->
     <div class="mt-6 border-t border-slate-200 pt-4">
@@ -163,7 +165,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import {
   getSportCalendar,
   getUpcomingMilestones,
@@ -175,7 +177,12 @@ import {
   type Division,
   type RecruitingPeriod,
 } from "~/utils/recruitingCalendar";
+import type { Milestone } from "~/utils/ncaaRecruitingCalendar";
+import type { UnifiedDeadline, UserDeadlineCategory, SystemDeadlineCategory } from "~/types/deadline";
 import { parseLocalDateOnly, exclusiveEndOfDay } from "~/utils/localDate";
+import { useDeadlines } from "~/composables/useDeadlines";
+import { milestoneToDeadline } from "~/composables/useRecruitingDeadlines";
+import { mergeDeadlines, splitUpcomingPast } from "~/utils/deadlines";
 import UpcomingMilestones from "~/components/Timeline/UpcomingMilestones.vue";
 
 interface Props {
@@ -186,6 +193,11 @@ interface Props {
   footballSubdivision?: "FBS" | "FCS";
   /** Injectable "now" for the staleness check (L6b) — defaults to real now. */
   now?: Date;
+  /** Fold the athlete's own deadlines (useDeadlines()) into "Next Key Dates",
+   *  matching pages/deadlines.vue. Dashboard-only by default — Timeline
+   *  already surfaces the full Tasks/Guidance breakdown, so this stays off
+   *  there unless a caller opts in. */
+  mergeUserDeadlines?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -195,6 +207,7 @@ const props = withDefaults(defineProps<Props>(), {
   division: "D1",
   footballSubdivision: "FBS",
   now: () => new Date(),
+  mergeUserDeadlines: false,
 });
 
 // L6a/L6b: `SEASON`/`SEASON_END` (from `~/utils/recruitingCalendar`) name the
@@ -259,6 +272,65 @@ const upcomingMilestones = computed(() =>
     opts: resolverOpts.value,
     currentDate: today,
   }),
+);
+
+// mergeUserDeadlines path: same mergeDeadlines()/splitUpcomingPast() logic as
+// pages/deadlines.vue, via useDeadlines() for the user side. Pulls a wider
+// system-milestone window (not the 5-cap above) so a nearer user deadline
+// can't push off a closer NCAA date before the final cap is applied.
+const { userDeadlines, fetchDeadlines } = useDeadlines();
+
+onMounted(() => {
+  if (props.mergeUserDeadlines) fetchDeadlines();
+});
+
+const CATEGORY_TO_MILESTONE_TYPE: Record<
+  UserDeadlineCategory | SystemDeadlineCategory,
+  Milestone["type"]
+> = {
+  test: "test",
+  signing: "signing",
+  "ncaa-period": "ncaa-period",
+  deadline: "deadline",
+  application: "application",
+  decision: "deadline",
+  financial_aid: "deadline",
+  visit: "deadline",
+  custom: "deadline",
+};
+
+function unifiedToMilestoneItem(
+  d: UnifiedDeadline,
+): Milestone & { source: "user" | "system" } {
+  return {
+    date: d.date,
+    title: d.label,
+    type: CATEGORY_TO_MILESTONE_TYPE[d.category] ?? "deadline",
+    url: d.url,
+    description: d.description,
+    source: d.source,
+  };
+}
+
+const mergedUpcomingItems = computed(() => {
+  const systemAsUnified = getUpcomingMilestones({
+    sport: props.sport,
+    division: props.division,
+    graduationYear: props.graduationYear,
+    limit: 20,
+    opts: resolverOpts.value,
+    currentDate: today,
+  }).map(milestoneToDeadline);
+
+  const merged = mergeDeadlines(userDeadlines.value, systemAsUnified);
+  const todayISO = today.toISOString().slice(0, 10);
+  return splitUpcomingPast(merged, todayISO)
+    .upcoming.slice(0, 5)
+    .map(unifiedToMilestoneItem);
+});
+
+const displayedUpcomingItems = computed(() =>
+  props.mergeUserDeadlines ? mergedUpcomingItems.value : upcomingMilestones.value,
 );
 
 // The resolved SportCalendar this sport/division/gender/subdivision

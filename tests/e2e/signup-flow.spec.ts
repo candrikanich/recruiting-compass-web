@@ -104,13 +104,13 @@ test.describe("Signup Page - Full Flow E2E Tests", () => {
       ).toBeVisible({ timeout: 5000 });
     });
 
-    test("minor (13-17) player is steered to a guardian invite and cannot submit", async ({
+    test("minor (13-17) player can submit the signup form", async ({
       page,
     }) => {
       await page.click('[data-testid="user-type-player"]');
 
-      // DOB ~15 years ago: old enough for COPPA (13+) but a minor (<18), so the
-      // account must be created through a parent/guardian family invite.
+      // DOB ~15 years ago: old enough for COPPA (13+), minor (<18).
+      // Guardian gating was removed — minors sign up directly.
       const fifteenYearsAgo = new Date();
       fifteenYearsAgo.setFullYear(fifteenYearsAgo.getFullYear() - 15);
       await page.fill("#firstName", "Minor");
@@ -124,14 +124,13 @@ test.describe("Signup Page - Full Flow E2E Tests", () => {
       await page.fill("#confirmPassword", "SecurePass123");
       await page.check("#agreeToTerms");
 
-      // The guardian-invite notice appears and the form cannot be submitted
-      // even with every other field valid + terms agreed.
+      // No guardian-invite notice; the submit button is enabled.
       await expect(
         page.locator('[data-testid="minor-guardian-notice"]'),
-      ).toBeVisible();
+      ).not.toBeVisible();
       await expect(
         page.locator('[data-testid="signup-button"]'),
-      ).toBeDisabled();
+      ).not.toBeDisabled();
     });
   });
 
