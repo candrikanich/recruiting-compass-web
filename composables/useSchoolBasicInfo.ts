@@ -13,6 +13,8 @@ export interface BasicInfoFormData {
   twitter_handle: string;
   instagram_handle: string;
   phone: string;
+  mascot: string;
+  school_colors: [string, string];
 }
 
 export const useSchoolBasicInfo = (schoolId: string) => {
@@ -26,6 +28,8 @@ export const useSchoolBasicInfo = (schoolId: string) => {
     twitter_handle: "",
     instagram_handle: "",
     phone: "",
+    mascot: "",
+    school_colors: ["", ""],
   });
 
   const initializeForm = (school: School) => {
@@ -36,6 +40,11 @@ export const useSchoolBasicInfo = (schoolId: string) => {
       twitter_handle: String(school.twitter_handle || ""),
       instagram_handle: String(school.instagram_handle || ""),
       phone: formatPhoneDisplay(String(school.phone || "")),
+      mascot: String(school.mascot || ""),
+      school_colors: [
+        String(school.school_colors?.[0] || ""),
+        String(school.school_colors?.[1] || ""),
+      ],
     };
   };
 
@@ -48,6 +57,11 @@ export const useSchoolBasicInfo = (schoolId: string) => {
       twitter_handle: editedBasicInfo.value.twitter_handle || null,
       instagram_handle: editedBasicInfo.value.instagram_handle || null,
       phone: toStoredPhone(editedBasicInfo.value.phone),
+      mascot: editedBasicInfo.value.mascot || null,
+      school_colors:
+        editedBasicInfo.value.school_colors.filter(Boolean).length > 0
+          ? editedBasicInfo.value.school_colors.filter(Boolean)
+          : null,
       academic_info: {
         ...(currentSchool.academic_info || {}),
         address: editedBasicInfo.value.address,

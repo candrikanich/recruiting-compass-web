@@ -22,10 +22,11 @@ describe("useSchoolBasicInfo", () => {
     twitter_handle: "@testschool",
     instagram_handle: "@testschool_ig",
     phone: "(555) 111-2222",
+    mascot: "Eagles",
+    school_colors: ["#660000", "#FFFFFF"],
     academic_info: {
       address: "123 Main St",
       baseball_facility_address: "456 Stadium Dr",
-      mascot: "Eagles",
       undergrad_size: "5,000-10,000",
       distance_from_home: 50,
     },
@@ -48,6 +49,8 @@ describe("useSchoolBasicInfo", () => {
         twitter_handle: "",
         instagram_handle: "",
         phone: "",
+        mascot: "",
+        school_colors: ["", ""],
       });
     });
   });
@@ -64,7 +67,22 @@ describe("useSchoolBasicInfo", () => {
         twitter_handle: "@testschool",
         instagram_handle: "@testschool_ig",
         phone: "(555) 111-2222",
+        mascot: "Eagles",
+        school_colors: ["#660000", "#FFFFFF"],
       });
+    });
+
+    it("handles missing mascot/school_colors", () => {
+      const schoolWithoutColors = {
+        ...mockSchool,
+        mascot: undefined,
+        school_colors: undefined,
+      };
+      const { editedBasicInfo, initializeForm } = useSchoolBasicInfo(schoolId);
+      initializeForm(schoolWithoutColors);
+
+      expect(editedBasicInfo.value.mascot).toBe("");
+      expect(editedBasicInfo.value.school_colors).toEqual(["", ""]);
     });
 
     it("handles missing academic_info", () => {
@@ -183,12 +201,48 @@ describe("useSchoolBasicInfo", () => {
         twitter_handle: "@testschool",
         instagram_handle: "@testschool_ig",
         phone: "+15551112222",
+        mascot: "Eagles",
+        school_colors: ["#660000", "#FFFFFF"],
         academic_info: {
           ...mockSchool.academic_info,
           address: "456 New St",
         },
       });
       expect(result).toEqual(updatedSchool);
+    });
+
+    it("saves mascot as null and school_colors as null when both slots are empty", async () => {
+      mockUpdateSchool.mockResolvedValue(mockSchool);
+
+      const { editedBasicInfo, saveBasicInfo } = useSchoolBasicInfo(schoolId);
+      editedBasicInfo.value.mascot = "";
+      editedBasicInfo.value.school_colors = ["", ""];
+
+      await saveBasicInfo(mockSchool);
+
+      expect(mockUpdateSchool).toHaveBeenCalledWith(
+        schoolId,
+        expect.objectContaining({
+          mascot: null,
+          school_colors: null,
+        }),
+      );
+    });
+
+    it("drops empty color slots but keeps a single filled one", async () => {
+      mockUpdateSchool.mockResolvedValue(mockSchool);
+
+      const { editedBasicInfo, saveBasicInfo } = useSchoolBasicInfo(schoolId);
+      editedBasicInfo.value.school_colors = ["#660000", ""];
+
+      await saveBasicInfo(mockSchool);
+
+      expect(mockUpdateSchool).toHaveBeenCalledWith(
+        schoolId,
+        expect.objectContaining({
+          school_colors: ["#660000"],
+        }),
+      );
     });
 
     it("exits edit mode after successful save", async () => {
