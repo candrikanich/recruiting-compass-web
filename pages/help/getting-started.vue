@@ -27,7 +27,8 @@
         Complete it before adding schools or coaches.
       </p>
       <HelpStepCard :step="1" title="Navigate to Settings">
-        From the dashboard, go to <strong>Settings → Athlete Profile</strong>.
+        From the dashboard, go to
+        <strong>Settings → Profile & Player Info → Athlete Profile</strong>.
       </HelpStepCard>
       <HelpStepCard :step="2" title="Fill in your details">
         Enter your name, graduation year, sport, position(s), GPA, and test
@@ -47,15 +48,22 @@
         collaborate on your recruiting journey.
       </p>
       <HelpStepCard :step="1" title="Go to Family settings">
-        Navigate to <strong>Settings → Family</strong>.
+        Navigate to
+        <strong>Settings → Family → Family Management</strong>.
       </HelpStepCard>
       <HelpStepCard :step="2" title="Invite a family member" :last="true">
-        Enter their email address and tap <strong>Send invite</strong>. They'll
-        receive an email to create their account and join your family unit.
+        Enter their email address, choose their role (<strong>Player</strong> or
+        <strong>Parent</strong>), and tap <strong>Send invite</strong>. They'll
+        receive an email to create their account and join your family unit. If
+        someone already has an account, they can also join instantly by entering
+        your family's <strong>Family Code</strong>, shown on the same page — no
+        email invite required.
       </HelpStepCard>
       <HelpCallout type="info">
-        Family members can view and edit your athlete profile, school list, and
-        interactions — everyone in the family works together.
+        Family members can view your athlete profile, school list, and every
+        interaction logged by anyone in the family, and any family member can
+        log a new interaction. Editing or deleting an existing interaction is
+        limited to whoever originally logged it.
       </HelpCallout>
     </section>
 
@@ -67,23 +75,37 @@
         glance.
       </p>
       <HelpImageSlot
-        caption="The main dashboard showing your school list, current phase, and recent activity."
+        caption="The main dashboard showing your current phase, stats, suggestions, and upcoming deadlines."
       />
       <ul class="mt-4 space-y-2 text-sm text-gray-700">
         <li>
-          <strong>Current Phase</strong> — where you are in the recruiting
-          process (Freshman through Senior)
+          <strong>Timeline card</strong> — your current phase and the milestone
+          tasks left to complete before advancing
         </li>
         <li>
-          <strong>School list</strong> — your saved schools with fit signals and
-          interaction counts
+          <strong>Stats cards</strong> — quick counts across your schools and
+          interactions
         </li>
         <li>
-          <strong>Recent activity</strong> — latest interactions and
-          notifications
+          <strong>Suggestions</strong> — smart recommendations for your next
+          steps
         </li>
         <li>
-          <strong>Tasks</strong> — action items specific to your current phase
+          <strong>Public Profile link</strong> — a shortcut to your shareable
+          public recruiting profile
+        </li>
+        <li>
+          <strong>Recruiting Calendar</strong> — upcoming milestones and
+          deadlines for your sport, division, and graduation year, plus any
+          custom deadlines you've added
+        </li>
+        <li>
+          <strong>Contact Frequency</strong> — how often you're hearing from
+          your tracked coaches
+        </li>
+        <li>
+          <strong>Athlete Activity</strong> — parent accounts only; a summary of
+          the athlete's recent activity
         </li>
       </ul>
     </section>

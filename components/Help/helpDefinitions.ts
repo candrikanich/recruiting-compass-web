@@ -18,10 +18,7 @@ export const helpDefinitions: Record<string, HelpDefinition> = {
     title: "Freshman Phase",
     shortDescription: "Year of exploration and foundation building",
     fullDescription: `During your freshman year, the focus is on exploration and building a foundation. You're getting to know colleges, attending summer camps, starting to build relationships with coaches, and figuring out what you're looking for in a college. You don't need to have committed to anything yet. Tasks include building your target school list, attending camps, and starting to log interactions with coaches.`,
-    relatedLinks: [
-      { label: "Timeline Guide", url: "/docs/timeline" },
-      { label: "Freshman Tasks", url: "/timeline/freshman" },
-    ],
+    relatedLinks: [{ label: "Timeline", url: "/timeline" }],
   },
 
   sophomorePhase: {
@@ -29,10 +26,7 @@ export const helpDefinitions: Record<string, HelpDefinition> = {
     title: "Sophomore Phase",
     shortDescription: "Year of serious pursuit and list refinement",
     fullDescription: `Your sophomore year is when recruiting becomes more serious. You're being actively recruited, you're reaching out to coaches, attending showcases, and narrowing down your list. This is when coaches start paying closer attention to your stats and performance. You're building strong relationships with coaches at your target schools.`,
-    relatedLinks: [
-      { label: "Timeline Guide", url: "/docs/timeline" },
-      { label: "Sophomore Tasks", url: "/timeline/sophomore" },
-    ],
+    relatedLinks: [{ label: "Timeline", url: "/timeline" }],
   },
 
   juniorPhase: {
@@ -40,10 +34,7 @@ export const helpDefinitions: Record<string, HelpDefinition> = {
     title: "Junior Phase",
     shortDescription: "Critical year of intense recruitment",
     fullDescription: `Junior year is typically the most intense recruiting year. Coaches are watching your performance closely, you're having serious conversations about scholarships, and you're taking official visits. Your stats matter more than ever. This is also the year you might commit to a school if you're ready.`,
-    relatedLinks: [
-      { label: "Timeline Guide", url: "/docs/timeline" },
-      { label: "Junior Tasks", url: "/timeline/junior" },
-    ],
+    relatedLinks: [{ label: "Timeline", url: "/timeline" }],
   },
 
   seniorPhase: {
@@ -51,10 +42,7 @@ export const helpDefinitions: Record<string, HelpDefinition> = {
     title: "Senior Phase",
     shortDescription: "Final decision and commitment year",
     fullDescription: `Your senior year is about making your final decision and committing. You've been through three years of recruiting, you know which schools are interested in you, and now you're choosing where to go. This is the finish line. You're signing your letter of intent and getting ready for the next chapter.`,
-    relatedLinks: [
-      { label: "Timeline Guide", url: "/docs/timeline" },
-      { label: "Senior Tasks", url: "/timeline/senior" },
-    ],
+    relatedLinks: [{ label: "Timeline", url: "/timeline" }],
   },
 
   // Fit signals
@@ -75,21 +63,21 @@ We intentionally do not show Athletic Fit or Opportunity Fit because we cannot r
     id: "location-fit",
     title: "Location Fit",
     shortDescription: "Geographic distance from home",
-    fullDescription: `Location fit considers how far the school is from your home and whether it matches your location preferences. Some athletes don't care about distance; others really value being close to home. Shows as a colored label (Strong, Good, Fair, or Limited) — not a numeric score.`,
+    fullDescription: `Location fit considers how far the school is from your home and whether it matches your location preferences. Some athletes don't care about distance; others really value being close to home. Shows as a colored label (Strong, Good, Stretch, or Unknown) — not a numeric score.`,
   },
 
   campusSizeFit: {
     id: "campus-size-fit",
     title: "Campus Size Fit",
     shortDescription: "Enrollment size match with your preference",
-    fullDescription: `Campus size fit compares a school's enrollment against your preferred campus size (small, medium, or large). A school whose enrollment falls in your preferred range shows a stronger signal. Shows as a colored label (Strong, Good, Fair, or Limited) — not a numeric score.`,
+    fullDescription: `Campus size fit compares a school's enrollment against your preferred campus size (small, medium, or large). A school whose enrollment falls in your preferred range shows a stronger signal. Shows as a colored label (Strong, Good, Stretch, or Unknown) — not a numeric score.`,
   },
 
   costFit: {
     id: "cost-fit",
     title: "Cost Fit",
     shortDescription: "Tuition and cost alignment with your sensitivity",
-    fullDescription: `Cost fit evaluates a school's tuition and fees against your cost sensitivity preference. If you've indicated cost is a major factor, schools with lower tuition will show stronger signals. Shows as a colored label (Strong, Good, Fair, or Limited) — not a numeric score.`,
+    fullDescription: `Cost fit evaluates a school's tuition and fees against your cost sensitivity preference. If you've indicated cost is a major factor, schools with lower tuition will show stronger signals. Shows as a colored label (Strong, Good, Stretch, or Unknown) — not a numeric score.`,
   },
 
   // Interest calibration
@@ -98,9 +86,6 @@ We intentionally do not show Athletic Fit or Opportunity Fit because we cannot r
     title: "Interest Calibration",
     shortDescription: "6-question survey to assess school interest",
     fullDescription: `After you log a significant interaction (like a call with a coach), we'll ask you 6 quick questions to calibrate your interest level in that school. Questions like: How interested are you? Would you visit campus? Academic fit? Athletic fit? Location? Next action? Your answers help us understand your genuine interest and suggest next steps.`,
-    relatedLinks: [
-      { label: "Video: Interest Calibration", url: "/videos/calibration" },
-    ],
   },
 
   // Task dependencies
@@ -139,7 +124,6 @@ We intentionally do not show Athletic Fit or Opportunity Fit because we cannot r
     title: "Recovery Plan",
     shortDescription: "Re-engagement strategy for silent coaches",
     fullDescription: `If a coach hasn't interacted with you in 30+ days, Recruiting Compass suggests a recovery plan. This might be a new angle to approach them, optimal timing to reach out, or a sample message to use. It's designed to help you re-engage with coaches who've gone quiet without seeming desperate.`,
-    relatedLinks: [{ label: "Recovery Plan Guide", url: "/docs/recovery" }],
   },
 };
 

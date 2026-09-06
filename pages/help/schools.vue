@@ -126,50 +126,28 @@
       <p class="mb-4 text-sm text-gray-600">
         Choose the type that best describes how contact was made.
       </p>
-      <div class="space-y-3 text-sm">
-        <div class="flex gap-3">
-          <UIcon
-            name="i-heroicons-envelope"
-            class="mt-0.5 size-4 shrink-0 text-gray-400"
-          />
-          <div>
-            <strong>Email</strong> — written correspondence with a coach
-          </div>
+      <div class="space-y-4 text-sm">
+        <div>
+          <p class="mb-1 font-semibold text-gray-800">Contact</p>
+          <p class="text-gray-600">Email, text, phone call, virtual meeting</p>
         </div>
-        <div class="flex gap-3">
-          <UIcon
-            name="i-heroicons-phone"
-            class="mt-0.5 size-4 shrink-0 text-gray-400"
-          />
-          <div><strong>Phone call</strong> — direct conversation by phone</div>
+        <div>
+          <p class="mb-1 font-semibold text-gray-800">Visits</p>
+          <p class="text-gray-600">
+            In-person visit, unofficial visit, official visit
+          </p>
         </div>
-        <div class="flex gap-3">
-          <UIcon
-            name="i-heroicons-building-office"
-            class="mt-0.5 size-4 shrink-0 text-gray-400"
-          />
-          <div>
-            <strong>Campus visit</strong> — official or unofficial campus visit
-          </div>
+        <div>
+          <p class="mb-1 font-semibold text-gray-800">Events</p>
+          <p class="text-gray-600">Camp, showcase, game</p>
         </div>
-        <div class="flex gap-3">
-          <UIcon
-            name="i-heroicons-chat-bubble-left"
-            class="mt-0.5 size-4 shrink-0 text-gray-400"
-          />
-          <div>
-            <strong>Social media</strong> — DMs, follows, or replies on social
-            platforms
-          </div>
+        <div>
+          <p class="mb-1 font-semibold text-gray-800">Social</p>
+          <p class="text-gray-600">Tweet, DM</p>
         </div>
-        <div class="flex gap-3">
-          <UIcon
-            name="i-heroicons-document"
-            class="mt-0.5 size-4 shrink-0 text-gray-400"
-          />
-          <div>
-            <strong>Other</strong> — anything that doesn't fit the above
-          </div>
+        <div>
+          <p class="mb-1 font-semibold text-gray-800">Other</p>
+          <p class="text-gray-600">Interest, other</p>
         </div>
       </div>
       <HelpCallout type="tip">

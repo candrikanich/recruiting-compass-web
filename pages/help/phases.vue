@@ -7,12 +7,12 @@
     <section class="mb-10">
       <HelpSectionHeader title="Overview of recruiting phases" />
       <p class="mb-4 text-sm text-gray-600">
-        The recruiting process is organized into four phases that map to your
-        high school career. Each phase unlocks specific features and actions in
-        the app.
+        The recruiting process is organized into five phases that map to your
+        high school career, ending in Committed once you've made your decision.
+        Each phase unlocks specific features and actions in the app.
       </p>
       <HelpImageSlot
-        caption="The four recruiting phases: Freshman, Sophomore, Junior, and Senior."
+        caption="The five recruiting phases: Freshman, Sophomore, Junior, Senior, and Committed."
       />
     </section>
 
@@ -71,6 +71,17 @@
             your senior year.
           </p>
         </div>
+
+        <div class="rounded-xl border border-gray-200 p-5">
+          <div class="mb-2 flex items-center gap-2">
+            <span class="text-lg font-bold text-gray-900">Committed</span>
+          </div>
+          <p class="text-sm text-gray-600">
+            The final phase, reached once you've made your decision. There's no
+            further phase to advance to — this is where your recruiting journey
+            in the app ends.
+          </p>
+        </div>
       </div>
     </section>
 
@@ -78,23 +89,27 @@
     <section class="mb-10">
       <HelpSectionHeader title="How to advance your phase" />
       <p class="mb-4 text-sm text-gray-600">
-        Phase advancement is a confirmed action — both you and a coach or family
-        member must confirm the transition.
+        Phase advancement is your own call — only the athlete can advance a
+        phase. Parent/guardian family members can view progress but can't
+        trigger or confirm it.
       </p>
-      <HelpStepCard :step="1" title="Open Phase settings">
-        Go to <strong>Settings → Recruiting Phase</strong>.
+      <HelpStepCard :step="1" title="Complete your required tasks">
+        Open
+        <NuxtLink
+          to="/timeline"
+          class="text-primary-600 font-medium hover:underline"
+          >Timeline</NuxtLink
+        >
+        and finish the milestone tasks required for your current phase.
       </HelpStepCard>
-      <HelpStepCard :step="2" title="Request advancement">
-        Tap <strong>Advance to [next phase]</strong>. A confirmation request is
-        sent to your family unit.
-      </HelpStepCard>
-      <HelpStepCard :step="3" title="Family confirms" :last="true">
-        A family member confirms the advancement in their notification feed.
-        Once confirmed, your phase updates and new features unlock.
+      <HelpStepCard :step="2" title="Advance" :last="true">
+        Once every required task is complete, tap
+        <strong>Advance</strong> on the Timeline page. It applies immediately —
+        no one else needs to confirm it.
       </HelpStepCard>
       <HelpCallout type="warning">
         Phase advancement cannot be reversed. Make sure you're ready before
-        requesting the change.
+        advancing.
       </HelpCallout>
     </section>
 
@@ -105,14 +120,15 @@
         Recommendation letters from coaches, teachers, or counselors strengthen
         your recruiting profile. Track all your requests in one place.
       </p>
-      <HelpStepCard :step="1" title="Go to Documents">
+      <HelpStepCard :step="1" title="Go to Recommendations">
         Navigate to
         <NuxtLink
-          to="/documents"
+          to="/recommendations"
           class="text-primary-600 font-medium hover:underline"
-          >Documents</NuxtLink
+          >Recommendations</NuxtLink
         >
-        and select the <strong>Recommendation Letters</strong> tab.
+        in the main nav. This is its own dedicated page, separate from
+        Documents.
       </HelpStepCard>
       <HelpStepCard :step="2" title="Add a new request">
         Tap <strong>Request letter</strong> and enter the recommender's name,
@@ -137,31 +153,36 @@
       <div class="space-y-3 text-sm">
         <div class="flex items-center gap-3">
           <span
-            class="w-24 shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-center text-xs font-medium text-amber-700"
+            class="w-28 shrink-0 rounded-full bg-gray-100 px-2 py-0.5 text-center text-xs font-medium text-gray-700"
+            >Not Requested</span
+          >
+          <span class="text-gray-600">Default state — nothing sent yet.</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <span
+            class="w-28 shrink-0 rounded-full bg-blue-100 px-2 py-0.5 text-center text-xs font-medium text-blue-700"
             >Requested</span
           >
           <span class="text-gray-600"
-            >You've submitted the request. Waiting for the recommender to
-            confirm.</span
+            >You've asked the recommender for a letter.</span
           >
         </div>
         <div class="flex items-center gap-3">
           <span
-            class="w-24 shrink-0 rounded-full bg-blue-100 px-2 py-0.5 text-center text-xs font-medium text-blue-700"
-            >In progress</span
-          >
-          <span class="text-gray-600"
-            >The recommender has confirmed they'll write it.</span
-          >
-        </div>
-        <div class="flex items-center gap-3">
-          <span
-            class="w-24 shrink-0 rounded-full bg-green-100 px-2 py-0.5 text-center text-xs font-medium text-green-700"
+            class="w-28 shrink-0 rounded-full bg-green-100 px-2 py-0.5 text-center text-xs font-medium text-green-700"
             >Received</span
           >
           <span class="text-gray-600"
-            >The letter has been submitted to the school or delivered to
-            you.</span
+            >The letter has been delivered to you or your recommender.</span
+          >
+        </div>
+        <div class="flex items-center gap-3">
+          <span
+            class="w-28 shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-center text-xs font-medium text-amber-700"
+            >Submitted</span
+          >
+          <span class="text-gray-600"
+            >The letter has been sent on to the school.</span
           >
         </div>
       </div>
