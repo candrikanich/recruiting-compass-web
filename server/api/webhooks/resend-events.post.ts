@@ -27,6 +27,7 @@ const KNOWN_EVENT_TYPES = new Set([
   "complained",
   "opened",
   "clicked",
+  "failed",
 ]);
 
 interface ResendEventPayload {

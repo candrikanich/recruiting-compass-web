@@ -18,7 +18,8 @@ create table if not exists public.email_events (
       'bounced',
       'complained',
       'opened',
-      'clicked'
+      'clicked',
+      'failed'
     )
   ),
   recipient_email text,

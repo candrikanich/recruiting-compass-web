@@ -7,6 +7,7 @@
  * Security: CRON_SECRET via withCronRun (Bearer or x-cron-secret).
  */
 import { defineEventHandler } from "h3";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import { createLogger } from "~/server/utils/logger";
 import { withCronRun } from "~/server/utils/cronRunner";
@@ -22,7 +23,10 @@ function daysAgo(days: number): string {
 
 export default defineEventHandler(async (event) =>
   withCronRun(event, "email-events-purge", async (ctx) => {
-    const supabase = useSupabaseAdmin();
+    // email_events is not yet in the generated Database schema (migration
+    // applied live via MCP, types not regenerated) — same untyped-client
+    // pattern used by server/utils/adminAudit.ts.
+    const supabase = useSupabaseAdmin() as unknown as SupabaseClient;
 
     const { data: deleted, error } = await supabase
       .from("email_events")

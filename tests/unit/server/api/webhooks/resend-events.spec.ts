@@ -18,7 +18,12 @@ vi.mock("~/server/utils/verifyResendEventWebhook", () => ({
   verifyResendEventWebhook: vi.fn(),
 }));
 vi.mock("~/server/utils/logger", () => ({
-  useLogger: () => ({ debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() }),
+  useLogger: () => ({
+    debug: vi.fn(),
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+  }),
 }));
 
 const mockState = {
@@ -29,7 +34,8 @@ const mockState = {
 vi.mock("~/server/utils/supabase", () => ({
   useSupabaseAdmin: () => ({
     from: (table: string) => {
-      if (table !== "email_events") throw new Error(`unexpected table ${table}`);
+      if (table !== "email_events")
+        throw new Error(`unexpected table ${table}`);
       return {
         insert: (row: Record<string, unknown>) => {
           mockState.insertedRow = row;
@@ -59,19 +65,19 @@ describe("POST /api/webhooks/resend-events", () => {
     vi.mocked(verifyResendEventWebhook).mockImplementation(() => {
       throw new Error("Invalid webhook signature");
     });
-    const { default: handler } = await import(
-      "~/server/api/webhooks/resend-events.post"
-    );
+    const { default: handler } =
+      await import("~/server/api/webhooks/resend-events.post");
     await expect(
       handler({} as Parameters<typeof handler>[0]),
     ).rejects.toMatchObject({ statusCode: 401 });
   });
 
   it("skips an unrecognized payload shape", async () => {
-    vi.mocked(verifyResendEventWebhook).mockReturnValue({ type: "email.delivered" });
-    const { default: handler } = await import(
-      "~/server/api/webhooks/resend-events.post"
-    );
+    vi.mocked(verifyResendEventWebhook).mockReturnValue({
+      type: "email.delivered",
+    });
+    const { default: handler } =
+      await import("~/server/api/webhooks/resend-events.post");
     const result = await handler({} as Parameters<typeof handler>[0]);
     expect(result).toEqual({ ok: true, skipped: "unrecognized-payload" });
     expect(mockState.insertedRow).toBeUndefined();
@@ -83,9 +89,8 @@ describe("POST /api/webhooks/resend-events", () => {
       created_at: "2026-09-06T00:00:00Z",
       data: { email_id: "msg_1", to: ["coach@school.edu"], subject: "hi" },
     });
-    const { default: handler } = await import(
-      "~/server/api/webhooks/resend-events.post"
-    );
+    const { default: handler } =
+      await import("~/server/api/webhooks/resend-events.post");
     const result = await handler({} as Parameters<typeof handler>[0]);
     expect(result).toEqual({ ok: true, skipped: "unhandled-type" });
     expect(mockState.insertedRow).toBeUndefined();
@@ -97,9 +102,8 @@ describe("POST /api/webhooks/resend-events", () => {
       created_at: "2026-09-06T00:00:00Z",
       data: { email_id: "msg_1", to: ["coach@school.edu"], subject: "hi" },
     });
-    const { default: handler } = await import(
-      "~/server/api/webhooks/resend-events.post"
-    );
+    const { default: handler } =
+      await import("~/server/api/webhooks/resend-events.post");
     const result = await handler({} as Parameters<typeof handler>[0]);
     expect(result).toEqual({ ok: true });
     expect(mockState.insertedRow).toMatchObject({
@@ -118,9 +122,8 @@ describe("POST /api/webhooks/resend-events", () => {
       created_at: "2026-09-06T00:00:00Z",
       data: { email_id: "msg_2", to: ["coach@school.edu"] },
     });
-    const { default: handler } = await import(
-      "~/server/api/webhooks/resend-events.post"
-    );
+    const { default: handler } =
+      await import("~/server/api/webhooks/resend-events.post");
     await expect(
       handler({} as Parameters<typeof handler>[0]),
     ).rejects.toMatchObject({ statusCode: 500 });

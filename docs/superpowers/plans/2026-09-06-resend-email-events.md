@@ -571,7 +571,7 @@ RESEND_API_KEY=your_resend_api_key_here
 RESEND_EVENTS_WEBHOOK_SECRET=your_resend_events_webhook_signing_secret_here
 ```
 
-- [ ] **Step 6: Manual step — note for Chris, not code:** After this ships, register the webhook in the Resend dashboard: Webhooks → Add Endpoint → URL `https://myrecruitingcompass.com/api/webhooks/resend-events` → subscribe to `email.sent`, `email.delivered`, `email.delivery_delayed`, `email.bounced`, `email.complained`, `email.opened`, `email.clicked` → copy the generated signing secret into `RESEND_EVENTS_WEBHOOK_SECRET` in Vercel env vars (prod + QA) and redeploy.
+- [ ] **Step 6: Manual step — note for Chris, not code:** After this ships, register the webhook in the Resend dashboard: Webhooks → Add Endpoint → URL `https://myrecruitingcompass.com/api/webhooks/resend-events` → subscribe to `email.sent`, `email.delivered`, `email.delivery_delayed`, `email.bounced`, `email.complained`, `email.opened`, `email.clicked`, `email.failed` → copy the generated signing secret into `RESEND_EVENTS_WEBHOOK_SECRET` in Vercel env vars (prod + QA) and redeploy.
 
 - [ ] **Step 7: Commit**
 

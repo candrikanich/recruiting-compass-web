@@ -20,10 +20,22 @@ vi.mock("~/server/utils/logger", () => ({
 }));
 
 const rows = [
-  { id: "evt-1", message_id: "msg-1", event_type: "delivered", recipient_email: "a@b.com", subject: "hi", occurred_at: "2026-09-06T00:00:00Z", created_at: "2026-09-06T00:00:00Z" },
+  {
+    id: "evt-1",
+    message_id: "msg-1",
+    event_type: "delivered",
+    recipient_email: "a@b.com",
+    subject: "hi",
+    occurred_at: "2026-09-06T00:00:00Z",
+    created_at: "2026-09-06T00:00:00Z",
+  },
 ];
 
-function buildQueryChain(finalResult: { data: unknown; error: unknown; count: number }) {
+function buildQueryChain(finalResult: {
+  data: unknown;
+  error: unknown;
+  count: number;
+}) {
   const chain: Record<string, unknown> = {};
   chain.select = vi.fn(() => chain);
   chain.order = vi.fn(() => chain);
@@ -44,30 +56,27 @@ import { getQuery } from "h3";
 describe("GET /api/admin/email-events", () => {
   it("returns rows and total", async () => {
     vi.mocked(getQuery).mockReturnValue({});
-    const { default: handler } = await import(
-      "~/server/api/admin/email-events.get"
-    );
+    const { default: handler } =
+      await import("~/server/api/admin/email-events.get");
     const result = await handler({} as Parameters<typeof handler>[0]);
     expect(result).toEqual({ rows, total: 1 });
   });
 
   it("clamps limit to 200", async () => {
     vi.mocked(getQuery).mockReturnValue({ limit: "9999" });
-    const { default: handler } = await import(
-      "~/server/api/admin/email-events.get"
+    const { default: handler } =
+      await import("~/server/api/admin/email-events.get");
+    await expect(handler({} as Parameters<typeof handler>[0])).resolves.toEqual(
+      { rows, total: 1 },
     );
-    await expect(
-      handler({} as Parameters<typeof handler>[0]),
-    ).resolves.toEqual({ rows, total: 1 });
   });
 
   it("clamps negative limit to 1", async () => {
     vi.mocked(getQuery).mockReturnValue({ limit: "-5" });
-    const { default: handler } = await import(
-      "~/server/api/admin/email-events.get"
+    const { default: handler } =
+      await import("~/server/api/admin/email-events.get");
+    await expect(handler({} as Parameters<typeof handler>[0])).resolves.toEqual(
+      { rows, total: 1 },
     );
-    await expect(
-      handler({} as Parameters<typeof handler>[0]),
-    ).resolves.toEqual({ rows, total: 1 });
   });
 });

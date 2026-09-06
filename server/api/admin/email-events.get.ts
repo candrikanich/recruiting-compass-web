@@ -48,10 +48,7 @@ export default defineEventHandler(
       const query = getQuery(event);
       const limit = Math.max(
         1,
-        Math.min(
-          parseInt(String(query.limit ?? "50"), 10) || 50,
-          200,
-        ),
+        Math.min(parseInt(String(query.limit ?? "50"), 10) || 50, 200),
       );
       const offset = Math.max(
         parseInt(String(query.offset ?? "0"), 10) || 0,

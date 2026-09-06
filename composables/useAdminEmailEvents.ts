@@ -26,7 +26,8 @@ export function useAdminEmailEvents() {
       if (opts.limit !== undefined) params.set("limit", String(opts.limit));
       if (opts.offset !== undefined) params.set("offset", String(opts.offset));
       if (opts.eventType) params.set("eventType", opts.eventType);
-      if (opts.recipientEmail) params.set("recipientEmail", opts.recipientEmail);
+      if (opts.recipientEmail)
+        params.set("recipientEmail", opts.recipientEmail);
       const qs = params.toString();
       return `/api/admin/email-events${qs ? `?${qs}` : ""}`;
     },

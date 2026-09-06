@@ -29,9 +29,18 @@ describe("verifyResendEventWebhook", () => {
   });
 
   it("returns the verified payload on a valid signature", () => {
-    verifyMock.mockReturnValue({ type: "email.delivered", data: { email_id: "msg_1" } });
-    const result = verifyResendEventWebhook('{"type":"email.delivered"}', headers);
-    expect(result).toEqual({ type: "email.delivered", data: { email_id: "msg_1" } });
+    verifyMock.mockReturnValue({
+      type: "email.delivered",
+      data: { email_id: "msg_1" },
+    });
+    const result = verifyResendEventWebhook(
+      '{"type":"email.delivered"}',
+      headers,
+    );
+    expect(result).toEqual({
+      type: "email.delivered",
+      data: { email_id: "msg_1" },
+    });
   });
 
   it("throws when the secret is not configured", () => {
