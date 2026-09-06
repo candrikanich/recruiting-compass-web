@@ -24,6 +24,7 @@ vi.mock("~/server/utils/parseForwardedEmail", () => ({
 }));
 vi.mock("~/server/utils/matchCoachByEmail", () => ({
   matchCoachByEmail: vi.fn(),
+  autoCreateCoachByEmailDomain: vi.fn(),
 }));
 vi.mock("~/server/utils/logger", () => ({
   useLogger: () => ({ debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() }),
@@ -90,7 +91,7 @@ import { readRawBody, getHeaders } from "h3";
 import { verifyResendWebhook } from "~/server/utils/verifyResendWebhook";
 import { parseInboundToken, resolveFamilyByInboundToken } from "~/server/utils/familyInboundToken";
 import { parseForwardedEmail } from "~/server/utils/parseForwardedEmail";
-import { matchCoachByEmail } from "~/server/utils/matchCoachByEmail";
+import { matchCoachByEmail, autoCreateCoachByEmailDomain } from "~/server/utils/matchCoachByEmail";
 
 describe("POST /api/webhooks/inbound-email", () => {
   beforeEach(() => {
@@ -103,6 +104,10 @@ describe("POST /api/webhooks/inbound-email", () => {
     mockState.draftInsertRow = undefined;
     mockState.notificationRows = undefined;
     receivingGetMock.mockReset();
+    vi.mocked(autoCreateCoachByEmailDomain).mockReset().mockResolvedValue({
+      coachId: null,
+      schoolId: null,
+    });
   });
 
   it("rejects a bad signature with 401", async () => {
@@ -163,6 +168,7 @@ describe("POST /api/webhooks/inbound-email", () => {
     const { default: handler } = await import("~/server/api/webhooks/inbound-email.post");
     const result = await handler({} as Parameters<typeof handler>[0]);
 
+    expect(autoCreateCoachByEmailDomain).not.toHaveBeenCalled();
     expect(receivingGetMock).toHaveBeenCalledWith("email-1");
     expect(parseForwardedEmail).toHaveBeenCalledWith(
       "On Mon, Sep 2, 2026 at 3:15 PM Coach Smith <smith@osu.edu> wrote:\n> hi",
@@ -218,6 +224,51 @@ describe("POST /api/webhooks/inbound-email", () => {
       matched_coach_id: null,
       sender_name: null,
       body_text: null,
+      status: "pending",
+    });
+  });
+
+  it("falls back to the school-domain auto-create when no coach matches", async () => {
+    vi.mocked(verifyResendWebhook).mockReturnValue({
+      type: "email.received",
+      data: {
+        email_id: "email-1",
+        to: ["family-ab3d9f2c@inbound.therecruitingcompass.com"],
+        from: "Player <player@example.com>",
+        subject: "Fwd: Camp invite",
+        created_at: "2026-09-02T15:15:00.000Z",
+      },
+    });
+    vi.mocked(parseInboundToken).mockReturnValue("ab3d9f2c");
+    vi.mocked(resolveFamilyByInboundToken).mockResolvedValue("family-1");
+    receivingGetMock.mockResolvedValue({
+      data: { text: "On Mon, Sep 2, 2026 at 3:15 PM Coach Smith <smith@osu.edu> wrote:\n> hi" },
+      error: null,
+    });
+    vi.mocked(parseForwardedEmail).mockReturnValue({
+      senderName: "Coach Smith",
+      senderEmail: "smith@osu.edu",
+      originalDate: "Mon, Sep 2, 2026 at 3:15 PM",
+    });
+    vi.mocked(matchCoachByEmail).mockResolvedValue({ coachId: null, schoolId: null });
+    vi.mocked(autoCreateCoachByEmailDomain).mockResolvedValue({
+      coachId: "auto-coach-1",
+      schoolId: "school-1",
+    });
+
+    const { default: handler } = await import("~/server/api/webhooks/inbound-email.post");
+    const result = await handler({} as Parameters<typeof handler>[0]);
+
+    expect(autoCreateCoachByEmailDomain).toHaveBeenCalledWith(expect.anything(), {
+      familyUnitId: "family-1",
+      senderEmail: "smith@osu.edu",
+      senderName: "Coach Smith",
+    });
+    expect(result).toEqual({ ok: true });
+    expect(mockState.draftInsertRow).toMatchObject({
+      family_unit_id: "family-1",
+      matched_coach_id: "auto-coach-1",
+      matched_school_id: "school-1",
       status: "pending",
     });
   });

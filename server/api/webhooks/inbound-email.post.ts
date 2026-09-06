@@ -23,7 +23,7 @@ import { useLogger } from "~/server/utils/logger";
 import { verifyResendWebhook } from "~/server/utils/verifyResendWebhook";
 import { parseInboundToken, resolveFamilyByInboundToken } from "~/server/utils/familyInboundToken";
 import { parseForwardedEmail } from "~/server/utils/parseForwardedEmail";
-import { matchCoachByEmail } from "~/server/utils/matchCoachByEmail";
+import { matchCoachByEmail, autoCreateCoachByEmailDomain } from "~/server/utils/matchCoachByEmail";
 import type { Database, Json } from "~/types/database";
 
 /**
@@ -120,10 +120,20 @@ export default defineEventHandler(async (event) => {
   }
 
   const parsed = bodyText ? parseForwardedEmail(bodyText) : null;
-  const { coachId, schoolId } = await matchCoachByEmail(admin, {
+  const existingMatch = await matchCoachByEmail(admin, {
     familyUnitId,
     email: parsed?.senderEmail,
   });
+  // No existing coach for this sender — try a school-domain match before
+  // falling back to an unmatched draft (see autoCreateCoachByEmailDomain's
+  // doc comment for why this never runs on the public Contact-Player flow).
+  const { coachId, schoolId } = existingMatch.coachId
+    ? existingMatch
+    : await autoCreateCoachByEmailDomain(admin, {
+        familyUnitId,
+        senderEmail: parsed?.senderEmail,
+        senderName: parsed?.senderName,
+      });
 
   const draftInsert: DraftInsert = {
     family_unit_id: familyUnitId,
@@ -173,6 +183,10 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  logger.info("Inbound email draft created", { familyUnitId, matched: !!coachId });
+  logger.info("Inbound email draft created", {
+    familyUnitId,
+    matched: !!coachId,
+    autoCreatedCoach: !existingMatch.coachId && !!coachId,
+  });
   return { ok: true };
 });
