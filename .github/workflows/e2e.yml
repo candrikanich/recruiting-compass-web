@@ -57,6 +57,13 @@ jobs:
           NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.TEST_SUPABASE_URL }}
           NUXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.TEST_SUPABASE_ANON_KEY }}
 
+      - name: Upload build output
+        uses: actions/upload-artifact@v7
+        with:
+          name: e2e-build-output
+          path: .output/
+          retention-days: 1
+
       - name: Run E2E tests
         run: npm run test:e2e
         env:
@@ -94,10 +101,11 @@ jobs:
   # WebKit (Safari) — non-blocking initially; failures are reported but don't gate the PR
   e2e-webkit:
     name: Playwright E2E Tests (WebKit/Safari)
+    needs: e2e-tests
     runs-on: ubuntu-latest
     timeout-minutes: 75
     continue-on-error: true
-    if: github.actor != 'dependabot[bot]'
+    if: always() && github.actor != 'dependabot[bot]'
 
     steps:
       - name: Checkout code
@@ -117,16 +125,11 @@ jobs:
         # via chromium.launch() (portable across browsers) before the webkit run.
         run: npx playwright install --with-deps webkit chromium
 
-      - name: Prepare Nuxt
-        run: npx nuxi prepare
-
-      - name: Build application
-        run: npm run build
-        env:
-          NITRO_PRESET: node-server
-          # ssr:false bakes NUXT_PUBLIC_* into the client bundle at build time.
-          NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.TEST_SUPABASE_URL }}
-          NUXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.TEST_SUPABASE_ANON_KEY }}
+      - name: Download build output
+        uses: actions/download-artifact@v7
+        with:
+          name: e2e-build-output
+          path: .output/
 
       - name: Run E2E tests (WebKit only)
         # WebKit is substantially less stable under parallel load in CI
