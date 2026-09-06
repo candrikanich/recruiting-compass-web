@@ -105,3 +105,27 @@ close; that work isn't committed/stable yet.
 
 Final diff after backporting: schema parity confirmed, modulo the
 concurrent session's in-flight, uncommitted work (expected exclusion).
+
+## Task 7 — Data Migration (COMPLETE)
+
+Chris's family unit `9a39e02b-657f-47f1-b1ff-d2f61215792a` (chris@andrikanich.com
+parent, owen@andrikanich.com player) copied staging → prod in full,
+FK-dependency order. Method: `auth.users` + `public.users` copied manually
+(password hash preserved — same login works on prod, no reset needed);
+remaining tables copied via a temporary SELECT-only Postgres role
+(`migration_reader`, granted `BYPASSRLS` after RLS blocked read access —
+approved by Chris, dropped immediately after use) + `dblink` from prod
+directly to staging, avoiding routing row data through chat for the larger
+tables (schools 54 rows, coaches 68 rows).
+
+Verified row counts match the pre-migration dry-run exactly on every
+table: family_units 1, users 2, family_members 2, schools 54, coaches 68,
+player_profiles 2, documents 1, interactions 13, performance_metrics 5,
+profile_contacts 15, communication_templates 2, video_links 1,
+athlete_messages 8, family_invitations 1, family_subscriptions 1 (had to
+UPDATE not INSERT — a trigger auto-created a default row on
+`family_units` insert), user_deadlines 1.
+
+`migration_reader` role fully dropped (grants revoked first) — confirmed
+absent from `pg_roles` post-cleanup. `dblink` extension left enabled on
+prod (harmless, standard extension, may be useful again).
