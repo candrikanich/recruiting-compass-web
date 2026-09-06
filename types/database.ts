@@ -2595,6 +2595,36 @@ export type Database = {
         }
         Relationships: []
       }
+      scholarship_limits: {
+        Row: {
+          division: string
+          equivalency: number | null
+          head_count: number | null
+          id: string
+          notes: string | null
+          sport: string
+          total: number | null
+        }
+        Insert: {
+          division: string
+          equivalency?: number | null
+          head_count?: number | null
+          id?: string
+          notes?: string | null
+          sport: string
+          total?: number | null
+        }
+        Update: {
+          division?: string
+          equivalency?: number | null
+          head_count?: number | null
+          id?: string
+          notes?: string | null
+          sport?: string
+          total?: number | null
+        }
+        Relationships: []
+      }
       school_recommendation_dismissals: {
         Row: {
           athlete_user_id: string
@@ -2697,6 +2727,7 @@ export type Database = {
           instagram_handle: string | null
           is_favorite: boolean | null
           location: string | null
+          mascot: string | null
           name: string
           notes: string | null
           offer_details: Json | null
@@ -2705,6 +2736,7 @@ export type Database = {
           questionnaire_completed: boolean
           questionnaire_completed_at: string | null
           recruiting_approach: string | null
+          school_colors: string[] | null
           state: string | null
           status: Database["public"]["Enums"]["school_status"] | null
           status_changed_at: string | null
@@ -2737,6 +2769,7 @@ export type Database = {
           instagram_handle?: string | null
           is_favorite?: boolean | null
           location?: string | null
+          mascot?: string | null
           name: string
           notes?: string | null
           offer_details?: Json | null
@@ -2745,6 +2778,7 @@ export type Database = {
           questionnaire_completed?: boolean
           questionnaire_completed_at?: string | null
           recruiting_approach?: string | null
+          school_colors?: string[] | null
           state?: string | null
           status?: Database["public"]["Enums"]["school_status"] | null
           status_changed_at?: string | null
@@ -2777,6 +2811,7 @@ export type Database = {
           instagram_handle?: string | null
           is_favorite?: boolean | null
           location?: string | null
+          mascot?: string | null
           name?: string
           notes?: string | null
           offer_details?: Json | null
@@ -2785,6 +2820,7 @@ export type Database = {
           questionnaire_completed?: boolean
           questionnaire_completed_at?: string | null
           recruiting_approach?: string | null
+          school_colors?: string[] | null
           state?: string | null
           status?: Database["public"]["Enums"]["school_status"] | null
           status_changed_at?: string | null
@@ -3959,3 +3995,4 @@ export const Constants = {
     },
   },
 } as const
+

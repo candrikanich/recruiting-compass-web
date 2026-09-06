@@ -292,6 +292,8 @@
 
 <script setup lang="ts">
 import { ref, onMounted, reactive, computed } from "vue";
+import { useFamilyCtx } from "~/composables/useFamilyCtx";
+import { useRealtimeDocumentsList } from "~/composables/useRealtimeDocumentsList";
 import { useDocumentsConsolidated } from "~/composables/useDocumentsConsolidated";
 import { useSchools } from "~/composables/useSchools";
 import { useUniversalFilter } from "~/composables/useUniversalFilter";
@@ -572,6 +574,14 @@ const handleDeleteDocument = async (docId: string) => {
     );
   }
 };
+
+// Live-update documents list when data changes from another device/session.
+const { activeFamilyId } = useFamilyCtx();
+useRealtimeDocumentsList(activeFamilyId, {
+  onDocumentChange: async () => {
+    await fetchDocuments();
+  },
+});
 
 onMounted(async () => {
   if (!userStore.user) return;
