@@ -128,6 +128,10 @@ onMounted(() => fetchGrowth(30));
           label="Coach match rate"
           :value="formatPct(growth.inboundEmail.coachMatchRate)"
         />
+        <AdminStatTile
+          label="Families using inbound email"
+          :value="formatPct(growth.inboundEmail.familyAdoptionPct)"
+        />
       </div>
     </template>
   </section>

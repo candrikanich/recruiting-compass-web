@@ -23,6 +23,7 @@ import {
   adoption,
   confirmationRate,
   coachMatchRate,
+  familyAdoptionRate,
   type ActivityRow,
 } from "~/utils/growthAnalytics";
 import type { AdminGrowth } from "~/types/adminGrowth";
@@ -36,7 +37,13 @@ const ACTIVITY = [
   { table: "offers", ts: "created_at", user: "user_id" },
 ] as const;
 
-/** Tables used for feature-adoption counts — how many distinct users have touched each. */
+/**
+ * Tables used for feature-adoption counts — how many distinct users have
+ * touched each. `adoption()`'s denominator is always a USER count, so a
+ * family-scoped table (no user_id) does NOT belong here — inbound_email_drafts
+ * is reported separately below via `familyAdoptionRate` instead, against a
+ * families denominator.
+ */
 const ADOPTION_TABLES = [
   "athlete_messages",
   "interactions",
@@ -46,17 +53,11 @@ const ADOPTION_TABLES = [
   "offers",
   "performance_metrics",
   "documents",
-  "inbound_email_drafts",
 ] as const;
 
-/**
- * Column adoption dedupes on, per table. Most features are per-user;
- * inbound_email_drafts has no user_id (the webhook writes it, not a user),
- * so "adoption" there means distinct families with >=1 draft.
- */
+/** Column adoption dedupes on, per table. Every table here is per-user. */
 function adoptionUserCol(table: string): string {
   if (table === "interactions") return "logged_by";
-  if (table === "inbound_email_drafts") return "family_unit_id";
   return "user_id";
 }
 
@@ -173,6 +174,7 @@ async function loadAdoptionUserIds(
 interface InboundDraftRow {
   status: string;
   matchedCoachId: string | null;
+  familyUnitId: string | null;
 }
 
 async function loadInboundDraftRows(
@@ -183,7 +185,7 @@ async function loadInboundDraftRows(
   try {
     const { data, error } = await db
       .from("inbound_email_drafts")
-      .select("status, matched_coach_id")
+      .select("status, matched_coach_id, family_unit_id")
       .gte("created_at", windowStart.toISOString());
     if (error) {
       logger.warn("Inbound draft read failed", { error });
@@ -193,6 +195,7 @@ async function loadInboundDraftRows(
       (r) => ({
         status: String(r.status),
         matchedCoachId: (r.matched_coach_id as string | null) ?? null,
+        familyUnitId: (r.family_unit_id as string | null) ?? null,
       }),
     );
   } catch (err) {
@@ -233,6 +236,7 @@ export default defineEventHandler(async (event): Promise<AdminGrowth> => {
     [invitesSent, invitesAccepted, accounts, onboarded],
     featureUserIds,
     inboundDraftRows,
+    totalFamilies,
   ] = await Promise.all([
     loadActivityRows(db, activityFloorStart, logger),
     Promise.all([
@@ -245,6 +249,7 @@ export default defineEventHandler(async (event): Promise<AdminGrowth> => {
     ]),
     loadAdoptionUserIds(db, logger),
     loadInboundDraftRows(db, windowStart, logger),
+    countOf(db, "family_units", logger),
   ]);
 
   const activity = {
@@ -269,6 +274,10 @@ export default defineEventHandler(async (event): Promise<AdminGrowth> => {
     inboundEmail: {
       confirmationRate: confirmationRate(inboundDraftRows),
       coachMatchRate: coachMatchRate(inboundDraftRows),
+      familyAdoptionPct: familyAdoptionRate(
+        inboundDraftRows.map((r) => r.familyUnitId),
+        totalFamilies,
+      ),
     },
     windowDays: days,
   };

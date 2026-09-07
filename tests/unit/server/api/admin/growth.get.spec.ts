@@ -107,10 +107,10 @@ describe("GET /api/admin/growth", () => {
   it("returns inboundEmail confirmation + coach-match rates over the window", async () => {
     const now = new Date().toISOString();
     data["inbound_email_drafts"] = [
-      { status: "confirmed", matched_coach_id: "c1", created_at: now },
-      { status: "confirmed", matched_coach_id: null, created_at: now },
-      { status: "discarded", matched_coach_id: null, created_at: now },
-      { status: "pending", matched_coach_id: null, created_at: now },
+      { status: "confirmed", matched_coach_id: "c1", created_at: now, family_unit_id: "fam-1" },
+      { status: "confirmed", matched_coach_id: null, created_at: now, family_unit_id: "fam-1" },
+      { status: "discarded", matched_coach_id: null, created_at: now, family_unit_id: "fam-2" },
+      { status: "pending", matched_coach_id: null, created_at: now, family_unit_id: "fam-3" },
     ];
 
     const res = await handler(ev("30"));
@@ -128,7 +128,28 @@ describe("GET /api/admin/growth", () => {
 
     expect(res.inboundEmail.confirmationRate).toBeNull();
     expect(res.inboundEmail.coachMatchRate).toBeNull();
+    expect(res.inboundEmail.familyAdoptionPct).toBeNull();
     // The rest of the panel still renders — one failing table doesn't 500 the whole endpoint.
     expect(res.funnel.length).toBeGreaterThan(0);
+  });
+
+  it("reports inbound-email adoption as a families rate, not folded into the users-denominator adoption chart", async () => {
+    const now = new Date().toISOString();
+    counts["family_units"] = 4;
+    data["inbound_email_drafts"] = [
+      { status: "confirmed", matched_coach_id: "c1", created_at: now, family_unit_id: "fam-1" },
+      { status: "confirmed", matched_coach_id: "c2", created_at: now, family_unit_id: "fam-2" },
+      // Same family as fam-1 — must dedupe, not double-count.
+      { status: "pending", matched_coach_id: null, created_at: now, family_unit_id: "fam-1" },
+    ];
+
+    const res = await handler(ev("30"));
+
+    // 2 distinct families (fam-1, fam-2) / 4 total families = 50%.
+    expect(res.inboundEmail.familyAdoptionPct).toBe(50);
+    // Never appears in the shared users-denominator adoption feature list.
+    expect(
+      res.adoption.features.some((f: { feature: string }) => f.feature === "inbound_email_drafts"),
+    ).toBe(false);
   });
 });

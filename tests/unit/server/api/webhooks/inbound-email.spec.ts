@@ -514,6 +514,36 @@ describe("POST /api/webhooks/inbound-email", () => {
     ]);
   });
 
+  it("sanitizes a hostile filename before building the storage path, keeping the original filename for display", async () => {
+    mockSingleSegmentEmail();
+    receivingGetMock.mockResolvedValue({
+      data: {
+        text: "hi",
+        attachments: [
+          { id: "att-1", filename: "../../etc/passwd.pdf", size: 1024, content_type: "application/pdf" },
+        ],
+      },
+      error: null,
+    });
+    attachmentsGetMock.mockResolvedValue({
+      data: { download_url: "https://resend.example/signed/att-1" },
+      error: null,
+    });
+
+    const { default: handler } = await import("~/server/api/webhooks/inbound-email.post");
+    const result = await handler({} as Parameters<typeof handler>[0]);
+
+    expect(result).toEqual({ ok: true });
+    expect(mockState.storageUploads).toHaveLength(1);
+    const uploadedPath = mockState.storageUploads[0].path;
+    expect(uploadedPath.startsWith("family-1/inbound/draft-1-")).toBe(true);
+    expect(uploadedPath).not.toContain("/etc/");
+    expect(uploadedPath).not.toContain("..");
+    expect(uploadedPath).not.toContain("/passwd.pdf");
+    // Display metadata keeps the original filename.
+    expect(mockState.attachmentInsertRows[0].filename).toBe("../../etc/passwd.pdf");
+  });
+
   it("skips an attachment whose type isn't on the coach_attachment allowlist, without failing the webhook", async () => {
     mockSingleSegmentEmail();
     receivingGetMock.mockResolvedValue({
@@ -574,6 +604,43 @@ describe("POST /api/webhooks/inbound-email", () => {
     expect(attachmentsGetMock).not.toHaveBeenCalled();
     expect(mockState.storageUploads).toHaveLength(0);
     expect(mockState.attachmentInsertRows).toHaveLength(0);
+  });
+
+  it("drops a segment whose parsed sender is the forwarder's own address (coach reply quoting the player)", async () => {
+    vi.mocked(verifyResendWebhook).mockReturnValue({
+      type: "email.received",
+      data: {
+        email_id: "email-1",
+        to: ["family-ab3d9f2c@inbound.therecruitingcompass.com"],
+        from: "Player Kid <kid@example.com>",
+        subject: "Re: hi",
+        created_at: "2026-09-02T15:15:00.000Z",
+      },
+    });
+    vi.mocked(parseInboundToken).mockReturnValue("ab3d9f2c");
+    vi.mocked(resolveFamilyByInboundToken).mockResolvedValue("family-1");
+    receivingGetMock.mockResolvedValue({ data: { text: "irrelevant, parseForwardedThread is mocked" }, error: null });
+    // Coach's segment first, then the coach's reply quoting the player's own
+    // earlier message — the second segment's parsed sender is the forwarder.
+    vi.mocked(parseForwardedThread).mockReturnValue([
+      {
+        parsed: { senderName: "Coach Alpha", senderEmail: "alpha@osu.edu", originalDate: "Sep 2, 2026" },
+        segmentText: "segment-coach",
+      },
+      {
+        parsed: { senderName: "Player Kid", senderEmail: "kid@example.com", originalDate: "Sep 1, 2026" },
+        segmentText: "segment-player-quote",
+      },
+    ]);
+    vi.mocked(matchCoachByEmail).mockResolvedValue({ coachId: "coach-1", schoolId: "school-1" });
+
+    const { default: handler } = await import("~/server/api/webhooks/inbound-email.post");
+    const result = await handler({} as Parameters<typeof handler>[0]);
+
+    expect(result).toEqual({ ok: true });
+    expect(mockState.draftInsertRows).toHaveLength(1);
+    expect(mockState.draftInsertRows[0]).toMatchObject({ sender_email: "alpha@osu.edu" });
+    expect(mockState.notificationRowBatches).toHaveLength(1);
   });
 
   it("continues to remaining segments and still returns 200 when one segment's draft insert fails", async () => {

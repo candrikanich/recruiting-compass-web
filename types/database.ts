@@ -980,39 +980,6 @@ export type Database = {
         };
         Relationships: [];
       };
-      email_events: {
-        Row: {
-          created_at: string;
-          event_type: string;
-          id: string;
-          message_id: string;
-          occurred_at: string;
-          raw_payload: Json;
-          recipient_email: string | null;
-          subject: string | null;
-        };
-        Insert: {
-          created_at?: string;
-          event_type: string;
-          id?: string;
-          message_id: string;
-          occurred_at: string;
-          raw_payload: Json;
-          recipient_email?: string | null;
-          subject?: string | null;
-        };
-        Update: {
-          created_at?: string;
-          event_type?: string;
-          id?: string;
-          message_id?: string;
-          occurred_at?: string;
-          raw_payload?: Json;
-          recipient_email?: string | null;
-          subject?: string | null;
-        };
-        Relationships: [];
-      };
       email_optouts: {
         Row: {
           created_at: string;

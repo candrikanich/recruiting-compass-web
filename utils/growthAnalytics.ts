@@ -95,6 +95,23 @@ export function coachMatchRate(
   return Math.round((matched / drafts.length) * 100);
 }
 
+/**
+ * Feature-adoption share for a FAMILY-scoped feature (e.g. inbound email
+ * drafts, which have no user_id) — distinct families with >=1 row, divided
+ * by total families. Kept separate from `adoption()` below because that
+ * helper's denominator is always a USER count; mixing a family-count feature
+ * into it would understate its adoption by roughly half. `null` (not NaN)
+ * when there are no families yet.
+ */
+export function familyAdoptionRate(
+  draftFamilyIds: (string | null)[],
+  totalFamilies: number,
+): number | null {
+  if (totalFamilies <= 0) return null;
+  const families = new Set(draftFamilyIds.filter((id): id is string => Boolean(id)));
+  return Math.round((families.size / totalFamilies) * 100);
+}
+
 export function adoption(
   featureUserIds: Record<string, string[]>,
   totalUsers: number,

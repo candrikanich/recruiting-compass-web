@@ -73,6 +73,33 @@ function resolveOccurredAt(originalDate: string | null | undefined, fallback: st
   return Number.isNaN(parsed.getTime()) ? fallback : parsed.toISOString();
 }
 
+/**
+ * Extracts the bare address out of a `"Name <email>"` or plain `email`
+ * header value, lowercased for case-insensitive comparison. Never throws —
+ * a header that doesn't parse just yields null.
+ */
+function extractEmailAddress(headerValue: string | null | undefined): string | null {
+  if (!headerValue) return null;
+  const angleMatch = /<([^<>\s]+@[^<>\s]+)>/.exec(headerValue);
+  const raw = angleMatch ? angleMatch[1] : headerValue.trim();
+  return raw.includes("@") ? raw.toLowerCase() : null;
+}
+
+/**
+ * Reduces an (attacker-influenceable, third-party) attachment filename to a
+ * safe storage-key segment — letters/digits/`.`/`_`/`-` only, repeated dots
+ * collapsed (blocks `../` traversal), capped to a sane length. The ORIGINAL
+ * filename is kept as-is in `raw_inbound_attachments.filename` /
+ * `documents.title` for display — only the storage path uses this.
+ */
+function sanitizeFilenameForStorage(filename: string): string {
+  const safe = filename
+    .replace(/[^A-Za-z0-9._-]/g, "_")
+    .replace(/\.{2,}/g, ".")
+    .replace(/^\.+/, "");
+  return (safe || "attachment").slice(0, 200);
+}
+
 function isResendInboundPayload(value: unknown): value is ResendInboundPayload {
   if (!value || typeof value !== "object") return false;
   const data = (value as { data?: unknown }).data;
@@ -165,7 +192,7 @@ async function stageAttachments(
       continue;
     }
 
-    const storagePath = `${params.familyUnitId}/inbound/${params.draftId}-${filename}`;
+    const storagePath = `${params.familyUnitId}/inbound/${params.draftId}-${sanitizeFilenameForStorage(filename)}`;
     const { error: uploadError } = await admin.storage
       .from("documents")
       .upload(storagePath, Buffer.from(fileBuffer), {
@@ -257,9 +284,22 @@ export default defineEventHandler(async (event) => {
   // "On ... wrote:" block — and gets one draft per segment below. Today's
   // normal case (0 or 1 quote markers) always comes back as exactly one
   // segment covering the whole body, so that path is unchanged.
-  const segments: { parsed: ParsedForward | null; segmentText: string | null }[] = bodyText
+  const allSegments: { parsed: ParsedForward | null; segmentText: string | null }[] = bodyText
     ? parseForwardedThread(bodyText)
     : [{ parsed: null, segmentText: null }];
+
+  // A coach's reply commonly quotes the player's OWN earlier message
+  // ("On ... wrote:" pointing at the forwarder, not the coach) — that quote
+  // is itself a valid segment boundary but not a second real message, so it
+  // must not become a second draft. Drop any segment whose parsed sender is
+  // the forwarder (the player who did the forwarding) — the highest-value,
+  // lowest-cost filter; a full family-member-email check would need an
+  // extra query this handler doesn't otherwise need.
+  const forwarderEmail = extractEmailAddress(payload.data.from);
+  const segments = allSegments.filter((segment) => {
+    const senderEmail = extractEmailAddress(segment.parsed?.senderEmail ?? null);
+    return !(forwarderEmail && senderEmail && senderEmail === forwarderEmail);
+  });
 
   const { data: familyMembers } = await admin
     .from("family_members")

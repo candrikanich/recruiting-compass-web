@@ -20,6 +20,7 @@ const growth = {
   inboundEmail: {
     confirmationRate: 67,
     coachMatchRate: null,
+    familyAdoptionPct: 50,
   },
   windowDays: 30,
 };
@@ -70,5 +71,6 @@ describe("admin growth page", () => {
     const text = w.text();
     expect(text).toContain("Confirmation rate:67%");
     expect(text).toContain("Coach match rate:No data yet");
+    expect(text).toContain("Families using inbound email:50%");
   });
 });

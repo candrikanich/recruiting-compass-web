@@ -12,6 +12,12 @@ vi.mock("h3", async () => {
   };
 });
 vi.mock("~/server/utils/auth", () => ({ requireAuth: vi.fn() }));
+vi.mock("~/server/utils/resolveAthleteId", () => ({
+  resolveAthleteId: vi.fn(async (userId: string) => {
+    if (mockState.callerRole !== "parent") return userId;
+    return mockState.playerMember?.user_id ?? userId;
+  }),
+}));
 vi.mock("~/server/utils/logger", () => ({
   useLogger: () => ({ debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() }),
 }));
@@ -25,14 +31,45 @@ const mockState = {
   updateAffectsRow: true,
   stagedAttachments: [] as Record<string, unknown>[],
   documentInsertRows: undefined as Record<string, unknown>[] | undefined,
+  // resolveAthleteId's dependencies: the confirming user's role, and (when
+  // they're a parent) their family's player member.
+  callerRole: "parent" as "parent" | "player",
+  playerMember: { user_id: "player-1" } as { user_id: string } | null,
 };
 
 vi.mock("~/server/utils/supabase", () => ({
   useSupabaseAdmin: () => ({
     from: (table: string) => {
+      if (table === "users") {
+        return {
+          select: () => ({
+            eq: () => ({ single: async () => ({ data: { role: mockState.callerRole }, error: null }) }),
+          }),
+        };
+      }
       if (table === "family_members") {
         return {
-          select: () => ({ eq: () => ({ single: async () => ({ data: mockState.membership, error: null }) }) }),
+          select: () => ({
+            eq: (col: string, value: string) => {
+              // resolveFamilyUnitId: .eq("user_id", userId).single()
+              // resolveAthleteId: .eq("user_id", userId).eq("role", "parent").maybeSingle()
+              //               or: .eq("family_unit_id", id).eq("role", "player").maybeSingle()
+              return {
+                single: async () => ({ data: mockState.membership, error: null }),
+                eq: (col2: string, value2: string) => ({
+                  maybeSingle: async () => {
+                    if (col2 === "role" && value2 === "parent") {
+                      return { data: { family_unit_id: mockState.membership?.family_unit_id }, error: null };
+                    }
+                    if (col2 === "role" && value2 === "player") {
+                      return { data: mockState.playerMember, error: null };
+                    }
+                    return { data: null, error: null };
+                  },
+                }),
+              };
+            },
+          }),
         };
       }
       if (table === "inbound_email_drafts") {
@@ -91,6 +128,11 @@ vi.mock("~/server/utils/supabase", () => ({
       }
       throw new Error(`unexpected table ${table}`);
     },
+    storage: {
+      from: (bucket: string) => ({
+        getPublicUrl: (path: string) => ({ data: { publicUrl: `https://storage.example/${bucket}/${path}` } }),
+      }),
+    },
   }),
 }));
 
@@ -109,6 +151,8 @@ describe("POST /api/inbound-drafts/:id/confirm", () => {
     mockState.updateAffectsRow = true;
     mockState.stagedAttachments = [];
     mockState.documentInsertRows = undefined;
+    mockState.callerRole = "parent";
+    mockState.playerMember = { user_id: "player-1" };
   });
 
   it("404s when the draft isn't found or belongs to another family", async () => {
@@ -212,9 +256,10 @@ describe("POST /api/inbound-drafts/:id/confirm", () => {
         interaction_id: "interaction-1",
         family_unit_id: "family-1",
         school_id: "school-1",
-        user_id: "user-1",
+        // Athlete-owned regardless of who confirmed (a parent, here).
+        user_id: "player-1",
         uploaded_by: "user-1",
-        file_url: "family-1/inbound/draft-1-camp-invite.pdf",
+        file_url: "https://storage.example/documents/family-1/inbound/draft-1-camp-invite.pdf",
         file_type: "application/pdf",
         title: "camp-invite.pdf",
       },
@@ -223,15 +268,46 @@ describe("POST /api/inbound-drafts/:id/confirm", () => {
         interaction_id: "interaction-1",
         family_unit_id: "family-1",
         school_id: "school-1",
-        user_id: "user-1",
+        user_id: "player-1",
         uploaded_by: "user-1",
-        file_url: "family-1/inbound/draft-1-roster.docx",
+        file_url: "https://storage.example/documents/family-1/inbound/draft-1-roster.docx",
         file_type: "application/msword",
         title: "roster.docx",
       },
     ]);
     // The draft still gets confirmed even though it carried attachments.
     expect(mockState.updatedDraft).toMatchObject({ status: "confirmed" });
+  });
+
+  it("owns the created documents by the athlete's user id, not the confirming parent's, and resolves a public file_url", async () => {
+    mockState.draft = {
+      id: "draft-1",
+      family_unit_id: "family-1",
+      status: "pending",
+      matched_school_id: "school-1",
+      matched_coach_id: "coach-1",
+      subject: "Fwd: Camp",
+      body_text: "hi",
+      occurred_at: "2026-09-02T15:15:00.000Z",
+      confirmed_interaction_id: null,
+    };
+    mockState.stagedAttachments = [
+      { filename: "camp-invite.pdf", content_type: "application/pdf", storage_path: "family-1/inbound/draft-1-camp-invite.pdf" },
+    ];
+    mockState.callerRole = "parent";
+    mockState.playerMember = { user_id: "player-1" };
+
+    const { default: handler } = await import("~/server/api/inbound-drafts/[id]/confirm.post");
+    await handler({} as Parameters<typeof handler>[0]);
+
+    expect(mockState.documentInsertRows).toHaveLength(1);
+    expect(mockState.documentInsertRows![0]).toMatchObject({
+      user_id: "player-1",
+      uploaded_by: "user-1",
+      file_url: "https://storage.example/documents/family-1/inbound/draft-1-camp-invite.pdf",
+    });
+    // A bare storage path is never written as file_url — every viewer treats it as a URL.
+    expect(mockState.documentInsertRows![0].file_url).not.toBe("family-1/inbound/draft-1-camp-invite.pdf");
   });
 
   it("400s for a malformed draft id", async () => {

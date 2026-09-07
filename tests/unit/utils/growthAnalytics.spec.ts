@@ -6,6 +6,7 @@ import {
   adoption,
   confirmationRate,
   coachMatchRate,
+  familyAdoptionRate,
 } from "~/utils/growthAnalytics";
 
 const rows = [
@@ -91,5 +92,19 @@ describe("growthAnalytics", () => {
 
   it("coachMatchRate is null (not NaN) on a zero-draft window", () => {
     expect(coachMatchRate([])).toBeNull();
+  });
+
+  it("familyAdoptionRate dedupes families and divides by total families, not users", () => {
+    // 3 drafts, but only 2 distinct families — must not overcount, and must
+    // not use a users denominator the way adoption() does.
+    expect(familyAdoptionRate(["fam-1", "fam-1", "fam-2"], 4)).toBe(50);
+  });
+
+  it("familyAdoptionRate ignores null family ids", () => {
+    expect(familyAdoptionRate(["fam-1", null, null], 2)).toBe(50);
+  });
+
+  it("familyAdoptionRate is null (not NaN) when there are no families yet", () => {
+    expect(familyAdoptionRate([], 0)).toBeNull();
   });
 });

@@ -12,6 +12,7 @@ import { requireAuth } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import { useLogger } from "~/server/utils/logger";
 import { resolveFamilyUnitId } from "~/server/utils/familyMembership";
+import { resolveAthleteId } from "~/server/utils/resolveAthleteId";
 
 const UUID_SHAPE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const confirmBodySchema = z.object({
@@ -107,14 +108,22 @@ export default defineEventHandler(async (event) => {
     if (stagedAttachmentsError) {
       logger.error("Failed to load staged inbound attachments", stagedAttachmentsError);
     } else if (stagedAttachments && stagedAttachments.length > 0) {
+      // Documents are athlete-owned regardless of who confirms the draft —
+      // a parent confirming must not park the attachment on their own
+      // (unlisted) Documents page. `uploaded_by` stays the actual confirming
+      // user; only `user_id` (the list-scoping owner) is resolved to the
+      // athlete. Inherits resolveAthleteId's known .maybeSingle() gap on
+      // multi-athlete families (tracked separately) — same helper every
+      // other family-scoped write path already uses.
+      const athleteUserId = await resolveAthleteId(userId, admin);
       const documentInserts = stagedAttachments.map((attachment) => ({
         type: "coach_attachment" as const,
         interaction_id: interaction.id,
         family_unit_id: draft.family_unit_id,
         school_id: schoolId,
-        user_id: userId,
+        user_id: athleteUserId,
         uploaded_by: userId,
-        file_url: attachment.storage_path,
+        file_url: admin.storage.from("documents").getPublicUrl(attachment.storage_path).data.publicUrl,
         file_type: attachment.content_type,
         title: attachment.filename,
       }));
