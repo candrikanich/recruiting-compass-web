@@ -89,10 +89,17 @@
           description="Ready-to-send emails personalized with your recruiting data"
         >
           <template #icon>
-            <UIcon name="i-heroicons-document-text" class="h-8 w-8 text-brand-slate-400" />
+            <UIcon
+              name="i-heroicons-document-text"
+              class="h-8 w-8 text-brand-slate-400"
+            />
           </template>
           <template #action>
-            <DesignSystemButton color="blue" variant="solid" @click="filterType = null">
+            <DesignSystemButton
+              color="blue"
+              variant="solid"
+              @click="filterType = null"
+            >
               Browse Coach Outreach Templates
             </DesignSystemButton>
           </template>

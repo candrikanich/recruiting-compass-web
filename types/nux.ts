@@ -40,8 +40,7 @@ export function parseNuxProgress(raw: unknown): NuxProgress {
   return {
     version: typeof obj.version === "number" ? obj.version : 1,
     checklist: {
-      items:
-        (checklist?.items as NuxProgress["checklist"]["items"]) ?? {},
+      items: (checklist?.items as NuxProgress["checklist"]["items"]) ?? {},
       dismissedAt: (checklist?.dismissedAt as string | null) ?? null,
     },
     firstVisits: (obj.firstVisits as Record<string, string>) ?? {},

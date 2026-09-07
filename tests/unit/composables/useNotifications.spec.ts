@@ -264,7 +264,10 @@ describe("useNotifications reactivity", () => {
 
   it("deleteNotification: removes the notification from local state after a successful delete", async () => {
     mockSupabase.from.mockReturnValueOnce(
-      chainableQuery({ data: [createMockNotification({ id: "n1" })], error: null }),
+      chainableQuery({
+        data: [createMockNotification({ id: "n1" })],
+        error: null,
+      }),
     );
     const { notifications, fetchNotifications, deleteNotification } =
       useNotifications();
@@ -285,7 +288,10 @@ describe("useNotifications reactivity", () => {
 
   it("deleteNotification: rejects and leaves local state untouched when the delete fails", async () => {
     mockSupabase.from.mockReturnValueOnce(
-      chainableQuery({ data: [createMockNotification({ id: "n1" })], error: null }),
+      chainableQuery({
+        data: [createMockNotification({ id: "n1" })],
+        error: null,
+      }),
     );
     const { notifications, fetchNotifications, deleteNotification } =
       useNotifications();

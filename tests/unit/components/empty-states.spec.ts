@@ -175,9 +175,7 @@ describe("Empty states — DesignSystemEmptyState adoption", () => {
     const EventsPage = (await import("~/pages/events/index.vue")).default;
     const wrapper = mount(EventsPage);
     await flushPromises();
-    expect(
-      wrapper.findComponent(DesignSystemEmptyState).exists(),
-    ).toBe(true);
+    expect(wrapper.findComponent(DesignSystemEmptyState).exists()).toBe(true);
     expect(wrapper.text()).toContain("No events yet");
     expect(wrapper.text()).toContain("Schedule Your First Event");
   });
@@ -186,21 +184,16 @@ describe("Empty states — DesignSystemEmptyState adoption", () => {
     const OffersPage = (await import("~/pages/offers/index.vue")).default;
     const wrapper = mount(OffersPage);
     await flushPromises();
-    expect(
-      wrapper.findComponent(DesignSystemEmptyState).exists(),
-    ).toBe(true);
+    expect(wrapper.findComponent(DesignSystemEmptyState).exists()).toBe(true);
     expect(wrapper.text()).toContain("No offers tracked");
     expect(wrapper.text()).toContain("Track Your First Offer");
   });
 
   it("Documents page renders DesignSystemEmptyState with CTA when no documents", async () => {
-    const DocumentsPage = (await import("~/pages/documents/index.vue"))
-      .default;
+    const DocumentsPage = (await import("~/pages/documents/index.vue")).default;
     const wrapper = mount(DocumentsPage);
     await flushPromises();
-    expect(
-      wrapper.findComponent(DesignSystemEmptyState).exists(),
-    ).toBe(true);
+    expect(wrapper.findComponent(DesignSystemEmptyState).exists()).toBe(true);
     expect(wrapper.text()).toContain("No documents yet");
     expect(wrapper.text()).toContain("Upload Your First Document");
   });
@@ -210,9 +203,7 @@ describe("Empty states — DesignSystemEmptyState adoption", () => {
       .default;
     const wrapper = mount(PerformancePage);
     await flushPromises();
-    expect(
-      wrapper.findComponent(DesignSystemEmptyState).exists(),
-    ).toBe(true);
+    expect(wrapper.findComponent(DesignSystemEmptyState).exists()).toBe(true);
     expect(wrapper.text()).toContain("No stats logged");
     expect(wrapper.text()).toContain("Log Your First Stats");
   });
@@ -221,9 +212,7 @@ describe("Empty states — DesignSystemEmptyState adoption", () => {
     const DeadlinesPage = (await import("~/pages/deadlines.vue")).default;
     const wrapper = mount(DeadlinesPage);
     await flushPromises();
-    expect(
-      wrapper.findComponent(DesignSystemEmptyState).exists(),
-    ).toBe(true);
+    expect(wrapper.findComponent(DesignSystemEmptyState).exists()).toBe(true);
     expect(wrapper.text()).toContain("No deadlines yet");
     expect(wrapper.text()).toContain("Add Deadline");
   });
@@ -234,9 +223,7 @@ describe("Empty states — DesignSystemEmptyState adoption", () => {
     ).default;
     const wrapper = mount(RecommendationsPage);
     await flushPromises();
-    expect(
-      wrapper.findComponent(DesignSystemEmptyState).exists(),
-    ).toBe(true);
+    expect(wrapper.findComponent(DesignSystemEmptyState).exists()).toBe(true);
     expect(wrapper.text()).toContain("No recommendations");
     expect(wrapper.text()).toContain("Request a Recommendation");
   });
@@ -245,9 +232,7 @@ describe("Empty states — DesignSystemEmptyState adoption", () => {
     const TasksPage = (await import("~/pages/tasks/index.vue")).default;
     const wrapper = mount(TasksPage);
     await flushPromises();
-    expect(
-      wrapper.findComponent(DesignSystemEmptyState).exists(),
-    ).toBe(true);
+    expect(wrapper.findComponent(DesignSystemEmptyState).exists()).toBe(true);
     expect(wrapper.text()).toContain("No tasks yet");
     expect(wrapper.text()).toContain("Your tasks appear as you progress");
   });
@@ -258,9 +243,7 @@ describe("Empty states — DesignSystemEmptyState adoption", () => {
     ).default;
     const wrapper = mount(TemplatesPage);
     await flushPromises();
-    expect(
-      wrapper.findComponent(DesignSystemEmptyState).exists(),
-    ).toBe(true);
+    expect(wrapper.findComponent(DesignSystemEmptyState).exists()).toBe(true);
     expect(wrapper.text()).toContain("No templates found");
     expect(wrapper.text()).toContain("Browse Coach Outreach Templates");
   });
@@ -269,9 +252,7 @@ describe("Empty states — DesignSystemEmptyState adoption", () => {
     const ActivityPage = (await import("~/pages/activity.vue")).default;
     const wrapper = mount(ActivityPage);
     await flushPromises();
-    expect(
-      wrapper.findComponent(DesignSystemEmptyState).exists(),
-    ).toBe(true);
+    expect(wrapper.findComponent(DesignSystemEmptyState).exists()).toBe(true);
     expect(wrapper.text()).toContain("No activity yet");
     expect(wrapper.text()).toContain(
       "Your activity feed starts when you begin tracking",
@@ -281,13 +262,10 @@ describe("Empty states — DesignSystemEmptyState adoption", () => {
   });
 
   it("Analytics page renders DesignSystemEmptyState with CTA when no schools", async () => {
-    const AnalyticsPage = (await import("~/pages/analytics/index.vue"))
-      .default;
+    const AnalyticsPage = (await import("~/pages/analytics/index.vue")).default;
     const wrapper = mount(AnalyticsPage);
     await flushPromises();
-    expect(
-      wrapper.findComponent(DesignSystemEmptyState).exists(),
-    ).toBe(true);
+    expect(wrapper.findComponent(DesignSystemEmptyState).exists()).toBe(true);
     expect(wrapper.text()).toContain("No analytics yet");
     expect(wrapper.text()).toContain(
       "Add a school to see recruiting analytics",

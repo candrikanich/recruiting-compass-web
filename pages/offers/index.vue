@@ -352,7 +352,11 @@
           <UIcon name="i-heroicons-gift" class="h-8 w-8 text-brand-slate-400" />
         </template>
         <template #action>
-          <DesignSystemButton color="blue" variant="solid" @click="showAddForm = true">
+          <DesignSystemButton
+            color="blue"
+            variant="solid"
+            @click="showAddForm = true"
+          >
             Track Your First Offer
           </DesignSystemButton>
         </template>

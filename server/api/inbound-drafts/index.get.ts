@@ -19,7 +19,10 @@ export default defineEventHandler(async (event) => {
     const admin = useSupabaseAdmin();
 
     const rawStatus = getQuery(event).status;
-    if (rawStatus !== undefined && !VALID_STATUSES.includes(rawStatus as (typeof VALID_STATUSES)[number])) {
+    if (
+      rawStatus !== undefined &&
+      !VALID_STATUSES.includes(rawStatus as (typeof VALID_STATUSES)[number])
+    ) {
       throw createError({ statusCode: 400, statusMessage: "Invalid status" });
     }
     const status = rawStatus as (typeof VALID_STATUSES)[number] | undefined;
@@ -31,18 +34,27 @@ export default defineEventHandler(async (event) => {
     if (status !== "all") {
       query = query.eq("status", status ?? "pending");
     }
-    const { data: drafts, error: draftsError } = await query.order("created_at", {
-      ascending: false,
-    });
+    const { data: drafts, error: draftsError } = await query.order(
+      "created_at",
+      {
+        ascending: false,
+      },
+    );
     if (draftsError) {
       logger.error("Failed to list inbound drafts", draftsError);
-      throw createError({ statusCode: 500, statusMessage: "Failed to load drafts" });
+      throw createError({
+        statusCode: 500,
+        statusMessage: "Failed to load drafts",
+      });
     }
 
     return { drafts: drafts ?? [] };
   } catch (err) {
     if (err instanceof Error && "statusCode" in err) throw err;
     logger.error("Failed to list inbound drafts", err);
-    throw createError({ statusCode: 500, statusMessage: "Failed to load drafts" });
+    throw createError({
+      statusCode: 500,
+      statusMessage: "Failed to load drafts",
+    });
   }
 });

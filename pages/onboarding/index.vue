@@ -316,7 +316,9 @@ const progressPercentage = computed(() => {
 });
 
 const onSportChange = () => {
-  const sport = ((onboardingData.value.primary_sport as string) || "").toLowerCase();
+  const sport = (
+    (onboardingData.value.primary_sport as string) || ""
+  ).toLowerCase();
   const derivedGender = SPORT_GENDER_MAP[sport];
   if (derivedGender) {
     onboardingData.value.gender = derivedGender;
@@ -372,8 +374,7 @@ const clearError = () => {
 
 const saveStep1 = async () => {
   const onboardingGender = onboardingData.value.gender as
-    | PlayerDetails["gender"]
-    | undefined;
+    PlayerDetails["gender"] | undefined;
   await setPlayerDetails({
     graduation_year: onboardingData.value.graduation_year as number,
     primary_sport: onboardingData.value.primary_sport as string,

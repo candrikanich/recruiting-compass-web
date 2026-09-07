@@ -4,7 +4,11 @@ import { useAuthFetch } from "~/composables/useAuthFetch";
 import { usePreferenceManager } from "~/composables/usePreferenceManager";
 import { useSchoolStore } from "~/stores/schools";
 import { useRecruitingDeadlines } from "~/composables/useRecruitingDeadlines";
-import { mergeDeadlines, groupByMonth, splitUpcomingPast } from "~/utils/deadlines";
+import {
+  mergeDeadlines,
+  groupByMonth,
+  splitUpcomingPast,
+} from "~/utils/deadlines";
 import type { UnifiedDeadline } from "~/types/deadline";
 import type { AppSport, Division } from "~/utils/recruitingCalendar/types";
 

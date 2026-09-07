@@ -13,7 +13,8 @@ import { useSupabaseAdmin } from "~/server/utils/supabase";
 import { useLogger } from "~/server/utils/logger";
 import { resolveFamilyUnitId } from "~/server/utils/familyMembership";
 
-const UUID_SHAPE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const UUID_SHAPE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const confirmBodySchema = z.object({
   schoolId: z.string().regex(UUID_SHAPE, "Invalid UUID").optional(),
 });
@@ -50,7 +51,10 @@ export default defineEventHandler(async (event) => {
       return { ok: true, interactionId: draft.confirmed_interaction_id };
     }
     if (draft.status === "discarded") {
-      throw createError({ statusCode: 422, statusMessage: "Cannot confirm a discarded draft" });
+      throw createError({
+        statusCode: 422,
+        statusMessage: "Cannot confirm a discarded draft",
+      });
     }
 
     let schoolId = draft.matched_school_id;
@@ -58,7 +62,8 @@ export default defineEventHandler(async (event) => {
       if (!parsed.data.schoolId) {
         throw createError({
           statusCode: 422,
-          statusMessage: "schoolId is required — this draft has no matched school",
+          statusMessage:
+            "schoolId is required — this draft has no matched school",
         });
       }
       // schools is family-scoped; the admin client bypasses RLS, so confirm
@@ -71,7 +76,10 @@ export default defineEventHandler(async (event) => {
         .eq("family_unit_id", draft.family_unit_id)
         .maybeSingle();
       if (!school) {
-        throw createError({ statusCode: 422, statusMessage: "Invalid schoolId" });
+        throw createError({
+          statusCode: 422,
+          statusMessage: "Invalid schoolId",
+        });
       }
       schoolId = school.id;
     }
@@ -93,7 +101,10 @@ export default defineEventHandler(async (event) => {
       .single();
     if (insertError || !interaction) {
       logger.error("Failed to create interaction from draft", insertError);
-      throw createError({ statusCode: 500, statusMessage: "Failed to confirm draft" });
+      throw createError({
+        statusCode: 500,
+        statusMessage: "Failed to confirm draft",
+      });
     }
 
     // Only flip status when it's still "pending" — closes the observable race
@@ -107,7 +118,10 @@ export default defineEventHandler(async (event) => {
       .select("id");
     if (updateError) {
       logger.error("Failed to mark draft confirmed", updateError);
-      throw createError({ statusCode: 500, statusMessage: "Failed to confirm draft" });
+      throw createError({
+        statusCode: 500,
+        statusMessage: "Failed to confirm draft",
+      });
     }
     if (!updatedRows || updatedRows.length === 0) {
       // Another request already confirmed this draft first. Our own
@@ -119,13 +133,19 @@ export default defineEventHandler(async (event) => {
         .select("confirmed_interaction_id")
         .eq("id", draftId)
         .maybeSingle();
-      return { ok: true, interactionId: current?.confirmed_interaction_id ?? interaction.id };
+      return {
+        ok: true,
+        interactionId: current?.confirmed_interaction_id ?? interaction.id,
+      };
     }
 
     return { ok: true, interactionId: interaction.id };
   } catch (err) {
     if (err instanceof Error && "statusCode" in err) throw err;
     logger.error("Failed to confirm inbound draft", err);
-    throw createError({ statusCode: 500, statusMessage: "Failed to confirm draft" });
+    throw createError({
+      statusCode: 500,
+      statusMessage: "Failed to confirm draft",
+    });
   }
 });

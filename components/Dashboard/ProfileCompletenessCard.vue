@@ -8,11 +8,7 @@
       <div class="flex items-start gap-6">
         <!-- Circular SVG progress ring -->
         <div class="shrink-0">
-          <svg
-            viewBox="0 0 120 120"
-            class="h-32 w-32"
-            aria-hidden="true"
-          >
+          <svg viewBox="0 0 120 120" class="h-32 w-32" aria-hidden="true">
             <!-- Background circle -->
             <circle
               cx="60"
@@ -64,7 +60,7 @@
             <div
               v-for="prompt in topThreePrompts"
               :key="prompt.id"
-              class="flex items-center justify-between rounded-md bg-brand-slate-50 p-3 hover:bg-brand-slate-100 transition-colors"
+              class="flex items-center justify-between rounded-md bg-brand-slate-50 p-3 transition-colors hover:bg-brand-slate-100"
             >
               <span class="text-sm text-brand-slate-700">
                 {{ prompt.message }}
@@ -95,7 +91,9 @@
           </p>
         </div>
         <!-- Compact horizontal bar -->
-        <div class="h-2 w-32 shrink-0 overflow-hidden rounded-full bg-brand-slate-200">
+        <div
+          class="h-2 w-32 shrink-0 overflow-hidden rounded-full bg-brand-slate-200"
+        >
           <div
             :style="{ width: `${completeness}%` }"
             class="h-full bg-brand-blue-600 transition-all duration-500"
@@ -116,8 +114,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
-import { useProfileCompleteness } from '~/composables/useProfileCompleteness';
+import { ref, computed, onMounted } from "vue";
+import { useProfileCompleteness } from "~/composables/useProfileCompleteness";
 
 const { completeness, loading, updateCompleteness } = useProfileCompleteness();
 
@@ -125,29 +123,31 @@ const { completeness, loading, updateCompleteness } = useProfileCompleteness();
 // In production, these would come from a more complete data source
 const allPrompts = [
   {
-    id: 'gpa',
-    message: 'Add your GPA for better fit scores from colleges',
-    link: '/settings/player-details?tab=academics',
-    priority: 'medium',
+    id: "gpa",
+    message: "Add your GPA for better fit scores from colleges",
+    link: "/settings/player-details?tab=academics",
+    priority: "medium",
   },
   {
-    id: 'test_scores',
-    message: 'Add your SAT or ACT scores to improve visibility',
-    link: '/settings/player-details?tab=academics',
-    priority: 'medium',
+    id: "test_scores",
+    message: "Add your SAT or ACT scores to improve visibility",
+    link: "/settings/player-details?tab=academics",
+    priority: "medium",
   },
   {
-    id: 'highlight_video',
-    message: 'Upload a highlight video to showcase your athletic abilities',
-    link: '/settings/player-details?tab=public-profile',
-    priority: 'high',
+    id: "highlight_video",
+    message: "Upload a highlight video to showcase your athletic abilities",
+    link: "/settings/player-details?tab=public-profile",
+    priority: "high",
   },
 ];
 
 const topThreePrompts = computed(() => {
   const priorityMap: Record<string, number> = { high: 0, medium: 1, low: 2 };
   return [...allPrompts]
-    .sort((a, b) => (priorityMap[a.priority] ?? 2) - (priorityMap[b.priority] ?? 2))
+    .sort(
+      (a, b) => (priorityMap[a.priority] ?? 2) - (priorityMap[b.priority] ?? 2),
+    )
     .slice(0, 3);
 });
 

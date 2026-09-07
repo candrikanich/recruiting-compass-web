@@ -108,8 +108,7 @@ describe("useUserPreferencesV2", () => {
 
     it("keeps preferences empty when response has no data", async () => {
       mockFetchAuth.mockResolvedValue({ exists: false });
-      const { loadPreferences, preferences } =
-        useUserPreferencesV2("filters");
+      const { loadPreferences, preferences } = useUserPreferencesV2("filters");
 
       await loadPreferences();
 
@@ -134,8 +133,7 @@ describe("useUserPreferencesV2", () => {
     it("handles corrupt localStorage gracefully on fallback", async () => {
       localStorageMock["user_prefs_display"] = "not-json{{{";
       mockFetchAuth.mockRejectedValue(new Error("offline"));
-      const { loadPreferences, preferences } =
-        useUserPreferencesV2("display");
+      const { loadPreferences, preferences } = useUserPreferencesV2("display");
 
       await loadPreferences();
 
@@ -333,8 +331,7 @@ describe("useUserPreferencesV2", () => {
 
     it("sets saving false even on error", async () => {
       mockFetchAuth.mockRejectedValue(new Error("fail"));
-      const { deletePreferences, isSaving } =
-        useUserPreferencesV2("display");
+      const { deletePreferences, isSaving } = useUserPreferencesV2("display");
 
       await deletePreferences().catch(() => {});
 
@@ -365,8 +362,7 @@ describe("useUserPreferencesV2", () => {
     });
 
     it("overwrites an existing key", () => {
-      const { updatePreference, preferences } =
-        useUserPreferencesV2("filters");
+      const { updatePreference, preferences } = useUserPreferencesV2("filters");
 
       updatePreference("sortBy", "name");
       updatePreference("sortBy", "date");
@@ -416,8 +412,7 @@ describe("useUserPreferencesV2", () => {
 
     it("clears a previous error", async () => {
       mockFetchAuth.mockRejectedValue(new Error("load fail"));
-      const { loadPreferences, clear, error } =
-        useUserPreferencesV2("filters");
+      const { loadPreferences, clear, error } = useUserPreferencesV2("filters");
 
       await loadPreferences();
       expect(error.value).toBe("load fail");

@@ -134,8 +134,7 @@ describe("GET /api/deadlines (family-scoped)", () => {
       throw new Error(`unexpected table ${table}`);
     });
 
-    const handler = (await import("~/server/api/deadlines/index.get"))
-      .default;
+    const handler = (await import("~/server/api/deadlines/index.get")).default;
     await handler(fakeEvent());
 
     expect(eqSpy).toHaveBeenCalledWith("family_unit_id", FAMILY_ID);
@@ -147,8 +146,7 @@ describe("GET /api/deadlines (family-scoped)", () => {
       throw new Error(`unexpected table ${table}`);
     });
 
-    const handler = (await import("~/server/api/deadlines/index.get"))
-      .default;
+    const handler = (await import("~/server/api/deadlines/index.get")).default;
     await expect(handler(fakeEvent())).rejects.toMatchObject({
       statusCode: 500,
     });
@@ -165,8 +163,7 @@ describe("POST /api/deadlines (family-scoped)", () => {
 
     const insertSpy = vi.fn(() => ({
       select: () => ({
-        single: () =>
-          Promise.resolve({ data: { id: "d1" }, error: null }),
+        single: () => Promise.resolve({ data: { id: "d1" }, error: null }),
       }),
     }));
     mockSupabase.from.mockImplementation((table: string) => {
@@ -175,8 +172,7 @@ describe("POST /api/deadlines (family-scoped)", () => {
       throw new Error(`unexpected table ${table}`);
     });
 
-    const handler = (await import("~/server/api/deadlines/index.post"))
-      .default;
+    const handler = (await import("~/server/api/deadlines/index.post")).default;
     await handler(fakeEvent());
 
     expect(insertSpy).toHaveBeenCalledWith([

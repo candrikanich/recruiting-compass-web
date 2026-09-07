@@ -296,9 +296,7 @@ describe("useCoaches", () => {
       ];
       mockQuery.in = vi.fn().mockReturnValue({
         order: vi.fn().mockReturnValue({
-          order: vi
-            .fn()
-            .mockResolvedValue({ data: mockCoaches, error: null }),
+          order: vi.fn().mockResolvedValue({ data: mockCoaches, error: null }),
         }),
       });
 
@@ -318,12 +316,10 @@ describe("useCoaches", () => {
     it("handles fetch error", async () => {
       mockQuery.in = vi.fn().mockReturnValue({
         order: vi.fn().mockReturnValue({
-          order: vi
-            .fn()
-            .mockResolvedValue({
-              data: null,
-              error: new Error("Query failed"),
-            }),
+          order: vi.fn().mockResolvedValue({
+            data: null,
+            error: new Error("Query failed"),
+          }),
         }),
       });
 
@@ -408,9 +404,9 @@ describe("useCoaches", () => {
 
       const { updateCoach } = useCoaches();
 
-      await expect(
-        updateCoach("coach-1", { first_name: "X" }),
-      ).rejects.toThrow("Update denied");
+      await expect(updateCoach("coach-1", { first_name: "X" })).rejects.toThrow(
+        "Update denied",
+      );
     });
   });
 
@@ -529,9 +525,7 @@ describe("useCoaches", () => {
       });
 
       const { smartDelete } = useCoaches();
-      await expect(smartDelete("coach-1")).rejects.toThrow(
-        "Permission denied",
-      );
+      await expect(smartDelete("coach-1")).rejects.toThrow("Permission denied");
       expect(mockFetchAuth).not.toHaveBeenCalled();
     });
   });

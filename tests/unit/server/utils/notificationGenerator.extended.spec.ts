@@ -791,7 +791,7 @@ describe("generateUserDeadlineNotifications", () => {
     );
     const result = await generateUserDeadlineNotifications("u-1", supabase);
     expect(result).toEqual({ count: 1, type: "user_deadline" });
-    const row = (inserts.calls[0].rows as Row) as Row;
+    const row = inserts.calls[0].rows as Row as Row;
     expect(row.user_id).toBe("u-1");
     expect(row.type).toBe("deadline_alert");
     expect(row.related_entity_type).toBe("user_deadline");
@@ -822,7 +822,7 @@ describe("generateUserDeadlineNotifications", () => {
     );
     const result = await generateUserDeadlineNotifications("u-1", supabase);
     expect(result.count).toBe(1);
-    const row = (inserts.calls[0].rows as Row) as Row;
+    const row = inserts.calls[0].rows as Row as Row;
     expect(row.priority).toBe("high");
     expect(row.title).toContain("tomorrow");
   });
@@ -849,7 +849,7 @@ describe("generateUserDeadlineNotifications", () => {
     );
     const result = await generateUserDeadlineNotifications("u-1", supabase);
     expect(result).toEqual({ count: 1, type: "user_deadline" });
-    const row = (inserts.calls[0].rows as Row) as Row;
+    const row = inserts.calls[0].rows as Row as Row;
     expect(row.user_id).toBe("u-1");
     expect(row.type).toBe("deadline_alert");
     expect(row.related_entity_type).toBe("user_deadline");
@@ -881,7 +881,7 @@ describe("generateUserDeadlineNotifications", () => {
     );
     const result = await generateUserDeadlineNotifications("u-1", supabase);
     expect(result).toEqual({ count: 1, type: "user_deadline" });
-    const row = (inserts.calls[0].rows as Row) as Row;
+    const row = inserts.calls[0].rows as Row as Row;
     expect(row.user_id).toBe("u-1");
     expect(row.type).toBe("deadline_alert");
     expect(row.related_entity_type).toBe("user_deadline");

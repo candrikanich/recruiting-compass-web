@@ -13,10 +13,12 @@ const mockSubscribe = vi.fn();
 const mockRemoveChannel = vi.fn();
 
 const mockChannel = {
-  on: vi.fn((_type: string, filter: Record<string, string>, cb: PostgresCallback) => {
-    onCalls.push({ filter, callback: cb });
-    return mockChannel;
-  }),
+  on: vi.fn(
+    (_type: string, filter: Record<string, string>, cb: PostgresCallback) => {
+      onCalls.push({ filter, callback: cb });
+      return mockChannel;
+    },
+  ),
   subscribe: mockSubscribe,
 };
 

@@ -28,7 +28,9 @@ describe("useNuxProgress", () => {
     const { completeItem, progress } = useNuxProgress();
     await completeItem("first_school");
     expect(progress.value.checklist.items.first_school?.completed).toBe(true);
-    expect(progress.value.checklist.items.first_school?.completedAt).toBeTruthy();
+    expect(
+      progress.value.checklist.items.first_school?.completedAt,
+    ).toBeTruthy();
     expect(mockFetchFn).toHaveBeenCalledWith(
       "/api/user/nux-progress",
       expect.objectContaining({ method: "PATCH" }),
@@ -44,7 +46,10 @@ describe("useNuxProgress", () => {
         checklist: {
           items: {
             sport: { completed: true, completedAt: "2026-01-01T00:00:00Z" },
-            first_school: { completed: true, completedAt: "2026-01-01T00:00:00Z" },
+            first_school: {
+              completed: true,
+              completedAt: "2026-01-01T00:00:00Z",
+            },
           },
           dismissedAt: null,
         },

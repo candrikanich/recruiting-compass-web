@@ -10,8 +10,8 @@
       <HelpSectionHeader title="Documents" />
       <p class="mb-4 text-sm text-gray-600">
         Store the files coaches ask for — highlight videos, transcripts,
-        resumes, recommendation letters, questionnaires, and stats sheets —
-        all in one place, then choose which schools can see each one.
+        resumes, recommendation letters, questionnaires, and stats sheets — all
+        in one place, then choose which schools can see each one.
       </p>
       <HelpStepCard :step="1" title="Upload a document">
         Go to
@@ -25,12 +25,12 @@
         stats sheet — and upload the file.
       </HelpStepCard>
       <HelpStepCard :step="2" title="Share it with schools" :last="true">
-        Open the document and choose which schools on your list can access it.
-        A document is private to you until you explicitly share it.
+        Open the document and choose which schools on your list can access it. A
+        document is private to you until you explicitly share it.
       </HelpStepCard>
       <HelpCallout type="warning">
-        A document isn't visible to a school until you share it with that
-        school specifically. Uploading a file alone doesn't send it to anyone.
+        A document isn't visible to a school until you share it with that school
+        specifically. Uploading a file alone doesn't send it to anyone.
       </HelpCallout>
     </section>
 
@@ -59,8 +59,8 @@
         >, or from the school's own page.
       </p>
       <HelpCallout type="tip">
-        Comparing offers side by side is easiest once each one has a status
-        and scholarship percentage filled in.
+        Comparing offers side by side is easiest once each one has a status and
+        scholarship percentage filled in.
       </HelpCallout>
     </section>
 
@@ -106,8 +106,8 @@
       </p>
       <HelpCallout type="tip">
         Your performance stats also auto-fill the metrics in Coach Outreach
-        templates — keeping them current helps your outreach stay accurate.
-        See the Coach Outreach section on the
+        templates — keeping them current helps your outreach stay accurate. See
+        the Coach Outreach section on the
         <NuxtLink
           to="/help/schools"
           class="text-primary-600 font-medium hover:underline"
@@ -127,9 +127,9 @@
           class="text-primary-600 font-medium hover:underline"
           >Reports</NuxtLink
         >
-        page generates a summary of your recruiting activity over a date
-        range you choose — pick a quick preset or a custom range, then export
-        it as a CSV for spreadsheets.
+        page generates a summary of your recruiting activity over a date range
+        you choose — pick a quick preset or a custom range, then export it as a
+        CSV for spreadsheets.
       </p>
       <p class="mb-4 text-sm text-gray-600">
         A separate
@@ -138,8 +138,8 @@
           class="text-primary-600 font-medium hover:underline"
           >Recruiting Timeline</NuxtLink
         >
-        view shows your journey visually, filterable by school and by a 3, 6,
-        or 12-month (or all-time) window.
+        view shows your journey visually, filterable by school and by a 3, 6, or
+        12-month (or all-time) window.
       </p>
     </section>
 
@@ -153,14 +153,14 @@
           class="text-primary-600 font-medium hover:underline"
           >Analytics</NuxtLink
         >
-        page rolls up your recruiting metrics into one view: interaction
-        types, sentiment breakdown, your recruiting pipeline, school status,
-        and a performance correlation analysis.
+        page rolls up your recruiting metrics into one view: interaction types,
+        sentiment breakdown, your recruiting pipeline, school status, and a
+        performance correlation analysis.
       </p>
       <HelpCallout type="info">
-        Analytics needs enough logged interactions and performance data to
-        show meaningful trends — it's most useful once you've been actively
-        tracking for a few weeks.
+        Analytics needs enough logged interactions and performance data to show
+        meaningful trends — it's most useful once you've been actively tracking
+        for a few weeks.
       </HelpCallout>
     </section>
 

@@ -7,11 +7,11 @@ export interface ParsedForward {
 // Gmail: "On Mon, Sep 2, 2026 at 3:15 PM Coach Smith <smith@osu.edu> wrote:"
 // Apple Mail: "On Sep 2, 2026, at 3:15 PM, Coach Smith <smith@osu.edu> wrote:"
 // Captures everything between "On " and "<email> wrote:" then parses date/name.
-const ON_WROTE_RE =
-  /On\s+(.+)\s<([^<>\s]+@[^<>\s]+)>\s+wrote:/i;
+const ON_WROTE_RE = /On\s+(.+)\s<([^<>\s]+@[^<>\s]+)>\s+wrote:/i;
 
 // Outlook: separate "From:"/"Sent:" header lines rather than one "On ... wrote:" line.
-const OUTLOOK_FROM_RE = /From:\s*(?:([^<>\n]+?)\s*)?<?([^<>\s\n]+@[^<>\s\n]+)>?/i;
+const OUTLOOK_FROM_RE =
+  /From:\s*(?:([^<>\n]+?)\s*)?<?([^<>\s\n]+@[^<>\s\n]+)>?/i;
 const OUTLOOK_SENT_RE = /Sent:\s*(.+)/i;
 
 /**
@@ -31,7 +31,7 @@ export function parseForwardedEmail(bodyText: string): ParsedForward | null {
     // The name (if present) typically follows a time pattern like "3:15 PM".
     // Look for a time pattern at the end of the date, then anything after that is the name.
     const timeMatch = /^(.+?\d{1,2}:\d{2}\s+(?:AM|PM)),?\s+(.+)$/i.exec(
-      dateAndName
+      dateAndName,
     );
     let date: string | null;
     let name: string | null;
@@ -42,7 +42,7 @@ export function parseForwardedEmail(bodyText: string): ParsedForward | null {
     } else {
       // No time-based split found, try to find name at the end (capital words)
       const nameMatch = /^(.+?)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s*$/.exec(
-        dateAndName
+        dateAndName,
       );
       if (nameMatch && !nameMatch[2].match(/\d/)) {
         date = nameMatch[1].trim();

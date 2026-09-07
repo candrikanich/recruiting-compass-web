@@ -142,7 +142,11 @@ describe.skipIf(!hasLiveSupabase)(
       familyId = family.id as string;
       await admin
         .from("family_members")
-        .insert({ family_unit_id: familyId, user_id: playerId, role: "player" });
+        .insert({
+          family_unit_id: familyId,
+          user_id: playerId,
+          role: "player",
+        });
 
       // offers.school_id is NOT NULL; seed a school as admin (bypasses RLS)
       // purely as an FK target for the offers RLS tests below.
@@ -155,7 +159,8 @@ describe.skipIf(!hasLiveSupabase)(
         })
         .select("id")
         .single();
-      if (offerSchoolErr || !offerSchool) throw new Error(offerSchoolErr?.message);
+      if (offerSchoolErr || !offerSchool)
+        throw new Error(offerSchoolErr?.message);
       offerSchoolId = offerSchool.id as string;
     }, 30000);
 
@@ -331,13 +336,18 @@ describe.skipIf(!hasLiveSupabase)(
       try {
         const { error: flipErr } = await admin
           .from("app_config")
-          .update({ pricing_flip_at: new Date(Date.now() - 86_400_000).toISOString() })
+          .update({
+            pricing_flip_at: new Date(Date.now() - 86_400_000).toISOString(),
+          })
           .eq("id", true);
         if (flipErr) throw new Error(flipErr.message);
 
         const { data: family, error: familyErr } = await admin
           .from("family_units")
-          .insert({ created_by_user_id: playerId, family_name: "Post-Flip Fam" })
+          .insert({
+            created_by_user_id: playerId,
+            family_name: "Post-Flip Fam",
+          })
           .select("id")
           .single();
         if (familyErr || !family) throw new Error(familyErr?.message);
@@ -362,7 +372,10 @@ describe.skipIf(!hasLiveSupabase)(
         if (secondFamilyId) {
           await admin.from("family_units").delete().eq("id", secondFamilyId);
         }
-        await admin.from("app_config").update({ pricing_flip_at: null }).eq("id", true);
+        await admin
+          .from("app_config")
+          .update({ pricing_flip_at: null })
+          .eq("id", true);
       }
     });
   },

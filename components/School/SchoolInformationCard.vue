@@ -112,7 +112,8 @@
                 <span
                   class="h-6 w-6 shrink-0 rounded-full border border-slate-300"
                   :style="{
-                    backgroundColor: editedBasicInfo.school_colors[index] || undefined,
+                    backgroundColor:
+                      editedBasicInfo.school_colors[index] || undefined,
                   }"
                 />
                 <input
@@ -214,10 +215,7 @@
           <span class="w-24 shrink-0 text-sm text-slate-500">Mascot:</span>
           <span class="text-sm text-slate-900">{{ school.mascot }}</span>
         </div>
-        <div
-          v-if="school.school_colors?.length"
-          class="flex items-start gap-2"
-        >
+        <div v-if="school.school_colors?.length" class="flex items-start gap-2">
           <span class="w-24 shrink-0 text-sm text-slate-500">Colors:</span>
           <span class="flex items-center gap-1.5">
             <span
@@ -229,9 +227,7 @@
           </span>
         </div>
         <div v-if="conferenceUrl" class="flex items-start gap-2">
-          <span class="w-24 shrink-0 text-sm text-slate-500"
-            >Conference:</span
-          >
+          <span class="w-24 shrink-0 text-sm text-slate-500">Conference:</span>
           <a
             :href="conferenceUrl"
             target="_blank"

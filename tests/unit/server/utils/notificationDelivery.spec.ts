@@ -43,9 +43,8 @@ import type { DeadlineItem } from "~/server/utils/notificationDelivery";
 const { sendRecurringEmail } = await import("~/server/utils/recurringEmail");
 const mockSendRecurringEmail = sendRecurringEmail as Mock;
 
-const { getNotificationPrefs } = await import(
-  "~/server/utils/notificationPreferences"
-);
+const { getNotificationPrefs } =
+  await import("~/server/utils/notificationPreferences");
 const mockGetPrefs = getNotificationPrefs as Mock;
 
 const {
@@ -209,9 +208,7 @@ describe("sendDeadlineAlertEmails", () => {
 
   it("sends emails for deadlines hitting a milestone", async () => {
     const sb = mockSupabaseWithItems({
-      offers: [
-        { id: "off-1", school_id: "s-1", deadline_date: daysOut(7) },
-      ],
+      offers: [{ id: "off-1", school_id: "s-1", deadline_date: daysOut(7) }],
       schools: [{ id: "s-1", name: "State U" }],
     });
     mockSendRecurringEmail.mockResolvedValue({
@@ -250,13 +247,7 @@ describe("sendDeadlineAlertEmails", () => {
       skipped: false,
     });
 
-    await sendDeadlineAlertEmails(
-      "u-1",
-      "test@example.com",
-      sb,
-      "secret",
-      now,
-    );
+    await sendDeadlineAlertEmails("u-1", "test@example.com", sb, "secret", now);
 
     expect(mockSendRecurringEmail).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -267,9 +258,7 @@ describe("sendDeadlineAlertEmails", () => {
 
   it("returns 0 when no deadlines hit a milestone", async () => {
     const sb = mockSupabaseWithItems({
-      offers: [
-        { id: "off-1", school_id: "s-1", deadline_date: daysOut(10) },
-      ],
+      offers: [{ id: "off-1", school_id: "s-1", deadline_date: daysOut(10) }],
       schools: [{ id: "s-1", name: "X" }],
     });
 
@@ -287,9 +276,7 @@ describe("sendDeadlineAlertEmails", () => {
 
   it("does not count skipped (idempotent) sends", async () => {
     const sb = mockSupabaseWithItems({
-      offers: [
-        { id: "off-1", school_id: "s-1", deadline_date: daysOut(7) },
-      ],
+      offers: [{ id: "off-1", school_id: "s-1", deadline_date: daysOut(7) }],
       schools: [{ id: "s-1", name: "X" }],
     });
     mockSendRecurringEmail.mockResolvedValue({
