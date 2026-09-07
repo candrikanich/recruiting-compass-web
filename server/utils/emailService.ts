@@ -1,8 +1,10 @@
 import { Resend } from "resend";
+import * as Sentry from "@sentry/nuxt";
 import type { NotificationPriority } from "~/types/models";
 import { createLogger } from "~/server/utils/logger";
 import { retryWithBackoff } from "~/server/utils/retry";
 import { logEmailSend, type EmailSendContext } from "~/server/utils/emailSends";
+import { shouldCaptureInSentry } from "~/server/utils/sentryContext";
 
 const logger = createLogger("email");
 
@@ -14,6 +16,20 @@ const SEND_TIMEOUT_MS = 10_000;
 const fromAddress = (): string => process.env.RESEND_FROM_EMAIL ?? DEFAULT_FROM;
 
 let client: Resend | null = null;
+let missingKeyCaptured = false;
+
+// Loud, but only once per process — every send with a missing key would
+// otherwise spam Sentry (invites, notifications, feedback all call in).
+function reportMissingApiKey(): void {
+  logger.error("RESEND_API_KEY not configured, email notifications disabled");
+  if (!missingKeyCaptured && shouldCaptureInSentry()) {
+    missingKeyCaptured = true;
+    Sentry.captureMessage(
+      "RESEND_API_KEY missing at send time — emails are not being sent",
+      "error",
+    );
+  }
+}
 
 function getResend(): Resend {
   if (!client) {
@@ -90,7 +106,7 @@ async function sendViaResend(
   opts: SendViaResendOptions = {},
 ): Promise<SendResult> {
   if (!process.env.RESEND_API_KEY) {
-    logger.warn("RESEND_API_KEY not configured, email notifications disabled");
+    reportMissingApiKey();
     return { success: false, error: "Email service not configured" };
   }
 
