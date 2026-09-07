@@ -135,6 +135,9 @@ const timeoutMessage = computed(() => {
   if (typeof reason === "string" && reason === "session_expired") {
     return "Your session has expired. Please sign in again.";
   }
+  if (typeof reason === "string" && reason === "not_admin") {
+    return "You don't have access to the admin area.";
+  }
   return null;
 });
 
