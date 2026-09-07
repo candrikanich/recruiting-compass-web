@@ -2,6 +2,7 @@ import { Resend } from "resend";
 import type { NotificationPriority } from "~/types/models";
 import { createLogger } from "~/server/utils/logger";
 import { retryWithBackoff } from "~/server/utils/retry";
+import { logEmailSend, type EmailSendContext } from "~/server/utils/emailSends";
 
 const logger = createLogger("email");
 
@@ -71,6 +72,7 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
 interface SendViaResendOptions {
   idempotencyKey?: string;
   listUnsubscribeUrl?: string;
+  context?: EmailSendContext;
 }
 
 function unsubscribeHeaders(
@@ -92,36 +94,51 @@ async function sendViaResend(
     return { success: false, error: "Email service not configured" };
   }
 
-  const { idempotencyKey, listUnsubscribeUrl } = opts;
+  const { idempotencyKey, listUnsubscribeUrl, context } = opts;
   const headers = unsubscribeHeaders(listUnsubscribeUrl);
 
-  try {
-    return await retryWithBackoff(
-      async () => {
-        const { data, error } = await withTimeout(
-          getResend().emails.send(
-            {
-              from: fromAddress(),
-              ...payload,
-              ...(headers ? { headers } : {}),
-            },
-            idempotencyKey ? { idempotencyKey } : undefined,
-          ),
-          SEND_TIMEOUT_MS,
-        );
+  const result = await (async (): Promise<SendResult> => {
+    try {
+      return await retryWithBackoff(
+        async () => {
+          const { data, error } = await withTimeout(
+            getResend().emails.send(
+              {
+                from: fromAddress(),
+                ...payload,
+                ...(headers ? { headers } : {}),
+              },
+              idempotencyKey ? { idempotencyKey } : undefined,
+            ),
+            SEND_TIMEOUT_MS,
+          );
 
-        if (error) throw new ResendSendError(error.message, error.statusCode);
+          if (error) throw new ResendSendError(error.message, error.statusCode);
 
-        return { success: true, messageId: data?.id };
-      },
-      { retries: MAX_ATTEMPTS, baseDelayMs: BASE_DELAY_MS, isRetryable },
-    );
-  } catch (err) {
-    logger.error("Failed to send email:", err);
-    const errorMessage =
-      err instanceof Error ? err.message : "Unknown error sending email";
-    return { success: false, error: errorMessage };
+          return { success: true, messageId: data?.id };
+        },
+        { retries: MAX_ATTEMPTS, baseDelayMs: BASE_DELAY_MS, isRetryable },
+      );
+    } catch (err) {
+      logger.error("Failed to send email:", err);
+      const errorMessage =
+        err instanceof Error ? err.message : "Unknown error sending email";
+      return { success: false, error: errorMessage };
+    }
+  })();
+
+  if (context) {
+    // Fire-and-forget — never block/fail the send on the audit write.
+    void logEmailSend(context, {
+      recipientEmail: payload.to,
+      subject: payload.subject,
+      success: result.success,
+      messageId: result.messageId,
+      error: result.error,
+    });
   }
+
+  return result;
 }
 
 function escapeHtml(str: string): string {
@@ -155,6 +172,7 @@ export interface SendNotificationEmailOptions {
   priority: NotificationPriority;
   idempotencyKey?: string;
   listUnsubscribeUrl?: string;
+  context?: EmailSendContext;
 }
 
 export interface SendEmailOptions {
@@ -163,6 +181,7 @@ export interface SendEmailOptions {
   html: string;
   idempotencyKey?: string;
   listUnsubscribeUrl?: string;
+  context?: EmailSendContext;
 }
 
 export const sendNotificationEmail = async (
@@ -177,6 +196,7 @@ export const sendNotificationEmail = async (
     priority,
     idempotencyKey,
     listUnsubscribeUrl,
+    context,
   } = options;
 
   const priorityBadge =
@@ -215,17 +235,18 @@ export const sendNotificationEmail = async (
 
   return sendViaResend(
     { to, subject, html: htmlContent },
-    { idempotencyKey, listUnsubscribeUrl },
+    { idempotencyKey, listUnsubscribeUrl, context },
   );
 };
 
 export const sendEmail = async (
   options: SendEmailOptions,
 ): Promise<SendResult> => {
-  const { to, subject, html, idempotencyKey, listUnsubscribeUrl } = options;
+  const { to, subject, html, idempotencyKey, listUnsubscribeUrl, context } =
+    options;
   return sendViaResend(
     { to, subject, html },
-    { idempotencyKey, listUnsubscribeUrl },
+    { idempotencyKey, listUnsubscribeUrl, context },
   );
 };
 
@@ -235,6 +256,7 @@ export interface SendInviteEmailOptions {
   familyName: string;
   role: "player" | "parent";
   token: string;
+  context?: EmailSendContext;
 }
 
 function unsubscribeFooterLink(url?: string): string {
@@ -295,7 +317,7 @@ export function renderDeadlineAlertEmail(
 export const sendInviteEmail = async (
   options: SendInviteEmailOptions,
 ): Promise<{ success: boolean; messageId?: string; error?: string }> => {
-  const { to, inviterName, familyName, role, token } = options;
+  const { to, inviterName, familyName, role, token, context } = options;
   const baseUrl =
     process.env.PUBLIC_BASE_URL ?? "https://myrecruitingcompass.com";
   const joinUrl = `${baseUrl}/join?token=${encodeURIComponent(token)}`;
@@ -335,5 +357,6 @@ export const sendInviteEmail = async (
     subject: `${familyName}'s recruiting journey awaits — you're invited!`,
     html: htmlContent,
     idempotencyKey: `invite-${token}`,
+    context,
   });
 };

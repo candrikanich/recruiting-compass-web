@@ -32,6 +32,7 @@ const detail = {
     recentEvents: [],
     recentMessages: [],
   },
+  emailHistory: [],
 };
 vi.mock("~/composables/useAdminUserDetail", () => ({
   useAdminUserDetail: () => ({

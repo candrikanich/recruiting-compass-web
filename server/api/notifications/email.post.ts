@@ -27,6 +27,8 @@ const schema = z.object({
   priority: z.enum(["high", "normal", "low"]).default("normal"),
   actionUrl: z.string().url().optional(),
   idempotencyKey: z.string().optional(),
+  userId: z.string().uuid().optional(),
+  notificationId: z.string().uuid().optional(),
 });
 
 export default defineEventHandler(async (event) => {
@@ -51,8 +53,17 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 422, statusMessage: "Invalid request" });
   }
 
-  const { to, subject, title, message, priority, actionUrl, idempotencyKey } =
-    parsed.data;
+  const {
+    to,
+    subject,
+    title,
+    message,
+    priority,
+    actionUrl,
+    idempotencyKey,
+    userId,
+    notificationId,
+  } = parsed.data;
 
   const result = await sendNotificationEmail({
     to,
@@ -62,6 +73,12 @@ export default defineEventHandler(async (event) => {
     priority,
     actionUrl,
     idempotencyKey,
+    context: {
+      purpose: "notification",
+      userId,
+      entityType: notificationId ? "notification" : undefined,
+      entityId: notificationId,
+    },
   });
 
   if (!result.success) {

@@ -151,6 +151,7 @@ export default defineEventHandler(async (event) =>
           message: html,
           priority: "low",
           idempotencyKey: `onboarding-nudge-${user.id}`,
+          context: { purpose: "onboarding_nudge", userId: user.id },
         });
 
         const updatedProgress = {
