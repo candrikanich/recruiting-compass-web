@@ -8,7 +8,8 @@
       <HelpSectionHeader title="Family Management" />
       <p class="mb-4 text-sm text-gray-600">
         Recruiting is a family effort. Invite a parent or guardian to share
-        access to your recruiting data, or join an existing family as a student.
+        access to your recruiting data, or join an existing family as a
+        student.
       </p>
       <HelpStepCard :step="1" title="Open Family Management">
         Go to
@@ -41,9 +42,9 @@
     <section class="mb-10">
       <HelpSectionHeader title="Notifications" />
       <p class="mb-4 text-sm text-gray-600">
-        Notifications keep you on top of deadlines and coach follow-ups without
-        checking the app constantly. There are four types, each with its own
-        in-app (push) and, where available, email toggle:
+        Notifications keep you on top of deadlines and coach follow-ups
+        without checking the app constantly. There are four types, each with
+        its own in-app (push) and, where available, email toggle:
       </p>
       <ul class="space-y-2 text-sm text-gray-700">
         <li>
@@ -82,10 +83,10 @@
     <section class="mb-10">
       <HelpSectionHeader title="Public Player Profile" />
       <p class="mb-4 text-sm text-gray-600">
-        A shareable, public-facing page that shows coaches your key recruiting
-        info without requiring them to log in — your metrics, team history,
-        awards, values, and current commitment status, plus a highlights reel of
-        your video links.
+        A shareable, public-facing page that shows coaches your key
+        recruiting info without requiring them to log in — your metrics, team
+        history, awards, values, and current commitment status, plus a
+        highlights reel of your video links.
       </p>
       <HelpStepCard :step="1" title="Publish your profile">
         Go to
@@ -97,14 +98,14 @@
         and turn it on.
       </HelpStepCard>
       <HelpStepCard :step="2" title="Share the link" :last="true">
-        Once published, your dashboard's Public Profile card shows a shareable
-        link — copy it and send it to coaches. Anyone with the link can view the
-        profile; no account or login is required.
+        Once published, your dashboard's Public Profile card shows a
+        shareable link — copy it and send it to coaches. Anyone with the link
+        can view the profile; no account or login is required.
       </HelpStepCard>
       <HelpCallout type="tip">
-        Add video links from the Athletics tab of your Athlete Profile (up to 5)
-        — they show up in your public profile's highlights reel and in Coach
-        Outreach template previews.
+        Add video links from the Athletics tab of your Athlete Profile (up to
+        5) — they show up in your public profile's highlights reel and in
+        Coach Outreach template previews.
       </HelpCallout>
     </section>
 
@@ -117,14 +118,14 @@
           class="text-primary-600 font-medium hover:underline"
           >Settings → School Preferences</NuxtLink
         >
-        lets you build a custom set of criteria — location, academics, program,
-        or your own custom rules — for what you're looking for in a school.
-        Start from a template or build your own list from scratch.
+        lets you build a custom set of criteria — location, academics,
+        program, or your own custom rules — for what you're looking for in a
+        school. Start from a template or build your own list from scratch.
       </p>
       <HelpCallout type="info">
         This is separate from the inputs behind your Personal Fit signal.
-        Personal Fit compares your home state, campus size preference, and cost
-        sensitivity — set on your
+        Personal Fit compares your home state, campus size preference, and
+        cost sensitivity — set on your
         <NuxtLink
           to="/settings/player-details"
           class="text-primary-600 font-medium hover:underline"

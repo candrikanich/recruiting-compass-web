@@ -14,9 +14,7 @@ export function useInboundDrafts() {
     loading.value = true;
     error.value = null;
     try {
-      const result = await $fetchAuth<{ drafts: InboundDraft[] }>(
-        "/api/inbound-drafts",
-      );
+      const result = await $fetchAuth<{ drafts: InboundDraft[] }>("/api/inbound-drafts");
       drafts.value = result.drafts;
     } catch {
       error.value = "Failed to load drafts";

@@ -367,11 +367,7 @@ const scholarshipLine = computed<string | null>(() => {
   const sport = getPlayerDetails()?.primary_sport;
   const division = school.value?.division;
   if (!sport || !division) return null;
-  const limit = selectScholarshipLimit(
-    scholarshipLimits.value,
-    sport,
-    division,
-  );
+  const limit = selectScholarshipLimit(scholarshipLimits.value, sport, division);
   return limit ? formatScholarshipLine(limit, sport, division) : null;
 });
 

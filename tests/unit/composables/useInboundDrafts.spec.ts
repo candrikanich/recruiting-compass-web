@@ -13,9 +13,7 @@ describe("useInboundDrafts", () => {
   });
 
   it("fetches pending drafts on load", async () => {
-    fetchAuthMock.mockResolvedValue({
-      drafts: [{ id: "draft-1", status: "pending" }],
-    });
+    fetchAuthMock.mockResolvedValue({ drafts: [{ id: "draft-1", status: "pending" }] });
     const { drafts, fetchDrafts, loading, error } = useInboundDrafts();
     await fetchDrafts();
     expect(fetchAuthMock).toHaveBeenCalledWith("/api/inbound-drafts");
@@ -25,38 +23,25 @@ describe("useInboundDrafts", () => {
   });
 
   it("removes a draft from the list after confirming it", async () => {
-    fetchAuthMock.mockResolvedValueOnce({
-      drafts: [{ id: "draft-1", status: "pending" }],
-    });
+    fetchAuthMock.mockResolvedValueOnce({ drafts: [{ id: "draft-1", status: "pending" }] });
     const { drafts, fetchDrafts, confirmDraft } = useInboundDrafts();
     await fetchDrafts();
-    fetchAuthMock.mockResolvedValueOnce({
-      ok: true,
-      interactionId: "interaction-1",
-    });
+    fetchAuthMock.mockResolvedValueOnce({ ok: true, interactionId: "interaction-1" });
     await confirmDraft("draft-1");
-    expect(fetchAuthMock).toHaveBeenCalledWith(
-      "/api/inbound-drafts/draft-1/confirm",
-      {
-        method: "POST",
-        body: {},
-      },
-    );
+    expect(fetchAuthMock).toHaveBeenCalledWith("/api/inbound-drafts/draft-1/confirm", {
+      method: "POST",
+      body: {},
+    });
     expect(drafts.value).toEqual([]);
   });
 
   it("removes a draft from the list after discarding it", async () => {
-    fetchAuthMock.mockResolvedValueOnce({
-      drafts: [{ id: "draft-1", status: "pending" }],
-    });
+    fetchAuthMock.mockResolvedValueOnce({ drafts: [{ id: "draft-1", status: "pending" }] });
     const { drafts, fetchDrafts, discardDraft } = useInboundDrafts();
     await fetchDrafts();
     fetchAuthMock.mockResolvedValueOnce({ ok: true });
     await discardDraft("draft-1");
-    expect(fetchAuthMock).toHaveBeenCalledWith(
-      "/api/inbound-drafts/draft-1/discard",
-      { method: "POST" },
-    );
+    expect(fetchAuthMock).toHaveBeenCalledWith("/api/inbound-drafts/draft-1/discard", { method: "POST" });
     expect(drafts.value).toEqual([]);
   });
 

@@ -33,9 +33,7 @@ function mountPage() {
         DesignSystemErrorState: true,
         DesignSystemEmptyState: true,
         DesignSystemCard: { template: "<div><slot /></div>" },
-        DesignSystemButton: {
-          template: "<button @click=\"$emit('click')\"><slot /></button>",
-        },
+        DesignSystemButton: { template: "<button @click=\"$emit('click')\"><slot /></button>" },
         SchoolSelect: true,
       },
     },
