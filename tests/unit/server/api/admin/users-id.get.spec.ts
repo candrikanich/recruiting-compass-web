@@ -33,6 +33,7 @@ function tableStub(name: string) {
     select: (...args: unknown[]) => typeof builder;
     eq: (...args: unknown[]) => typeof builder;
     in: (...args: unknown[]) => typeof builder;
+    or: (...args: unknown[]) => typeof builder;
     order: (...args: unknown[]) => typeof builder;
     limit: (...args: unknown[]) => typeof builder;
     maybeSingle: () => Promise<{ data: unknown; error: null }>;
@@ -40,6 +41,7 @@ function tableStub(name: string) {
     select: () => builder,
     eq: () => builder,
     in: () => builder,
+    or: () => builder,
     order: () => builder,
     limit: () => builder,
     maybeSingle: () => Promise.resolve({ data: rows[0] ?? null, error: null }),
@@ -111,6 +113,8 @@ beforeEach(() => {
   tables["athlete_messages"] = [];
   tables["schools"] = [];
   tables["coaches"] = [];
+  tables["email_sends"] = [];
+  tables["email_events"] = [];
   vi.mocked(requireAdmin).mockClear();
   vi.mocked(logAdminAction).mockClear();
 });

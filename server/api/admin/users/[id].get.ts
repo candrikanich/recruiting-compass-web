@@ -23,11 +23,57 @@ import { requireUuidParam } from "~/server/utils/validation";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import { logAdminAction } from "~/server/utils/adminAudit";
 import { useLogger } from "~/server/utils/logger";
-import type { AdminUserDetail } from "~/types/adminUserDetail";
+import {
+  mergeEmailSendStatus,
+  type RawEmailSend,
+  type RawEmailEvent,
+} from "~/server/utils/emailSendHistory";
+import type { AdminUserDetail, AdminEmailSendRow } from "~/types/adminUserDetail";
 
 const ACCOUNT_COLUMNS =
   "id, email, full_name, role, is_admin, created_at, graduation_year, current_phase, onboarding_completed, status_label, deletion_requested_at";
 const RECENT_LIMIT = 10;
+const EMAIL_HISTORY_LIMIT = 25;
+
+async function loadEmailHistory(
+  db: SupabaseClient,
+  userId: string,
+  familyUnitId: string | null,
+  logger: ReturnType<typeof useLogger>,
+): Promise<AdminEmailSendRow[]> {
+  const scoped = db
+    .from("email_sends")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(EMAIL_HISTORY_LIMIT);
+
+  const { data: sends, error: sendsError } = familyUnitId
+    ? await scoped.or(`user_id.eq.${userId},family_unit_id.eq.${familyUnitId}`)
+    : await scoped.eq("user_id", userId);
+
+  if (sendsError) {
+    logger.error("Failed to load email send history", sendsError);
+    return [];
+  }
+
+  const rawSends = (sends as RawEmailSend[] | null) ?? [];
+  const messageIds = [
+    ...new Set(rawSends.map((s) => s.message_id).filter((id): id is string => !!id)),
+  ];
+  if (messageIds.length === 0) return mergeEmailSendStatus(rawSends, []);
+
+  const { data: events, error: eventsError } = await db
+    .from("email_events")
+    .select("message_id, event_type, occurred_at")
+    .in("message_id", messageIds);
+
+  if (eventsError) {
+    logger.error("Failed to load email events for send history", eventsError);
+    return mergeEmailSendStatus(rawSends, []);
+  }
+
+  return mergeEmailSendStatus(rawSends, (events as RawEmailEvent[] | null) ?? []);
+}
 
 function emptyDetail(
   account: AdminUserDetail["account"],
@@ -52,6 +98,7 @@ function emptyDetail(
       recentEvents: [],
       recentMessages: [],
     },
+    emailHistory: [],
   };
 }
 
@@ -101,19 +148,21 @@ async function loadUserDetail(
   const familyUnitId =
     (membership as { family_unit_id?: string } | null)?.family_unit_id ?? null;
 
+  // Dynamic table-name lookups below span tables spread across the
+  // generated Database schema (and email_sends/email_events, not yet in the
+  // generated types) — the untyped client keeps `.from(table)` usable with a
+  // runtime `table: string` instead of a literal union.
+  const untypedDb = db as unknown as SupabaseClient;
+
   if (!familyUnitId) {
     logAdminAction(event, {
       action: "view_as.start",
       targetUserId: id,
       meta: { family_unit_id: null },
     });
-    return emptyDetail(typedAccount, null);
+    const emailHistory = await loadEmailHistory(untypedDb, id, null, logger);
+    return { ...emptyDetail(typedAccount, null), emailHistory };
   }
-
-  // Dynamic table-name lookups below span tables spread across the
-  // generated Database schema; the untyped client keeps `.from(table)`
-  // usable with a runtime `table: string` instead of a literal union.
-  const untypedDb = db as unknown as SupabaseClient;
 
   const byFamily = (table: string, columns = "*") =>
     untypedDb.from(table).select(columns).eq("family_unit_id", familyUnitId);
@@ -225,6 +274,13 @@ async function loadUserDetail(
     };
   });
 
+  const emailHistory = await loadEmailHistory(
+    untypedDb,
+    id,
+    familyUnitId,
+    logger,
+  );
+
   return {
     account: typedAccount,
     familyUnitId,
@@ -248,6 +304,7 @@ async function loadUserDetail(
       recentEvents: asRecords(recentEventsResult.data),
       recentMessages: asRecords(recentMessagesResult.data),
     },
+    emailHistory,
   };
 }
 

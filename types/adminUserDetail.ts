@@ -38,4 +38,20 @@ export interface AdminUserDetail {
     recentEvents: Record<string, unknown>[];
     recentMessages: Record<string, unknown>[];
   };
+  emailHistory: AdminEmailSendRow[];
+}
+
+export interface AdminEmailSendRow {
+  id: string;
+  purpose: string;
+  recipientEmail: string;
+  subject: string | null;
+  success: boolean;
+  error: string | null;
+  entityType: string | null;
+  entityId: string | null;
+  sentAt: string;
+  messageId: string | null;
+  latestEventType: string | null;
+  latestEventAt: string | null;
 }

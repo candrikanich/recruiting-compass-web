@@ -14,6 +14,24 @@ const detail = computed(() => data.value);
 const isLoading = computed(() => loading.value);
 const loadError = computed(() => error.value);
 
+// AdminDataTable expects a generic row shape; AdminEmailSendRow rows are
+// rendered via typed cell slots, so widen for the prop binding only.
+const emailHistoryRows = computed(
+  () => (detail.value?.emailHistory ?? []) as unknown as Record<
+    string,
+    unknown
+  >[],
+);
+
+const BOUNCE_EVENTS = new Set(["bounced", "complained", "failed"]);
+const DELIVERED_EVENTS = new Set(["delivered", "opened", "clicked"]);
+
+function statusClass(eventType: string): string {
+  if (BOUNCE_EVENTS.has(eventType)) return "text-brand-red-600";
+  if (DELIVERED_EVENTS.has(eventType)) return "text-brand-emerald-600";
+  return "text-brand-slate-600";
+}
+
 onMounted(() => fetchDetail(String(route.params.id)));
 </script>
 
@@ -112,6 +130,33 @@ onMounted(() => fetchDetail(String(route.params.id)));
         ]"
         :rows="detail.family.members"
       />
+
+      <!-- Email history -->
+      <h2 class="mb-2 text-sm font-semibold text-brand-slate-700">
+        Email history ({{ detail.emailHistory.length }})
+      </h2>
+      <AdminDataTable
+        :columns="[
+          { key: 'sentAt', label: 'Sent' },
+          { key: 'purpose', label: 'Purpose' },
+          { key: 'subject', label: 'Subject' },
+          { key: 'status', label: 'Status' },
+        ]"
+        :rows="emailHistoryRows"
+      >
+        <template #cell-sentAt="{ value }">{{
+          new Date(String(value)).toLocaleString()
+        }}</template>
+        <template #cell-status="{ row }">
+          <span v-if="!row.success" class="text-brand-red-600"
+            >send failed{{ row.error ? `: ${row.error}` : "" }}</span
+          >
+          <span v-else-if="row.latestEventType" :class="statusClass(String(row.latestEventType))">
+            {{ row.latestEventType }}
+          </span>
+          <span v-else class="text-brand-slate-400">sent (no events yet)</span>
+        </template>
+      </AdminDataTable>
     </template>
   </section>
 </template>

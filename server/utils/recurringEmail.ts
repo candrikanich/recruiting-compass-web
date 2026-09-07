@@ -3,6 +3,7 @@ import {
   renderDeadlineAlertEmail,
   sendEmail,
 } from "~/server/utils/emailService";
+import type { EmailSendContext } from "~/server/utils/emailSends";
 import {
   generateUnsubscribeToken,
   normalizeEmail,
@@ -22,6 +23,7 @@ export interface RecurringEmailParams {
   idempotencyKey?: string;
   /** Overrides `useRuntimeConfig().unsubscribeSecret` for callers outside a request context. */
   unsubscribeSecret: string;
+  context?: EmailSendContext;
 }
 
 export interface RecurringEmailResult {
@@ -40,8 +42,15 @@ export interface RecurringEmailResult {
 export async function sendRecurringEmail(
   params: RecurringEmailParams,
 ): Promise<RecurringEmailResult> {
-  const { to, subject, template, data, idempotencyKey, unsubscribeSecret } =
-    params;
+  const {
+    to,
+    subject,
+    template,
+    data,
+    idempotencyKey,
+    unsubscribeSecret,
+    context,
+  } = params;
   const normalized = normalizeEmail(to);
 
   if (await isOptedOut(normalized)) {
@@ -67,5 +76,12 @@ export async function sendRecurringEmail(
           listUnsubscribeUrl,
         );
 
-  return sendEmail({ to, subject, html, listUnsubscribeUrl, idempotencyKey });
+  return sendEmail({
+    to,
+    subject,
+    html,
+    listUnsubscribeUrl,
+    idempotencyKey,
+    context,
+  });
 }

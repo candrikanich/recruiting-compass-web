@@ -60,6 +60,7 @@ export default defineEventHandler(async (event) => {
       to: FEEDBACK_EMAIL,
       subject: `[Feedback] ${typeLabel} from ${name ?? "unknown"}`,
       html,
+      context: { purpose: "feedback", userId: user.id },
     });
 
     if (!result.success) {

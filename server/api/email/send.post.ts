@@ -17,7 +17,7 @@ const schema = z.object({
 // so every send is suppression-checked and carries List-Unsubscribe headers.
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "email/send");
-  await requireAuth(event);
+  const authedUser = await requireAuth(event);
 
   const body = await readBody(event);
   const parsed = schema.safeParse(body);
@@ -33,6 +33,7 @@ export default defineEventHandler(async (event) => {
     template,
     data,
     unsubscribeSecret: useRuntimeConfig().unsubscribeSecret,
+    context: { purpose: "recurring", userId: authedUser.id },
   });
 
   if (result.skipped) {
