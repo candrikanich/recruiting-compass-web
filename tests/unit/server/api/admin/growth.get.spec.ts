@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 // Per-table row fixtures the stub returns based on table name.
 const data: Record<string, any[]> = {};
 const counts: Record<string, number> = {};
+const readErrors: Record<string, boolean> = {};
 function stub(table: string) {
   let gteCol: string | undefined;
   let gteVal: string | undefined;
@@ -30,7 +31,11 @@ function stub(table: string) {
     not: () => b,
     eq: () => b,
     then: (r: any) =>
-      r({ data: filtered(), error: null, count: counts[table] ?? 0 }),
+      r(
+        readErrors[table]
+          ? { data: null, error: new Error("boom"), count: null }
+          : { data: filtered(), error: null, count: counts[table] ?? 0 },
+      ),
   };
   return b;
 }
@@ -51,6 +56,7 @@ const ev = (days?: string) => {
 beforeEach(() => {
   for (const k of Object.keys(data)) delete data[k];
   for (const k of Object.keys(counts)) delete counts[k];
+  for (const k of Object.keys(readErrors)) delete readErrors[k];
   counts["users"] = 10;
   counts["family_invitations"] = 8;
   data["interactions"] = [
@@ -96,5 +102,33 @@ describe("GET /api/admin/growth", () => {
       0,
     );
     expect(trendTotal).toBe(2);
+  });
+
+  it("returns inboundEmail confirmation + coach-match rates over the window", async () => {
+    const now = new Date().toISOString();
+    data["inbound_email_drafts"] = [
+      { status: "confirmed", matched_coach_id: "c1", created_at: now },
+      { status: "confirmed", matched_coach_id: null, created_at: now },
+      { status: "discarded", matched_coach_id: null, created_at: now },
+      { status: "pending", matched_coach_id: null, created_at: now },
+    ];
+
+    const res = await handler(ev("30"));
+
+    // 2 confirmed / 3 decided (pending excluded) = 67%
+    expect(res.inboundEmail.confirmationRate).toBe(67);
+    // 1 matched / 4 total drafts = 25%
+    expect(res.inboundEmail.coachMatchRate).toBe(25);
+  });
+
+  it("inboundEmail degrades to null (not an error) when inbound_email_drafts read fails", async () => {
+    readErrors["inbound_email_drafts"] = true;
+
+    const res = await handler(ev("30"));
+
+    expect(res.inboundEmail.confirmationRate).toBeNull();
+    expect(res.inboundEmail.coachMatchRate).toBeNull();
+    // The rest of the panel still renders — one failing table doesn't 500 the whole endpoint.
+    expect(res.funnel.length).toBeGreaterThan(0);
   });
 });

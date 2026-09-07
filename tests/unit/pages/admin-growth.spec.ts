@@ -17,6 +17,10 @@ const growth = {
     totalUsers: 10,
     features: [{ feature: "events", users: 4, pct: 40 }],
   },
+  inboundEmail: {
+    confirmationRate: 67,
+    coachMatchRate: null,
+  },
   windowDays: 30,
 };
 vi.mock("~/composables/useAdminGrowth", () => ({
@@ -58,5 +62,13 @@ describe("admin growth page", () => {
     expect(text).toContain("100");
     expect(text).not.toContain("100 (--1567%)");
     expect(text).not.toContain("(-1567%)");
+  });
+
+  it("renders inbound email rates, with null shown as no-data rather than a literal 0%", async () => {
+    const w = mount(AdminGrowth, { global: { stubs } });
+    await flushPromises();
+    const text = w.text();
+    expect(text).toContain("Confirmation rate:67%");
+    expect(text).toContain("Coach match rate:No data yet");
   });
 });

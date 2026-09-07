@@ -10,5 +10,9 @@ export interface AdminGrowth {
     totalUsers: number;
     features: { feature: string; users: number; pct: number }[];
   };
+  inboundEmail: {
+    confirmationRate: number | null;
+    coachMatchRate: number | null;
+  };
   windowDays: number;
 }

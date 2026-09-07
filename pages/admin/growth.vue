@@ -25,6 +25,12 @@ function formatDropoff(count: number, dropoffPct: number | null): string {
   return `${count} (-${dropoffPct}%)`;
 }
 
+// null means nothing was decided/received in the window yet — render that
+// as "no data yet" rather than a misleading literal 0%.
+function formatPct(pct: number | null): string {
+  return pct === null ? "No data yet" : `${pct}%`;
+}
+
 function onRangeChange(value: { days: number }) {
   range.value = value;
   fetchGrowth(value.days);
@@ -105,8 +111,23 @@ onMounted(() => fetchGrowth(30));
       <h2 class="mb-2 text-sm font-semibold text-brand-slate-700">
         Feature adoption ({{ growth.adoption.totalUsers }} users)
       </h2>
-      <div class="h-64 rounded-lg border border-brand-slate-200 bg-white p-4">
+      <div class="mb-6 h-64 rounded-lg border border-brand-slate-200 bg-white p-4">
         <AdminChart type="bar" :data="adoptionChartData" />
+      </div>
+
+      <!-- Inbound email -->
+      <h2 class="mb-2 text-sm font-semibold text-brand-slate-700">
+        Inbound email
+      </h2>
+      <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        <AdminStatTile
+          label="Confirmation rate"
+          :value="formatPct(growth.inboundEmail.confirmationRate)"
+        />
+        <AdminStatTile
+          label="Coach match rate"
+          :value="formatPct(growth.inboundEmail.coachMatchRate)"
+        />
       </div>
     </template>
   </section>

@@ -4,6 +4,8 @@ import {
   windowActiveCount,
   funnelWithDropoff,
   adoption,
+  confirmationRate,
+  coachMatchRate,
 } from "~/utils/growthAnalytics";
 
 const rows = [
@@ -54,5 +56,40 @@ describe("growthAnalytics", () => {
     const a = adoption({ messages: ["a", "a", "b"], events: ["a"] }, 4);
     expect(a.features.find((x) => x.feature === "messages")?.users).toBe(2);
     expect(a.features.find((x) => x.feature === "messages")?.pct).toBe(50);
+  });
+
+  it("confirmationRate excludes pending drafts from the denominator", () => {
+    const drafts = [
+      { status: "confirmed" },
+      { status: "confirmed" },
+      { status: "discarded" },
+      { status: "pending" },
+      { status: "pending" },
+    ];
+    // 2 confirmed / 3 decided (pending excluded) = 67%
+    expect(confirmationRate(drafts)).toBe(67);
+  });
+
+  it("confirmationRate is null (not NaN) when every draft is still pending", () => {
+    const drafts = [{ status: "pending" }, { status: "pending" }];
+    expect(confirmationRate(drafts)).toBeNull();
+  });
+
+  it("confirmationRate is null on an empty window", () => {
+    expect(confirmationRate([])).toBeNull();
+  });
+
+  it("coachMatchRate computes matched share of all drafts", () => {
+    const drafts = [
+      { matchedCoachId: "c1" },
+      { matchedCoachId: "c2" },
+      { matchedCoachId: null },
+      { matchedCoachId: null },
+    ];
+    expect(coachMatchRate(drafts)).toBe(50);
+  });
+
+  it("coachMatchRate is null (not NaN) on a zero-draft window", () => {
+    expect(coachMatchRate([])).toBeNull();
   });
 });

@@ -21,6 +21,8 @@ import {
   windowActiveCount,
   funnelWithDropoff,
   adoption,
+  confirmationRate,
+  coachMatchRate,
   type ActivityRow,
 } from "~/utils/growthAnalytics";
 import type { AdminGrowth } from "~/types/adminGrowth";
@@ -44,7 +46,19 @@ const ADOPTION_TABLES = [
   "offers",
   "performance_metrics",
   "documents",
+  "inbound_email_drafts",
 ] as const;
+
+/**
+ * Column adoption dedupes on, per table. Most features are per-user;
+ * inbound_email_drafts has no user_id (the webhook writes it, not a user),
+ * so "adoption" there means distinct families with >=1 draft.
+ */
+function adoptionUserCol(table: string): string {
+  if (table === "interactions") return "logged_by";
+  if (table === "inbound_email_drafts") return "family_unit_id";
+  return "user_id";
+}
 
 // Table set spans several tables (video_links, offers, family_invitations, etc.)
 // referenced by generic string name below — use the untyped client, same
@@ -131,7 +145,7 @@ async function loadAdoptionUserIds(
   const featureUserIds: Record<string, string[]> = {};
   await Promise.all(
     ADOPTION_TABLES.map(async (table) => {
-      const userCol = table === "interactions" ? "logged_by" : "user_id";
+      const userCol = adoptionUserCol(table);
       try {
         const { data, error } = await db.from(table).select(userCol);
         if (error) {
@@ -154,6 +168,37 @@ async function loadAdoptionUserIds(
     }),
   );
   return featureUserIds;
+}
+
+interface InboundDraftRow {
+  status: string;
+  matchedCoachId: string | null;
+}
+
+async function loadInboundDraftRows(
+  db: Db,
+  windowStart: Date,
+  logger: ReturnType<typeof useLogger>,
+): Promise<InboundDraftRow[]> {
+  try {
+    const { data, error } = await db
+      .from("inbound_email_drafts")
+      .select("status, matched_coach_id")
+      .gte("created_at", windowStart.toISOString());
+    if (error) {
+      logger.warn("Inbound draft read failed", { error });
+      return [];
+    }
+    return ((data ?? []) as unknown as Record<string, unknown>[]).map(
+      (r) => ({
+        status: String(r.status),
+        matchedCoachId: (r.matched_coach_id as string | null) ?? null,
+      }),
+    );
+  } catch (err) {
+    logger.warn("Inbound draft read threw", { err: String(err) });
+    return [];
+  }
 }
 
 export default defineEventHandler(async (event): Promise<AdminGrowth> => {
@@ -187,6 +232,7 @@ export default defineEventHandler(async (event): Promise<AdminGrowth> => {
     activityRows,
     [invitesSent, invitesAccepted, accounts, onboarded],
     featureUserIds,
+    inboundDraftRows,
   ] = await Promise.all([
     loadActivityRows(db, activityFloorStart, logger),
     Promise.all([
@@ -198,6 +244,7 @@ export default defineEventHandler(async (event): Promise<AdminGrowth> => {
       countOf(db, "users", logger, (q) => q.eq("onboarding_completed", true)),
     ]),
     loadAdoptionUserIds(db, logger),
+    loadInboundDraftRows(db, windowStart, logger),
   ]);
 
   const activity = {
@@ -219,6 +266,10 @@ export default defineEventHandler(async (event): Promise<AdminGrowth> => {
     funnel,
     activity,
     adoption: adoption(featureUserIds, accounts),
+    inboundEmail: {
+      confirmationRate: confirmationRate(inboundDraftRows),
+      coachMatchRate: coachMatchRate(inboundDraftRows),
+    },
     windowDays: days,
   };
 });
