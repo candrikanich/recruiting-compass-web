@@ -32,6 +32,25 @@ Direct → Connection Method: Session pooler), format
 the pooler node number (`aws-0` vs `aws-1` etc.) is per-project, not
 purely regional; always confirm from the dashboard rather than guessing.
 
+**Gap found post-split (2026-09-07):** the `recruiting-compass-ios` repo keeps its own
+`supabase/migrations/` folder, applied ad hoc via MCP `apply_migration` outside this
+repo's tracked history. The 2026-09-06 schema replay sourced only this repo's
+migrations, so 3 iOS-repo-only files never made it to prod: `20260816000001_fix_push_trigger_auth`,
+`20260816000002_notify_offer_inbound_event`, `20260816000003_notification_cron_auth_and_event_schedule`.
+Net effect: `trigger_push_notification()` on prod had the pre-fix body (no
+Authorization header → every push 401'd), and the `notify_on_offer`/`notify_on_inbound_interaction`
+triggers + `notify_upcoming_events()` function didn't exist at all.
+Reapplied all 3 to prod (URL/key in 000001 and 000003 swapped to prod's own
+values) — **then had to re-disable** the 4 `pg_cron` jobs from 000003
+(`process-follow-up-reminders`, `process-deadline-alerts`, `send-weekly-digest`,
+`notify-upcoming-events`) via `cron.alter_job(id, active := false)`, since those
+are the exact legacy jobs already flagged above as disabled-not-dropped
+duplicates of the Vercel-cron system — reapplying the migration re-enabled them
+as a side effect. Verified against staging: cron jobs `active=false` on both,
+the 3 real-time triggers (`notify_on_offer_insert`, `notify_on_inbound_interaction_insert`,
+`push_on_notification_insert`) enabled on both. **Lesson: any future prod resync
+must also check the iOS repo's `supabase/migrations/` folder, not just this one.**
+
 **Spec/plan/execution record:** `docs/superpowers/specs/2026-09-05-prod-staging-db-separation-design.md`,
 `docs/superpowers/plans/2026-09-05-prod-staging-db-separation.md`, and the
 inventory doc at `docs/superpowers/plans/artifacts/2026-09-05-staging-inventory.md`
