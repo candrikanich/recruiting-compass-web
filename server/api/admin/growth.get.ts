@@ -21,6 +21,9 @@ import {
   windowActiveCount,
   funnelWithDropoff,
   adoption,
+  confirmationRate,
+  coachMatchRate,
+  familyAdoptionRate,
   type ActivityRow,
 } from "~/utils/growthAnalytics";
 import type { AdminGrowth } from "~/types/adminGrowth";
@@ -34,7 +37,13 @@ const ACTIVITY = [
   { table: "offers", ts: "created_at", user: "user_id" },
 ] as const;
 
-/** Tables used for feature-adoption counts — how many distinct users have touched each. */
+/**
+ * Tables used for feature-adoption counts — how many distinct users have
+ * touched each. `adoption()`'s denominator is always a USER count, so a
+ * family-scoped table (no user_id) does NOT belong here — inbound_email_drafts
+ * is reported separately below via `familyAdoptionRate` instead, against a
+ * families denominator.
+ */
 const ADOPTION_TABLES = [
   "athlete_messages",
   "interactions",
@@ -45,6 +54,12 @@ const ADOPTION_TABLES = [
   "performance_metrics",
   "documents",
 ] as const;
+
+/** Column adoption dedupes on, per table. Every table here is per-user. */
+function adoptionUserCol(table: string): string {
+  if (table === "interactions") return "logged_by";
+  return "user_id";
+}
 
 // Table set spans several tables (video_links, offers, family_invitations, etc.)
 // referenced by generic string name below — use the untyped client, same
@@ -131,7 +146,7 @@ async function loadAdoptionUserIds(
   const featureUserIds: Record<string, string[]> = {};
   await Promise.all(
     ADOPTION_TABLES.map(async (table) => {
-      const userCol = table === "interactions" ? "logged_by" : "user_id";
+      const userCol = adoptionUserCol(table);
       try {
         const { data, error } = await db.from(table).select(userCol);
         if (error) {
@@ -154,6 +169,39 @@ async function loadAdoptionUserIds(
     }),
   );
   return featureUserIds;
+}
+
+interface InboundDraftRow {
+  status: string;
+  matchedCoachId: string | null;
+  familyUnitId: string | null;
+}
+
+async function loadInboundDraftRows(
+  db: Db,
+  windowStart: Date,
+  logger: ReturnType<typeof useLogger>,
+): Promise<InboundDraftRow[]> {
+  try {
+    const { data, error } = await db
+      .from("inbound_email_drafts")
+      .select("status, matched_coach_id, family_unit_id")
+      .gte("created_at", windowStart.toISOString());
+    if (error) {
+      logger.warn("Inbound draft read failed", { error });
+      return [];
+    }
+    return ((data ?? []) as unknown as Record<string, unknown>[]).map(
+      (r) => ({
+        status: String(r.status),
+        matchedCoachId: (r.matched_coach_id as string | null) ?? null,
+        familyUnitId: (r.family_unit_id as string | null) ?? null,
+      }),
+    );
+  } catch (err) {
+    logger.warn("Inbound draft read threw", { err: String(err) });
+    return [];
+  }
 }
 
 export default defineEventHandler(async (event): Promise<AdminGrowth> => {
@@ -187,6 +235,8 @@ export default defineEventHandler(async (event): Promise<AdminGrowth> => {
     activityRows,
     [invitesSent, invitesAccepted, accounts, onboarded],
     featureUserIds,
+    inboundDraftRows,
+    totalFamilies,
   ] = await Promise.all([
     loadActivityRows(db, activityFloorStart, logger),
     Promise.all([
@@ -198,6 +248,8 @@ export default defineEventHandler(async (event): Promise<AdminGrowth> => {
       countOf(db, "users", logger, (q) => q.eq("onboarding_completed", true)),
     ]),
     loadAdoptionUserIds(db, logger),
+    loadInboundDraftRows(db, windowStart, logger),
+    countOf(db, "family_units", logger),
   ]);
 
   const activity = {
@@ -219,6 +271,14 @@ export default defineEventHandler(async (event): Promise<AdminGrowth> => {
     funnel,
     activity,
     adoption: adoption(featureUserIds, accounts),
+    inboundEmail: {
+      confirmationRate: confirmationRate(inboundDraftRows),
+      coachMatchRate: coachMatchRate(inboundDraftRows),
+      familyAdoptionPct: familyAdoptionRate(
+        inboundDraftRows.map((r) => r.familyUnitId),
+        totalFamilies,
+      ),
+    },
     windowDays: days,
   };
 });

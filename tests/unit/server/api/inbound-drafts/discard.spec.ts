@@ -73,4 +73,18 @@ describe("POST /api/inbound-drafts/:id/discard", () => {
     expect(mockState.updatedDraft).toBeUndefined();
     expect(result).toEqual({ ok: true });
   });
+
+  // Any attachments staged with this draft (issue #586 Phase 3 Task 3) stay
+  // in `raw_inbound_attachments`, untouched — discard is not the purge job's
+  // responsibility. Proven here by the mock's `from()` throwing on any table
+  // other than `family_members`/`inbound_email_drafts`: if discard ever
+  // queried `raw_inbound_attachments` or `documents`, this test would fail
+  // with "unexpected table", not a normal assertion failure.
+  it("never touches raw_inbound_attachments or documents when discarding", async () => {
+    mockState.draft = { id: "550e8400-e29b-41d4-a716-446655440000", family_unit_id: "family-1", status: "pending" };
+    const { default: handler } = await import("~/server/api/inbound-drafts/[id]/discard.post");
+    const result = await handler({} as Parameters<typeof handler>[0]);
+    expect(result).toEqual({ ok: true });
+    expect(mockState.updatedDraft).toMatchObject({ status: "discarded" });
+  });
 });

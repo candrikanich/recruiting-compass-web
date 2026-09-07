@@ -63,6 +63,55 @@ export function funnelWithDropoff(
   });
 }
 
+/**
+ * confirmed / (confirmed + discarded) over a window, excluding pending
+ * drafts from the denominator — an undecided draft hasn't failed or
+ * succeeded yet, so counting it as "not confirmed" would unfairly penalize
+ * a family who forwarded something recently and hasn't reviewed it.
+ * `null` (not NaN) when nothing has been decided yet.
+ */
+export function confirmationRate(
+  drafts: { status: string }[],
+): number | null {
+  const decided = drafts.filter(
+    (d) => d.status === "confirmed" || d.status === "discarded",
+  );
+  if (decided.length === 0) return null;
+  const confirmed = decided.filter((d) => d.status === "confirmed").length;
+  return Math.round((confirmed / decided.length) * 100);
+}
+
+/**
+ * Share of drafts that resolved to a tracked coach — a proxy for parsing
+ * quality, not a direct measure of it (a draft can be parsed correctly and
+ * still match no coach we track). `null` (not NaN) when the window has no
+ * drafts at all.
+ */
+export function coachMatchRate(
+  drafts: { matchedCoachId: string | null }[],
+): number | null {
+  if (drafts.length === 0) return null;
+  const matched = drafts.filter((d) => d.matchedCoachId !== null).length;
+  return Math.round((matched / drafts.length) * 100);
+}
+
+/**
+ * Feature-adoption share for a FAMILY-scoped feature (e.g. inbound email
+ * drafts, which have no user_id) — distinct families with >=1 row, divided
+ * by total families. Kept separate from `adoption()` below because that
+ * helper's denominator is always a USER count; mixing a family-count feature
+ * into it would understate its adoption by roughly half. `null` (not NaN)
+ * when there are no families yet.
+ */
+export function familyAdoptionRate(
+  draftFamilyIds: (string | null)[],
+  totalFamilies: number,
+): number | null {
+  if (totalFamilies <= 0) return null;
+  const families = new Set(draftFamilyIds.filter((id): id is string => Boolean(id)));
+  return Math.round((families.size / totalFamilies) * 100);
+}
+
 export function adoption(
   featureUserIds: Record<string, string[]>,
   totalUsers: number,

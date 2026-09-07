@@ -46,7 +46,11 @@ export interface FileValidationError extends Error {
  * File type validation configuration
  * Maps document types to allowed MIME types
  */
-const FILE_VALIDATION_RULES = {
+// Exported so server-side code (e.g. the inbound-email webhook, which has
+// no `File`/browser context to run `validateFile` against) can check
+// content-type/extension/size against the same allowlist instead of
+// duplicating it — see issue #586 Phase 3 Task 3.
+export const FILE_VALIDATION_RULES = {
   highlight_video: {
     mimeTypes: ["video/mp4", "video/quicktime", "video/x-msvideo"],
     extensions: [".mp4", ".mov", ".avi"],
@@ -96,6 +100,37 @@ const FILE_VALIDATION_RULES = {
     description: "CSV or Excel files",
   },
   attachment: {
+    mimeTypes: [
+      "application/pdf",
+      "image/jpeg",
+      "image/png",
+      "image/gif",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "application/vnd.ms-excel",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "text/plain",
+    ],
+    extensions: [
+      ".pdf",
+      ".jpg",
+      ".jpeg",
+      ".png",
+      ".gif",
+      ".doc",
+      ".docx",
+      ".xls",
+      ".xlsx",
+      ".txt",
+    ],
+    maxSize: 10 * 1024 * 1024, // 10MB
+    description: "Common document and image files",
+  },
+  // Forwarded coach-email attachments (issue #586 Phase 3 Task 3):
+  // questionnaires, camp invites, flyers. Same allowlist as "attachment" —
+  // reused rather than duplicated, kept as its own entry only because it's
+  // a distinct document_type enum value (coach_attachment) once confirmed.
+  coach_attachment: {
     mimeTypes: [
       "application/pdf",
       "image/jpeg",
