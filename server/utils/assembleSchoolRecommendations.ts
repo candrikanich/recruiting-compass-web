@@ -15,9 +15,7 @@ import { getOrFetch } from "~/server/utils/cache";
 
 const PROGRAMS_CACHE_TTL_SECONDS = 3600;
 
-function genderFilterFor(
-  gender: string | null,
-): "male" | "female" | null {
+function genderFilterFor(gender: string | null): "male" | "female" | null {
   return gender === "male" || gender === "female" ? gender : null;
 }
 
@@ -33,7 +31,8 @@ async function loadProgramsBySport(
 ): Promise<Map<string, Set<string>>> {
   if (!sport) return new Map();
 
-  const dbGender = gender === "male" ? "men" : gender === "female" ? "women" : null;
+  const dbGender =
+    gender === "male" ? "men" : gender === "female" ? "women" : null;
   const cacheKey = `college-programs:${sport.toLowerCase()}:${dbGender ?? "any"}`;
 
   return getOrFetch(

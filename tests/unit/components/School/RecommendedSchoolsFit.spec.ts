@@ -5,7 +5,11 @@ describe("Recommendation fit badges", () => {
     const userState = "OH";
     const schoolState = "OH";
     const badge =
-      userState === schoolState ? "In-state" : schoolState ? "Out of state" : null;
+      userState === schoolState
+        ? "In-state"
+        : schoolState
+          ? "Out of state"
+          : null;
     expect(badge).toBe("In-state");
   });
 

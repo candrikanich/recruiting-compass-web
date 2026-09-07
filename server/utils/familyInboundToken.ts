@@ -14,10 +14,12 @@ const randomToken = (): string => {
   if (typeof crypto !== "undefined" && crypto.getRandomValues) {
     crypto.getRandomValues(bytes);
   } else {
-    for (let i = 0; i < bytes.length; i++) bytes[i] = Math.floor(Math.random() * 256);
+    for (let i = 0; i < bytes.length; i++)
+      bytes[i] = Math.floor(Math.random() * 256);
   }
   let result = "";
-  for (let i = 0; i < bytes.length; i++) result += chars[bytes[i] % chars.length];
+  for (let i = 0; i < bytes.length; i++)
+    result += chars[bytes[i] % chars.length];
   return result;
 };
 

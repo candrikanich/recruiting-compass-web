@@ -225,7 +225,10 @@
         description="Coaches expect transcripts, test scores, and highlight reels"
       >
         <template #icon>
-          <UIcon name="i-heroicons-document" class="h-8 w-8 text-brand-slate-400" />
+          <UIcon
+            name="i-heroicons-document"
+            class="h-8 w-8 text-brand-slate-400"
+          />
         </template>
         <template #action>
           <DesignSystemButton to="/documents/add" color="blue" variant="solid">

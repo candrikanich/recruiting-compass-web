@@ -97,7 +97,9 @@ describe("parseForwardedEmail", () => {
   });
 
   it("returns null when no forward marker is present", () => {
-    expect(parseForwardedEmail("Just a plain note, no forward here.")).toBeNull();
+    expect(
+      parseForwardedEmail("Just a plain note, no forward here."),
+    ).toBeNull();
   });
 
   it("falls back to a bare email address with no display name", () => {

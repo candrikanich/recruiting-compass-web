@@ -57,8 +57,7 @@ describe("useProfileEditHistory", () => {
       // @ts-expect-error — simulate missing user id
       mockUser.id = undefined;
 
-      const { fetchHistory, error, loading, history } =
-        useProfileEditHistory();
+      const { fetchHistory, error, loading, history } = useProfileEditHistory();
       await fetchHistory();
 
       expect(error.value).toBe("User not authenticated");
@@ -80,9 +79,7 @@ describe("useProfileEditHistory", () => {
         {
           timestamp: "2026-02-01T00:00:00Z",
           changed_by: "user-123",
-          changes: [
-            { field: "height_inches", old_value: 70, new_value: 72 },
-          ],
+          changes: [{ field: "height_inches", old_value: 70, new_value: 72 }],
         },
       ];
 
@@ -91,8 +88,7 @@ describe("useProfileEditHistory", () => {
         error: null,
       });
 
-      const { fetchHistory, history, loading, error } =
-        useProfileEditHistory();
+      const { fetchHistory, history, loading, error } = useProfileEditHistory();
       await fetchHistory();
 
       expect(mockFrom).toHaveBeenCalledWith("user_preferences");
@@ -136,9 +132,7 @@ describe("useProfileEditHistory", () => {
       const { fetchHistory, history } = useProfileEditHistory();
       await fetchHistory();
 
-      expect(history.value[0].changes[0].fieldLabel).toBe(
-        "some_unknown_field",
-      );
+      expect(history.value[0].changes[0].fieldLabel).toBe("some_unknown_field");
     });
 
     it("returns empty history on PGRST116 (no preferences row)", async () => {

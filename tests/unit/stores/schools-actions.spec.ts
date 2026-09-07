@@ -107,7 +107,9 @@ describe("useSchoolStore — computed getters and sync actions", () => {
       store.setFilters({ division: "D1" });
 
       expect(store.filteredSchools).toHaveLength(2);
-      expect(store.filteredSchools.every((s) => s.division === "D1")).toBe(true);
+      expect(store.filteredSchools.every((s) => s.division === "D1")).toBe(
+        true,
+      );
     });
 
     it("filters by state", () => {
@@ -272,9 +274,7 @@ describe("useSchoolStore — computed getters and sync actions", () => {
       expect(mockQuery.update).toHaveBeenCalledWith(
         expect.objectContaining({ is_favorite: false }),
       );
-      expect(result).toEqual(
-        expect.objectContaining({ is_favorite: false }),
-      );
+      expect(result).toEqual(expect.objectContaining({ is_favorite: false }));
     });
 
     it("sets is_favorite to true when currently false", async () => {
@@ -387,9 +387,9 @@ describe("useSchoolStore — computed getters and sync actions", () => {
 
   describe("updateSchool — missing familyId", () => {
     it("throws when familyId is empty", async () => {
-      await expect(
-        store.updateSchool("s1", { name: "X" }, ""),
-      ).rejects.toThrow("No family context");
+      await expect(store.updateSchool("s1", { name: "X" }, "")).rejects.toThrow(
+        "No family context",
+      );
       expect(store.error).toBe("No family context");
     });
   });

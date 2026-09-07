@@ -19,6 +19,7 @@ Tier-0 (this file) is always loaded. Read the matching file FIRST before working
 | iOS / SwiftUI (rare here) | `claude/ios.md` |
 | Any UI code | `docs/design/tokens.md`, `docs/design/components.md` |
 | Domain / application / infrastructure layers | `docs/architecture/clean-architecture.md` |
+| Adding/changing a user-facing feature or flow | Update the matching `pages/help/*.vue` section + bump its `reviewed-on` date; add an entry to `components/Help/faqEntries.ts` if it's likely to generate a support question |
 
 ## Workflow
 

@@ -18,7 +18,9 @@ export function useNuxProgress() {
 
   const checklistPercentage = computed(() => {
     const items = progress.value.checklist.items;
-    const completed = NUX_CHECKLIST_KEYS.filter((k) => items[k]?.completed).length;
+    const completed = NUX_CHECKLIST_KEYS.filter(
+      (k) => items[k]?.completed,
+    ).length;
     return Math.round((completed / NUX_CHECKLIST_KEYS.length) * 100);
   });
 

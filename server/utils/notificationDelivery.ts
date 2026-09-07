@@ -184,8 +184,7 @@ export async function deliverNotificationsForUser(
     inApp += (await generateOfferNotifications(userId, supabase)).count;
     inApp += (await generateRecommendationNotifications(userId, supabase))
       .count;
-    inApp += (await generateUserDeadlineNotifications(userId, supabase))
-      .count;
+    inApp += (await generateUserDeadlineNotifications(userId, supabase)).count;
   }
   if (prefFor(prefs, "event").push_enabled) {
     inApp += (await generateEventNotifications(userId, supabase)).count;

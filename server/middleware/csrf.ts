@@ -43,6 +43,10 @@ export const CSRF_EXEMPT_EXACT_PATHS = [
   // Resend Inbound webhook: called server-to-server with no cookies/CSRF
   // token. The Svix signature (verifyResendWebhook) is the authorization.
   "/api/webhooks/inbound-email",
+  // Resend outbound-event webhook: called server-to-server with no
+  // cookies/CSRF token. The Svix signature (verifyResendEventWebhook) is
+  // the authorization.
+  "/api/webhooks/resend-events",
 ] as const;
 
 /** HTTP methods CSRF protection applies to; GET/HEAD are safe and exempt. */

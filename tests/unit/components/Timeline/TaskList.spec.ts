@@ -99,9 +99,7 @@ describe("TaskList", () => {
     });
 
     it("renders container div but no tasks and no empty message when all tasks filtered out", () => {
-      const tasks = [
-        makeTask({ id: "t1", category: "recruiting" }),
-      ];
+      const tasks = [makeTask({ id: "t1", category: "recruiting" })];
       const wrapper = mountTaskList({
         tasks,
         filterCategory: "academic",

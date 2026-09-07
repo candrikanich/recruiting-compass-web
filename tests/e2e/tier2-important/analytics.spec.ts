@@ -43,7 +43,9 @@ test.describe("/analytics — Analytics dashboard", () => {
     const emptyState = page.getByText("No analytics yet");
     await Promise.race([
       toolbar.waitFor({ state: "visible", timeout: 15000 }).catch(() => null),
-      emptyState.waitFor({ state: "visible", timeout: 15000 }).catch(() => null),
+      emptyState
+        .waitFor({ state: "visible", timeout: 15000 })
+        .catch(() => null),
     ]);
     if (await emptyState.isVisible().catch(() => false)) {
       test.skip(true, "empty state — no schools tracked, toolbar not rendered");
@@ -59,7 +61,9 @@ test.describe("/analytics — Analytics dashboard", () => {
     const emptyState = page.getByText("No analytics yet");
     await Promise.race([
       select.waitFor({ state: "visible", timeout: 15000 }).catch(() => null),
-      emptyState.waitFor({ state: "visible", timeout: 15000 }).catch(() => null),
+      emptyState
+        .waitFor({ state: "visible", timeout: 15000 })
+        .catch(() => null),
     ]);
     if (await emptyState.isVisible().catch(() => false)) {
       test.skip(true, "empty state — no schools tracked, toolbar not rendered");
@@ -78,7 +82,9 @@ test.describe("/analytics — Analytics dashboard", () => {
     const emptyState = page.getByText("No analytics yet");
     await Promise.race([
       select.waitFor({ state: "visible", timeout: 15000 }).catch(() => null),
-      emptyState.waitFor({ state: "visible", timeout: 15000 }).catch(() => null),
+      emptyState
+        .waitFor({ state: "visible", timeout: 15000 })
+        .catch(() => null),
     ]);
     if (await emptyState.isVisible().catch(() => false)) {
       test.skip(true, "empty state — no schools tracked, toolbar not rendered");

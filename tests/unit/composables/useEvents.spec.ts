@@ -543,18 +543,18 @@ describe("useEvents — coverage gaps", () => {
       userStore.user = null as any;
 
       const { updateEvent } = useEvents();
-      await expect(
-        updateEvent("event-1", { name: "Updated" }),
-      ).rejects.toThrow(/not authenticated/i);
+      await expect(updateEvent("event-1", { name: "Updated" })).rejects.toThrow(
+        /not authenticated/i,
+      );
     });
 
     it("throws when data-owner id hasn't resolved", async () => {
       mockGetDataOwnerUserId.mockReturnValue(null);
 
       const { updateEvent, error } = useEvents();
-      await expect(
-        updateEvent("event-1", { name: "Updated" }),
-      ).rejects.toThrow(/still loading/i);
+      await expect(updateEvent("event-1", { name: "Updated" })).rejects.toThrow(
+        /still loading/i,
+      );
       expect(error.value).toMatch(/still loading/i);
     });
 
@@ -599,9 +599,7 @@ describe("useEvents — coverage gaps", () => {
       });
 
       const { updateEvent, error } = useEvents();
-      await expect(
-        updateEvent("event-1", { name: "X" }),
-      ).rejects.toThrow();
+      await expect(updateEvent("event-1", { name: "X" })).rejects.toThrow();
       expect(error.value).toBe("Update failed");
     });
 
@@ -609,9 +607,9 @@ describe("useEvents — coverage gaps", () => {
       mockQuery.single.mockRejectedValue("raw string");
 
       const { updateEvent, error } = useEvents();
-      await expect(
-        updateEvent("event-1", { name: "X" }),
-      ).rejects.toBe("raw string");
+      await expect(updateEvent("event-1", { name: "X" })).rejects.toBe(
+        "raw string",
+      );
       expect(error.value).toBe("Failed to update event");
     });
   });
@@ -651,8 +649,7 @@ describe("useEvents — coverage gaps", () => {
       // Mock a successful delete (eq chain resolves with no error)
       mockQuery.eq.mockImplementation(() => ({
         ...mockQuery,
-        then: (resolve: any) =>
-          resolve({ error: null }),
+        then: (resolve: any) => resolve({ error: null }),
       }));
       // Re-mock the delete chain: delete() → eq(id) → eq(user_id) resolves
       let eqCallCount = 0;

@@ -71,9 +71,7 @@ test.describe("Onboarding v2 — Full Entry Journey", () => {
     ).toBeVisible({ timeout: 10000 });
 
     // Complete onboarding → dashboard
-    await page
-      .getByRole("button", { name: /go to your dashboard/i })
-      .click();
+    await page.getByRole("button", { name: /go to your dashboard/i }).click();
 
     await expect(page).toHaveURL(/\/dashboard/, { timeout: 15000 });
   });
@@ -164,8 +162,6 @@ test.describe("Onboarding v2 — Full Entry Journey", () => {
     await expect(page.locator('[data-testid="age-error"]')).toBeVisible();
 
     // Next button should be disabled
-    await expect(
-      page.locator('[data-testid="next-button"]'),
-    ).toBeDisabled();
+    await expect(page.locator('[data-testid="next-button"]')).toBeDisabled();
   });
 });

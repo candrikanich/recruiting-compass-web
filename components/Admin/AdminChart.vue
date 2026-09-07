@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onBeforeUnmount, ref, watch } from "vue";
+import { onMounted, onBeforeUnmount, ref, toRaw, watch } from "vue";
 import Chart from "chart.js/auto";
 import type { ChartData, ChartOptions } from "chart.js";
 
@@ -22,14 +22,20 @@ function render(): void {
   if (!canvas.value) return;
   chart?.destroy();
   const isSpark = props.type === "sparkline";
+  // Chart.js does not clone the data/options it's given — it mutates the
+  // dataset objects directly (attaching internal `_meta` caches per chart
+  // instance). Handing it the same reference as props.data/props.options
+  // would leak that mutation back into the reactive prop, which the deep
+  // watch below observes — retriggering render() forever. Clone so
+  // Chart.js only ever mutates its own copy.
   chart = new Chart(canvas.value, {
     type: isSpark ? "line" : props.type,
-    data: props.data,
+    data: structuredClone(toRaw(props.data)),
     options: {
       responsive: true,
       maintainAspectRatio: false,
       ...(isSpark ? sparklineOptions : {}),
-      ...props.options,
+      ...(props.options ? structuredClone(toRaw(props.options)) : {}),
     },
   });
 }

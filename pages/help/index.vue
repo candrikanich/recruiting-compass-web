@@ -48,11 +48,37 @@ const helpSections = [
       "Navigate recruiting phases and manage recommendation letter requests.",
   },
   {
+    slug: "tracking",
+    icon: "i-heroicons-clipboard-document-list",
+    title: "Tracking Your Recruiting",
+    description:
+      "Documents, offers, events, performance, and reports in one place.",
+  },
+  {
+    slug: "family",
+    icon: "i-heroicons-user-group",
+    title: "Family & Profile",
+    description:
+      "Family accounts, notifications, your public profile, and preferences.",
+  },
+  {
     slug: "account",
     icon: "i-heroicons-cog-6-tooth",
     title: "Account & Settings",
     description:
       "Manage your family, notifications, profile, and account preferences.",
+  },
+  {
+    slug: "faq",
+    icon: "i-heroicons-question-mark-circle",
+    title: "Frequently Asked Questions",
+    description: "Quick answers to the questions we hear most.",
+  },
+  {
+    slug: "glossary",
+    icon: "i-heroicons-book-open",
+    title: "Glossary",
+    description: "Recruiting terms explained in plain language.",
   },
 ] as const;
 </script>

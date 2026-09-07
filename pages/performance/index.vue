@@ -193,10 +193,17 @@
         description="Your stats auto-fill coach outreach templates"
       >
         <template #icon>
-          <UIcon name="i-heroicons-chart-bar" class="h-8 w-8 text-brand-slate-400" />
+          <UIcon
+            name="i-heroicons-chart-bar"
+            class="h-8 w-8 text-brand-slate-400"
+          />
         </template>
         <template #action>
-          <DesignSystemButton color="blue" variant="solid" @click="showLogMetricModal = true">
+          <DesignSystemButton
+            color="blue"
+            variant="solid"
+            @click="showLogMetricModal = true"
+          >
             Log Your First Stats
           </DesignSystemButton>
         </template>
