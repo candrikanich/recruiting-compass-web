@@ -69,7 +69,7 @@
     "pinia": "^3.0.4",
     "posthog-js": "^1.426.2",
     "qrcode": "^1.5.4",
-    "resend": "^6.24.0",
+    "resend": "^6.26.0",
     "sanitize-html": "^2.17.7",
     "sortablejs": "^1.15.6",
     "svix": "^1.99.1",
