@@ -21,10 +21,7 @@ import { defineEventHandler, readRawBody, getHeaders, createError } from "h3";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import { useLogger } from "~/server/utils/logger";
 import { verifyResendWebhook } from "~/server/utils/verifyResendWebhook";
-import {
-  parseInboundToken,
-  resolveFamilyByInboundToken,
-} from "~/server/utils/familyInboundToken";
+import { parseInboundToken, resolveFamilyByInboundToken } from "~/server/utils/familyInboundToken";
 import { parseForwardedEmail } from "~/server/utils/parseForwardedEmail";
 import { matchCoachByEmail } from "~/server/utils/matchCoachByEmail";
 import type { Database, Json } from "~/types/database";
@@ -65,10 +62,8 @@ function isResendInboundPayload(value: unknown): value is ResendInboundPayload {
   );
 }
 
-type RawEmailInsert =
-  Database["public"]["Tables"]["raw_inbound_emails"]["Insert"];
-type DraftInsert =
-  Database["public"]["Tables"]["inbound_email_drafts"]["Insert"];
+type RawEmailInsert = Database["public"]["Tables"]["raw_inbound_emails"]["Insert"];
+type DraftInsert = Database["public"]["Tables"]["inbound_email_drafts"]["Insert"];
 
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "webhooks/inbound-email");
@@ -80,10 +75,7 @@ export default defineEventHandler(async (event) => {
     payload = verifyResendWebhook(rawBody, headers);
   } catch (err) {
     logger.warn("Rejected inbound email webhook: bad signature", err);
-    throw createError({
-      statusCode: 401,
-      statusMessage: "Invalid webhook signature",
-    });
+    throw createError({ statusCode: 401, statusMessage: "Invalid webhook signature" });
   }
 
   if (!isResendInboundPayload(payload)) {
@@ -96,14 +88,10 @@ export default defineEventHandler(async (event) => {
   const admin = useSupabaseAdmin();
   const toAddress = payload.data.to[0] ?? "";
   const token = parseInboundToken(toAddress);
-  const familyUnitId = token
-    ? await resolveFamilyByInboundToken(admin, token)
-    : null;
+  const familyUnitId = token ? await resolveFamilyByInboundToken(admin, token) : null;
 
   if (!familyUnitId) {
-    logger.warn("Inbound email addressed to unknown/malformed token", {
-      toAddress,
-    });
+    logger.warn("Inbound email addressed to unknown/malformed token", { toAddress });
     return { ok: true, skipped: "unknown-family" };
   }
 
@@ -122,8 +110,9 @@ export default defineEventHandler(async (event) => {
 
   let bodyText: string | null = null;
   try {
-    const { data: fullEmail, error: fetchError } =
-      await getResend().emails.receiving.get(payload.data.email_id);
+    const { data: fullEmail, error: fetchError } = await getResend().emails.receiving.get(
+      payload.data.email_id,
+    );
     if (fetchError) throw new Error(fetchError.message);
     bodyText = fullEmail?.text ?? null;
   } catch (err) {
@@ -156,10 +145,7 @@ export default defineEventHandler(async (event) => {
     .single();
   if (draftError) {
     logger.error("Failed to create inbound email draft", draftError);
-    throw createError({
-      statusCode: 500,
-      statusMessage: "Failed to store draft",
-    });
+    throw createError({ statusCode: 500, statusMessage: "Failed to store draft" });
   }
 
   const { data: familyMembers } = await admin
@@ -187,9 +173,6 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  logger.info("Inbound email draft created", {
-    familyUnitId,
-    matched: !!coachId,
-  });
+  logger.info("Inbound email draft created", { familyUnitId, matched: !!coachId });
   return { ok: true };
 });

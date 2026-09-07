@@ -28,7 +28,9 @@ const rows = [baseballD1, footballD1];
 describe("selectScholarshipLimit", () => {
   it("matches exact sport + division, case-insensitive sport", () => {
     expect(selectScholarshipLimit(rows, "Baseball", "D1")).toBe(baseballD1);
-    expect(selectScholarshipLimit(rows, "football", "D1_FBS")).toBe(footballD1);
+    expect(selectScholarshipLimit(rows, "football", "D1_FBS")).toBe(
+      footballD1,
+    );
   });
 
   it("returns null on division mismatch", () => {

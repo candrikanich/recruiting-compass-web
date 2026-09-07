@@ -244,9 +244,9 @@ describe("SchoolInformationCard", () => {
       expect(wrapper.text()).toContain("Mascot");
       expect(wrapper.text()).toContain("School Colors");
       const inputs = wrapper.findAll("input[type='text']");
-      expect(inputs.some((i) => i.attributes("placeholder") === "Eagles")).toBe(
-        true,
-      );
+      expect(
+        inputs.some((i) => i.attributes("placeholder") === "Eagles"),
+      ).toBe(true);
     });
   });
 

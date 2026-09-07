@@ -26,16 +26,10 @@ export async function resolveFamilyUnitId(
 
   if (error && error.code !== "PGRST116") {
     logger.error("Failed to resolve family membership", error);
-    throw createError({
-      statusCode: 500,
-      statusMessage: "Failed to resolve family membership",
-    });
+    throw createError({ statusCode: 500, statusMessage: "Failed to resolve family membership" });
   }
   if (!membership) {
-    throw createError({
-      statusCode: 403,
-      statusMessage: "Not a family member",
-    });
+    throw createError({ statusCode: 403, statusMessage: "Not a family member" });
   }
 
   return membership.family_unit_id;

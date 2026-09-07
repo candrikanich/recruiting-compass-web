@@ -8,9 +8,7 @@ vi.mock("h3", async () => {
     readRawBody: vi.fn(),
     getHeaders: vi.fn(),
     createError: (opts: { statusCode: number; statusMessage?: string }) =>
-      Object.assign(new Error(opts.statusMessage ?? "error"), {
-        statusCode: opts.statusCode,
-      }),
+      Object.assign(new Error(opts.statusMessage ?? "error"), { statusCode: opts.statusCode }),
   };
 });
 
@@ -28,12 +26,7 @@ vi.mock("~/server/utils/matchCoachByEmail", () => ({
   matchCoachByEmail: vi.fn(),
 }));
 vi.mock("~/server/utils/logger", () => ({
-  useLogger: () => ({
-    debug: vi.fn(),
-    info: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn(),
-  }),
+  useLogger: () => ({ debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() }),
 }));
 
 const receivingGetMock = vi.fn();
@@ -56,10 +49,7 @@ vi.mock("~/server/utils/supabase", () => ({
         return {
           insert: () => ({
             select: () => ({
-              single: async () => ({
-                data: { id: mockState.rawInsertId },
-                error: null,
-              }),
+              single: async () => ({ data: { id: mockState.rawInsertId }, error: null }),
             }),
           }),
         };
@@ -79,10 +69,7 @@ vi.mock("~/server/utils/supabase", () => ({
       if (table === "family_members") {
         return {
           select: () => ({
-            eq: async () => ({
-              data: [{ user_id: "parent-1" }, { user_id: "player-1" }],
-              error: null,
-            }),
+            eq: async () => ({ data: [{ user_id: "parent-1" }, { user_id: "player-1" }], error: null }),
           }),
         };
       }
@@ -101,10 +88,7 @@ vi.mock("~/server/utils/supabase", () => ({
 
 import { readRawBody, getHeaders } from "h3";
 import { verifyResendWebhook } from "~/server/utils/verifyResendWebhook";
-import {
-  parseInboundToken,
-  resolveFamilyByInboundToken,
-} from "~/server/utils/familyInboundToken";
+import { parseInboundToken, resolveFamilyByInboundToken } from "~/server/utils/familyInboundToken";
 import { parseForwardedEmail } from "~/server/utils/parseForwardedEmail";
 import { matchCoachByEmail } from "~/server/utils/matchCoachByEmail";
 
@@ -125,11 +109,8 @@ describe("POST /api/webhooks/inbound-email", () => {
     vi.mocked(verifyResendWebhook).mockImplementation(() => {
       throw new Error("Invalid webhook signature");
     });
-    const { default: handler } =
-      await import("~/server/api/webhooks/inbound-email.post");
-    await expect(
-      handler({} as Parameters<typeof handler>[0]),
-    ).rejects.toMatchObject({
+    const { default: handler } = await import("~/server/api/webhooks/inbound-email.post");
+    await expect(handler({} as Parameters<typeof handler>[0])).rejects.toMatchObject({
       statusCode: 401,
     });
   });
@@ -148,8 +129,7 @@ describe("POST /api/webhooks/inbound-email", () => {
     vi.mocked(parseInboundToken).mockReturnValue("deadbeef");
     vi.mocked(resolveFamilyByInboundToken).mockResolvedValue(null);
 
-    const { default: handler } =
-      await import("~/server/api/webhooks/inbound-email.post");
+    const { default: handler } = await import("~/server/api/webhooks/inbound-email.post");
     const result = await handler({} as Parameters<typeof handler>[0]);
     expect(result).toEqual({ ok: true, skipped: "unknown-family" });
     expect(mockState.draftInsertRow).toBeUndefined();
@@ -170,9 +150,7 @@ describe("POST /api/webhooks/inbound-email", () => {
     vi.mocked(parseInboundToken).mockReturnValue("ab3d9f2c");
     vi.mocked(resolveFamilyByInboundToken).mockResolvedValue("family-1");
     receivingGetMock.mockResolvedValue({
-      data: {
-        text: "On Mon, Sep 2, 2026 at 3:15 PM Coach Smith <smith@osu.edu> wrote:\n> hi",
-      },
+      data: { text: "On Mon, Sep 2, 2026 at 3:15 PM Coach Smith <smith@osu.edu> wrote:\n> hi" },
       error: null,
     });
     vi.mocked(parseForwardedEmail).mockReturnValue({
@@ -180,13 +158,9 @@ describe("POST /api/webhooks/inbound-email", () => {
       senderEmail: "smith@osu.edu",
       originalDate: "Mon, Sep 2, 2026 at 3:15 PM",
     });
-    vi.mocked(matchCoachByEmail).mockResolvedValue({
-      coachId: "coach-1",
-      schoolId: "school-1",
-    });
+    vi.mocked(matchCoachByEmail).mockResolvedValue({ coachId: "coach-1", schoolId: "school-1" });
 
-    const { default: handler } =
-      await import("~/server/api/webhooks/inbound-email.post");
+    const { default: handler } = await import("~/server/api/webhooks/inbound-email.post");
     const result = await handler({} as Parameters<typeof handler>[0]);
 
     expect(receivingGetMock).toHaveBeenCalledWith("email-1");
@@ -231,17 +205,10 @@ describe("POST /api/webhooks/inbound-email", () => {
     });
     vi.mocked(parseInboundToken).mockReturnValue("ab3d9f2c");
     vi.mocked(resolveFamilyByInboundToken).mockResolvedValue("family-1");
-    receivingGetMock.mockResolvedValue({
-      data: null,
-      error: { message: "not found" },
-    });
-    vi.mocked(matchCoachByEmail).mockResolvedValue({
-      coachId: null,
-      schoolId: null,
-    });
+    receivingGetMock.mockResolvedValue({ data: null, error: { message: "not found" } });
+    vi.mocked(matchCoachByEmail).mockResolvedValue({ coachId: null, schoolId: null });
 
-    const { default: handler } =
-      await import("~/server/api/webhooks/inbound-email.post");
+    const { default: handler } = await import("~/server/api/webhooks/inbound-email.post");
     const result = await handler({} as Parameters<typeof handler>[0]);
 
     expect(result).toEqual({ ok: true });
