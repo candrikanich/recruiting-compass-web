@@ -827,6 +827,19 @@ describe("login.vue", () => {
       expect(wrapper.find("#timeout-message").exists()).toBe(false);
     });
 
+    it("should display a not-admin message when reason=not_admin query param is present", () => {
+      // middleware/admin.ts sends a non-admin here after the admin subdomain
+      // redirect-loop fix — regression guard for that message actually
+      // rendering.
+      mockRoute.query = { reason: "not_admin" };
+      const wrapper = createWrapper();
+
+      expect(wrapper.find("#timeout-message").exists()).toBe(true);
+      expect(wrapper.text()).toContain(
+        "You don't have access to the admin area.",
+      );
+    });
+
     it("timeout message should have proper ARIA attributes", () => {
       mockRoute.query = { reason: "timeout" };
       const wrapper = createWrapper();
