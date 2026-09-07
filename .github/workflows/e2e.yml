@@ -45,7 +45,7 @@ jobs:
           NUXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.TEST_SUPABASE_ANON_KEY }}
 
       - name: Upload build output
-        uses: actions/upload-artifact@v8
+        uses: actions/upload-artifact@v7
         with:
           name: e2e-build-output
           path: .output/
@@ -104,7 +104,7 @@ jobs:
         run: npx playwright install --with-deps webkit chromium
 
       - name: Download build output
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v7
         with:
           name: e2e-build-output
           path: .output/
