@@ -104,7 +104,9 @@ describe("GettingStartedChecklist", () => {
 
   it("renders checklist with progress bar", async () => {
     const wrapper = await mountChecklist();
-    expect(wrapper.find('[data-testid="checklist-progress"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="checklist-progress"]').exists()).toBe(
+      true,
+    );
     expect(wrapper.text()).toContain("1 of 8");
   });
 
@@ -117,16 +119,24 @@ describe("GettingStartedChecklist", () => {
   it("hides when dismissed", async () => {
     mockProgress.value = {
       ...mockProgress.value,
-      checklist: { ...mockProgress.value.checklist, dismissedAt: "2026-01-01T00:00:00Z" },
+      checklist: {
+        ...mockProgress.value.checklist,
+        dismissedAt: "2026-01-01T00:00:00Z",
+      },
     };
     const wrapper = await mountChecklist();
-    expect(wrapper.find('[data-testid="checklist-progress"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="checklist-progress"]').exists()).toBe(
+      false,
+    );
   });
 
   it('shows "Resume getting started" link when dismissed', async () => {
     mockProgress.value = {
       ...mockProgress.value,
-      checklist: { ...mockProgress.value.checklist, dismissedAt: "2026-01-01T00:00:00Z" },
+      checklist: {
+        ...mockProgress.value.checklist,
+        dismissedAt: "2026-01-01T00:00:00Z",
+      },
     };
     const wrapper = await mountChecklist();
     expect(wrapper.text()).toContain("Resume getting started");

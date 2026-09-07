@@ -4,7 +4,9 @@
     class="rounded-lg border border-brand-slate-200 bg-white p-4 dark:border-brand-slate-700 dark:bg-brand-slate-800"
   >
     <div class="mb-3 flex items-center justify-between">
-      <h3 class="text-sm font-semibold text-brand-slate-900 dark:text-brand-slate-100">
+      <h3
+        class="text-sm font-semibold text-brand-slate-900 dark:text-brand-slate-100"
+      >
         Schools to explore
       </h3>
       <NuxtLink
@@ -26,7 +28,9 @@
         data-testid="rec-card"
         class="rounded-md border border-brand-slate-100 p-3 dark:border-brand-slate-600"
       >
-        <p class="truncate text-sm font-medium text-brand-slate-900 dark:text-brand-slate-100">
+        <p
+          class="truncate text-sm font-medium text-brand-slate-900 dark:text-brand-slate-100"
+        >
           {{ school.name }}
         </p>
         <p class="text-xs text-brand-slate-500">
@@ -73,8 +77,12 @@ const emit = defineEmits<{
   "school-added": [school: SchoolRecommendation];
 }>();
 
-const { recommendations, fetchRecommendations, dismissRecommendation, removeRecommendation } =
-  useSchoolRecommendations();
+const {
+  recommendations,
+  fetchRecommendations,
+  dismissRecommendation,
+  removeRecommendation,
+} = useSchoolRecommendations();
 const { completeItem } = useNuxProgress();
 const { createSchool } = useSchools();
 

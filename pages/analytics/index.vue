@@ -15,7 +15,10 @@
         description="Track engagement, fit trends, and recruiting momentum"
       >
         <template #icon>
-          <UIcon name="i-heroicons-chart-pie" class="h-8 w-8 text-brand-slate-400" />
+          <UIcon
+            name="i-heroicons-chart-pie"
+            class="h-8 w-8 text-brand-slate-400"
+          />
         </template>
         <template #action>
           <DesignSystemButton to="/schools/new" color="blue" variant="solid">
@@ -32,124 +35,126 @@
         />
 
         <!-- Summary Stats Row -->
-      <div class="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          label="Total Schools"
-          :value="stats.totalSchools"
-          border-color="#3b82f6"
-          icon="🏫"
-          :show-icon="true"
-        />
-        <StatCard
-          label="Total Interactions"
-          :value="stats.totalInteractions"
-          border-color="#10b981"
-          icon="💬"
-          :show-icon="true"
-        />
-        <StatCard
-          label="Offer Count"
-          :value="stats.totalOffers"
-          border-color="#f59e0b"
-          icon="📝"
-          :show-icon="true"
-        />
-        <StatCard
-          label="Commitments"
-          :value="stats.commitments"
-          border-color="#ef4444"
-          icon="✅"
-          :show-icon="true"
-        />
-      </div>
-
-      <!-- Charts Grid -->
-      <div class="mb-8 grid grid-cols-1 gap-8 lg:grid-cols-2">
-        <!-- Interaction Type Distribution (Pie Chart) -->
-        <div>
-          <PieChart
-            title="Interaction Types"
-            :data="chartData.interactionTypes"
-            chart-height="350px"
-            :show-summary="true"
-            @segment-click="handleInteractionTypeClick"
+        <div class="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <StatCard
+            label="Total Schools"
+            :value="stats.totalSchools"
+            border-color="#3b82f6"
+            icon="🏫"
+            :show-icon="true"
+          />
+          <StatCard
+            label="Total Interactions"
+            :value="stats.totalInteractions"
+            border-color="#10b981"
+            icon="💬"
+            :show-icon="true"
+          />
+          <StatCard
+            label="Offer Count"
+            :value="stats.totalOffers"
+            border-color="#f59e0b"
+            icon="📝"
+            :show-icon="true"
+          />
+          <StatCard
+            label="Commitments"
+            :value="stats.commitments"
+            border-color="#ef4444"
+            icon="✅"
+            :show-icon="true"
           />
         </div>
 
-        <!-- Sentiment Breakdown (Pie Chart) -->
-        <div>
-          <PieChart
-            title="Sentiment Breakdown"
-            :data="chartData.sentiments"
-            chart-height="350px"
-            :show-summary="true"
-          />
-        </div>
+        <!-- Charts Grid -->
+        <div class="mb-8 grid grid-cols-1 gap-8 lg:grid-cols-2">
+          <!-- Interaction Type Distribution (Pie Chart) -->
+          <div>
+            <PieChart
+              title="Interaction Types"
+              :data="chartData.interactionTypes"
+              chart-height="350px"
+              :show-summary="true"
+              @segment-click="handleInteractionTypeClick"
+            />
+          </div>
 
-        <!-- Recruiting Pipeline (Funnel Chart) -->
-        <div>
-          <FunnelChart
-            title="Recruiting Pipeline"
-            :stages="chartData.pipeline"
-            @stage-click="handlePipelineStageClick"
-          />
-        </div>
+          <!-- Sentiment Breakdown (Pie Chart) -->
+          <div>
+            <PieChart
+              title="Sentiment Breakdown"
+              :data="chartData.sentiments"
+              chart-height="350px"
+              :show-summary="true"
+            />
+          </div>
 
-        <!-- School Status Distribution (Pie Chart) -->
-        <div>
-          <PieChart
-            title="School Status"
-            :data="chartData.schoolStatus"
-            chart-height="350px"
-            :show-summary="true"
-          />
-        </div>
-      </div>
+          <!-- Recruiting Pipeline (Funnel Chart) -->
+          <div>
+            <FunnelChart
+              title="Recruiting Pipeline"
+              :stages="chartData.pipeline"
+              @stage-click="handlePipelineStageClick"
+            />
+          </div>
 
-      <!-- Performance Correlation (Scatter Chart) -->
-      <div class="mb-8">
-        <ScatterChart
-          title="Performance Correlation Analysis"
-          :datasets="chartData.performanceData"
-          :x-label="performanceScatterXLabel"
-          y-label="Distance (feet)"
-          chart-height="400px"
-          :show-stats="true"
-          :show-trend-line="true"
-        />
-      </div>
-
-      <!-- Export Actions -->
-      <div class="rounded-lg bg-white p-6 shadow-sm">
-        <div
-          class="flex flex-col items-center justify-between gap-4 md:flex-row"
-        >
-          <h3 class="text-lg font-semibold text-gray-900">Export Analytics</h3>
-          <div class="flex gap-3">
-            <button
-              data-testid="export-csv-button"
-              @click="handleExport('csv')"
-              class="rounded-lg border border-gray-300 px-4 py-2 font-medium text-gray-700 transition hover:bg-gray-50"
-            >
-              Export as CSV
-            </button>
-            <button
-              data-testid="export-excel-button"
-              @click="handleExport('excel')"
-              class="rounded-lg border border-gray-300 px-4 py-2 font-medium text-gray-700 transition hover:bg-gray-50"
-            >
-              Export as Excel
-            </button>
-            <button
-              data-testid="export-pdf-button"
-              @click="handleExport('pdf')"
-              class="rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition hover:bg-blue-700"
-            >
-              Export as PDF
-            </button>
+          <!-- School Status Distribution (Pie Chart) -->
+          <div>
+            <PieChart
+              title="School Status"
+              :data="chartData.schoolStatus"
+              chart-height="350px"
+              :show-summary="true"
+            />
           </div>
         </div>
-      </div>
+
+        <!-- Performance Correlation (Scatter Chart) -->
+        <div class="mb-8">
+          <ScatterChart
+            title="Performance Correlation Analysis"
+            :datasets="chartData.performanceData"
+            :x-label="performanceScatterXLabel"
+            y-label="Distance (feet)"
+            chart-height="400px"
+            :show-stats="true"
+            :show-trend-line="true"
+          />
+        </div>
+
+        <!-- Export Actions -->
+        <div class="rounded-lg bg-white p-6 shadow-sm">
+          <div
+            class="flex flex-col items-center justify-between gap-4 md:flex-row"
+          >
+            <h3 class="text-lg font-semibold text-gray-900">
+              Export Analytics
+            </h3>
+            <div class="flex gap-3">
+              <button
+                data-testid="export-csv-button"
+                @click="handleExport('csv')"
+                class="rounded-lg border border-gray-300 px-4 py-2 font-medium text-gray-700 transition hover:bg-gray-50"
+              >
+                Export as CSV
+              </button>
+              <button
+                data-testid="export-excel-button"
+                @click="handleExport('excel')"
+                class="rounded-lg border border-gray-300 px-4 py-2 font-medium text-gray-700 transition hover:bg-gray-50"
+              >
+                Export as Excel
+              </button>
+              <button
+                data-testid="export-pdf-button"
+                @click="handleExport('pdf')"
+                class="rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition hover:bg-blue-700"
+              >
+                Export as PDF
+              </button>
+            </div>
+          </div>
+        </div>
       </template>
     </main>
   </div>

@@ -167,9 +167,7 @@ describe("Parent Onboarding", () => {
       const wrapper = createWrapper();
       await setDob(wrapper);
       await wrapper.find('[data-testid="sport"]').setValue("Baseball");
-      await wrapper
-        .find('[data-testid="graduation-year"]')
-        .setValue("2027");
+      await wrapper.find('[data-testid="graduation-year"]').setValue("2027");
       await wrapper.find('[data-testid="next-button"]').trigger("click");
       await flushPromises();
       await wrapper.vm.$nextTick();
@@ -212,9 +210,7 @@ describe("Parent Onboarding", () => {
     const goToStep2 = async (wrapper: ReturnType<typeof mount>) => {
       await setDob(wrapper);
       await wrapper.find('[data-testid="sport"]').setValue("Baseball");
-      await wrapper
-        .find('[data-testid="graduation-year"]')
-        .setValue("2027");
+      await wrapper.find('[data-testid="graduation-year"]').setValue("2027");
       await wrapper.find('[data-testid="next-button"]').trigger("click");
       await flushPromises();
       await wrapper.vm.$nextTick();
@@ -231,17 +227,15 @@ describe("Parent Onboarding", () => {
     it("does not show an invite form on step 2", async () => {
       const wrapper = createWrapper();
       await goToStep2(wrapper);
-      expect(wrapper.find('[data-testid="invite-email"]').exists()).toBe(
-        false,
-      );
+      expect(wrapper.find('[data-testid="invite-email"]').exists()).toBe(false);
     });
 
     it("shows a go-to-dashboard CTA on step 2", async () => {
       const wrapper = createWrapper();
       await goToStep2(wrapper);
-      expect(
-        wrapper.find('[data-testid="go-to-dashboard"]').exists(),
-      ).toBe(true);
+      expect(wrapper.find('[data-testid="go-to-dashboard"]').exists()).toBe(
+        true,
+      );
     });
 
     it("adding a recommended school calls createSchool and removes it from the list", async () => {

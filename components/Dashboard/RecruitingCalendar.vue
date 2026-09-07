@@ -178,7 +178,11 @@ import {
   type RecruitingPeriod,
 } from "~/utils/recruitingCalendar";
 import type { Milestone } from "~/utils/ncaaRecruitingCalendar";
-import type { UnifiedDeadline, UserDeadlineCategory, SystemDeadlineCategory } from "~/types/deadline";
+import type {
+  UnifiedDeadline,
+  UserDeadlineCategory,
+  SystemDeadlineCategory,
+} from "~/types/deadline";
 import { parseLocalDateOnly, exclusiveEndOfDay } from "~/utils/localDate";
 import { useDeadlines } from "~/composables/useDeadlines";
 import { milestoneToDeadline } from "~/composables/useRecruitingDeadlines";
@@ -330,7 +334,9 @@ const mergedUpcomingItems = computed(() => {
 });
 
 const displayedUpcomingItems = computed(() =>
-  props.mergeUserDeadlines ? mergedUpcomingItems.value : upcomingMilestones.value,
+  props.mergeUserDeadlines
+    ? mergedUpcomingItems.value
+    : upcomingMilestones.value,
 );
 
 // The resolved SportCalendar this sport/division/gender/subdivision

@@ -253,9 +253,7 @@ useRealtimeTasksList(realtimeAthleteId, {
   onTaskChange: async () => {
     await fetchTasksWithStatus(
       currentGradeLevel.value,
-      isViewingAsParent.value
-        ? currentAthleteId.value || undefined
-        : undefined,
+      isViewingAsParent.value ? currentAthleteId.value || undefined : undefined,
     );
   },
 });
@@ -497,7 +495,10 @@ const onUrgencyFilterChange = () => {
         description="Phase-based recruiting tasks guide your next steps"
       >
         <template #icon>
-          <UIcon name="i-heroicons-check-circle" class="h-8 w-8 text-brand-slate-400" />
+          <UIcon
+            name="i-heroicons-check-circle"
+            class="h-8 w-8 text-brand-slate-400"
+          />
         </template>
         <template #action>
           <p class="text-sm text-brand-slate-500">

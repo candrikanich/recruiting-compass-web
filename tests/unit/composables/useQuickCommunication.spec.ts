@@ -21,7 +21,12 @@ const buildAthleteContext = vi.fn(async () => ({
   derived: { sport: "Baseball" },
 }));
 const resolveTemplate = vi.fn(
-  async (t: CommunicationTemplate, _ctx: unknown, _actx: unknown, authored: Record<string, string> = {}) => ({
+  async (
+    t: CommunicationTemplate,
+    _ctx: unknown,
+    _actx: unknown,
+    authored: Record<string, string> = {},
+  ) => ({
     subject: t.subject ?? "",
     body: (t.body ?? "").replace(
       /\{\{(\w+)\}\}/g,
@@ -128,7 +133,12 @@ vi.mock("~/composables/useCommunicationTemplates", () => ({
   useCommunicationTemplates: () => ({
     getTemplatesByType: (type: string) => {
       if (type === "email")
-        return [emailTemplate, questionnaireTemplate, resolvedOnlyTemplate, editableTemplate];
+        return [
+          emailTemplate,
+          questionnaireTemplate,
+          resolvedOnlyTemplate,
+          editableTemplate,
+        ];
       return [textTemplate];
     },
     loadTemplates,
@@ -171,8 +181,12 @@ let mockIsAthlete = true;
 let mockUserId = "athlete1";
 vi.mock("~/stores/user", () => ({
   useUserStore: () => ({
-    get isAthlete() { return mockIsAthlete; },
-    get user() { return { id: mockUserId }; },
+    get isAthlete() {
+      return mockIsAthlete;
+    },
+    get user() {
+      return { id: mockUserId };
+    },
   }),
 }));
 
@@ -198,7 +212,7 @@ function mountWith(school?: Record<string, unknown>) {
             phone: "5551234567",
           }) as never,
         school: () => school as never,
-        schoolName: () => school?.name as string ?? "Ohio State",
+        schoolName: () => (school?.name as string) ?? "Ohio State",
         emit: emitSpy,
       });
       qc.init();
@@ -367,7 +381,9 @@ describe("useQuickCommunication — previewSegments (toSegments)", () => {
     const { api } = await mountAndSelectTemplate("t-email", { id: "s1" });
     const segments = api.qc!.email.previewSegments.value;
     const unresolvedParts = segments.filter((s) => s.unresolved);
-    expect(unresolvedParts.some((s) => s.text === "{{programNote}}")).toBe(false);
+    expect(unresolvedParts.some((s) => s.text === "{{programNote}}")).toBe(
+      false,
+    );
   });
 
   it("keeps required unresolved tokens as unresolved segments", async () => {
@@ -538,7 +554,11 @@ describe("useQuickCommunication — saveField", () => {
     writeField.mockResolvedValueOnce(undefined);
     await api.qc!.email.saveField(gpaRow!);
 
-    expect(writeField).toHaveBeenCalledWith("athlete1", "column:users.gpa", "3.8");
+    expect(writeField).toHaveBeenCalledWith(
+      "athlete1",
+      "column:users.gpa",
+      "3.8",
+    );
     expect(api.qc!.email.savingKey.value).toBeNull();
   });
 
@@ -581,7 +601,11 @@ describe("useQuickCommunication — saveField", () => {
     writeField.mockResolvedValueOnce(undefined);
     await api.qc!.email.saveField(gpaRow!);
 
-    expect(writeField).toHaveBeenCalledWith("athlete1", "column:users.gpa", null);
+    expect(writeField).toHaveBeenCalledWith(
+      "athlete1",
+      "column:users.gpa",
+      null,
+    );
   });
 });
 
@@ -615,10 +639,13 @@ describe("useQuickCommunication — send", () => {
     });
     const sent = await api.qc!.email.send();
     expect(sent).toBe(true);
-    expect(emitSpy).toHaveBeenCalledWith("interaction-logged", expect.objectContaining({
-      type: "email",
-      direction: "outbound",
-    }));
+    expect(emitSpy).toHaveBeenCalledWith(
+      "interaction-logged",
+      expect.objectContaining({
+        type: "email",
+        direction: "outbound",
+      }),
+    );
   });
 
   it("blocks on programNote reuse", async () => {

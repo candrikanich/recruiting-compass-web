@@ -2,9 +2,8 @@ import { describe, it, expect } from "vitest";
 
 describe("renderOnboardingNudgeEmail", () => {
   it("renders HTML with user name and incomplete items", async () => {
-    const { renderOnboardingNudgeEmail } = await import(
-      "~/server/utils/onboardingEmail"
-    );
+    const { renderOnboardingNudgeEmail } =
+      await import("~/server/utils/onboardingEmail");
     const html = renderOnboardingNudgeEmail({
       userName: "Chris",
       completedCount: 2,

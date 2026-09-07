@@ -29,20 +29,27 @@ describe("verifyResendWebhook", () => {
   });
 
   it("returns the verified payload on a valid signature", () => {
-    verifyMock.mockReturnValue({ type: "email.received", data: { subject: "hi" } });
+    verifyMock.mockReturnValue({
+      type: "email.received",
+      data: { subject: "hi" },
+    });
     const result = verifyResendWebhook('{"type":"email.received"}', headers);
     expect(result).toEqual({ type: "email.received", data: { subject: "hi" } });
   });
 
   it("throws when the secret is not configured", () => {
     delete process.env.RESEND_INBOUND_WEBHOOK_SECRET;
-    expect(() => verifyResendWebhook("{}", headers)).toThrow("Invalid webhook signature");
+    expect(() => verifyResendWebhook("{}", headers)).toThrow(
+      "Invalid webhook signature",
+    );
   });
 
   it("throws when svix verification fails", () => {
     verifyMock.mockImplementation(() => {
       throw new Error("bad signature");
     });
-    expect(() => verifyResendWebhook("{}", headers)).toThrow("Invalid webhook signature");
+    expect(() => verifyResendWebhook("{}", headers)).toThrow(
+      "Invalid webhook signature",
+    );
   });
 });

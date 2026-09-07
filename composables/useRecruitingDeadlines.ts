@@ -1,7 +1,14 @@
 import { computed } from "vue";
 import type { UnifiedDeadline } from "~/types/deadline";
-import type { Division, AppSport, CalendarMilestone } from "~/utils/recruitingCalendar/types";
-import { getUpcomingMilestones, getSportCalendar } from "~/utils/recruitingCalendar/resolver";
+import type {
+  Division,
+  AppSport,
+  CalendarMilestone,
+} from "~/utils/recruitingCalendar/types";
+import {
+  getUpcomingMilestones,
+  getSportCalendar,
+} from "~/utils/recruitingCalendar/resolver";
 import { SEASON_END } from "~/utils/recruitingCalendar/calendarData";
 import { ALL_MILESTONES } from "~/utils/ncaaRecruitingCalendar";
 
@@ -68,7 +75,8 @@ export function useRecruitingDeadlines(
         const key = `${p.start}|${p.description}`;
         if (seen.has(key)) continue;
         seen.add(key);
-        const typeLabel = p.type === "dead" ? "Dead Period" : "Recruiting Shutdown";
+        const typeLabel =
+          p.type === "dead" ? "Dead Period" : "Recruiting Shutdown";
         result.push({
           id: `system-${div}-${p.type}-${p.start}`,
           label: `${div} ${s} ${typeLabel}`,

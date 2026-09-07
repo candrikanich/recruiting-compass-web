@@ -45,9 +45,7 @@ test.describe("Dashboard NUX Widgets", () => {
       }
 
       // Verify key checklist items exist
-      const sportItem = page.locator(
-        '[data-testid="checklist-item-sport"]',
-      );
+      const sportItem = page.locator('[data-testid="checklist-item-sport"]');
       const schoolItem = page.locator(
         '[data-testid="checklist-item-first_school"]',
       );
@@ -86,9 +84,7 @@ test.describe("Dashboard NUX Widgets", () => {
       // Wait for loading to finish
       await expect(loading).not.toBeVisible({ timeout: 10000 });
 
-      const expandedVisible = await expanded
-        .isVisible()
-        .catch(() => false);
+      const expandedVisible = await expanded.isVisible().catch(() => false);
       const compactVisible = await compact.isVisible().catch(() => false);
 
       // One layout must be visible
@@ -123,9 +119,7 @@ test.describe("Dashboard NUX Widgets", () => {
         // Each card has school name and Add/Dismiss buttons
         const first = recCard.first();
         await expect(first).toBeVisible();
-        await expect(
-          first.locator('[data-testid="rec-add"]'),
-        ).toBeVisible();
+        await expect(first.locator('[data-testid="rec-add"]')).toBeVisible();
         await expect(
           first.locator('[data-testid="rec-dismiss"]'),
         ).toBeVisible();

@@ -68,10 +68,8 @@ vi.mock("~/server/utils/supabase", () => ({
 
 // Bypass the module-level cache so each test sees its own db.programs fixture.
 vi.mock("~/server/utils/cache", () => ({
-  getOrFetch: async (
-    _key: string,
-    fetchFn: () => Promise<unknown>,
-  ) => fetchFn(),
+  getOrFetch: async (_key: string, fetchFn: () => Promise<unknown>) =>
+    fetchFn(),
 }));
 
 import { assembleSchoolRecommendations } from "~/server/utils/assembleSchoolRecommendations";

@@ -185,12 +185,7 @@ describe("useCursorPagination — compound (timestamp, id) cursor", () => {
       },
     ]);
 
-    const { loadMore } = useCursorPagination(
-      builder as any,
-      "ts",
-      1,
-      "asc",
-    );
+    const { loadMore } = useCursorPagination(builder as any, "ts", 1, "asc");
 
     await loadMore();
     await loadMore();
@@ -279,11 +274,7 @@ describe("useCursorPagination — compound (timestamp, id) cursor", () => {
   it("uses fallback message for non-Error thrown values", async () => {
     const builder = makeQueryBuilder([{ data: null, error: "string-error" }]);
 
-    const { loadMore, error } = useCursorPagination(
-      builder as any,
-      "ts",
-      20,
-    );
+    const { loadMore, error } = useCursorPagination(builder as any, "ts", 20);
     await loadMore();
 
     expect(error.value).toBe("Failed to load paginated results");
@@ -367,12 +358,7 @@ describe("useCursorPagination — compound (timestamp, id) cursor", () => {
       },
     ]);
 
-    const { loadMore } = useCursorPagination(
-      builder as any,
-      "name",
-      1,
-      "asc",
-    );
+    const { loadMore } = useCursorPagination(builder as any, "name", 1, "asc");
 
     await loadMore();
     await loadMore();
@@ -428,7 +414,10 @@ describe("useTypedCursorPagination", () => {
 
     expect(items.value).toHaveLength(1);
     expect(count.value).toBe(1);
-    expect(supabase._builder.eq).toHaveBeenCalledWith("family_unit_id", "fam-1");
+    expect(supabase._builder.eq).toHaveBeenCalledWith(
+      "family_unit_id",
+      "fam-1",
+    );
   });
 
   it("reset reloads from scratch", async () => {

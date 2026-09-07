@@ -30,9 +30,8 @@ vi.mock("~/server/utils/supabase", () => ({
 
 describe("GET /api/cron/inbound-email-purge", () => {
   it("purges raw_inbound_emails older than 7 days and reports the count", async () => {
-    const { default: handler } = await import(
-      "~/server/api/cron/inbound-email-purge.get"
-    );
+    const { default: handler } =
+      await import("~/server/api/cron/inbound-email-purge.get");
     const result = await handler({} as Parameters<typeof handler>[0]);
     expect(result).toEqual({ deletedRawEmails: 2 });
   });

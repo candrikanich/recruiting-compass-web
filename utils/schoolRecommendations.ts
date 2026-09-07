@@ -132,8 +132,7 @@ export function rankSchoolRecommendations(
   const weights = divisionWeights(input.gpa);
   const bucket = gpaBucket(input.gpa);
 
-  const sportFilter =
-    input.sport && input.programsBySport ? input.sport : null;
+  const sportFilter = input.sport && input.programsBySport ? input.sport : null;
 
   const scored: SchoolRecommendation[] = [];
   for (const school of input.catalog) {

@@ -535,15 +535,15 @@
           <p>
             <strong>(a) Free access.</strong> The Service is currently offered
             at no charge. Families who create an account before we begin
-            charging ("Founding Families") keep full access at no charge for
-            as long as their family account remains active.
+            charging ("Founding Families") keep full access at no charge for as
+            long as their family account remains active.
           </p>
           <p>
-            <strong>(b) Paid plans.</strong> We may introduce paid
-            subscription plans. Where offered, a subscription is billed per
-            family account, covers every member of that family, and renews
-            automatically at the end of each billing period until cancelled.
-            The price and billing period are shown before you subscribe.
+            <strong>(b) Paid plans.</strong> We may introduce paid subscription
+            plans. Where offered, a subscription is billed per family account,
+            covers every member of that family, and renews automatically at the
+            end of each billing period until cancelled. The price and billing
+            period are shown before you subscribe.
           </p>
           <p>
             <strong>(c) Billing and cancellation.</strong> Subscriptions
@@ -555,16 +555,16 @@
           </p>
           <p>
             <strong>(d) Refunds.</strong> Refunds for App Store purchases are
-            governed by Apple's policies. For website purchases, contact us
-            at the address in Section 23; refunds are at our discretion
-            except where required by law.
+            governed by Apple's policies. For website purchases, contact us at
+            the address in Section 23; refunds are at our discretion except
+            where required by law.
           </p>
           <p>
-            <strong>(e) Free trials and read-only access.</strong> We may
-            offer a free trial. When a trial or subscription ends, your
-            family account becomes read-only: you can view and export your
-            data but cannot add or change it, and your public athlete
-            profile is not available until a subscription is active.
+            <strong>(e) Free trials and read-only access.</strong> We may offer
+            a free trial. When a trial or subscription ends, your family account
+            becomes read-only: you can view and export your data but cannot add
+            or change it, and your public athlete profile is not available until
+            a subscription is active.
           </p>
           <p>
             <strong>(f) Price changes.</strong> We will give existing
