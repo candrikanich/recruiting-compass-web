@@ -20,6 +20,17 @@ vi.mock("~/server/utils/logger", () => ({
   createLogger: () => loggerMock,
 }));
 
+const { captureMessage, shouldCaptureInSentryMock } = vi.hoisted(() => ({
+  captureMessage: vi.fn(),
+  shouldCaptureInSentryMock: vi.fn(() => true),
+}));
+
+vi.mock("@sentry/nuxt", () => ({ captureMessage }));
+
+vi.mock("~/server/utils/sentryContext", () => ({
+  shouldCaptureInSentry: shouldCaptureInSentryMock,
+}));
+
 import {
   sendEmail,
   sendNotificationEmail,
@@ -55,6 +66,25 @@ describe("emailService (Resend SDK)", () => {
 
       expect(result.success).toBe(false);
       expect(sendMock).not.toHaveBeenCalled();
+    });
+
+    it("logs an error (not a warn) and captures once to Sentry when API key is missing (#547)", async () => {
+      delete process.env.RESEND_API_KEY;
+      captureMessage.mockClear();
+      vi.resetModules();
+      const fresh = await import("~/server/utils/emailService");
+
+      await fresh.sendEmail({ to: "a@b.com", subject: "Hi", html: "<p>Hi</p>" });
+      await fresh.sendEmail({
+        to: "c@d.com",
+        subject: "Hi 2",
+        html: "<p>Hi</p>",
+      });
+
+      expect(loggerMock.error).toHaveBeenCalledTimes(2);
+      expect(loggerMock.warn).not.toHaveBeenCalled();
+      // Don't spam Sentry on every send attempt — one capture per process.
+      expect(captureMessage).toHaveBeenCalledTimes(1);
     });
 
     it("sends via the SDK and returns the message id on success", async () => {

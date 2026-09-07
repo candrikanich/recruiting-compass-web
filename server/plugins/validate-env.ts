@@ -25,4 +25,13 @@ export default defineNitroPlugin(() => {
       `[startup] Missing required environment variables: ${missing.join(", ")}`,
     );
   }
+
+  // RESEND_API_KEY is only load-bearing in production — local/CI/preview
+  // must keep booting without it (email is not required for those).
+  // See issue #547: don't add this to the global `required` list above.
+  if (process.env.VERCEL_ENV === "production" && !process.env.RESEND_API_KEY) {
+    throw new Error(
+      "[startup] Missing required environment variable: RESEND_API_KEY (required in production)",
+    );
+  }
 });
