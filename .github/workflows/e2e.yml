@@ -50,6 +50,10 @@ jobs:
           name: e2e-build-output
           path: .output/
           retention-days: 1
+          # .output/ is dot-prefixed; upload-artifact treats it as hidden and
+          # silently skips every file under it unless this is set (root cause
+          # of WebKit's "Artifact not found for name: e2e-build-output").
+          include-hidden-files: true
 
       - name: Run E2E tests
         run: npm run test:e2e
