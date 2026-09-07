@@ -28,8 +28,12 @@ export default defineNuxtRouteMiddleware(async (to, _from) => {
     return navigateTo("/login");
   }
 
-  // Check if user is admin
+  // Check if user is admin. Redirect to /login, not "/" — middleware/host.global.ts
+  // forces any non-public, non-"/admin" path on the admin subdomain back to
+  // "/admin", so "/" bounces straight back here, an unrecoverable redirect
+  // loop for any non-admin account on the admin host. "/login" is on that
+  // middleware's admin-host public-path allowlist, so it terminates.
   if (!userStore.user.is_admin) {
-    return navigateTo("/");
+    return navigateTo("/login?reason=not_admin");
   }
 });
