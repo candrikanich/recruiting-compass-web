@@ -59,23 +59,38 @@ describe("canWriteFrom", () => {
     expect(canWriteFrom(sub({ status: "read_only" }), NOW)).toBe(false));
   it("trialing before end → true, after end → false", () => {
     expect(
-      canWriteFrom(sub({ status: "trialing", trialEndsAt: "2026-09-10T00:00:00Z" }), NOW),
+      canWriteFrom(
+        sub({ status: "trialing", trialEndsAt: "2026-09-10T00:00:00Z" }),
+        NOW,
+      ),
     ).toBe(true);
     expect(
-      canWriteFrom(sub({ status: "trialing", trialEndsAt: "2026-09-01T00:00:00Z" }), NOW),
+      canWriteFrom(
+        sub({ status: "trialing", trialEndsAt: "2026-09-01T00:00:00Z" }),
+        NOW,
+      ),
     ).toBe(false);
-    expect(canWriteFrom(sub({ status: "trialing", trialEndsAt: null }), NOW)).toBe(false);
+    expect(
+      canWriteFrom(sub({ status: "trialing", trialEndsAt: null }), NOW),
+    ).toBe(false);
   });
 });
 
 describe("trialDaysLeftFrom", () => {
-  it("non-trial → null", () => expect(trialDaysLeftFrom(sub({}), NOW)).toBeNull());
+  it("non-trial → null", () =>
+    expect(trialDaysLeftFrom(sub({}), NOW)).toBeNull());
   it("rounds up remaining days, floors at 0", () => {
     expect(
-      trialDaysLeftFrom(sub({ status: "trialing", trialEndsAt: "2026-09-10T00:00:00Z" }), NOW),
+      trialDaysLeftFrom(
+        sub({ status: "trialing", trialEndsAt: "2026-09-10T00:00:00Z" }),
+        NOW,
+      ),
     ).toBe(7);
     expect(
-      trialDaysLeftFrom(sub({ status: "trialing", trialEndsAt: "2026-09-01T00:00:00Z" }), NOW),
+      trialDaysLeftFrom(
+        sub({ status: "trialing", trialEndsAt: "2026-09-01T00:00:00Z" }),
+        NOW,
+      ),
     ).toBe(0);
   });
 });

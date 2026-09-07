@@ -32,7 +32,7 @@ describe("PortfolioHealth", () => {
   });
 
   describe("default state (no props)", () => {
-    it('shows em-dash fallback for reaches, matches, and safeties', () => {
+    it("shows em-dash fallback for reaches, matches, and safeties", () => {
       const wrapper = mountPortfolioHealth();
       const stats = wrapper.findAll(".text-sm.font-medium");
 
@@ -43,7 +43,9 @@ describe("PortfolioHealth", () => {
 
     it("does not render any progress bar fills when counts are undefined", () => {
       const wrapper = mountPortfolioHealth();
-      const fills = wrapper.findAll(".bg-blue-500, .bg-emerald-500, .bg-purple-500");
+      const fills = wrapper.findAll(
+        ".bg-blue-500, .bg-emerald-500, .bg-purple-500",
+      );
 
       expect(fills).toHaveLength(0);
     });

@@ -30,7 +30,9 @@ export default defineEventHandler(async (event) => {
 
     // Trusted client IP (same chain as contact.post.ts)
     const clientIp =
-      getRequestHeader(event, "x-vercel-forwarded-for")?.split(",")[0]?.trim() ||
+      getRequestHeader(event, "x-vercel-forwarded-for")
+        ?.split(",")[0]
+        ?.trim() ||
       getRequestHeader(event, "x-real-ip") ||
       undefined;
 

@@ -15,7 +15,7 @@
     </p>
 
     <div class="mt-6 rounded-xl border border-slate-200 bg-white p-5 shadow-xs">
-      <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">
+      <p class="text-xs font-semibold tracking-wide text-slate-500 uppercase">
         Current plan
       </p>
       <p class="mt-1 text-lg font-semibold text-slate-900">
@@ -27,9 +27,9 @@
         v-else-if="subscription?.status === 'founding'"
         class="mt-2 text-sm text-slate-600"
       >
-        You joined during our founding period. Your family keeps full access
-        at no charge for as long as this account is active. Thank you for
-        being early.
+        You joined during our founding period. Your family keeps full access at
+        no charge for as long as this account is active. Thank you for being
+        early.
       </p>
     </div>
   </div>

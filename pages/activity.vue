@@ -134,7 +134,10 @@
         description="Try adjusting your filters or search query"
       >
         <template #icon>
-          <UIcon name="i-heroicons-sparkles" class="h-8 w-8 text-brand-slate-400" />
+          <UIcon
+            name="i-heroicons-sparkles"
+            class="h-8 w-8 text-brand-slate-400"
+          />
         </template>
       </DesignSystemEmptyState>
 
@@ -145,7 +148,10 @@
         description="See all your recruiting activity in one timeline"
       >
         <template #icon>
-          <UIcon name="i-heroicons-sparkles" class="h-8 w-8 text-brand-slate-400" />
+          <UIcon
+            name="i-heroicons-sparkles"
+            class="h-8 w-8 text-brand-slate-400"
+          />
         </template>
         <template #action>
           <p class="text-sm text-brand-slate-500">

@@ -5,7 +5,8 @@ import { useAppToast } from "~/composables/useAppToast";
 
 definePageMeta({ middleware: "auth" });
 
-const { drafts, loading, error, fetchDrafts, confirmDraft, discardDraft } = useInboundDrafts();
+const { drafts, loading, error, fetchDrafts, confirmDraft, discardDraft } =
+  useInboundDrafts();
 const schoolIdByDraft = ref<Record<string, string>>({});
 const { showToast } = useAppToast();
 
@@ -13,7 +14,10 @@ onMounted(fetchDrafts);
 
 async function onConfirm(draftId: string, matchedSchoolId: string | null) {
   try {
-    await confirmDraft(draftId, matchedSchoolId ? undefined : schoolIdByDraft.value[draftId]);
+    await confirmDraft(
+      draftId,
+      matchedSchoolId ? undefined : schoolIdByDraft.value[draftId],
+    );
   } catch {
     showToast("Failed to confirm this draft. Please try again.", "error");
   }
@@ -30,10 +34,16 @@ async function onDiscard(draftId: string) {
 
 <template>
   <div class="mx-auto max-w-2xl px-4 py-8">
-    <h1 class="text-xl font-semibold text-brand-slate-900">Coach Emails to Review</h1>
+    <h1 class="text-xl font-semibold text-brand-slate-900">
+      Coach Emails to Review
+    </h1>
 
     <DesignSystemLoadingState v-if="loading" />
-    <DesignSystemErrorState v-else-if="error" :error="error" @retry="fetchDrafts" />
+    <DesignSystemErrorState
+      v-else-if="error"
+      :error="error"
+      @retry="fetchDrafts"
+    />
     <DesignSystemEmptyState
       v-else-if="drafts.length === 0"
       title="No emails to review"
@@ -50,7 +60,7 @@ async function onDiscard(draftId: string) {
             </span>
           </p>
           <p class="text-sm text-brand-slate-600">{{ draft.subject }}</p>
-          <p class="mt-2 whitespace-pre-line text-sm text-brand-slate-700">
+          <p class="mt-2 text-sm whitespace-pre-line text-brand-slate-700">
             {{ draft.body_text }}
           </p>
 
@@ -69,7 +79,11 @@ async function onDiscard(draftId: string) {
             >
               Confirm
             </DesignSystemButton>
-            <DesignSystemButton variant="outline" color="slate" @click="onDiscard(draft.id)">
+            <DesignSystemButton
+              variant="outline"
+              color="slate"
+              @click="onDiscard(draft.id)"
+            >
               Discard
             </DesignSystemButton>
           </div>

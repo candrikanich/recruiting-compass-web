@@ -312,18 +312,22 @@ export function getYearCompletionMilestones(
   ];
 
   const required = YEAR_PHASES.map((y) => y.label);
-  const completed = YEAR_PHASES
-    .filter((y) => {
-      const total = totalByGrade[y.grade] ?? 0;
-      const done = completedByGrade[y.grade] ?? 0;
-      return total > 0 && done >= total;
-    })
-    .map((y) => y.label);
+  const completed = YEAR_PHASES.filter((y) => {
+    const total = totalByGrade[y.grade] ?? 0;
+    const done = completedByGrade[y.grade] ?? 0;
+    return total > 0 && done >= total;
+  }).map((y) => y.label);
   const remaining = required.filter((label) => !completed.includes(label));
   const percentComplete =
     required.length > 0 ? (completed.length / required.length) * 100 : 0;
 
-  return { phase: currentPhase, required, completed, remaining, percentComplete };
+  return {
+    phase: currentPhase,
+    required,
+    completed,
+    remaining,
+    percentComplete,
+  };
 }
 
 /**

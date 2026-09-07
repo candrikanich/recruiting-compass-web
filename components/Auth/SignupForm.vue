@@ -94,7 +94,6 @@
       <FieldError id="dateOfBirth-error" :error="fieldErrors.dateOfBirth" />
     </div>
 
-
     <!-- Email -->
     <LoginInputField
       id="email"

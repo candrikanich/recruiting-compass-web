@@ -330,9 +330,7 @@ describe("pages/onboarding/index.vue", () => {
     await flushPromises();
 
     const graduationSelect = wrapper.find("#onboarding-graduation-year");
-    expect((graduationSelect.element as HTMLSelectElement).value).toBe(
-      "2027",
-    );
+    expect((graduationSelect.element as HTMLSelectElement).value).toBe("2027");
     const sportSelect = wrapper.find("#onboarding-primary-sport");
     expect((sportSelect.element as HTMLSelectElement).value).toBe("Soccer");
   });

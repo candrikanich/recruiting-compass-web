@@ -9,7 +9,8 @@ export interface NuxPrompt {
 }
 
 export interface PromptContext {
-  context: "dashboard" | "fit-score" | "template" | "schools" | "public-profile";
+  context:
+    "dashboard" | "fit-score" | "template" | "schools" | "public-profile";
   userGpa?: number | null;
   userSat?: number | null;
   userAct?: number | null;
@@ -35,7 +36,10 @@ export function useNuxPrompts() {
 
     const candidates: NuxPrompt[] = [];
 
-    if (!ctx.userGpa && (ctx.context === "fit-score" || ctx.context === "schools")) {
+    if (
+      !ctx.userGpa &&
+      (ctx.context === "fit-score" || ctx.context === "schools")
+    ) {
       candidates.push({
         id: "gpa_fit_score",
         field: "gpa",

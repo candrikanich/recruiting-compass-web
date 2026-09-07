@@ -19,21 +19,53 @@ function makeDeadline(
 
 describe("mergeDeadlines", () => {
   it("sorts merged deadlines by date ascending", () => {
-    const user = [makeDeadline({ id: "u1", date: "2026-12-01", source: "user" })];
-    const system = [makeDeadline({ id: "s1", date: "2026-11-01", source: "system" })];
+    const user = [
+      makeDeadline({ id: "u1", date: "2026-12-01", source: "user" }),
+    ];
+    const system = [
+      makeDeadline({ id: "s1", date: "2026-11-01", source: "system" }),
+    ];
     const result = mergeDeadlines(user, system);
     expect(result.map((d) => d.id)).toEqual(["s1", "u1"]);
   });
 
   it("deduplicates by date + label + source", () => {
-    const a = [makeDeadline({ id: "a1", date: "2026-11-01", label: "SAT", source: "system" })];
-    const b = [makeDeadline({ id: "a2", date: "2026-11-01", label: "SAT", source: "system" })];
+    const a = [
+      makeDeadline({
+        id: "a1",
+        date: "2026-11-01",
+        label: "SAT",
+        source: "system",
+      }),
+    ];
+    const b = [
+      makeDeadline({
+        id: "a2",
+        date: "2026-11-01",
+        label: "SAT",
+        source: "system",
+      }),
+    ];
     expect(mergeDeadlines(a, b)).toHaveLength(1);
   });
 
   it("keeps entries with same date+label but different source", () => {
-    const user = [makeDeadline({ id: "u1", date: "2026-11-01", label: "App Due", source: "user" })];
-    const system = [makeDeadline({ id: "s1", date: "2026-11-01", label: "App Due", source: "system" })];
+    const user = [
+      makeDeadline({
+        id: "u1",
+        date: "2026-11-01",
+        label: "App Due",
+        source: "user",
+      }),
+    ];
+    const system = [
+      makeDeadline({
+        id: "s1",
+        date: "2026-11-01",
+        label: "App Due",
+        source: "system",
+      }),
+    ];
     expect(mergeDeadlines(user, system)).toHaveLength(2);
   });
 
@@ -43,10 +75,22 @@ describe("mergeDeadlines", () => {
 
   it("keeps both when user deadline collides with system deadline on same date+label", () => {
     const system = [
-      makeDeadline({ id: "s1", date: "2026-10-05", label: "SAT Test Date", source: "system", category: "test" }),
+      makeDeadline({
+        id: "s1",
+        date: "2026-10-05",
+        label: "SAT Test Date",
+        source: "system",
+        category: "test",
+      }),
     ];
     const user = [
-      makeDeadline({ id: "u1", date: "2026-10-05", label: "SAT Test Date", source: "user", category: "custom" }),
+      makeDeadline({
+        id: "u1",
+        date: "2026-10-05",
+        label: "SAT Test Date",
+        source: "user",
+        category: "custom",
+      }),
     ];
     const result = mergeDeadlines(user, system);
     expect(result).toHaveLength(2);
@@ -56,8 +100,20 @@ describe("mergeDeadlines", () => {
 
   it("deduplicates multiple system deadlines with identical date+label+source", () => {
     const system = [
-      makeDeadline({ id: "s1", date: "2026-11-15", label: "Early Signing Period", source: "system", division: "D1" as any }),
-      makeDeadline({ id: "s2", date: "2026-11-15", label: "Early Signing Period", source: "system", division: "D2" as any }),
+      makeDeadline({
+        id: "s1",
+        date: "2026-11-15",
+        label: "Early Signing Period",
+        source: "system",
+        division: "D1" as any,
+      }),
+      makeDeadline({
+        id: "s2",
+        date: "2026-11-15",
+        label: "Early Signing Period",
+        source: "system",
+        division: "D2" as any,
+      }),
     ];
     const result = mergeDeadlines([], system);
     expect(result).toHaveLength(1);
@@ -66,9 +122,27 @@ describe("mergeDeadlines", () => {
 
   it("deduplicates three system entries from D1/D2/D3 with same key to one", () => {
     const system = [
-      makeDeadline({ id: "d1", date: "2026-02-01", label: "NLI Signing", source: "system", division: "D1" as any }),
-      makeDeadline({ id: "d2", date: "2026-02-01", label: "NLI Signing", source: "system", division: "D2" as any }),
-      makeDeadline({ id: "d3", date: "2026-02-01", label: "NLI Signing", source: "system", division: "D3" as any }),
+      makeDeadline({
+        id: "d1",
+        date: "2026-02-01",
+        label: "NLI Signing",
+        source: "system",
+        division: "D1" as any,
+      }),
+      makeDeadline({
+        id: "d2",
+        date: "2026-02-01",
+        label: "NLI Signing",
+        source: "system",
+        division: "D2" as any,
+      }),
+      makeDeadline({
+        id: "d3",
+        date: "2026-02-01",
+        label: "NLI Signing",
+        source: "system",
+        division: "D3" as any,
+      }),
     ];
     const result = mergeDeadlines([], system);
     expect(result).toHaveLength(1);
@@ -77,9 +151,24 @@ describe("mergeDeadlines", () => {
 
   it("preserves insertion order for deadlines on the same date", () => {
     const system = [
-      makeDeadline({ id: "a", date: "2026-06-01", label: "Alpha", source: "system" }),
-      makeDeadline({ id: "b", date: "2026-06-01", label: "Beta", source: "system" }),
-      makeDeadline({ id: "c", date: "2026-06-01", label: "Charlie", source: "system" }),
+      makeDeadline({
+        id: "a",
+        date: "2026-06-01",
+        label: "Alpha",
+        source: "system",
+      }),
+      makeDeadline({
+        id: "b",
+        date: "2026-06-01",
+        label: "Beta",
+        source: "system",
+      }),
+      makeDeadline({
+        id: "c",
+        date: "2026-06-01",
+        label: "Charlie",
+        source: "system",
+      }),
     ];
     const result = mergeDeadlines([], system);
     expect(result.map((d) => d.id)).toEqual(["a", "b", "c"]);

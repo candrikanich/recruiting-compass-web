@@ -5,10 +5,14 @@ import {
   parseInboundToken,
 } from "~/server/utils/familyInboundToken";
 
-function buildAdminMock(existingTokens: string[], familyByToken: Record<string, string>) {
+function buildAdminMock(
+  existingTokens: string[],
+  familyByToken: Record<string, string>,
+) {
   return {
     from: (table: string) => {
-      if (table !== "family_units") throw new Error(`unexpected table ${table}`);
+      if (table !== "family_units")
+        throw new Error(`unexpected table ${table}`);
       return {
         select: () => ({
           eq: (_col: string, value: string) => ({
@@ -37,8 +41,12 @@ describe("parseInboundToken", () => {
   });
 
   it("returns null for a malformed local-part", () => {
-    expect(parseInboundToken("notfamily-ab3d9f2c@inbound.therecruitingcompass.com")).toBeNull();
-    expect(parseInboundToken("family-short@inbound.therecruitingcompass.com")).toBeNull();
+    expect(
+      parseInboundToken("notfamily-ab3d9f2c@inbound.therecruitingcompass.com"),
+    ).toBeNull();
+    expect(
+      parseInboundToken("family-short@inbound.therecruitingcompass.com"),
+    ).toBeNull();
     expect(parseInboundToken("garbage")).toBeNull();
   });
 });
@@ -53,7 +61,7 @@ describe("generateInboundToken", () => {
 
 describe("resolveFamilyByInboundToken", () => {
   it("resolves a family_unit_id when token is found", async () => {
-    const admin = buildAdminMock([], { "valid123": "fam-123" });
+    const admin = buildAdminMock([], { valid123: "fam-123" });
     const familyId = await resolveFamilyByInboundToken(admin, "valid123");
     expect(familyId).toBe("fam-123");
   });

@@ -222,13 +222,10 @@ describe("unified view", () => {
       ],
     });
     const { useDeadlines } = await import("~/composables/useDeadlines");
-    const { fetchDeadlines, upcomingDeadlines, pastDeadlines } =
-      useDeadlines();
+    const { fetchDeadlines, upcomingDeadlines, pastDeadlines } = useDeadlines();
     await fetchDeadlines();
     expect(pastDeadlines.value.some((d) => d.label === "Old")).toBe(true);
-    expect(upcomingDeadlines.value.some((d) => d.label === "Old")).toBe(
-      false,
-    );
+    expect(upcomingDeadlines.value.some((d) => d.label === "Old")).toBe(false);
   });
 });
 

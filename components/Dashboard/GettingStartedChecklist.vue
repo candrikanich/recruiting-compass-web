@@ -5,7 +5,9 @@
   >
     <div data-testid="checklist-progress" class="mb-3">
       <div class="mb-1 flex items-center justify-between">
-        <h3 class="text-sm font-semibold text-brand-slate-900 dark:text-brand-slate-100">
+        <h3
+          class="text-sm font-semibold text-brand-slate-900 dark:text-brand-slate-100"
+        >
           Getting started
         </h3>
         <button
@@ -18,9 +20,12 @@
         </button>
       </div>
       <p class="mb-2 text-xs text-brand-slate-500">
-        {{ completedCount }} of {{ items.length }} complete — {{ checklistPercentage }}%
+        {{ completedCount }} of {{ items.length }} complete —
+        {{ checklistPercentage }}%
       </p>
-      <div class="h-1.5 w-full overflow-hidden rounded-full bg-brand-slate-100 dark:bg-brand-slate-700">
+      <div
+        class="h-1.5 w-full overflow-hidden rounded-full bg-brand-slate-100 dark:bg-brand-slate-700"
+      >
         <div
           class="h-full rounded-full bg-brand-blue-600 transition-all"
           :style="{ width: `${checklistPercentage}%` }"
@@ -36,7 +41,9 @@
         class="flex items-start gap-2 py-1"
         :class="{ 'line-through opacity-60': item.completed }"
       >
-        <span class="mt-0.5 shrink-0" aria-hidden="true">{{ item.completed ? "✅" : "○" }}</span>
+        <span class="mt-0.5 shrink-0" aria-hidden="true">{{
+          item.completed ? "✅" : "○"
+        }}</span>
         <div class="min-w-0">
           <NuxtLink
             v-if="!item.completed"
@@ -45,7 +52,10 @@
           >
             {{ item.label }}
           </NuxtLink>
-          <span v-else class="text-sm font-medium text-brand-slate-900 dark:text-brand-slate-100">
+          <span
+            v-else
+            class="text-sm font-medium text-brand-slate-900 dark:text-brand-slate-100"
+          >
             {{ item.label }}
           </span>
           <p class="text-xs text-brand-slate-500">{{ item.def.why }}</p>

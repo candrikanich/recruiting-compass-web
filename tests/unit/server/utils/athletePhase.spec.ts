@@ -223,11 +223,7 @@ describe("getYearCompletionMilestones", () => {
     const result = getYearCompletionMilestones({}, {}, "committed");
     expect(result.phase).toBe("committed");
 
-    const result2 = getYearCompletionMilestones(
-      { 9: 1 },
-      { 9: 1 },
-      "junior",
-    );
+    const result2 = getYearCompletionMilestones({ 9: 1 }, { 9: 1 }, "junior");
     expect(result2.phase).toBe("junior");
   });
 });

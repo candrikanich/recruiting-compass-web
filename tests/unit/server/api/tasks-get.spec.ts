@@ -131,9 +131,7 @@ function seedDefaults() {
       error: null,
     },
   ];
-  queues.users = [
-    { data: { graduation_year: 2028 }, error: null },
-  ];
+  queues.users = [{ data: { graduation_year: 2028 }, error: null }];
 }
 
 describe("GET /api/tasks", () => {

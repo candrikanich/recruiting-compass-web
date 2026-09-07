@@ -9,7 +9,9 @@ const mockGetSession = vi.fn();
 const mockFetch = vi.fn();
 
 vi.mock("~/composables/useAuth", () => ({
-  useAuth: () => ({ session: { value: { user: { email: "admin@test.com" } } } }),
+  useAuth: () => ({
+    session: { value: { user: { email: "admin@test.com" } } },
+  }),
 }));
 
 vi.mock("~/composables/useSupabase", () => ({
@@ -33,10 +35,19 @@ vi.mock("~/utils/logger", () => ({
   }),
 }));
 
-function makeUser(overrides: Partial<{ id: string; email: string; full_name: string | null; role: string; is_admin: boolean }> = {}) {
+function makeUser(
+  overrides: Partial<{
+    id: string;
+    email: string;
+    full_name: string | null;
+    role: string;
+    is_admin: boolean;
+  }> = {},
+) {
   return {
     id: overrides.id ?? crypto.randomUUID(),
-    email: overrides.email ?? `user-${Math.random().toString(36).slice(2)}@test.com`,
+    email:
+      overrides.email ?? `user-${Math.random().toString(36).slice(2)}@test.com`,
     full_name: overrides.full_name ?? "Test User",
     role: overrides.role ?? "athlete",
     is_admin: overrides.is_admin ?? false,
@@ -45,7 +56,9 @@ function makeUser(overrides: Partial<{ id: string; email: string; full_name: str
 
 function setupLoadUsersSuccess(userList: ReturnType<typeof makeUser>[]) {
   mockGetSession.mockResolvedValue({
-    data: { session: { access_token: "tok", user: { email: "admin@test.com" } } },
+    data: {
+      session: { access_token: "tok", user: { email: "admin@test.com" } },
+    },
   });
   mockFetch.mockResolvedValue({
     ok: true,
@@ -91,7 +104,10 @@ describe("useAdminUsers", () => {
 
   describe("loadUsers", () => {
     it("fetches users and populates the list", async () => {
-      const testUsers = [makeUser({ email: "a@t.com" }), makeUser({ email: "b@t.com" })];
+      const testUsers = [
+        makeUser({ email: "a@t.com" }),
+        makeUser({ email: "b@t.com" }),
+      ];
       setupLoadUsersSuccess(testUsers);
 
       const { loadUsers, users, loading } = useAdminUsers();
@@ -115,7 +131,9 @@ describe("useAdminUsers", () => {
 
     it("sets error on non-OK HTTP response", async () => {
       mockGetSession.mockResolvedValue({
-        data: { session: { access_token: "tok", user: { email: "admin@test.com" } } },
+        data: {
+          session: { access_token: "tok", user: { email: "admin@test.com" } },
+        },
       });
       mockFetch.mockResolvedValue({ ok: false, status: 403 });
 
@@ -127,7 +145,9 @@ describe("useAdminUsers", () => {
 
     it("sets error on network failure", async () => {
       mockGetSession.mockResolvedValue({
-        data: { session: { access_token: "tok", user: { email: "admin@test.com" } } },
+        data: {
+          session: { access_token: "tok", user: { email: "admin@test.com" } },
+        },
       });
       mockFetch.mockRejectedValue(new Error("Network down"));
 
@@ -138,11 +158,15 @@ describe("useAdminUsers", () => {
     });
 
     it("paginates through multiple pages of results", async () => {
-      const page1 = Array.from({ length: 100 }, (_, i) => makeUser({ email: `u${i}@t.com` }));
+      const page1 = Array.from({ length: 100 }, (_, i) =>
+        makeUser({ email: `u${i}@t.com` }),
+      );
       const page2 = [makeUser({ email: "last@t.com" })];
 
       mockGetSession.mockResolvedValue({
-        data: { session: { access_token: "tok", user: { email: "admin@test.com" } } },
+        data: {
+          session: { access_token: "tok", user: { email: "admin@test.com" } },
+        },
       });
 
       let callCount = 0;
@@ -165,9 +189,17 @@ describe("useAdminUsers", () => {
   describe("filteredUsers", () => {
     it("filters by search query across email, name, and role", async () => {
       const testUsers = [
-        makeUser({ email: "alice@t.com", full_name: "Alice Adams", role: "athlete" }),
+        makeUser({
+          email: "alice@t.com",
+          full_name: "Alice Adams",
+          role: "athlete",
+        }),
         makeUser({ email: "bob@t.com", full_name: "Bob Brown", role: "coach" }),
-        makeUser({ email: "carol@t.com", full_name: "Carol Clark", role: "parent" }),
+        makeUser({
+          email: "carol@t.com",
+          full_name: "Carol Clark",
+          role: "parent",
+        }),
       ];
       setupLoadUsersSuccess(testUsers);
 
@@ -214,13 +246,26 @@ describe("useAdminUsers", () => {
 
     it("combines search and admin filter", async () => {
       const testUsers = [
-        makeUser({ email: "admin1@t.com", full_name: "Admin One", is_admin: true }),
-        makeUser({ email: "admin2@t.com", full_name: "Admin Two", is_admin: false }),
-        makeUser({ email: "user1@t.com", full_name: "User One", is_admin: true }),
+        makeUser({
+          email: "admin1@t.com",
+          full_name: "Admin One",
+          is_admin: true,
+        }),
+        makeUser({
+          email: "admin2@t.com",
+          full_name: "Admin Two",
+          is_admin: false,
+        }),
+        makeUser({
+          email: "user1@t.com",
+          full_name: "User One",
+          is_admin: true,
+        }),
       ];
       setupLoadUsersSuccess(testUsers);
 
-      const { loadUsers, searchQuery, filterAdmin, filteredUsers } = useAdminUsers();
+      const { loadUsers, searchQuery, filterAdmin, filteredUsers } =
+        useAdminUsers();
       await loadUsers();
 
       searchQuery.value = "admin";
@@ -283,7 +328,8 @@ describe("useAdminUsers", () => {
 
     it("paginatedUsers returns the correct slice", async () => {
       setupWithUsers(30);
-      const { loadUsers, paginatedUsers, currentPage, pageSize } = useAdminUsers();
+      const { loadUsers, paginatedUsers, currentPage, pageSize } =
+        useAdminUsers();
       await loadUsers();
 
       pageSize.value = 10;
@@ -302,8 +348,13 @@ describe("useAdminUsers", () => {
 
     it("paginationStart and paginationEnd are correct", async () => {
       setupWithUsers(30);
-      const { loadUsers, paginationStart, paginationEnd, pageSize, currentPage } =
-        useAdminUsers();
+      const {
+        loadUsers,
+        paginationStart,
+        paginationEnd,
+        pageSize,
+        currentPage,
+      } = useAdminUsers();
       await loadUsers();
 
       pageSize.value = 10;
@@ -324,7 +375,8 @@ describe("useAdminUsers", () => {
 
     it("resets to page 1 when search or filter changes", async () => {
       setupWithUsers(50);
-      const { loadUsers, currentPage, searchQuery, filterAdmin } = useAdminUsers();
+      const { loadUsers, currentPage, searchQuery, filterAdmin } =
+        useAdminUsers();
       await loadUsers();
 
       currentPage.value = 2;
@@ -380,7 +432,8 @@ describe("useAdminUsers", () => {
       );
       setupLoadUsersSuccess(testUsers);
 
-      const { loadUsers, visiblePageNumbers, pageSize, currentPage } = useAdminUsers();
+      const { loadUsers, visiblePageNumbers, pageSize, currentPage } =
+        useAdminUsers();
       await loadUsers();
       pageSize.value = 10;
       currentPage.value = 2;
@@ -395,7 +448,8 @@ describe("useAdminUsers", () => {
       );
       setupLoadUsersSuccess(testUsers);
 
-      const { loadUsers, visiblePageNumbers, pageSize, currentPage } = useAdminUsers();
+      const { loadUsers, visiblePageNumbers, pageSize, currentPage } =
+        useAdminUsers();
       await loadUsers();
       pageSize.value = 10;
       currentPage.value = 9;
@@ -410,19 +464,29 @@ describe("useAdminUsers", () => {
       );
       setupLoadUsersSuccess(testUsers);
 
-      const { loadUsers, visiblePageNumbers, pageSize, currentPage } = useAdminUsers();
+      const { loadUsers, visiblePageNumbers, pageSize, currentPage } =
+        useAdminUsers();
       await loadUsers();
       pageSize.value = 10;
       currentPage.value = 5;
       await nextTick();
 
-      expect(visiblePageNumbers.value).toEqual([1, "ellipsis", 4, 5, 6, "ellipsis", 10]);
+      expect(visiblePageNumbers.value).toEqual([
+        1,
+        "ellipsis",
+        4,
+        5,
+        6,
+        "ellipsis",
+        10,
+      ]);
     });
   });
 
   describe("selection", () => {
     it("toggleSelectMode enters and exits select mode, clearing selection on exit", () => {
-      const { isSelectMode, selectedUserEmails, toggleSelectMode } = useAdminUsers();
+      const { isSelectMode, selectedUserEmails, toggleSelectMode } =
+        useAdminUsers();
 
       toggleSelectMode();
       expect(isSelectMode.value).toBe(true);
@@ -524,8 +588,12 @@ describe("useAdminUsers", () => {
     });
 
     it("deleteByEmailInput triggers deleteUser with trimmed email", () => {
-      const { deleteByEmailInput, deleteUserByEmail, isDeleteUserDialogOpen, userToDeleteEmail } =
-        useAdminUsers();
+      const {
+        deleteByEmailInput,
+        deleteUserByEmail,
+        isDeleteUserDialogOpen,
+        userToDeleteEmail,
+      } = useAdminUsers();
 
       deleteByEmailInput.value = "  target@t.com  ";
       deleteUserByEmail();
@@ -614,8 +682,12 @@ describe("useAdminUsers", () => {
 
   describe("cancelDeleteUser", () => {
     it("closes dialog and clears queued email", () => {
-      const { deleteUser, cancelDeleteUser, isDeleteUserDialogOpen, userToDeleteEmail } =
-        useAdminUsers();
+      const {
+        deleteUser,
+        cancelDeleteUser,
+        isDeleteUserDialogOpen,
+        userToDeleteEmail,
+      } = useAdminUsers();
 
       deleteUser("someone@t.com");
       expect(isDeleteUserDialogOpen.value).toBe(true);
@@ -636,8 +708,14 @@ describe("useAdminUsers", () => {
       ];
       setupLoadUsersSuccess(testUsers);
 
-      const { loadUsers, users, selectedUserEmails, isSelectMode, bulkDeleteUsers, showBulkDeleteModal } =
-        useAdminUsers();
+      const {
+        loadUsers,
+        users,
+        selectedUserEmails,
+        isSelectMode,
+        bulkDeleteUsers,
+        showBulkDeleteModal,
+      } = useAdminUsers();
       await loadUsers();
 
       isSelectMode.value = true;
@@ -656,7 +734,10 @@ describe("useAdminUsers", () => {
       await bulkDeleteUsers();
 
       expect(users.value).toHaveLength(2);
-      expect(users.value.map((u) => u.email)).toEqual(["admin@test.com", "c@t.com"]);
+      expect(users.value.map((u) => u.email)).toEqual([
+        "admin@test.com",
+        "c@t.com",
+      ]);
       expect(selectedUserEmails.value.size).toBe(0);
       expect(isSelectMode.value).toBe(false);
       expect(showBulkDeleteModal.value).toBe(false);
@@ -667,7 +748,10 @@ describe("useAdminUsers", () => {
     });
 
     it("shows warning toast and sets error on partial failure", async () => {
-      const testUsers = [makeUser({ email: "a@t.com" }), makeUser({ email: "b@t.com" })];
+      const testUsers = [
+        makeUser({ email: "a@t.com" }),
+        makeUser({ email: "b@t.com" }),
+      ];
       setupLoadUsersSuccess(testUsers);
 
       const { loadUsers, selectedUserEmails, isSelectMode, bulkDeleteUsers } =
@@ -697,8 +781,13 @@ describe("useAdminUsers", () => {
     });
 
     it("handles complete failure with error toast", async () => {
-      const { selectedUserEmails, isSelectMode, bulkDeleteUsers, error, bulkDeleting } =
-        useAdminUsers();
+      const {
+        selectedUserEmails,
+        isSelectMode,
+        bulkDeleteUsers,
+        error,
+        bulkDeleting,
+      } = useAdminUsers();
 
       isSelectMode.value = true;
       selectedUserEmails.value.add("victim@t.com");

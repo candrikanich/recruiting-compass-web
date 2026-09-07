@@ -265,10 +265,17 @@
         description="Letters from coaches and teachers strengthen your recruiting profile"
       >
         <template #icon>
-          <UIcon name="i-heroicons-envelope-open" class="h-8 w-8 text-brand-slate-400" />
+          <UIcon
+            name="i-heroicons-envelope-open"
+            class="h-8 w-8 text-brand-slate-400"
+          />
         </template>
         <template #action>
-          <DesignSystemButton color="blue" variant="solid" @click="showAddForm = true">
+          <DesignSystemButton
+            color="blue"
+            variant="solid"
+            @click="showAddForm = true"
+          >
             Request a Recommendation
           </DesignSystemButton>
         </template>

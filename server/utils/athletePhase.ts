@@ -83,9 +83,7 @@ export async function getTaskCompletionByGrade(
   athleteId: string,
   completedTaskIds: string[],
 ): Promise<GradeTaskCounts> {
-  const { data, error } = await supabase
-    .from("task")
-    .select("id, grade_level");
+  const { data, error } = await supabase.from("task").select("id, grade_level");
 
   if (error) throw error;
 

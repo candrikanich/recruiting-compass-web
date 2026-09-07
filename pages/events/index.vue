@@ -128,7 +128,10 @@
         description="Coaches want to see you compete — track camps, showcases, and visits"
       >
         <template #icon>
-          <UIcon name="i-heroicons-calendar" class="h-8 w-8 text-brand-slate-400" />
+          <UIcon
+            name="i-heroicons-calendar"
+            class="h-8 w-8 text-brand-slate-400"
+          />
         </template>
         <template #action>
           <DesignSystemButton to="/events/create" color="blue" variant="solid">

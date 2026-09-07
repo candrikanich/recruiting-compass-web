@@ -24,7 +24,9 @@ import PlanPage from "~/pages/settings/plan.vue";
 describe("settings/plan", () => {
   it("renders the plan label and loads on mount", async () => {
     const wrapper = mount(PlanPage, {
-      global: { stubs: { NuxtLink: { template: "<a><slot /></a>" }, UIcon: true } },
+      global: {
+        stubs: { NuxtLink: { template: "<a><slot /></a>" }, UIcon: true },
+      },
     });
     await Promise.resolve();
     expect(load).toHaveBeenCalled();
