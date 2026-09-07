@@ -156,7 +156,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, watch } from "vue";
 import DateRangeToolbar from "~/components/Analytics/DateRangeToolbar.vue";
 import StatCard from "~/components/Analytics/StatCard.vue";
 import PieChart from "~/components/Analytics/PieChart.vue";
@@ -275,14 +275,26 @@ const handleExport = (format: "csv" | "excel" | "pdf") => {
   // TODO: Implement export functionality
 };
 
-onMounted(async () => {
-  const familyId = activeFamily.activeFamilyId?.value;
-  const userId = activeFamily.isViewingAsParent?.value
+// activeFamily.activeFamilyId resolves asynchronously (useActiveFamily's own
+// initializeFamily() fetch) — it is NOT guaranteed to be set yet on this
+// page's onMounted tick. A plain onMounted-only fetch silently no-ops when it
+// loses that race, leaving the page stuck on the empty state for its whole
+// lifetime. Mirror pages/dashboard.vue's pattern: watch for the family/user
+// context becoming available (immediate, so an already-ready context still
+// fetches right away) instead of checking it once at mount.
+const targetUserId = computed(() =>
+  activeFamily.isViewingAsParent?.value
     ? (activeFamily.activeAthleteId?.value ?? userStore.user?.id)
-    : userStore.user?.id;
+    : userStore.user?.id,
+);
 
-  if (familyId && userId) {
-    await dashboardData.fetchAll(familyId, userId);
-  }
-});
+watch(
+  () => [activeFamily.activeFamilyId?.value, targetUserId.value] as const,
+  async ([familyId, userId]) => {
+    if (familyId && userId) {
+      await dashboardData.fetchAll(familyId, userId);
+    }
+  },
+  { immediate: true },
+);
 </script>
