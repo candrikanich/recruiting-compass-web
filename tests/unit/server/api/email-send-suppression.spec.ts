@@ -7,7 +7,9 @@ const RECIPIENT = "player@example.com";
 const sendEmailMock = vi.fn();
 const maybeSingleMock = vi.fn();
 
-vi.mock("~/server/utils/auth", () => ({ requireAuth: vi.fn() }));
+vi.mock("~/server/utils/auth", () => ({
+  requireAuth: vi.fn(async () => ({ id: "user-1" })),
+}));
 
 vi.mock("~/server/utils/logger", () => ({
   useLogger: vi.fn(() => ({

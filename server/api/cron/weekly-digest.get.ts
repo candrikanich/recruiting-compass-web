@@ -85,6 +85,7 @@ export default defineEventHandler(async (event) =>
             data: digest as unknown as Record<string, unknown>,
             idempotencyKey: `weekly-digest-${athlete.id}-${weekKey}`,
             unsubscribeSecret,
+            context: { purpose: "weekly_digest", userId: athlete.id },
           });
           if (emailResult.success && !emailResult.skipped) result.emails++;
         }

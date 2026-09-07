@@ -148,6 +148,12 @@ export async function sendDeadlineAlertEmails(
       },
       idempotencyKey: `deadline-${item.entityType}-${item.entityId}-${item.daysUntil}`,
       unsubscribeSecret,
+      context: {
+        purpose: "deadline_alert",
+        userId,
+        entityType: item.entityType,
+        entityId: item.entityId,
+      },
     });
     if (result.success && !result.skipped) sent++;
   }

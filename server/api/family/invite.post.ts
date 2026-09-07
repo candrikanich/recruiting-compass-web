@@ -128,6 +128,12 @@ export default defineEventHandler(async (event) => {
         familyName: family?.family_name ?? "My Family",
         role: role as "player" | "parent",
         token,
+        context: {
+          purpose: "invite",
+          familyUnitId,
+          entityType: "family_invitation",
+          entityId: invitation.id,
+        },
       });
       if (!emailResult.success) {
         logger.warn(
