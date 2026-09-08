@@ -1,0 +1,58 @@
+name: Migrate QA + E2E Databases
+
+on:
+  push:
+    branches: [develop]
+    paths:
+      - "supabase/migrations/**"
+
+concurrency:
+  group: migrate-qa-e2e
+  cancel-in-progress: false
+
+jobs:
+  migrate-qa:
+    name: Push migrations to QA (xpxzhqghxecsjhvklsqg)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@46f7f98c7f948ad727d22c1e67fab04c223a0520 # v3.0.0
+        with:
+          version: 2.116.0
+
+      - name: Link + push migrations
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.QA_DB_PASSWORD }}
+        run: |
+          supabase link --project-ref ${{ secrets.QA_PROJECT_REF }}
+          supabase db push
+
+  migrate-e2e:
+    name: Push migrations to E2E (ahpethltxopkjxxzwmmb)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@46f7f98c7f948ad727d22c1e67fab04c223a0520 # v3.0.0
+        with:
+          version: 2.116.0
+
+      - name: Link + push migrations
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.E2E_DB_PASSWORD }}
+        run: |
+          supabase link --project-ref ${{ secrets.E2E_PROJECT_REF }}
+          supabase db push
