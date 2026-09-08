@@ -56,6 +56,10 @@
     {
       "path": "/api/cron/email-events-purge",
       "schedule": "0 5 * * 0"
+    },
+    {
+      "path": "/api/cron/school-metadata-backfill",
+      "schedule": "0 2 * * 0"
     }
   ]
 }
