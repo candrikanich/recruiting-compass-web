@@ -1,11 +1,13 @@
 /**
  * DELETE /api/video-links/:id
- * Deletes a video link owned by the authenticated player.
+ * Deletes a video link on the athlete's profile (family-shared: athlete or
+ * parent, always scoped to the athlete's own row via resolveAthleteId).
  */
 
 import { defineEventHandler, createError } from "h3";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
-import { requireAuth, assertNotParent } from "~/server/utils/auth";
+import { requireAuth } from "~/server/utils/auth";
+import { resolveAthleteId } from "~/server/utils/resolveAthleteId";
 import { useLogger } from "~/server/utils/logger";
 import { requireUuidParam } from "~/server/utils/validation";
 
@@ -15,8 +17,7 @@ export default defineEventHandler(async (event) => {
     const user = await requireAuth(event);
     const id = requireUuidParam(event, "id");
     const supabase = createServerSupabaseClient();
-
-    await assertNotParent(user.id, supabase);
+    const athleteId = await resolveAthleteId(user.id, supabase);
 
     // Verify ownership before deleting — RLS is bypassed by the service-role
     // client, so this explicit check is the only guard. Return 404 (not 403)
@@ -25,7 +26,7 @@ export default defineEventHandler(async (event) => {
       .from("video_links")
       .select("id")
       .eq("id", id)
-      .eq("user_id", user.id)
+      .eq("user_id", athleteId)
       .maybeSingle();
 
     if (fetchError) {
@@ -47,7 +48,7 @@ export default defineEventHandler(async (event) => {
       .from("video_links")
       .delete()
       .eq("id", id)
-      .eq("user_id", user.id);
+      .eq("user_id", athleteId);
 
     if (deleteError) {
       logger.error("Failed to delete video link", deleteError);

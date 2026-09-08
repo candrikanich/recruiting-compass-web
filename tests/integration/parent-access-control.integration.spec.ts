@@ -16,14 +16,21 @@
  *    data (isolation-by-construction: these routes have no attacker-supplied
  *    athleteId to abuse, unlike /api/athlete-tasks).
  *
- * 2. Mocked wiring suite: proves each of the mutation routes actually calls
- *    the real `assertNotParent` (or `requireAdmin`) gate before doing any
- *    work — a parent role is rejected with 403, matching the exact
- *    behavior already unit-tested in tests/unit/server/utils/auth.spec.ts.
- *    This is deliberately mocked (not live-DB): the authorization logic
- *    itself already has real, live-DB-independent coverage; what's unproven
- *    without this suite is that each endpoint actually wires the gate in
- *    before its side effects.
+ * 2. Mocked wiring suite: proves each of the still-restricted mutation
+ *    routes actually calls the real `assertNotParent` (or `requireAdmin`)
+ *    gate before doing any work — a parent role is rejected with 403,
+ *    matching the exact behavior already unit-tested in
+ *    tests/unit/server/utils/auth.spec.ts. This is deliberately mocked (not
+ *    live-DB): the authorization logic itself already has real,
+ *    live-DB-independent coverage; what's unproven without this suite is
+ *    that each endpoint actually wires the gate in before its side effects.
+ *
+ *    #555 removed this gate from phase/advance, status/recalculate, and
+ *    suggestions/evaluate — family-shared profile means parents are full
+ *    collaborators there now (resolved to the linked athlete's record via
+ *    resolveAthleteId, not blocked). Their per-endpoint parent-resolution
+ *    behavior is unit-tested alongside each handler; only notifications/
+ *    generate remains athlete-only here.
  */
 
 import { describe, it, expect, beforeAll, afterAll, vi } from "vitest";
@@ -149,18 +156,6 @@ function mockSupabaseWithRole(role: "player" | "parent") {
 
 describe("Parent/Athlete Access Control — mutation route wiring (mocked authz)", () => {
   it.each([
-    {
-      name: "POST /api/athlete/phase/advance",
-      path: "~/server/api/athlete/phase/advance.post",
-    },
-    {
-      name: "POST /api/athlete/status/recalculate",
-      path: "~/server/api/athlete/status/recalculate.post",
-    },
-    {
-      name: "POST /api/suggestions/evaluate",
-      path: "~/server/api/suggestions/evaluate.post",
-    },
     {
       name: "POST /api/notifications/generate",
       path: "~/server/api/notifications/generate.post",

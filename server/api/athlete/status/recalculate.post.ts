@@ -1,7 +1,9 @@
 /**
  * POST /api/athlete/status/recalculate
- * Force recalculation and persist athlete's status score
- * RESTRICTED: Athletes only (parents have read-only access)
+ * Force recalculation and persist athlete's status score. Family-shared
+ * profile: both the athlete and their parent can trigger this, always
+ * scoped to the athlete's own record (resolveAthleteId). Audit log
+ * attributes the write to the actual caller (user.id), not the athlete.
  */
 
 import { defineEventHandler } from "h3";
@@ -9,7 +11,8 @@ import { createServerSupabaseClient } from "~/server/utils/supabase";
 import { useLogger } from "~/server/utils/logger";
 import { logCRUD, logError } from "~/server/utils/auditLog";
 import type { StatusScoreResult, Phase } from "~/types/timeline";
-import { requireAuth, assertNotParent } from "~/server/utils/auth";
+import { requireAuth } from "~/server/utils/auth";
+import { resolveAthleteId } from "~/server/utils/resolveAthleteId";
 import {
   calculateTaskCompletionRate,
   calculateInteractionFrequencyScore,
@@ -22,16 +25,14 @@ export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "athlete/status/recalculate");
   const user = await requireAuth(event);
   const supabase = createServerSupabaseClient();
-
-  // Ensure requesting user is not a parent (mutation restricted)
-  await assertNotParent(user.id, supabase);
+  const athleteId = await resolveAthleteId(user.id, supabase);
 
   try {
     // Get user info
     const { data: userData, error: userError } = await supabase
       .from("users")
       .select("current_phase")
-      .eq("id", user.id)
+      .eq("id", athleteId)
       .single();
 
     if (userError) {
@@ -76,7 +77,7 @@ export default defineEventHandler(async (event) => {
     const { data: completedTasksData, error: completedError } = await supabase
       .from("athlete_task")
       .select("task_id")
-      .eq("athlete_id", user.id)
+      .eq("athlete_id", athleteId)
       .eq("status", "completed");
 
     if (completedError) {
@@ -101,7 +102,7 @@ export default defineEventHandler(async (event) => {
     const { data: schoolsData, error: schoolsError } = await supabase
       .from("schools")
       .select("id")
-      .eq("user_id", user.id);
+      .eq("user_id", athleteId);
 
     if (schoolsError) {
       logger.error("Error fetching schools", schoolsError);
@@ -117,7 +118,7 @@ export default defineEventHandler(async (event) => {
     const { data: interactionsData, error: interactionsError } = await supabase
       .from("interactions")
       .select("created_at, sentiment")
-      .eq("logged_by", user.id)
+      .eq("logged_by", athleteId)
       .order("created_at", { ascending: false });
 
     // A transient query error must fail the request, not silently score this
@@ -177,7 +178,7 @@ export default defineEventHandler(async (event) => {
     const { data: academicData, error: academicError } = await supabase
       .from("users")
       .select("gpa, sat_score, act_score")
-      .eq("id", user.id)
+      .eq("id", athleteId)
       .single();
 
     if (academicError) {
@@ -227,7 +228,7 @@ export default defineEventHandler(async (event) => {
         status_label: result.label,
         updated_at: new Date().toISOString(),
       })
-      .eq("id", user.id);
+      .eq("id", athleteId);
 
     const { error: updateError } = updateResult;
 
@@ -244,7 +245,7 @@ export default defineEventHandler(async (event) => {
       userId: user.id,
       action: "UPDATE",
       resourceType: "users",
-      resourceId: user.id,
+      resourceId: athleteId,
       newValues: {
         status_score: result.score,
         status_label: result.label,
@@ -267,7 +268,7 @@ export default defineEventHandler(async (event) => {
       userId: user.id,
       action: "UPDATE",
       resourceType: "users",
-      resourceId: user.id,
+      resourceId: athleteId,
       errorMessage,
       description: "Unexpected error recalculating status score",
     });

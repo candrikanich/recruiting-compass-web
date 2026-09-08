@@ -29,9 +29,12 @@ vi.mock("~/server/utils/auditLog", () => ({
   logError: vi.fn(),
 }));
 
+// getUserRole -> "player" short-circuits resolveAthleteId back to the
+// caller's own id for these tests (real resolveAthleteId is used, unmocked;
+// parent-resolution has its own dedicated test below).
 vi.mock("~/server/utils/auth", () => ({
   requireAuth: vi.fn(async () => ({ id: "athlete-1" })),
-  assertNotParent: vi.fn(async () => {}),
+  getUserRole: vi.fn(async () => "player"),
 }));
 
 (
@@ -57,6 +60,7 @@ function makeQueryBuilder(response: TableResponse) {
     eq: vi.fn(() => builder),
     order: vi.fn(() => builder),
     single: vi.fn(() => builder),
+    maybeSingle: vi.fn(() => builder),
     update: vi.fn(() => builder),
     then: (resolve: (value: TableResponse) => unknown) => resolve(response),
   };
@@ -130,6 +134,30 @@ describe("POST /api/athlete/status/recalculate — error propagation", () => {
 
   it("regression: persists the computed score on the happy path", async () => {
     seedHappyPath();
+    const { default: handler } =
+      await import("~/server/api/athlete/status/recalculate.post");
+    const result = (await handler(mockEvent)) as { score: number };
+
+    expect(typeof result.score).toBe("number");
+    expect(updateSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it("a parent's request recalculates the LINKED ATHLETE's score, not their own (#555)", async () => {
+    const { getUserRole } = await import("~/server/utils/auth");
+    vi.mocked(getUserRole).mockResolvedValueOnce("parent");
+
+    // resolveAthleteId's two sequential family_members queries, then the
+    // normal recalculate.post.ts happy-path queue scoped to the athlete.
+    queueResponse("family_members", {
+      data: { family_unit_id: "fam-1" },
+      error: null,
+    });
+    queueResponse("family_members", {
+      data: { user_id: "athlete-1" },
+      error: null,
+    });
+    seedHappyPath();
+
     const { default: handler } =
       await import("~/server/api/athlete/status/recalculate.post");
     const result = (await handler(mockEvent)) as { score: number };

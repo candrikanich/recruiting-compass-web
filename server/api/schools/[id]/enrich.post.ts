@@ -9,12 +9,14 @@
  * Step 2 — Confirm: POST { scorecardId: number, confirmed: true }
  *   Merges matched Scorecard data into school's academic_info JSONB and saves.
  *
- * RESTRICTED: Athletes only (parents cannot mutate)
+ * Family-shared: both the athlete and their parent can trigger enrichment
+ * — it merges publicly-sourced academic data into the family's school
+ * record, no athlete-owned data is touched.
  */
 
 import { defineEventHandler, createError, readBody } from "h3";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
-import { requireAuth, assertNotParent } from "~/server/utils/auth";
+import { requireAuth } from "~/server/utils/auth";
 import { useLogger } from "~/server/utils/logger";
 import { requireUuidParam } from "~/server/utils/validation";
 import {
@@ -32,8 +34,6 @@ export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "schools/enrich");
   const user = await requireAuth(event);
   const supabase = createServerSupabaseClient();
-
-  await assertNotParent(user.id, supabase);
 
   const schoolId = requireUuidParam(event, "id");
   const body = await readBody<EnrichBody>(event);

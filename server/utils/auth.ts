@@ -236,8 +236,13 @@ export async function requireAdmin(event: H3Event): Promise<AuthUser> {
 }
 
 /**
- * Asserts that user is not a parent (parents cannot perform mutations)
- * Throws 403 error if user is a parent
+ * Asserts that user is not a parent. Throws 403 if they are.
+ *
+ * Family-shared profile (#554/#555) means most mutations now welcome
+ * parents as full collaborators, scoped to the linked athlete via
+ * resolveAthleteId — this gate is no longer the default. Reach for it only
+ * for actions that are genuinely athlete/system-only (e.g. notifications
+ * generation), not as a blanket "parents can't write" rule.
  */
 export async function assertNotParent(
   userId: string,

@@ -15,10 +15,17 @@ vi.mock("~/server/utils/supabase", () => ({
 }));
 
 const mockRequireAuth = vi.fn(async () => ({ id: "user-1", email: "p@t" }));
-const mockAssertNotParent = vi.fn(async () => {});
 vi.mock("~/server/utils/auth", () => ({
   requireAuth: (...args: unknown[]) => mockRequireAuth(...args),
-  assertNotParent: (...args: unknown[]) => mockAssertNotParent(...args),
+}));
+
+// resolveAthleteId defaults to the caller's own id (matches unmocked
+// getUserRole behavior — role !== "parent" short-circuits). Parent
+// resolution is covered by its own dedicated tests below.
+const mockResolveAthleteId = vi.fn(async (userId: string) => userId);
+vi.mock("~/server/utils/resolveAthleteId", () => ({
+  resolveAthleteId: (...args: [string, unknown]) =>
+    mockResolveAthleteId(...args),
 }));
 
 vi.mock("~/server/utils/logger", () => ({
@@ -62,7 +69,7 @@ function fakeEvent(params: Record<string, string> = {}): H3Event {
 beforeEach(() => {
   vi.clearAllMocks();
   mockRequireAuth.mockResolvedValue({ id: "user-1", email: "p@t" });
-  mockAssertNotParent.mockResolvedValue(undefined);
+  mockResolveAthleteId.mockImplementation(async (userId: string) => userId);
   mockReadBody.mockResolvedValue({});
 });
 
@@ -101,18 +108,53 @@ describe("GET /api/video-links", () => {
 });
 
 describe("POST /api/video-links", () => {
-  it("rejects a parent with 403", async () => {
-    mockAssertNotParent.mockRejectedValueOnce(
-      Object.assign(new Error("Parents cannot perform this action."), {
-        statusCode: 403,
-      }),
-    );
+  it("a parent's request creates the video link on the LINKED ATHLETE's row, not their own (#555)", async () => {
+    mockResolveAthleteId.mockResolvedValueOnce("athlete-9");
+    mockReadBody.mockResolvedValue({
+      platform: "youtube",
+      url: "https://youtube.com/watch?v=abc",
+    });
+
+    let capturedInsert: unknown;
+    mockSupabase.from.mockImplementation((table: string) => {
+      if (table === "video_links") {
+        return {
+          select: () => ({
+            eq: () => Promise.resolve({ count: 0, error: null }),
+          }),
+          insert: (payload: unknown) => {
+            capturedInsert = payload;
+            return {
+              select: () => ({
+                single: () =>
+                  Promise.resolve({
+                    data: { id: "v1", ...(payload as object) },
+                    error: null,
+                  }),
+              }),
+            };
+          },
+        };
+      }
+      if (table === "family_members") {
+        return {
+          select: () => ({
+            eq: () => ({
+              eq: () => ({
+                maybeSingle: () => Promise.resolve({ data: null, error: null }),
+              }),
+            }),
+          }),
+        };
+      }
+      throw new Error(`unexpected table ${table}`);
+    });
 
     const handler = (await import("~/server/api/video-links/index.post"))
       .default;
-    await expect(handler(fakeEvent())).rejects.toMatchObject({
-      statusCode: 403,
-    });
+    await handler(fakeEvent());
+
+    expect(capturedInsert).toMatchObject({ user_id: "athlete-9" });
   });
 
   it("rejects an invalid platform with 422", async () => {
@@ -156,18 +198,45 @@ describe("PATCH /api/video-links/:id", () => {
     });
   };
 
-  it("rejects a parent with 403", async () => {
-    mockAssertNotParent.mockRejectedValueOnce(
-      Object.assign(new Error("Parents cannot perform this action."), {
-        statusCode: 403,
-      }),
-    );
+  it("a parent's request updates the LINKED ATHLETE's video link, not their own (#555)", async () => {
+    mockResolveAthleteId.mockResolvedValueOnce("athlete-9");
+    const captured: { update?: unknown; eqCalls: unknown[] } = { eqCalls: [] };
+    mockSupabase.from.mockImplementation((table: string) => {
+      if (table === "video_links") {
+        return {
+          update: (payload: unknown) => {
+            captured.update = payload;
+            return {
+              eq: (...args: unknown[]) => {
+                captured.eqCalls.push(args);
+                return {
+                  eq: (...args2: unknown[]) => {
+                    captured.eqCalls.push(args2);
+                    return {
+                      select: () => ({
+                        maybeSingle: () =>
+                          Promise.resolve({
+                            data: { id: VALID_ID },
+                            error: null,
+                          }),
+                      }),
+                    };
+                  },
+                };
+              },
+            };
+          },
+        };
+      }
+      throw new Error(`unexpected table ${table}`);
+    });
+    mockReadBody.mockResolvedValue({ title: "New title" });
 
     const handler = (await import("~/server/api/video-links/[id].patch"))
       .default;
-    await expect(handler(fakeEvent({ id: VALID_ID }))).rejects.toMatchObject({
-      statusCode: 403,
-    });
+    await handler(fakeEvent({ id: VALID_ID }));
+
+    expect(captured.eqCalls).toContainEqual(["user_id", "athlete-9"]);
   });
 
   it("rejects an invalid body with 422", async () => {
@@ -246,5 +315,50 @@ describe("DELETE /api/video-links/:id", () => {
       .default;
     const event = fakeEvent({ id: "11111111-1111-1111-1111-111111111111" });
     await expect(handler(event)).rejects.toMatchObject({ statusCode: 404 });
+  });
+
+  it("a parent's request deletes the LINKED ATHLETE's video link, not their own (#555)", async () => {
+    mockResolveAthleteId.mockResolvedValueOnce("athlete-9");
+    const id = "11111111-1111-1111-1111-111111111111";
+    const eqCalls: unknown[] = [];
+    mockSupabase.from.mockImplementation((table: string) => {
+      if (table === "video_links") {
+        return {
+          select: () => ({
+            eq: (...args: unknown[]) => {
+              eqCalls.push(args);
+              return {
+                eq: (...args2: unknown[]) => {
+                  eqCalls.push(args2);
+                  return {
+                    maybeSingle: () =>
+                      Promise.resolve({ data: { id }, error: null }),
+                  };
+                },
+              };
+            },
+          }),
+          delete: () => ({
+            eq: (...args: unknown[]) => {
+              eqCalls.push(args);
+              return {
+                eq: (...args2: unknown[]) => {
+                  eqCalls.push(args2);
+                  return Promise.resolve({ error: null });
+                },
+              };
+            },
+          }),
+        };
+      }
+      throw new Error(`unexpected table ${table}`);
+    });
+
+    const handler = (await import("~/server/api/video-links/[id].delete"))
+      .default;
+    const result = (await handler(fakeEvent({ id }))) as { success: boolean };
+
+    expect(result.success).toBe(true);
+    expect(eqCalls).toContainEqual(["user_id", "athlete-9"]);
   });
 });
