@@ -1,6 +1,31 @@
 <template>
+  <NuxtLink
+    v-if="isDismissed"
+    to="/dashboard"
+    data-testid="checklist-resume"
+    class="mb-2 inline-block text-xs font-medium text-brand-blue-600 hover:text-brand-blue-700"
+    @click="isDismissed = false"
+  >
+    Resume getting started
+  </NuxtLink>
+
   <div
-    v-if="!isDismissed"
+    v-else-if="allComplete && !completionExpired"
+    data-testid="checklist-complete-banner"
+    class="rounded-lg border border-brand-slate-200 bg-white p-4 dark:border-brand-slate-700 dark:bg-brand-slate-800"
+  >
+    <h3
+      class="text-sm font-semibold text-brand-slate-900 dark:text-brand-slate-100"
+    >
+      🎉 100% Complete
+    </h3>
+    <p class="text-xs text-brand-slate-500">
+      You've finished getting started. Nice work!
+    </p>
+  </div>
+
+  <div
+    v-else-if="!allComplete"
     class="rounded-lg border border-brand-slate-200 bg-white p-4 dark:border-brand-slate-700 dark:bg-brand-slate-800"
   >
     <div data-testid="checklist-progress" class="mb-3">
@@ -63,16 +88,6 @@
       </li>
     </ul>
   </div>
-
-  <NuxtLink
-    v-else
-    to="/dashboard"
-    data-testid="checklist-resume"
-    class="mb-2 inline-block text-xs font-medium text-brand-blue-600 hover:text-brand-blue-700"
-    @click="isDismissed = false"
-  >
-    Resume getting started
-  </NuxtLink>
 </template>
 
 <script setup lang="ts">
@@ -82,7 +97,7 @@ import { useUserStore } from "~/stores/user";
 import { useSchools } from "~/composables/useSchools";
 import { useCoaches } from "~/composables/useCoaches";
 import { useProfileCompleteness } from "~/composables/useProfileCompleteness";
-import type { NuxChecklistKey } from "~/types/nux";
+import { hasNuxCompletionExpired, type NuxChecklistKey } from "~/types/nux";
 
 interface ChecklistItemDef {
   key: NuxChecklistKey;
@@ -151,8 +166,13 @@ const CHECKLIST_ITEMS: ChecklistItemDef[] = [
   },
 ];
 
-const { progress, checklistPercentage, completeItem, dismissChecklist } =
-  useNuxProgress();
+const {
+  progress,
+  checklistPercentage,
+  completeItem,
+  dismissChecklist,
+  updateProfileCompletion,
+} = useNuxProgress();
 const userStore = useUserStore();
 const { schools } = useSchools();
 const { coaches } = useCoaches();
@@ -174,6 +194,11 @@ const completedCount = computed(
   () => items.value.filter((item) => item.completed).length,
 );
 
+const allComplete = computed(() => checklistPercentage.value === 100);
+const completionExpired = computed(() =>
+  hasNuxCompletionExpired(progress.value.checklist.allCompleteAt),
+);
+
 function handleDismiss() {
   isDismissed.value = true;
   void dismissChecklist();
@@ -183,6 +208,7 @@ onMounted(async () => {
   isDismissed.value = !!progress.value.checklist.dismissedAt;
 
   await updateCompleteness();
+  await updateProfileCompletion(completeness.value);
 
   if (schools.value.length > 0) {
     await completeItem("first_school");

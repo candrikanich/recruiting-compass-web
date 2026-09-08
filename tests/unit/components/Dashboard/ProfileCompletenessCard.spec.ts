@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { mount } from "@vue/test-utils";
 import { ref } from "vue";
+import { EMPTY_NUX_PROGRESS, type NuxProgress } from "~/types/nux";
 
 // Set up mock before importing component
 const createMockComposable = (overrides = {}) => ({
@@ -15,6 +16,16 @@ const createMockComposable = (overrides = {}) => ({
 
 vi.mock("~/composables/useProfileCompleteness", () => ({
   useProfileCompleteness: vi.fn(() => createMockComposable()),
+}));
+
+const mockNuxProgress = ref<NuxProgress>({ ...EMPTY_NUX_PROGRESS });
+const mockUpdateProfileCompletion = vi.fn();
+
+vi.mock("~/composables/useNuxProgress", () => ({
+  useNuxProgress: () => ({
+    progress: mockNuxProgress,
+    updateProfileCompletion: mockUpdateProfileCompletion,
+  }),
 }));
 
 describe("ProfileCompletenessCard", () => {
@@ -97,5 +108,56 @@ describe("ProfileCompletenessCard", () => {
       text.includes("Add"),
     ).length;
     expect(addCount).toBeGreaterThanOrEqual(3);
+  });
+
+  it("shows complete banner at 100% within 24h", async () => {
+    mockNuxProgress.value = {
+      ...EMPTY_NUX_PROGRESS,
+      profileCompletion: { completedAt: new Date().toISOString() },
+    };
+    vi.mocked(
+      (await import("~/composables/useProfileCompleteness"))
+        .useProfileCompleteness,
+    ).mockReturnValueOnce(createMockComposable({ completeness: ref(100) }));
+
+    const { default: ProfileCompletenessCard } =
+      await import("~/components/Dashboard/ProfileCompletenessCard.vue");
+    const wrapper = mount(ProfileCompletenessCard);
+    expect(wrapper.find('[data-test="complete-banner"]').exists()).toBe(true);
+    expect(wrapper.find('[data-test="compact-layout"]').exists()).toBe(false);
+  });
+
+  it("renders nothing after 24h past completion", async () => {
+    mockNuxProgress.value = {
+      ...EMPTY_NUX_PROGRESS,
+      profileCompletion: {
+        completedAt: new Date(Date.now() - 25 * 3_600_000).toISOString(),
+      },
+    };
+    vi.mocked(
+      (await import("~/composables/useProfileCompleteness"))
+        .useProfileCompleteness,
+    ).mockReturnValueOnce(createMockComposable({ completeness: ref(100) }));
+
+    const { default: ProfileCompletenessCard } =
+      await import("~/components/Dashboard/ProfileCompletenessCard.vue");
+    const wrapper = mount(ProfileCompletenessCard);
+    expect(wrapper.find('[data-test="complete-banner"]').exists()).toBe(false);
+    expect(wrapper.find('[data-test="expanded-layout"]').exists()).toBe(false);
+    expect(wrapper.find('[data-test="compact-layout"]').exists()).toBe(false);
+  });
+
+  it("still shows compact layout at 80-99% (regression guard)", async () => {
+    mockNuxProgress.value = { ...EMPTY_NUX_PROGRESS };
+    vi.mocked(
+      (await import("~/composables/useProfileCompleteness"))
+        .useProfileCompleteness,
+    ).mockReturnValueOnce(createMockComposable({ completeness: ref(85) }));
+
+    const { default: ProfileCompletenessCard } =
+      await import("~/components/Dashboard/ProfileCompletenessCard.vue");
+    const wrapper = mount(ProfileCompletenessCard);
+    expect(wrapper.find('[data-test="compact-layout"]').exists()).toBe(true);
+    expect(wrapper.find('[data-test="complete-banner"]').exists()).toBe(false);
   });
 });
