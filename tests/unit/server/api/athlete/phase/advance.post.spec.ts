@@ -13,7 +13,6 @@ vi.mock("~/server/utils/supabase", () => ({
 vi.mock("~/server/utils/auth", () => ({
   requireAuth: vi.fn(),
   getUserRole: vi.fn(),
-  assertNotParent: vi.fn(),
 }));
 
 vi.mock("~/server/utils/logger", () => ({
@@ -55,10 +54,10 @@ describe("/api/athlete/phase/advance.post", () => {
   });
 
   describe("authorization", () => {
-    it("rejects with 403 when the requesting user is a parent (cannot advance anyone's phase, including their own linked player's)", async () => {
+    it("redirects a parent's call to their linked athlete's row (family-shared profile, #555)", async () => {
       const { createServerSupabaseClient } =
         await import("~/server/utils/supabase");
-      const { requireAuth, assertNotParent } =
+      const { requireAuth, getUserRole } =
         await import("~/server/utils/auth");
       const handler = (await import("~/server/api/athlete/phase/advance.post"))
         .default;
@@ -67,22 +66,61 @@ describe("/api/athlete/phase/advance.post", () => {
         id: "parent-user-id",
         email: "parent@example.com",
       });
-      vi.mocked(assertNotParent).mockRejectedValue(
-        Object.assign(new Error("Forbidden"), { statusCode: 403 }),
+      vi.mocked(getUserRole).mockResolvedValueOnce("parent");
+
+      const taskRows = freshmanMilestoneTaskRows();
+      const mockSupabase = createMockSupabase({
+        familyMembership: { data: { family_unit_id: "fam-1" }, error: null },
+        playerMember: {
+          data: [{ user_id: ATHLETE_ID }] as unknown as {
+            user_id: string;
+          } | null,
+          error: null,
+        },
+        user: { data: { current_phase: "freshman" }, error: null },
+        tasks: { data: taskRows, error: null },
+        athleteTasks: {
+          data: taskRows.map((t) => ({ task_id: t.id })),
+          error: null,
+        },
+        usersUpdate: { data: null, error: null },
+      });
+      vi.mocked(createServerSupabaseClient).mockReturnValue(
+        mockSupabase as any,
       );
+
+      const response = await handler(mockEvent());
+
+      expect(response.success).toBe(true);
+      expect(mockSupabase.usersUpdate).toHaveBeenCalled();
+    });
+
+    it("throws 404 when a parent has no linked athlete to advance", async () => {
+      const { createServerSupabaseClient } =
+        await import("~/server/utils/supabase");
+      const { requireAuth, getUserRole } =
+        await import("~/server/utils/auth");
+      const handler = (await import("~/server/api/athlete/phase/advance.post"))
+        .default;
+
+      vi.mocked(requireAuth).mockResolvedValue({
+        id: "parent-user-id",
+        email: "parent@example.com",
+      });
+      vi.mocked(getUserRole).mockResolvedValueOnce("parent");
       vi.mocked(createServerSupabaseClient).mockReturnValue(
         createMockSupabase({}) as any,
       );
 
       await expect(handler(mockEvent())).rejects.toMatchObject({
-        statusCode: 403,
+        statusCode: 404,
       });
     });
 
-    it("only ever targets the requesting user's own row — there is no athleteId param to advance someone else's phase", async () => {
+    it("only ever targets the resolved athlete's own row — there is no athleteId param to advance someone else's phase", async () => {
       const { createServerSupabaseClient } =
         await import("~/server/utils/supabase");
-      const { requireAuth, assertNotParent } =
+      const { requireAuth } =
         await import("~/server/utils/auth");
       const handler = (await import("~/server/api/athlete/phase/advance.post"))
         .default;
@@ -91,7 +129,6 @@ describe("/api/athlete/phase/advance.post", () => {
         id: ATHLETE_ID,
         email: "athlete@example.com",
       });
-      vi.mocked(assertNotParent).mockResolvedValue(undefined);
 
       const taskRows = freshmanMilestoneTaskRows();
       const mockSupabase = createMockSupabase({
@@ -110,11 +147,8 @@ describe("/api/athlete/phase/advance.post", () => {
       const response = await handler(mockEvent());
 
       expect(response.success).toBe(true);
-      // requireAuth resolved to ATHLETE_ID — assertNotParent and every downstream
-      // query implicitly scope to that same id, never to a caller-supplied one.
-      expect(vi.mocked(assertNotParent)).toHaveBeenCalledWith(
-        ATHLETE_ID,
-        expect.anything(),
+      expect(mockSupabase.usersUpdate).toHaveBeenCalledWith(
+        expect.objectContaining({ current_phase: "sophomore" }),
       );
     });
   });
@@ -123,7 +157,7 @@ describe("/api/athlete/phase/advance.post", () => {
     it("rejects advancement when required milestone tasks are incomplete", async () => {
       const { createServerSupabaseClient } =
         await import("~/server/utils/supabase");
-      const { requireAuth, assertNotParent } =
+      const { requireAuth } =
         await import("~/server/utils/auth");
       const handler = (await import("~/server/api/athlete/phase/advance.post"))
         .default;
@@ -132,7 +166,6 @@ describe("/api/athlete/phase/advance.post", () => {
         id: ATHLETE_ID,
         email: "athlete@example.com",
       });
-      vi.mocked(assertNotParent).mockResolvedValue(undefined);
 
       const taskRows = freshmanMilestoneTaskRows();
       const mockSupabase = createMockSupabase({
@@ -159,7 +192,7 @@ describe("/api/athlete/phase/advance.post", () => {
     it("does not resolve raw milestone slugs as completed task ids (regression guard for the original bug)", async () => {
       const { createServerSupabaseClient } =
         await import("~/server/utils/supabase");
-      const { requireAuth, assertNotParent } =
+      const { requireAuth } =
         await import("~/server/utils/auth");
       const handler = (await import("~/server/api/athlete/phase/advance.post"))
         .default;
@@ -168,7 +201,6 @@ describe("/api/athlete/phase/advance.post", () => {
         id: ATHLETE_ID,
         email: "athlete@example.com",
       });
-      vi.mocked(assertNotParent).mockResolvedValue(undefined);
 
       // athlete_task.task_id values are the milestone SLUGS themselves (as if
       // seed data never carried real ids) rather than resolved task uuids —
@@ -195,7 +227,7 @@ describe("/api/athlete/phase/advance.post", () => {
     it("advances when all required milestone tasks are complete", async () => {
       const { createServerSupabaseClient } =
         await import("~/server/utils/supabase");
-      const { requireAuth, assertNotParent } =
+      const { requireAuth } =
         await import("~/server/utils/auth");
       const handler = (await import("~/server/api/athlete/phase/advance.post"))
         .default;
@@ -204,7 +236,6 @@ describe("/api/athlete/phase/advance.post", () => {
         id: ATHLETE_ID,
         email: "athlete@example.com",
       });
-      vi.mocked(assertNotParent).mockResolvedValue(undefined);
 
       const taskRows = freshmanMilestoneTaskRows();
       const mockSupabase = createMockSupabase({
@@ -232,7 +263,7 @@ describe("/api/athlete/phase/advance.post", () => {
     it("falls back to the grade-derived phase (matching GET) when current_phase has never been set", async () => {
       const { createServerSupabaseClient } =
         await import("~/server/utils/supabase");
-      const { requireAuth, assertNotParent } =
+      const { requireAuth } =
         await import("~/server/utils/auth");
       const handler = (await import("~/server/api/athlete/phase/advance.post"))
         .default;
@@ -241,7 +272,6 @@ describe("/api/athlete/phase/advance.post", () => {
         id: ATHLETE_ID,
         email: "athlete@example.com",
       });
-      vi.mocked(assertNotParent).mockResolvedValue(undefined);
 
       const taskRows = freshmanMilestoneTaskRows();
       const mockSupabase = createMockSupabase({
@@ -269,7 +299,7 @@ describe("/api/athlete/phase/advance.post", () => {
     it("returns a non-error, non-duplicate response when already at the final phase (committed)", async () => {
       const { createServerSupabaseClient } =
         await import("~/server/utils/supabase");
-      const { requireAuth, assertNotParent } =
+      const { requireAuth } =
         await import("~/server/utils/auth");
       const handler = (await import("~/server/api/athlete/phase/advance.post"))
         .default;
@@ -278,7 +308,6 @@ describe("/api/athlete/phase/advance.post", () => {
         id: ATHLETE_ID,
         email: "athlete@example.com",
       });
-      vi.mocked(assertNotParent).mockResolvedValue(undefined);
 
       const mockSupabase = createMockSupabase({
         user: { data: { current_phase: "committed" }, error: null },
@@ -301,7 +330,7 @@ describe("/api/athlete/phase/advance.post", () => {
     it("advancing twice in a row is safe: the second call re-evaluates gating against the new phase rather than duplicating the first advance", async () => {
       const { createServerSupabaseClient } =
         await import("~/server/utils/supabase");
-      const { requireAuth, assertNotParent } =
+      const { requireAuth } =
         await import("~/server/utils/auth");
       const handler = (await import("~/server/api/athlete/phase/advance.post"))
         .default;
@@ -310,7 +339,6 @@ describe("/api/athlete/phase/advance.post", () => {
         id: ATHLETE_ID,
         email: "athlete@example.com",
       });
-      vi.mocked(assertNotParent).mockResolvedValue(undefined);
 
       const taskRows = freshmanMilestoneTaskRows();
       // Simulate the state *after* a first successful advance: current_phase
@@ -343,7 +371,7 @@ describe("/api/athlete/phase/advance.post", () => {
     it("throws 404 (not 500) when the users row is missing — deleted account must not fake-succeed or alert", async () => {
       const { createServerSupabaseClient } =
         await import("~/server/utils/supabase");
-      const { requireAuth, assertNotParent } =
+      const { requireAuth } =
         await import("~/server/utils/auth");
       const handler = (await import("~/server/api/athlete/phase/advance.post"))
         .default;
@@ -352,7 +380,6 @@ describe("/api/athlete/phase/advance.post", () => {
         id: ATHLETE_ID,
         email: "athlete@example.com",
       });
-      vi.mocked(assertNotParent).mockResolvedValue(undefined);
 
       const mockSupabase = createMockSupabase({ userMissing: true });
       vi.mocked(createServerSupabaseClient).mockReturnValue(
@@ -368,7 +395,7 @@ describe("/api/athlete/phase/advance.post", () => {
     it("throws 500 when the users.current_phase query returns an error", async () => {
       const { createServerSupabaseClient } =
         await import("~/server/utils/supabase");
-      const { requireAuth, assertNotParent } =
+      const { requireAuth } =
         await import("~/server/utils/auth");
       const handler = (await import("~/server/api/athlete/phase/advance.post"))
         .default;
@@ -377,7 +404,6 @@ describe("/api/athlete/phase/advance.post", () => {
         id: ATHLETE_ID,
         email: "athlete@example.com",
       });
-      vi.mocked(assertNotParent).mockResolvedValue(undefined);
 
       const mockSupabase = createMockSupabase({
         user: {
@@ -398,7 +424,7 @@ describe("/api/athlete/phase/advance.post", () => {
     it("throws 500 when the users update fails", async () => {
       const { createServerSupabaseClient } =
         await import("~/server/utils/supabase");
-      const { requireAuth, assertNotParent } =
+      const { requireAuth } =
         await import("~/server/utils/auth");
       const handler = (await import("~/server/api/athlete/phase/advance.post"))
         .default;
@@ -407,7 +433,6 @@ describe("/api/athlete/phase/advance.post", () => {
         id: ATHLETE_ID,
         email: "athlete@example.com",
       });
-      vi.mocked(assertNotParent).mockResolvedValue(undefined);
 
       const taskRows = freshmanMilestoneTaskRows();
       const mockSupabase = createMockSupabase({

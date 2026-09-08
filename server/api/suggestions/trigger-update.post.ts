@@ -1,12 +1,13 @@
 /**
  * POST /api/suggestions/trigger-update
- * Trigger suggestion re-evaluation (called after interactions logged)
- * RESTRICTED: Athletes only
+ * Trigger suggestion re-evaluation (called after interactions logged).
+ * Family-shared profile — a parent's call is redirected to their linked athlete.
  */
 
 import { defineEventHandler, readBody, createError } from "h3";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
-import { requireAuth, assertNotParent } from "~/server/utils/auth";
+import { requireAuth } from "~/server/utils/auth";
+import { resolveActingAthleteId } from "~/server/utils/playerOwnedPreferences";
 import { useLogger } from "~/server/utils/logger";
 import { triggerSuggestionUpdate } from "~/server/utils/triggerSuggestionUpdate";
 
@@ -15,10 +16,9 @@ export default defineEventHandler(async (event) => {
   const user = await requireAuth(event);
   const supabase = createServerSupabaseClient();
 
-  // Ensure requesting user is not a parent (mutation restricted)
-  await assertNotParent(user.id, supabase);
-
   try {
+    const athleteId = await resolveActingAthleteId(user.id, supabase);
+
     const body = await readBody<{
       reason: "profile_change" | "interaction_logged" | "daily_refresh";
       interactionSchoolId?: string;
@@ -41,7 +41,7 @@ export default defineEventHandler(async (event) => {
 
     logger.info("Triggering suggestion update", { reason });
 
-    const result = await triggerSuggestionUpdate(supabase, user.id, reason, {
+    const result = await triggerSuggestionUpdate(supabase, athleteId, reason, {
       interactionSchoolId,
       interactionCoachId,
     });

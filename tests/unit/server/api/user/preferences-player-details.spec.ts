@@ -11,7 +11,6 @@ import type { H3Event } from "h3";
 
 vi.mock("~/server/utils/auth", () => ({
   requireAuth: vi.fn(),
-  assertNotParent: vi.fn(),
 }));
 
 vi.mock("~/server/utils/logger", () => ({
@@ -54,13 +53,11 @@ describe("PATCH /api/user/preferences/player-details", () => {
   beforeEach(async () => {
     vi.clearAllMocks();
     vi.resetModules();
-    const { requireAuth, assertNotParent } =
-      await import("~/server/utils/auth");
+    const { requireAuth } = await import("~/server/utils/auth");
     vi.mocked(requireAuth).mockResolvedValue({
       id: "user-1",
       email: "user@example.com",
     });
-    vi.mocked(assertNotParent).mockResolvedValue(undefined);
     const { createServerSupabaseClient } =
       await import("~/server/utils/supabase");
     vi.mocked(createServerSupabaseClient).mockReturnValue({

@@ -31,7 +31,7 @@ vi.mock("~/server/utils/auditLog", () => ({
 
 vi.mock("~/server/utils/auth", () => ({
   requireAuth: vi.fn(async () => ({ id: "athlete-1" })),
-  assertNotParent: vi.fn(async () => {}),
+  getUserRole: vi.fn(async () => "player"),
 }));
 
 (
@@ -103,8 +103,8 @@ vi.mock("h3", async (importOriginal) => {
 const mockEvent = { context: {}, node: { req: {}, res: {} } } as H3Event;
 
 function seedHappyPath() {
-  // 1st users call: getUserRole (from assertNotParent — mocked away, so unused)
-  // 2nd users call: current_phase lookup
+  // getUserRole is mocked directly (no "users" query) — 1st real users call is
+  // the current_phase lookup.
   queueResponse("users", { data: { current_phase: "freshman" }, error: null });
   queueResponse("task", { data: [{ id: "t1" }, { id: "t2" }], error: null });
   queueResponse("athlete_task", { data: [{ task_id: "t1" }], error: null });

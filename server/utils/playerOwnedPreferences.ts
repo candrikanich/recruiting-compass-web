@@ -3,6 +3,7 @@
  * player-role member of a family. Parents read AND write the athlete's row so the
  * whole family collaborates on one profile.
  */
+import { createError } from "h3";
 import { getUserRole } from "~/server/utils/auth";
 import type { useSupabaseAdmin } from "~/server/utils/supabase";
 
@@ -84,4 +85,28 @@ export async function resolvePreferenceTargetUserId(
 
   const athleteId = await getLinkedAthleteId(userId, supabase);
   return athleteId ?? userId;
+}
+
+/**
+ * Resolves the athlete a mutation acts on: the caller's own id if they're the
+ * athlete, or their linked athlete's id if they're a parent. Family-edit
+ * parity endpoints (video links, suggestions, phase, status, notifications)
+ * use this in place of assertNotParent so parent-triggered writes land on the
+ * athlete's row instead of silently writing to the parent's own — see #555.
+ */
+export async function resolveActingAthleteId(
+  userId: string,
+  supabase: ReturnType<typeof useSupabaseAdmin>,
+): Promise<string> {
+  const role = await getUserRole(userId, supabase);
+  if (role !== "parent") return userId;
+
+  const athleteId = await getLinkedAthleteId(userId, supabase);
+  if (!athleteId) {
+    throw createError({
+      statusCode: 404,
+      statusMessage: "No linked athlete found",
+    });
+  }
+  return athleteId;
 }
