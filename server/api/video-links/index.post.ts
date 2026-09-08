@@ -1,12 +1,14 @@
 /**
  * POST /api/video-links
- * Creates a video link for the authenticated player. Parents cannot post
- * (read-only). Enforces a max of 5 video links per player.
+ * Creates a video link for the athlete. Family-shared profile — parents can
+ * create too, redirected to their linked athlete's row. Enforces a max of 5
+ * video links per player.
  */
 
 import { defineEventHandler, readBody, createError } from "h3";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
-import { requireAuth, assertNotParent } from "~/server/utils/auth";
+import { requireAuth } from "~/server/utils/auth";
+import { resolveActingAthleteId } from "~/server/utils/playerOwnedPreferences";
 import { useLogger } from "~/server/utils/logger";
 import { createVideoLinkSchema } from "~/utils/validation/schemas";
 import type { VideoLinkRow } from "~/types/models";
@@ -17,7 +19,7 @@ export default defineEventHandler(async (event) => {
     const user = await requireAuth(event);
     const supabase = createServerSupabaseClient();
 
-    await assertNotParent(user.id, supabase);
+    const athleteId = await resolveActingAthleteId(user.id, supabase);
 
     const parsed = createVideoLinkSchema.safeParse(await readBody(event));
     if (!parsed.success) {
@@ -30,7 +32,7 @@ export default defineEventHandler(async (event) => {
     const { count, error: countError } = await supabase
       .from("video_links")
       .select("id", { count: "exact", head: true })
-      .eq("user_id", user.id);
+      .eq("user_id", athleteId);
 
     if (countError) {
       logger.error("Failed to count existing video links", countError);
@@ -50,12 +52,12 @@ export default defineEventHandler(async (event) => {
     const { data: fam } = await supabase
       .from("family_members")
       .select("family_unit_id")
-      .eq("user_id", user.id)
+      .eq("user_id", athleteId)
       .eq("role", "player")
       .maybeSingle();
 
     const insert = {
-      user_id: user.id,
+      user_id: athleteId,
       family_unit_id: fam?.family_unit_id ?? null,
       platform: parsed.data.platform,
       url: parsed.data.url,

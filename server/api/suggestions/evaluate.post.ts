@@ -1,14 +1,15 @@
 /**
  * POST /api/suggestions/evaluate
- * Trigger rule engine to generate suggestions for athlete
- * RESTRICTED: Athletes only (parents have read-only access)
+ * Trigger rule engine to generate suggestions for athlete. Family-shared
+ * profile — a parent's call is redirected to their linked athlete.
  */
 
 import { defineEventHandler } from "h3";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
 import { useLogger } from "~/server/utils/logger";
 import { RuleEngine } from "~/server/utils/ruleEngine";
-import { requireAuth, assertNotParent } from "~/server/utils/auth";
+import { requireAuth } from "~/server/utils/auth";
+import { resolveActingAthleteId } from "~/server/utils/playerOwnedPreferences";
 import type { RuleContext } from "~/server/utils/rules/index";
 import type { AppSport } from "~/utils/recruitingCalendar";
 import { calculateCurrentGrade } from "~/utils/gradeHelpers";
@@ -28,12 +29,9 @@ export default defineEventHandler(async (event) => {
   const supabase = createServerSupabaseClient();
   const logger = useLogger(event, "suggestions/evaluate");
 
-  // Ensure requesting user is not a parent (mutation restricted)
-  await assertNotParent(user.id, supabase);
-
-  const athleteId = user.id;
-
   try {
+    const athleteId = await resolveActingAthleteId(user.id, supabase);
+
     // grade_level is derived from graduation_year in user_preferences
     // (the profiles table was removed — see migration 041).
     const schoolsSelect = "id, name, division, status, priority";

@@ -16,14 +16,17 @@
  *    data (isolation-by-construction: these routes have no attacker-supplied
  *    athleteId to abuse, unlike /api/athlete-tasks).
  *
- * 2. Mocked wiring suite: proves each of the mutation routes actually calls
- *    the real `assertNotParent` (or `requireAdmin`) gate before doing any
- *    work — a parent role is rejected with 403, matching the exact
- *    behavior already unit-tested in tests/unit/server/utils/auth.spec.ts.
- *    This is deliberately mocked (not live-DB): the authorization logic
- *    itself already has real, live-DB-independent coverage; what's unproven
- *    without this suite is that each endpoint actually wires the gate in
- *    before its side effects.
+ * 2. Mocked wiring suite: proves each of the family-shared mutation routes
+ *    actually calls the real `resolveActingAthleteId` (or `requireAdmin`)
+ *    gate before doing any work — a parent with no linked athlete gets a
+ *    404, matching the exact behavior already unit-tested in
+ *    tests/unit/server/utils/playerOwnedPreferences.spec.ts. As of #555,
+ *    parents can trigger these mutations (family-shared profile); the gate
+ *    now redirects to the linked athlete's row instead of rejecting parents
+ *    outright. This is deliberately mocked (not live-DB): the resolution
+ *    logic itself already has real, live-DB-independent coverage; what's
+ *    unproven without this suite is that each endpoint actually wires the
+ *    gate in before its side effects.
  */
 
 import { describe, it, expect, beforeAll, afterAll, vi } from "vitest";
@@ -120,8 +123,22 @@ function fakeEvent(query: Record<string, string> = {}): H3Event {
   } as unknown as H3Event;
 }
 
-/** Builds a mock Supabase client whose `users` role lookup returns `role`. */
+/**
+ * Builds a mock Supabase client whose `users` role lookup returns `role` and
+ * every other table (notably `family_members`, chained with two `.eq()`
+ * calls by getLinkedAthleteId) resolves to no rows — a parent with no
+ * linked athlete.
+ */
 function mockSupabaseWithRole(role: "player" | "parent") {
+  const empty = { data: null, error: null };
+  const emptyBuilder: Record<string, unknown> = {
+    single: () => Promise.resolve(empty),
+    maybeSingle: () => Promise.resolve(empty),
+    then: (resolve: (v: typeof empty) => unknown) => resolve(empty),
+  };
+  emptyBuilder.eq = () => emptyBuilder;
+  emptyBuilder.select = () => emptyBuilder;
+
   return {
     from: vi.fn((table: string) => {
       if (table === "users") {
@@ -135,14 +152,7 @@ function mockSupabaseWithRole(role: "player" | "parent") {
           }),
         };
       }
-      return {
-        select: () => ({
-          eq: () => ({
-            single: () => Promise.resolve({ data: null, error: null }),
-            maybeSingle: () => Promise.resolve({ data: null, error: null }),
-          }),
-        }),
-      };
+      return emptyBuilder;
     }),
   };
 }
@@ -166,7 +176,7 @@ describe("Parent/Athlete Access Control — mutation route wiring (mocked authz)
       path: "~/server/api/notifications/generate.post",
     },
   ])(
-    "rejects a parent with 403 before performing the mutation: $name",
+    "wires resolveActingAthleteId before performing the mutation — a parent with no linked athlete gets 404, not a silent write to their own row: $name",
     async ({ path }) => {
       vi.resetModules();
       const { requireAuth } = await import("~/server/utils/auth");
@@ -183,8 +193,7 @@ describe("Parent/Athlete Access Control — mutation route wiring (mocked authz)
       const handler = (await import(path)).default;
 
       await expect(handler(fakeEvent())).rejects.toMatchObject({
-        statusCode: 403,
-        message: expect.stringContaining("read-only"),
+        statusCode: 404,
       });
     },
   );

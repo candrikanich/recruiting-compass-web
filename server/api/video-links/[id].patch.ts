@@ -1,12 +1,14 @@
 /**
  * PATCH /api/video-links/:id
- * Updates a video link owned by the authenticated player. Editing the url
+ * Updates a video link owned by the athlete. Family-shared profile — a
+ * parent's call is redirected to their linked athlete's row. Editing the url
  * resets health-check state so the next cron re-checks it.
  */
 
 import { defineEventHandler, readBody, createError } from "h3";
 import { createServerSupabaseClient } from "~/server/utils/supabase";
-import { requireAuth, assertNotParent } from "~/server/utils/auth";
+import { requireAuth } from "~/server/utils/auth";
+import { resolveActingAthleteId } from "~/server/utils/playerOwnedPreferences";
 import { useLogger } from "~/server/utils/logger";
 import { requireUuidParam } from "~/server/utils/validation";
 import { updateVideoLinkSchema } from "~/utils/validation/schemas";
@@ -22,7 +24,7 @@ export default defineEventHandler(async (event) => {
     const id = requireUuidParam(event, "id");
     const supabase = createServerSupabaseClient();
 
-    await assertNotParent(user.id, supabase);
+    const athleteId = await resolveActingAthleteId(user.id, supabase);
 
     const parsed = updateVideoLinkSchema.safeParse(await readBody(event));
     if (!parsed.success) {
@@ -42,7 +44,7 @@ export default defineEventHandler(async (event) => {
       .from("video_links")
       .update(update)
       .eq("id", id)
-      .eq("user_id", user.id)
+      .eq("user_id", athleteId)
       .select()
       .maybeSingle();
 
