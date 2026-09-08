@@ -61,6 +61,10 @@
           class="pointer-events-none absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 text-slate-400"
           aria-hidden="true"
         />
+        <!-- Safari/WebKit fires only `change` (not `input`) when a date is
+             picked via the native calendar popover, as opposed to typed
+             digit-by-digit — issue #696. Both handlers below keep
+             dateOfBirth in sync regardless of how the value was set. -->
         <input
           id="dateOfBirth"
           :value="dateOfBirth"
@@ -80,6 +84,12 @@
           ]"
           :disabled="disabled"
           @input="
+            $emit(
+              'update:dateOfBirth',
+              ($event.target as HTMLInputElement).value,
+            )
+          "
+          @change="
             $emit(
               'update:dateOfBirth',
               ($event.target as HTMLInputElement).value,
