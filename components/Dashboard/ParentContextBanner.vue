@@ -16,7 +16,8 @@
       <p class="text-sm text-indigo-800">
         <strong>Parent View Mode Active:</strong> You're viewing
         <strong>{{ athleteName || "this athlete" }}'s</strong>
-        recruiting data. Data is read-only. Your views are visible to them.
+        recruiting data. Edits you make here are shared with the whole
+        family.
       </p>
     </div>
   </div>
