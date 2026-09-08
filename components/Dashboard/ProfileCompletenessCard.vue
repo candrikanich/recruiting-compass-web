@@ -1,6 +1,6 @@
 <template>
   <div
-    v-if="!loading"
+    v-if="!loading && !(isComplete && completionExpired)"
     class="rounded-lg border border-brand-slate-200 bg-white p-6 shadow-sm transition-all duration-300"
   >
     <!-- Expanded layout: < 80% completeness -->
@@ -79,8 +79,8 @@
       </div>
     </div>
 
-    <!-- Compact layout: >= 80% completeness -->
-    <div v-else data-test="compact-layout">
+    <!-- Compact layout: 80-99% completeness -->
+    <div v-else-if="completeness < 100" data-test="compact-layout">
       <div class="flex items-center justify-between gap-4">
         <div>
           <h3 class="text-sm font-semibold text-brand-slate-900">
@@ -101,6 +101,19 @@
         </div>
       </div>
     </div>
+
+    <!-- Complete banner: 100% completeness, within 24h -->
+    <div
+      v-else-if="isComplete && !completionExpired"
+      data-test="complete-banner"
+    >
+      <h3 class="text-sm font-semibold text-brand-slate-900">
+        🎉 Profile 100% Complete
+      </h3>
+      <p class="text-xs text-brand-slate-600">
+        Your profile is fully filled out. Great work!
+      </p>
+    </div>
   </div>
 
   <!-- Loading state -->
@@ -116,8 +129,16 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import { useProfileCompleteness } from "~/composables/useProfileCompleteness";
+import { useNuxProgress } from "~/composables/useNuxProgress";
+import { hasNuxCompletionExpired } from "~/types/nux";
 
 const { completeness, loading, updateCompleteness } = useProfileCompleteness();
+const { progress, updateProfileCompletion } = useNuxProgress();
+
+const isComplete = computed(() => completeness.value === 100);
+const completionExpired = computed(() =>
+  hasNuxCompletionExpired(progress.value.profileCompletion.completedAt),
+);
 
 // Mock prompts list for demo purposes
 // In production, these would come from a more complete data source
@@ -162,5 +183,6 @@ const strokeOffset = computed(() => {
 // Initialize on mount
 onMounted(async () => {
   await updateCompleteness();
+  await updateProfileCompletion(completeness.value);
 });
 </script>

@@ -43,8 +43,25 @@ export function useNuxProgress() {
       completed: true,
       completedAt: new Date().toISOString(),
     };
+    const allComplete = NUX_CHECKLIST_KEYS.every(
+      (k) => current.checklist.items[k]?.completed,
+    );
+    current.checklist.allCompleteAt = allComplete
+      ? (current.checklist.allCompleteAt ?? new Date().toISOString())
+      : null;
     await persistProgress(current);
     useNuxtApp().$posthog?.capture("checklist_item_completed", { item: key });
+  }
+
+  async function updateProfileCompletion(percentage: number) {
+    const current = parseNuxProgress(userStore.user?.nux_progress);
+    const isComplete = percentage >= 100;
+    const wasComplete = current.profileCompletion.completedAt !== null;
+    if (isComplete === wasComplete) return;
+    current.profileCompletion.completedAt = isComplete
+      ? new Date().toISOString()
+      : null;
+    await persistProgress(current);
   }
 
   async function dismissChecklist() {
@@ -79,6 +96,7 @@ export function useNuxProgress() {
     checklistPercentage,
     isChecklistComplete,
     completeItem,
+    updateProfileCompletion,
     dismissChecklist,
     recordFirstVisit,
     dismissPrompt,
