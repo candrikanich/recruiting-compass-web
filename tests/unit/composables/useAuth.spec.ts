@@ -309,6 +309,46 @@ describe("useAuth", () => {
 
       expect(auth.loading.value).toBe(false);
     });
+
+    it("should forward captchaToken to Supabase when provided", async () => {
+      const { mockSupabase, mockAuth } = getMockSupabase();
+
+      mockAuth.signInWithPassword.mockResolvedValue({
+        data: { session: mockSession, user: mockUser },
+        error: null,
+      });
+
+      const auth = useAuth();
+      await auth.login(
+        "test@example.com",
+        "password123",
+        false,
+        "turnstile-token-abc",
+      );
+
+      expect(mockAuth.signInWithPassword).toHaveBeenCalledWith({
+        email: "test@example.com",
+        password: "password123",
+        options: { captchaToken: "turnstile-token-abc" },
+      });
+    });
+
+    it("should omit options when no captchaToken provided", async () => {
+      const { mockSupabase, mockAuth } = getMockSupabase();
+
+      mockAuth.signInWithPassword.mockResolvedValue({
+        data: { session: mockSession, user: mockUser },
+        error: null,
+      });
+
+      const auth = useAuth();
+      await auth.login("test@example.com", "password123");
+
+      expect(mockAuth.signInWithPassword).toHaveBeenCalledWith({
+        email: "test@example.com",
+        password: "password123",
+      });
+    });
   });
 
   describe("logout", () => {

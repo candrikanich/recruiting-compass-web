@@ -26,6 +26,7 @@ interface _AuthActions {
     email: string,
     password: string,
     rememberMe?: boolean,
+    captchaToken?: string,
   ) => Promise<{
     data: { user: User | null; session: Session | null };
     error: null;
@@ -126,19 +127,37 @@ export const useAuth = () => {
    * @param email User email
    * @param password User password
    * @param rememberMe Whether to extend session to 30 days (defaults to false for 1 day)
+   * @param captchaToken When provided, forwarded to Supabase Auth's built-in
+   *   Turnstile verification (requires CAPTCHA enabled in the Supabase
+   *   Dashboard → Authentication → Attack Protection).
    */
-  const login = async (email: string, password: string, rememberMe = false) => {
+  const login = async (
+    email: string,
+    password: string,
+    rememberMe = false,
+    captchaToken?: string,
+  ) => {
     loading.value = true;
     error.value = null;
 
     try {
       const trimmedEmail = email.trim().toLowerCase();
 
+      const signInParams: {
+        email: string;
+        password: string;
+        options?: { captchaToken: string };
+      } = {
+        email: trimmedEmail,
+        password,
+      };
+
+      if (captchaToken) {
+        signInParams.options = { captchaToken };
+      }
+
       const { data, error: signInError } =
-        await supabase.auth.signInWithPassword({
-          email: trimmedEmail,
-          password,
-        });
+        await supabase.auth.signInWithPassword(signInParams);
 
       if (signInError) {
         error.value = signInError;

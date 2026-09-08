@@ -83,6 +83,13 @@
             @validate-email="validateEmail"
             @validate-password="validatePassword"
           />
+
+          <!-- Cloudflare Turnstile (flag-gated, renders only when site key set) -->
+          <div
+            v-if="turnstileEnabled"
+            ref="turnstileEl"
+            class="mt-4 flex justify-center"
+          />
         </div>
       </div>
     </div>
@@ -92,8 +99,9 @@
 <script setup lang="ts">
 definePageMeta({ layout: "public" });
 
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 import { useRoute } from "vue-router";
+import { useRuntimeConfig } from "#app";
 import { useAuth } from "~/composables/useAuth";
 import { useFormValidation } from "~/composables/useFormValidation";
 import { useFormErrorFocus } from "~/composables/useFormErrorFocus";
@@ -111,6 +119,82 @@ const route = useRoute();
 const email = ref("");
 const password = ref("");
 const rememberMe = ref(false);
+
+// --- Turnstile (optional, flag-gated) ----------------------------------------
+const runtimeConfig = useRuntimeConfig();
+const turnstileSiteKey = computed(
+  () => runtimeConfig.public?.turnstileSiteKey ?? "",
+);
+const turnstileEnabled = computed(() => turnstileSiteKey.value.length > 0);
+const turnstileToken = ref<string | undefined>(undefined);
+const turnstileEl = ref<HTMLDivElement | null>(null);
+const turnstileWidgetId = ref<string | undefined>(undefined);
+
+const TURNSTILE_SCRIPT_SRC =
+  "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+
+type TurnstileGlobal = {
+  render: (
+    el: HTMLElement,
+    options: {
+      sitekey: string;
+      action?: string;
+      callback: (token: string) => void;
+    },
+  ) => string;
+  reset: (widgetId?: string) => void;
+};
+
+function loadTurnstileScript(): Promise<void> {
+  return new Promise((resolve) => {
+    const w = window as unknown as { turnstile?: TurnstileGlobal };
+    if (w.turnstile) {
+      resolve();
+      return;
+    }
+    const existing = document.querySelector<HTMLScriptElement>(
+      `script[src="${TURNSTILE_SCRIPT_SRC}"]`,
+    );
+    const script = existing ?? document.createElement("script");
+    script.addEventListener("load", () => resolve());
+    script.addEventListener("error", () => resolve());
+    if (!existing) {
+      try {
+        script.src = TURNSTILE_SCRIPT_SRC;
+        script.async = true;
+        document.head.appendChild(script);
+      } catch {
+        resolve();
+      }
+    }
+  });
+}
+
+// Mount Turnstile widget once the div exists
+watch(
+  [turnstileEnabled, turnstileEl],
+  async ([enabled, el]) => {
+    if (!enabled || !el || turnstileWidgetId.value) return;
+    try {
+      await loadTurnstileScript();
+      const w = window as unknown as { turnstile?: TurnstileGlobal };
+      if (w.turnstile && el) {
+        turnstileWidgetId.value = w.turnstile.render(el, {
+          sitekey: turnstileSiteKey.value,
+          action: "login",
+          callback: (token: string) => {
+            turnstileToken.value = token;
+          },
+        });
+      }
+    } catch {
+      // Widget failure is non-fatal — Supabase verifies server-side only
+      // when CAPTCHA is enabled in the dashboard; otherwise login proceeds.
+    }
+  },
+  { flush: "post", immediate: true },
+);
+// ---------------------------------------------------------------------------
 
 const { loading, validating } = useLoadingStates();
 const { login } = useAuth();
@@ -182,7 +266,12 @@ const handleLogin = async () => {
   loading.value = true;
 
   try {
-    await login(validated.email, validated.password, rememberMe.value);
+    await login(
+      validated.email,
+      validated.password,
+      rememberMe.value,
+      turnstileToken.value,
+    );
 
     // Give Supabase time to persist session to localStorage
     await new Promise((resolve) =>
