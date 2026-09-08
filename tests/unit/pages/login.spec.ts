@@ -447,6 +447,7 @@ describe("login.vue", () => {
         "test@example.com",
         "password123",
         false,
+        undefined, // captchaToken (Turnstile disabled in test)
       );
       // The initializeUser might be called asynchronously
       expect(mockUserStore.initializeUser).toBeDefined();
@@ -540,6 +541,7 @@ describe("login.vue", () => {
         "test@example.com",
         "password123",
         false,
+        undefined, // captchaToken (Turnstile disabled in test)
       );
     });
   });
@@ -746,6 +748,7 @@ describe("login.vue", () => {
         "test@example.com",
         "password123",
         true,
+        undefined, // captchaToken (Turnstile disabled in test)
       );
     });
 
@@ -773,6 +776,7 @@ describe("login.vue", () => {
         "test@example.com",
         "password123",
         false,
+        undefined, // captchaToken (Turnstile disabled in test)
       );
     });
 
