@@ -192,4 +192,24 @@ describe("POST /api/schools/[id]/enrich (confirm step)", () => {
       athleticsUrl: "https://testu.example/athletics",
     });
   });
+
+  it("does not call lookupSchoolMetadata on the search step (confirmed absent)", async () => {
+    vi.mocked(readBody).mockResolvedValue({ schoolName: "Test University" });
+    mockSchoolsSingle.mockResolvedValue({
+      data: {
+        id: TEST_UUID,
+        name: "Test University",
+        academic_info: {},
+        family_unit_id: "family-1",
+        mascot: null,
+        school_colors: null,
+        athletics_url: null,
+      },
+      error: null,
+    });
+
+    await handler(mockEvent);
+
+    expect(metadataLookup.lookupSchoolMetadata).not.toHaveBeenCalled();
+  });
 });

@@ -1,5 +1,16 @@
 # School Metadata Enrichment Triggers Implementation Plan
 
+> **STATUS (2026-09-08): Only Task 2 (#582) was executed on this branch.**
+> Task 1 (shared lookup util) was superseded by the already-merged PR #698
+> (issue #580) — that implementation dropped the Wikidata approach below
+> entirely (spike #576 found only 2.4% mascot coverage) in favor of a
+> static-JSON + fuzzy-name-match util with no network dependency. **Do not
+> implement Task 1 as written below — it duplicates rejected work.**
+> Task 3 (#581) and Task 4 (#583) are owned by other sessions/PRs (#699 for
+> #583) and were not executed here. **Do not execute this plan as written —
+> it is a historical record of the original (over-)scoped plan, not a
+> to-do list.**
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Build the shared `lookupSchoolMetadata` server util and wire it into all three remaining enrichment triggers from the design spec — enrich endpoint (#582), NCAA-autocomplete school-add (#581), and weekly cron backfill (#583) — closing all three issues.
@@ -1157,7 +1168,7 @@ git commit -m "feat(schools): weekly cron backfill for missing school metadata (
 - [ ] `npm test` — full suite green, no new failures
 - [ ] `npm run audit:tokens` — 0 (new UI touches raw color inputs — swatches must not hardcode hex in `<style>`; the plain `<input>` elements above are fine since color is user/data-driven value, not a style token)
 - [ ] Browser verify: add a school via NCAA autocomplete → mascot/colors/athletics pre-fill (#581). Open an existing school with no mascot set → click Enrich → confirm → mascot/colors/athletics/conference-link populate on the detail page (#582). Trigger the cron manually from admin Jobs tab → `cron_runs` row succeeds (#583).
-- [ ] Close #581, #582, #583 on merge (reference all three in the PR body — they share this one implementation).
+- [ ] Close #582 on merge (this branch implements #582 only — see the status banner at the top of this doc for why #581/#583 aren't included).
 
 ## Self-Review Notes
 
