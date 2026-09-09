@@ -12,6 +12,10 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # Fast PR-gate for feature branches → develop. Full suite (below) only runs
+  # on the develop → main promotion — see e2e-smoke job and
+  # planning/e2e-ci-refactor-plan.md Phase 4 for the rationale.
+  #
   # Runs the full test-database seed exactly once. global-setup.ts also seeds
   # per-run (shouldSeed), which is fine for a single job but not for 4 sharded
   # jobs hitting the same shared test project concurrently — seeding here and
@@ -20,7 +24,9 @@ jobs:
     name: Seed E2E Database
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    if: github.actor != 'dependabot[bot]'
+    if: >-
+      github.actor != 'dependabot[bot]' &&
+      (github.event_name == 'workflow_dispatch' || github.base_ref == 'main')
     steps:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-node-deps
@@ -30,6 +36,60 @@ jobs:
           NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.TEST_SUPABASE_URL }}
           NUXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.TEST_SUPABASE_ANON_KEY }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.TEST_SUPABASE_SERVICE_ROLE_KEY }}
+
+  # PRs into develop (feature work) get this fast smoke-only gate instead of
+  # the full suite below — one job, no sharding needed at this size. The full
+  # suite gates the develop → main promotion, where the risk of a bad prod
+  # release justifies the ~15-20m cost. See planning/e2e-ci-refactor-plan.md
+  # Phase 4. Starter @smoke set is intentionally small (8 tests as of this
+  # writing) — expand coverage over time by tagging more tier1-critical specs,
+  # not by inventing a parallel test suite.
+  e2e-smoke:
+    name: Playwright E2E Tests (smoke)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    if: github.actor != 'dependabot[bot]' && github.base_ref == 'develop'
+
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-node-deps
+        with:
+          prepare-nuxt: "true"
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Build application
+        run: npm run build
+        env:
+          NITRO_PRESET: node-server
+          NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.TEST_SUPABASE_URL }}
+          NUXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.TEST_SUPABASE_ANON_KEY }}
+
+      - name: Run smoke E2E tests
+        # Skips the full DB seed (smoke specs create their own data via UI or
+        # need no seeded reference data beyond the standard test accounts,
+        # which global-setup.ts always provisions regardless of this flag) —
+        # verify this holds as the @smoke set grows; flip off if a future
+        # smoke spec needs seeded reference data.
+        run: npm run test:e2e:main -- --grep "@smoke"
+        env:
+          CI: true
+          E2E_SKIP_SEED: "true"
+          NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.TEST_SUPABASE_URL }}
+          NUXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.TEST_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.TEST_SUPABASE_SERVICE_ROLE_KEY }}
+          E2E_PROFILE_SLUG: e2e-test-player
+          NUXT_ADMIN_TOKEN_SECRET: ${{ secrets.NUXT_ADMIN_TOKEN_SECRET }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report-smoke
+          path: playwright-report/
+          retention-days: 30
 
   e2e-tests:
     name: Playwright E2E Tests (shard ${{ matrix.shard }}/4)
@@ -46,7 +106,9 @@ jobs:
     timeout-minutes: 30
     # Dependabot PRs don't have access to secrets — the server can't start without them.
     # Dependency bumps are validated by unit tests, lint, and type-check.
-    if: github.actor != 'dependabot[bot]'
+    if: >-
+      github.actor != 'dependabot[bot]' &&
+      (github.event_name == 'workflow_dispatch' || github.base_ref == 'main')
 
     steps:
       - uses: actions/checkout@v7
@@ -113,7 +175,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: e2e-seed
     timeout-minutes: 20
-    if: github.actor != 'dependabot[bot]'
+    if: >-
+      github.actor != 'dependabot[bot]' &&
+      (github.event_name == 'workflow_dispatch' || github.base_ref == 'main')
 
     steps:
       - uses: actions/checkout@v7
@@ -168,7 +232,9 @@ jobs:
     needs: e2e-seed
     timeout-minutes: 15
     continue-on-error: true
-    if: github.actor != 'dependabot[bot]'
+    if: >-
+      github.actor != 'dependabot[bot]' &&
+      (github.event_name == 'workflow_dispatch' || github.base_ref == 'main')
 
     steps:
       - uses: actions/checkout@v7
@@ -216,7 +282,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 75
     continue-on-error: true
-    if: github.actor != 'dependabot[bot]'
+    if: >-
+      github.actor != 'dependabot[bot]' &&
+      (github.event_name == 'workflow_dispatch' || github.base_ref == 'main')
 
     steps:
       - uses: actions/checkout@v7
