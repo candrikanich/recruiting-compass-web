@@ -22,6 +22,7 @@ import {
   scorecardToAcademicInfo,
   type ScorecardSchool,
 } from "~/server/utils/collegeScorecard";
+import { lookupSchoolMetadata } from "~/server/utils/schoolMetadataLookup";
 import type { SchoolAcademicInfo } from "~/types/schoolFit";
 
 type EnrichSearchBody = { schoolName?: string; confirmed?: false };
@@ -49,7 +50,7 @@ export default defineEventHandler(async (event) => {
 
   const { data: school, error: schoolError } = await supabase
     .from("schools")
-    .select("id, name, academic_info, family_unit_id")
+    .select("id, name, academic_info, family_unit_id, mascot, school_colors, athletics_url")
     .eq("id", schoolId)
     .eq("family_unit_id", membership.family_unit_id)
     .single();
@@ -124,12 +125,28 @@ export default defineEventHandler(async (event) => {
 
     const mergedInfo: SchoolAcademicInfo = { ...existingInfo, ...enrichedData };
 
+    const schoolRow = school as {
+      mascot: string | null;
+      school_colors: string[] | null;
+      athletics_url: string | null;
+    };
+
+    const metadata = lookupSchoolMetadata(schoolName);
+
+    // Null-fill only: an existing value always wins.
+    const mascot = schoolRow.mascot ?? metadata.mascot;
+    const schoolColors = schoolRow.school_colors ?? metadata.colors;
+    const athleticsUrl = schoolRow.athletics_url ?? metadata.athleticsUrl;
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const academicInfo = mergedInfo as any;
     const { error: updateError } = await supabase
       .from("schools")
       .update({
         academic_info: academicInfo,
+        mascot,
+        school_colors: schoolColors,
+        athletics_url: athleticsUrl,
         updated_at: new Date().toISOString(),
       })
       .eq("id", schoolId);
@@ -152,6 +169,10 @@ export default defineEventHandler(async (event) => {
       data: {
         schoolId,
         academicInfo: mergedInfo,
+        mascot,
+        athleticsUrl,
+        colors: schoolColors,
+        conferenceUrl: metadata.conferenceUrl,
         message: "Academic data updated from College Scorecard.",
       },
     };
