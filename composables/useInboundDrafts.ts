@@ -23,10 +23,20 @@ export function useInboundDrafts() {
     }
   }
 
-  async function confirmDraft(id: string, schoolId?: string) {
+  interface ConfirmOverrides {
+    schoolId?: string;
+    coachId?: string | null;
+    type?: string;
+    direction?: string;
+    occurredAt?: string;
+    subject?: string | null;
+    content?: string | null;
+  }
+
+  async function confirmDraft(id: string, overrides: ConfirmOverrides = {}) {
     await $fetchAuth(`/api/inbound-drafts/${id}/confirm`, {
       method: "POST",
-      body: schoolId ? { schoolId } : {},
+      body: overrides,
     });
     drafts.value = drafts.value.filter((d) => d.id !== id);
   }

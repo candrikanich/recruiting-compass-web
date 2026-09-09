@@ -1,10 +1,12 @@
 /**
  * POST /api/inbound-drafts/:id/confirm
- * Turns a pending inbound-email draft into a real `interactions` row.
- * Requires `schoolId` in the body only when the draft has no matched school
- * (interactions.school_id is NOT NULL). Idempotent — re-confirming an
- * already-confirmed draft returns its existing interaction without
- * duplicating it.
+ * Turns a pending inbound-email draft into a real `interactions` row. The
+ * caller reviews the parsed draft first (#678) and may override any of the
+ * fields below before confirming; anything omitted falls back to the value
+ * the parser found. Requires `schoolId` in the body only when the draft has
+ * no matched school (interactions.school_id is NOT NULL). Idempotent —
+ * re-confirming an already-confirmed draft returns its existing interaction
+ * without duplicating it.
  */
 import { defineEventHandler, getRouterParam, readBody, createError } from "h3";
 import { z } from "zod";
@@ -15,8 +17,30 @@ import { resolveFamilyUnitId } from "~/server/utils/familyMembership";
 import { resolveAthleteId } from "~/server/utils/resolveAthleteId";
 
 const UUID_SHAPE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const INTERACTION_TYPES = [
+  "email",
+  "text",
+  "phone_call",
+  "in_person_visit",
+  "virtual_meeting",
+  "camp",
+  "showcase",
+  "tweet",
+  "dm",
+  "game",
+  "unofficial_visit",
+  "official_visit",
+  "interest",
+  "other",
+] as const;
 const confirmBodySchema = z.object({
   schoolId: z.string().regex(UUID_SHAPE, "Invalid UUID").optional(),
+  coachId: z.string().regex(UUID_SHAPE, "Invalid UUID").nullable().optional(),
+  type: z.enum(INTERACTION_TYPES).optional(),
+  direction: z.enum(["inbound", "outbound"]).optional(),
+  occurredAt: z.string().optional(),
+  subject: z.string().nullable().optional(),
+  content: z.string().nullable().optional(),
 });
 
 export default defineEventHandler(async (event) => {
@@ -82,12 +106,12 @@ export default defineEventHandler(async (event) => {
       .insert({
         family_unit_id: draft.family_unit_id,
         school_id: schoolId,
-        coach_id: draft.matched_coach_id,
-        type: "email",
-        direction: "inbound",
-        subject: draft.subject,
-        content: draft.body_text,
-        occurred_at: draft.occurred_at,
+        coach_id: parsed.data.coachId !== undefined ? parsed.data.coachId : draft.matched_coach_id,
+        type: parsed.data.type ?? "email",
+        direction: parsed.data.direction ?? "inbound",
+        subject: parsed.data.subject !== undefined ? parsed.data.subject : draft.subject,
+        content: parsed.data.content !== undefined ? parsed.data.content : draft.body_text,
+        occurred_at: parsed.data.occurredAt ?? draft.occurred_at,
         logged_by: userId,
       })
       .select("id")
