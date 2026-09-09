@@ -122,6 +122,8 @@ export const schoolSchema = z.object({
   conference: sanitizedTextSchema(100),
   website: urlSchema.nullable().optional(),
   athletics_url: urlSchema.nullable().optional(),
+  mascot: z.string().nullable().optional(),
+  school_colors: z.array(z.string()).nullable().optional(),
   twitter_handle: twitterHandleSchema,
   instagram_handle: instagramHandleSchema,
   notes: richTextSchema(5000),
