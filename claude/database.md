@@ -210,6 +210,17 @@ rerun of a failed run replays that run's original commit's workflow file
 — so a fresh push (PR #733, re-touching the noop file) was needed to
 actually exercise the fix.
 
+**Prod/QA divergence found + fixed (2026-09-09):** this whole
+reconciliation's "re-confirmed live" check for the 4 legacy jobs was
+against QA only. Prod (`lrzsenidegcqhwzwncve`) still had all 4
+`active=true` — never got the 2026-09-07 disable. Fixed via
+`cron.alter_job(jobid, active := false)` for
+`process-follow-up-reminders`, `process-deadline-alerts`,
+`send-weekly-digest`, `notify-upcoming-events`; confirmed all 4
+`active=false` on prod, matching QA. Metadata-only — jobs stay defined,
+just stopped firing. Vercel-cron (`generate-notifications`,
+`weekly-digest`) already covers the same notifications.
+
 **Verified live 2026-09-09**: `migrate-qa-e2e.yml` run `34382438891`'s QA
 job went green for the first time. `list_migrations` confirms every
 version on QA matches a `supabase/migrations/*.sql` filename 1:1, no
