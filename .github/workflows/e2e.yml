@@ -44,17 +44,6 @@ jobs:
           NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.TEST_SUPABASE_URL }}
           NUXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.TEST_SUPABASE_ANON_KEY }}
 
-      - name: Upload build output
-        uses: actions/upload-artifact@v7
-        with:
-          name: e2e-build-output
-          path: .output/
-          retention-days: 1
-          # .output/ is dot-prefixed; upload-artifact treats it as hidden and
-          # silently skips every file under it unless this is set (root cause
-          # of WebKit's "Artifact not found for name: e2e-build-output").
-          include-hidden-files: true
-
       - name: Run E2E tests
         run: npm run test:e2e
         env:
@@ -89,29 +78,39 @@ jobs:
           path: test-results/
           retention-days: 30
 
-  # WebKit (Safari) — non-blocking initially; failures are reported but don't gate the PR
+  # WebKit (Safari) — non-blocking; failures are reported but don't gate the PR.
+  # Builds its own app instead of downloading e2e-tests' artifact so it starts
+  # at T+0 instead of waiting out the ~50m chromium job first (both jobs were
+  # non-dependent — WebKit only ever needed e2e-tests' build output, not its
+  # test result).
   e2e-webkit:
     name: Playwright E2E Tests (WebKit/Safari)
-    needs: e2e-tests
     runs-on: ubuntu-latest
     timeout-minutes: 75
     continue-on-error: true
-    if: always() && github.actor != 'dependabot[bot]'
+    if: github.actor != 'dependabot[bot]'
 
     steps:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-node-deps
+        with:
+          prepare-nuxt: "true"
 
       - name: Install Playwright WebKit browser
         # chromium is also required: global-setup.ts captures auth storageState
         # via chromium.launch() (portable across browsers) before the webkit run.
         run: npx playwright install --with-deps webkit chromium
 
-      - name: Download build output
-        uses: actions/download-artifact@v7
-        with:
-          name: e2e-build-output
-          path: .output/
+      - name: Build application
+        run: npm run build
+        env:
+          # Override Vercel preset so nuxi preview can serve a standard Node.js
+          # server in CI. Production builds use the Vercel preset (nuxt.config.ts).
+          NITRO_PRESET: node-server
+          # ssr:false bakes NUXT_PUBLIC_* into the client bundle at build time,
+          # so the test project's URL/anon must be present here, not just at run.
+          NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.TEST_SUPABASE_URL }}
+          NUXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.TEST_SUPABASE_ANON_KEY }}
 
       - name: Run E2E tests (WebKit only)
         # WebKit is substantially less stable under parallel load in CI
