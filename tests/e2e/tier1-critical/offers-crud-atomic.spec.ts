@@ -6,7 +6,6 @@ import {
   generateUniqueSchoolName,
   schoolHelpers,
 } from "../fixtures/schools.fixture";
-import { tagName } from "../seed/helpers/run-id";
 
 /**
  * Atomic CRUD pilot #5 — offer lifecycle.
@@ -39,7 +38,7 @@ test.describe("Offers CRUD — atomic lifecycle", () => {
       // "0 " prefix sorts before letters — the player has accumulated 1000+
       // test schools and the offers dropdown is capped at Supabase's default
       // 1000-row limit, so a mid-alphabet name gets buried.
-      schoolName = tagName(generateUniqueSchoolName("0 Offers Atomic"));
+      schoolName = generateUniqueSchoolName("0 Offers Atomic");
       schoolId = await schoolHelpers.createSchool(
         page,
         createSchoolData({ name: schoolName }),
