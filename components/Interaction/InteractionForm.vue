@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import { ref, computed } from "vue";
 import InterestCalibration from "~/components/Interaction/InterestCalibration.vue";
+import { useFormValidation } from "~/composables/useFormValidation";
 import type { Interaction } from "~/types/models";
 import type { Coach } from "~/types/models";
 
@@ -18,10 +20,16 @@ interface InteractionFormData {
 interface Props {
   loading: boolean;
   initialData?: Partial<Interaction>;
+  senderName?: string | null;
+  senderEmail?: string | null;
+  draftReturnTo?: string | null;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   initialData: undefined,
+  senderName: null,
+  senderEmail: null,
+  draftReturnTo: null,
 });
 
 const emit = defineEmits<{
@@ -91,6 +99,14 @@ const shouldShowCalibration = computed(() => {
   );
 });
 
+const addSchoolHref = computed(() => {
+  if (!props.draftReturnTo) return null;
+  const params = new URLSearchParams({ returnTo: props.draftReturnTo });
+  const domain = props.senderEmail?.split("@")[1]?.trim();
+  if (domain) params.set("prefillWebsite", `https://${domain}`);
+  return `/schools/new?${params.toString()}`;
+});
+
 const isFormValid = computed(() => {
   return (
     form.value.school_id &&
@@ -157,6 +173,14 @@ const handleCancel = () => {
       :required="true"
       :error="fieldErrors.school_id"
     />
+    <NuxtLink
+      v-if="addSchoolHref"
+      data-testid="add-school-link"
+      :to="addSchoolHref"
+      class="mt-1 inline-block text-sm text-blue-600 hover:text-blue-700 hover:underline"
+    >
+      School not listed? Add it
+    </NuxtLink>
 
     <!-- Coach Selection -->
     <CoachSelect
@@ -313,6 +337,8 @@ const handleCancel = () => {
     <CoachAddCoachModal
       :show="showAddCoachModal"
       :school-id="form.school_id"
+      :sender-name="senderName"
+      :sender-email="senderEmail"
       @close="showAddCoachModal = false"
       @coach-created="handleCoachCreated"
     />
