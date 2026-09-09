@@ -8,6 +8,7 @@ import type {
   PreviewSegment,
 } from "~/composables/useQuickCommunication";
 import type { MissingInfoField } from "~/utils/communication/missingInfo";
+import { groupTemplatesByStage } from "~/utils/communication/templateStages";
 import type { Coach, CommunicationTemplate } from "~/types/models";
 
 vi.mock("~/composables/useFocusTrap", () => ({
@@ -51,6 +52,7 @@ function buildController(
     savingKey: ref(null),
     saveErrors: ref({}),
     templates: computed(() => [template]),
+    groupedTemplates: computed(() => groupTemplatesByStage([template])),
     variableRows: computed(() => []),
     previewSegments: computed(() => segments),
     unresolved: computed(() => []),
