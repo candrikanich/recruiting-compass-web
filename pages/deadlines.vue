@@ -57,6 +57,201 @@
       </DesignSystemEmptyState>
 
       <template v-else>
+        <div class="mb-6 space-y-3">
+          <input
+            v-model="searchText"
+            type="search"
+            placeholder="Search deadlines…"
+            aria-label="Search deadlines"
+            class="input-field"
+          />
+          <div class="flex flex-wrap gap-2">
+            <button
+              type="button"
+              class="rounded-full px-3 py-1 text-xs font-medium transition-colors"
+              :class="
+                activeCategory === null
+                  ? 'bg-brand-blue-600 text-white'
+                  : 'bg-brand-slate-100 text-brand-slate-700 hover:bg-brand-slate-200'
+              "
+              @click="activeCategory = null"
+            >
+              All
+            </button>
+            <button
+              v-for="cat in availableCategories"
+              :key="cat"
+              type="button"
+              class="rounded-full px-3 py-1 text-xs font-medium transition-colors"
+              :class="
+                activeCategory === cat
+                  ? 'bg-brand-blue-600 text-white'
+                  : 'bg-brand-slate-100 text-brand-slate-700 hover:bg-brand-slate-200'
+              "
+              @click="activeCategory = activeCategory === cat ? null : cat"
+            >
+              {{ categoryLabel(cat) }}
+            </button>
+          </div>
+
+          <div class="flex gap-1 rounded-lg bg-brand-slate-100 p-1 w-fit">
+            <button
+              type="button"
+              class="rounded-md px-3 py-1 text-xs font-medium transition-colors"
+              :class="
+                viewMode === 'list'
+                  ? 'bg-[var(--card)] text-brand-slate-900 shadow-xs'
+                  : 'text-brand-slate-600'
+              "
+              @click="viewMode = 'list'"
+            >
+              List
+            </button>
+            <button
+              type="button"
+              class="rounded-md px-3 py-1 text-xs font-medium transition-colors"
+              :class="
+                viewMode === 'calendar'
+                  ? 'bg-[var(--card)] text-brand-slate-900 shadow-xs'
+                  : 'text-brand-slate-600'
+              "
+              @click="viewMode = 'calendar'"
+            >
+              Calendar
+            </button>
+          </div>
+        </div>
+
+        <template v-if="viewMode === 'calendar'">
+          <div
+            class="mb-6 rounded-xl border border-brand-slate-200 bg-[var(--card)] p-6"
+          >
+            <div class="mb-6 flex items-center justify-between">
+              <button
+                type="button"
+                aria-label="Previous month"
+                class="rounded-lg p-2 text-brand-slate-600 hover:bg-brand-slate-100"
+                @click="previousMonth"
+              >
+                <UIcon name="i-heroicons-chevron-left" class="h-5 w-5" />
+              </button>
+              <span class="font-semibold text-brand-slate-900">
+                {{ monthDisplay }}
+              </span>
+              <button
+                type="button"
+                aria-label="Next month"
+                class="rounded-lg p-2 text-brand-slate-600 hover:bg-brand-slate-100"
+                @click="nextMonth"
+              >
+                <UIcon name="i-heroicons-chevron-right" class="h-5 w-5" />
+              </button>
+            </div>
+
+            <div class="grid grid-cols-7 gap-1">
+              <div
+                v-for="day in ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']"
+                :key="day"
+                class="py-1 text-center text-xs font-medium text-brand-slate-500"
+              >
+                {{ day }}
+              </div>
+              <button
+                v-for="dateKey in calendarGrid"
+                :key="dateKey"
+                type="button"
+                class="flex min-h-12 flex-col items-center justify-center rounded-lg p-1 text-sm transition-colors"
+                :class="[
+                  isCurrentGridMonth(dateKey)
+                    ? 'text-brand-slate-700'
+                    : 'text-brand-slate-300',
+                  dateKey === selectedDay
+                    ? 'bg-brand-blue-600 text-white'
+                    : 'hover:bg-brand-slate-100',
+                ]"
+                @click="selectedDay = dateKey"
+              >
+                <span>{{ dayOfMonth(dateKey) }}</span>
+                <span
+                  v-if="deadlinesByDate.has(dateKey)"
+                  class="mt-0.5 h-1.5 w-1.5 rounded-full"
+                  :class="dateKey === selectedDay ? 'bg-white' : 'bg-brand-blue-500'"
+                />
+              </button>
+            </div>
+          </div>
+
+          <div v-if="selectedDayDeadlines.length > 0" class="space-y-3">
+            <h2 class="text-sm font-semibold text-brand-slate-700">
+              {{ formatDate(selectedDay ?? "") }}
+            </h2>
+            <ul class="space-y-3">
+              <li
+                v-for="d in selectedDayDeadlines"
+                :key="d.id"
+                class="flex items-center justify-between rounded-lg border border-brand-slate-200 bg-[var(--card)] p-4"
+              >
+                <div>
+                  <p class="font-medium text-brand-slate-900">{{ d.label }}</p>
+                  <div
+                    class="mt-1 flex flex-wrap items-center gap-2 text-sm text-brand-slate-500"
+                  >
+                    <DesignSystemBadge
+                      :color="categoryColor(d.category)"
+                      size="sm"
+                    >
+                      {{ categoryLabel(d.category) }}
+                    </DesignSystemBadge>
+                    <DesignSystemBadge
+                      v-if="d.source === 'system'"
+                      color="slate"
+                      size="sm"
+                    >
+                      NCAA Calendar
+                    </DesignSystemBadge>
+                  </div>
+                </div>
+                <div v-if="d.source === 'user'" class="flex items-center gap-3">
+                  <button
+                    type="button"
+                    class="text-sm font-medium text-brand-slate-600 hover:text-brand-slate-900"
+                    :aria-label="`Edit ${d.label}`"
+                    @click="openEdit(d)"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    class="text-sm font-medium text-brand-red-600 hover:text-brand-red-700"
+                    :aria-label="`Remove ${d.label}`"
+                    @click="removeDeadline(d.id)"
+                  >
+                    Remove
+                  </button>
+                </div>
+              </li>
+            </ul>
+          </div>
+          <DesignSystemEmptyState
+            v-else-if="selectedDay"
+            title="No deadlines this day"
+            description="Pick another day on the calendar"
+          />
+        </template>
+
+        <template v-else>
+        <DesignSystemEmptyState
+          v-if="upcomingByMonth.size === 0 && pastByMonth.size === 0"
+          title="No deadlines match your filters"
+          description="Try a different category or search term"
+        >
+          <template #icon>
+            <UIcon
+              name="i-heroicons-magnifying-glass"
+              class="h-8 w-8 text-brand-slate-400"
+            />
+          </template>
+        </DesignSystemEmptyState>
         <section
           v-for="[monthKey, items] in upcomingByMonth"
           :key="monthKey"
@@ -94,28 +289,37 @@
                   </DesignSystemBadge>
                 </div>
               </div>
-              <button
-                v-if="d.source === 'user'"
-                type="button"
-                class="text-sm font-medium text-brand-red-600 hover:text-brand-red-700"
-                :aria-label="`Remove ${d.label}`"
-                @click="removeDeadline(d.id)"
-              >
-                Remove
-              </button>
+              <div v-if="d.source === 'user'" class="flex items-center gap-3">
+                <button
+                  type="button"
+                  class="text-sm font-medium text-brand-slate-600 hover:text-brand-slate-900"
+                  :aria-label="`Edit ${d.label}`"
+                  @click="openEdit(d)"
+                >
+                  Edit
+                </button>
+                <button
+                  type="button"
+                  class="text-sm font-medium text-brand-red-600 hover:text-brand-red-700"
+                  :aria-label="`Remove ${d.label}`"
+                  @click="removeDeadline(d.id)"
+                >
+                  Remove
+                </button>
+              </div>
             </li>
           </ul>
         </section>
 
-        <section v-if="pastDeadlines.length > 0" class="mt-8">
+        <section v-if="filteredPastCount > 0" class="mt-8">
           <DesignSystemButton
             variant="ghost"
             color="slate"
             size="sm"
             @click="showPast = !showPast"
           >
-            {{ showPast ? "Hide" : "Show" }} {{ pastDeadlines.length }} past
-            deadline{{ pastDeadlines.length === 1 ? "" : "s" }}
+            {{ showPast ? "Hide" : "Show" }} {{ filteredPastCount }} past
+            deadline{{ filteredPastCount === 1 ? "" : "s" }}
           </DesignSystemButton>
 
           <div v-if="showPast" class="mt-4 opacity-50">
@@ -158,28 +362,38 @@
                       </DesignSystemBadge>
                     </div>
                   </div>
-                  <button
-                    v-if="d.source === 'user'"
-                    type="button"
-                    class="text-sm font-medium text-brand-red-600 hover:text-brand-red-700"
-                    :aria-label="`Remove ${d.label}`"
-                    @click="removeDeadline(d.id)"
-                  >
-                    Remove
-                  </button>
+                  <div v-if="d.source === 'user'" class="flex items-center gap-3">
+                    <button
+                      type="button"
+                      class="text-sm font-medium text-brand-slate-600 hover:text-brand-slate-900"
+                      :aria-label="`Edit ${d.label}`"
+                      @click="openEdit(d)"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      type="button"
+                      class="text-sm font-medium text-brand-red-600 hover:text-brand-red-700"
+                      :aria-label="`Remove ${d.label}`"
+                      @click="removeDeadline(d.id)"
+                    >
+                      Remove
+                    </button>
+                  </div>
                 </li>
               </ul>
             </section>
           </div>
         </section>
+        </template>
       </template>
     </div>
 
     <DesignSystemModal
       :open="showAdd"
-      title="Add Deadline"
+      :title="editingId ? 'Edit Deadline' : 'Add Deadline'"
       size="md"
-      @close="showAdd = false"
+      @close="closeModal"
     >
       <form
         id="add-deadline-form"
@@ -243,11 +457,7 @@
       </form>
 
       <template #footer>
-        <DesignSystemButton
-          variant="outline"
-          color="slate"
-          @click="showAdd = false"
-        >
+        <DesignSystemButton variant="outline" color="slate" @click="closeModal">
           Cancel
         </DesignSystemButton>
         <DesignSystemButton
@@ -255,7 +465,7 @@
           form="add-deadline-form"
           :loading="addingDeadline"
         >
-          {{ addingDeadline ? "Adding…" : "Add Deadline" }}
+          {{ submitButtonLabel }}
         </DesignSystemButton>
       </template>
     </DesignSystemModal>
@@ -263,9 +473,15 @@
 </template>
 
 <script setup lang="ts">
-import { groupByMonth } from "~/utils/deadlines";
+import {
+  groupByMonth,
+  filterDeadlines,
+  buildCalendarGrid,
+  groupByDate,
+} from "~/utils/deadlines";
 import type {
   SystemDeadlineCategory,
+  UnifiedDeadline,
   UserDeadlineCategory,
 } from "~/types/deadline";
 import type { BadgeColor } from "~/components/DesignSystem/Badge.vue";
@@ -279,6 +495,7 @@ const {
   error,
   fetchDeadlines,
   createDeadline,
+  updateDeadline,
   removeDeadline,
 } = useDeadlines();
 const { schools, fetchSchools } = useSchools();
@@ -286,6 +503,7 @@ const { schools, fetchSchools } = useSchools();
 const showAdd = ref(false);
 const showPast = ref(false);
 const addingDeadline = ref(false);
+const editingId = ref<string | null>(null);
 const newDeadline = reactive({
   label: "",
   deadline_date: "",
@@ -293,13 +511,116 @@ const newDeadline = reactive({
   school_id: "",
 });
 
+const submitButtonLabel = computed(() => {
+  if (addingDeadline.value) return editingId.value ? "Saving…" : "Adding…";
+  return editingId.value ? "Save Changes" : "Add Deadline";
+});
+
+function openEdit(d: UnifiedDeadline) {
+  editingId.value = d.id;
+  Object.assign(newDeadline, {
+    label: d.label,
+    deadline_date: d.date,
+    category: d.category,
+    school_id: d.schoolId ?? "",
+  });
+  showAdd.value = true;
+}
+
+function closeModal() {
+  showAdd.value = false;
+  editingId.value = null;
+  Object.assign(newDeadline, {
+    label: "",
+    deadline_date: "",
+    category: "application",
+    school_id: "",
+  });
+}
+
 onMounted(() => {
   fetchDeadlines();
   fetchSchools();
 });
 
-const upcomingByMonth = computed(() => groupByMonth(upcomingDeadlines.value));
-const pastByMonth = computed(() => groupByMonth(pastDeadlines.value));
+const activeCategory = ref<string | null>(null);
+const searchText = ref("");
+
+const availableCategories = computed(() =>
+  Array.from(new Set(unifiedDeadlines.value.map((d) => d.category))).sort(),
+);
+
+const filteredUpcoming = computed(() =>
+  filterDeadlines(upcomingDeadlines.value, {
+    category: activeCategory.value ?? undefined,
+    search: searchText.value,
+  }),
+);
+const filteredPast = computed(() =>
+  filterDeadlines(pastDeadlines.value, {
+    category: activeCategory.value ?? undefined,
+    search: searchText.value,
+  }),
+);
+
+const upcomingByMonth = computed(() => groupByMonth(filteredUpcoming.value));
+const pastByMonth = computed(() => groupByMonth(filteredPast.value));
+const filteredPastCount = computed(() => filteredPast.value.length);
+
+const viewMode = ref<"list" | "calendar">("list");
+const calendarMonth = ref(new Date());
+const selectedDay = ref<string | null>(null);
+
+const filteredAll = computed(() =>
+  filterDeadlines(unifiedDeadlines.value, {
+    category: activeCategory.value ?? undefined,
+    search: searchText.value,
+  }),
+);
+const deadlinesByDate = computed(() => groupByDate(filteredAll.value));
+const calendarGrid = computed(() =>
+  buildCalendarGrid(
+    calendarMonth.value.getFullYear(),
+    calendarMonth.value.getMonth(),
+  ),
+);
+const monthDisplay = computed(() =>
+  calendarMonth.value.toLocaleDateString("en-US", {
+    month: "long",
+    year: "numeric",
+  }),
+);
+const selectedDayDeadlines = computed(
+  () => deadlinesByDate.value.get(selectedDay.value ?? "") ?? [],
+);
+
+function isCurrentGridMonth(dateKey: string): boolean {
+  const [y, m] = dateKey.split("-").map(Number);
+  return (
+    y === calendarMonth.value.getFullYear() &&
+    m === calendarMonth.value.getMonth() + 1
+  );
+}
+
+function dayOfMonth(dateKey: string): number {
+  return Number(dateKey.split("-")[2]);
+}
+
+function previousMonth() {
+  calendarMonth.value = new Date(
+    calendarMonth.value.getFullYear(),
+    calendarMonth.value.getMonth() - 1,
+    1,
+  );
+}
+
+function nextMonth() {
+  calendarMonth.value = new Date(
+    calendarMonth.value.getFullYear(),
+    calendarMonth.value.getMonth() + 1,
+    1,
+  );
+}
 
 const CATEGORY_COLORS: Record<
   UserDeadlineCategory | SystemDeadlineCategory,
@@ -352,22 +673,26 @@ async function submitAdd() {
   if (!newDeadline.label || !newDeadline.deadline_date) return;
   addingDeadline.value = true;
   try {
-    await createDeadline({
+    const payload = {
       label: newDeadline.label,
       deadline_date: newDeadline.deadline_date,
       category: newDeadline.category,
       school_id: newDeadline.school_id || undefined,
-    });
-    showAdd.value = false;
-    Object.assign(newDeadline, {
-      label: "",
-      deadline_date: "",
-      category: "application",
-      school_id: "",
-    });
+    };
+    if (editingId.value) {
+      await updateDeadline(editingId.value, payload);
+    } else {
+      await createDeadline(payload);
+    }
+    closeModal();
   } catch (err) {
-    error.value =
-      err instanceof Error ? err.message : "Failed to create deadline";
+    error.value = editingId.value
+      ? err instanceof Error
+        ? err.message
+        : "Failed to update deadline"
+      : err instanceof Error
+        ? err.message
+        : "Failed to create deadline";
   } finally {
     addingDeadline.value = false;
   }

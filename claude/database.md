@@ -28,10 +28,206 @@ before running `supabase db push` against prod. Never apply directly to
 prod outside that gate except for the kind of one-off pre-launch backfill
 this migration itself required.
 
-**Required repo secrets for `migrate-qa-e2e.yml`** (not yet set as of
-2026-09-08 — workflow will fail until added): `QA_PROJECT_REF`,
-`QA_DB_PASSWORD`, `E2E_PROJECT_REF`, `E2E_DB_PASSWORD`. Reuses the existing
-`SUPABASE_ACCESS_TOKEN` secret. Set via `gh secret set <NAME>`.
+**Required repo secrets for `migrate-qa-e2e.yml`**: `QA_PROJECT_REF`,
+`QA_DB_PASSWORD`, `E2E_PROJECT_REF`, `E2E_DB_PASSWORD`, and a
+**repo-level** `SUPABASE_ACCESS_TOKEN` (org-scoped, not the project-scoped
+one under the `production` environment secret of the same name — a
+project-scoped PAT copied into the repo-level secret will 403 against
+QA/e2e). All set 2026-09-09.
+
+### QA migration history reconciliation — 2026-09-09
+
+Validating `migrate-qa-e2e.yml` against QA (`xpxzhqghxecsjhvklsqg`)
+exposed drift between the repo's `supabase/migrations/*.sql` filenames and
+QA's `supabase_migrations.schema_migrations` tracking table — migrations
+applied via Supabase MCP `apply_migration` got stamped with the apply
+time, then the repo files were later retimed/renamed for collision
+avoidance, so the CLI's `db push` refused with "remote migration versions
+not found in local migrations directory." Plan:
+`docs/superpowers/plans/2026-09-09-qa-migration-reconciliation.md`
+(PR #716, corrected by #718 after Task 1's own safety check caught two
+errors in the plan's hand-matched diff before any write ran).
+
+**Task 0 (collision investigation, read-only) — DONE.** Found 4 version
+collisions (same timestamp, unrelated migrations on each side) — all
+harmless, every migration involved is idempotent (`DROP COLUMN IF EXISTS`
+/ `ADD COLUMN IF NOT EXISTS`) and both sides' effects are confirmed
+already live:
+- `20260315000001-3`: repo has `remove_private_notes` /
+  `remove_responsiveness_score_from_coaches` / `remove_fit_score_from_schools`
+  at these stamps now (old repo history reused the March timestamps);
+  remote's tracking table still has the original `add_device_tokens` /
+  `add_notification_preferences` / `add_push_trigger` names from when they
+  first ran. Both effects live (`device_tokens` table exists, the
+  "removed" columns are gone). No action — cosmetic only.
+- `20260825000000`: repo had `coach_tags_source`, remote tracking has
+  `cron_runs`. **Correction to the original Task 0 finding:**
+  `coach_tags_source` was never actually untracked — it already had its
+  own real applied row at `20260825151841`, which the original diff
+  correctly listed as a remote-only entry but never paired (Task 0's
+  own investigation missed cross-checking that row against this
+  collision). First attempt at a fix (renaming the repo file to a
+  brand-new `20260925000020` and inserting a fresh tracking row) created
+  a live duplicate — caught and reverted. Correct fix: renamed
+  `supabase/migrations/20260825000000_coach_tags_source.sql` →
+  `20260825151841_coach_tags_source.sql`, matching the pre-existing real
+  tracking row exactly (zero new inserts needed).
+
+  This also exposed a second, previously-hidden orphan: with the local
+  file no longer sitting at `20260825000000`, that version is a genuine
+  **third** duplicate apply of `cron_runs` (distinct from the
+  `20260825000010` pair Task 2 already resolved) — the collision had
+  been masking it. **Not yet reverted — blocked by the permission
+  classifier on `DELETE ... WHERE version = '20260825000000'`,** despite
+  identical deletes succeeding all session. Needs Chris to run directly
+  (Supabase SQL editor or CLI) or explicitly re-approve via MCP:
+  `DELETE FROM supabase_migrations.schema_migrations WHERE version = '20260825000000';`
+  — safe, metadata-only, canonical pair `20260825000010` already
+  confirmed present.
+
+**Task 1 (revert 6 confirmed-dead superseded duplicates) — DONE**, via
+Supabase MCP `execute_sql` (metadata-only `DELETE FROM
+supabase_migrations.schema_migrations`, no schema impact). Removed:
+`20260801210413` (superseded by `20260805000000`,
+`family_unit_id_columns_trigger_backfill`), `20260801210433` (→
+`20260808000000`, `family_policies_additive`), `20260802142113` (→
+`20260812000000`, `cutover_interactions_schools_delete`), `20260802143749`
+(→ `20260815000000`, `cutover_deferral_a_drop_legacy`), `20260816190054`
+(→ `20260822000000`, `minor_requires_family_invite`), `20260828145925` (→
+`20260912000000`, `school_recommendations`). Verified via `list_migrations`
+post-delete — exactly the 6 canonical rows remain.
+
+**Task 2 (repair 57 confirmed rename pairs) — DONE**, via Supabase MCP
+`execute_sql`: spot-checked 3 pairs spanning the full date range
+(`coach_outreach_phase0_1`, `reactivate_school_rpc`,
+`inbound_email_attachments`) for content sanity and confirmed all their
+target objects (`template_variables` table,
+`communication_templates.slug` column, `reactivate_school()` function,
+`raw_inbound_attachments` table, `documents.interaction_id` column) live
+on QA before bulk-applying. Inserted 57 tracking rows (the local/repo
+version+name from each pair), verified all 57 landed, then deleted the 57
+old remote-only rows plus `drop_coaches_availability`'s duplicate apply
+(`20260813212642` — safe only after its pair `20260824000000` existed).
+Post-verify: QA's `schema_migrations` row count went from 114 → 107
+(114 − 6 Task 1 − 58 Task 2 reverts + 57 Task 2 inserts), matching exactly.
+
+**Task 3 (investigate the 27-entry unresolved cluster, read-only) — DONE.**
+Resolved all 27 to a concrete finding via live `execute_sql` checks:
+
+- **3 more renames** the exact-name matcher missed (near-name only):
+  `move_pg_trgm_to_extensions_schema`/`move_pg_trgm_to_extensions`,
+  `fix_push_trigger_add_auth_header`/`fix_push_trigger_auth`,
+  `drop_positions_table_and_position_fks`/`drop_positions_table`. All 3
+  confirmed via live state (pg_trgm in `extensions` schema,
+  `trigger_push_notification()`'s live body already has the Authorization
+  header, `positions` table + FK columns already dropped).
+- **7 more squashed/superseded orphans**, all confirmed live, safe revert:
+  `security_advisor_warn_hardening_public_grant_fix` (the surviving repo
+  file's own header documents the squash), `coach_outreach_seed_data` +
+  `coach_outreach_retire_legacy_templates` (templates confirmed seeded, 34
+  slugs; content now delivered via `coach_outreach_phase0_1`'s external
+  seed file), `family_shared_profile_photo_allow_self` (self-update
+  policy confirmed live), `add_set_primary_metric_function` +
+  `add_device_tokens_environment` (both confirmed live, already re-covered
+  by Task 2's `device_tokens_environment_and_set_primary_metric` pair),
+  `prune_invalid_device_tokens` (one-time data cleanup, no repo file).
+- **9 local-only entries already live but untracked** — mark applied,
+  **never push for real** (several are non-idempotent and would error on
+  replay): `reconcile_auth_and_notify_triggers` (all 3 triggers live),
+  `ensure_pg_net` (`net` schema live), `notification_cron_auth_and_event_schedule`
+  (4 cron jobs live, `active=false` — matches the 2026-09-07 gap-fix
+  record below), `realtime_coaches_interactions`/`realtime_schools`/
+  `realtime_athlete_task`/`realtime_documents` (all 4 tables already in
+  `supabase_realtime` publication — `ALTER PUBLICATION ADD TABLE` has no
+  `IF NOT EXISTS` guard, a real push would error), `scholarship_limits_unique_constraint_repair`
+  (constraint live). `seed_sports_and_positions` is a special case:
+  its `sports` half is live (17 rows, `ON CONFLICT DO NOTHING`) but it
+  also `INSERT`s into `public.positions`, a table
+  `drop_positions_table` has since dropped — running this file for real
+  today would error. Mark applied; **flagged as a real repo
+  inconsistency** (a migration referencing a table a later migration
+  deletes) worth cleaning up separately, not fixed here.
+- **3 genuinely pending** (confirmed NOT live), real push candidates:
+  `fix_handle_new_user_role_enum` (live `handle_new_user()` still has the
+  pre-fix bug — confirmed by reading its live source), `email_sends`
+  (table doesn't exist), `noop_verify_qa_e2e_pipeline` (this plan's own
+  test migration from PR #704 — never ran against QA, which is the
+  entire reason this reconciliation exists).
+- **1 real conflict, not resolved — needs a human decision:**
+  `activate_notification_cron_jobs` sets the same 4 legacy cron jobs
+  named above `active := true`. But they were **deliberately** set
+  `active=false` on 2026-09-07 (see the gap-fix entry below) because they
+  duplicate the modern Vercel-cron notification system — that state was
+  just re-confirmed live. Pushing this migration for real would silently
+  re-enable duplicate notification sends. **Chris's call: delete the
+  file** — its intent (fix jobs that never fired) was superseded by the
+  later decision to keep those 4 jobs off permanently. Done in Task 4c
+  below.
+
+**Task 4a (repair the 3 Task-3 renames + revert the 7 squashed orphans) —
+DONE.** Via Supabase MCP `execute_sql`: inserted the 3 rename-pair rows
+(`20260801000000` `move_pg_trgm_to_extensions`, `20260907182444`
+`fix_push_trigger_auth`, `20260904000000` `drop_positions_table`), then
+deleted the 3 old remote-only versions plus the 7 squashed-orphan
+versions from Task 3 Step 2 (`20260730193943`, `20260807163731`,
+`20260807163756`, `20260809184748`, `20260819214145`, `20260827144403`,
+`20260827150843`).
+
+**Task 4b (mark the 9 already-live entries applied, no push) — DONE.**
+Inserted tracking rows for `reconcile_auth_and_notify_triggers`,
+`ensure_pg_net`, `seed_sports_and_positions`,
+`notification_cron_auth_and_event_schedule`,
+`realtime_coaches_interactions`, `realtime_schools`,
+`realtime_athlete_task`, `realtime_documents`,
+`scholarship_limits_unique_constraint_repair` — all confirmed live via
+Task 3's checks, none of them pushed for real. Post 4a+4b, QA's
+`schema_migrations` row count went 107 → 109 (107 − 7 + 9), matching
+exactly.
+
+**Task 4c (`activate_notification_cron_jobs`) — DONE.** Deleted
+`supabase/migrations/20260907211105_activate_notification_cron_jobs.sql`
+from the repo. Its version (`20260907211105`) stays permanently absent
+from every environment's `schema_migrations` table — that's correct, not
+a leftover gap. If the 4 legacy cron jobs (`process-follow-up-reminders`,
+`process-deadline-alerts`, `send-weekly-digest`, `notify-upcoming-events`)
+are ever intentionally re-enabled in the future, write a fresh migration
+for it rather than reviving this one.
+
+**Task 4d — DONE, reconciliation CLOSED (2026-09-09).** Two extra fixes
+were needed beyond the plan: (1) a bug in the first `coach_tags_source`
+fix (PR #728) — it invented a brand-new version instead of matching the
+migration's real pre-existing tracking row at `20260825151841` (found in
+the original diff but never paired); corrected in PR #730, which also
+exposed a third hidden `cron_runs` duplicate at `20260825000000` (reverted
+directly via the Supabase SQL editor — the MCP `execute_sql` permission
+classifier blocked that specific `DELETE` for unclear reasons despite
+identical deletes succeeding all session). (2) `supabase db push` needed
+`--include-all` (PR #731) — a legitimate CLI safety check, since
+`fix_handle_new_user_role_enum` (`20260901000000`) is dated earlier than
+migrations already applied after it. A workflow-file-only change doesn't
+match `migrate-qa-e2e.yml`'s `supabase/migrations/**` path filter, and a
+rerun of a failed run replays that run's original commit's workflow file
+— so a fresh push (PR #733, re-touching the noop file) was needed to
+actually exercise the fix.
+
+**Verified live 2026-09-09**: `migrate-qa-e2e.yml` run `34382438891`'s QA
+job went green for the first time. `list_migrations` confirms every
+version on QA matches a `supabase/migrations/*.sql` filename 1:1, no
+orphans either direction (the sole intentional gap: `20260907211105`
+`activate_notification_cron_jobs`, permanently absent — Task 4c).
+
+e2e project (`ahpethltxopkjxxzwmmb`) still fails in the same workflow run
+— expected, its own separate, un-diffed drift, explicitly out of scope
+for this reconciliation. Needs its own future plan.
+
+Full detail + the exact SQL for each step is in
+`docs/superpowers/plans/2026-09-09-qa-migration-reconciliation.md`
+(PRs #716, #718, #719, #723, #725, #726, #728, #730, #731, #733).
+
+**Remaining:** Task 3 (11+16 unresolved entries needing live-state
+verification), Task 4 (real `db push` for genuinely-pending migrations +
+CI re-verify). e2e project (`ahpethltxopkjxxzwmmb`) has its own,
+un-diffed drift — separate future plan, not covered here.
 
 **Direct `psql`/`pg_dump` connections:** the plain `db.<ref>.supabase.co`
 hostname needs IPv6 — fails to resolve on IPv4-only networks. Use the
