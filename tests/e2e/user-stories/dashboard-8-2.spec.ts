@@ -8,6 +8,9 @@ import {
   type SeededSchools,
 } from "../seed/helpers/supabase-admin";
 import { TEST_ACCOUNTS } from "../config/test-accounts";
+// Aliased: this file also has a local `tagName` (the DOM element property,
+// see AC2 below) — importing the helper under its own name would shadow it.
+import { tagName as tagE2EName } from "../seed/helpers/run-id";
 
 const RUN_ID = Date.now();
 let seeded: SeededSchools | null = null;
@@ -41,6 +44,22 @@ test.describe("User Story 8.2: Contact Frequency Summary", () => {
         userId: playerId,
         runId: RUN_ID,
       });
+      // seedSchoolsWithInteractions names schools from the local Date.now()
+      // RUN_ID above, not the shared global-setup run id — global-teardown's
+      // `[e2e-${getRunId()}]%` sweep can't match those names, so an afterAll
+      // failure/timeout below would leak them silently (same gap fixed in
+      // cross-account-logout.spec.ts, batch 2). Overwrite with RUN_ID-tagged
+      // names post-seed; nothing in this spec asserts on school name content.
+      if (seeded) {
+        await Promise.all(
+          seeded.schoolIds.map((id, i) =>
+            supabase
+              .from("schools")
+              .update({ name: tagE2EName(`Contact School ${i + 1}`) })
+              .eq("id", id),
+          ),
+        );
+      }
       seedReady = true;
     } catch (e) {
       console.warn("⚠️  dashboard-8-2 seed failed:", e);

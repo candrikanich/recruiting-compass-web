@@ -4,6 +4,7 @@ import { generateUniqueSchoolName } from "../fixtures/schools.fixture";
 import { generateUniqueCoachEmail } from "../fixtures/coaches.fixture";
 import { getSupabaseAdmin } from "../seed/helpers/supabase-admin";
 import { TEST_ACCOUNTS } from "../config/test-accounts";
+import { tagName } from "../seed/helpers/run-id";
 
 /**
  * Coach detail consolidation — legacy-redirect and back-link coverage.
@@ -47,7 +48,7 @@ test.describe("Coach detail — back-nav and legacy redirect", () => {
         .from("schools")
         .insert([
           {
-            name: generateUniqueSchoolName("Backnav School"),
+            name: tagName(generateUniqueSchoolName("Backnav School")),
             location: "Test City, USA",
             division: "D3",
             status: "researching",

@@ -16,6 +16,7 @@ import {
 } from "../fixtures/schools.fixture";
 import { getSupabaseAdmin } from "../seed/helpers/supabase-admin";
 import { TEST_ACCOUNTS } from "../config/test-accounts";
+import { tagName } from "../seed/helpers/run-id";
 
 test.describe("Coach Search and Filtering", () => {
   // fullyParallel can shard this describe's tests across workers, each of
@@ -80,7 +81,7 @@ test.describe("Coach Search and Filtering", () => {
         .from("schools")
         .insert([
           {
-            name: generateUniqueSchoolName("Filter Test School"),
+            name: tagName(generateUniqueSchoolName("Filter Test School")),
             location: "Test City, USA",
             division: "D3",
             status: "researching",
