@@ -47,7 +47,7 @@ Ran `list_migrations` (project `xpxzhqghxecsjhvklsqg`) against the repo's 112 `s
 
 Same version, same day, completely unrelated content — these are two different migrations that happened to land on the same timestamp far enough apart in the repo's history that no one caught the collision at the time (the repo file is presumably now the canonical/renamed one and the remote name is what was actually run under that stamp — but that must be confirmed, not assumed, since the CLI/tracking table only ever sees one name per version).
 
-- [ ] **Step 1: For each collision, confirm which content is actually live on QA**
+- [x] **Step 1: For each collision, confirm which content is actually live on QA**
 
   The `remote` name is what's actually recorded as applied. Check whether the object(s) it implies exist:
 
@@ -68,7 +68,7 @@ Same version, same day, completely unrelated content — these are two different
            WHERE table_name = 'coaches' AND column_name IN ('source', 'tags');
   ```
 
-- [ ] **Step 2: Record the resolution**
+- [x] **Step 2: Record the resolution**
 
   For each of the 4, write one line in `claude/database.md`: which content is live, whether the repo-side migration ever actually ran (under this or another version), and whether any action is needed (likely none — these look like historical version-number coincidences where both migrations' real effects already landed correctly under their own separate applied versions; this step is confirming that, not fixing anything).
 
@@ -91,7 +91,7 @@ These 6 versions are remote-only, and their **name** has an exact `version|name`
 | `20260816190054` | `minor_requires_family_invite` | `20260822000000` |
 | `20260828145925` | `school_recommendations` | `20260912000000` |
 
-- [ ] **Step 1: Verify each dead version's canonical counterpart is really present on QA**
+- [x] **Step 1: Verify each dead version's canonical counterpart is really present on QA**
 
   ```
   mcp__claude_ai_Supabase__execute_sql
@@ -106,7 +106,7 @@ These 6 versions are remote-only, and their **name** has an exact `version|name`
 
   Expected: all 6 rows returned, names matching the table above. If any is missing or misnamed, STOP — do not revert its dead pair below; that name needs Task 3-style investigation instead.
 
-- [ ] **Step 2: Delete the 6 dead tracking rows**
+- [x] **Step 2: Delete the 6 dead tracking rows**
 
   ```
   mcp__claude_ai_Supabase__execute_sql
@@ -120,7 +120,7 @@ These 6 versions are remote-only, and their **name** has an exact `version|name`
 
   This is what `supabase migration repair --status reverted <version>` does under the hood — a plain metadata delete, no schema impact.
 
-- [ ] **Step 3: Verify**
+- [x] **Step 3: Verify**
 
   ```
   mcp__claude_ai_Supabase__list_migrations
@@ -129,7 +129,7 @@ These 6 versions are remote-only, and their **name** has an exact `version|name`
 
   Expected: none of the 6 dead versions appear in the result; the 6 canonical versions still do.
 
-- [ ] **Step 4: Record in claude/database.md**
+- [x] **Step 4: Record in claude/database.md**
 
   Add a dated entry (`### QA migration history reconciliation — 2026-09-09`) listing the 6 reverted dead versions and why, following the existing convention in that file.
 
