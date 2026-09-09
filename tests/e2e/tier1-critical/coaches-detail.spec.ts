@@ -12,6 +12,7 @@ import {
   generateUniqueSchoolName,
   schoolHelpers,
 } from "../fixtures/schools.fixture";
+import { tagName } from "../seed/helpers/run-id";
 
 /**
  * Coach detail page — focused, beforeAll-shared setup.
@@ -66,7 +67,9 @@ test.describe("Coach detail page", () => {
       const page = await ctx.newPage();
       schoolId = await schoolHelpers.createSchool(
         page,
-        createSchoolData({ name: generateUniqueSchoolName("Coach Detail") }),
+        createSchoolData({
+          name: tagName(generateUniqueSchoolName("Coach Detail")),
+        }),
       );
 
       const coachName = generateUniqueCoachName("Detail", "Coach");
