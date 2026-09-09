@@ -139,6 +139,25 @@ describe("pages/timeline/index.vue", () => {
     expect(showToastMock).not.toHaveBeenCalled();
   });
 
+  it("still marks initial load complete when one of the parallel onMounted fetches rejects", async () => {
+    // fetchPhase (like fetchTasksWithStatus/fetchStatusScore) stores the
+    // error on its own `error` ref AND re-throws — correct for callers that
+    // want to know a specific call failed. But onMounted awaits all three via
+    // a bare Promise.all with no try/catch: a single rejection short-circuits
+    // it, so `initialLoadComplete.value = true` (the line right after) never
+    // runs — real `loading`/`error` refs (unlike these static mocks) would
+    // then either strand the page on the loading skeleton or show the error
+    // branch forever, with no `guidance-sidebar` either way. It also leaves
+    // the rejection genuinely unhandled (visible as a vitest "Unhandled
+    // Rejection" if this test fails), not just swallowed.
+    fetchPhaseMock.mockRejectedValueOnce(new Error("network hiccup"));
+    const wrapper = mountPage();
+    await wrapper.vm.$nextTick();
+    await wrapper.vm.$nextTick();
+
+    expect((wrapper.vm as any).initialLoadComplete).toBe(true);
+  });
+
   it("conveys status with visible text, not color alone", async () => {
     statusLabelRef.value = "slightly_behind";
     const wrapper = mountPage();

@@ -440,7 +440,14 @@ const getStatusColorClass = (label: StatusLabel): string => {
 
 // Lifecycle
 onMounted(async () => {
-  await Promise.all([
+  // allSettled, not all: each fetch already stores its own failure on its
+  // own `error` ref (for the v-else-if="error" branch) and re-throws for
+  // callers that want to know a specific call failed. A bare Promise.all
+  // here would let one rejection short-circuit the rest, skip the line
+  // below, and leave initialLoadComplete permanently false — stranding the
+  // page on the loading skeleton (or never reaching the error branch either)
+  // even when the other fetches succeeded.
+  await Promise.allSettled([
     fetchTasksWithStatus(),
     fetchPhase(),
     fetchStatusScore(),
