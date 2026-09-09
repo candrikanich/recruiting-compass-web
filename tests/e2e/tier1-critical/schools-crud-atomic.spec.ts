@@ -22,7 +22,7 @@ import {
 test.describe("Schools CRUD — atomic lifecycle", () => {
   test.setTimeout(120_000);
 
-  test("create → read → update status → delete", async ({ page }) => {
+  test("create → read → update status → delete @smoke", async ({ page }) => {
     const name = generateUniqueSchoolName("Atomic CRUD");
     const schoolData = createSchoolData({
       name,

@@ -54,7 +54,7 @@ test.describe("Coaches CRUD — atomic lifecycle", () => {
     await deleteSchoolDirect(schoolId);
   });
 
-  test("create → read → update → delete a coach", async ({ page }) => {
+  test("create → read → update → delete a coach @smoke", async ({ page }) => {
     test.skip(!schoolId, "beforeAll school setup failed");
 
     const { firstName, lastName } = generateUniqueCoachName("Atomic", "Coach");
