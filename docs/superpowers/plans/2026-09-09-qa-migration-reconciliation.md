@@ -1,3 +1,13 @@
+**STATUS: CLOSED 2026-09-09.** All tasks (0 through 4d) done and verified
+live. `migrate-qa-e2e.yml` run `34382438891`'s QA job went green for the
+first time. Two extra fixes beyond this plan's original scope were needed
+to get there — see `claude/database.md`'s "QA migration history
+reconciliation" entry for the full closing summary (PRs #728, #730 fixed
+a bug in this plan's own first `coach_tags_source` attempt; PR #731 +
+#733 added `supabase db push --include-all` and forced a fresh trigger to
+pick it up). e2e project reconciliation is a separate, still-open future
+plan.
+
 # QA Migration History Reconciliation — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
@@ -493,11 +503,11 @@ Do not mark applied, do not push, do not delete the repo file without an explici
 - Consumes: Task 4a and 4b complete (Task 4c's decision does not block this — the 3 migrations here are independent of `activate_notification_cron_jobs`).
 - Produces: 3 real `db push`-applied migrations on QA — `fix_handle_new_user_role_enum`, `email_sends`, `noop_verify_qa_e2e_pipeline` — plus the QA job in `migrate-qa-e2e.yml` going green for the first time.
 
-- [ ] **Step 1: Trigger the workflow**
+- [x] **Step 1: Trigger the workflow**
 
   Push any commit touching `supabase/migrations/**` on `develop` (the existing no-op `20260909120000_noop_verify_qa_e2e_pipeline.sql` from earlier today already qualifies — re-run `migrate-qa-e2e.yml` run `34348747049`, or push a new trivial commit).
 
-- [ ] **Step 2: Verify green**
+- [x] **Step 2: Verify green**
 
   ```
   gh run view <run-id> -R candrikanich/recruiting-compass-web
@@ -505,7 +515,7 @@ Do not mark applied, do not push, do not delete the repo file without an explici
 
   Expected: the `Push migrations to QA` job succeeds and pushes exactly 3 migrations (`fix_handle_new_user_role_enum`, `email_sends`, `noop_verify_qa_e2e_pipeline`). The `Push migrations to e2e` job in the same run is **not** expected to be clean — e2e has its own, separate, un-diffed drift (out of scope for this plan).
 
-- [ ] **Step 3: Confirm QA history now matches repo exactly (modulo Task 4c)**
+- [x] **Step 3: Confirm QA history now matches repo exactly (modulo Task 4c)**
 
   ```
   mcp__claude_ai_Supabase__list_migrations

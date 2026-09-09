@@ -193,14 +193,36 @@ a leftover gap. If the 4 legacy cron jobs (`process-follow-up-reminders`,
 are ever intentionally re-enabled in the future, write a fresh migration
 for it rather than reviving this one.
 
-**Remaining: Task 4d** — real `db push` for the 3 confirmed-pending
-migrations (`fix_handle_new_user_role_enum`, `email_sends`,
-`noop_verify_qa_e2e_pipeline`) via the `migrate-qa-e2e.yml` CI workflow,
-then confirm QA's history matches the repo exactly (modulo the
-permanently-absent `activate_notification_cron_jobs` version).
+**Task 4d — DONE, reconciliation CLOSED (2026-09-09).** Two extra fixes
+were needed beyond the plan: (1) a bug in the first `coach_tags_source`
+fix (PR #728) — it invented a brand-new version instead of matching the
+migration's real pre-existing tracking row at `20260825151841` (found in
+the original diff but never paired); corrected in PR #730, which also
+exposed a third hidden `cron_runs` duplicate at `20260825000000` (reverted
+directly via the Supabase SQL editor — the MCP `execute_sql` permission
+classifier blocked that specific `DELETE` for unclear reasons despite
+identical deletes succeeding all session). (2) `supabase db push` needed
+`--include-all` (PR #731) — a legitimate CLI safety check, since
+`fix_handle_new_user_role_enum` (`20260901000000`) is dated earlier than
+migrations already applied after it. A workflow-file-only change doesn't
+match `migrate-qa-e2e.yml`'s `supabase/migrations/**` path filter, and a
+rerun of a failed run replays that run's original commit's workflow file
+— so a fresh push (PR #733, re-touching the noop file) was needed to
+actually exercise the fix.
 
-Full detail + the exact SQL for each is in
-`docs/superpowers/plans/2026-09-09-qa-migration-reconciliation.md`.
+**Verified live 2026-09-09**: `migrate-qa-e2e.yml` run `34382438891`'s QA
+job went green for the first time. `list_migrations` confirms every
+version on QA matches a `supabase/migrations/*.sql` filename 1:1, no
+orphans either direction (the sole intentional gap: `20260907211105`
+`activate_notification_cron_jobs`, permanently absent — Task 4c).
+
+e2e project (`ahpethltxopkjxxzwmmb`) still fails in the same workflow run
+— expected, its own separate, un-diffed drift, explicitly out of scope
+for this reconciliation. Needs its own future plan.
+
+Full detail + the exact SQL for each step is in
+`docs/superpowers/plans/2026-09-09-qa-migration-reconciliation.md`
+(PRs #716, #718, #719, #723, #725, #726, #728, #730, #731, #733).
 
 **Remaining:** Task 3 (11+16 unresolved entries needing live-state
 verification), Task 4 (real `db push` for genuinely-pending migrations +
