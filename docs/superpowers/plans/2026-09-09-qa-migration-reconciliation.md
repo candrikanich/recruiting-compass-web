@@ -22,37 +22,76 @@
 
 ## Background: the full diff (as of 2026-09-09)
 
-Ran `list_migrations` (project `xpxzhqghxecsjhvklsqg`) against the repo's 112 `supabase/migrations/*.sql` filenames. Matched on `version|name`.
+Ran `list_migrations` (project `xpxzhqghxecsjhvklsqg`) against the repo's 112 `supabase/migrations/*.sql` filenames. **Revision note:** the first version of this plan matched on version number alone in one place, which silently mispaired one entry (see Task 0 below). This section reflects the corrected, script-verified diff (a straight `version -> name` dict comparison, not hand-matching).
 
-- **39 entries** match exactly (same version, same name) on both sides — no action needed, not covered by this plan.
-- **7 entries** are remote-only versions whose *name* has an exact canonical match elsewhere in both sides (i.e., a confirmed-dead superseded duplicate apply) — **Task 1**.
-- **57 entries** are remote-only versions that pair 1:1 by unique name with a local-only version (a confirmed rename — same migration, different timestamp) — **Task 2**. (One of these, `drop_coaches_availability`, has *two* remote-only versions mapping to the same one local file; the extra one folds into Task 1's revert list, not Task 2's repair list.)
-- **10 remote-only + 16 local-only entries** don't pair cleanly (near-name matches, or no match at all) — **Task 3**, needs real verification before any action.
+- **35 entries** match exactly (same version, same name) on both sides — no action needed, not covered by this plan.
+- **4 entries** are version *collisions*: the same version number exists both sides but names differ — the version number is not a valid identity key for these, each needs individual resolution — **Task 0**.
+- **6 entries** are remote-only versions whose *name* has an exact canonical match elsewhere in both sides (i.e., a confirmed-dead superseded duplicate apply) — **Task 1**.
+- **57 entries** are remote-only versions that pair 1:1 by unique name with a local-only version (a confirmed rename — same migration, different timestamp) — **Task 2**. (One of these, `drop_coaches_availability`, has *two* remote-only versions mapping to the same one local file; the extra one is reverted as part of Task 2 itself, once its pair exists — see Task 2's note.)
+- **11 remote-only + 16 local-only entries** don't pair cleanly (near-name matches, or no match at all) — **Task 3**, needs real verification before any action. (`coach_tags_source`, `20260825151841`, moved here from the original plan's Task 1 — it is not actually superseded, see Task 0.)
+
+## Task 0: Resolve the 4 version collisions
+
+**Files:** None in the repo — read-only investigation, decisions recorded in `claude/database.md`.
+
+**Interfaces:**
+- Consumes: nothing from other tasks. Do this first — Tasks 1/2 depend on trusting `clean` (version+name agreeing) as a safe no-op set, and these 4 versions looked clean under version-only matching in the first plan draft.
+- Produces: a resolution decision per collision, recorded before Task 1 proceeds.
+
+| Version | Repo file says | QA tracking table says |
+|---|---|---|
+| `20260315000001` | `remove_private_notes` | `add_device_tokens` |
+| `20260315000002` | `remove_responsiveness_score_from_coaches` | `add_notification_preferences` |
+| `20260315000003` | `remove_fit_score_from_schools` | `add_push_trigger` |
+| `20260825000000` | `coach_tags_source` | `cron_runs` |
+
+Same version, same day, completely unrelated content — these are two different migrations that happened to land on the same timestamp far enough apart in the repo's history that no one caught the collision at the time (the repo file is presumably now the canonical/renamed one and the remote name is what was actually run under that stamp — but that must be confirmed, not assumed, since the CLI/tracking table only ever sees one name per version).
+
+- [ ] **Step 1: For each collision, confirm which content is actually live on QA**
+
+  The `remote` name is what's actually recorded as applied. Check whether the object(s) it implies exist:
+
+  ```
+  mcp__claude_ai_Supabase__execute_sql
+    project_id: xpxzhqghxecsjhvklsqg
+    query: SELECT column_name FROM information_schema.columns
+           WHERE table_name = 'device_tokens' AND column_name IS NOT NULL
+           LIMIT 5;
+  ```
+
+  (Adjust per row — `add_notification_preferences`/`add_push_trigger` similarly via `information_schema.columns`/`pg_trigger`; `cron_runs` via `to_regclass('public.cron_runs')`.) Then check whether the *repo's* version of that same migration was also, separately, actually applied under a **different** version number (i.e., is `coach_tags_source`'s effect — a `tags`/`source` column on `coaches` — already live under some other timestamp, meaning this collision is otherwise harmless because the real content landed correctly elsewhere)?
+
+  ```
+  mcp__claude_ai_Supabase__execute_sql
+    project_id: xpxzhqghxecsjhvklsqg
+    query: SELECT column_name FROM information_schema.columns
+           WHERE table_name = 'coaches' AND column_name IN ('source', 'tags');
+  ```
+
+- [ ] **Step 2: Record the resolution**
+
+  For each of the 4, write one line in `claude/database.md`: which content is live, whether the repo-side migration ever actually ran (under this or another version), and whether any action is needed (likely none — these look like historical version-number coincidences where both migrations' real effects already landed correctly under their own separate applied versions; this step is confirming that, not fixing anything).
 
 ## Task 1: Revert confirmed-dead superseded duplicates
 
 **Files:** None in the repo — this is a live-DB metadata operation via MCP, recorded afterward in `claude/database.md`.
 
 **Interfaces:**
-- Consumes: nothing from other tasks.
-- Produces: 8 rows removed from QA's `supabase_migrations.schema_migrations` (the 7 below, plus `20260813212642` folded in from the Task 2 duplicate note).
+- Consumes: Task 0 resolved first (confirms `clean`/collision set is trustworthy).
+- Produces: 6 rows removed from QA's `supabase_migrations.schema_migrations`. (`coach_tags_source` at `20260825151841` was in the original draft of this table — removed, see Task 3; it is a collision-adjacent case, not a confirmed supersede. `drop_coaches_availability`'s duplicate at `20260813212642` was also in the original draft — moved to Task 2, since its canonical target `20260824000000` doesn't exist on QA until Task 2 creates it.)
 
-These 8 versions are remote-only, and their **name** has an exact `version|name` match already present on both QA and the repo (i.e., the migration was re-applied later under the correct, now-canonical timestamp — these are leftover dead rows from an earlier, superseded attempt):
+These 6 versions are remote-only, and their **name** has an exact `version|name` match already present on both QA and the repo (i.e., the migration was re-applied later under the correct, now-canonical timestamp — these are leftover dead rows from an earlier, superseded attempt). Verified live on QA today (2026-09-09) via `list_migrations`:
 
-| Dead remote version | Name | Canonical version (already correct, both sides) |
+| Dead remote version | Name | Canonical version (confirmed present on QA today) |
 |---|---|---|
 | `20260801210413` | `family_unit_id_columns_trigger_backfill` | `20260805000000` |
 | `20260801210433` | `family_policies_additive` | `20260808000000` |
 | `20260802142113` | `cutover_interactions_schools_delete` | `20260812000000` |
 | `20260802143749` | `cutover_deferral_a_drop_legacy` | `20260815000000` |
 | `20260816190054` | `minor_requires_family_invite` | `20260822000000` |
-| `20260825151841` | `coach_tags_source` | `20260825000000` |
 | `20260828145925` | `school_recommendations` | `20260912000000` |
-| `20260813212642` | `drop_coaches_availability` | `20260824000000` (via Task 2 pairing with `20260813203944`) |
 
 - [ ] **Step 1: Verify each dead version's canonical counterpart is really present on QA**
-
-  For each row in the table above, confirm the canonical version is really in QA's live tracking table (not just in the repo):
 
   ```
   mcp__claude_ai_Supabase__execute_sql
@@ -60,14 +99,14 @@ These 8 versions are remote-only, and their **name** has an exact `version|name`
     query: SELECT version, name FROM supabase_migrations.schema_migrations
            WHERE version IN (
              '20260805000000','20260808000000','20260812000000','20260815000000',
-             '20260822000000','20260825000000','20260912000000','20260824000000'
+             '20260822000000','20260912000000'
            )
            ORDER BY version;
   ```
 
-  Expected: all 8 rows returned. If any is missing, STOP — do not revert its dead pair below; that name needs Task 3-style investigation instead (the "canonical" version isn't actually applied).
+  Expected: all 6 rows returned, names matching the table above. If any is missing or misnamed, STOP — do not revert its dead pair below; that name needs Task 3-style investigation instead.
 
-- [ ] **Step 2: Delete the 8 dead tracking rows**
+- [ ] **Step 2: Delete the 6 dead tracking rows**
 
   ```
   mcp__claude_ai_Supabase__execute_sql
@@ -75,7 +114,7 @@ These 8 versions are remote-only, and their **name** has an exact `version|name`
     query: DELETE FROM supabase_migrations.schema_migrations
            WHERE version IN (
              '20260801210413','20260801210433','20260802142113','20260802143749',
-             '20260816190054','20260825151841','20260828145925','20260813212642'
+             '20260816190054','20260828145925'
            );
   ```
 
@@ -88,19 +127,19 @@ These 8 versions are remote-only, and their **name** has an exact `version|name`
     project_id: xpxzhqghxecsjhvklsqg
   ```
 
-  Expected: none of the 8 dead versions appear in the result; the 8 canonical versions still do.
+  Expected: none of the 6 dead versions appear in the result; the 6 canonical versions still do.
 
 - [ ] **Step 4: Record in claude/database.md**
 
-  Add a dated entry (`### QA migration history reconciliation — 2026-09-09`) listing the 8 reverted dead versions and why, following the existing convention in that file.
+  Add a dated entry (`### QA migration history reconciliation — 2026-09-09`) listing the 6 reverted dead versions and why, following the existing convention in that file.
 
 ## Task 2: Repair confirmed renames (mark local version as applied)
 
 **Files:** None in the repo — live-DB metadata via MCP.
 
 **Interfaces:**
-- Consumes: Task 1 must complete first (removes the `20260813212642` duplicate so `drop_coaches_availability` has exactly one remaining remote-only version to pair).
-- Produces: 57 new rows in QA's `supabase_migrations.schema_migrations`, one per local-only version below, each tagged with the corresponding repo file's name.
+- Consumes: Task 1 complete (confirms the dead-row-removal pattern is safe).
+- Produces: 57 new rows in QA's `supabase_migrations.schema_migrations`, one per local-only version below, each tagged with the corresponding repo file's name; plus 1 additional dead-row delete (`20260813212642`, `drop_coaches_availability`'s duplicate remote apply — its canonical pair `20260813203944 -> 20260824000000` is in the list below; this extra row can only be safely reverted *after* `20260824000000` exists, i.e. after this task's Step 2, so it's folded into this task's Step 3 rather than Task 1).
 
 Full list (`remote-only version -> local-only version (name)`) — these are the same migration, same content, applied on QA under the left-hand timestamp, present in the repo under the right-hand timestamp:
 
@@ -272,9 +311,12 @@ Full list (`remote-only version -> local-only version (name)`) — these are the
              '20260831193526','20260902155839','20260903183614','20260903183622',
              '20260903183732','20260905220548','20260905224538','20260905224553',
              '20260905230951','20260906002239','20260906192437','20260906195357',
-             '20260906202346'
+             '20260906202346',
+             '20260813212642'
            );
   ```
+
+  The last version in that list, `20260813212642`, isn't one of the 57 pairing rows above — it's `drop_coaches_availability`'s duplicate remote apply (see this task's Interfaces note). It's only safe to delete now, after the `INSERT` above has created its pair `20260824000000`.
 
 - [ ] **Step 3: Verify**
 
@@ -289,11 +331,11 @@ Full list (`remote-only version -> local-only version (name)`) — these are the
 
   Add the 57 repairs to the same dated entry from Task 1.
 
-## Task 3: Investigate the unresolved cluster (10 remote-only + 16 local-only)
+## Task 3: Investigate the unresolved cluster (11 remote-only + 16 local-only)
 
 These don't pair cleanly — some are likely renames with a name change big enough to break exact-match pairing, some are genuinely retired, some are genuinely new. **Do not resolve any of these by pattern-matching name similarity alone** — each needs an actual check.
 
-**Remote-only, unresolved (10):**
+**Remote-only, unresolved (11):**
 ```
 20260730193943|security_advisor_warn_hardening_public_grant_fix
 20260801191053|move_pg_trgm_to_extensions_schema
@@ -303,9 +345,12 @@ These don't pair cleanly — some are likely renames with a name change big enou
 20260816171744|fix_push_trigger_add_auth_header
 20260819214145|add_set_primary_metric_function
 20260823143136|drop_positions_table_and_position_fks
+20260825151841|coach_tags_source
 20260827144403|add_device_tokens_environment
 20260827150843|prune_invalid_device_tokens
 ```
+
+`coach_tags_source` (`20260825151841`) moved here from the original draft's Task 1 (it was wrongly bucketed as safely superseded by `20260825000000` — but `20260825000000` is actually a different migration, `cron_runs`; see Task 0). Resolve this one only after Task 0 has established what's really live at `coach_tags_source`'s canonical slot, if any.
 
 **Local-only, unresolved (16):**
 ```
@@ -402,6 +447,7 @@ Three near-name pairs jump out and are the most likely renames — verify these 
 
 ## Self-Review
 
-- **Coverage:** Task 1 (7+1 dead duplicates), Task 2 (57 renames), Task 3 (10+16 unresolved), Task 4 (real push + CI verify) account for all 75 remote-only + 73 local-only + 39 exact-match entries identified in the background diff. e2e is explicitly deferred to its own future plan.
-- **Placeholders:** none — every version/name pair is the actual data from today's `list_migrations` call and repo `ls`.
-- **Risk containment:** Tasks 1 and 2 only touch the tracking table (verified metadata-only); Task 3 requires an actual live-state check before any action; Task 4 only pushes what Task 3 confirms is genuinely new.
+- **Coverage:** Task 0 (4 collisions), Task 1 (6 dead duplicates), Task 2 (57 renames + 1 folded-in duplicate revert), Task 3 (11+16 unresolved), Task 4 (real push + CI verify) account for all 75 remote-only + 73 local-only + 35 exact-match + 4 collision entries identified in the corrected diff (114 total remote entries: 35+4+6+57+11 = 113 — the 114th is the pre-existing `baseline` row at version `00000000000000`, exact match, no action). e2e is explicitly deferred to its own future plan.
+- **Placeholders:** none — every version/name pair is the actual data from today's `list_migrations` call and repo `ls`, cross-checked with a script (not hand-matched — see revision note in Background).
+- **Risk containment:** Task 0 is read-only investigation; Tasks 1 and 2 only touch the tracking table (verified metadata-only, and Task 1's list was independently re-verified live against QA before this revision); Task 3 requires an actual live-state check before any action; Task 4 only pushes what Task 3 confirms is genuinely new.
+- **Correction history:** the first version of this plan (merged as PR #716) had two data errors caught during Task 1 Step 1's own safety check, before any write: (1) it listed `20260813212642` as already safe to revert when its canonical pair doesn't exist until Task 2 runs, and (2) it bucketed `coach_tags_source` (`20260825151841`) as safely superseded by `20260825000000`, but that version is actually a different migration (`cron_runs`) — a version collision the original hand-matching missed entirely. This revision fixes both and adds Task 0 to cover the collisions the original diff never surfaced.
