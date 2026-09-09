@@ -1,6 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { H3Event } from "h3";
-import { createDeadlineSchema } from "~/utils/validation/schemas";
+import {
+  createDeadlineSchema,
+  updateDeadlineSchema,
+} from "~/utils/validation/schemas";
 
 describe("Deadline API schema", () => {
   it("accepts valid deadline", () => {
@@ -41,6 +44,27 @@ describe("Deadline API schema", () => {
       label: "",
       deadline_date: "2026-11-01",
       category: "custom",
+    });
+    expect(result.success).toBe(false);
+  });
+});
+
+describe("updateDeadlineSchema", () => {
+  it("accepts a partial update (label only)", () => {
+    const result = updateDeadlineSchema.safeParse({ label: "Renamed" });
+    expect(result.success).toBe(true);
+  });
+  it("accepts an empty object (no-op update)", () => {
+    const result = updateDeadlineSchema.safeParse({});
+    expect(result.success).toBe(true);
+  });
+  it("rejects invalid category on partial update", () => {
+    const result = updateDeadlineSchema.safeParse({ category: "birthday" });
+    expect(result.success).toBe(false);
+  });
+  it("rejects invalid date format on partial update", () => {
+    const result = updateDeadlineSchema.safeParse({
+      deadline_date: "not-a-date",
     });
     expect(result.success).toBe(false);
   });
@@ -206,5 +230,96 @@ describe("DELETE /api/deadlines/:id (family-scoped)", () => {
     });
 
     expect(eqFamilySpy).toHaveBeenCalledWith("family_unit_id", FAMILY_ID);
+  });
+});
+
+describe("PATCH /api/deadlines/:id (family-scoped)", () => {
+  const VALID_ID = "11111111-1111-1111-1111-111111111111";
+
+  it("verifies ownership via family_unit_id before updating", async () => {
+    mockReadBody.mockResolvedValue({ label: "Renamed" });
+
+    const eqFamilySpy = vi.fn(() => ({
+      maybeSingle: () => Promise.resolve({ data: null, error: null }),
+    }));
+    const eqSpy = vi.fn(() => ({ eq: eqFamilySpy }));
+    mockSupabase.from.mockImplementation((table: string) => {
+      if (table === "family_members") return mockFamilyMembership(FAMILY_ID);
+      if (table === "user_deadlines") {
+        return { select: () => ({ eq: eqSpy }) };
+      }
+      throw new Error(`unexpected table ${table}`);
+    });
+
+    const handler = (await import("~/server/api/deadlines/[id].patch"))
+      .default;
+    await expect(handler(fakeEvent({ id: VALID_ID }))).rejects.toMatchObject({
+      statusCode: 404,
+    });
+
+    expect(eqFamilySpy).toHaveBeenCalledWith("family_unit_id", FAMILY_ID);
+  });
+
+  it("updates only the provided fields, scoped by family_unit_id", async () => {
+    mockReadBody.mockResolvedValue({ label: "Renamed" });
+
+    const updateSpy = vi.fn(() => ({
+      eq: () => ({
+        eq: () => ({
+          select: () => ({
+            single: () =>
+              Promise.resolve({
+                data: { id: VALID_ID, label: "Renamed" },
+                error: null,
+              }),
+          }),
+        }),
+      }),
+    }));
+    mockSupabase.from.mockImplementation((table: string) => {
+      if (table === "family_members") return mockFamilyMembership(FAMILY_ID);
+      if (table === "user_deadlines") {
+        return {
+          select: () => ({
+            eq: () => ({
+              eq: () => ({
+                maybeSingle: () =>
+                  Promise.resolve({ data: { id: VALID_ID }, error: null }),
+              }),
+            }),
+          }),
+          update: updateSpy,
+        };
+      }
+      throw new Error(`unexpected table ${table}`);
+    });
+
+    const handler = (await import("~/server/api/deadlines/[id].patch"))
+      .default;
+    const result = await handler(fakeEvent({ id: VALID_ID }));
+
+    expect(updateSpy).toHaveBeenCalledWith({ label: "Renamed" });
+    expect(result).toMatchObject({ success: true });
+  });
+
+  it("rejects invalid body with 422", async () => {
+    mockReadBody.mockResolvedValue({ category: "birthday" });
+    mockSupabase.from.mockImplementation(() => {
+      throw new Error("should not query supabase on invalid body");
+    });
+
+    const handler = (await import("~/server/api/deadlines/[id].patch"))
+      .default;
+    await expect(handler(fakeEvent({ id: VALID_ID }))).rejects.toMatchObject({
+      statusCode: 422,
+    });
+  });
+
+  it("returns 400 when id param is missing", async () => {
+    const handler = (await import("~/server/api/deadlines/[id].patch"))
+      .default;
+    await expect(handler(fakeEvent())).rejects.toMatchObject({
+      statusCode: 400,
+    });
   });
 });

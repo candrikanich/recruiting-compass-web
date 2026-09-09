@@ -94,15 +94,24 @@
                   </DesignSystemBadge>
                 </div>
               </div>
-              <button
-                v-if="d.source === 'user'"
-                type="button"
-                class="text-sm font-medium text-brand-red-600 hover:text-brand-red-700"
-                :aria-label="`Remove ${d.label}`"
-                @click="removeDeadline(d.id)"
-              >
-                Remove
-              </button>
+              <div v-if="d.source === 'user'" class="flex items-center gap-3">
+                <button
+                  type="button"
+                  class="text-sm font-medium text-brand-slate-600 hover:text-brand-slate-900"
+                  :aria-label="`Edit ${d.label}`"
+                  @click="openEdit(d)"
+                >
+                  Edit
+                </button>
+                <button
+                  type="button"
+                  class="text-sm font-medium text-brand-red-600 hover:text-brand-red-700"
+                  :aria-label="`Remove ${d.label}`"
+                  @click="removeDeadline(d.id)"
+                >
+                  Remove
+                </button>
+              </div>
             </li>
           </ul>
         </section>
@@ -158,15 +167,24 @@
                       </DesignSystemBadge>
                     </div>
                   </div>
-                  <button
-                    v-if="d.source === 'user'"
-                    type="button"
-                    class="text-sm font-medium text-brand-red-600 hover:text-brand-red-700"
-                    :aria-label="`Remove ${d.label}`"
-                    @click="removeDeadline(d.id)"
-                  >
-                    Remove
-                  </button>
+                  <div v-if="d.source === 'user'" class="flex items-center gap-3">
+                    <button
+                      type="button"
+                      class="text-sm font-medium text-brand-slate-600 hover:text-brand-slate-900"
+                      :aria-label="`Edit ${d.label}`"
+                      @click="openEdit(d)"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      type="button"
+                      class="text-sm font-medium text-brand-red-600 hover:text-brand-red-700"
+                      :aria-label="`Remove ${d.label}`"
+                      @click="removeDeadline(d.id)"
+                    >
+                      Remove
+                    </button>
+                  </div>
                 </li>
               </ul>
             </section>
@@ -177,9 +195,9 @@
 
     <DesignSystemModal
       :open="showAdd"
-      title="Add Deadline"
+      :title="editingId ? 'Edit Deadline' : 'Add Deadline'"
       size="md"
-      @close="showAdd = false"
+      @close="closeModal"
     >
       <form
         id="add-deadline-form"
@@ -243,11 +261,7 @@
       </form>
 
       <template #footer>
-        <DesignSystemButton
-          variant="outline"
-          color="slate"
-          @click="showAdd = false"
-        >
+        <DesignSystemButton variant="outline" color="slate" @click="closeModal">
           Cancel
         </DesignSystemButton>
         <DesignSystemButton
@@ -255,7 +269,7 @@
           form="add-deadline-form"
           :loading="addingDeadline"
         >
-          {{ addingDeadline ? "Adding…" : "Add Deadline" }}
+          {{ submitButtonLabel }}
         </DesignSystemButton>
       </template>
     </DesignSystemModal>
@@ -266,6 +280,7 @@
 import { groupByMonth } from "~/utils/deadlines";
 import type {
   SystemDeadlineCategory,
+  UnifiedDeadline,
   UserDeadlineCategory,
 } from "~/types/deadline";
 import type { BadgeColor } from "~/components/DesignSystem/Badge.vue";
@@ -279,6 +294,7 @@ const {
   error,
   fetchDeadlines,
   createDeadline,
+  updateDeadline,
   removeDeadline,
 } = useDeadlines();
 const { schools, fetchSchools } = useSchools();
@@ -286,12 +302,40 @@ const { schools, fetchSchools } = useSchools();
 const showAdd = ref(false);
 const showPast = ref(false);
 const addingDeadline = ref(false);
+const editingId = ref<string | null>(null);
 const newDeadline = reactive({
   label: "",
   deadline_date: "",
   category: "application",
   school_id: "",
 });
+
+const submitButtonLabel = computed(() => {
+  if (addingDeadline.value) return editingId.value ? "Saving…" : "Adding…";
+  return editingId.value ? "Save Changes" : "Add Deadline";
+});
+
+function openEdit(d: UnifiedDeadline) {
+  editingId.value = d.id;
+  Object.assign(newDeadline, {
+    label: d.label,
+    deadline_date: d.date,
+    category: d.category,
+    school_id: d.schoolId ?? "",
+  });
+  showAdd.value = true;
+}
+
+function closeModal() {
+  showAdd.value = false;
+  editingId.value = null;
+  Object.assign(newDeadline, {
+    label: "",
+    deadline_date: "",
+    category: "application",
+    school_id: "",
+  });
+}
 
 onMounted(() => {
   fetchDeadlines();
@@ -352,22 +396,26 @@ async function submitAdd() {
   if (!newDeadline.label || !newDeadline.deadline_date) return;
   addingDeadline.value = true;
   try {
-    await createDeadline({
+    const payload = {
       label: newDeadline.label,
       deadline_date: newDeadline.deadline_date,
       category: newDeadline.category,
       school_id: newDeadline.school_id || undefined,
-    });
-    showAdd.value = false;
-    Object.assign(newDeadline, {
-      label: "",
-      deadline_date: "",
-      category: "application",
-      school_id: "",
-    });
+    };
+    if (editingId.value) {
+      await updateDeadline(editingId.value, payload);
+    } else {
+      await createDeadline(payload);
+    }
+    closeModal();
   } catch (err) {
-    error.value =
-      err instanceof Error ? err.message : "Failed to create deadline";
+    error.value = editingId.value
+      ? err instanceof Error
+        ? err.message
+        : "Failed to update deadline"
+      : err instanceof Error
+        ? err.message
+        : "Failed to create deadline";
   } finally {
     addingDeadline.value = false;
   }
