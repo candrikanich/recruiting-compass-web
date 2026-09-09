@@ -28,10 +28,64 @@ before running `supabase db push` against prod. Never apply directly to
 prod outside that gate except for the kind of one-off pre-launch backfill
 this migration itself required.
 
-**Required repo secrets for `migrate-qa-e2e.yml`** (not yet set as of
-2026-09-08 — workflow will fail until added): `QA_PROJECT_REF`,
-`QA_DB_PASSWORD`, `E2E_PROJECT_REF`, `E2E_DB_PASSWORD`. Reuses the existing
-`SUPABASE_ACCESS_TOKEN` secret. Set via `gh secret set <NAME>`.
+**Required repo secrets for `migrate-qa-e2e.yml`**: `QA_PROJECT_REF`,
+`QA_DB_PASSWORD`, `E2E_PROJECT_REF`, `E2E_DB_PASSWORD`, and a
+**repo-level** `SUPABASE_ACCESS_TOKEN` (org-scoped, not the project-scoped
+one under the `production` environment secret of the same name — a
+project-scoped PAT copied into the repo-level secret will 403 against
+QA/e2e). All set 2026-09-09.
+
+### QA migration history reconciliation — 2026-09-09
+
+Validating `migrate-qa-e2e.yml` against QA (`xpxzhqghxecsjhvklsqg`)
+exposed drift between the repo's `supabase/migrations/*.sql` filenames and
+QA's `supabase_migrations.schema_migrations` tracking table — migrations
+applied via Supabase MCP `apply_migration` got stamped with the apply
+time, then the repo files were later retimed/renamed for collision
+avoidance, so the CLI's `db push` refused with "remote migration versions
+not found in local migrations directory." Plan:
+`docs/superpowers/plans/2026-09-09-qa-migration-reconciliation.md`
+(PR #716, corrected by #718 after Task 1's own safety check caught two
+errors in the plan's hand-matched diff before any write ran).
+
+**Task 0 (collision investigation, read-only) — DONE.** Found 4 version
+collisions (same timestamp, unrelated migrations on each side) — all
+harmless, every migration involved is idempotent (`DROP COLUMN IF EXISTS`
+/ `ADD COLUMN IF NOT EXISTS`) and both sides' effects are confirmed
+already live:
+- `20260315000001-3`: repo has `remove_private_notes` /
+  `remove_responsiveness_score_from_coaches` / `remove_fit_score_from_schools`
+  at these stamps now (old repo history reused the March timestamps);
+  remote's tracking table still has the original `add_device_tokens` /
+  `add_notification_preferences` / `add_push_trigger` names from when they
+  first ran. Both effects live (`device_tokens` table exists, the
+  "removed" columns are gone). No action — cosmetic only.
+- `20260825000000`: repo has `coach_tags_source`, remote tracking has
+  `cron_runs`. Both effects live (`coaches.tags`/`coaches.source` columns
+  exist, `cron_runs` table exists) — but `coach_tags_source` has **no
+  tracking row anywhere**, because its filename timestamp is permanently
+  squatted by `cron_runs`. **Open follow-up:** rename
+  `supabase/migrations/20260825000000_coach_tags_source.sql` to a
+  non-colliding timestamp, then mark that new version applied (safe either
+  way — its SQL is idempotent).
+
+**Task 1 (revert 6 confirmed-dead superseded duplicates) — DONE**, via
+Supabase MCP `execute_sql` (metadata-only `DELETE FROM
+supabase_migrations.schema_migrations`, no schema impact). Removed:
+`20260801210413` (superseded by `20260805000000`,
+`family_unit_id_columns_trigger_backfill`), `20260801210433` (→
+`20260808000000`, `family_policies_additive`), `20260802142113` (→
+`20260812000000`, `cutover_interactions_schools_delete`), `20260802143749`
+(→ `20260815000000`, `cutover_deferral_a_drop_legacy`), `20260816190054`
+(→ `20260822000000`, `minor_requires_family_invite`), `20260828145925` (→
+`20260912000000`, `school_recommendations`). Verified via `list_migrations`
+post-delete — exactly the 6 canonical rows remain.
+
+**Remaining:** Task 2 (57 confirmed rename pairs, `repair --status
+applied`), Task 3 (11+16 unresolved entries needing live-state
+verification), Task 4 (real `db push` for genuinely-pending migrations +
+CI re-verify). e2e project (`ahpethltxopkjxxzwmmb`) has its own,
+un-diffed drift — separate future plan, not covered here.
 
 **Direct `psql`/`pg_dump` connections:** the plain `db.<ref>.supabase.co`
 hostname needs IPv6 — fails to resolve on IPv4-only networks. Use the
