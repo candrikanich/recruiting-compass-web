@@ -43,13 +43,19 @@
                   class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="">Custom message</option>
-                  <option
-                    v-for="t in channel.templates.value"
-                    :key="t.id"
-                    :value="t.id"
+                  <optgroup
+                    v-for="group in channel.groupedTemplates.value"
+                    :key="group.stage ?? 'other'"
+                    :label="group.label"
                   >
-                    {{ t.name }}
-                  </option>
+                    <option
+                      v-for="t in group.templates"
+                      :key="t.id"
+                      :value="t.id"
+                    >
+                      {{ t.name }}
+                    </option>
+                  </optgroup>
                 </select>
               </div>
 
