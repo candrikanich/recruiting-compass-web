@@ -28,6 +28,18 @@ export function groupByMonth(
   return map;
 }
 
+export function filterDeadlines(
+  deadlines: UnifiedDeadline[],
+  filters: { category?: string; search?: string },
+): UnifiedDeadline[] {
+  const search = filters.search?.trim().toLowerCase();
+  return deadlines.filter((d) => {
+    if (filters.category && d.category !== filters.category) return false;
+    if (search && !d.label.toLowerCase().includes(search)) return false;
+    return true;
+  });
+}
+
 export function splitUpcomingPast(
   deadlines: UnifiedDeadline[],
   today: string,
