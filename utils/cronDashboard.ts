@@ -17,6 +17,7 @@ export const TRIGGERABLE_JOBS = [
   "weekly-digest",
   "health-ping",
   "video-health-check",
+  "school-metadata-backfill",
 ] as const;
 
 export const DRYRUN_ONLY_JOBS = ["orphaned-storage-sweep"] as const;
