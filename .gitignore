@@ -58,6 +58,7 @@ supabase/.temp/
 
 # Playwright auth state (contains real tokens — never commit)
 tests/e2e/.auth/*.json
+tests/e2e/.auth/run-id.txt
 
 # Lighthouse CI reports (generated in CI, uploaded as artifacts)
 .lighthouseci/
