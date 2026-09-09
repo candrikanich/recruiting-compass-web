@@ -236,25 +236,6 @@ export async function requireAdmin(event: H3Event): Promise<AuthUser> {
 }
 
 /**
- * Asserts that user is not a parent (parents cannot perform mutations)
- * Throws 403 error if user is a parent
- */
-export async function assertNotParent(
-  userId: string,
-  supabase: SupabaseClient<Database>,
-): Promise<void> {
-  const role = await getUserRole(userId, supabase);
-
-  if (role === "parent") {
-    throw createError({
-      statusCode: 403,
-      statusMessage:
-        "Parents cannot perform this action. This is a read-only view.",
-    });
-  }
-}
-
-/**
  * Clears the role cache — for testing only
  * @internal
  */

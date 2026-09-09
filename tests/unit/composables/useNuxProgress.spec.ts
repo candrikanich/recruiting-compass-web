@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { setActivePinia, createPinia } from "pinia";
 import { useNuxProgress } from "~/composables/useNuxProgress";
 import { useUserStore } from "~/stores/user";
-import { EMPTY_NUX_PROGRESS } from "~/types/nux";
+import { EMPTY_NUX_PROGRESS, NUX_CHECKLIST_KEYS } from "~/types/nux";
 
 const mockFetchFn = vi.fn().mockResolvedValue({});
 
@@ -105,5 +105,90 @@ describe("useNuxProgress", () => {
 
     const { isPromptDismissed } = useNuxProgress();
     expect(isPromptDismissed("gpa_prompt", 7)).toBe(false);
+  });
+
+  it("completeItem sets checklist.allCompleteAt when the 8th item completes", async () => {
+    const userStore = useUserStore();
+    const items: Record<string, unknown> = {};
+    for (const key of NUX_CHECKLIST_KEYS.slice(0, 7)) {
+      items[key] = { completed: true, completedAt: "2026-01-01T00:00:00Z" };
+    }
+    userStore.user = {
+      id: "user-1",
+      nux_progress: {
+        ...EMPTY_NUX_PROGRESS,
+        checklist: { items, dismissedAt: null, allCompleteAt: null },
+      },
+    } as any;
+
+    const { completeItem, progress } = useNuxProgress();
+    await completeItem(NUX_CHECKLIST_KEYS[7]);
+    expect(progress.value.checklist.allCompleteAt).toBeTruthy();
+  });
+
+  it("completeItem clears checklist.allCompleteAt if regressed to incomplete", async () => {
+    // completeItem only ever marks items complete, so simulate regression by
+    // starting from an all-complete state minus one item, verifying the
+    // (still incomplete) recompute keeps allCompleteAt null.
+    const userStore = useUserStore();
+    const items: Record<string, unknown> = {};
+    for (const key of NUX_CHECKLIST_KEYS.slice(0, 6)) {
+      items[key] = { completed: true, completedAt: "2026-01-01T00:00:00Z" };
+    }
+    userStore.user = {
+      id: "user-1",
+      nux_progress: {
+        ...EMPTY_NUX_PROGRESS,
+        checklist: {
+          items,
+          dismissedAt: null,
+          allCompleteAt: "2026-01-01T00:00:00Z",
+        },
+      },
+    } as any;
+
+    const { completeItem, progress } = useNuxProgress();
+    await completeItem(NUX_CHECKLIST_KEYS[6]);
+    expect(progress.value.checklist.allCompleteAt).toBeNull();
+  });
+
+  it("updateProfileCompletion sets completedAt at 100%", async () => {
+    const { updateProfileCompletion, progress } = useNuxProgress();
+    await updateProfileCompletion(100);
+    expect(progress.value.profileCompletion.completedAt).toBeTruthy();
+    expect(mockFetchFn).toHaveBeenCalledWith(
+      "/api/user/nux-progress",
+      expect.objectContaining({ method: "PATCH" }),
+    );
+  });
+
+  it("updateProfileCompletion clears completedAt below 100%", async () => {
+    const userStore = useUserStore();
+    userStore.user = {
+      id: "user-1",
+      nux_progress: {
+        ...EMPTY_NUX_PROGRESS,
+        profileCompletion: { completedAt: "2026-01-01T00:00:00Z" },
+      },
+    } as any;
+
+    const { updateProfileCompletion, progress } = useNuxProgress();
+    await updateProfileCompletion(90);
+    expect(progress.value.profileCompletion.completedAt).toBeNull();
+  });
+
+  it("updateProfileCompletion no-ops when state is unchanged", async () => {
+    const userStore = useUserStore();
+    userStore.user = {
+      id: "user-1",
+      nux_progress: {
+        ...EMPTY_NUX_PROGRESS,
+        profileCompletion: { completedAt: "2026-01-01T00:00:00Z" },
+      },
+    } as any;
+
+    const { updateProfileCompletion } = useNuxProgress();
+    await updateProfileCompletion(100);
+    expect(mockFetchFn).not.toHaveBeenCalled();
   });
 });

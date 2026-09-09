@@ -172,6 +172,19 @@ describe("SignupForm", () => {
       await input.trigger("input");
       expect(wrapper.emitted("update:dateOfBirth")).toBeDefined();
     });
+
+    // Safari/WebKit's native date-picker UI (clicking a day in the calendar,
+    // rather than typing digits) is known to fire only `change`, not `input`,
+    // on <input type="date"> — issue #696: the Create Account button stayed
+    // disabled because dateOfBirth never updated, even though the picker
+    // visibly showed the selected date.
+    it("emits update:dateOfBirth when dateOfBirth input fires change without input (Safari picker, #696)", async () => {
+      const wrapper = createWrapper({ userType: "player" });
+      const input = wrapper.find("#dateOfBirth");
+      (input.element as HTMLInputElement).value = "2005-06-15";
+      await input.trigger("change");
+      expect(wrapper.emitted("update:dateOfBirth")).toEqual([["2005-06-15"]]);
+    });
   });
 
   describe("Emit: update:password", () => {

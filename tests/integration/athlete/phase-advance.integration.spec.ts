@@ -75,7 +75,6 @@ const adminClient = (): SupabaseClient =>
 vi.mock("~/server/utils/auth", () => ({
   requireAuth: vi.fn(),
   getUserRole: vi.fn().mockResolvedValue("player"),
-  assertNotParent: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock("~/server/utils/logger", () => ({

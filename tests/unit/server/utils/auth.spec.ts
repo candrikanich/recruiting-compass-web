@@ -7,7 +7,6 @@ import {
   getUserRole,
   isParentViewingLinkedAthlete,
   canMutateAthleteData,
-  assertNotParent,
   clearRoleCacheForTesting,
   type AuthUser,
 } from "~/server/utils/auth";
@@ -418,56 +417,4 @@ describe("server/utils/auth", () => {
     });
   });
 
-  describe("assertNotParent", () => {
-    it("should not throw when user is not parent", async () => {
-      const mockSupabase = {
-        from: vi.fn().mockReturnValue({
-          select: vi.fn().mockReturnThis(),
-          eq: vi.fn().mockReturnThis(),
-          single: vi.fn().mockResolvedValue({
-            data: { role: "player" },
-            error: null,
-          }),
-        }),
-      } as any;
-
-      await expect(
-        assertNotParent("user-123", mockSupabase),
-      ).resolves.not.toThrow();
-    });
-
-    it("should throw 403 when user is parent", async () => {
-      const mockSupabase = {
-        from: vi.fn().mockReturnValue({
-          select: vi.fn().mockReturnThis(),
-          eq: vi.fn().mockReturnThis(),
-          single: vi.fn().mockResolvedValue({
-            data: { role: "parent" },
-            error: null,
-          }),
-        }),
-      } as any;
-
-      await expect(assertNotParent("parent-123", mockSupabase)).rejects.toThrow(
-        "Parents cannot perform",
-      );
-    });
-
-    it("should not throw when role is null", async () => {
-      const mockSupabase = {
-        from: vi.fn().mockReturnValue({
-          select: vi.fn().mockReturnThis(),
-          eq: vi.fn().mockReturnThis(),
-          single: vi.fn().mockResolvedValue({
-            data: { role: null },
-            error: null,
-          }),
-        }),
-      } as any;
-
-      await expect(
-        assertNotParent("user-123", mockSupabase),
-      ).resolves.not.toThrow();
-    });
-  });
 });

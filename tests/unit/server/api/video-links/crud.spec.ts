@@ -15,10 +15,10 @@ vi.mock("~/server/utils/supabase", () => ({
 }));
 
 const mockRequireAuth = vi.fn(async () => ({ id: "user-1", email: "p@t" }));
-const mockAssertNotParent = vi.fn(async () => {});
+const mockGetUserRole = vi.fn(async () => "player");
 vi.mock("~/server/utils/auth", () => ({
   requireAuth: (...args: unknown[]) => mockRequireAuth(...args),
-  assertNotParent: (...args: unknown[]) => mockAssertNotParent(...args),
+  getUserRole: (...args: unknown[]) => mockGetUserRole(...args),
 }));
 
 vi.mock("~/server/utils/logger", () => ({
@@ -52,6 +52,54 @@ vi.mock("h3", async (importOriginal) => {
   return err;
 };
 
+/**
+ * Handles the two sequential `family_members` queries getLinkedAthleteId
+ * issues for a parent caller: their own membership, then the family's player
+ * row. Pass through to a caller-supplied handler for any other table.
+ */
+function familyMembersRedirectingTo(
+  athleteId: string,
+  otherTables: (table: string) => unknown,
+) {
+  let call = 0;
+  return (table: string) => {
+    if (table !== "family_members") return otherTables(table);
+    call += 1;
+    if (call === 1) {
+      return {
+        select: () => ({
+          eq: () => ({
+            eq: () => ({
+              maybeSingle: () =>
+                Promise.resolve({
+                  data: { family_unit_id: "fam-1" },
+                  error: null,
+                }),
+            }),
+          }),
+        }),
+      };
+    }
+    // 2nd call: player members list (awaited directly). Later calls (e.g.
+    // an endpoint's own family_unit_id lookup) chain further .eq()s before
+    // .maybeSingle() — this node supports any depth of both.
+    const listResult = Promise.resolve({
+      data: [{ user_id: athleteId }],
+      error: null,
+    });
+    const chain: Record<string, unknown> = {
+      eq: () => chain,
+      maybeSingle: () =>
+        Promise.resolve({ data: { family_unit_id: "fam-1" }, error: null }),
+      then: (
+        resolve: (v: unknown) => unknown,
+        reject: (e: unknown) => unknown,
+      ) => listResult.then(resolve, reject),
+    };
+    return { select: () => chain };
+  };
+}
+
 function fakeEvent(params: Record<string, string> = {}): H3Event {
   return {
     node: { req: { headers: {} }, res: {} },
@@ -62,7 +110,7 @@ function fakeEvent(params: Record<string, string> = {}): H3Event {
 beforeEach(() => {
   vi.clearAllMocks();
   mockRequireAuth.mockResolvedValue({ id: "user-1", email: "p@t" });
-  mockAssertNotParent.mockResolvedValue(undefined);
+  mockGetUserRole.mockResolvedValue("player");
   mockReadBody.mockResolvedValue({});
 });
 
@@ -101,18 +149,42 @@ describe("GET /api/video-links", () => {
 });
 
 describe("POST /api/video-links", () => {
-  it("rejects a parent with 403", async () => {
-    mockAssertNotParent.mockRejectedValueOnce(
-      Object.assign(new Error("Parents cannot perform this action."), {
-        statusCode: 403,
+  it("redirects a parent's create to their linked athlete's row (family-shared profile, #555)", async () => {
+    mockGetUserRole.mockResolvedValueOnce("parent");
+    mockReadBody.mockResolvedValue({
+      platform: "hudl",
+      url: "https://hudl.com/video/1",
+    });
+
+    mockSupabase.from.mockImplementation(
+      familyMembersRedirectingTo("athlete-9", (table) => {
+        if (table === "video_links") {
+          return {
+            select: () => ({
+              eq: () => Promise.resolve({ count: 0, error: null }),
+            }),
+            insert: (payload: unknown) => ({
+              select: () => ({
+                single: () =>
+                  Promise.resolve({
+                    data: { id: "v1", ...(payload as object) },
+                    error: null,
+                  }),
+              }),
+            }),
+          };
+        }
+        throw new Error(`unexpected table ${table}`);
       }),
     );
 
     const handler = (await import("~/server/api/video-links/index.post"))
       .default;
-    await expect(handler(fakeEvent())).rejects.toMatchObject({
-      statusCode: 403,
-    });
+    const res = (await handler(fakeEvent())) as {
+      videoLink: { user_id: string };
+    };
+
+    expect(res.videoLink.user_id).toBe("athlete-9");
   });
 
   it("rejects an invalid platform with 422", async () => {
@@ -156,18 +228,45 @@ describe("PATCH /api/video-links/:id", () => {
     });
   };
 
-  it("rejects a parent with 403", async () => {
-    mockAssertNotParent.mockRejectedValueOnce(
-      Object.assign(new Error("Parents cannot perform this action."), {
-        statusCode: 403,
+  it("redirects a parent's edit to their linked athlete's row (family-shared profile, #555)", async () => {
+    mockGetUserRole.mockResolvedValueOnce("parent");
+    mockReadBody.mockResolvedValue({ title: "New title" });
+    const captured: { update?: unknown } = {};
+
+    mockSupabase.from.mockImplementation(
+      familyMembersRedirectingTo("athlete-9", (table) => {
+        if (table === "video_links") {
+          return {
+            update: (payload: unknown) => {
+              captured.update = payload;
+              return {
+                eq: () => ({
+                  eq: () => ({
+                    select: () => ({
+                      maybeSingle: () =>
+                        Promise.resolve({
+                          data: { id: VALID_ID, title: "New title" },
+                          error: null,
+                        }),
+                    }),
+                  }),
+                }),
+              };
+            },
+          };
+        }
+        throw new Error(`unexpected table ${table}`);
       }),
     );
 
     const handler = (await import("~/server/api/video-links/[id].patch"))
       .default;
-    await expect(handler(fakeEvent({ id: VALID_ID }))).rejects.toMatchObject({
-      statusCode: 403,
-    });
+    const res = (await handler(fakeEvent({ id: VALID_ID }))) as {
+      videoLink: { id: string };
+    };
+
+    expect(res.videoLink.id).toBe(VALID_ID);
+    expect(captured.update).toMatchObject({ title: "New title" });
   });
 
   it("rejects an invalid body with 422", async () => {

@@ -7,6 +7,7 @@ vi.mock("~/server/utils/auth", () => ({ getUserRole }));
 import {
   getLinkedAthleteId,
   resolvePreferenceTargetUserId,
+  resolveActingAthleteId,
 } from "~/server/utils/playerOwnedPreferences";
 
 /**
@@ -105,6 +106,33 @@ describe("resolvePreferenceTargetUserId", () => {
     ]);
     expect(await resolvePreferenceTargetUserId("parent-1", "player", sb)).toBe(
       "player-9",
+    );
+  });
+});
+
+describe("resolveActingAthleteId", () => {
+  beforeEach(() => getUserRole.mockReset());
+
+  it("returns the caller's own id when they are the athlete", async () => {
+    getUserRole.mockResolvedValue("player");
+    const sb = supabaseReturning([]);
+    expect(await resolveActingAthleteId("athlete-1", sb)).toBe("athlete-1");
+  });
+
+  it("redirects a parent to their linked athlete", async () => {
+    getUserRole.mockResolvedValue("parent");
+    const sb = supabaseReturning([
+      { family_unit_id: "fam-1" },
+      [{ user_id: "player-9" }],
+    ]);
+    expect(await resolveActingAthleteId("parent-1", sb)).toBe("player-9");
+  });
+
+  it("throws 404 when a parent has no linked athlete", async () => {
+    getUserRole.mockResolvedValue("parent");
+    const sb = supabaseReturning([null]);
+    await expect(resolveActingAthleteId("parent-1", sb)).rejects.toMatchObject(
+      { statusCode: 404 },
     );
   });
 });

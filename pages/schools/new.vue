@@ -77,6 +77,9 @@
         website: selectedCollege?.website || '',
         division: selectedCollege?.division || '',
         conference: selectedCollege?.conference || '',
+        mascot: selectedCollege?.mascot || '',
+        athletics_url: selectedCollege?.athletics_url || '',
+        school_colors: selectedCollege?.school_colors || [],
       }"
       :initialAutoFilledFields="autoFilledFields"
       @submit="handleSchoolFormSubmit"
@@ -101,6 +104,7 @@ definePageMeta({ middleware: "auth" });
 import { ref, reactive, onMounted } from "vue";
 import { useSchools } from "~/composables/useSchools";
 import { useNcaaLookup } from "~/composables/useNcaaLookup";
+import { useAuthFetch } from "~/composables/useAuthFetch";
 import {
   useCollegeData,
   type CollegeDataResult,
@@ -127,6 +131,7 @@ const {
   loading: collegeDataLoading,
   error: collegeDataError,
 } = useCollegeData();
+const { $fetchAuth } = useAuthFetch();
 
 const useAutocomplete = ref(true);
 const selectedCollege = ref<CollegeSearchResult | null>(null);
@@ -139,6 +144,9 @@ const autoFilledFields = reactive({
   website: false,
   division: false,
   conference: false,
+  mascot: false,
+  athletics_url: false,
+  school_colors: false,
 });
 
 import { getSchoolLogo } from "~/utils/school-logo";
@@ -150,8 +158,12 @@ const handleCollegeSelect = async (college: CollegeSearchResult) => {
   autoFilledFields.location = !!college.location;
   autoFilledFields.website = !!college.website;
 
-  // Fetch all data in parallel: NCAA lookup + College Scorecard
-  const [ncaaResult, scorecardResult] = await Promise.all([
+  // Fetch all data in parallel: NCAA lookup + College Scorecard + school metadata.
+  // conference isn't known yet (it comes from ncaaResult, resolved in this same
+  // Promise.all), so metadata lookup fires without it — the mascot/colors/athletics
+  // fields don't need it, and any missing conferenceUrl self-heals via the weekly
+  // school-metadata-backfill cron (#583) once conference is saved.
+  const [ncaaResult, scorecardResult, metadataResult] = await Promise.all([
     // NCAA lookup for division, conference, logo
     // Pass the ID (UnitID) for 100% accuracy if it's in our metadata
     lookupDivision(college.name, college.id).catch((err) => {
@@ -164,6 +176,14 @@ const handleCollegeSelect = async (college: CollegeSearchResult) => {
         collegeName: college.name,
         err,
       });
+      return null;
+    }),
+    // Static-seed mascot/athletics-URL/colors lookup (issue #581)
+    $fetchAuth<{
+      success: boolean;
+      data: { mascot: string | null; athleticsUrl: string | null; colors: string[] | null };
+    }>(`/api/schools/metadata-lookup?name=${encodeURIComponent(college.name)}`).catch((err) => {
+      logger.debug("School metadata lookup failed", { collegeName: college.name, err });
       return null;
     }),
   ]);
@@ -203,6 +223,20 @@ const handleCollegeSelect = async (college: CollegeSearchResult) => {
       }
     }
   }
+
+  // Apply school-metadata lookup (mascot/athletics URL/colors) — null-fill only,
+  // never overrides an existing value the user may have already typed.
+  if (metadataResult?.data) {
+    selectedCollege.value = {
+      ...selectedCollege.value,
+      mascot: metadataResult.data.mascot ?? undefined,
+      athletics_url: metadataResult.data.athleticsUrl ?? undefined,
+      school_colors: metadataResult.data.colors ?? undefined,
+    };
+    autoFilledFields.mascot = !!metadataResult.data.mascot;
+    autoFilledFields.athletics_url = !!metadataResult.data.athleticsUrl;
+    autoFilledFields.school_colors = !!metadataResult.data.colors;
+  }
 };
 
 const clearSelection = () => {
@@ -215,6 +249,9 @@ const clearSelection = () => {
   autoFilledFields.website = false;
   autoFilledFields.division = false;
   autoFilledFields.conference = false;
+  autoFilledFields.mascot = false;
+  autoFilledFields.athletics_url = false;
+  autoFilledFields.school_colors = false;
 };
 
 // Duplicate-confirmation dialog state

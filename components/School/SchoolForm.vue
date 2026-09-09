@@ -82,6 +82,55 @@
       @blur="validateWebsite"
     />
 
+    <!-- Mascot -->
+    <DesignSystemFormInput
+      v-model="formData.mascot"
+      label="Mascot"
+      :disabled="loading"
+      :auto-filled="isAutoFilled('mascot')"
+      placeholder="e.g., Wildcats"
+      :error="fieldErrors.mascot"
+    />
+
+    <!-- Athletics Website -->
+    <DesignSystemFormInput
+      v-model="formData.athletics_url"
+      label="Athletics Website"
+      type="url"
+      :disabled="loading"
+      :auto-filled="isAutoFilled('athletics_url')"
+      placeholder="example.com/athletics"
+      :error="fieldErrors.athletics_url"
+    />
+
+    <!-- School Colors -->
+    <div>
+      <label class="mb-2 block text-sm font-medium text-slate-700">
+        School Colors
+        <span
+          v-if="isAutoFilled('school_colors')"
+          class="text-xs font-normal text-blue-700"
+          >(auto-filled)</span
+        >
+      </label>
+      <div class="flex gap-3">
+        <input
+          v-model="formData.schoolColorPrimary"
+          type="text"
+          :disabled="loading"
+          placeholder="#RRGGBB"
+          class="w-32 rounded-lg border border-slate-300 px-3 py-2 text-sm"
+        />
+        <input
+          v-model="formData.schoolColorSecondary"
+          type="text"
+          :disabled="loading"
+          placeholder="#RRGGBB (optional)"
+          class="w-32 rounded-lg border border-slate-300 px-3 py-2 text-sm"
+        />
+      </div>
+    </div>
+
     <!-- Social Media -->
     <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
       <DesignSystemFormInput
@@ -247,6 +296,9 @@ const props = defineProps<{
     instagram_handle?: string;
     notes?: string;
     status?: string;
+    mascot?: string;
+    athletics_url?: string;
+    school_colors?: string[];
   };
   initialAutoFilledFields?: {
     name?: boolean;
@@ -254,6 +306,9 @@ const props = defineProps<{
     website?: boolean;
     division?: boolean;
     conference?: boolean;
+    mascot?: boolean;
+    athletics_url?: boolean;
+    school_colors?: boolean;
   };
 }>();
 
@@ -278,6 +333,10 @@ const formData = reactive({
   instagram_handle: props.initialData?.instagram_handle || "",
   notes: props.initialData?.notes || "",
   status: props.initialData?.status || "researching",
+  mascot: props.initialData?.mascot || "",
+  athletics_url: props.initialData?.athletics_url || "",
+  schoolColorPrimary: props.initialData?.school_colors?.[0] || "",
+  schoolColorSecondary: props.initialData?.school_colors?.[1] || "",
 });
 
 const autoFilledFields = reactive({
@@ -286,6 +345,9 @@ const autoFilledFields = reactive({
   website: props.initialAutoFilledFields?.website || false,
   division: props.initialAutoFilledFields?.division || false,
   conference: props.initialAutoFilledFields?.conference || false,
+  mascot: props.initialAutoFilledFields?.mascot || false,
+  athletics_url: props.initialAutoFilledFields?.athletics_url || false,
+  school_colors: props.initialAutoFilledFields?.school_colors || false,
 });
 
 // Watch for changes to initialData from parent (college selection)
@@ -298,6 +360,12 @@ watch(
       formData.name = newData.name ?? formData.name;
       formData.location = newData.location ?? formData.location;
       formData.website = newData.website ?? formData.website;
+      formData.mascot = newData.mascot ?? formData.mascot;
+      formData.athletics_url = newData.athletics_url ?? formData.athletics_url;
+      if (newData.school_colors) {
+        formData.schoolColorPrimary = newData.school_colors[0] || formData.schoolColorPrimary;
+        formData.schoolColorSecondary = newData.school_colors[1] || formData.schoolColorSecondary;
+      }
 
       // Division and conference need special handling.
       // The parent sends '' while its async NCAA lookup is still in flight.
@@ -334,6 +402,9 @@ watch(
         // Only flip to true — don't clear back to false while parent NCAA lookup is in flight.
         division: newFields.division || autoFilledFields.division,
         conference: newFields.conference || autoFilledFields.conference,
+        mascot: newFields.mascot || autoFilledFields.mascot,
+        athletics_url: newFields.athletics_url || autoFilledFields.athletics_url,
+        school_colors: newFields.school_colors || autoFilledFields.school_colors,
       });
 
       // When the parent fully resets (name goes false with no other fields true),
@@ -466,6 +537,10 @@ const handleCollegeSelect = async (college: CollegeSearchResult) => {
 };
 
 const handleSubmit = async () => {
+  const school_colors = [formData.schoolColorPrimary, formData.schoolColorSecondary]
+    .map((c) => c.trim())
+    .filter((c) => c.length > 0);
+
   // Convert empty strings to undefined for optional fields (Zod's .optional() expects undefined, not null)
   const normalizedData = {
     ...formData,
@@ -474,6 +549,9 @@ const handleSubmit = async () => {
     website: formData.website || undefined,
     twitter_handle: formData.twitter_handle || undefined,
     instagram_handle: formData.instagram_handle || undefined,
+    mascot: formData.mascot || undefined,
+    athletics_url: formData.athletics_url || undefined,
+    school_colors: school_colors.length > 0 ? school_colors : undefined,
   };
 
   const validated = await validate(normalizedData, schoolSchema);

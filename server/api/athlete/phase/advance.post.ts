@@ -1,7 +1,7 @@
 /**
  * POST /api/athlete/phase/advance
- * Attempt to advance athlete to next phase
- * RESTRICTED: Athletes only (parents have read-only access)
+ * Attempt to advance athlete to next phase. Family-shared profile — a
+ * parent's call is redirected to their linked athlete.
  */
 
 import { defineEventHandler } from "h3";
@@ -9,7 +9,8 @@ import { createServerSupabaseClient } from "~/server/utils/supabase";
 import { useLogger } from "~/server/utils/logger";
 import { logCRUD, logError } from "~/server/utils/auditLog";
 import type { Phase } from "~/types/timeline";
-import { requireAuth, assertNotParent } from "~/server/utils/auth";
+import { requireAuth } from "~/server/utils/auth";
+import { resolveActingAthleteId } from "~/server/utils/playerOwnedPreferences";
 import {
   canAdvancePhase,
   getNextPhase,
@@ -31,16 +32,15 @@ export default defineEventHandler(async (event) => {
   const user = await requireAuth(event);
   const supabase = createServerSupabaseClient();
 
-  // Ensure requesting user is not a parent (mutation restricted)
-  await assertNotParent(user.id, supabase);
-
   try {
-    // Get current phase — always operates on the requesting user's own record,
-    // so there is no separate "athleteId" param that could target someone else's phase.
+    // Athletes advance their own record; a parent's call is redirected to
+    // their linked athlete's record via resolveActingAthleteId.
+    const athleteId = await resolveActingAthleteId(user.id, supabase);
+
     const { data: userData, error: userError } = await supabase
       .from("users")
       .select("current_phase")
-      .eq("id", user.id)
+      .eq("id", athleteId)
       .maybeSingle();
 
     if (userError) {
@@ -54,7 +54,7 @@ export default defineEventHandler(async (event) => {
     // Row gone (account deleted mid-session): advancing would no-op the later
     // UPDATE and report success — fail honestly instead, without a 500 alert
     if (!userData) {
-      logger.warn("User row missing for phase advance", { userId: user.id });
+      logger.warn("User row missing for phase advance", { userId: athleteId });
       throw createError({
         statusCode: 404,
         statusMessage: "User not found",
@@ -74,7 +74,7 @@ export default defineEventHandler(async (event) => {
       const { data: prefData, error: prefError } = await supabase
         .from("user_preferences")
         .select("data")
-        .eq("user_id", user.id)
+        .eq("user_id", athleteId)
         .eq("category", "player")
         .maybeSingle();
 
@@ -99,7 +99,7 @@ export default defineEventHandler(async (event) => {
     const { data: athleteTasksData, error: tasksError } = await supabase
       .from("athlete_task")
       .select("task_id")
-      .eq("athlete_id", user.id)
+      .eq("athlete_id", athleteId)
       .eq("status", "completed");
 
     if (tasksError) {
@@ -154,7 +154,7 @@ export default defineEventHandler(async (event) => {
         updated_at: new Date().toISOString(),
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any)
-      .eq("id", user.id);
+      .eq("id", athleteId);
 
     const { error: updateError } = updateResult;
 
@@ -179,7 +179,7 @@ export default defineEventHandler(async (event) => {
       userId: user.id,
       action: "UPDATE",
       resourceType: "users",
-      resourceId: user.id,
+      resourceId: athleteId,
       newValues: {
         current_phase: nextPhase,
       },

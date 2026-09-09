@@ -1,7 +1,7 @@
 /**
  * POST /api/notifications/generate
- * Generate all notifications for athlete
- * RESTRICTED: Athletes only (parents have read-only access)
+ * Generate all notifications for athlete. Family-shared profile — a
+ * parent's call is redirected to their linked athlete.
  */
 
 import { defineEventHandler } from "h3";
@@ -12,25 +12,24 @@ import {
   generateEventNotifications,
   generateCoachFollowupNotifications,
 } from "~/server/utils/notificationGenerator";
-import { requireAuth, assertNotParent } from "~/server/utils/auth";
+import { requireAuth } from "~/server/utils/auth";
+import { resolveActingAthleteId } from "~/server/utils/playerOwnedPreferences";
 import { useLogger } from "~/server/utils/logger";
 
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "notifications/generate");
   try {
-    // Get authenticated user
     const user = await requireAuth(event);
     const supabase = createServerSupabaseClient();
 
-    // Ensure requesting user is not a parent (mutation restricted)
-    await assertNotParent(user.id, supabase);
+    const athleteId = await resolveActingAthleteId(user.id, supabase);
 
     // Generate notifications from all sources in parallel
     const results = await Promise.all([
-      generateOfferNotifications(user.id, supabase),
-      generateRecommendationNotifications(user.id, supabase),
-      generateEventNotifications(user.id, supabase),
-      generateCoachFollowupNotifications(user.id, supabase),
+      generateOfferNotifications(athleteId, supabase),
+      generateRecommendationNotifications(athleteId, supabase),
+      generateEventNotifications(athleteId, supabase),
+      generateCoachFollowupNotifications(athleteId, supabase),
     ]);
 
     // Calculate totals

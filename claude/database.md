@@ -16,13 +16,22 @@ Three separate Supabase projects, no longer one shared DB:
 - **`ahpethltxopkjxxzwmmb`** — dedicated E2E project, unchanged, untouched
   by this split.
 
-**Migrations going forward:** write once, apply to staging as always via
-Supabase MCP `apply_migration`, then merge to `main` — `.github/workflows/migrate-prod.yml`
-picks it up automatically and pauses for manual approval (GitHub
-Environment `production`, reviewer required) before running
-`supabase db push` against prod. Never apply directly to prod outside that
-gate except for the kind of one-off pre-launch backfill this migration
-itself required.
+**Migrations going forward:** write once, push to `develop` —
+`.github/workflows/migrate-qa-e2e.yml` auto-pushes the same migration to
+QA (`xpxzhqghxecsjhvklsqg`) AND the e2e project (`ahpethltxopkjxxzwmmb`),
+no approval gate (both are dev/test tier). This closes the drift gap that
+bit twice (PR #542 e2e schema drift) — e2e project is no longer a manual
+"remember to also apply it there" step. Then merge to `main` —
+`.github/workflows/migrate-prod.yml` picks it up automatically and pauses
+for manual approval (GitHub Environment `production`, reviewer required)
+before running `supabase db push` against prod. Never apply directly to
+prod outside that gate except for the kind of one-off pre-launch backfill
+this migration itself required.
+
+**Required repo secrets for `migrate-qa-e2e.yml`** (not yet set as of
+2026-09-08 — workflow will fail until added): `QA_PROJECT_REF`,
+`QA_DB_PASSWORD`, `E2E_PROJECT_REF`, `E2E_DB_PASSWORD`. Reuses the existing
+`SUPABASE_ACCESS_TOKEN` secret. Set via `gh secret set <NAME>`.
 
 **Direct `psql`/`pg_dump` connections:** the plain `db.<ref>.supabase.co`
 hostname needs IPv6 — fails to resolve on IPv4-only networks. Use the

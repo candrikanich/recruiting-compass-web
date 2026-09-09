@@ -224,6 +224,18 @@ describe("SchoolForm", () => {
         "researching",
       );
     });
+
+    it("renders mascot, athletics URL, and school color fields", () => {
+      const wrapper = mountForm();
+      expect(wrapper.find("#mascot").exists()).toBe(true);
+      expect(wrapper.find("#athleticswebsite").exists()).toBe(true);
+      expect(
+        wrapper.find('input[placeholder="#RRGGBB"]').exists(),
+      ).toBe(true);
+      expect(
+        wrapper.find('input[placeholder="#RRGGBB (optional)"]').exists(),
+      ).toBe(true);
+    });
   });
 
   describe("loading prop", () => {
@@ -298,6 +310,16 @@ describe("SchoolForm", () => {
 
       expect(wrapper.text()).toContain("(auto-filled)");
     });
+
+    it("shows auto-filled badge for mascot when initialAutoFilledFields.mascot is true", () => {
+      const wrapper = mountForm({
+        initialData: { mascot: "Wildcats" },
+        initialAutoFilledFields: { mascot: true },
+      });
+
+      expect(wrapper.text()).toContain("Mascot");
+      expect(wrapper.text()).toContain("(auto-filled)");
+    });
   });
 
   describe("college scorecard data", () => {
@@ -357,6 +379,20 @@ describe("SchoolForm", () => {
         cons: [],
         is_favorite: false,
       });
+    });
+
+    it("passes school_colors as a filtered array to validate on submit", async () => {
+      const wrapper = mountForm({ useAutocomplete: false });
+
+      await wrapper.find("#schoolname").setValue("Test U");
+      await wrapper.find('input[placeholder="#RRGGBB"]').setValue("#FF0000");
+      await wrapper.find("form").trigger("submit");
+      await flushPromises();
+
+      expect(mockValidate).toHaveBeenCalledWith(
+        expect.objectContaining({ school_colors: ["#FF0000"] }),
+        expect.anything(),
+      );
     });
 
     it("does not emit submit when validation fails", async () => {

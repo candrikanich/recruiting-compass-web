@@ -16,19 +16,26 @@ export interface NuxChecklistItem {
   completedAt: string | null;
 }
 
+export interface NuxProfileCompletion {
+  completedAt: string | null;
+}
+
 export interface NuxProgress {
   version: number;
   checklist: {
     items: Partial<Record<NuxChecklistKey, NuxChecklistItem>>;
     dismissedAt: string | null;
+    allCompleteAt: string | null;
   };
+  profileCompletion: NuxProfileCompletion;
   firstVisits: Record<string, string>;
   dismissals: Record<string, string>;
 }
 
 export const EMPTY_NUX_PROGRESS: NuxProgress = {
   version: 1,
-  checklist: { items: {}, dismissedAt: null },
+  checklist: { items: {}, dismissedAt: null, allCompleteAt: null },
+  profileCompletion: { completedAt: null },
   firstVisits: {},
   dismissals: {},
 };
@@ -37,13 +44,31 @@ export function parseNuxProgress(raw: unknown): NuxProgress {
   if (!raw || typeof raw !== "object") return { ...EMPTY_NUX_PROGRESS };
   const obj = raw as Record<string, unknown>;
   const checklist = obj.checklist as Record<string, unknown> | undefined;
+  const profileCompletion = obj.profileCompletion as
+    Record<string, unknown> | undefined;
   return {
     version: typeof obj.version === "number" ? obj.version : 1,
     checklist: {
       items: (checklist?.items as NuxProgress["checklist"]["items"]) ?? {},
       dismissedAt: (checklist?.dismissedAt as string | null) ?? null,
+      allCompleteAt: (checklist?.allCompleteAt as string | null) ?? null,
+    },
+    profileCompletion: {
+      completedAt: (profileCompletion?.completedAt as string | null) ?? null,
     },
     firstVisits: (obj.firstVisits as Record<string, string>) ?? {},
     dismissals: (obj.dismissals as Record<string, string>) ?? {},
   };
+}
+
+export const NUX_AUTO_HIDE_THRESHOLD_HOURS = 24;
+
+export function hasNuxCompletionExpired(
+  completedAt: string | null,
+  now: Date = new Date(),
+): boolean {
+  if (!completedAt) return false;
+  const elapsedHours =
+    (now.getTime() - new Date(completedAt).getTime()) / 3_600_000;
+  return elapsedHours >= NUX_AUTO_HIDE_THRESHOLD_HOURS;
 }

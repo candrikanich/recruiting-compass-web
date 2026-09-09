@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { mount } from "@vue/test-utils";
+import { mount, flushPromises } from "@vue/test-utils";
 import { ref, computed } from "vue";
-import type { NuxProgress } from "~/types/nux";
+import { NUX_CHECKLIST_KEYS, type NuxProgress } from "~/types/nux";
 
 const mockProgress = ref<NuxProgress>({
   version: 1,
@@ -10,22 +10,32 @@ const mockProgress = ref<NuxProgress>({
       sport: { completed: true, completedAt: "2026-01-01T00:00:00Z" },
     },
     dismissedAt: null,
+    allCompleteAt: null,
   },
+  profileCompletion: { completedAt: null },
   firstVisits: {},
   dismissals: {},
 });
 const mockCompleteItem = vi.fn();
 const mockDismissChecklist = vi.fn();
 const mockRecordFirstVisit = vi.fn();
+const mockUpdateProfileCompletion = vi.fn();
 
 vi.mock("~/composables/useNuxProgress", () => ({
   useNuxProgress: () => ({
     progress: mockProgress,
-    checklistPercentage: computed(() => 13),
+    checklistPercentage: computed(() => {
+      const items = mockProgress.value.checklist.items;
+      const completed = NUX_CHECKLIST_KEYS.filter(
+        (k) => items[k]?.completed,
+      ).length;
+      return Math.round((completed / NUX_CHECKLIST_KEYS.length) * 100);
+    }),
     isChecklistComplete: computed(() => false),
     completeItem: mockCompleteItem,
     dismissChecklist: mockDismissChecklist,
     recordFirstVisit: mockRecordFirstVisit,
+    updateProfileCompletion: mockUpdateProfileCompletion,
   }),
 }));
 
@@ -74,9 +84,11 @@ async function mountChecklist() {
   const GettingStartedChecklist = (
     await import("~/components/Dashboard/GettingStartedChecklist.vue")
   ).default;
-  return mount(GettingStartedChecklist, {
+  const wrapper = mount(GettingStartedChecklist, {
     global: { stubs: { NuxtLink: NuxtLinkStub } },
   });
+  await flushPromises();
+  return wrapper;
 }
 
 describe("GettingStartedChecklist", () => {
@@ -88,7 +100,9 @@ describe("GettingStartedChecklist", () => {
           sport: { completed: true, completedAt: "2026-01-01T00:00:00Z" },
         },
         dismissedAt: null,
+        allCompleteAt: null,
       },
+      profileCompletion: { completedAt: null },
       firstVisits: {},
       dismissals: {},
     };
@@ -100,6 +114,7 @@ describe("GettingStartedChecklist", () => {
     mockDismissChecklist.mockClear().mockResolvedValue(undefined);
     mockRecordFirstVisit.mockClear();
     mockUpdateCompleteness.mockClear();
+    mockUpdateProfileCompletion.mockClear();
   });
 
   it("renders checklist with progress bar", async () => {
@@ -170,5 +185,62 @@ describe("GettingStartedChecklist", () => {
     mockCompleteness.value = 85;
     await mountChecklist();
     expect(mockCompleteItem).toHaveBeenCalledWith("profile_80");
+  });
+
+  it("still shows item list when not complete (regression guard)", async () => {
+    const wrapper = await mountChecklist();
+    expect(wrapper.find('[data-testid="checklist-progress"]').exists()).toBe(
+      true,
+    );
+    expect(
+      wrapper.find('[data-testid="checklist-complete-banner"]').exists(),
+    ).toBe(false);
+  });
+
+  it("renders complete banner at 100% within 24h", async () => {
+    const items: NuxProgress["checklist"]["items"] = {};
+    for (const key of NUX_CHECKLIST_KEYS) {
+      items[key] = { completed: true, completedAt: "2026-01-01T00:00:00Z" };
+    }
+    mockProgress.value = {
+      ...mockProgress.value,
+      checklist: {
+        items,
+        dismissedAt: null,
+        allCompleteAt: new Date().toISOString(),
+      },
+    };
+    const wrapper = await mountChecklist();
+    expect(
+      wrapper.find('[data-testid="checklist-complete-banner"]').exists(),
+    ).toBe(true);
+    expect(wrapper.find('[data-testid="checklist-progress"]').exists()).toBe(
+      false,
+    );
+  });
+
+  it("renders nothing after 24h past full completion", async () => {
+    const items: NuxProgress["checklist"]["items"] = {};
+    for (const key of NUX_CHECKLIST_KEYS) {
+      items[key] = { completed: true, completedAt: "2026-01-01T00:00:00Z" };
+    }
+    mockProgress.value = {
+      ...mockProgress.value,
+      checklist: {
+        items,
+        dismissedAt: null,
+        allCompleteAt: new Date(Date.now() - 25 * 3_600_000).toISOString(),
+      },
+    };
+    const wrapper = await mountChecklist();
+    expect(
+      wrapper.find('[data-testid="checklist-complete-banner"]').exists(),
+    ).toBe(false);
+    expect(wrapper.find('[data-testid="checklist-progress"]').exists()).toBe(
+      false,
+    );
+    expect(wrapper.find('[data-testid="checklist-resume"]').exists()).toBe(
+      false,
+    );
   });
 });
