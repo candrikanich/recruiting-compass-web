@@ -177,7 +177,6 @@ watch(
               </div>
 
               <div>
-              <div>
                 <label
                   for="email"
                   class="block text-sm font-medium text-slate-700"
@@ -192,6 +191,8 @@ watch(
                   class="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 shadow-xs focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500"
                 />
               </div>
+
+              <div>
                 <label
                   for="role"
                   class="block text-sm font-medium text-slate-700"
