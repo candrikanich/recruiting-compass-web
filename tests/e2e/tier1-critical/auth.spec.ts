@@ -19,7 +19,7 @@ test.describe("Tier 1: Authentication - Critical User Flows", () => {
     await authPage.goto();
   });
 
-  test("should signup new user successfully", async ({ page }) => {
+  test("should signup new user successfully @smoke", async ({ page }) => {
     authPage = new AuthPage(page);
 
     // Use a unique email per run to avoid "already registered" errors
@@ -35,7 +35,7 @@ test.describe("Tier 1: Authentication - Critical User Flows", () => {
     await authPage.expectVerifyEmail();
   });
 
-  test("should login with valid credentials", async ({ page }) => {
+  test("should login with valid credentials @smoke", async ({ page }) => {
     authPage = new AuthPage(page);
 
     // Create a unique test user for this test

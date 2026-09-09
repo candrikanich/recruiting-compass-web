@@ -101,6 +101,20 @@ async function globalSetup(_config: FullConfig) {
     );
   }
 
+  // Smoke-only runs (staging-smoke-e2e CI job) exercise unauthenticated
+  // redirects only (tests/e2e/tier1-critical/auth-enforcement.spec.ts) — no
+  // seeded accounts or storageState needed. Skip provisioning entirely: on
+  // staging, Supabase Attack Protection CAPTCHA is enabled project-wide, so
+  // both the direct password-grant mint and the UI-login fallback are
+  // unsolvable headless and would abort the run for state the tests never use.
+  if (process.env.SMOKE_ONLY === "true") {
+    console.log(
+      "⏭️  SMOKE_ONLY=true — skipping account/storageState provisioning",
+    );
+    console.log("✅ Global setup complete (smoke-only)");
+    return;
+  }
+
   // Always provision test accounts (idempotent — safe to run every time).
   // Required for CRUD tests: accounts need onboarding_complete + family_unit.
   try {
@@ -185,9 +199,14 @@ async function globalSetup(_config: FullConfig) {
     );
   }
 
-  // Full database seed (only in CI or when explicitly requested)
+  // Full database seed (only in CI or when explicitly requested).
+  // E2E_SKIP_SEED=true is set by sharded CI jobs (e2e.yml) whose seed already
+  // ran once in a dedicated e2e-seed job upstream — running the full seed
+  // concurrently from N sharded jobs against the same shared test project
+  // would race on the same rows instead of just being redundant.
   const shouldSeed =
-    process.env.CI === "true" || process.env.E2E_SEED === "true";
+    (process.env.CI === "true" || process.env.E2E_SEED === "true") &&
+    process.env.E2E_SKIP_SEED !== "true";
 
   if (shouldSeed) {
     console.log("🌱 Seeding test database...");
@@ -198,6 +217,8 @@ async function globalSetup(_config: FullConfig) {
       console.error("❌ Database seeding failed:", error);
       // Don't exit - tests can still run with existing data
     }
+  } else if (process.env.E2E_SKIP_SEED === "true") {
+    console.log("⏭️  Skipping full database seed (E2E_SKIP_SEED=true — already seeded upstream)");
   } else {
     console.log("⏭️  Skipping full database seed (set E2E_SEED=true to seed)");
   }

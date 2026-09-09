@@ -122,6 +122,7 @@ jobs:
         env:
           BASE_URL: ${{ needs.deploy-staging.outputs.deployment-url }}
           CI: true
+          SMOKE_ONLY: true
           NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
           NUXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NUXT_PUBLIC_SUPABASE_ANON_KEY }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
