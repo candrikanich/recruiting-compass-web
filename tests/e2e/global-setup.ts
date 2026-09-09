@@ -101,6 +101,20 @@ async function globalSetup(_config: FullConfig) {
     );
   }
 
+  // Smoke-only runs (staging-smoke-e2e CI job) exercise unauthenticated
+  // redirects only (tests/e2e/tier1-critical/auth-enforcement.spec.ts) — no
+  // seeded accounts or storageState needed. Skip provisioning entirely: on
+  // staging, Supabase Attack Protection CAPTCHA is enabled project-wide, so
+  // both the direct password-grant mint and the UI-login fallback are
+  // unsolvable headless and would abort the run for state the tests never use.
+  if (process.env.SMOKE_ONLY === "true") {
+    console.log(
+      "⏭️  SMOKE_ONLY=true — skipping account/storageState provisioning",
+    );
+    console.log("✅ Global setup complete (smoke-only)");
+    return;
+  }
+
   // Always provision test accounts (idempotent — safe to run every time).
   // Required for CRUD tests: accounts need onboarding_complete + family_unit.
   try {
