@@ -62,12 +62,16 @@ already live:
   "removed" columns are gone). No action — cosmetic only.
 - `20260825000000`: repo has `coach_tags_source`, remote tracking has
   `cron_runs`. Both effects live (`coaches.tags`/`coaches.source` columns
-  exist, `cron_runs` table exists) — but `coach_tags_source` has **no
-  tracking row anywhere**, because its filename timestamp is permanently
-  squatted by `cron_runs`. **Open follow-up:** rename
-  `supabase/migrations/20260825000000_coach_tags_source.sql` to a
-  non-colliding timestamp, then mark that new version applied (safe either
-  way — its SQL is idempotent).
+  exist, `cron_runs` table exists) — but `coach_tags_source` had **no
+  tracking row anywhere**, because its filename timestamp was permanently
+  squatted by `cron_runs`. **Follow-up resolved:** renamed
+  `supabase/migrations/20260825000000_coach_tags_source.sql` →
+  `20260925000020_coach_tags_source.sql` (next free timestamp), inserted
+  a tracking row for the new version on QA (metadata only — content
+  already live, nothing re-run). This was the last remaining mismatch —
+  `migrate-qa-e2e.yml` run `34361972021` (pre-rename) confirmed it was the
+  only thing still blocking QA's push. QA `schema_migrations` row count:
+  109 → 110.
 
 **Task 1 (revert 6 confirmed-dead superseded duplicates) — DONE**, via
 Supabase MCP `execute_sql` (metadata-only `DELETE FROM
