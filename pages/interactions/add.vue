@@ -21,26 +21,45 @@ const { createInteraction, loading } = useInteractions();
 const { showToast } = useAppToast();
 
 // Reviewing an inbound-email draft (#678): the parser's output is prefilled
-// here for editing rather than inserted verbatim. `draft` stays null until
-// loaded, so initialData falls back to the coach/school query prefill below.
+// here for editing rather than inserted verbatim.
 const draftId = computed(() =>
   typeof route.query.draftId === "string" ? route.query.draftId : null,
 );
 const { drafts, fetchDrafts, confirmDraft } = useInboundDrafts();
 const draft = ref<(typeof drafts.value)[number] | null>(null);
 
+// InteractionForm snapshots `initialData` once during its own setup, which Vue
+// runs before this page's onMounted. Rendering it before the draft resolves
+// would silently drop the parsed subject/body/direction — so hold the form back
+// until the fetch settles (found or not). Manual logging has no draft to wait on.
+const draftLoaded = ref(false);
+const formReady = computed(() => !draftId.value || draftLoaded.value);
+
 onMounted(async () => {
   if (!draftId.value) return;
-  await fetchDrafts();
-  draft.value = drafts.value.find((d) => d.id === draftId.value) ?? null;
+  try {
+    await fetchDrafts();
+    draft.value = drafts.value.find((d) => d.id === draftId.value) ?? null;
+  } finally {
+    // Never leave the page stuck on the spinner: an unfound (or unfetchable)
+    // draft still falls through to the blank manual-log form.
+    draftLoaded.value = true;
+  }
 });
 
 // Prefill coach/school when arriving from a coach's "Log Interaction" action,
-// or the full parsed draft when reviewing an inbound-email draft.
+// or the full parsed draft when reviewing an inbound-email draft. A
+// `schoolId` query param — set when returning from creating a new school via
+// InteractionForm's "Add it" link (#675) — always wins over the draft's own
+// matched_school_id, since it represents the user's most recent choice.
+const schoolIdOverride = computed(() =>
+  typeof route.query.schoolId === "string" ? route.query.schoolId : "",
+);
+
 const initialData = computed<Partial<Interaction>>(() => {
   if (draft.value) {
     return {
-      school_id: draft.value.matched_school_id ?? "",
+      school_id: schoolIdOverride.value || draft.value.matched_school_id || "",
       coach_id: draft.value.matched_coach_id,
       type: "email",
       direction: "inbound",
@@ -51,13 +70,17 @@ const initialData = computed<Partial<Interaction>>(() => {
   }
   const coachId =
     typeof route.query.coachId === "string" ? route.query.coachId : "";
-  const schoolId =
-    typeof route.query.schoolId === "string" ? route.query.schoolId : "";
   return {
     ...(coachId ? { coach_id: coachId } : {}),
-    ...(schoolId ? { school_id: schoolId } : {}),
+    ...(schoolIdOverride.value ? { school_id: schoolIdOverride.value } : {}),
   };
 });
+
+const senderName = computed(() => draft.value?.sender_name ?? null);
+const senderEmail = computed(() => draft.value?.sender_email ?? null);
+const draftReturnTo = computed(() =>
+  draftId.value ? `/interactions/add?draftId=${draftId.value}` : null,
+);
 
 const pageTitle = computed(() => {
   if (draftId.value) return "Review Coach Email";
@@ -163,9 +186,14 @@ const handleCancel = () => {
     :description="description"
     header-color="indigo"
   >
+    <DesignSystemLoadingState v-if="!formReady" />
     <InteractionForm
+      v-else
       :loading="loading"
       :initial-data="initialData"
+      :sender-name="senderName"
+      :sender-email="senderEmail"
+      :draft-return-to="draftReturnTo"
       @submit="handleSubmit"
       @cancel="handleCancel"
     />
