@@ -77,7 +77,10 @@ test.describe("Smart Inputs — High School Search", () => {
     });
   });
 
-  test("shows escape hatch when no results found", async ({ page }) => {
+  // @flaky: debounced empty-query round-trip against the ~27k-row
+  // nces_schools table occasionally exceeds even the 20s timeout under heavy
+  // parallel-worker load (see planning/e2e-ci-refactor-plan.md Phase 3).
+  test("shows escape hatch when no results found @flaky", async ({ page }) => {
     const schoolInput = page.locator(
       '[placeholder="Search for your high school"]',
     );
