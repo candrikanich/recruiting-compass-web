@@ -7,9 +7,14 @@ import type { Coach } from "~/types/models";
 interface Props {
   show: boolean;
   schoolId: string;
+  senderName?: string | null;
+  senderEmail?: string | null;
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  senderName: null,
+  senderEmail: null,
+});
 
 const emit = defineEmits<{
   close: [];
@@ -23,9 +28,23 @@ const { activate, deactivate } = useFocusTrap(dialogRef);
 
 const firstName = ref("");
 const lastName = ref("");
+const email = ref("");
 const role = ref("assistant");
 const loading = ref(false);
 const error = ref<string | null>(null);
+
+// Best-effort first/last split for prefilling from an inbound draft's sender
+// name — unlike the server-side splitSenderName (matchCoachByEmail.ts) this
+// never needs a non-empty fallback since both fields stay user-editable here.
+function splitSenderName(senderName: string | null): { firstName: string; lastName: string } {
+  const trimmed = senderName?.trim();
+  if (!trimmed) return { firstName: "", lastName: "" };
+  const parts = trimmed.split(/\s+/);
+  if (parts.length > 1) {
+    return { firstName: parts[0], lastName: parts.slice(1).join(" ") };
+  }
+  return { firstName: parts[0], lastName: "" };
+}
 
 const handleSubmit = async () => {
   error.value = null;
@@ -43,7 +62,7 @@ const handleSubmit = async () => {
       first_name: firstName.value.trim(),
       last_name: lastName.value.trim(),
       role: role.value as "head" | "assistant" | "recruiting",
-      email: null,
+      email: email.value.trim() || null,
       phone: null,
       twitter_handle: null,
       instagram_handle: null,
@@ -65,6 +84,7 @@ const handleSubmit = async () => {
 const handleClose = () => {
   firstName.value = "";
   lastName.value = "";
+  email.value = "";
   role.value = "assistant";
   error.value = null;
   loading.value = false;
@@ -76,12 +96,16 @@ watch(
   () => props.show,
   async (show) => {
     if (show) {
+      const prefill = splitSenderName(props.senderName);
+      firstName.value = prefill.firstName;
+      lastName.value = prefill.lastName;
+      email.value = props.senderEmail?.trim() ?? "";
       await nextTick();
       activate();
     } else {
       deactivate();
     }
-  },
+  }, { immediate: true }
 );
 </script>
 
@@ -153,6 +177,21 @@ watch(
               </div>
 
               <div>
+              <div>
+                <label
+                  for="email"
+                  class="block text-sm font-medium text-slate-700"
+                >
+                  Email (Optional)
+                </label>
+                <input
+                  id="email"
+                  v-model="email"
+                  type="email"
+                  :disabled="loading"
+                  class="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 shadow-xs focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500"
+                />
+              </div>
                 <label
                   for="role"
                   class="block text-sm font-medium text-slate-700"
