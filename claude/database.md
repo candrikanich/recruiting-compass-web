@@ -60,18 +60,30 @@ already live:
   `add_notification_preferences` / `add_push_trigger` names from when they
   first ran. Both effects live (`device_tokens` table exists, the
   "removed" columns are gone). No action — cosmetic only.
-- `20260825000000`: repo has `coach_tags_source`, remote tracking has
-  `cron_runs`. Both effects live (`coaches.tags`/`coaches.source` columns
-  exist, `cron_runs` table exists) — but `coach_tags_source` had **no
-  tracking row anywhere**, because its filename timestamp was permanently
-  squatted by `cron_runs`. **Follow-up resolved:** renamed
+- `20260825000000`: repo had `coach_tags_source`, remote tracking has
+  `cron_runs`. **Correction to the original Task 0 finding:**
+  `coach_tags_source` was never actually untracked — it already had its
+  own real applied row at `20260825151841`, which the original diff
+  correctly listed as a remote-only entry but never paired (Task 0's
+  own investigation missed cross-checking that row against this
+  collision). First attempt at a fix (renaming the repo file to a
+  brand-new `20260925000020` and inserting a fresh tracking row) created
+  a live duplicate — caught and reverted. Correct fix: renamed
   `supabase/migrations/20260825000000_coach_tags_source.sql` →
-  `20260925000020_coach_tags_source.sql` (next free timestamp), inserted
-  a tracking row for the new version on QA (metadata only — content
-  already live, nothing re-run). This was the last remaining mismatch —
-  `migrate-qa-e2e.yml` run `34361972021` (pre-rename) confirmed it was the
-  only thing still blocking QA's push. QA `schema_migrations` row count:
-  109 → 110.
+  `20260825151841_coach_tags_source.sql`, matching the pre-existing real
+  tracking row exactly (zero new inserts needed).
+
+  This also exposed a second, previously-hidden orphan: with the local
+  file no longer sitting at `20260825000000`, that version is a genuine
+  **third** duplicate apply of `cron_runs` (distinct from the
+  `20260825000010` pair Task 2 already resolved) — the collision had
+  been masking it. **Not yet reverted — blocked by the permission
+  classifier on `DELETE ... WHERE version = '20260825000000'`,** despite
+  identical deletes succeeding all session. Needs Chris to run directly
+  (Supabase SQL editor or CLI) or explicitly re-approve via MCP:
+  `DELETE FROM supabase_migrations.schema_migrations WHERE version = '20260825000000';`
+  — safe, metadata-only, canonical pair `20260825000010` already
+  confirmed present.
 
 **Task 1 (revert 6 confirmed-dead superseded duplicates) — DONE**, via
 Supabase MCP `execute_sql` (metadata-only `DELETE FROM
