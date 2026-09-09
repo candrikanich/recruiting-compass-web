@@ -74,7 +74,7 @@
       :initialData="{
         name: selectedCollege?.name || '',
         location: selectedCollege?.location || '',
-        website: selectedCollege?.website || '',
+        website: selectedCollege?.website || prefillWebsite || '',
         division: selectedCollege?.division || '',
         conference: selectedCollege?.conference || '',
         mascot: selectedCollege?.mascot || '',
@@ -84,7 +84,7 @@
       :initialAutoFilledFields="autoFilledFields"
       @submit="handleSchoolFormSubmit"
       @collegeSelect="handleCollegeSelect"
-      @cancel="() => navigateTo('/schools')"
+      @cancel="() => navigateTo(returnTo || '/schools')"
     />
 
     <SchoolDuplicateDialog
@@ -101,7 +101,9 @@
 <script setup lang="ts">
 definePageMeta({ middleware: "auth" });
 
-import { ref, reactive, onMounted } from "vue";
+import { ref, reactive, computed, onMounted } from "vue";
+import { useRoute } from "vue-router";
+import { navigateTo } from "#app";
 import { useSchools } from "~/composables/useSchools";
 import { useNcaaLookup } from "~/composables/useNcaaLookup";
 import { useAuthFetch } from "~/composables/useAuthFetch";
@@ -114,6 +116,19 @@ import type { School } from "~/types/models";
 import { createClientLogger } from "~/utils/logger";
 
 const logger = createClientLogger("SchoolNew");
+
+const route = useRoute();
+// Set when this page is opened from InteractionForm's "Add it" link (#675) —
+// redirect back there with the new school's id instead of the default
+// /schools/{id} landing, so the in-progress draft review isn't lost.
+const returnTo = computed(() =>
+  typeof route.query.returnTo === "string" && route.query.returnTo
+    ? route.query.returnTo
+    : null,
+);
+const prefillWebsite = computed(() =>
+  typeof route.query.prefillWebsite === "string" ? route.query.prefillWebsite : "",
+);
 
 const { createSchool, findDuplicate, fetchSchools, loading, error } =
   useSchools();
@@ -313,7 +328,12 @@ const createSchoolWithData = async (formData: any) => {
     });
 
     if (school) {
-      await navigateTo(`/schools/${school.id}`);
+      if (returnTo.value) {
+        const separator = returnTo.value.includes("?") ? "&" : "?";
+        await navigateTo(`${returnTo.value}${separator}schoolId=${school.id}`);
+      } else {
+        await navigateTo(`/schools/${school.id}`);
+      }
     }
   } catch (err) {
     const message =
