@@ -172,12 +172,13 @@ export default globalTeardown;
 **Interfaces:**
 - Consumes: `tagName(prefix)` and `getRunId()` from Task 1's `run-id.ts`.
 
-- [ ] Read the two specs' current school-creation call sites (`grep -n "generateUniqueSchoolName\|createSchoolData" tests/e2e/coaching-philosophy.spec.ts tests/e2e/family-invite-flow.spec.ts`) before editing — the plan doesn't guess their exact current code.
-- [ ] Swap their name generation to go through `tagName()` instead of (or in addition to) `generateUniqueSchoolName()`.
-- [ ] For the dashboard-empty-state assertion specifically: change the check from an absolute "0 schools" / "No schools tracked yet" assertion to one that tolerates other runs' in-flight data — either assert on a RUN_ID-scoped count, or (simpler, if the empty-state test's whole point is verifying a *fresh* account) give that one test its own throwaway account instead of the shared `player.json` — pick whichever is the smaller diff once you're looking at the actual test.
-- [ ] Run the two specs repeated + parallel locally to reproduce-then-confirm-fixed: `npx playwright test coaching-philosophy.spec.ts family-invite-flow.spec.ts --repeat-each=3 --workers=3` (per superpowers:systematic-debugging — reproduce before declaring fixed).
-- [ ] Since `coaching-philosophy.spec.ts` currently has `test.describe.configure({ mode: "serial" })` specifically to dodge this race: if the RUN_ID fix holds under the repeat-parallel run above, remove the serial pin and the `@flaky` tag from PR #713 — that's the actual win condition for this task, not just "still passes serially."
-- [ ] Commit: `fix(e2e): migrate coaching-philosophy + family-invite-flow onto RUN_ID-scoped data, un-quarantine`
+- [x] Read the two specs' current school-creation call sites before editing.
+- [x] **Corrected mid-task, two of three original targets don't apply:**
+  - `coaching-philosophy.spec.ts` — matched the assumption. `createSchoolData({ name: ... })` now routes through `tagName(generateUniqueSchoolName(...))`.
+  - `family-invite-flow.spec.ts` — **does not touch schools/`generateUniqueSchoolName` at all.** Its `serial` pin guards a different partial-insert race, unrelated to this plan's schools-visibility problem. Left untouched — migrating it would have been scope creep onto an unrelated bug.
+  - The `dashboard-8-2:132` school-leak empty-state pattern from memory — **already fixed by a prior session**, commits `57e021be`/`c063f831`. Nothing left to do here.
+- [ ] **Blocked locally, not yet CI-confirmed:** the repeat-parallel reproduction (`--repeat-each=3 --workers=3`) could not run — this Supabase project's CAPTCHA gate blocks local storageState provisioning entirely (same blocker as Task 1's live-verification note). `@flaky` and `mode: "serial"` were correctly left in place rather than removed on an unproven claim. **Follow-up (not this task, not blocking Task 3):** once this ships and a real CI run exercises the RUN_ID-tagged seed under parallel load, confirm the race is actually gone, then remove the quarantine in a small separate PR.
+- [x] Commit: `fix(e2e): tag coaching-philosophy seeded school with RUN_ID`
 
 ---
 
