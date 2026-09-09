@@ -115,6 +115,40 @@ export function useDeadlines() {
     }
   }
 
+  async function updateDeadline(
+    id: string,
+    payload: Partial<{
+      label: string;
+      deadline_date: string;
+      category: string;
+      school_id: string;
+    }>,
+  ): Promise<{
+    id: string;
+    label: string;
+    deadline_date: string;
+    category: string;
+    school_id?: string;
+  }> {
+    try {
+      const result = await $fetchAuth<{
+        success: boolean;
+        deadline: {
+          id: string;
+          label: string;
+          deadline_date: string;
+          category: string;
+          school_id?: string;
+        };
+      }>(`/api/deadlines/${id}`, { method: "PATCH", body: payload });
+      await fetchDeadlines();
+      return result.deadline;
+    } catch (err) {
+      logger.error("Failed to update deadline", err);
+      throw err;
+    }
+  }
+
   async function removeDeadline(id: string) {
     try {
       await $fetchAuth(`/api/deadlines/${id}`, { method: "DELETE" });
@@ -138,6 +172,7 @@ export function useDeadlines() {
     error,
     fetchDeadlines,
     createDeadline,
+    updateDeadline,
     removeDeadline,
   };
 }

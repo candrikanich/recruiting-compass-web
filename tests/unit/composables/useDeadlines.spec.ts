@@ -182,6 +182,41 @@ describe("useDeadlines", () => {
       fetchError,
     );
   });
+
+  it("updateDeadline PATCHes to /api/deadlines/:id, re-fetches, and returns the deadline", async () => {
+    const updated = {
+      id: "dead-1",
+      label: "Renamed",
+      deadline_date: "2026-11-01",
+      category: "application",
+    };
+    mockFetchAuth
+      .mockResolvedValueOnce({ success: true, deadline: updated }) // PATCH
+      .mockResolvedValueOnce({ deadlines: [updated] }); // re-fetch GET
+    const { useDeadlines } = await import("~/composables/useDeadlines");
+    const { updateDeadline } = useDeadlines();
+    const result = await updateDeadline("dead-1", { label: "Renamed" });
+    expect(mockFetchAuth).toHaveBeenCalledWith("/api/deadlines/dead-1", {
+      method: "PATCH",
+      body: { label: "Renamed" },
+    });
+    expect(mockFetchAuth).toHaveBeenCalledWith("/api/deadlines");
+    expect(result).toEqual(updated);
+  });
+
+  it("updateDeadline logs error and re-throws when $fetchAuth rejects", async () => {
+    const fetchError = new Error("Update failed");
+    mockFetchAuth.mockRejectedValue(fetchError);
+    const { useDeadlines } = await import("~/composables/useDeadlines");
+    const { updateDeadline } = useDeadlines();
+    await expect(
+      updateDeadline("dead-1", { label: "X" }),
+    ).rejects.toThrow("Update failed");
+    expect(mockLogger.error).toHaveBeenCalledWith(
+      "Failed to update deadline",
+      fetchError,
+    );
+  });
 });
 
 describe("unified view", () => {

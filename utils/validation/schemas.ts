@@ -474,6 +474,9 @@ export const createDeadlineSchema = z.object({
 
 export type CreateDeadlineInput = z.infer<typeof createDeadlineSchema>;
 
+export const updateDeadlineSchema = createDeadlineSchema.partial();
+export type UpdateDeadlineInput = z.infer<typeof updateDeadlineSchema>;
+
 // ============================================================================
 // VIDEO LINK SCHEMAS
 // ============================================================================
