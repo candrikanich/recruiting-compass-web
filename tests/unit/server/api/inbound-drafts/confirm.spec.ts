@@ -327,6 +327,85 @@ describe("POST /api/inbound-drafts/:id/confirm", () => {
     expect(mockState.insertedInteraction).toBeUndefined();
   });
 
+  it("uses caller-supplied overrides instead of the parsed draft fields when present", async () => {
+    mockState.draft = {
+      id: "draft-1",
+      family_unit_id: "family-1",
+      status: "pending",
+      matched_school_id: "school-1",
+      matched_coach_id: "coach-1",
+      subject: "Fwd: Camp",
+      body_text: "hi",
+      occurred_at: "2026-09-02T15:15:00.000Z",
+      confirmed_interaction_id: null,
+    };
+    vi.mocked(readBody).mockResolvedValue({
+      coachId: "22222222-2222-2222-2222-222222222222",
+      type: "phone_call",
+      direction: "outbound",
+      occurredAt: "2026-09-03T10:00:00.000Z",
+      subject: "Edited subject",
+      content: "Edited content",
+    });
+    const { default: handler } = await import("~/server/api/inbound-drafts/[id]/confirm.post");
+    await handler({} as Parameters<typeof handler>[0]);
+
+    expect(mockState.insertedInteraction).toMatchObject({
+      school_id: "school-1",
+      coach_id: "22222222-2222-2222-2222-222222222222",
+      type: "phone_call",
+      direction: "outbound",
+      occurred_at: "2026-09-03T10:00:00.000Z",
+      subject: "Edited subject",
+      content: "Edited content",
+    });
+  });
+
+  it("falls back to the draft's parsed fields when no overrides are supplied", async () => {
+    mockState.draft = {
+      id: "draft-1",
+      family_unit_id: "family-1",
+      status: "pending",
+      matched_school_id: "school-1",
+      matched_coach_id: "coach-1",
+      subject: "Fwd: Camp",
+      body_text: "hi",
+      occurred_at: "2026-09-02T15:15:00.000Z",
+      confirmed_interaction_id: null,
+    };
+    const { default: handler } = await import("~/server/api/inbound-drafts/[id]/confirm.post");
+    await handler({} as Parameters<typeof handler>[0]);
+
+    expect(mockState.insertedInteraction).toMatchObject({
+      school_id: "school-1",
+      coach_id: "coach-1",
+      type: "email",
+      direction: "inbound",
+      occurred_at: "2026-09-02T15:15:00.000Z",
+      subject: "Fwd: Camp",
+      content: "hi",
+    });
+  });
+
+  it("allows overriding coachId to null, clearing the parsed match", async () => {
+    mockState.draft = {
+      id: "draft-1",
+      family_unit_id: "family-1",
+      status: "pending",
+      matched_school_id: "school-1",
+      matched_coach_id: "coach-1",
+      subject: "Fwd: Camp",
+      body_text: "hi",
+      occurred_at: "2026-09-02T15:15:00.000Z",
+      confirmed_interaction_id: null,
+    };
+    vi.mocked(readBody).mockResolvedValue({ coachId: null });
+    const { default: handler } = await import("~/server/api/inbound-drafts/[id]/confirm.post");
+    await handler({} as Parameters<typeof handler>[0]);
+
+    expect(mockState.insertedInteraction).toMatchObject({ coach_id: null });
+  });
+
   it("still returns ok when a concurrent confirm already flipped the status (race guard)", async () => {
     mockState.draft = {
       id: "draft-1",

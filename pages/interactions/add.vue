@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { navigateTo } from "#app";
 import { useRoute } from "vue-router";
 import { useInteractions } from "~/composables/useInteractions";
+import { useInboundDrafts } from "~/composables/useInboundDrafts";
 import { useUserStore } from "~/stores/user";
 import { useAppToast } from "~/composables/useAppToast";
 import { useSupabase } from "~/composables/useSupabase";
@@ -19,8 +20,35 @@ const userStore = useUserStore();
 const { createInteraction, loading } = useInteractions();
 const { showToast } = useAppToast();
 
-// Prefill coach/school when arriving from a coach's "Log Interaction" action.
+// Reviewing an inbound-email draft (#678): the parser's output is prefilled
+// here for editing rather than inserted verbatim. `draft` stays null until
+// loaded, so initialData falls back to the coach/school query prefill below.
+const draftId = computed(() =>
+  typeof route.query.draftId === "string" ? route.query.draftId : null,
+);
+const { drafts, fetchDrafts, confirmDraft } = useInboundDrafts();
+const draft = ref<(typeof drafts.value)[number] | null>(null);
+
+onMounted(async () => {
+  if (!draftId.value) return;
+  await fetchDrafts();
+  draft.value = drafts.value.find((d) => d.id === draftId.value) ?? null;
+});
+
+// Prefill coach/school when arriving from a coach's "Log Interaction" action,
+// or the full parsed draft when reviewing an inbound-email draft.
 const initialData = computed<Partial<Interaction>>(() => {
+  if (draft.value) {
+    return {
+      school_id: draft.value.matched_school_id ?? "",
+      coach_id: draft.value.matched_coach_id,
+      type: "email",
+      direction: "inbound",
+      subject: draft.value.subject ?? "",
+      content: draft.value.body_text ?? "",
+      occurred_at: draft.value.occurred_at,
+    };
+  }
   const coachId =
     typeof route.query.coachId === "string" ? route.query.coachId : "";
   const schoolId =
@@ -32,15 +60,38 @@ const initialData = computed<Partial<Interaction>>(() => {
 });
 
 const pageTitle = computed(() => {
+  if (draftId.value) return "Review Coach Email";
   return userStore.isAthlete ? "Log My Interaction" : "Log Interaction";
 });
 
 const handleSubmit = async (formData: any) => {
-  try {
-    // Convert local datetime to UTC ISO string
-    const localDate = new Date(formData.occurred_at);
-    const utcDatetime = localDate.toISOString();
+  // Convert local datetime to UTC ISO string
+  const localDate = new Date(formData.occurred_at);
+  const utcDatetime = localDate.toISOString();
 
+  if (draftId.value) {
+    try {
+      await confirmDraft(draftId.value, {
+        schoolId: formData.school_id,
+        coachId: formData.coach_id || null,
+        type: formData.type,
+        direction: formData.direction,
+        occurredAt: utcDatetime,
+        subject: formData.subject || null,
+        content: formData.content || null,
+      });
+      await navigateTo("/inbox/inbound-drafts");
+    } catch (err) {
+      logger.error("Failed to confirm inbound draft", err);
+      showToast(
+        "Something went wrong logging this interaction. Please try again.",
+        "error",
+      );
+    }
+    return;
+  }
+
+  try {
     const interactionData: Omit<Interaction, "id" | "created_at"> = {
       school_id: formData.school_id,
       coach_id: formData.coach_id || null,
@@ -87,17 +138,29 @@ const handleSubmit = async (formData: any) => {
   }
 };
 
+const backTo = computed(() =>
+  draftId.value ? "/inbox/inbound-drafts" : "/interactions",
+);
+const backText = computed(() =>
+  draftId.value ? "Back to Coach Emails" : "Back to Interactions",
+);
+const description = computed(() =>
+  draftId.value
+    ? "Review the parsed email before saving it as an interaction"
+    : "Record a new communication with a school or coach",
+);
+
 const handleCancel = () => {
-  navigateTo("/interactions");
+  navigateTo(backTo.value);
 };
 </script>
 
 <template>
   <FormPageLayout
-    back-to="/interactions"
-    back-text="Back to Interactions"
+    :back-to="backTo"
+    :back-text="backText"
     :title="pageTitle"
-    description="Record a new communication with a school or coach"
+    :description="description"
     header-color="indigo"
   >
     <InteractionForm

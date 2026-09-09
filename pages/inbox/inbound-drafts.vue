@@ -1,22 +1,20 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { onMounted } from "vue";
 import { useInboundDrafts } from "~/composables/useInboundDrafts";
 import { useAppToast } from "~/composables/useAppToast";
 
 definePageMeta({ middleware: "auth" });
 
-const { drafts, loading, error, fetchDrafts, confirmDraft, discardDraft } = useInboundDrafts();
-const schoolIdByDraft = ref<Record<string, string>>({});
+const { drafts, loading, error, fetchDrafts, discardDraft } = useInboundDrafts();
 const { showToast } = useAppToast();
 
 onMounted(fetchDrafts);
 
-async function onConfirm(draftId: string, matchedSchoolId: string | null) {
-  try {
-    await confirmDraft(draftId, matchedSchoolId ? undefined : schoolIdByDraft.value[draftId]);
-  } catch {
-    showToast("Failed to confirm this draft. Please try again.", "error");
-  }
+// Confirming is no longer a blind accept-as-is — it opens the manual
+// interaction form prefilled from the draft so the parsed fields can be
+// reviewed and edited before anything is saved (#678).
+function onConfirm(draftId: string) {
+  navigateTo(`/interactions/add?draftId=${draftId}`);
 }
 
 async function onDiscard(draftId: string) {
@@ -54,21 +52,8 @@ async function onDiscard(draftId: string) {
             {{ draft.body_text }}
           </p>
 
-          <div v-if="!draft.matched_school_id" class="mt-3">
-            <SchoolSelect
-              v-model="schoolIdByDraft[draft.id]"
-              :required="false"
-              label="Which school is this from?"
-            />
-          </div>
-
           <div class="mt-4 flex gap-2">
-            <DesignSystemButton
-              :disabled="!draft.matched_school_id && !schoolIdByDraft[draft.id]"
-              @click="onConfirm(draft.id, draft.matched_school_id)"
-            >
-              Confirm
-            </DesignSystemButton>
+            <DesignSystemButton @click="onConfirm(draft.id)"> Confirm </DesignSystemButton>
             <DesignSystemButton variant="outline" color="slate" @click="onDiscard(draft.id)">
               Discard
             </DesignSystemButton>
