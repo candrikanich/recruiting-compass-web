@@ -237,7 +237,16 @@ export async function findUserIdByEmail(
  * name prefixes, scoped to the test accounts' own schools (user_id), and chunks
  * deletes to keep request URLs within server limits. Idempotent — safe to run at
  * the start of every E2E run.
+ *
+ * Age-gated to `created_at` older than `MIN_LEAK_AGE_MS`: multiple CI jobs
+ * (e2e-tests shards, e2e-sequential, e2e-flaky, e2e-webkit) run concurrently
+ * against the same shared test Supabase project, each calling this at
+ * global-setup. Without an age filter, one job's purge would delete another
+ * still-running job's in-flight `[e2e-`-tagged schools. Leaked debris is by
+ * definition old; a live concurrent run's rows are minutes old.
  */
+const MIN_LEAK_AGE_MS = 2 * 60 * 60 * 1000; // 2 hours
+
 export async function purgeLeakedTestSchools(
   supabase: ReturnType<typeof getSupabaseAdmin>,
 ): Promise<number> {
@@ -261,14 +270,18 @@ export async function purgeLeakedTestSchools(
   const userIds = (users ?? []).map((u) => (u as { id: string }).id);
   if (userIds.length === 0) return 0;
 
-  // Collect leaked school ids (test-named, owned by a test account).
+  const cutoff = new Date(Date.now() - MIN_LEAK_AGE_MS).toISOString();
+
+  // Collect leaked school ids (test-named, owned by a test account, old enough
+  // to rule out a concurrently-running job's still-in-flight data).
   const idSet = new Set<string>();
   for (const prefix of NAME_PREFIXES) {
     const { data } = await supabase
       .from("schools")
       .select("id")
       .in("user_id", userIds)
-      .like("name", `${prefix}%`);
+      .like("name", `${prefix}%`)
+      .lt("created_at", cutoff);
     for (const row of data ?? []) idSet.add((row as { id: string }).id);
   }
   const ids = [...idSet];

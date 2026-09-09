@@ -12,6 +12,7 @@ import {
   generateUniqueSchoolName,
   schoolHelpers,
 } from "../fixtures/schools.fixture";
+import { tagName } from "../seed/helpers/run-id";
 
 /**
  * Atomic CRUD pilot #2 — coach lifecycle.
@@ -40,7 +41,9 @@ test.describe("Coaches CRUD — atomic lifecycle", () => {
     });
     try {
       const page = await ctx.newPage();
-      const schoolName = generateUniqueSchoolName("Coaches Atomic School");
+      const schoolName = tagName(
+        generateUniqueSchoolName("Coaches Atomic School"),
+      );
       schoolId = await schoolHelpers.createSchool(
         page,
         createSchoolData({ name: schoolName }),

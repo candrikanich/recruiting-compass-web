@@ -12,6 +12,7 @@ import {
 } from "./seed/helpers/supabase-admin";
 import { mintStorageState } from "./seed/helpers/auth-session";
 import { TEST_ACCOUNTS } from "./config/test-accounts";
+import { initRunId } from "./seed/helpers/run-id";
 
 /** Run `fn`, retrying on failure with linear backoff. Returns on first success. */
 async function withRetry<T>(
@@ -100,6 +101,13 @@ async function globalSetup(_config: FullConfig) {
         `Run \`nvm use\` (see .nvmrc) then retry.`,
     );
   }
+
+  // Generate/persist this run's RUN_ID before anything else so every later
+  // step (account provisioning, seeding, specs, teardown) can tag/find rows
+  // by it. CI sets E2E_RUN_ID per job+shard; local runs get a random one.
+  await fs.mkdir(AUTH_DIR, { recursive: true });
+  const runId = initRunId();
+  console.log(`🏷️  RUN_ID: ${runId}`);
 
   // Smoke-only runs (staging-smoke-e2e CI job) exercise unauthenticated
   // redirects only (tests/e2e/tier1-critical/auth-enforcement.spec.ts) — no

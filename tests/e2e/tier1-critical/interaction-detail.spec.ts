@@ -6,6 +6,7 @@ import {
   generateUniqueSchoolName,
   schoolHelpers,
 } from "../fixtures/schools.fixture";
+import { tagName } from "../seed/helpers/run-id";
 
 /**
  * Interaction detail page — focused, beforeAll-shared setup.
@@ -41,7 +42,7 @@ test.describe("Interaction detail page", () => {
       schoolId = await schoolHelpers.createSchool(
         page,
         createSchoolData({
-          name: generateUniqueSchoolName("Interaction Detail"),
+          name: tagName(generateUniqueSchoolName("Interaction Detail")),
         }),
       );
 

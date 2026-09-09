@@ -8,6 +8,7 @@ import {
   type SeededSchools,
 } from "../seed/helpers/supabase-admin";
 import { TEST_ACCOUNTS } from "../config/test-accounts";
+import { tagName } from "../seed/helpers/run-id";
 
 /**
  * Phase 4 (auth lifecycle) AC1: "Logout → login as different account in same
@@ -33,13 +34,18 @@ import { TEST_ACCOUNTS } from "../config/test-accounts";
 test.describe("Cross-account logout — no stale data leak", () => {
   test.use({ storageState: { cookies: [], origins: [] } });
 
-  const RUN_ID = Date.now();
-  const UNIQUE_SCHOOL_NAME = `[e2e-${RUN_ID}] Cross-Account Leak Check`;
   let seeded: SeededSchools | null = null;
   let playerFamilyUnitId: string | null = null;
+  // Computed in beforeAll (not module scope) via tagName() so it is
+  // RUN_ID-scoped off the shared global-setup run id, matching the
+  // `[e2e-${runId}]%` prefix global-teardown.ts sweeps for — not a locally
+  // rolled `Date.now()` id that the sweep can't match if afterAll's
+  // deleteSeededSchools below fails/times out.
+  let uniqueSchoolName = "";
 
   test.beforeAll(async () => {
     const supabase = getSupabaseAdmin();
+    uniqueSchoolName = tagName("Cross-Account Leak Check");
     const playerId = await findUserIdByEmail(
       supabase,
       TEST_ACCOUNTS.player.email,
@@ -64,15 +70,15 @@ test.describe("Cross-account logout — no stale data leak", () => {
     seeded = await seedSchoolsWithInteractions(supabase, {
       familyUnitId,
       userId: playerId,
-      runId: RUN_ID,
+      runId: Date.now(),
       count: 1,
     });
-    // Give it the distinctive name this test asserts on (helper's default
-    // naming already embeds RUN_ID, but rename explicitly for clarity/
-    // uniqueness independent of the helper's internal format).
+    // Overwrite the helper's own (locally Date.now()-scoped) name with the
+    // shared-run-id-tagged one computed above — this is the name the test
+    // below asserts on, and the one the teardown sweep needs to see.
     await supabase
       .from("schools")
-      .update({ name: UNIQUE_SCHOOL_NAME })
+      .update({ name: uniqueSchoolName })
       .in("id", seeded.schoolIds);
   });
 
@@ -131,7 +137,7 @@ test.describe("Cross-account logout — no stale data leak", () => {
     );
     await page.locator('[data-testid="nav-schools"]').click();
     await page.waitForURL("/schools");
-    await expect(page.getByText(UNIQUE_SCHOOL_NAME)).toBeVisible({
+    await expect(page.getByText(uniqueSchoolName)).toBeVisible({
       timeout: 15000,
     });
 
@@ -159,7 +165,7 @@ test.describe("Cross-account logout — no stale data leak", () => {
     await page.locator('[data-testid="nav-schools"]').click();
     await page.waitForURL("/schools");
     await page.waitForLoadState("networkidle");
-    await expect(page.getByText(UNIQUE_SCHOOL_NAME)).not.toBeVisible();
+    await expect(page.getByText(uniqueSchoolName)).not.toBeVisible();
 
     // 5. Family/profile header must reflect the new account, not the old one.
     await expect(

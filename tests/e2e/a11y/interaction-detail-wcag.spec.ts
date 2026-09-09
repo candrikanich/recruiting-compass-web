@@ -6,6 +6,7 @@ import {
   generateUniqueSchoolName,
   schoolHelpers,
 } from "../fixtures/schools.fixture";
+import { tagName } from "../seed/helpers/run-id";
 
 test.describe("Interaction Detail Page - Accessibility (WCAG 2.1 AA)", () => {
   // Not pinned to serial: each worker creates its own independent school +
@@ -32,7 +33,7 @@ test.describe("Interaction Detail Page - Accessibility (WCAG 2.1 AA)", () => {
       schoolId = await schoolHelpers.createSchool(
         page,
         createSchoolData({
-          name: generateUniqueSchoolName("Interaction WCAG"),
+          name: tagName(generateUniqueSchoolName("Interaction WCAG")),
         }),
       );
 
