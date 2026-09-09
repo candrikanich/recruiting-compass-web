@@ -12,6 +12,9 @@ export interface CollegeSearchResult {
   website: string | null;
   division?: string; // NCAA division (populated after lookup)
   conference?: string; // NCAA conference (populated after lookup)
+  mascot?: string; // Static-seed lookup (populated after school-metadata lookup)
+  athletics_url?: string; // Static-seed lookup (populated after school-metadata lookup)
+  school_colors?: string[]; // Static-seed lookup (populated after school-metadata lookup)
 }
 
 export interface CollegeScorecardSchool {
