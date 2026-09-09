@@ -59,8 +59,15 @@ vi.mock("~/composables/useInboundDrafts", () => ({
   }),
 }));
 
+vi.mock("~/composables/useFormValidation", () => ({
+  useFormValidation: () => ({ fieldErrors: {} }),
+}));
+
 import { navigateTo } from "#app";
 import InteractionsAddPage from "~/pages/interactions/add.vue";
+import InteractionForm from "~/components/Interaction/InteractionForm.vue";
+import DesignSystemFormInput from "~/components/DesignSystem/Form/FormInput.vue";
+import DesignSystemFormTextarea from "~/components/DesignSystem/Form/FormTextarea.vue";
 
 const mockNavigateTo = vi.mocked(navigateTo);
 
@@ -285,9 +292,50 @@ describe("pages/interactions/add.vue", () => {
       await flushPromises();
 
       const form = wrapper.findComponent(InteractionFormStub);
-      expect((form.props("initialData") as any).school_id).toBe(
-        "school-new-1",
+      expect((form.props("initialData") as any).school_id).toBe("school-new-1");
+    });
+
+    // Integration-style: the REAL InteractionForm is mounted here (every other
+    // test in this file stubs it) because the bug being guarded is a mount-order
+    // race — InteractionForm snapshots props.initialData once at setup, which
+    // runs before the parent's onMounted resolves the draft. Only a real render
+    // of the child's inputs can catch it.
+    it("renders the draft's parsed fields in the real form after returning from /schools/new", async () => {
+      routeQuery = { draftId: "draft-1", schoolId: "school-new-1" };
+      const wrapper = mount(InteractionsAddPage, {
+        global: {
+          components: {
+            InteractionForm,
+            DesignSystemFormInput,
+            DesignSystemFormTextarea,
+          },
+          stubs: {
+            FormPageLayout: { template: "<div><slot /></div>" },
+            SchoolSelect: { template: "<div />" },
+            CoachSelect: { template: "<div />" },
+            CoachAddCoachModal: { template: "<div />" },
+            CoachOtherCoachModal: { template: "<div />" },
+            InterestCalibration: { template: "<div />" },
+            FileUpload: { template: "<div />" },
+            DesignSystemFormSelect: { template: "<div />" },
+            DesignSystemFieldError: { template: "<div />" },
+            DesignSystemLoadingState: { template: "<div />" },
+            NuxtLink: { props: ["to"], template: "<a :href='to'><slot /></a>" },
+          },
+        },
+      });
+      await flushPromises();
+
+      const subject = wrapper.find<HTMLInputElement>('input[type="text"]');
+      expect(subject.exists()).toBe(true);
+      expect(subject.element.value).toBe("Recruiting interest");
+      expect(wrapper.find<HTMLTextAreaElement>("textarea").element.value).toBe(
+        "Hi, we're interested in your son.",
       );
+      expect(
+        wrapper.find<HTMLInputElement>('input[value="inbound"]').element
+          .checked,
+      ).toBe(true);
     });
   });
 });

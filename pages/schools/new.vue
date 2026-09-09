@@ -121,14 +121,18 @@ const route = useRoute();
 // Set when this page is opened from InteractionForm's "Add it" link (#675) —
 // redirect back there with the new school's id instead of the default
 // /schools/{id} landing, so the in-progress draft review isn't lost.
-const returnTo = computed(() =>
-  typeof route.query.returnTo === "string" && route.query.returnTo
-    ? route.query.returnTo
-    : null,
-);
-const prefillWebsite = computed(() =>
-  typeof route.query.prefillWebsite === "string" ? route.query.prefillWebsite : "",
-);
+// Constrained to a same-origin path: this value is handed to navigateTo, and an
+// attacker-supplied absolute or protocol-relative URL must not become a redirect.
+const returnTo = computed(() => {
+  const raw = route.query.returnTo;
+  return typeof raw === "string" && raw.startsWith("/") && !raw.startsWith("//")
+    ? raw
+    : null;
+});
+const prefillWebsite = computed(() => {
+  const raw = route.query.prefillWebsite;
+  return typeof raw === "string" && /^https?:\/\//i.test(raw) ? raw : "";
+});
 
 const { createSchool, findDuplicate, fetchSchools, loading, error } =
   useSchools();
@@ -196,9 +200,18 @@ const handleCollegeSelect = async (college: CollegeSearchResult) => {
     // Static-seed mascot/athletics-URL/colors lookup (issue #581)
     $fetchAuth<{
       success: boolean;
-      data: { mascot: string | null; athleticsUrl: string | null; colors: string[] | null };
-    }>(`/api/schools/metadata-lookup?name=${encodeURIComponent(college.name)}`).catch((err) => {
-      logger.debug("School metadata lookup failed", { collegeName: college.name, err });
+      data: {
+        mascot: string | null;
+        athleticsUrl: string | null;
+        colors: string[] | null;
+      };
+    }>(
+      `/api/schools/metadata-lookup?name=${encodeURIComponent(college.name)}`,
+    ).catch((err) => {
+      logger.debug("School metadata lookup failed", {
+        collegeName: college.name,
+        err,
+      });
       return null;
     }),
   ]);

@@ -21,18 +21,30 @@ const { createInteraction, loading } = useInteractions();
 const { showToast } = useAppToast();
 
 // Reviewing an inbound-email draft (#678): the parser's output is prefilled
-// here for editing rather than inserted verbatim. `draft` stays null until
-// loaded, so initialData falls back to the coach/school query prefill below.
+// here for editing rather than inserted verbatim.
 const draftId = computed(() =>
   typeof route.query.draftId === "string" ? route.query.draftId : null,
 );
 const { drafts, fetchDrafts, confirmDraft } = useInboundDrafts();
 const draft = ref<(typeof drafts.value)[number] | null>(null);
 
+// InteractionForm snapshots `initialData` once during its own setup, which Vue
+// runs before this page's onMounted. Rendering it before the draft resolves
+// would silently drop the parsed subject/body/direction — so hold the form back
+// until the fetch settles (found or not). Manual logging has no draft to wait on.
+const draftLoaded = ref(false);
+const formReady = computed(() => !draftId.value || draftLoaded.value);
+
 onMounted(async () => {
   if (!draftId.value) return;
-  await fetchDrafts();
-  draft.value = drafts.value.find((d) => d.id === draftId.value) ?? null;
+  try {
+    await fetchDrafts();
+    draft.value = drafts.value.find((d) => d.id === draftId.value) ?? null;
+  } finally {
+    // Never leave the page stuck on the spinner: an unfound (or unfetchable)
+    // draft still falls through to the blank manual-log form.
+    draftLoaded.value = true;
+  }
 });
 
 // Prefill coach/school when arriving from a coach's "Log Interaction" action,
@@ -174,7 +186,9 @@ const handleCancel = () => {
     :description="description"
     header-color="indigo"
   >
+    <DesignSystemLoadingState v-if="!formReady" />
     <InteractionForm
+      v-else
       :loading="loading"
       :initial-data="initialData"
       :sender-name="senderName"

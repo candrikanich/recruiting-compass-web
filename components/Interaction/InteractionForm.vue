@@ -102,7 +102,11 @@ const shouldShowCalibration = computed(() => {
 const addSchoolHref = computed(() => {
   if (!props.draftReturnTo) return null;
   const params = new URLSearchParams({ returnTo: props.draftReturnTo });
-  const domain = props.senderEmail?.split("@")[1]?.trim();
+  // Last segment, not the second: a malformed multi-`@` address still yields the
+  // real domain. An address with no `@` at all yields nothing.
+  const segments = props.senderEmail?.split("@") ?? [];
+  const domain =
+    segments.length > 1 ? segments[segments.length - 1].trim() : "";
   if (domain) params.set("prefillWebsite", `https://${domain}`);
   return `/schools/new?${params.toString()}`;
 });

@@ -36,7 +36,10 @@ const error = ref<string | null>(null);
 // Best-effort first/last split for prefilling from an inbound draft's sender
 // name — unlike the server-side splitSenderName (matchCoachByEmail.ts) this
 // never needs a non-empty fallback since both fields stay user-editable here.
-function splitSenderName(senderName: string | null): { firstName: string; lastName: string } {
+function splitSenderName(senderName: string | null): {
+  firstName: string;
+  lastName: string;
+} {
   const trimmed = senderName?.trim();
   if (!trimmed) return { firstName: "", lastName: "" };
   const parts = trimmed.split(/\s+/);
@@ -105,7 +108,8 @@ watch(
     } else {
       deactivate();
     }
-  }, { immediate: true }
+  },
+  { immediate: true },
 );
 </script>
 

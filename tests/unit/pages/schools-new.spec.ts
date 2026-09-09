@@ -45,7 +45,13 @@ import SchoolsNewPage from "~/pages/schools/new.vue";
 
 const SchoolFormStub = {
   name: "SchoolForm",
-  props: ["loading", "useAutocomplete", "collegeScorecardData", "initialData", "initialAutoFilledFields"],
+  props: [
+    "loading",
+    "useAutocomplete",
+    "collegeScorecardData",
+    "initialData",
+    "initialAutoFilledFields",
+  ],
   emits: ["submit", "collegeSelect", "cancel"],
   template: "<div />",
 };
@@ -81,7 +87,10 @@ describe("pages/schools/new.vue", () => {
     const wrapper = mountPage();
     const form = wrapper.findComponent(SchoolFormStub);
 
-    await form.vm.$emit("submit", { name: "Ohio State", website: "https://osu.edu" });
+    await form.vm.$emit("submit", {
+      name: "Ohio State",
+      website: "https://osu.edu",
+    });
     await wrapper.vm.$nextTick();
     await wrapper.vm.$nextTick();
 
@@ -101,6 +110,34 @@ describe("pages/schools/new.vue", () => {
     await wrapper.vm.$nextTick();
 
     expect(navigateToMock).toHaveBeenCalledWith("/schools/school-new-2");
+  });
+
+  it.each([
+    "//evil.example.com",
+    "https://evil.example.com",
+    "javascript:alert(1)",
+  ])(
+    "ignores an off-site returnTo (%s) and lands on /schools/{id}",
+    async (hostile) => {
+      routeQuery = { returnTo: hostile };
+      createSchoolMock.mockResolvedValue({ id: "school-new-3" });
+      const wrapper = mountPage();
+      const form = wrapper.findComponent(SchoolFormStub);
+
+      await form.vm.$emit("submit", { name: "Ohio State" });
+      await wrapper.vm.$nextTick();
+      await wrapper.vm.$nextTick();
+
+      expect(navigateToMock).toHaveBeenCalledWith("/schools/school-new-3");
+    },
+  );
+
+  it("ignores a prefillWebsite that isn't an http(s) URL", () => {
+    routeQuery = { prefillWebsite: "javascript:alert(1)" };
+    const wrapper = mountPage();
+
+    const form = wrapper.findComponent(SchoolFormStub);
+    expect((form.props("initialData") as any).website).toBe("");
   });
 
   it("cancels back to returnTo when present", async () => {

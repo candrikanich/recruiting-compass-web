@@ -14,8 +14,14 @@ const AddCoachModalStub = {
   props: ["show", "schoolId", "senderName", "senderEmail"],
   template: "<div />",
 };
-const OtherCoachModalStub = { name: "CoachOtherCoachModal", template: "<div />" };
-const InterestCalibrationStub = { name: "InterestCalibration", template: "<div />" };
+const OtherCoachModalStub = {
+  name: "CoachOtherCoachModal",
+  template: "<div />",
+};
+const InterestCalibrationStub = {
+  name: "InterestCalibration",
+  template: "<div />",
+};
 const FileUploadStub = { name: "FileUpload", template: "<div />" };
 const NuxtLinkStub = {
   props: ["to"],
@@ -61,7 +67,9 @@ describe("components/Interaction/InteractionForm.vue", () => {
     const link = wrapper.find("[data-testid='add-school-link']");
     expect(link.exists()).toBe(true);
     const href = link.attributes("href") ?? "";
-    expect(href).toContain("returnTo=%2Finteractions%2Fadd%3FdraftId%3Ddraft-1");
+    expect(href).toContain(
+      "returnTo=%2Finteractions%2Fadd%3FdraftId%3Ddraft-1",
+    );
     expect(href).toContain("prefillWebsite=https%3A%2F%2Fosu.edu");
   });
 
@@ -71,6 +79,8 @@ describe("components/Interaction/InteractionForm.vue", () => {
       global: { stubs: GLOBAL_STUBS },
     });
 
-    expect(wrapper.find("[data-testid='add-school-link']").exists()).toBe(false);
+    expect(wrapper.find("[data-testid='add-school-link']").exists()).toBe(
+      false,
+    );
   });
 });
