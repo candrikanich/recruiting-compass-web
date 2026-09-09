@@ -143,13 +143,48 @@ Resolved all 27 to a concrete finding via live `execute_sql` checks:
   `active=false` on 2026-09-07 (see the gap-fix entry below) because they
   duplicate the modern Vercel-cron notification system — that state was
   just re-confirmed live. Pushing this migration for real would silently
-  re-enable duplicate notification sends. Not marked applied, not pushed,
-  not deleted — options (delete the file vs. leave it permanently
-  untracked with an explanatory comment) queued for Chris to decide.
+  re-enable duplicate notification sends. **Chris's call: delete the
+  file** — its intent (fix jobs that never fired) was superseded by the
+  later decision to keep those 4 jobs off permanently. Done in Task 4c
+  below.
+
+**Task 4a (repair the 3 Task-3 renames + revert the 7 squashed orphans) —
+DONE.** Via Supabase MCP `execute_sql`: inserted the 3 rename-pair rows
+(`20260801000000` `move_pg_trgm_to_extensions`, `20260907182444`
+`fix_push_trigger_auth`, `20260904000000` `drop_positions_table`), then
+deleted the 3 old remote-only versions plus the 7 squashed-orphan
+versions from Task 3 Step 2 (`20260730193943`, `20260807163731`,
+`20260807163756`, `20260809184748`, `20260819214145`, `20260827144403`,
+`20260827150843`).
+
+**Task 4b (mark the 9 already-live entries applied, no push) — DONE.**
+Inserted tracking rows for `reconcile_auth_and_notify_triggers`,
+`ensure_pg_net`, `seed_sports_and_positions`,
+`notification_cron_auth_and_event_schedule`,
+`realtime_coaches_interactions`, `realtime_schools`,
+`realtime_athlete_task`, `realtime_documents`,
+`scholarship_limits_unique_constraint_repair` — all confirmed live via
+Task 3's checks, none of them pushed for real. Post 4a+4b, QA's
+`schema_migrations` row count went 107 → 109 (107 − 7 + 9), matching
+exactly.
+
+**Task 4c (`activate_notification_cron_jobs`) — DONE.** Deleted
+`supabase/migrations/20260907211105_activate_notification_cron_jobs.sql`
+from the repo. Its version (`20260907211105`) stays permanently absent
+from every environment's `schema_migrations` table — that's correct, not
+a leftover gap. If the 4 legacy cron jobs (`process-follow-up-reminders`,
+`process-deadline-alerts`, `send-weekly-digest`, `notify-upcoming-events`)
+are ever intentionally re-enabled in the future, write a fresh migration
+for it rather than reviving this one.
+
+**Remaining: Task 4d** — real `db push` for the 3 confirmed-pending
+migrations (`fix_handle_new_user_role_enum`, `email_sends`,
+`noop_verify_qa_e2e_pipeline`) via the `migrate-qa-e2e.yml` CI workflow,
+then confirm QA's history matches the repo exactly (modulo the
+permanently-absent `activate_notification_cron_jobs` version).
 
 Full detail + the exact SQL for each is in
-`docs/superpowers/plans/2026-09-09-qa-migration-reconciliation.md` Task 3
-and Task 4a/4b/4c.
+`docs/superpowers/plans/2026-09-09-qa-migration-reconciliation.md`.
 
 **Remaining:** Task 3 (11+16 unresolved entries needing live-state
 verification), Task 4 (real `db push` for genuinely-pending migrations +

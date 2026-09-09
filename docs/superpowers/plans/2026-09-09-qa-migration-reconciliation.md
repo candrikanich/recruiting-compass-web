@@ -423,7 +423,7 @@ Task 3 found more than "pending or not" — it found 3 sub-groups needing 3 diff
 
 **Files:** None — live-DB metadata via MCP, same pattern as Tasks 1/2.
 
-- [ ] **Step 1: Insert the 3 rename-pair tracking rows**
+- [x] **Step 1: Insert the 3 rename-pair tracking rows**
 
   ```
   mcp__claude_ai_Supabase__execute_sql
@@ -436,7 +436,7 @@ Task 3 found more than "pending or not" — it found 3 sub-groups needing 3 diff
            ON CONFLICT (version) DO NOTHING;
   ```
 
-- [ ] **Step 2: Delete the 3 old remote-only rows + the 7 squashed-orphan rows from Task 3 Step 2**
+- [x] **Step 2: Delete the 3 old remote-only rows + the 7 squashed-orphan rows from Task 3 Step 2**
 
   ```
   mcp__claude_ai_Supabase__execute_sql
@@ -450,13 +450,13 @@ Task 3 found more than "pending or not" — it found 3 sub-groups needing 3 diff
            );
   ```
 
-- [ ] **Step 3: Verify** — `list_migrations`, expect row count to drop by 7 (10 deleted, 3 inserted).
+- [x] **Step 3: Verify** — `list_migrations`, expect row count to drop by 7 (10 deleted, 3 inserted).
 
 ### Task 4b: Mark the 9 already-live local-only entries as applied (no real push)
 
 **Files:** None — live-DB metadata via MCP.
 
-- [ ] **Step 1: Insert the 9 tracking rows**
+- [x] **Step 1: Insert the 9 tracking rows**
 
   ```
   mcp__claude_ai_Supabase__execute_sql
@@ -477,11 +477,13 @@ Task 3 found more than "pending or not" — it found 3 sub-groups needing 3 diff
 
   No corresponding deletes — these versions were never in the tracking table under any name (they're local-only entries whose effects turned out to already be live via other means, e.g. manual apply or a squashed migration).
 
-- [ ] **Step 2: Verify** — `list_migrations`, expect row count to rise by exactly 9.
+- [x] **Step 2: Verify** — `list_migrations`, expect row count to rise by exactly 9.
 
 ### Task 4c: `activate_notification_cron_jobs` — human decision required, do not resolve here
 
 Do not mark applied, do not push, do not delete the repo file without an explicit decision from Chris. Options to present: (a) delete `supabase/migrations/20260907211105_activate_notification_cron_jobs.sql` from the repo since its intent was superseded, with a note in `claude/database.md` explaining why a version number is permanently absent from tracking; (b) leave the file in place but mark its tracking row `--status reverted`-equivalent (i.e., never insert it) with the same explanatory note, in case the legacy cron jobs are ever intentionally re-enabled later. Either way, record the decision in `claude/database.md` once made — do not silently drop this line item.
+
+- [x] **Decision: delete the file.** Chris chose option (a) — its intent was superseded by the 2026-09-07 decision to keep those 4 jobs off permanently. Deleted `supabase/migrations/20260907211105_activate_notification_cron_jobs.sql`; version `20260907211105` stays permanently absent from every environment's tracking table. Recorded in `claude/database.md`.
 
 ### Task 4d: Real push for the 3 confirmed-pending migrations + CI verification
 
