@@ -203,7 +203,7 @@ Full list (`remote-only version -> local-only version (name)`) — these are the
 20260906202346 -> 20260924000000  (inbound_email_attachments)
 ```
 
-- [ ] **Step 1: Spot-check 5 pairs for content sanity before bulk-applying**
+- [x] **Step 1: Spot-check 5 pairs for content sanity before bulk-applying**
 
   Don't trust the name-match alone for the whole batch — read the repo file for a handful of pairs spanning the date range and confirm the DDL matches what's plausible for something already live (e.g., `CREATE TABLE IF NOT EXISTS`, not a `DROP`/destructive statement that would be dangerous to silently mark "already applied" if it *hadn't* actually run). Check at minimum:
   - `supabase/migrations/20260816000000_coach_outreach_phase0_1.sql` (early pair)
@@ -221,7 +221,7 @@ Full list (`remote-only version -> local-only version (name)`) — these are the
 
   Adjust the table/function names per file. Expected: non-null (object exists) for every one checked — confirming the content really is already live, not just name-coincidence.
 
-- [ ] **Step 2: Insert the 57 tracking rows**
+- [x] **Step 2: Insert the 57 tracking rows**
 
   This is what `supabase migration repair --status applied <version>` does under the hood: insert a row recording that version as applied, without running its SQL. Do this as one batched insert (values list generated from the table above — the **local** version + name in each row, since that's the version the repo/CI will look for going forward):
 
@@ -318,7 +318,7 @@ Full list (`remote-only version -> local-only version (name)`) — these are the
 
   The last version in that list, `20260813212642`, isn't one of the 57 pairing rows above — it's `drop_coaches_availability`'s duplicate remote apply (see this task's Interfaces note). It's only safe to delete now, after the `INSERT` above has created its pair `20260824000000`.
 
-- [ ] **Step 3: Verify**
+- [x] **Step 3: Verify**
 
   ```
   mcp__claude_ai_Supabase__list_migrations
@@ -327,7 +327,7 @@ Full list (`remote-only version -> local-only version (name)`) — these are the
 
   Expected: all 57 local versions from the pairing table now present; none of the 57 old remote-only versions remain.
 
-- [ ] **Step 4: Record in claude/database.md**
+- [x] **Step 4: Record in claude/database.md**
 
   Add the 57 repairs to the same dated entry from Task 1.
 

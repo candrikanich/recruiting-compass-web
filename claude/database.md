@@ -81,8 +81,21 @@ supabase_migrations.schema_migrations`, no schema impact). Removed:
 `20260912000000`, `school_recommendations`). Verified via `list_migrations`
 post-delete — exactly the 6 canonical rows remain.
 
-**Remaining:** Task 2 (57 confirmed rename pairs, `repair --status
-applied`), Task 3 (11+16 unresolved entries needing live-state
+**Task 2 (repair 57 confirmed rename pairs) — DONE**, via Supabase MCP
+`execute_sql`: spot-checked 3 pairs spanning the full date range
+(`coach_outreach_phase0_1`, `reactivate_school_rpc`,
+`inbound_email_attachments`) for content sanity and confirmed all their
+target objects (`template_variables` table,
+`communication_templates.slug` column, `reactivate_school()` function,
+`raw_inbound_attachments` table, `documents.interaction_id` column) live
+on QA before bulk-applying. Inserted 57 tracking rows (the local/repo
+version+name from each pair), verified all 57 landed, then deleted the 57
+old remote-only rows plus `drop_coaches_availability`'s duplicate apply
+(`20260813212642` — safe only after its pair `20260824000000` existed).
+Post-verify: QA's `schema_migrations` row count went from 114 → 107
+(114 − 6 Task 1 − 58 Task 2 reverts + 57 Task 2 inserts), matching exactly.
+
+**Remaining:** Task 3 (11+16 unresolved entries needing live-state
 verification), Task 4 (real `db push` for genuinely-pending migrations +
 CI re-verify). e2e project (`ahpethltxopkjxxzwmmb`) has its own,
 un-diffed drift — separate future plan, not covered here.
