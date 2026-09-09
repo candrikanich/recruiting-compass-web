@@ -84,10 +84,11 @@
 - Tasks list renders
 - One login + one signup happy path (not already covered by auth-enforcement)
 
-- [ ] Grep `tests/e2e/tier1-critical/` for existing candidates before writing new specs — tag what already exists rather than duplicating.
-- [ ] Add `@smoke` tags to the chosen ~10-15 tests.
-- [ ] In `e2e.yml`, branch behavior on `github.base_ref`: PRs into `develop` run `test:e2e:main -- --grep "@smoke"` (skip the matrix entirely — smoke tier doesn't need sharding); PRs into `main` run the full sharded matrix from Phase 2.
-- [ ] Verify: open a throwaway PR into `develop`, confirm only smoke specs run and total time is a few minutes; confirm a PR into `main` still runs the full gate.
+- [x] Grepped `tests/e2e/tier1-critical/` for candidates instead of writing new specs. Starter set landed smaller than the ~10-15 estimate: **8 tests** — 4 pre-existing (`auth-enforcement.spec.ts`), + login/signup (`auth.spec.ts`) + one atomic CRUD test each for schools/coaches. No dashboard/tasks smoke coverage — no dedicated "dashboard loads" spec exists to tag; noted as a follow-up, not invented here.
+- [x] Tagged those 8 with `@smoke`.
+- [x] `e2e.yml`: new `e2e-smoke` job gated `if: ... && github.base_ref == 'develop'`; all 5 full-suite jobs (`e2e-seed`/`e2e-tests`/`e2e-sequential`/`e2e-flaky`/`e2e-webkit`) gated `if: ... && (github.event_name == 'workflow_dispatch' || github.base_ref == 'main')` — manual dispatch still runs the full suite regardless of target branch.
+- [x] **Live-verified on this PR itself** (#715, into develop): only `e2e-smoke` ran, all 5 full-suite jobs showed `skipping` (not failed).
+- [x] **Shipped PR #715.**
 
 ---
 
