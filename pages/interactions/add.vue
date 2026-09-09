@@ -36,11 +36,18 @@ onMounted(async () => {
 });
 
 // Prefill coach/school when arriving from a coach's "Log Interaction" action,
-// or the full parsed draft when reviewing an inbound-email draft.
+// or the full parsed draft when reviewing an inbound-email draft. A
+// `schoolId` query param — set when returning from creating a new school via
+// InteractionForm's "Add it" link (#675) — always wins over the draft's own
+// matched_school_id, since it represents the user's most recent choice.
+const schoolIdOverride = computed(() =>
+  typeof route.query.schoolId === "string" ? route.query.schoolId : "",
+);
+
 const initialData = computed<Partial<Interaction>>(() => {
   if (draft.value) {
     return {
-      school_id: draft.value.matched_school_id ?? "",
+      school_id: schoolIdOverride.value || draft.value.matched_school_id || "",
       coach_id: draft.value.matched_coach_id,
       type: "email",
       direction: "inbound",
@@ -51,13 +58,17 @@ const initialData = computed<Partial<Interaction>>(() => {
   }
   const coachId =
     typeof route.query.coachId === "string" ? route.query.coachId : "";
-  const schoolId =
-    typeof route.query.schoolId === "string" ? route.query.schoolId : "";
   return {
     ...(coachId ? { coach_id: coachId } : {}),
-    ...(schoolId ? { school_id: schoolId } : {}),
+    ...(schoolIdOverride.value ? { school_id: schoolIdOverride.value } : {}),
   };
 });
+
+const senderName = computed(() => draft.value?.sender_name ?? null);
+const senderEmail = computed(() => draft.value?.sender_email ?? null);
+const draftReturnTo = computed(() =>
+  draftId.value ? `/interactions/add?draftId=${draftId.value}` : null,
+);
 
 const pageTitle = computed(() => {
   if (draftId.value) return "Review Coach Email";
@@ -166,6 +177,9 @@ const handleCancel = () => {
     <InteractionForm
       :loading="loading"
       :initial-data="initialData"
+      :sender-name="senderName"
+      :sender-email="senderEmail"
+      :draft-return-to="draftReturnTo"
       @submit="handleSubmit"
       @cancel="handleCancel"
     />

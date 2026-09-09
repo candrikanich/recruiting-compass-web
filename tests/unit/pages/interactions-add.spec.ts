@@ -66,7 +66,13 @@ const mockNavigateTo = vi.mocked(navigateTo);
 
 const InteractionFormStub = {
   name: "InteractionFormStub",
-  props: ["loading", "initialData"],
+  props: [
+    "loading",
+    "initialData",
+    "senderName",
+    "senderEmail",
+    "draftReturnTo",
+  ],
   emits: ["submit", "cancel"],
   template: "<div />",
 };
@@ -241,6 +247,47 @@ describe("pages/interactions/add.vue", () => {
         "error",
       );
       expect(wrapper.findComponent(InteractionFormStub).exists()).toBe(true);
+    });
+  });
+
+  describe("draft review with an unmatched school", () => {
+    const draft = {
+      id: "draft-1",
+      matched_school_id: null,
+      matched_coach_id: null,
+      sender_name: "Mark Royer",
+      sender_email: "mroyer@osu.edu",
+      subject: "Recruiting interest",
+      body_text: "Hi, we're interested in your son.",
+      occurred_at: new Date().toISOString(),
+    };
+
+    beforeEach(() => {
+      routeQuery = { draftId: "draft-1" };
+      draftsRef.value = [draft];
+    });
+
+    it("passes sender info and a draftReturnTo pointing back at this draft", async () => {
+      const wrapper = mountPage();
+      await flushPromises();
+
+      const form = wrapper.findComponent(InteractionFormStub);
+      expect(form.props("senderName")).toBe("Mark Royer");
+      expect(form.props("senderEmail")).toBe("mroyer@osu.edu");
+      expect(form.props("draftReturnTo")).toBe(
+        "/interactions/add?draftId=draft-1",
+      );
+    });
+
+    it("overrides the draft's school with a schoolId returned from /schools/new", async () => {
+      routeQuery = { draftId: "draft-1", schoolId: "school-new-1" };
+      const wrapper = mountPage();
+      await flushPromises();
+
+      const form = wrapper.findComponent(InteractionFormStub);
+      expect((form.props("initialData") as any).school_id).toBe(
+        "school-new-1",
+      );
     });
   });
 });
