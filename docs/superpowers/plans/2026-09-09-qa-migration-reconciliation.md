@@ -377,50 +377,119 @@ Three near-name pairs jump out and are the most likely renames — verify these 
 - `fix_push_trigger_add_auth_header` (remote) vs `fix_push_trigger_auth` (local)
 - `drop_positions_table_and_position_fks` (remote) vs `drop_positions_table` (local)
 
-- [ ] **Step 1: For each of the 3 near-name candidates, diff content and check live state**
+- [x] **Step 1: For each of the 3 near-name candidates, diff content and check live state**
 
-  Read both repo files in the pair (e.g. `supabase/migrations/20260801191053*` doesn't exist locally — read the closest actual file `supabase/migrations/20260801000000_move_pg_trgm_to_extensions.sql`) and compare against what the remote name implies. Then check the actual live state the migration would produce:
+  All 3 confirmed as renames — live state matches exactly what each repo file would produce (`pg_trgm` already in `extensions` schema; `trigger_push_notification()`'s live body already has the `Authorization: Bearer` header; `positions` table already dropped, `users.primary_position_id`/`secondary_position_id` already gone). Fold into a Task 2-style repair:
+  - `20260801191053` (remote `move_pg_trgm_to_extensions_schema`) → `20260801000000` (local `move_pg_trgm_to_extensions`)
+  - `20260816171744` (remote `fix_push_trigger_add_auth_header`) → `20260907182444` (local `fix_push_trigger_auth`)
+  - `20260823143136` (remote `drop_positions_table_and_position_fks`) → `20260904000000` (local `drop_positions_table`)
+
+- [x] **Step 2: For each of the remaining 7 remote-only entries with no local pair at all, determine if truly retired**
+
+  All 7 confirmed superseded/squashed, effects live, safe to revert (Task-1-style delete, no local file to pair with — content was captured elsewhere or is a one-time data operation with nothing to replay):
+  - `20260730193943` `security_advisor_warn_hardening_public_grant_fix` — the surviving file `20260730000000_security_advisor_warn_hardening.sql` **explicitly documents in its own header** that it consolidates both this and the paired migration into one repo file.
+  - `20260807163731` `coach_outreach_seed_data`, `20260807163756` `coach_outreach_retire_legacy_templates` — `communication_templates` confirmed seeded (34 rows with slugs); no repo file exists for either name, content now delivered via `20260816000000_coach_outreach_phase0_1.sql`'s referenced external seed file.
+  - `20260809184748` `family_shared_profile_photo_allow_self` — a `users` UPDATE policy ("Users can update own profile") confirmed live; no repo file, effect delivered.
+  - `20260819214145` `add_set_primary_metric_function`, `20260827144403` `add_device_tokens_environment` — both confirmed live (`set_primary_metric()` function exists, `device_tokens.environment` column exists); both already captured by Task 2's `20260906002239 -> 20260918000010` pair (`device_tokens_environment_and_set_primary_metric`), a later migration that re-covers the same ground under one combined name.
+  - `20260827150843` `prune_invalid_device_tokens` — no repo file; a one-time data cleanup (prune, not schema), nothing to replay.
+
+- [x] **Step 3: For each of the remaining 13 local-only entries with no remote pair, confirm genuinely pending**
+
+  Split three ways by live-state check — **do not treat this list as uniformly "pending," most of it already ran**:
+
+  **Already live (mark `--status applied`, do NOT push for real — several of these are non-idempotent and would error or misbehave on replay):**
+  - `20260830000000` `reconcile_auth_and_notify_triggers` — all 3 triggers confirmed live (`on_auth_user_created`, `notify_on_inbound_interaction_insert`, `notify_on_offer_insert`).
+  - `20260831000000` `ensure_pg_net` — `net` schema confirmed present.
+  - `20260907182459` `notification_cron_auth_and_event_schedule` — the 4 cron jobs it creates (`process-follow-up-reminders`, `process-deadline-alerts`, `send-weekly-digest`, `notify-upcoming-events`) confirmed present, `active=false` — matches `claude/database.md`'s existing record of the 2026-09-07 gap-fix session, which explicitly re-verified this state on staging/QA.
+  - `20260919000000`/`20260920000000`/`20260921000000`/`20260922000000` (`realtime_coaches_interactions`/`realtime_schools`/`realtime_athlete_task`/`realtime_documents`) — all 4 tables confirmed already in the `supabase_realtime` publication. Their migrations use plain `ALTER PUBLICATION ... ADD TABLE` with **no `IF NOT EXISTS` guard** — a real push would error "already member of publication."
+  - `20260924000001` `scholarship_limits_unique_constraint_repair` — the unique constraint confirmed present on `scholarship_limits`.
+  - `20260902000010` `seed_sports_and_positions` — **partially live, and partially impossible to ever push again**: `sports` table has the exact 17 rows this file inserts (`ON CONFLICT DO NOTHING`, so re-running is harmless for that half), but the same file also `INSERT INTO public.positions (...)` — a table `20260904000000_drop_positions_table.sql` (applied later, chronologically and in this reconciliation) has since dropped. Running this file for real today would error `relation "public.positions" does not exist`. Mark `--status applied` (its meaningful, still-relevant effect — the sports seed — is already live); **flag as a real repo inconsistency** worth a follow-up cleanup (the file references a table a later migration deletes), not something to fix as part of this DB-reconciliation plan.
+
+  **Genuinely pending — confirmed NOT live, real candidates for Task 4's push:**
+  - `20260901000000` `fix_handle_new_user_role_enum` — live `handle_new_user()` function body still has the **pre-fix bug** (defaults unrecognized roles to `'student'`, which isn't a valid `user_role` enum value, and the valid-role list doesn't include `'player'`). Confirmed via reading the live function source directly.
+  - `20260925000000` `email_sends` — target table doesn't exist.
+  - `20260925000010` `noop_verify_qa_e2e_pipeline` — this plan's own earlier no-op migration test (see PR #704) — never ran against QA (that's the whole reason this reconciliation plan exists).
+
+  **STOP — do not resolve automatically, real conflict found:**
+  - `20260907211105` `activate_notification_cron_jobs` — this migration sets the same 4 legacy cron jobs (`process-follow-up-reminders` etc.) `active := true`. But `claude/database.md`'s existing 2026-09-07 record says those jobs were **deliberately set back to `active=false`** because they duplicate the modern Vercel-cron notification system, and that state was re-verified live just now (Step 3, above). This migration's file, if ever pushed for real, would silently re-enable duplicate notification sends — a functional regression, not a reconciliation no-op. **Do not mark this `--status applied` and do not push it.** This needs an explicit human call: either delete the file from the repo (its intent was superseded by a later decision) or leave its tracking row absent forever with a code comment explaining why. Out of scope for this plan to decide unilaterally.
+
+- [x] **Step 4: Record findings + any additional repairs in claude/database.md**
+
+## Task 4: Reconcile Task 3's findings, then real push for the 3 confirmed-pending migrations + CI verification
+
+Task 3 found more than "pending or not" — it found 3 sub-groups needing 3 different actions. This task covers all three, in order.
+
+### Task 4a: Repair the 3 rename pairs + revert the 7 squashed orphans from Task 3
+
+**Files:** None — live-DB metadata via MCP, same pattern as Tasks 1/2.
+
+- [ ] **Step 1: Insert the 3 rename-pair tracking rows**
 
   ```
   mcp__claude_ai_Supabase__execute_sql
     project_id: xpxzhqghxecsjhvklsqg
-    query: SELECT extname, extnamespace::regnamespace FROM pg_extension WHERE extname = 'pg_trgm';
+    query: INSERT INTO supabase_migrations.schema_migrations (version, name)
+           VALUES
+             ('20260801000000','move_pg_trgm_to_extensions'),
+             ('20260907182444','fix_push_trigger_auth'),
+             ('20260904000000','drop_positions_table')
+           ON CONFLICT (version) DO NOTHING;
   ```
 
-  If `pg_trgm` is already in the `extensions` schema, the migration's effect is already live — pair it via Task 2's `--status applied` pattern (add to that reconciliation, don't re-run). Repeat the analogous check for the other two pairs (query `information_schema.columns`/`routines` for the specific objects each migration touches — read the file first to know what to check for).
-
-- [ ] **Step 2: For each of the remaining 7 remote-only entries with no local pair at all, determine if truly retired**
-
-  These names don't appear anywhere in the current repo — meaning either the feature was squashed into a later combined migration, or the repo file was deleted outright (both legitimate). For each, check whether its described object still exists live:
-
-  ```
-  mcp__claude_ai_Supabase__execute_sql
-    project_id: xpxzhqghxecsjhvklsqg
-    query: SELECT to_regclass('public.athlete_messages'); -- adjust per migration's actual target
-  ```
-
-  If the object exists (feature is live, just consolidated elsewhere in repo history) → revert this tracking row via Task-1-style delete (metadata only, schema unaffected either way). If the object does NOT exist → STOP, this is a real discrepancy (something QA never actually got) and needs a human decision, not an automated one.
-
-- [ ] **Step 3: For each of the remaining 13 local-only entries with no remote pair, confirm genuinely pending**
-
-  These are very likely real, never-applied-to-QA migrations (post-Sept-6 dates mostly — `realtime_*`, `notification_cron_*`, `email_sends`, etc.). Confirm each one's target object does NOT yet exist on QA:
+- [ ] **Step 2: Delete the 3 old remote-only rows + the 7 squashed-orphan rows from Task 3 Step 2**
 
   ```
   mcp__claude_ai_Supabase__execute_sql
     project_id: xpxzhqghxecsjhvklsqg
-    query: SELECT to_regclass('public.email_sends'); -- adjust per file
+    query: DELETE FROM supabase_migrations.schema_migrations
+           WHERE version IN (
+             '20260801191053','20260816171744','20260823143136',
+             '20260730193943','20260807163731','20260807163756',
+             '20260809184748','20260819214145','20260827144403',
+             '20260827150843'
+           );
   ```
 
-  If it doesn't exist, it's genuinely pending — leave it for Task 4's real `db push`. If it unexpectedly does exist, treat as Task 2 (repair `--status applied`, don't re-push).
+- [ ] **Step 3: Verify** — `list_migrations`, expect row count to drop by 7 (10 deleted, 3 inserted).
 
-- [ ] **Step 4: Record findings + any additional repairs in claude/database.md**
+### Task 4b: Mark the 9 already-live local-only entries as applied (no real push)
 
-## Task 4: Real push for confirmed-pending migrations + CI verification
+**Files:** None — live-DB metadata via MCP.
+
+- [ ] **Step 1: Insert the 9 tracking rows**
+
+  ```
+  mcp__claude_ai_Supabase__execute_sql
+    project_id: xpxzhqghxecsjhvklsqg
+    query: INSERT INTO supabase_migrations.schema_migrations (version, name)
+           VALUES
+             ('20260830000000','reconcile_auth_and_notify_triggers'),
+             ('20260831000000','ensure_pg_net'),
+             ('20260902000010','seed_sports_and_positions'),
+             ('20260907182459','notification_cron_auth_and_event_schedule'),
+             ('20260919000000','realtime_coaches_interactions'),
+             ('20260920000000','realtime_schools'),
+             ('20260921000000','realtime_athlete_task'),
+             ('20260922000000','realtime_documents'),
+             ('20260924000001','scholarship_limits_unique_constraint_repair')
+           ON CONFLICT (version) DO NOTHING;
+  ```
+
+  No corresponding deletes — these versions were never in the tracking table under any name (they're local-only entries whose effects turned out to already be live via other means, e.g. manual apply or a squashed migration).
+
+- [ ] **Step 2: Verify** — `list_migrations`, expect row count to rise by exactly 9.
+
+### Task 4c: `activate_notification_cron_jobs` — human decision required, do not resolve here
+
+Do not mark applied, do not push, do not delete the repo file without an explicit decision from Chris. Options to present: (a) delete `supabase/migrations/20260907211105_activate_notification_cron_jobs.sql` from the repo since its intent was superseded, with a note in `claude/database.md` explaining why a version number is permanently absent from tracking; (b) leave the file in place but mark its tracking row `--status reverted`-equivalent (i.e., never insert it) with the same explanatory note, in case the legacy cron jobs are ever intentionally re-enabled later. Either way, record the decision in `claude/database.md` once made — do not silently drop this line item.
+
+### Task 4d: Real push for the 3 confirmed-pending migrations + CI verification
 
 **Files:** None new — this exercises the existing `.github/workflows/migrate-qa-e2e.yml`.
 
 **Interfaces:**
-- Consumes: Tasks 1–3 complete, QA's tracking table now matches the repo except for genuinely-never-applied migrations.
+- Consumes: Task 4a and 4b complete (Task 4c's decision does not block this — the 3 migrations here are independent of `activate_notification_cron_jobs`).
+- Produces: 3 real `db push`-applied migrations on QA — `fix_handle_new_user_role_enum`, `email_sends`, `noop_verify_qa_e2e_pipeline` — plus the QA job in `migrate-qa-e2e.yml` going green for the first time.
 
 - [ ] **Step 1: Trigger the workflow**
 
@@ -432,22 +501,22 @@ Three near-name pairs jump out and are the most likely renames — verify these 
   gh run view <run-id> -R candrikanich/recruiting-compass-web
   ```
 
-  Expected: both `Push migrations to QA` and (once its own plan exists) e2e jobs succeed, pushing only the genuinely-pending migrations identified in Task 3.
+  Expected: the `Push migrations to QA` job succeeds and pushes exactly 3 migrations (`fix_handle_new_user_role_enum`, `email_sends`, `noop_verify_qa_e2e_pipeline`). The `Push migrations to e2e` job in the same run is **not** expected to be clean — e2e has its own, separate, un-diffed drift (out of scope for this plan).
 
-- [ ] **Step 3: Confirm QA history now matches repo exactly**
+- [ ] **Step 3: Confirm QA history now matches repo exactly (modulo Task 4c)**
 
   ```
   mcp__claude_ai_Supabase__list_migrations
     project_id: xpxzhqghxecsjhvklsqg
   ```
 
-  Expected: every version present matches a `supabase/migrations/*.sql` filename in the repo, 1:1, no orphans either direction.
+  Expected: every version present matches a `supabase/migrations/*.sql` filename in the repo, 1:1, no orphans either direction — **except** `20260907211105_activate_notification_cron_jobs.sql`, which stays absent from QA's tracking table until Task 4c's decision is made (that absence is correct, not a leftover bug).
 
 ---
 
 ## Self-Review
 
-- **Coverage:** Task 0 (4 collisions), Task 1 (6 dead duplicates), Task 2 (57 renames + 1 folded-in duplicate revert), Task 3 (11+16 unresolved), Task 4 (real push + CI verify) account for all 75 remote-only + 73 local-only + 35 exact-match + 4 collision entries identified in the corrected diff (114 total remote entries: 35+4+6+57+11 = 113 — the 114th is the pre-existing `baseline` row at version `00000000000000`, exact match, no action). e2e is explicitly deferred to its own future plan.
-- **Placeholders:** none — every version/name pair is the actual data from today's `list_migrations` call and repo `ls`, cross-checked with a script (not hand-matched — see revision note in Background).
-- **Risk containment:** Task 0 is read-only investigation; Tasks 1 and 2 only touch the tracking table (verified metadata-only, and Task 1's list was independently re-verified live against QA before this revision); Task 3 requires an actual live-state check before any action; Task 4 only pushes what Task 3 confirms is genuinely new.
+- **Coverage:** Task 0 (4 collisions) + Task 1 (6 dead duplicates) + Task 2 (57 renames) account for the original 114-entry diff's clean majority. Task 3 (read-only investigation of the 27-entry unresolved cluster) resolved every single one of them to a concrete finding — 3 more renames, 7 more squashed orphans, 9 already-live-but-untracked, 3 genuinely pending, and 1 real conflict (`activate_notification_cron_jobs`) needing a human call. Task 4 (a/b/c/d) executes those findings. Nothing from the original diff is left unaddressed. e2e is explicitly deferred to its own future plan.
+- **Placeholders:** none — every version/name pair is real data, either from the original script-verified diff or from a live `execute_sql` check run during Task 3.
+- **Risk containment:** Task 0 and Task 3 are read-only investigation; Tasks 1, 2, 4a, and 4b only touch the tracking table (metadata-only, each verified against live QA state before and after); Task 4c deliberately takes no action pending a human decision, because the alternative (guessing) risks silently re-enabling duplicate notification sends; Task 4d only pushes the 3 migrations Task 3 confirmed are genuinely never-applied.
 - **Correction history:** the first version of this plan (merged as PR #716) had two data errors caught during Task 1 Step 1's own safety check, before any write: (1) it listed `20260813212642` as already safe to revert when its canonical pair doesn't exist until Task 2 runs, and (2) it bucketed `coach_tags_source` (`20260825151841`) as safely superseded by `20260825000000`, but that version is actually a different migration (`cron_runs`) — a version collision the original hand-matching missed entirely. This revision fixes both and adds Task 0 to cover the collisions the original diff never surfaced.

@@ -95,6 +95,62 @@ old remote-only rows plus `drop_coaches_availability`'s duplicate apply
 Post-verify: QA's `schema_migrations` row count went from 114 → 107
 (114 − 6 Task 1 − 58 Task 2 reverts + 57 Task 2 inserts), matching exactly.
 
+**Task 3 (investigate the 27-entry unresolved cluster, read-only) — DONE.**
+Resolved all 27 to a concrete finding via live `execute_sql` checks:
+
+- **3 more renames** the exact-name matcher missed (near-name only):
+  `move_pg_trgm_to_extensions_schema`/`move_pg_trgm_to_extensions`,
+  `fix_push_trigger_add_auth_header`/`fix_push_trigger_auth`,
+  `drop_positions_table_and_position_fks`/`drop_positions_table`. All 3
+  confirmed via live state (pg_trgm in `extensions` schema,
+  `trigger_push_notification()`'s live body already has the Authorization
+  header, `positions` table + FK columns already dropped).
+- **7 more squashed/superseded orphans**, all confirmed live, safe revert:
+  `security_advisor_warn_hardening_public_grant_fix` (the surviving repo
+  file's own header documents the squash), `coach_outreach_seed_data` +
+  `coach_outreach_retire_legacy_templates` (templates confirmed seeded, 34
+  slugs; content now delivered via `coach_outreach_phase0_1`'s external
+  seed file), `family_shared_profile_photo_allow_self` (self-update
+  policy confirmed live), `add_set_primary_metric_function` +
+  `add_device_tokens_environment` (both confirmed live, already re-covered
+  by Task 2's `device_tokens_environment_and_set_primary_metric` pair),
+  `prune_invalid_device_tokens` (one-time data cleanup, no repo file).
+- **9 local-only entries already live but untracked** — mark applied,
+  **never push for real** (several are non-idempotent and would error on
+  replay): `reconcile_auth_and_notify_triggers` (all 3 triggers live),
+  `ensure_pg_net` (`net` schema live), `notification_cron_auth_and_event_schedule`
+  (4 cron jobs live, `active=false` — matches the 2026-09-07 gap-fix
+  record below), `realtime_coaches_interactions`/`realtime_schools`/
+  `realtime_athlete_task`/`realtime_documents` (all 4 tables already in
+  `supabase_realtime` publication — `ALTER PUBLICATION ADD TABLE` has no
+  `IF NOT EXISTS` guard, a real push would error), `scholarship_limits_unique_constraint_repair`
+  (constraint live). `seed_sports_and_positions` is a special case:
+  its `sports` half is live (17 rows, `ON CONFLICT DO NOTHING`) but it
+  also `INSERT`s into `public.positions`, a table
+  `drop_positions_table` has since dropped — running this file for real
+  today would error. Mark applied; **flagged as a real repo
+  inconsistency** (a migration referencing a table a later migration
+  deletes) worth cleaning up separately, not fixed here.
+- **3 genuinely pending** (confirmed NOT live), real push candidates:
+  `fix_handle_new_user_role_enum` (live `handle_new_user()` still has the
+  pre-fix bug — confirmed by reading its live source), `email_sends`
+  (table doesn't exist), `noop_verify_qa_e2e_pipeline` (this plan's own
+  test migration from PR #704 — never ran against QA, which is the
+  entire reason this reconciliation exists).
+- **1 real conflict, not resolved — needs a human decision:**
+  `activate_notification_cron_jobs` sets the same 4 legacy cron jobs
+  named above `active := true`. But they were **deliberately** set
+  `active=false` on 2026-09-07 (see the gap-fix entry below) because they
+  duplicate the modern Vercel-cron notification system — that state was
+  just re-confirmed live. Pushing this migration for real would silently
+  re-enable duplicate notification sends. Not marked applied, not pushed,
+  not deleted — options (delete the file vs. leave it permanently
+  untracked with an explanatory comment) queued for Chris to decide.
+
+Full detail + the exact SQL for each is in
+`docs/superpowers/plans/2026-09-09-qa-migration-reconciliation.md` Task 3
+and Task 4a/4b/4c.
+
 **Remaining:** Task 3 (11+16 unresolved entries needing live-state
 verification), Task 4 (real `db push` for genuinely-pending migrations +
 CI re-verify). e2e project (`ahpethltxopkjxxzwmmb`) has its own,
