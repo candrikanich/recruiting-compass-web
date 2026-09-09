@@ -4,6 +4,8 @@ import {
   groupByMonth,
   splitUpcomingPast,
   filterDeadlines,
+  buildCalendarGrid,
+  groupByDate,
 } from "~/utils/deadlines";
 import type { UnifiedDeadline } from "~/types/deadline";
 
@@ -308,5 +310,47 @@ describe("filterDeadlines", () => {
   it("ignores blank/whitespace-only search text", () => {
     const result = filterDeadlines(deadlines, { search: "   " });
     expect(result).toHaveLength(3);
+  });
+});
+
+describe("buildCalendarGrid", () => {
+  it("returns 42 local YYYY-MM-DD date keys, Sunday-start, spilling into adjacent months", () => {
+    // September 2026: Sept 1 is a Tuesday, so the grid starts Sunday Aug 30
+    // and ends Saturday Oct 10 (30+2+... = 42 cells).
+    const grid = buildCalendarGrid(2026, 8); // month is 0-indexed (8 = September)
+    expect(grid).toHaveLength(42);
+    expect(grid[0]).toBe("2026-08-30");
+    expect(grid[2]).toBe("2026-09-01");
+    expect(grid[41]).toBe("2026-10-10");
+  });
+
+  it("handles a month starting on Sunday with no leading spillover", () => {
+    // Nov 1, 2026 is a Sunday
+    const grid = buildCalendarGrid(2026, 10);
+    expect(grid[0]).toBe("2026-11-01");
+  });
+
+  it("handles December→January year rollover", () => {
+    const grid = buildCalendarGrid(2026, 11);
+    expect(grid.every((d) => /^\d{4}-\d{2}-\d{2}$/.test(d))).toBe(true);
+    expect(grid[grid.length - 1] >= "2027-01-01").toBe(true);
+  });
+});
+
+describe("groupByDate", () => {
+  it("groups deadlines by their date key", () => {
+    const deadlines = [
+      makeDeadline({ id: "1", date: "2026-09-01" }),
+      makeDeadline({ id: "2", date: "2026-09-01" }),
+      makeDeadline({ id: "3", date: "2026-09-05" }),
+    ];
+    const grouped = groupByDate(deadlines);
+    expect(grouped.get("2026-09-01")).toHaveLength(2);
+    expect(grouped.get("2026-09-05")).toHaveLength(1);
+    expect(grouped.get("2026-09-06")).toBeUndefined();
+  });
+
+  it("returns empty map for empty input", () => {
+    expect(groupByDate([])).toEqual(new Map());
   });
 });

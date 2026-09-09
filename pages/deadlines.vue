@@ -93,8 +93,153 @@
               {{ categoryLabel(cat) }}
             </button>
           </div>
+
+          <div class="flex gap-1 rounded-lg bg-brand-slate-100 p-1 w-fit">
+            <button
+              type="button"
+              class="rounded-md px-3 py-1 text-xs font-medium transition-colors"
+              :class="
+                viewMode === 'list'
+                  ? 'bg-[var(--card)] text-brand-slate-900 shadow-xs'
+                  : 'text-brand-slate-600'
+              "
+              @click="viewMode = 'list'"
+            >
+              List
+            </button>
+            <button
+              type="button"
+              class="rounded-md px-3 py-1 text-xs font-medium transition-colors"
+              :class="
+                viewMode === 'calendar'
+                  ? 'bg-[var(--card)] text-brand-slate-900 shadow-xs'
+                  : 'text-brand-slate-600'
+              "
+              @click="viewMode = 'calendar'"
+            >
+              Calendar
+            </button>
+          </div>
         </div>
 
+        <template v-if="viewMode === 'calendar'">
+          <div
+            class="mb-6 rounded-xl border border-brand-slate-200 bg-[var(--card)] p-6"
+          >
+            <div class="mb-6 flex items-center justify-between">
+              <button
+                type="button"
+                aria-label="Previous month"
+                class="rounded-lg p-2 text-brand-slate-600 hover:bg-brand-slate-100"
+                @click="previousMonth"
+              >
+                <UIcon name="i-heroicons-chevron-left" class="h-5 w-5" />
+              </button>
+              <span class="font-semibold text-brand-slate-900">
+                {{ monthDisplay }}
+              </span>
+              <button
+                type="button"
+                aria-label="Next month"
+                class="rounded-lg p-2 text-brand-slate-600 hover:bg-brand-slate-100"
+                @click="nextMonth"
+              >
+                <UIcon name="i-heroicons-chevron-right" class="h-5 w-5" />
+              </button>
+            </div>
+
+            <div class="grid grid-cols-7 gap-1">
+              <div
+                v-for="day in ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']"
+                :key="day"
+                class="py-1 text-center text-xs font-medium text-brand-slate-500"
+              >
+                {{ day }}
+              </div>
+              <button
+                v-for="dateKey in calendarGrid"
+                :key="dateKey"
+                type="button"
+                class="flex min-h-12 flex-col items-center justify-center rounded-lg p-1 text-sm transition-colors"
+                :class="[
+                  isCurrentGridMonth(dateKey)
+                    ? 'text-brand-slate-700'
+                    : 'text-brand-slate-300',
+                  dateKey === selectedDay
+                    ? 'bg-brand-blue-600 text-white'
+                    : 'hover:bg-brand-slate-100',
+                ]"
+                @click="selectedDay = dateKey"
+              >
+                <span>{{ dayOfMonth(dateKey) }}</span>
+                <span
+                  v-if="deadlinesByDate.has(dateKey)"
+                  class="mt-0.5 h-1.5 w-1.5 rounded-full"
+                  :class="dateKey === selectedDay ? 'bg-white' : 'bg-brand-blue-500'"
+                />
+              </button>
+            </div>
+          </div>
+
+          <div v-if="selectedDayDeadlines.length > 0" class="space-y-3">
+            <h2 class="text-sm font-semibold text-brand-slate-700">
+              {{ formatDate(selectedDay ?? "") }}
+            </h2>
+            <ul class="space-y-3">
+              <li
+                v-for="d in selectedDayDeadlines"
+                :key="d.id"
+                class="flex items-center justify-between rounded-lg border border-brand-slate-200 bg-[var(--card)] p-4"
+              >
+                <div>
+                  <p class="font-medium text-brand-slate-900">{{ d.label }}</p>
+                  <div
+                    class="mt-1 flex flex-wrap items-center gap-2 text-sm text-brand-slate-500"
+                  >
+                    <DesignSystemBadge
+                      :color="categoryColor(d.category)"
+                      size="sm"
+                    >
+                      {{ categoryLabel(d.category) }}
+                    </DesignSystemBadge>
+                    <DesignSystemBadge
+                      v-if="d.source === 'system'"
+                      color="slate"
+                      size="sm"
+                    >
+                      NCAA Calendar
+                    </DesignSystemBadge>
+                  </div>
+                </div>
+                <div v-if="d.source === 'user'" class="flex items-center gap-3">
+                  <button
+                    type="button"
+                    class="text-sm font-medium text-brand-slate-600 hover:text-brand-slate-900"
+                    :aria-label="`Edit ${d.label}`"
+                    @click="openEdit(d)"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    class="text-sm font-medium text-brand-red-600 hover:text-brand-red-700"
+                    :aria-label="`Remove ${d.label}`"
+                    @click="removeDeadline(d.id)"
+                  >
+                    Remove
+                  </button>
+                </div>
+              </li>
+            </ul>
+          </div>
+          <DesignSystemEmptyState
+            v-else-if="selectedDay"
+            title="No deadlines this day"
+            description="Pick another day on the calendar"
+          />
+        </template>
+
+        <template v-else>
         <DesignSystemEmptyState
           v-if="upcomingByMonth.size === 0 && pastByMonth.size === 0"
           title="No deadlines match your filters"
@@ -240,6 +385,7 @@
             </section>
           </div>
         </section>
+        </template>
       </template>
     </div>
 
@@ -327,7 +473,12 @@
 </template>
 
 <script setup lang="ts">
-import { groupByMonth, filterDeadlines } from "~/utils/deadlines";
+import {
+  groupByMonth,
+  filterDeadlines,
+  buildCalendarGrid,
+  groupByDate,
+} from "~/utils/deadlines";
 import type {
   SystemDeadlineCategory,
   UnifiedDeadline,
@@ -415,6 +566,61 @@ const filteredPast = computed(() =>
 const upcomingByMonth = computed(() => groupByMonth(filteredUpcoming.value));
 const pastByMonth = computed(() => groupByMonth(filteredPast.value));
 const filteredPastCount = computed(() => filteredPast.value.length);
+
+const viewMode = ref<"list" | "calendar">("list");
+const calendarMonth = ref(new Date());
+const selectedDay = ref<string | null>(null);
+
+const filteredAll = computed(() =>
+  filterDeadlines(unifiedDeadlines.value, {
+    category: activeCategory.value ?? undefined,
+    search: searchText.value,
+  }),
+);
+const deadlinesByDate = computed(() => groupByDate(filteredAll.value));
+const calendarGrid = computed(() =>
+  buildCalendarGrid(
+    calendarMonth.value.getFullYear(),
+    calendarMonth.value.getMonth(),
+  ),
+);
+const monthDisplay = computed(() =>
+  calendarMonth.value.toLocaleDateString("en-US", {
+    month: "long",
+    year: "numeric",
+  }),
+);
+const selectedDayDeadlines = computed(
+  () => deadlinesByDate.value.get(selectedDay.value ?? "") ?? [],
+);
+
+function isCurrentGridMonth(dateKey: string): boolean {
+  const [y, m] = dateKey.split("-").map(Number);
+  return (
+    y === calendarMonth.value.getFullYear() &&
+    m === calendarMonth.value.getMonth() + 1
+  );
+}
+
+function dayOfMonth(dateKey: string): number {
+  return Number(dateKey.split("-")[2]);
+}
+
+function previousMonth() {
+  calendarMonth.value = new Date(
+    calendarMonth.value.getFullYear(),
+    calendarMonth.value.getMonth() - 1,
+    1,
+  );
+}
+
+function nextMonth() {
+  calendarMonth.value = new Date(
+    calendarMonth.value.getFullYear(),
+    calendarMonth.value.getMonth() + 1,
+    1,
+  );
+}
 
 const CATEGORY_COLORS: Record<
   UserDeadlineCategory | SystemDeadlineCategory,
