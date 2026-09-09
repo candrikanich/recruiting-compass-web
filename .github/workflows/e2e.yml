@@ -12,14 +12,38 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  e2e-tests:
-    name: Playwright E2E Tests
+  # Runs the full test-database seed exactly once. global-setup.ts also seeds
+  # per-run (shouldSeed), which is fine for a single job but not for 4 sharded
+  # jobs hitting the same shared test project concurrently — seeding here and
+  # passing E2E_SKIP_SEED=true to every downstream job avoids that race.
+  e2e-seed:
+    name: Seed E2E Database
     runs-on: ubuntu-latest
-    # 60 not 30: against the dedicated test project the seed populates data, so
-    # far fewer specs skip than on the (data-less) prod runs — the full suite +
-    # sequential cross-account-logout phase runs ~50m. (Follow-up: cut this with
-    # more workers or sharding.)
-    timeout-minutes: 60
+    timeout-minutes: 10
+    if: github.actor != 'dependabot[bot]'
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-node-deps
+      - name: Seed test database
+        run: npm run db:seed:test
+        env:
+          NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.TEST_SUPABASE_URL }}
+          NUXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.TEST_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.TEST_SUPABASE_SERVICE_ROLE_KEY }}
+
+  e2e-tests:
+    name: Playwright E2E Tests (shard ${{ matrix.shard }}/4)
+    runs-on: ubuntu-latest
+    needs: e2e-seed
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
+    # Main chromium project only, sharded 4 ways — was a single ~50m runner.
+    # cross-account-logout and profile-publish-toggle run once, unsharded, in
+    # the separate e2e-sequential job below (they mutate shared account state
+    # and must never run concurrently with a second copy of themselves).
+    timeout-minutes: 30
     # Dependabot PRs don't have access to secrets — the server can't start without them.
     # Dependency bumps are validated by unit tests, lint, and type-check.
     if: github.actor != 'dependabot[bot]'
@@ -45,9 +69,10 @@ jobs:
           NUXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.TEST_SUPABASE_ANON_KEY }}
 
       - name: Run E2E tests
-        run: npm run test:e2e
+        run: npm run test:e2e:main -- --shard=${{ matrix.shard }}/4
         env:
           CI: true
+          E2E_SKIP_SEED: "true" # seeded once upstream in e2e-seed — see that job's comment
           # E2E runs against the dedicated test Supabase project, never prod.
           NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.TEST_SUPABASE_URL }}
           NUXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.TEST_SUPABASE_ANON_KEY }}
@@ -66,7 +91,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: playwright-report
+          name: playwright-report-${{ matrix.shard }}
           path: playwright-report/
           retention-days: 30
 
@@ -74,7 +99,63 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: playwright-results
+          name: playwright-results-${{ matrix.shard }}
+          path: test-results/
+          retention-days: 30
+
+  # cross-account-logout and profile-publish-toggle each mutate shared test-
+  # account state (see comments in playwright.config.ts / scripts/run-e2e.sh)
+  # and must run exactly once, never sharded, never concurrently with each
+  # other. Runs alongside the e2e-tests matrix, not after it — it's ~10 specs,
+  # nowhere near the main suite's wall time.
+  e2e-sequential:
+    name: Playwright E2E Tests (sequential)
+    runs-on: ubuntu-latest
+    needs: e2e-seed
+    timeout-minutes: 20
+    if: github.actor != 'dependabot[bot]'
+
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-node-deps
+        with:
+          prepare-nuxt: "true"
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Build application
+        run: npm run build
+        env:
+          NITRO_PRESET: node-server
+          NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.TEST_SUPABASE_URL }}
+          NUXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.TEST_SUPABASE_ANON_KEY }}
+
+      - name: Run E2E tests
+        run: npm run test:e2e:sequential
+        env:
+          CI: true
+          E2E_SKIP_SEED: "true" # seeded once upstream in e2e-seed — see that job's comment
+          NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.TEST_SUPABASE_URL }}
+          NUXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.TEST_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.TEST_SUPABASE_SERVICE_ROLE_KEY }}
+          E2E_PROFILE_SLUG: e2e-test-player
+          NUXT_ADMIN_TOKEN_SECRET: ${{ secrets.NUXT_ADMIN_TOKEN_SECRET }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report-sequential
+          path: playwright-report/
+          retention-days: 30
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-results-sequential
           path: test-results/
           retention-days: 30
 
