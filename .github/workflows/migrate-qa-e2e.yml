@@ -32,7 +32,7 @@ jobs:
           SUPABASE_DB_PASSWORD: ${{ secrets.QA_DB_PASSWORD }}
         run: |
           supabase link --project-ref ${{ secrets.QA_PROJECT_REF }}
-          supabase db push
+          supabase db push --include-all
 
   migrate-e2e:
     name: Push migrations to E2E (ahpethltxopkjxxzwmmb)
@@ -55,4 +55,4 @@ jobs:
           SUPABASE_DB_PASSWORD: ${{ secrets.E2E_DB_PASSWORD }}
         run: |
           supabase link --project-ref ${{ secrets.E2E_PROJECT_REF }}
-          supabase db push
+          supabase db push --include-all

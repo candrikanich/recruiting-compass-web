@@ -21,6 +21,10 @@ import {
   deriveMissingInfoFields,
   type MissingInfoField,
 } from "~/utils/communication/missingInfo";
+import {
+  groupTemplatesByStage,
+  type TemplateStageGroup,
+} from "~/utils/communication/templateStages";
 import type { ResolverContext, Row } from "~/utils/templateResolver";
 import type { Coach, School, CommunicationTemplate } from "~/types/models";
 
@@ -61,6 +65,9 @@ export interface ChannelController {
   /** Per-row inline save error, keyed by variable key. */
   saveErrors: Ref<Record<string, string>>;
   templates: ComputedRef<CommunicationTemplate[]>;
+  /** `templates` grouped by outreach stage (First Contact, Follow-Up, ...) for
+   *  the picker — issue #519, keeps a 30+-row list scannable. */
+  groupedTemplates: ComputedRef<TemplateStageGroup[]>;
   variableRows: ComputedRef<VariableRow[]>;
   previewSegments: ComputedRef<PreviewSegment[]>;
   unresolved: ComputedRef<string[]>;
@@ -369,6 +376,9 @@ export function useQuickCommunication(params: QuickCommunicationParams) {
         contactWindowState.value,
       ),
     );
+    const groupedTemplates = computed(() =>
+      groupTemplatesByStage(templates.value),
+    );
 
     const variableRows = computed(() =>
       toRows(selectedTemplateObj.value, resolvedValues.value),
@@ -446,6 +456,7 @@ export function useQuickCommunication(params: QuickCommunicationParams) {
       savingKey,
       saveErrors,
       templates,
+      groupedTemplates,
       variableRows,
       previewSegments,
       unresolved,

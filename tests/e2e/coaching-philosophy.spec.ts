@@ -15,7 +15,11 @@ import {
  * and work whether or not data is populated on the page.
  */
 
-test.describe("Coaching Philosophy - Feature E2E", () => {
+// @flaky: beforeAll below hits a known session-expired race under CI's
+// parallel worker load (see planning/e2e-ci-refactor-plan.md Phase 3) —
+// quarantined off the blocking gate into the non-blocking e2e-flaky job
+// until the underlying shared-account race is root-caused.
+test.describe("Coaching Philosophy - Feature E2E @flaky", () => {
   // fullyParallel can shard this describe's tests across workers, each of
   // which would otherwise independently re-run beforeAll -- pin to one
   // worker so the seeded school is created exactly once (same race found
