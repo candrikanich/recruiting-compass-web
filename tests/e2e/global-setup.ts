@@ -199,9 +199,14 @@ async function globalSetup(_config: FullConfig) {
     );
   }
 
-  // Full database seed (only in CI or when explicitly requested)
+  // Full database seed (only in CI or when explicitly requested).
+  // E2E_SKIP_SEED=true is set by sharded CI jobs (e2e.yml) whose seed already
+  // ran once in a dedicated e2e-seed job upstream — running the full seed
+  // concurrently from N sharded jobs against the same shared test project
+  // would race on the same rows instead of just being redundant.
   const shouldSeed =
-    process.env.CI === "true" || process.env.E2E_SEED === "true";
+    (process.env.CI === "true" || process.env.E2E_SEED === "true") &&
+    process.env.E2E_SKIP_SEED !== "true";
 
   if (shouldSeed) {
     console.log("🌱 Seeding test database...");
@@ -212,6 +217,8 @@ async function globalSetup(_config: FullConfig) {
       console.error("❌ Database seeding failed:", error);
       // Don't exit - tests can still run with existing data
     }
+  } else if (process.env.E2E_SKIP_SEED === "true") {
+    console.log("⏭️  Skipping full database seed (E2E_SKIP_SEED=true — already seeded upstream)");
   } else {
     console.log("⏭️  Skipping full database seed (set E2E_SEED=true to seed)");
   }

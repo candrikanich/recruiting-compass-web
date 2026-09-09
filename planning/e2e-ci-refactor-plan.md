@@ -23,10 +23,10 @@
 - Modify: `.github/workflows/e2e.yml` (`e2e-webkit` job)
 
 **Steps:**
-- [ ] Give `e2e-webkit` its own build step (checkout → setup-node-deps → `npm run build` with the same `NITRO_PRESET`/Supabase env), duplicating what `e2e-tests` does instead of downloading its artifact.
-- [ ] Remove `needs: e2e-tests` from `e2e-webkit`. Keep `continue-on-error: true` and `if: always()` → simplify to `if: github.actor != 'dependabot[bot]'` since it no longer depends on the other job's outcome.
-- [ ] Drop the now-unused "Download build output" step and the `e2e-build-output` artifact upload from `e2e-tests` if nothing else consumes it (check `migrate-qa-e2e.yml` and any other workflow first — grep for `e2e-build-output`).
-- [ ] Open a PR, confirm in the Actions tab both jobs start at T+0 instead of WebKit starting at T+50m.
+- [x] Give `e2e-webkit` its own build step (checkout → setup-node-deps → `npm run build` with the same `NITRO_PRESET`/Supabase env), duplicating what `e2e-tests` does instead of downloading its artifact.
+- [x] Remove `needs: e2e-tests` from `e2e-webkit`. Keep `continue-on-error: true` and `if: always()` → simplify to `if: github.actor != 'dependabot[bot]'` since it no longer depends on the other job's outcome.
+- [x] Drop the now-unused "Download build output" step and the `e2e-build-output` artifact upload from `e2e-tests` if nothing else consumes it (check `migrate-qa-e2e.yml` and any other workflow first — grep for `e2e-build-output`).
+- [x] **Shipped PR #711, merged to develop.**
 
 ---
 
@@ -42,12 +42,12 @@
 - Modify: `package.json` — add `test:e2e:main` (phase 1 only, shard-aware) and `test:e2e:sequential` (phases 2+3 only) scripts so CI and local runs share the same entry points as `test:e2e`.
 
 **Steps:**
-- [ ] Add `test:e2e:main` (`playwright test --project=chromium`) and `test:e2e:sequential` (`playwright test --project=cross-account-logout && playwright test --project=profile-publish-toggle --workers=1`) to `package.json`, sourced from the two tail phases already in `run-e2e.sh`.
-- [ ] Update `run-e2e.sh` to call the same three phases it already does — no behavior change for local `npm run test:e2e` — but confirm phase 1 forwards `--shard` when set via `$@` (it already does via passthrough args; verify with `npx playwright test --project=chromium --shard=1/4 --list` locally).
-- [ ] In `e2e.yml`, add `strategy: matrix: shard: [1, 2, 3, 4]` to `e2e-tests`, pass `--shard=${{ matrix.shard }}/4` into `npm run test:e2e:main`, and namespace the `playwright-report`/`playwright-results` artifact names with `-${{ matrix.shard }}` (upload-artifact rejects duplicate names across matrix jobs).
-- [ ] Add `e2e-sequential` job: same build/install steps, runs `npm run test:e2e:sequential`, no matrix, `timeout-minutes: 20` (phases 2+3 are ~10 specs total, not the 50m budget).
-- [ ] Any job that currently does `needs: e2e-tests` (check `e2e-webkit` post-Phase-1, and the final gate job around `e2e.yml:1238`/`1277`) must now also depend on `e2e-sequential` — a PR isn't safe to merge if the sequential phase failed even though the sharded matrix passed.
-- [ ] Verify: open a PR, confirm 4 shard jobs + `e2e-sequential` all start concurrently, total wall time for the main phase drops to roughly `50m / 4` plus fixed overhead (checkout/install/build ~2-3m per shard).
+- [x] Add `test:e2e:main` (`playwright test --project=chromium`) and `test:e2e:sequential` (`playwright test --project=cross-account-logout && playwright test --project=profile-publish-toggle --workers=1`) to `package.json`. **Deviation from plan:** left `run-e2e.sh` untouched instead of refactoring it — the two new scripts are thin CI-only wrappers, local `npm run test:e2e` behavior is unchanged, no dual-maintenance of the phase-splitting logic.
+- [x] Verified `--shard` flag parses against the chromium project (`npx playwright test --project=chromium --shard=1/4 --list`).
+- [x] In `e2e.yml`, added `strategy: matrix: shard: [1, 2, 3, 4]` to `e2e-tests`, `--shard=${{ matrix.shard }}/4` into `npm run test:e2e:main`, namespaced `playwright-report`/`playwright-results` artifacts with `-${{ matrix.shard }}`.
+- [x] Added `e2e-sequential` job (unsharded, `timeout-minutes: 20`).
+- [x] **Found and fixed a risk not in the original plan:** sharding means `global-setup.ts`'s per-run full DB seed would fire 4x concurrently against the shared test project — a new race the single-job setup never had. Added a dedicated `e2e-seed` job that seeds once; `e2e-tests` and `e2e-sequential` both `needs: e2e-seed` and pass `E2E_SKIP_SEED=true` (new global-setup.ts guard) to skip their own reseed.
+- [ ] **Live verify pending — this is the real test:** open PR, confirm `e2e-seed` → 4 parallel shards + `e2e-sequential` all pass, confirm seeded data is correct (no duplicate-key/race symptoms across shards), confirm wall time for the main phase drops meaningfully from ~50m.
 
 ---
 
