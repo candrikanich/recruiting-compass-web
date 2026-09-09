@@ -6,6 +6,7 @@ import {
   generateUniqueSchoolName,
   schoolHelpers,
 } from "../fixtures/schools.fixture";
+import { tagName } from "../seed/helpers/run-id";
 
 /**
  * Document sharing — share with schools (not users).
@@ -41,9 +42,13 @@ test.describe("Document sharing", () => {
       const page = await ctx.newPage();
       primarySchoolId = await schoolHelpers.createSchool(
         page,
-        createSchoolData({ name: generateUniqueSchoolName("Sharing Primary") }),
+        createSchoolData({
+          name: tagName(generateUniqueSchoolName("Sharing Primary")),
+        }),
       );
-      recipientSchoolName = generateUniqueSchoolName("Sharing Recipient");
+      recipientSchoolName = tagName(
+        generateUniqueSchoolName("Sharing Recipient"),
+      );
       recipientSchoolId = await schoolHelpers.createSchool(
         page,
         createSchoolData({ name: recipientSchoolName }),
