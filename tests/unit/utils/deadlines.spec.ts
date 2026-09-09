@@ -3,6 +3,7 @@ import {
   mergeDeadlines,
   groupByMonth,
   splitUpcomingPast,
+  filterDeadlines,
 } from "~/utils/deadlines";
 import type { UnifiedDeadline } from "~/types/deadline";
 
@@ -252,5 +253,60 @@ describe("splitUpcomingPast", () => {
     const { upcoming, past } = splitUpcomingPast([], "2026-09-02");
     expect(upcoming).toEqual([]);
     expect(past).toEqual([]);
+  });
+});
+
+describe("filterDeadlines", () => {
+  const deadlines = [
+    makeDeadline({
+      id: "1",
+      date: "2026-09-01",
+      label: "Stanford App",
+      category: "application",
+    }),
+    makeDeadline({
+      id: "2",
+      date: "2026-09-15",
+      label: "SAT Test Date",
+      category: "test",
+    }),
+    makeDeadline({
+      id: "3",
+      date: "2026-10-01",
+      label: "Campus Visit",
+      category: "visit",
+    }),
+  ];
+
+  it("returns all deadlines when no filters are set", () => {
+    expect(filterDeadlines(deadlines, {})).toHaveLength(3);
+  });
+
+  it("filters by category", () => {
+    const result = filterDeadlines(deadlines, { category: "test" });
+    expect(result.map((d) => d.id)).toEqual(["2"]);
+  });
+
+  it("filters by search text, case-insensitive, matching label", () => {
+    const result = filterDeadlines(deadlines, { search: "stanford" });
+    expect(result.map((d) => d.id)).toEqual(["1"]);
+  });
+
+  it("combines category and search filters (AND)", () => {
+    const result = filterDeadlines(deadlines, {
+      category: "visit",
+      search: "campus",
+    });
+    expect(result.map((d) => d.id)).toEqual(["3"]);
+  });
+
+  it("returns empty array when nothing matches", () => {
+    const result = filterDeadlines(deadlines, { search: "nonexistent" });
+    expect(result).toEqual([]);
+  });
+
+  it("ignores blank/whitespace-only search text", () => {
+    const result = filterDeadlines(deadlines, { search: "   " });
+    expect(result).toHaveLength(3);
   });
 });

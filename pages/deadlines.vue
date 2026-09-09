@@ -57,6 +57,56 @@
       </DesignSystemEmptyState>
 
       <template v-else>
+        <div class="mb-6 space-y-3">
+          <input
+            v-model="searchText"
+            type="search"
+            placeholder="Search deadlines…"
+            aria-label="Search deadlines"
+            class="input-field"
+          />
+          <div class="flex flex-wrap gap-2">
+            <button
+              type="button"
+              class="rounded-full px-3 py-1 text-xs font-medium transition-colors"
+              :class="
+                activeCategory === null
+                  ? 'bg-brand-blue-600 text-white'
+                  : 'bg-brand-slate-100 text-brand-slate-700 hover:bg-brand-slate-200'
+              "
+              @click="activeCategory = null"
+            >
+              All
+            </button>
+            <button
+              v-for="cat in availableCategories"
+              :key="cat"
+              type="button"
+              class="rounded-full px-3 py-1 text-xs font-medium transition-colors"
+              :class="
+                activeCategory === cat
+                  ? 'bg-brand-blue-600 text-white'
+                  : 'bg-brand-slate-100 text-brand-slate-700 hover:bg-brand-slate-200'
+              "
+              @click="activeCategory = activeCategory === cat ? null : cat"
+            >
+              {{ categoryLabel(cat) }}
+            </button>
+          </div>
+        </div>
+
+        <DesignSystemEmptyState
+          v-if="upcomingByMonth.size === 0 && pastByMonth.size === 0"
+          title="No deadlines match your filters"
+          description="Try a different category or search term"
+        >
+          <template #icon>
+            <UIcon
+              name="i-heroicons-magnifying-glass"
+              class="h-8 w-8 text-brand-slate-400"
+            />
+          </template>
+        </DesignSystemEmptyState>
         <section
           v-for="[monthKey, items] in upcomingByMonth"
           :key="monthKey"
@@ -116,15 +166,15 @@
           </ul>
         </section>
 
-        <section v-if="pastDeadlines.length > 0" class="mt-8">
+        <section v-if="filteredPastCount > 0" class="mt-8">
           <DesignSystemButton
             variant="ghost"
             color="slate"
             size="sm"
             @click="showPast = !showPast"
           >
-            {{ showPast ? "Hide" : "Show" }} {{ pastDeadlines.length }} past
-            deadline{{ pastDeadlines.length === 1 ? "" : "s" }}
+            {{ showPast ? "Hide" : "Show" }} {{ filteredPastCount }} past
+            deadline{{ filteredPastCount === 1 ? "" : "s" }}
           </DesignSystemButton>
 
           <div v-if="showPast" class="mt-4 opacity-50">
@@ -277,7 +327,7 @@
 </template>
 
 <script setup lang="ts">
-import { groupByMonth } from "~/utils/deadlines";
+import { groupByMonth, filterDeadlines } from "~/utils/deadlines";
 import type {
   SystemDeadlineCategory,
   UnifiedDeadline,
@@ -342,8 +392,29 @@ onMounted(() => {
   fetchSchools();
 });
 
-const upcomingByMonth = computed(() => groupByMonth(upcomingDeadlines.value));
-const pastByMonth = computed(() => groupByMonth(pastDeadlines.value));
+const activeCategory = ref<string | null>(null);
+const searchText = ref("");
+
+const availableCategories = computed(() =>
+  Array.from(new Set(unifiedDeadlines.value.map((d) => d.category))).sort(),
+);
+
+const filteredUpcoming = computed(() =>
+  filterDeadlines(upcomingDeadlines.value, {
+    category: activeCategory.value ?? undefined,
+    search: searchText.value,
+  }),
+);
+const filteredPast = computed(() =>
+  filterDeadlines(pastDeadlines.value, {
+    category: activeCategory.value ?? undefined,
+    search: searchText.value,
+  }),
+);
+
+const upcomingByMonth = computed(() => groupByMonth(filteredUpcoming.value));
+const pastByMonth = computed(() => groupByMonth(filteredPast.value));
+const filteredPastCount = computed(() => filteredPast.value.length);
 
 const CATEGORY_COLORS: Record<
   UserDeadlineCategory | SystemDeadlineCategory,
