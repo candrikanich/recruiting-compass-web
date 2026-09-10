@@ -94,6 +94,22 @@ describe("catalogKeyFor", () => {
       "ohio state university",
     );
   });
+
+  it("matches a tracked school's plain name to the catalog's disambiguated name", () => {
+    // Tracked schools are stored with the name the family typed/picked; the
+    // NCAA catalog often carries a formal or disambiguated variant of the
+    // same institution. Without normalizing these to the same key, a school
+    // the family already tracks keeps reappearing in recommendations.
+    expect(catalogKeyFor("Ohio State University")).toBe(
+      catalogKeyFor("The Ohio State University"),
+    );
+    expect(catalogKeyFor("College of Wooster")).toBe(
+      catalogKeyFor("The College of Wooster"),
+    );
+    expect(catalogKeyFor("Miami University")).toBe(
+      catalogKeyFor("Miami University (Ohio)"),
+    );
+  });
 });
 
 describe("gpaBucket / divisionWeights", () => {
