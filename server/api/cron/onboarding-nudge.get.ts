@@ -13,7 +13,7 @@ import { defineEventHandler } from "h3";
 import { withCronRun } from "~/server/utils/cronRunner";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import { useLogger } from "~/server/utils/logger";
-import { sendNotificationEmail } from "~/server/utils/emailService";
+import { sendEmail } from "~/server/utils/emailService";
 import { renderOnboardingNudgeEmail } from "~/server/utils/onboardingEmail";
 import {
   NUX_CHECKLIST_KEYS,
@@ -144,12 +144,10 @@ export default defineEventHandler(async (event) =>
           dashboardUrl: `${baseUrl}/dashboard`,
         });
 
-        await sendNotificationEmail({
+        await sendEmail({
           to: user.email,
           subject: "Your recruiting profile is waiting 👋",
-          title: "Continue your setup",
-          message: html,
-          priority: "low",
+          html,
           idempotencyKey: `onboarding-nudge-${user.id}`,
           context: { purpose: "onboarding_nudge", userId: user.id },
         });
