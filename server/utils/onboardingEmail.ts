@@ -1,7 +1,7 @@
 /**
- * Renders the Day-3 re-engagement nudge email body. Returned HTML is passed
- * as `message` to sendNotificationEmail(), which wraps it in the shared
- * email chrome — this only renders the inner content, not a full document.
+ * Renders the Day-3 re-engagement nudge email as a full HTML document.
+ * Send with sendEmail({ html }) — not sendNotificationEmail(), which
+ * HTML-escapes its `message` field and would double-encode this markup.
  */
 
 interface OnboardingNudgeEmailItem {
@@ -36,8 +36,7 @@ export function renderOnboardingNudgeEmail(
     )
     .join("");
 
-  return `
-    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 560px; margin: 0 auto; padding: 24px;">
+  return `<!DOCTYPE html><html><body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 560px; margin: 0 auto; padding: 24px;">
       <h2 style="color: #1e293b; font-size: 20px; margin-bottom: 8px;">
         Hey ${safeUserName}, your recruiting profile is waiting 👋
       </h2>
@@ -56,6 +55,5 @@ export function renderOnboardingNudgeEmail(
       <p style="color: #94a3b8; font-size: 13px; margin-top: 32px;">
         — The Recruiting Compass
       </p>
-    </div>
-  `;
+  </body></html>`;
 }
