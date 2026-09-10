@@ -109,7 +109,7 @@ function groupByBranch(deployments) {
   return byBranch;
 }
 
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const sleep = (ms) => new Promise((resolve) => globalThis.setTimeout(resolve, ms));
 
 async function deleteDeployment(token, teamId, id) {
   const url = new URL(`${API}/v13/deployments/${id}`);
