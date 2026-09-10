@@ -622,33 +622,10 @@ describe("signup.vue", () => {
       );
     });
 
-    it("should call POST /api/family/create after player signup", async () => {
-      const wrapper = createWrapper();
-
-      const playerRadio = wrapper.find('[data-testid="user-type-player"]');
-      await playerRadio.setValue(true);
-      await playerRadio.trigger("change");
-      await wrapper.vm.$nextTick();
-
-      await wrapper.find("#firstName").setValue("Test");
-      await wrapper.find("#lastName").setValue("User");
-      await wrapper.find("#email").setValue("test@example.com");
-      await wrapper.find("#password").setValue("Password123");
-      await wrapper.find("#confirmPassword").setValue("Password123");
-      await wrapper.find("#agreeToTerms").setValue(true);
-
-      await wrapper.find("form").trigger("submit.prevent");
-      await wrapper.vm.$nextTick();
-
-      expect(mockAuthFetch.$fetchAuth).toHaveBeenCalledWith(
-        "/api/family/create",
-        {
-          method: "POST",
-        },
-      );
-    });
-
-    it("should navigate to /onboarding after player signup", async () => {
+    // No session comes back (email confirmation required in prod) — nothing
+    // authenticated can happen client-side, so hand off to verify-email
+    // instead of hitting family/create (which would 401 under RLS).
+    it("should NOT call POST /api/family/create when no session yet", async () => {
       const wrapper = createWrapper();
 
       const playerRadio = wrapper.find('[data-testid="user-type-player"]');
@@ -666,7 +643,33 @@ describe("signup.vue", () => {
       await wrapper.find("form").trigger("submit.prevent");
       await flushPromises();
 
-      expect(global.navigateTo).toHaveBeenCalledWith("/onboarding");
+      expect(mockAuthFetch.$fetchAuth).not.toHaveBeenCalledWith(
+        "/api/family/create",
+        { method: "POST" },
+      );
+    });
+
+    it("should navigate to /verify-email when no session yet", async () => {
+      const wrapper = createWrapper();
+
+      const playerRadio = wrapper.find('[data-testid="user-type-player"]');
+      await playerRadio.setValue(true);
+      await playerRadio.trigger("change");
+      await wrapper.vm.$nextTick();
+
+      await wrapper.find("#firstName").setValue("Test");
+      await wrapper.find("#lastName").setValue("User");
+      await wrapper.find("#email").setValue("test@example.com");
+      await wrapper.find("#password").setValue("Password123");
+      await wrapper.find("#confirmPassword").setValue("Password123");
+      await wrapper.find("#agreeToTerms").setValue(true);
+
+      await wrapper.find("form").trigger("submit.prevent");
+      await flushPromises();
+
+      expect(global.navigateTo).toHaveBeenCalledWith(
+        "/verify-email?email=test%40example.com",
+      );
     });
 
     it("should submit parent signup with correct role", async () => {
@@ -704,41 +707,7 @@ describe("signup.vue", () => {
       );
     });
 
-    it("should call POST /api/family/create after parent signup", async () => {
-      mockValidation.validate.mockResolvedValue({
-        fullName: "Parent User",
-        email: "parent@example.com",
-        password: "Password123", // pragma: allowlist secret
-        confirmPassword: "Password123",
-        role: "parent",
-      });
-
-      const wrapper = createWrapper();
-
-      const parentRadio = wrapper.find('[data-testid="user-type-parent"]');
-      await parentRadio.setValue(true);
-      await parentRadio.trigger("change");
-      await wrapper.vm.$nextTick();
-
-      await wrapper.find("#firstName").setValue("Parent");
-      await wrapper.find("#lastName").setValue("User");
-      await wrapper.find("#email").setValue("parent@example.com");
-      await wrapper.find("#password").setValue("Password123");
-      await wrapper.find("#confirmPassword").setValue("Password123");
-      await wrapper.find("#agreeToTerms").setValue(true);
-
-      await wrapper.find("form").trigger("submit.prevent");
-      await wrapper.vm.$nextTick();
-
-      expect(mockAuthFetch.$fetchAuth).toHaveBeenCalledWith(
-        "/api/family/create",
-        {
-          method: "POST",
-        },
-      );
-    });
-
-    it("should navigate to /onboarding/parent after parent signup", async () => {
+    it("should NOT call POST /api/family/create when no session yet (parent)", async () => {
       mockValidation.validate.mockResolvedValue({
         fullName: "Parent User",
         email: "parent@example.com",
@@ -764,7 +733,110 @@ describe("signup.vue", () => {
       await wrapper.find("form").trigger("submit.prevent");
       await flushPromises();
 
-      expect(global.navigateTo).toHaveBeenCalledWith("/onboarding/parent");
+      expect(mockAuthFetch.$fetchAuth).not.toHaveBeenCalledWith(
+        "/api/family/create",
+        { method: "POST" },
+      );
+    });
+
+    it("should navigate to /verify-email when no session yet (parent)", async () => {
+      mockValidation.validate.mockResolvedValue({
+        fullName: "Parent User",
+        email: "parent@example.com",
+        password: "Password123", // pragma: allowlist secret
+        confirmPassword: "Password123",
+        role: "parent",
+      });
+
+      const wrapper = createWrapper();
+
+      const parentRadio = wrapper.find('[data-testid="user-type-parent"]');
+      await parentRadio.setValue(true);
+      await parentRadio.trigger("change");
+      await wrapper.vm.$nextTick();
+
+      await wrapper.find("#firstName").setValue("Parent");
+      await wrapper.find("#lastName").setValue("User");
+      await wrapper.find("#email").setValue("parent@example.com");
+      await wrapper.find("#password").setValue("Password123");
+      await wrapper.find("#confirmPassword").setValue("Password123");
+      await wrapper.find("#agreeToTerms").setValue(true);
+
+      await wrapper.find("form").trigger("submit.prevent");
+      await flushPromises();
+
+      expect(global.navigateTo).toHaveBeenCalledWith(
+        "/verify-email?email=parent%40example.com",
+      );
+    });
+  });
+
+  describe("Full Submission Flow (session present — confirmation disabled)", () => {
+    beforeEach(() => {
+      mockValidation.validate.mockResolvedValue({
+        fullName: "Test User",
+        email: "test@example.com",
+        password: "Password123", // pragma: allowlist secret
+        confirmPassword: "Password123",
+        role: "player",
+      });
+      mockAuth.signup.mockResolvedValue({
+        data: {
+          user: { id: "user-123" },
+          session: { user: { id: "user-123" } },
+        },
+        error: null,
+      });
+      mockSupabase.from.mockReturnValue({
+        upsert: vi.fn().mockResolvedValue({ error: null }),
+      });
+    });
+
+    it("should call POST /api/family/create after player signup", async () => {
+      const wrapper = createWrapper();
+
+      const playerRadio = wrapper.find('[data-testid="user-type-player"]');
+      await playerRadio.setValue(true);
+      await playerRadio.trigger("change");
+      await wrapper.vm.$nextTick();
+
+      await wrapper.find("#firstName").setValue("Test");
+      await wrapper.find("#lastName").setValue("User");
+      await wrapper.find("#email").setValue("test@example.com");
+      await wrapper.find("#password").setValue("Password123");
+      await wrapper.find("#confirmPassword").setValue("Password123");
+      await wrapper.find("#agreeToTerms").setValue(true);
+
+      await wrapper.find("form").trigger("submit.prevent");
+      await flushPromises();
+
+      expect(mockAuthFetch.$fetchAuth).toHaveBeenCalledWith(
+        "/api/family/create",
+        {
+          method: "POST",
+        },
+      );
+    });
+
+    it("should navigate to /onboarding after player signup", async () => {
+      const wrapper = createWrapper();
+
+      const playerRadio = wrapper.find('[data-testid="user-type-player"]');
+      await playerRadio.setValue(true);
+      await playerRadio.trigger("change");
+      await wrapper.vm.$nextTick();
+
+      await wrapper.find("#firstName").setValue("Test");
+      await wrapper.find("#lastName").setValue("User");
+      await wrapper.find("#email").setValue("test@example.com");
+      await wrapper.find("#password").setValue("Password123");
+      await wrapper.find("#confirmPassword").setValue("Password123");
+      await wrapper.find("#agreeToTerms").setValue(true);
+
+      await wrapper.find("form").trigger("submit.prevent");
+      await flushPromises();
+
+      expect(global.navigateTo).toHaveBeenCalledWith("/onboarding");
     });
   });
 
