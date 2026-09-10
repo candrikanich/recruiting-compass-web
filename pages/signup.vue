@@ -164,10 +164,23 @@ type TurnstileGlobal = {
       sitekey: string;
       action?: string;
       callback: (token: string) => void;
+      "expired-callback"?: () => void;
     },
   ) => string;
   reset: (widgetId?: string) => void;
 };
+
+// Turnstile tokens are single-use and expire (~5 min) — replaying a stale or
+// already-consumed token on retry surfaces as Supabase's opaque
+// "timeout-or-duplicate" captcha error, even when the prior request actually
+// succeeded (account created, confirmation email sent).
+function resetTurnstile() {
+  const w = window as unknown as { turnstile?: TurnstileGlobal };
+  turnstileToken.value = undefined;
+  if (w.turnstile && turnstileWidgetId.value) {
+    w.turnstile.reset(turnstileWidgetId.value);
+  }
+}
 
 function loadTurnstileScript(): Promise<void> {
   return new Promise((resolve) => {
@@ -208,6 +221,9 @@ watch(
           action: "signup",
           callback: (token: string) => {
             turnstileToken.value = token;
+          },
+          "expired-callback": () => {
+            turnstileToken.value = undefined;
           },
         });
       }
@@ -267,10 +283,19 @@ watch(agreeToTerms, (isChecked) => {
 });
 
 const handleSignup = async () => {
+  // Guard against double-submit (double-click, Enter+click race) — a second
+  // request would replay the already-consumed Turnstile token and get
+  // rejected with the opaque "timeout-or-duplicate" captcha error. Set
+  // synchronously (before any await) so a near-simultaneous second call
+  // can't slip through the gap.
+  if (loading.value) return;
+  loading.value = true;
+
   // Check passwords match
   if (password.value !== confirmPassword.value) {
     setErrors([{ field: "form", message: "Passwords don't match" }]);
     await focusErrorSummary();
+    loading.value = false;
     return;
   }
 
@@ -280,6 +305,7 @@ const handleSignup = async () => {
       { field: "form", message: "Please agree to the terms and conditions" },
     ]);
     await focusErrorSummary();
+    loading.value = false;
     return;
   }
 
@@ -295,6 +321,7 @@ const handleSignup = async () => {
         },
       ]);
       await focusErrorSummary();
+      loading.value = false;
       return;
     }
   }
@@ -316,10 +343,9 @@ const handleSignup = async () => {
 
   if (!validated) {
     await focusErrorSummary();
+    loading.value = false;
     return;
   }
-
-  loading.value = true;
 
   try {
     let userId: string;
@@ -356,6 +382,16 @@ const handleSignup = async () => {
           // No active session - this is a real error
           throw signupErr;
         }
+      } else if (errMessage.includes("timeout-or-duplicate")) {
+        // Supabase's captcha layer rejected a replayed/expired Turnstile
+        // token — commonly the second half of a double-submit, where the
+        // first request already created the account (confirmation email
+        // sent). There's no session yet (unconfirmed email), so we can't
+        // silently recover a userId here; surface actionable guidance and
+        // reset the widget so a genuine retry gets a fresh token.
+        throw new Error(
+          "We couldn't confirm you're not a robot in time. If you already received a confirmation email, check your inbox — otherwise, please try again.",
+        );
       } else {
         // Different error - rethrow it
         throw signupErr;
@@ -396,6 +432,7 @@ const handleSignup = async () => {
     const message = err instanceof Error ? err.message : "Signup failed";
     // Set form-level error
     setErrors([{ field: "form", message }]);
+    resetTurnstile();
     await focusErrorSummary();
     loading.value = false;
   }
