@@ -2,6 +2,7 @@ import { defineEventHandler, createError } from "h3";
 import { requireAuth, getUserRole } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import { generateFamilyCode } from "~/server/utils/familyCode";
+import { generateInboundToken } from "~/server/utils/familyInboundToken";
 import { useLogger } from "~/server/utils/logger";
 import type { Database } from "~/types/database";
 
@@ -38,8 +39,10 @@ export default defineEventHandler(async (event) => {
       };
     }
 
-    // Generate unique code
+    // Generate unique code + inbound-email token (inbound_token is NOT NULL —
+    // required for the family-<token>@... inbound-forwarding address)
     const familyCode = await generateFamilyCode(supabase);
+    const inboundToken = await generateInboundToken(supabase);
 
     // Create family unit
     const insertResponse = await supabase
@@ -49,6 +52,7 @@ export default defineEventHandler(async (event) => {
         family_name: "My Family",
         family_code: familyCode,
         code_generated_at: new Date().toISOString(),
+        inbound_token: inboundToken,
       } as Database["public"]["Tables"]["family_units"]["Insert"])
       .select()
       .single();

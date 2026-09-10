@@ -25,6 +25,12 @@ vi.mock("~/server/utils/familyCode", () => ({
   generateFamilyCode: vi.fn().mockResolvedValue("FAM-TESTCODE"),
 }));
 
+vi.mock("~/server/utils/familyInboundToken", () => ({
+  generateInboundToken: vi.fn().mockResolvedValue("abcd1234"),
+}));
+
+const familyUnitsInsertSpy = vi.fn();
+
 vi.mock("~/server/utils/supabase", () => ({
   useSupabaseAdmin: vi.fn(() => ({
     from: (table: string) => {
@@ -39,19 +45,22 @@ vi.mock("~/server/utils/supabase", () => ({
                 }),
             }),
           }),
-          insert: () => ({
-            select: () => ({
-              single: () =>
-                Promise.resolve({
-                  data: {
-                    id: "family-123",
-                    family_code: "FAM-TESTCODE",
-                    family_name: "My Family",
-                  },
-                  error: null,
-                }),
-            }),
-          }),
+          insert: (payload: object) => {
+            familyUnitsInsertSpy(payload);
+            return {
+              select: () => ({
+                single: () =>
+                  Promise.resolve({
+                    data: {
+                      id: "family-123",
+                      family_code: "FAM-TESTCODE",
+                      family_name: "My Family",
+                    },
+                    error: null,
+                  }),
+              }),
+            };
+          },
           delete: () => ({ eq: () => Promise.resolve({ error: null }) }),
         };
       }
@@ -97,6 +106,15 @@ describe("POST /api/family/create — symmetric", () => {
     mockState.userId = "player-user-id";
     mockState.userRole = "player";
     mockState.existingFamily = null;
+    familyUnitsInsertSpy.mockClear();
+  });
+
+  it("sets inbound_token on insert — DB column is NOT NULL, omitting it 500s in prod", async () => {
+    await handler({} as Parameters<typeof handler>[0]);
+
+    expect(familyUnitsInsertSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ inbound_token: "abcd1234" }),
+    );
   });
 
   it("allows a player to create a family unit", async () => {
