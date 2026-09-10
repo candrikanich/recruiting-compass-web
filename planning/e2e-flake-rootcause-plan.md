@@ -14,6 +14,8 @@
 
 ## Investigation findings (context, not tasks)
 
+**Task 0 measurement (as of 2026-09-09):** Zero qualifying CI runs exist yet. PR #712 (4-way sharding) merged 13:12:34Z and PR #715 (smoke/full-suite split) merged 13:24:22Z today — both very recent. Checked the last 30 `e2e.yml` runs (`gh run list --workflow=e2e.yml --json databaseId,conclusion,createdAt,headBranch,event`) plus the last 20 `main`-targeted PRs (`gh pr list --base main --state all`) plus all `workflow_dispatch` history: the one develop→main promote run in the window (PR #707, run `34351558563`, started 12:31:58Z) predates #712's merge and still shows the old single-job `Playwright E2E Tests` job, not the sharded matrix — so it's not usable evidence either way. No `main`-targeted PR or manual dispatch has run the new sharded pipeline since #712/#715 landed. Verdict: no data yet to confirm or refute the "sharding widened the race" hypothesis — Task 2's prioritization should stay based on the theoretical worker-count argument in the bullet below, not on measured evidence, until a real promote-to-main run happens post-#715.
+
 - `generateUniqueSchoolName()` (`tests/e2e/fixtures/schools.fixture.ts:187`) already makes names collision-free (timestamp + random suffix) — the flakes are not name collisions, they're **visibility races**: one worker's dashboard/list assertion counts or reads rows another concurrent worker created/deleted against the same shared test account.
 - `purgeLeakedTestSchools()` (`tests/e2e/seed/helpers/supabase-admin.ts:241`) matches a hardcoded list of 8 name prefixes (`"[e2e-"`, `"Filter Test"`, `"History Test"`, etc.) — any spec using a naming convention not on that list leaks forever, silently. This is a symptom sweep, not real teardown.
 - 23 spec files use `test.afterAll` (`grep -rl "test.afterAll" tests/e2e --include="*.spec.ts" | wc -l`) — real cleanup coverage across them is unaudited; some (e.g. `coaching-philosophy.spec.ts`, `family-invite-flow.spec.ts`) already use `test.describe.configure({ mode: "serial" })` specifically to dodge this class of race, at the cost of losing parallelism for that whole file.
@@ -89,33 +91,66 @@ export function tagName(prefix: string): string {
 import { getRunId } from "./seed/helpers/run-id";
 import { getSupabaseAdmin } from "./seed/helpers/supabase-admin";
 import { TEST_ACCOUNTS } from "./config/test-accounts";
+import { reapDebris } from "./seed/helpers/debris";
 
+// CORRECTED post-Task-1-ruling: the plan's first draft of this file replaced
+// the existing reapDebris(...) step wholesale — a real regression caught by
+// the Task 1 implementer. reapDebris cleans up a DIFFERENT debris category
+// (one-off auth users, hit 768 leaked once) and has its own
+// E2E_SKIP_TEARDOWN=1 kill switch. Both steps now run, gated by the same
+// switch, each independently non-fatal.
 async function globalTeardown() {
-  const runId = getRunId();
-  const supabase = getSupabaseAdmin();
-  const emails = Object.values(TEST_ACCOUNTS).map((a) => a.email);
-  const { data: users } = await supabase
-    .from("users")
-    .select("id")
-    .in("email", emails);
-  const userIds = (users ?? []).map((u) => (u as { id: string }).id);
-  if (userIds.length === 0) return;
-
-  const { data: schools } = await supabase
-    .from("schools")
-    .select("id")
-    .in("user_id", userIds)
-    .like("name", `[e2e-${runId}]%`);
-  const ids = (schools ?? []).map((s) => (s as { id: string }).id);
-  if (ids.length === 0) {
-    console.log(`🧹 RUN_ID ${runId}: nothing to tear down`);
+  if (process.env.E2E_SKIP_TEARDOWN === "1") {
+    console.log("🧹 E2E teardown skipped (E2E_SKIP_TEARDOWN=1)");
     return;
   }
 
-  await supabase.from("interactions").delete().in("school_id", ids);
-  await supabase.from("coaches").delete().in("school_id", ids);
-  await supabase.from("schools").delete().in("id", ids);
-  console.log(`🧹 RUN_ID ${runId}: tore down ${ids.length} school(s)`);
+  const supabase = getSupabaseAdmin();
+
+  try {
+    const r = await reapDebris(supabase, { execute: true });
+    if (r.matched === 0) {
+      console.log("  ✅ No debris users to reap");
+    } else {
+      console.log(
+        `  ✅ Reaped ${r.deletedUsers}/${r.matched} debris users ` +
+          `(${r.failedUsers} failed) + ${r.deletedUnits} orphan family_units`,
+      );
+    }
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : String(error);
+    console.warn(`  ⚠️  Debris-user reap failed (non-fatal): ${msg}`);
+  }
+
+  try {
+    const runId = getRunId();
+    const emails = Object.values(TEST_ACCOUNTS).map((a) => a.email);
+    const { data: users } = await supabase
+      .from("users")
+      .select("id")
+      .in("email", emails);
+    const userIds = (users ?? []).map((u) => (u as { id: string }).id);
+    if (userIds.length === 0) return;
+
+    const { data: schools } = await supabase
+      .from("schools")
+      .select("id")
+      .in("user_id", userIds)
+      .like("name", `[e2e-${runId}]%`);
+    const ids = (schools ?? []).map((s) => (s as { id: string }).id);
+    if (ids.length === 0) {
+      console.log(`🧹 RUN_ID ${runId}: nothing to tear down`);
+      return;
+    }
+
+    await supabase.from("interactions").delete().in("school_id", ids);
+    await supabase.from("coaches").delete().in("school_id", ids);
+    await supabase.from("schools").delete().in("id", ids);
+    console.log(`🧹 RUN_ID ${runId}: tore down ${ids.length} school(s)`);
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : String(error);
+    console.warn(`  ⚠️  RUN_ID school sweep failed (non-fatal): ${msg}`);
+  }
 }
 
 export default globalTeardown;
@@ -137,12 +172,13 @@ export default globalTeardown;
 **Interfaces:**
 - Consumes: `tagName(prefix)` and `getRunId()` from Task 1's `run-id.ts`.
 
-- [ ] Read the two specs' current school-creation call sites (`grep -n "generateUniqueSchoolName\|createSchoolData" tests/e2e/coaching-philosophy.spec.ts tests/e2e/family-invite-flow.spec.ts`) before editing — the plan doesn't guess their exact current code.
-- [ ] Swap their name generation to go through `tagName()` instead of (or in addition to) `generateUniqueSchoolName()`.
-- [ ] For the dashboard-empty-state assertion specifically: change the check from an absolute "0 schools" / "No schools tracked yet" assertion to one that tolerates other runs' in-flight data — either assert on a RUN_ID-scoped count, or (simpler, if the empty-state test's whole point is verifying a *fresh* account) give that one test its own throwaway account instead of the shared `player.json` — pick whichever is the smaller diff once you're looking at the actual test.
-- [ ] Run the two specs repeated + parallel locally to reproduce-then-confirm-fixed: `npx playwright test coaching-philosophy.spec.ts family-invite-flow.spec.ts --repeat-each=3 --workers=3` (per superpowers:systematic-debugging — reproduce before declaring fixed).
-- [ ] Since `coaching-philosophy.spec.ts` currently has `test.describe.configure({ mode: "serial" })` specifically to dodge this race: if the RUN_ID fix holds under the repeat-parallel run above, remove the serial pin and the `@flaky` tag from PR #713 — that's the actual win condition for this task, not just "still passes serially."
-- [ ] Commit: `fix(e2e): migrate coaching-philosophy + family-invite-flow onto RUN_ID-scoped data, un-quarantine`
+- [x] Read the two specs' current school-creation call sites before editing.
+- [x] **Corrected mid-task, two of three original targets don't apply:**
+  - `coaching-philosophy.spec.ts` — matched the assumption. `createSchoolData({ name: ... })` now routes through `tagName(generateUniqueSchoolName(...))`.
+  - `family-invite-flow.spec.ts` — **does not touch schools/`generateUniqueSchoolName` at all.** Its `serial` pin guards a different partial-insert race, unrelated to this plan's schools-visibility problem. Left untouched — migrating it would have been scope creep onto an unrelated bug.
+  - The `dashboard-8-2:132` school-leak empty-state pattern from memory — **already fixed by a prior session**, commits `57e021be`/`c063f831`. Nothing left to do here.
+- [ ] **Blocked locally, not yet CI-confirmed:** the repeat-parallel reproduction (`--repeat-each=3 --workers=3`) could not run — this Supabase project's CAPTCHA gate blocks local storageState provisioning entirely (same blocker as Task 1's live-verification note). `@flaky` and `mode: "serial"` were correctly left in place rather than removed on an unproven claim. **Follow-up (not this task, not blocking Task 3):** once this ships and a real CI run exercises the RUN_ID-tagged seed under parallel load, confirm the race is actually gone, then remove the quarantine in a small separate PR.
+- [x] Commit: `fix(e2e): tag coaching-philosophy seeded school with RUN_ID`
 
 ---
 

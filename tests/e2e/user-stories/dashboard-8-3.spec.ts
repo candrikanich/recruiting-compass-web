@@ -5,6 +5,7 @@ import {
   findUserIdByEmail,
 } from "../seed/helpers/supabase-admin";
 import { TEST_ACCOUNTS } from "../config/test-accounts";
+import { tagName } from "../seed/helpers/run-id";
 
 const RUN_ID = Date.now();
 let seededInteractionIds: string[] = [];
@@ -51,7 +52,7 @@ test.describe("User Story 8.3 - Recent Activity Feed", () => {
         const { data: created, error: schoolErr } = await supabase
           .from("schools")
           .insert({
-            name: `[e2e-${RUN_ID}] Dashboard Activity School`,
+            name: tagName("Dashboard Activity School"),
             family_unit_id: familyUnitId,
             user_id: playerUserId,
             status: "researching",

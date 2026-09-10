@@ -4,6 +4,7 @@ import { generateUniqueSchoolName } from "../fixtures/schools.fixture";
 import { generateUniqueCoachEmail } from "../fixtures/coaches.fixture";
 import { getSupabaseAdmin } from "../seed/helpers/supabase-admin";
 import { TEST_ACCOUNTS } from "../config/test-accounts";
+import { tagName } from "../seed/helpers/run-id";
 
 /**
  * Coach tile unification — directory page tap-to-detail smoke.
@@ -54,7 +55,7 @@ test.describe("Coach directory — tile navigation", () => {
         .from("schools")
         .insert([
           {
-            name: generateUniqueSchoolName("Tile Nav School"),
+            name: tagName(generateUniqueSchoolName("Tile Nav School")),
             location: "Test City, USA",
             division: "D3",
             status: "researching",

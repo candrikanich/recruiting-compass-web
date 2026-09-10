@@ -6,6 +6,7 @@ import {
   generateUniqueSchoolName,
   deleteSchoolDirect,
 } from "./fixtures/schools.fixture";
+import { tagName } from "./seed/helpers/run-id";
 
 /**
  * Public visitor submits "Contact Player" on `/p/<slug>` and the lead becomes
@@ -146,7 +147,7 @@ test.describe("Public profile — inbound lead becomes a tracked interaction", (
     });
     const setupPage = await setupContext.newPage();
     const schoolData = createSchoolData({
-      name: generateUniqueSchoolName(`Inbound Lead ${RUN_ID}`),
+      name: tagName(generateUniqueSchoolName(`Inbound Lead ${RUN_ID}`)),
     });
     schoolId = await schoolHelpers.createSchool(setupPage, schoolData);
 

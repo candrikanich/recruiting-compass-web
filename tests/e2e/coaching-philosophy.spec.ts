@@ -6,6 +6,7 @@ import {
   deleteSchoolDirect,
   generateUniqueSchoolName,
 } from "./fixtures/schools.fixture";
+import { tagName } from "./seed/helpers/run-id";
 
 /**
  * E2E Tests for Coaching Philosophy Feature
@@ -19,6 +20,16 @@ import {
 // parallel worker load (see planning/e2e-ci-refactor-plan.md Phase 3) —
 // quarantined off the blocking gate into the non-blocking e2e-flaky job
 // until the underlying shared-account race is root-caused.
+//
+// The seeded school now goes through tagName() (RUN_ID-scoped, swept by
+// global-teardown) instead of a bare generateUniqueSchoolName(), so this
+// run's data is unambiguously attributable and cleaned up per-run. That is
+// necessary but NOT independently confirmed sufficient to lift the
+// quarantine here: the CAPTCHA gate on this Supabase project blocks
+// storageState provisioning for local headless runs (same blocker
+// task-1-report.md hit), so the brief's win-condition repeat-parallel
+// reproduction (`--repeat-each=3 --workers=3`) could not be run locally.
+// mode:"serial" and @flaky stay in place pending a CI-side confirmation run.
 test.describe("Coaching Philosophy - Feature E2E @flaky", () => {
   // fullyParallel can shard this describe's tests across workers, each of
   // which would otherwise independently re-run beforeAll -- pin to one
@@ -39,7 +50,7 @@ test.describe("Coaching Philosophy - Feature E2E @flaky", () => {
         schoolId = await schoolHelpers.createSchool(
           page,
           createSchoolData({
-            name: generateUniqueSchoolName("Coaching Philosophy"),
+            name: tagName(generateUniqueSchoolName("Coaching Philosophy")),
           }),
         );
       } finally {
