@@ -357,6 +357,7 @@ const handleSignup = async () => {
         validated.fullName as string,
         validated.role,
         turnstileToken.value,
+        validated.dateOfBirth,
       );
 
       if (!authData?.data?.user?.id) {

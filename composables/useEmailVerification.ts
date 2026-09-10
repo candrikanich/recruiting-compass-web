@@ -98,9 +98,16 @@ export const useEmailVerification = () => {
 
         // No session is the normal state for a brand-new signup awaiting
         // email confirmation (auth.signUp() withholds the session until the
-        // link is clicked) — not a failure. Only a real authError (network,
-        // malformed token, etc.) is worth surfacing to the user.
-        if (authError) {
+        // link is clicked). supabase-js's getUser() surfaces this as
+        // AuthSessionMissingError, not a plain {user: null, error: null} —
+        // it never makes a network call when there's no session locally.
+        // Only a genuine authError (network, malformed token, etc.) is
+        // worth surfacing to the user.
+        const isNoSessionError =
+          authError?.name === "AuthSessionMissingError" ||
+          authError?.message?.toLowerCase().includes("session missing");
+
+        if (authError && !isNoSessionError) {
           error.value = "Unable to verify user session";
           return false;
         }

@@ -10,6 +10,7 @@ const mockBodyState = {
 const mockAuthState = {
   userId: "user-1",
   shouldFail: false,
+  userMetadata: undefined as Record<string, unknown> | undefined,
 };
 const mockAdminTokenState = {
   isValid: true as boolean,
@@ -24,7 +25,11 @@ vi.mock("~/server/utils/auth", () => ({
     if (mockAuthState.shouldFail) {
       throw createError({ statusCode: 401, statusMessage: "Unauthorized" });
     }
-    return { id: mockAuthState.userId, role: "athlete" };
+    return {
+      id: mockAuthState.userId,
+      role: "athlete",
+      user_metadata: mockAuthState.userMetadata,
+    };
   }),
 }));
 
@@ -102,6 +107,7 @@ describe("POST /api/auth/admin-profile", () => {
     mockBodyState.adminToken = "valid-token";
     mockAuthState.userId = "user-1";
     mockAuthState.shouldFail = false;
+    mockAuthState.userMetadata = undefined;
     mockAdminTokenState.isValid = true;
     mockAdminTokenState.adminTokenSecret = "test-secret";
     mockDbState.error = null;
@@ -114,7 +120,11 @@ describe("POST /api/auth/admin-profile", () => {
       if (mockAuthState.shouldFail) {
         throw createError({ statusCode: 401, statusMessage: "Unauthorized" });
       }
-      return { id: mockAuthState.userId, role: "athlete" } as any;
+      return {
+        id: mockAuthState.userId,
+        role: "athlete",
+        user_metadata: mockAuthState.userMetadata,
+      } as any;
     });
     vi.mocked(validateAdminToken).mockImplementation(
       () => mockAdminTokenState.isValid,
@@ -220,6 +230,54 @@ describe("POST /api/auth/admin-profile", () => {
       ).rejects.toMatchObject({
         statusCode: 403,
       });
+    });
+  });
+
+  describe("pending_admin trust path (lazy apply after email confirmation)", () => {
+    it("skips adminToken validation when the caller's own session has pending_admin: true", async () => {
+      mockAuthState.userMetadata = { pending_admin: true };
+      mockBodyState.adminToken = null;
+
+      const result = await handler({} as Parameters<typeof handler>[0]);
+
+      expect(result).toEqual({ success: true });
+      expect(validateAdminToken).not.toHaveBeenCalled();
+    });
+
+    it("still applies is_admin: true via the pending_admin path", async () => {
+      mockAuthState.userMetadata = { pending_admin: true };
+      mockBodyState.adminToken = null;
+      const mockEq = vi.fn(() => Promise.resolve({ data: null, error: null }));
+      const mockUpdate = vi.fn(() => ({ eq: mockEq }));
+      const mockFrom = vi.fn(() => ({ update: mockUpdate }));
+      vi.mocked(useSupabaseAdmin).mockReturnValue({ from: mockFrom } as any);
+
+      await handler({} as Parameters<typeof handler>[0]);
+
+      expect(mockUpdate).toHaveBeenCalledWith(
+        expect.objectContaining({ is_admin: true }),
+      );
+    });
+
+    it("still requires a valid adminToken when pending_admin is not set", async () => {
+      mockAuthState.userMetadata = undefined;
+      mockBodyState.adminToken = null;
+
+      await expect(
+        handler({} as Parameters<typeof handler>[0]),
+      ).rejects.toMatchObject({ statusCode: 403 });
+    });
+
+    it("does not trust a client-supplied pending_admin — only the verified session's own metadata", async () => {
+      // requireAuth() is mocked here to represent the verified JWT's own
+      // metadata; a request body can't influence it, so this asserts the
+      // trust boundary is the session, not anything in readBody().
+      mockAuthState.userMetadata = { pending_admin: false };
+      mockBodyState.adminToken = null;
+
+      await expect(
+        handler({} as Parameters<typeof handler>[0]),
+      ).rejects.toMatchObject({ statusCode: 403 });
     });
   });
 
