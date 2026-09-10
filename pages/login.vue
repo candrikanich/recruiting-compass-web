@@ -140,10 +140,22 @@ type TurnstileGlobal = {
       sitekey: string;
       action?: string;
       callback: (token: string) => void;
+      "expired-callback"?: () => void;
     },
   ) => string;
   reset: (widgetId?: string) => void;
 };
+
+// Turnstile tokens are single-use and expire (~5 min) — replaying a stale or
+// already-consumed token on retry surfaces as Supabase's opaque
+// "timeout-or-duplicate" captcha error.
+function resetTurnstile() {
+  const w = window as unknown as { turnstile?: TurnstileGlobal };
+  turnstileToken.value = undefined;
+  if (w.turnstile && turnstileWidgetId.value) {
+    w.turnstile.reset(turnstileWidgetId.value);
+  }
+}
 
 function loadTurnstileScript(): Promise<void> {
   return new Promise((resolve) => {
@@ -184,6 +196,9 @@ watch(
           action: "login",
           callback: (token: string) => {
             turnstileToken.value = token;
+          },
+          "expired-callback": () => {
+            turnstileToken.value = undefined;
           },
         });
       }
@@ -248,6 +263,11 @@ const validatePassword = async () => {
 };
 
 const handleLogin = async () => {
+  // Guard against double-submit — a second request would replay the
+  // already-consumed Turnstile token and get rejected with the opaque
+  // "timeout-or-duplicate" captcha error.
+  if (loading.value) return;
+
   // Validate entire form before submission
   const validated = await validate(
     {
@@ -292,6 +312,7 @@ const handleLogin = async () => {
     const message = err instanceof Error ? err.message : "Login failed";
     // Set auth error at form level
     setErrors([{ field: "form", message }]);
+    resetTurnstile();
 
     // Focus error summary on authentication error
     await focusErrorSummary();
