@@ -466,6 +466,65 @@ describe("useAuth", () => {
       expect(result).toEqual({ data: signupData, error: null });
     });
 
+    it("should include dateOfBirth in signup metadata when provided", async () => {
+      const { mockSupabase, mockAuth } = getMockSupabase();
+
+      const signupData = { user: mockUser, session: mockSession };
+      mockAuth.signUp.mockResolvedValue({ data: signupData, error: null });
+
+      const auth = useAuth();
+      await auth.signup(
+        "new@example.com",
+        "password123",
+        "John Doe",
+        "player",
+        undefined,
+        "2010-01-01",
+      );
+
+      expect(mockAuth.signUp).toHaveBeenCalledWith({
+        email: "new@example.com",
+        password: "password123",
+        options: {
+          data: {
+            full_name: "John Doe",
+            role: "player",
+            date_of_birth: "2010-01-01",
+          },
+        },
+      });
+    });
+
+    it("should include pending_admin in signup metadata when requested", async () => {
+      const { mockSupabase, mockAuth } = getMockSupabase();
+
+      const signupData = { user: mockUser, session: null };
+      mockAuth.signUp.mockResolvedValue({ data: signupData, error: null });
+
+      const auth = useAuth();
+      await auth.signup(
+        "admin@example.com",
+        "password123",
+        "Admin User",
+        "parent",
+        undefined,
+        undefined,
+        true,
+      );
+
+      expect(mockAuth.signUp).toHaveBeenCalledWith({
+        email: "admin@example.com",
+        password: "password123",
+        options: {
+          data: {
+            full_name: "Admin User",
+            role: "parent",
+            pending_admin: true,
+          },
+        },
+      });
+    });
+
     it("should trim email during signup", async () => {
       const { mockSupabase, mockAuth } = getMockSupabase();
 

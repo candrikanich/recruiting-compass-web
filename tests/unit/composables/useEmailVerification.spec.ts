@@ -360,12 +360,15 @@ describe("useEmailVerification", () => {
     });
 
     it("should handle no active session without surfacing an error", async () => {
-      // No session (user: null, error: null) is the normal state for a
-      // brand-new signup awaiting email confirmation — not a failure.
+      // supabase-js's getUser() returns AuthSessionMissingError (not a plain
+      // null/null pair) when there's no session locally — the normal state
+      // for a brand-new signup awaiting email confirmation, not a failure.
       const { mockAuth } = getMockSupabase();
+      const sessionMissingError = new Error("Auth session missing!");
+      sessionMissingError.name = "AuthSessionMissingError";
       mockAuth.getUser.mockResolvedValue({
         data: { user: null },
-        error: null,
+        error: sessionMissingError,
       });
 
       const verification = useEmailVerification();

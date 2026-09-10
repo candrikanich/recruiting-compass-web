@@ -619,6 +619,7 @@ describe("signup.vue", () => {
         "Test User",
         "player",
         undefined, // captchaToken (Turnstile disabled in test)
+        undefined, // dateOfBirth (not set in this fixture)
       );
     });
 
@@ -704,6 +705,7 @@ describe("signup.vue", () => {
         "Parent User",
         "parent",
         undefined, // captchaToken (Turnstile disabled in test)
+        undefined, // dateOfBirth (not set in this fixture)
       );
     });
 

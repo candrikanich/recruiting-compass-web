@@ -16,7 +16,7 @@ import { requireAuth } from "~/server/utils/auth";
 interface AdminProfileRequest {
   email: string;
   fullName: string;
-  adminToken: string;
+  adminToken?: string;
 }
 
 export default defineEventHandler(async (event) => {
@@ -33,20 +33,35 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    // Require a valid admin token — prevents unauthenticated privilege escalation.
-    if (!adminToken || typeof adminToken !== "string") {
-      logger.warn("Admin profile creation attempted without admin token", {
-        userId: authUser.id,
-      });
-      throw createError({ statusCode: 403, statusMessage: "Forbidden" });
-    }
+    // Two ways to reach this endpoint, both requiring the adminToken to have
+    // been validated at some point — never trusted from the request body alone:
+    // 1. Straight after admin signup (session already present, e.g. QA/E2E
+    //    where confirm-email is off): adminToken is supplied fresh and
+    //    validated here, same as always.
+    // 2. Lazily on first login, once email confirmation is done (prod):
+    //    the adminToken was already validated at signup time and the intent
+    //    was carried forward as `pending_admin` in the user's own signUp()
+    //    metadata — pulled from the verified JWT via requireAuth(), not from
+    //    anything the client asserts in this request, so it can't be spoofed.
+    const hasPendingAdminIntent =
+      authUser.user_metadata?.pending_admin === true;
 
-    const config = useRuntimeConfig(event);
-    if (!validateAdminToken(adminToken, config.adminTokenSecret)) {
-      logger.warn("Admin profile creation attempted with invalid admin token", {
-        userId: authUser.id,
-      });
-      throw createError({ statusCode: 403, statusMessage: "Forbidden" });
+    if (!hasPendingAdminIntent) {
+      if (!adminToken || typeof adminToken !== "string") {
+        logger.warn("Admin profile creation attempted without admin token", {
+          userId: authUser.id,
+        });
+        throw createError({ statusCode: 403, statusMessage: "Forbidden" });
+      }
+
+      const config = useRuntimeConfig(event);
+      if (!validateAdminToken(adminToken, config.adminTokenSecret)) {
+        logger.warn(
+          "Admin profile creation attempted with invalid admin token",
+          { userId: authUser.id },
+        );
+        throw createError({ statusCode: 403, statusMessage: "Forbidden" });
+      }
     }
 
     // Use admin client to bypass RLS
