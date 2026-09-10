@@ -359,7 +359,9 @@ describe("useEmailVerification", () => {
       expect(verification.error.value).toBe(null);
     });
 
-    it("should handle no active session", async () => {
+    it("should handle no active session without surfacing an error", async () => {
+      // No session (user: null, error: null) is the normal state for a
+      // brand-new signup awaiting email confirmation — not a failure.
       const { mockAuth } = getMockSupabase();
       mockAuth.getUser.mockResolvedValue({
         data: { user: null },
@@ -371,7 +373,7 @@ describe("useEmailVerification", () => {
 
       expect(result).toBe(false);
       expect(verification.isVerified.value).toBe(false);
-      expect(verification.error.value).toBe("Unable to verify user session");
+      expect(verification.error.value).toBe(null);
     });
 
     it("should handle auth error", async () => {
