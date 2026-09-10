@@ -14,6 +14,18 @@ const realtimeOptions: RealtimeClientOptions = {
   transport: ws as unknown as RealtimeClientOptions["transport"],
 };
 
+// family_units.inbound_token is NOT NULL with a CHECK (^[a-z0-9]{8}$) —
+// mirrors server/utils/familyInboundToken.ts's format without pulling in a
+// Nuxt-context import (this file compiles standalone under Playwright).
+// Test-seed collision odds are negligible; no retry needed here.
+export const randomInboundToken = (): string => {
+  const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+  let result = "";
+  for (let i = 0; i < 8; i++)
+    result += chars[Math.floor(Math.random() * chars.length)];
+  return result;
+};
+
 export const getSupabaseAdmin = () => {
   const url =
     process.env.TEST_SUPABASE_URL || process.env.NUXT_PUBLIC_SUPABASE_URL;
@@ -482,6 +494,7 @@ async function setupTestAccountData(
     .insert({
       family_name: `${account.displayName} Family`,
       created_by_user_id: userId,
+      inbound_token: randomInboundToken(),
     })
     .select()
     .single();
