@@ -364,6 +364,20 @@ const handleSignup = async () => {
       }
 
       userId = authData.data.user.id;
+
+      // Prod requires email confirmation, so Supabase withholds the session
+      // until the link is clicked. handle_new_user() already created the
+      // public.users row server-side (SECURITY DEFINER trigger); everything
+      // below this point needs an authenticated session for RLS, so there's
+      // nothing left to do client-side. Hand off to verify-email instead of
+      // failing — family creation happens on first login (pages/login.vue).
+      if (!authData.data.session) {
+        loading.value = false;
+        await navigateTo(
+          `/verify-email?email=${encodeURIComponent(validated.email)}`,
+        );
+        return;
+      }
     } catch (signupErr: unknown) {
       // Handle "User already registered" error - the account may have been created
       // in a previous request (race condition or double-submit)
