@@ -13,17 +13,20 @@
  * Options:
  *   --project <name|id>   Vercel project (default: recruiting-compass-web)
  *   --team <slug|id>      Vercel team (default: the-recruiting-compass)
- *   --keep <n>            Deployments to keep per branch (default: 5)
+ *   --keep <n>            Deployments to keep per branch regardless of age (default: 5)
+ *   --older-than <days>   Also delete anything past this age, beyond the --keep floor (default: none)
  *   --execute             Actually delete (default: dry-run)
  */
 
 const API = "https://api.vercel.com";
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 function parseArgs(argv) {
   const opts = {
     project: "recruiting-compass-web",
     team: "the-recruiting-compass",
     keep: 5,
+    olderThanDays: null,
     execute: false,
   };
   for (let i = 0; i < argv.length; i++) {
@@ -31,6 +34,7 @@ function parseArgs(argv) {
     if (arg === "--project") opts.project = argv[++i];
     else if (arg === "--team") opts.team = argv[++i];
     else if (arg === "--keep") opts.keep = Number(argv[++i]);
+    else if (arg === "--older-than") opts.olderThanDays = Number(argv[++i]);
     else if (arg === "--execute") opts.execute = true;
     else throw new Error(`Unknown arg: ${arg}`);
   }
@@ -105,14 +109,25 @@ function groupByBranch(deployments) {
   return byBranch;
 }
 
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 async function deleteDeployment(token, teamId, id) {
   const url = new URL(`${API}/v13/deployments/${id}`);
   if (teamId) url.searchParams.set("teamId", teamId);
-  const res = await fetch(url, {
-    method: "DELETE",
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  if (!res.ok && res.status !== 404) {
+  for (;;) {
+    const res = await fetch(url, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (res.ok || res.status === 404) return;
+    if (res.status === 429) {
+      const body = await res.json().catch(() => null);
+      const resetMs = body?.error?.limit?.reset ? body.error.limit.reset - Date.now() : 60_000;
+      const waitMs = Math.max(resetMs, 5000) + 2000; // small buffer past reset
+      console.log(`  rate limited, waiting ${Math.ceil(waitMs / 1000)}s...`);
+      await sleep(waitMs);
+      continue;
+    }
     throw new Error(`delete ${id} -> ${res.status} ${await res.text()}`);
   }
 }
@@ -129,20 +144,24 @@ async function main() {
     fetchAliasedDeploymentIds(token, teamId),
   ]);
 
+  const cutoff = opts.olderThanDays != null ? Date.now() - opts.olderThanDays * DAY_MS : null;
+
   const byBranch = groupByBranch(deployments);
   const toDelete = [];
 
   for (const [branch, list] of byBranch) {
-    const candidates = list.slice(opts.keep);
+    const candidates = list.slice(opts.keep); // never touch the newest N per branch
     for (const d of candidates) {
       if (aliasedIds.has(d.uid ?? d.id)) continue; // never delete anything aliased
+      if (cutoff != null && d.created > cutoff) continue; // not old enough yet
       toDelete.push({ branch, ...d });
     }
   }
 
+  const ageDesc = cutoff != null ? ` older than ${opts.olderThanDays}d` : "";
   console.log(
     `${opts.project}: ${deployments.length} deployments across ${byBranch.size} branches. ` +
-      `Keeping ${opts.keep}/branch + all aliased. ${toDelete.length} eligible for deletion.`,
+      `Keeping ${opts.keep}/branch + all aliased. ${toDelete.length} eligible for deletion${ageDesc}.`,
   );
 
   for (const d of toDelete) {
