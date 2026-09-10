@@ -38,6 +38,8 @@ interface _AuthActions {
     fullName?: string,
     role?: string,
     captchaToken?: string,
+    dateOfBirth?: string,
+    pendingAdmin?: boolean,
   ) => Promise<{
     data: { user: User | null; session: Session | null } | null;
     error: { message: string; status?: number } | null;
@@ -255,6 +257,8 @@ export const useAuth = () => {
     fullName?: string,
     role?: string,
     captchaToken?: string,
+    dateOfBirth?: string,
+    pendingAdmin?: boolean,
   ) => {
     loading.value = true;
     error.value = null;
@@ -283,6 +287,17 @@ export const useAuth = () => {
 
       if (role) {
         metadata.role = role;
+      }
+
+      if (dateOfBirth) {
+        metadata.date_of_birth = dateOfBirth;
+      }
+
+      // Carries the already-validated admin-signup intent across the
+      // email-confirmation gap (no session exists yet to apply is_admin
+      // directly) — consumed lazily on first login, not trusted again later.
+      if (pendingAdmin) {
+        metadata.pending_admin = true;
       }
 
       // Add metadata + captcha token if present

@@ -5,6 +5,7 @@ import { createPinia, setActivePinia } from "pinia";
 import { useRouter, useRoute } from "vue-router";
 import { useUserStore } from "~/stores/user";
 import { useAuth } from "~/composables/useAuth";
+import { useAuthFetch } from "~/composables/useAuthFetch";
 import { useFormValidation } from "~/composables/useFormValidation";
 import login from "~/pages/login.vue";
 
@@ -24,6 +25,9 @@ vi.mock("~/stores/user", () => ({
 }));
 vi.mock("~/composables/useAuth", () => ({
   useAuth: vi.fn(),
+}));
+vi.mock("~/composables/useAuthFetch", () => ({
+  useAuthFetch: vi.fn(),
 }));
 vi.mock("~/composables/useFormValidation", () => ({
   useFormValidation: vi.fn(),
@@ -198,6 +202,7 @@ vi.mock("~/components/Auth/LoginForm.vue", () => {
 const mockUseRouter = vi.mocked(useRouter);
 const mockUseUserStore = vi.mocked(useUserStore);
 const mockUseAuth = vi.mocked(useAuth);
+const mockUseAuthFetch = vi.mocked(useAuthFetch);
 const mockUseFormValidation = vi.mocked(useFormValidation);
 const useLoadingStates = vi.fn();
 
@@ -234,6 +239,11 @@ describe("login.vue", () => {
       error: { value: null },
     };
     mockUseAuth.mockReturnValue(mockAuth);
+
+    // Mock authed fetch (family/create + lazy admin-profile calls)
+    mockUseAuthFetch.mockReturnValue({
+      $fetchAuth: vi.fn().mockResolvedValue({}),
+    } as any);
 
     // Mock form validation
     mockValidation = {
@@ -453,6 +463,62 @@ describe("login.vue", () => {
       expect(mockUserStore.initializeUser).toBeDefined();
     });
 
+    it("should apply the pending admin flag on first login when metadata carries it", async () => {
+      mockValidation.validate.mockResolvedValue({
+        email: "admin@example.com",
+        password: "password123", // pragma: allowlist secret
+        rememberMe: false,
+      });
+      mockAuth.login.mockResolvedValue({
+        data: {
+          user: { id: "user-123", user_metadata: { pending_admin: true } },
+        },
+        error: null,
+      });
+      mockUserStore.user = { id: "user-123", is_admin: false, full_name: "Admin User" };
+      const fetchAuthMock = vi.fn().mockResolvedValue({});
+      mockUseAuthFetch.mockReturnValue({ $fetchAuth: fetchAuthMock } as any);
+
+      const wrapper = createWrapper();
+      await wrapper.find('input[type="email"]').setValue("admin@example.com");
+      await wrapper.find('input[type="password"]').setValue("password123");
+      await wrapper.find("form").trigger("submit.prevent");
+      await wrapper.vm.$nextTick();
+      await new Promise((resolve) => setTimeout(resolve, 150));
+
+      expect(fetchAuthMock).toHaveBeenCalledWith("/api/auth/admin-profile", {
+        method: "POST",
+        body: { fullName: "Admin User" },
+      });
+    });
+
+    it("should NOT call admin-profile when there is no pending admin intent", async () => {
+      mockValidation.validate.mockResolvedValue({
+        email: "test@example.com",
+        password: "password123", // pragma: allowlist secret
+        rememberMe: false,
+      });
+      mockAuth.login.mockResolvedValue({
+        data: { user: { id: "user-123", user_metadata: {} } },
+        error: null,
+      });
+      mockUserStore.user = { id: "user-123", is_admin: false };
+      const fetchAuthMock = vi.fn().mockResolvedValue({});
+      mockUseAuthFetch.mockReturnValue({ $fetchAuth: fetchAuthMock } as any);
+
+      const wrapper = createWrapper();
+      await wrapper.find('input[type="email"]').setValue("test@example.com");
+      await wrapper.find('input[type="password"]').setValue("password123");
+      await wrapper.find("form").trigger("submit.prevent");
+      await wrapper.vm.$nextTick();
+      await new Promise((resolve) => setTimeout(resolve, 150));
+
+      expect(fetchAuthMock).not.toHaveBeenCalledWith(
+        "/api/auth/admin-profile",
+        expect.anything(),
+      );
+    });
+
     it("should handle login error", async () => {
       mockValidation.validate.mockResolvedValue({
         email: "test@example.com",
@@ -562,9 +628,11 @@ describe("login.vue", () => {
       await wrapper.find('input[type="email"]').setValue("test@example.com");
       await wrapper.find('input[type="password"]').setValue("password123");
       await wrapper.find("form").trigger("submit.prevent");
-      // Wait for async operations
+      // Wait for async operations — handleLogin awaits a
+      // SUPABASE_SESSION_PERSIST_DELAY (100ms) before navigating, so this
+      // must outlast that.
       await wrapper.vm.$nextTick();
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 150));
 
       expect(global.navigateTo).toHaveBeenCalledWith("/dashboard");
     });

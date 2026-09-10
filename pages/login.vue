@@ -291,7 +291,7 @@ const handleLogin = async () => {
   loading.value = true;
 
   try {
-    await login(
+    const loginResult = await login(
       validated.email,
       validated.password,
       rememberMe.value,
@@ -313,6 +313,25 @@ const handleLogin = async () => {
       await $fetchAuth("/api/family/create", { method: "POST" });
     } catch (familyErr) {
       logger.error("Failed to ensure family unit on login", familyErr);
+    }
+
+    // Confirm-required admin signups never got a session to apply is_admin
+    // with (see pages/admin/signup.vue) — apply it lazily here. Server-side
+    // trusts the pending_admin flag from this session's own verified JWT,
+    // not anything supplied by this request.
+    if (
+      loginResult?.data?.user?.user_metadata?.pending_admin === true &&
+      !userStore.user?.is_admin
+    ) {
+      try {
+        await $fetchAuth("/api/auth/admin-profile", {
+          method: "POST",
+          body: { fullName: userStore.user?.full_name ?? "" },
+        });
+        await userStore.initializeUser();
+      } catch (adminErr) {
+        logger.error("Failed to apply pending admin flag on login", adminErr);
+      }
     }
 
     // Navigate to originally requested page, or dashboard as fallback
