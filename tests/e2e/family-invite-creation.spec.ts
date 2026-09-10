@@ -3,6 +3,7 @@ import {
   getSupabaseAdmin,
   createOneOffTestUser,
   deleteOneOffTestUser,
+  randomInboundToken,
 } from "./seed/helpers/supabase-admin";
 import { loginViaForm } from "./helpers/login";
 
@@ -83,6 +84,7 @@ async function seedFamilyUnit(
     .insert({
       family_name: `Invite Creation ${RUN} Family`,
       created_by_user_id: ownerUserId,
+      inbound_token: randomInboundToken(),
     })
     .select("id")
     .single();
