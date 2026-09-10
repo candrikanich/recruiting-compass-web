@@ -96,8 +96,16 @@ export const useEmailVerification = () => {
           error: authError,
         } = await supabase.auth.getUser();
 
-        if (authError || !user) {
+        // No session is the normal state for a brand-new signup awaiting
+        // email confirmation (auth.signUp() withholds the session until the
+        // link is clicked) — not a failure. Only a real authError (network,
+        // malformed token, etc.) is worth surfacing to the user.
+        if (authError) {
           error.value = "Unable to verify user session";
+          return false;
+        }
+
+        if (!user) {
           return false;
         }
 
