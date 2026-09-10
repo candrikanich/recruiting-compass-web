@@ -11,6 +11,8 @@ export type GpaBucket = "high" | "mid" | "low" | "unknown";
 export function catalogKeyFor(name: string): string {
   return name
     .toLowerCase()
+    .replace(/\([^)]*\)/g, " ") // drop disambiguators, e.g. "Miami University (Ohio)"
+    .replace(/^\s*the\s+/, "") // drop leading "The", e.g. "The Ohio State University"
     .replace(/[^a-z0-9]+/g, " ")
     .trim();
 }
