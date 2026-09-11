@@ -266,6 +266,70 @@ export const sendEmail = async (
   );
 };
 
+export interface SendGuardianClaimEmailOptions {
+  to: string;
+  playerName: string;
+  token: string;
+  context?: EmailSendContext;
+}
+
+/**
+ * Player-initiated guardian confirmation. The mirror image of `sendInviteEmail`: here the
+ * 13-17 player has already started an account and is asking a parent/guardian to confirm
+ * it, rather than the guardian inviting the player in.
+ */
+export const sendGuardianClaimEmail = async (
+  options: SendGuardianClaimEmailOptions,
+): Promise<{ success: boolean; messageId?: string; error?: string }> => {
+  const { to, playerName, token, context } = options;
+  const baseUrl =
+    process.env.PUBLIC_BASE_URL ?? "https://myrecruitingcompass.com";
+  const claimUrl = `${baseUrl}/guardian/claim/${encodeURIComponent(token)}`;
+
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 24px;">
+          <h1 style="margin: 0 0 16px 0; font-size: 24px; color: #111827;">
+            ${escapeHtml(playerName)} started a recruiting profile
+          </h1>
+          <p style="margin: 0 0 16px 0; color: #4b5563; font-size: 16px;">
+            ${escapeHtml(playerName)} is using The Recruiting Compass to track schools, deadlines
+            and coach contacts — and listed you as their parent or guardian.
+          </p>
+          <p style="margin: 0 0 24px 0; color: #4b5563; font-size: 16px;">
+            Because they're under 18, you need to confirm their account. Messaging coaches and
+            sharing their profile stay switched off until you do.
+          </p>
+          <a href="${sanitizeUrl(claimUrl)}" style="display: inline-block; background: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 600;">
+            Confirm ${escapeHtml(playerName)}'s account
+          </a>
+          <p style="margin-top: 24px; font-size: 13px; color: #9ca3af;">
+            If you don't recognize this, you can ignore this email — the account stays locked
+            and is removed if no one confirms it.
+          </p>
+        </div>
+        <p style="margin-top: 24px; font-size: 12px; color: #9ca3af; text-align: center;">
+          The Recruiting Compass
+        </p>
+      </body>
+    </html>
+  `;
+
+  return sendEmail({
+    to,
+    subject: `${playerName} started a recruiting profile — confirm you're their parent or guardian`,
+    html: htmlContent,
+    idempotencyKey: `guardian-claim-${token}`,
+    context,
+  });
+};
+
 export interface SendInviteEmailOptions {
   to: string;
   inviterName: string;

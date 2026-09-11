@@ -1526,6 +1526,56 @@ export type Database = {
           },
         ];
       };
+      guardian_claims: {
+        Row: {
+          claimed_at: string | null;
+          claimed_by: string | null;
+          created_at: string;
+          expires_at: string;
+          guardian_email: string;
+          id: string;
+          last_reminder_at: string | null;
+          player_user_id: string;
+          reminder_count: number;
+          status: string;
+          token: string;
+        };
+        Insert: {
+          claimed_at?: string | null;
+          claimed_by?: string | null;
+          created_at?: string;
+          expires_at?: string;
+          guardian_email: string;
+          id?: string;
+          last_reminder_at?: string | null;
+          player_user_id: string;
+          reminder_count?: number;
+          status?: string;
+          token: string;
+        };
+        Update: {
+          claimed_at?: string | null;
+          claimed_by?: string | null;
+          created_at?: string;
+          expires_at?: string;
+          guardian_email?: string;
+          id?: string;
+          last_reminder_at?: string | null;
+          player_user_id?: string;
+          reminder_count?: number;
+          status?: string;
+          token?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "guardian_claims_claimed_by_fkey";
+            columns: ["claimed_by"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       help_feedback: {
         Row: {
           created_at: string | null;
