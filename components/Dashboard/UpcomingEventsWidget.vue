@@ -44,10 +44,20 @@
       <p>No upcoming events</p>
     </div>
     <NuxtLink
+      v-if="events.length > 0"
       to="/events"
       class="mt-4 block w-full rounded-lg border border-slate-300 py-2 text-center text-slate-700 transition-colors hover:bg-slate-50"
     >
       View All Events
+    </NuxtLink>
+    <NuxtLink
+      v-else
+      to="/events/create"
+      data-testid="add-event-button"
+      class="mt-4 flex w-full items-center justify-center gap-2 rounded-lg border border-slate-300 py-2 text-center text-slate-700 transition-colors hover:bg-slate-50"
+    >
+      <UIcon name="i-heroicons-plus" class="h-4 w-4" />
+      Add Event
     </NuxtLink>
   </div>
 </template>
