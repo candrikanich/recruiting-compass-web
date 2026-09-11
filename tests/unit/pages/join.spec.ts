@@ -202,7 +202,12 @@ describe("/join page", () => {
         .trigger("click");
       await flushPromises();
 
-      expect(mockLogin).toHaveBeenCalledWith("player@example.com", "secret");
+      expect(mockLogin).toHaveBeenCalledWith(
+        "player@example.com",
+        "secret",
+        false,
+        undefined, // captchaToken (Turnstile disabled in test)
+      );
       expect(global.navigateTo).toHaveBeenCalledWith("/dashboard");
     });
   });
@@ -347,7 +352,13 @@ describe("/join page", () => {
         .trigger("submit");
       await flushPromises();
 
-      expect(mockSignup).toHaveBeenCalled();
+      expect(mockSignup).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.any(String),
+        expect.any(String),
+        "player",
+        undefined, // captchaToken (Turnstile disabled in test)
+      );
       expect(mockFetch).toHaveBeenCalledWith(
         "/api/family/invite/valid-token-123/accept",
         { method: "POST" },
