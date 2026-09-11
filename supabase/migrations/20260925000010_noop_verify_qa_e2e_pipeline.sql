@@ -5,4 +5,8 @@
 -- --include-all to the workflow (PR #731) -- a rerun of a prior failed
 -- run replays that run's original commit's workflow file, not develop's
 -- current one, so a genuinely new push was needed to pick it up.
+-- Re-touched 2026-09-11 after repairing E2E's schema_migrations bookkeeping
+-- (versions had drifted from a baseline squash + MCP-applied migrations) --
+-- same reason as above, rerunning the stale run replays its old commit's
+-- migrations/ directory, which predates several since-added/renamed files.
 DO $$ BEGIN END $$;
