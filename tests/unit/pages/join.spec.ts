@@ -147,8 +147,10 @@ describe("/join page", () => {
       );
     });
 
-    it("shows signup form when user is not authenticated", async () => {
+    it("shows signup form after switching from login", async () => {
       const wrapper = createWrapper();
+      await flushPromises();
+      await wrapper.find('[data-testid="switch-to-signup"]').trigger("click");
       await flushPromises();
       expect(wrapper.find('[data-testid="invite-signup-form"]').exists()).toBe(
         true,
@@ -322,6 +324,8 @@ describe("/join page", () => {
 
       const wrapper = createWrapper();
       await flushPromises();
+      await wrapper.find('[data-testid="switch-to-signup"]').trigger("click");
+      await flushPromises();
 
       await wrapper
         .find('[data-testid="invite-signup-form"]')
@@ -346,6 +350,8 @@ describe("/join page", () => {
         .mockResolvedValueOnce({ success: true, familyUnitId: "fam-1" });
 
       const wrapper = createWrapper();
+      await flushPromises();
+      await wrapper.find('[data-testid="switch-to-signup"]').trigger("click");
       await flushPromises();
       await wrapper
         .find('[data-testid="invite-signup-form"]')
@@ -390,6 +396,8 @@ describe("/join page", () => {
 
       const wrapper = createWrapper();
       await flushPromises();
+      await wrapper.find('[data-testid="switch-to-signup"]').trigger("click");
+      await flushPromises();
       await wrapper
         .find('[data-testid="invite-signup-form"]')
         .trigger("submit");
@@ -415,6 +423,8 @@ describe("/join page", () => {
         .mockResolvedValueOnce({ success: true });
 
       const wrapper = createWrapper();
+      await flushPromises();
+      await wrapper.find('[data-testid="switch-to-signup"]').trigger("click");
       await flushPromises();
       await wrapper
         .find('[data-testid="invite-signup-form"]')

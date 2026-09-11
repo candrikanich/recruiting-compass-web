@@ -65,6 +65,11 @@ const declining = ref(false);
 const signupError = ref<string | null>(null);
 const loginError = ref<string | null>(null);
 
+// Which form is shown for an unauthenticated visitor. Login and signup used
+// to render stacked in one screen (confusing — two email/password pairs at
+// once); now only one shows at a time.
+const authMode = ref<"login" | "signup">("login");
+
 // --- Turnstile (optional, flag-gated) ----------------------------------------
 const runtimeConfig = useRuntimeConfig();
 const turnstileSiteKey = computed(
@@ -72,8 +77,8 @@ const turnstileSiteKey = computed(
 );
 const turnstileEnabled = computed(() => turnstileSiteKey.value.length > 0);
 const turnstileToken = ref<string | undefined>(undefined);
-// Login and signup sections render simultaneously (both visible to an
-// unauthenticated visitor), so each needs its own widget instance/id.
+// Login and signup are separate toggled views, each mounting/unmounting its
+// own widget instance as authMode switches — so each needs its own id.
 const turnstileLoginEl = ref<HTMLDivElement | null>(null);
 const turnstileSignupEl = ref<HTMLDivElement | null>(null);
 const turnstileLoginWidgetId = ref<string | undefined>(undefined);
@@ -134,7 +139,7 @@ function loadTurnstileScript(): Promise<void> {
 }
 
 // Mount a Turnstile widget into `el`, feeding the shared token ref. Used for
-// both the login and signup sections, which render simultaneously.
+// whichever of the login/signup sections is currently toggled into view.
 async function mountTurnstile(
   el: HTMLElement,
   action: string,
@@ -431,7 +436,7 @@ async function decline() {
       <!-- Not authenticated -->
       <div v-else>
         <!-- Login form -->
-        <div data-testid="login-section">
+        <div v-if="authMode === 'login'" data-testid="login-section">
           <p class="mb-4 text-sm text-gray-500">
             Log in to connect your account.
           </p>
@@ -476,15 +481,23 @@ async function decline() {
               Decline
             </DesignSystemButton>
           </div>
+          <p class="mt-4 text-sm text-gray-500">
+            Don't have an account?
+            <button
+              type="button"
+              data-testid="switch-to-signup"
+              class="text-blue-600 hover:underline"
+              @click="authMode = 'signup'"
+            >
+              Create one instead
+            </button>
+          </p>
         </div>
 
-        <!-- Signup option -->
-        <div class="mt-8" data-testid="signup-section">
+        <!-- Signup form -->
+        <div v-else data-testid="signup-section">
           <p class="mb-4 text-sm text-gray-500">
-            Don't have an account?
-            <NuxtLink to="/signup" class="text-blue-600 hover:underline"
-              >Create one instead</NuxtLink
-            >.
+            Create an account to connect.
           </p>
           <p v-if="signupError" class="mb-3 text-sm text-red-600" role="alert">
             {{ signupError }}
@@ -514,6 +527,17 @@ async function decline() {
             ref="turnstileSignupEl"
             class="mt-4 flex justify-center"
           />
+          <p class="mt-4 text-sm text-gray-500">
+            Already have an account?
+            <button
+              type="button"
+              data-testid="switch-to-login"
+              class="text-blue-600 hover:underline"
+              @click="authMode = 'login'"
+            >
+              Log in instead
+            </button>
+          </p>
           <div class="mt-4">
             <DesignSystemButton
               data-testid="decline-button"
