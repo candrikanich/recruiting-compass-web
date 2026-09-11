@@ -67,8 +67,11 @@ const loginError = ref<string | null>(null);
 
 // Which form is shown for an unauthenticated visitor. Login and signup used
 // to render stacked in one screen (confusing — two email/password pairs at
-// once); now only one shows at a time.
-const authMode = ref<"login" | "signup">("login");
+// once); now only one shows at a time. Default to signup: most invitees
+// (players invited by a parent) have no account yet — login is the minority
+// case (e.g. a parent already on the platform invited to a second child's
+// family unit).
+const authMode = ref<"login" | "signup">("signup");
 
 // --- Turnstile (optional, flag-gated) ----------------------------------------
 const runtimeConfig = useRuntimeConfig();
