@@ -11,9 +11,37 @@
       >
     </div>
 
-    <!-- Empty State -->
+    <!-- Empty State: nothing tracked yet -->
     <div
-      v-if="needsFollowup.length === 0"
+      v-if="needsFollowup.length === 0 && allCoachesData.length === 0"
+      class="py-8 text-center text-slate-600"
+    >
+      <p class="text-lg">
+        {{ allSchools.length === 0 ? "🏫" : "🎯" }}
+        {{
+          allSchools.length === 0
+            ? "Start tracking your recruiting"
+            : "Add your first coach"
+        }}
+      </p>
+      <p class="mb-4 text-sm">
+        {{
+          allSchools.length === 0
+            ? "Follow a school to get coach follow-up reminders"
+            : "Add a coach to start getting follow-up reminders"
+        }}
+      </p>
+      <NuxtLink
+        :to="allSchools.length === 0 ? '/schools/new' : '/coaches/new'"
+        class="inline-block rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
+      >
+        {{ allSchools.length === 0 ? "Follow a School" : "Add a Coach" }}
+      </NuxtLink>
+    </div>
+
+    <!-- Empty State: caught up on existing coaches -->
+    <div
+      v-else-if="needsFollowup.length === 0"
       class="py-8 text-center text-slate-600"
     >
       <p class="text-lg">🎉 All caught up!</p>
