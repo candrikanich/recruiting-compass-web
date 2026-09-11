@@ -10,10 +10,14 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 // from "#app") — inject it as a global that returns the plugin fn unwrapped.
 global.defineNuxtPlugin = (fn: (ctx: unknown) => unknown) => fn;
 
-let authStateCallback: (event: string) => void = () => {};
-const mockOnAuthStateChange = vi.fn((cb: (event: string) => void) => {
-  authStateCallback = cb;
-});
+type AuthSession = { user: { id: string } } | undefined;
+let authStateCallback: (event: string, session?: AuthSession) => void =
+  () => {};
+const mockOnAuthStateChange = vi.fn(
+  (cb: (event: string, session?: AuthSession) => void) => {
+    authStateCallback = cb;
+  },
+);
 
 // useSupabase and useUserStore are Nuxt auto-imports in the source (no
 // explicit import statements) — inject as globals for the test environment.
@@ -22,7 +26,7 @@ global.useSupabase = () => ({
 });
 
 const mockLogout = vi.fn();
-const mockInitializeUser = vi.fn();
+const mockInitializeUser = vi.fn().mockResolvedValue(undefined);
 global.useUserStore = () => ({
   logout: mockLogout,
   initializeUser: mockInitializeUser,
@@ -31,6 +35,13 @@ global.useUserStore = () => ({
 const mockResetAppState = vi.fn();
 vi.mock("~/composables/useAuthLifecycle", () => ({
   resetAppState: mockResetAppState,
+}));
+
+const mockEnsureAccountProvisioned = vi.fn().mockResolvedValue(undefined);
+vi.mock("~/composables/useAccountProvisioning", () => ({
+  useAccountProvisioning: () => ({
+    ensureAccountProvisioned: mockEnsureAccountProvisioned,
+  }),
 }));
 
 describe("auth.client plugin", () => {
@@ -61,6 +72,24 @@ describe("auth.client plugin", () => {
     expect(mockInitializeUser).toHaveBeenCalledOnce();
     expect(mockLogout).not.toHaveBeenCalled();
     expect(mockResetAppState).not.toHaveBeenCalled();
+  });
+
+  it("ensures account provisioning (family unit, pending admin) on every SIGNED_IN — not just an explicit /login submit", async () => {
+    // This is the gap that used to exist: Supabase's own email-confirmation
+    // link establishes a session and fires SIGNED_IN while landing on "/",
+    // never on /login — provisioning must not depend on that specific page.
+    const session = { user: { id: "user-123" } };
+    authStateCallback("SIGNED_IN", session);
+    await vi.waitFor(() => {
+      expect(mockEnsureAccountProvisioned).toHaveBeenCalledWith(session.user);
+    });
+  });
+
+  it("does not call ensureAccountProvisioned when SIGNED_IN fires with no session", async () => {
+    authStateCallback("SIGNED_IN", undefined);
+    await mockInitializeUser.mock.results[0]?.value;
+
+    expect(mockEnsureAccountProvisioned).not.toHaveBeenCalled();
   });
 
   it("does nothing on unrelated auth events", () => {
