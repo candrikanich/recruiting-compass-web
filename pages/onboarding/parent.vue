@@ -132,11 +132,22 @@
           </div>
 
           <div class="pt-2">
+            <p
+              v-if="savePlayerDetailsError"
+              data-testid="save-player-details-error"
+              class="mb-2 text-sm text-red-600"
+            >
+              {{ savePlayerDetailsError }}
+            </p>
             <button
               data-testid="next-button"
               type="button"
               :disabled="
-                !playerDob || playerTooYoung || !sport || !graduationYear
+                !playerDob ||
+                playerTooYoung ||
+                !sport ||
+                !graduationYear ||
+                !familyReady
               "
               class="w-full rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
               @click="savePlayerDetails"
@@ -262,30 +273,55 @@ const { completeOnboarding } = useOnboarding();
 const { completeItem } = useNuxProgress();
 const addingRecommendationKey = ref<string | null>(null);
 const recommendationActionError = ref<string | null>(null);
+const savePlayerDetailsError = ref<string | null>(null);
+
+// Family creation (below) runs async in the background — Next must stay
+// disabled until it settles, or a fast-filling user can submit
+// player-details before their family_members row exists server-side,
+// which 403s (see issue #782).
+const familyReady = ref(false);
 
 onMounted(async () => {
-  await fetchMyCode();
-  if (!myFamilyCode.value) {
-    await createFamily();
-    // Refresh the app-level family context so pages loaded after onboarding
-    // (e.g. /schools/new) have a valid activeFamilyId immediately.
-    await activeFamilyCtx?.refetchFamilies();
+  try {
+    await fetchMyCode();
+    if (!myFamilyCode.value) {
+      await createFamily();
+      // Refresh the app-level family context so pages loaded after onboarding
+      // (e.g. /schools/new) have a valid activeFamilyId immediately.
+      await activeFamilyCtx?.refetchFamilies();
+    }
+  } catch (err) {
+    logger.warn("Failed to provision family during parent onboarding", err);
+  } finally {
+    // Even on failure, unblock Next — savePlayerDetails' own error handling
+    // covers a family that still isn't ready, rather than wedging the user
+    // on a permanently-disabled button.
+    familyReady.value = true;
   }
 });
 
 async function savePlayerDetails() {
-  await $fetchAuth("/api/family/player-details", {
-    method: "POST",
-    body: {
-      playerName: playerName.value,
-      playerDob: playerDob.value,
-      graduationYear: graduationYear.value,
-      sport: sport.value,
-    },
-  });
-  await completeItem("sport");
-  step.value = 2;
-  void fetchRecommendations();
+  savePlayerDetailsError.value = null;
+  try {
+    await $fetchAuth("/api/family/player-details", {
+      method: "POST",
+      body: {
+        playerName: playerName.value,
+        playerDob: playerDob.value,
+        graduationYear: graduationYear.value,
+        sport: sport.value,
+      },
+    });
+    await completeItem("sport");
+    step.value = 2;
+    void fetchRecommendations();
+  } catch (err) {
+    logger.warn("Failed to save player details during onboarding", err);
+    savePlayerDetailsError.value =
+      err instanceof Error
+        ? err.message
+        : "Something went wrong saving your athlete's details. Please try again.";
+  }
 }
 
 async function handleAddRecommendation(school: SchoolRecommendation) {
