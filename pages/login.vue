@@ -103,7 +103,6 @@ import { ref, computed, watch } from "vue";
 import { useRoute } from "vue-router";
 import { useRuntimeConfig } from "#app";
 import { useAuth } from "~/composables/useAuth";
-import { useAuthFetch } from "~/composables/useAuthFetch";
 import { useFormValidation } from "~/composables/useFormValidation";
 import { useFormErrorFocus } from "~/composables/useFormErrorFocus";
 import { useUserStore } from "~/stores/user";
@@ -112,9 +111,6 @@ import { EMAIL_SCHEMA, PASSWORD_SCHEMA } from "~/utils/validation/loginSchemas";
 import FormErrorSummary from "~/components/Validation/FormErrorSummary.vue";
 import MultiSportFieldBackground from "~/components/Auth/MultiSportFieldBackground.vue";
 import LoginForm from "~/components/Auth/LoginForm.vue";
-import { createClientLogger } from "~/utils/logger";
-
-const logger = createClientLogger("pages/login");
 
 // Constants
 const SUPABASE_SESSION_PERSIST_DELAY = 100; // ms
@@ -217,7 +213,6 @@ watch(
 
 const { loading, validating } = useLoadingStates();
 const { login } = useAuth();
-const { $fetchAuth } = useAuthFetch();
 const userStore = useUserStore();
 const {
   errors,
@@ -291,7 +286,7 @@ const handleLogin = async () => {
   loading.value = true;
 
   try {
-    const loginResult = await login(
+    await login(
       validated.email,
       validated.password,
       rememberMe.value,
@@ -303,36 +298,12 @@ const handleLogin = async () => {
       setTimeout(resolve, SUPABASE_SESSION_PERSIST_DELAY),
     );
 
-    // Reinitialize user store now that session is established
+    // Reinitialize user store now that session is established. Family-unit
+    // and pending-admin backfill (see pages/signup.vue, pages/admin/signup.vue)
+    // now runs from plugins/auth.client.ts's SIGNED_IN listener — it fires
+    // for every session-establishing event, not just this explicit submit,
+    // so it also covers landing on "/" via Supabase's own confirmation link.
     await userStore.initializeUser();
-
-    // Confirm-required signups never got a session to create their family
-    // unit with (see pages/signup.vue) — ensure it exists on first login.
-    // Idempotent (checks existing first) and must never block login.
-    try {
-      await $fetchAuth("/api/family/create", { method: "POST" });
-    } catch (familyErr) {
-      logger.error("Failed to ensure family unit on login", familyErr);
-    }
-
-    // Confirm-required admin signups never got a session to apply is_admin
-    // with (see pages/admin/signup.vue) — apply it lazily here. Server-side
-    // trusts the pending_admin flag from this session's own verified JWT,
-    // not anything supplied by this request.
-    if (
-      loginResult?.data?.user?.user_metadata?.pending_admin === true &&
-      !userStore.user?.is_admin
-    ) {
-      try {
-        await $fetchAuth("/api/auth/admin-profile", {
-          method: "POST",
-          body: { fullName: userStore.user?.full_name ?? "" },
-        });
-        await userStore.initializeUser();
-      } catch (adminErr) {
-        logger.error("Failed to apply pending admin flag on login", adminErr);
-      }
-    }
 
     // Navigate to originally requested page, or dashboard as fallback
     const redirectPath =
