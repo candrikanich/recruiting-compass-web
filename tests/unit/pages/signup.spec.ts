@@ -105,6 +105,18 @@ vi.mock("~/components/Auth/SignupForm.vue", () => ({
           <label for="confirmPassword">Confirm Password</label>
           <input id="confirmPassword" type="password" :value="confirmPassword" @input="$emit('update:confirmPassword', $event.target.value)" />
         </div>
+        <div v-if="userType === 'player'">
+          <label for="signup-graduation-year">Graduation Year</label>
+          <select id="signup-graduation-year" :value="graduationYear" @change="$emit('update:graduationYear', Number($event.target.value))">
+            <option value="2027">2027</option>
+          </select>
+          <label for="signup-primary-sport">Primary Sport</label>
+          <select id="signup-primary-sport" :value="primarySport" @change="$emit('update:primarySport', $event.target.value)">
+            <option value="Baseball">Baseball</option>
+          </select>
+          <label for="signup-zip-code">Zip Code</label>
+          <input id="signup-zip-code" :value="zipCode" @input="$emit('update:zipCode', $event.target.value)" />
+        </div>
         <div>
           <input id="agreeToTerms" type="checkbox" :checked="agreeToTerms" @change="$emit('update:agreeToTerms', $event.target.checked)" />
         </div>
@@ -125,6 +137,10 @@ vi.mock("~/components/Auth/SignupForm.vue", () => ({
       "loading",
       "hasErrors",
       "fieldErrors",
+      "graduationYear",
+      "primarySport",
+      "gender",
+      "zipCode",
     ],
     emits: [
       "update:firstName",
@@ -133,6 +149,10 @@ vi.mock("~/components/Auth/SignupForm.vue", () => ({
       "update:password",
       "update:confirmPassword",
       "update:agreeToTerms",
+      "update:graduationYear",
+      "update:primarySport",
+      "update:gender",
+      "update:zipCode",
       "submit",
       "validateEmail",
       "validatePassword",
@@ -670,6 +690,68 @@ describe("signup.vue", () => {
 
       expect(global.navigateTo).toHaveBeenCalledWith(
         "/verify-email?email=test%40example.com",
+      );
+    });
+
+    it("carries drafted onboarding step-1 fields into signup() when player fills them in", async () => {
+      const wrapper = createWrapper();
+
+      const playerRadio = wrapper.find('[data-testid="user-type-player"]');
+      await playerRadio.setValue(true);
+      await playerRadio.trigger("change");
+      await wrapper.vm.$nextTick();
+
+      await wrapper.find("#firstName").setValue("Test");
+      await wrapper.find("#lastName").setValue("User");
+      await wrapper.find("#email").setValue("test@example.com");
+      await wrapper.find("#password").setValue("Password123");
+      await wrapper.find("#confirmPassword").setValue("Password123");
+      await wrapper.find("#signup-graduation-year").setValue("2027");
+      await wrapper.find("#signup-primary-sport").setValue("Baseball");
+      await wrapper.find("#signup-zip-code").setValue("90210");
+      await wrapper.find("#agreeToTerms").setValue(true);
+
+      await wrapper.find("form").trigger("submit.prevent");
+      await wrapper.vm.$nextTick();
+
+      expect(mockAuth.signup).toHaveBeenCalledWith(
+        "test@example.com",
+        "Password123",
+        "Test User",
+        "player",
+        undefined, // captchaToken (Turnstile disabled in test)
+        undefined, // dateOfBirth (not set in this fixture)
+        undefined, // pendingAdmin
+        {
+          graduationYear: 2027,
+          primarySport: "Baseball",
+          zipCode: "90210",
+        },
+      );
+    });
+
+    it("carries sport/gradYear as query params on the /verify-email handoff so the wait screen can personalize", async () => {
+      const wrapper = createWrapper();
+
+      const playerRadio = wrapper.find('[data-testid="user-type-player"]');
+      await playerRadio.setValue(true);
+      await playerRadio.trigger("change");
+      await wrapper.vm.$nextTick();
+
+      await wrapper.find("#firstName").setValue("Test");
+      await wrapper.find("#lastName").setValue("User");
+      await wrapper.find("#email").setValue("test@example.com");
+      await wrapper.find("#password").setValue("Password123");
+      await wrapper.find("#confirmPassword").setValue("Password123");
+      await wrapper.find("#signup-graduation-year").setValue("2027");
+      await wrapper.find("#signup-primary-sport").setValue("Baseball");
+      await wrapper.find("#agreeToTerms").setValue(true);
+
+      await wrapper.find("form").trigger("submit.prevent");
+      await flushPromises();
+
+      expect(global.navigateTo).toHaveBeenCalledWith(
+        "/verify-email?email=test%40example.com&sport=Baseball&gradYear=2027",
       );
     });
 

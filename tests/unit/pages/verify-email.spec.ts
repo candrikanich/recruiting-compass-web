@@ -188,6 +188,27 @@ describe("pages/verify-email.vue", () => {
       expect(wrapper.text()).toContain("We sent a verification email to:");
       expect(wrapper.text()).toContain("user@test.com");
     });
+
+    it("personalizes the wait with the drafted sport/grad year when present", async () => {
+      const wrapper = mountPage({
+        email: "user@test.com",
+        sport: "Baseball",
+        gradYear: "2027",
+      });
+      await nextTick();
+      await wrapper.vm.$nextTick();
+
+      expect(wrapper.text()).toContain("Baseball");
+      expect(wrapper.text()).toContain("Class of 2027");
+    });
+
+    it("omits the personalized line when no sport/gradYear were drafted", async () => {
+      const wrapper = mountPage({ email: "user@test.com" });
+      await nextTick();
+      await wrapper.vm.$nextTick();
+
+      expect(wrapper.text()).not.toContain("Class of");
+    });
   });
 
   describe("Status Messages", () => {

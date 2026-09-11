@@ -156,6 +156,11 @@
                 Click the verification link in the email to confirm your
                 account. It may take a minute to arrive.
               </p>
+              <p v-if="draftedSport" class="mt-2 text-sm text-amber-900">
+                We'll get you set up for <strong>{{ draftedSport }}</strong
+                >{{ draftedGradYear ? `, Class of ${draftedGradYear}` : "" }}
+                as soon as you confirm.
+              </p>
             </div>
 
             <!-- Error message -->
@@ -246,6 +251,12 @@ const emailVerification = useEmailVerification();
 
 const isVerified = ref(false);
 const userEmail = ref("");
+// Carried from the signup form's drafted onboarding step 1 (never persisted
+// — just gives the wait screen something real to show instead of a blank
+// waiting room; the actual write happens on first sign-in, see
+// useAccountProvisioning.ts).
+const draftedSport = ref("");
+const draftedGradYear = ref("");
 
 const { loading } = useLoadingStates();
 const resendCooldown = ref(0);
@@ -360,6 +371,15 @@ onMounted(async () => {
   const emailParam = route.query.email as string;
   if (emailParam) {
     userEmail.value = emailParam;
+  }
+
+  const sportParam = route.query.sport as string;
+  if (sportParam) {
+    draftedSport.value = sportParam;
+  }
+  const gradYearParam = route.query.gradYear as string;
+  if (gradYearParam) {
+    draftedGradYear.value = gradYearParam;
   }
 
   await handleTokenVerification();

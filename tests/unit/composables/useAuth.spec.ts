@@ -525,6 +525,77 @@ describe("useAuth", () => {
       });
     });
 
+    it("should include drafted onboarding step-1 fields in signup metadata when provided", async () => {
+      const { mockSupabase, mockAuth } = getMockSupabase();
+
+      const signupData = { user: mockUser, session: null };
+      mockAuth.signUp.mockResolvedValue({ data: signupData, error: null });
+
+      const auth = useAuth();
+      await auth.signup(
+        "new@example.com",
+        "password123",
+        "Jane Player",
+        "player",
+        undefined,
+        undefined,
+        undefined,
+        {
+          graduationYear: 2027,
+          primarySport: "Baseball",
+          gender: "male",
+          zipCode: "90210",
+        },
+      );
+
+      expect(mockAuth.signUp).toHaveBeenCalledWith({
+        email: "new@example.com",
+        password: "password123",
+        options: {
+          data: {
+            full_name: "Jane Player",
+            role: "player",
+            pending_graduation_year: "2027",
+            pending_primary_sport: "Baseball",
+            pending_gender: "male",
+            pending_zip_code: "90210",
+          },
+        },
+      });
+    });
+
+    it("omits optional pending fields (gender, zip) when not drafted", async () => {
+      const { mockSupabase, mockAuth } = getMockSupabase();
+
+      const signupData = { user: mockUser, session: null };
+      mockAuth.signUp.mockResolvedValue({ data: signupData, error: null });
+
+      const auth = useAuth();
+      await auth.signup(
+        "new@example.com",
+        "password123",
+        "Jane Player",
+        "player",
+        undefined,
+        undefined,
+        undefined,
+        { graduationYear: 2027, primarySport: "Baseball" },
+      );
+
+      expect(mockAuth.signUp).toHaveBeenCalledWith({
+        email: "new@example.com",
+        password: "password123",
+        options: {
+          data: {
+            full_name: "Jane Player",
+            role: "player",
+            pending_graduation_year: "2027",
+            pending_primary_sport: "Baseball",
+          },
+        },
+      });
+    });
+
     it("should trim email during signup", async () => {
       const { mockSupabase, mockAuth } = getMockSupabase();
 

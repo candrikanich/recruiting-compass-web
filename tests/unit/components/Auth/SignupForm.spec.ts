@@ -14,6 +14,10 @@ const baseProps = {
   loading: false,
   hasErrors: false,
   fieldErrors: {},
+  graduationYear: 2027,
+  primarySport: "Basketball",
+  gender: undefined as string | undefined,
+  zipCode: "",
 };
 
 const createWrapper = (props: Record<string, unknown> = {}) =>
@@ -312,6 +316,75 @@ describe("SignupForm", () => {
       expect(
         wrapper.find("form").attributes("aria-describedby"),
       ).toBeUndefined();
+    });
+  });
+
+  describe("Pre-confirmation onboarding fields (step 1, player only)", () => {
+    it("shows graduation year and sport fields for player signup", () => {
+      const wrapper = createWrapper({ userType: "player" });
+      expect(wrapper.find("#signup-graduation-year").exists()).toBe(true);
+      expect(wrapper.find("#signup-primary-sport").exists()).toBe(true);
+      expect(wrapper.find("#signup-zip-code").exists()).toBe(true);
+    });
+
+    it("hides onboarding fields for parent signup", () => {
+      const wrapper = createWrapper({ userType: "parent" });
+      expect(wrapper.find("#signup-graduation-year").exists()).toBe(false);
+      expect(wrapper.find("#signup-primary-sport").exists()).toBe(false);
+      expect(wrapper.find("#signup-zip-code").exists()).toBe(false);
+    });
+
+    it("shows gender field when sport doesn't auto-derive it", () => {
+      const wrapper = createWrapper({ primarySport: "Basketball" });
+      expect(wrapper.find("#signup-gender").exists()).toBe(true);
+    });
+
+    it("hides gender field when sport auto-derives it (e.g. Baseball)", () => {
+      const wrapper = createWrapper({ primarySport: "Baseball" });
+      expect(wrapper.find("#signup-gender").exists()).toBe(false);
+    });
+
+    it("disables submit when player is missing graduation year", () => {
+      const wrapper = createWrapper({ graduationYear: undefined });
+      expect(
+        wrapper.find('[data-testid="signup-button"]').attributes("disabled"),
+      ).toBeDefined();
+    });
+
+    it("disables submit when player is missing primary sport", () => {
+      const wrapper = createWrapper({ primarySport: "" });
+      expect(
+        wrapper.find('[data-testid="signup-button"]').attributes("disabled"),
+      ).toBeDefined();
+    });
+
+    it("does not require graduation year/sport for parent signup", () => {
+      const wrapper = createWrapper({
+        userType: "parent",
+        graduationYear: undefined,
+        primarySport: "",
+      });
+      expect(
+        wrapper.find('[data-testid="signup-button"]').attributes("disabled"),
+      ).toBeUndefined();
+    });
+
+    it("emits update:primarySport when sport select changes", async () => {
+      const wrapper = createWrapper();
+      await wrapper.find("#signup-primary-sport").setValue("Soccer");
+      expect(wrapper.emitted("update:primarySport")).toEqual([["Soccer"]]);
+    });
+
+    it("emits update:graduationYear when year select changes", async () => {
+      const wrapper = createWrapper();
+      await wrapper.find("#signup-graduation-year").setValue("2028");
+      expect(wrapper.emitted("update:graduationYear")).toEqual([[2028]]);
+    });
+
+    it("emits update:zipCode when zip input changes", async () => {
+      const wrapper = createWrapper();
+      await wrapper.find("#signup-zip-code").setValue("90210");
+      expect(wrapper.emitted("update:zipCode")).toEqual([["90210"]]);
     });
   });
 
