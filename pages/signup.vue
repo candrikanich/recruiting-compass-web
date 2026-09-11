@@ -88,6 +88,10 @@
             :loading="loading"
             :has-errors="hasErrors"
             :field-errors="fieldErrors"
+            :graduation-year="graduationYear"
+            :primary-sport="primarySport"
+            :gender="gender"
+            :zip-code="zipCode"
             @update:first-name="firstName = $event"
             @update:last-name="lastName = $event"
             @update:email="email = $event"
@@ -95,6 +99,10 @@
             @update:password="password = $event"
             @update:confirm-password="confirmPassword = $event"
             @update:agree-to-terms="agreeToTerms = $event"
+            @update:graduation-year="graduationYear = $event"
+            @update:primary-sport="primarySport = $event"
+            @update:gender="gender = $event"
+            @update:zip-code="zipCode = $event"
             @submit="handleSignup"
             @validate-email="validateEmail"
             @validate-password="validatePassword"
@@ -143,6 +151,14 @@ const confirmPassword = ref("");
 const role = ref("");
 const userType = ref<"player" | "parent" | null>(null);
 const agreeToTerms = ref(false);
+
+// Onboarding step 1, drafted here (player only) so there's something real to
+// carry across the email-confirmation gap instead of a blank waiting screen.
+// See composables/useAccountProvisioning.ts for the flush-on-sign-in side.
+const graduationYear = ref<number | undefined>(undefined);
+const primarySport = ref("");
+const gender = ref<string | undefined>(undefined);
+const zipCode = ref("");
 
 // --- Turnstile (optional, flag-gated) ----------------------------------------
 const runtimeConfig = useRuntimeConfig();
@@ -347,18 +363,39 @@ const handleSignup = async () => {
     return;
   }
 
+  // Only a fully-answered draft is worth carrying across the confirmation
+  // gap — gender/zip are optional, grad year + sport are not.
+  const onboardingStep1 =
+    validated.role === "player" &&
+    graduationYear.value !== undefined &&
+    primarySport.value.trim()
+      ? {
+          graduationYear: graduationYear.value,
+          primarySport: primarySport.value,
+          ...(gender.value ? { gender: gender.value } : {}),
+          ...(zipCode.value ? { zipCode: zipCode.value } : {}),
+        }
+      : undefined;
+
   try {
     let userId: string;
 
     try {
-      const authData = await signup(
+      // Trailing args are appended only when present — this page never sets
+      // pendingAdmin, and padding every call with explicit `undefined`s
+      // would still change the call's arg count for a non-onboarding signup.
+      const signupArgs: Parameters<typeof signup> = [
         validated.email,
         validated.password,
         validated.fullName as string,
         validated.role,
         turnstileToken.value,
         validated.dateOfBirth,
-      );
+      ];
+      if (onboardingStep1) {
+        signupArgs.push(undefined, onboardingStep1);
+      }
+      const authData = await signup(...signupArgs);
 
       if (!authData?.data?.user?.id) {
         throw new Error("No user returned from signup");
@@ -374,9 +411,12 @@ const handleSignup = async () => {
       // failing — family creation happens on first login (pages/login.vue).
       if (!authData.data.session) {
         loading.value = false;
-        await navigateTo(
-          `/verify-email?email=${encodeURIComponent(validated.email)}`,
-        );
+        const params = new URLSearchParams({ email: validated.email });
+        if (onboardingStep1) {
+          params.set("sport", onboardingStep1.primarySport);
+          params.set("gradYear", String(onboardingStep1.graduationYear));
+        }
+        await navigateTo(`/verify-email?${params.toString()}`);
         return;
       }
     } catch (signupErr: unknown) {
