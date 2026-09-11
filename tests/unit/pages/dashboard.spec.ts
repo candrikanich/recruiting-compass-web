@@ -1405,6 +1405,47 @@ describe("Dashboard Page Logic", () => {
       });
     });
 
+    describe("Parent no-player gating (timeline + getting-started cards)", () => {
+      const hasConnectedPlayer = (
+        families: AccessibleFamily[],
+      ): boolean => families.some((f) => f.athleteId !== null);
+
+      const showsEmptyState = (params: {
+        isParent: boolean;
+        parentAccessibleFamilies: AccessibleFamily[];
+      }): boolean =>
+        params.isParent && !hasConnectedPlayer(params.parentAccessibleFamilies);
+
+      it("shows empty state for a parent with no linked athlete", () => {
+        expect(
+          showsEmptyState({ isParent: true, parentAccessibleFamilies: [] }),
+        ).toBe(true);
+      });
+
+      it("hides empty state once a family has a connected athlete", () => {
+        expect(
+          showsEmptyState({
+            isParent: true,
+            parentAccessibleFamilies: [
+              {
+                familyUnitId: "family-1",
+                athleteId: "athlete-123",
+                athleteName: "John Doe",
+                graduationYear: 2027,
+                familyName: "Doe Family",
+              },
+            ],
+          }),
+        ).toBe(false);
+      });
+
+      it("never shows empty state for a non-parent (player) user", () => {
+        expect(
+          showsEmptyState({ isParent: false, parentAccessibleFamilies: [] }),
+        ).toBe(false);
+      });
+    });
+
     describe("Target User ID resolution", () => {
       const resolveTargetUserId = (params: {
         familyContext: ReturnType<typeof createMockFamilyContext>;
