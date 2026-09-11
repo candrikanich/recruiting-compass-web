@@ -97,6 +97,10 @@ vi.mock("~/components/Auth/SignupForm.vue", () => ({
           <label for="email">Email</label>
           <input id="email" type="email" :value="email" @input="$emit('update:email', $event.target.value)" @blur="$emit('validateEmail')" />
         </div>
+        <div v-if="userType === 'player'">
+          <label for="dateOfBirth">Player Date of Birth</label>
+          <input id="dateOfBirth" type="date" :value="dateOfBirth" @input="$emit('update:dateOfBirth', $event.target.value)" />
+        </div>
         <div>
           <label for="password">Password</label>
           <input id="password" type="password" :value="password" @input="$emit('update:password', $event.target.value)" @blur="$emit('validatePassword')" />
@@ -131,6 +135,7 @@ vi.mock("~/components/Auth/SignupForm.vue", () => ({
       "firstName",
       "lastName",
       "email",
+      "dateOfBirth",
       "password",
       "confirmPassword",
       "agreeToTerms",
@@ -146,6 +151,7 @@ vi.mock("~/components/Auth/SignupForm.vue", () => ({
       "update:firstName",
       "update:lastName",
       "update:email",
+      "update:dateOfBirth",
       "update:password",
       "update:confirmPassword",
       "update:agreeToTerms",
@@ -921,6 +927,109 @@ describe("signup.vue", () => {
       await flushPromises();
 
       expect(global.navigateTo).toHaveBeenCalledWith("/onboarding");
+    });
+  });
+
+  describe("Age Gates", () => {
+    // Whole-years-old helper mirroring utils/age.ts semantics, avoids
+    // hardcoded dates going stale as the suite ages.
+    const dobForAge = (years: number) => {
+      const d = new Date();
+      d.setFullYear(d.getFullYear() - years);
+      return d.toISOString().split("T")[0];
+    };
+
+    it("blocks player signup under 13 (COPPA) without calling signup()", async () => {
+      const wrapper = createWrapper();
+
+      const playerRadio = wrapper.find('[data-testid="user-type-player"]');
+      await playerRadio.setValue(true);
+      await playerRadio.trigger("change");
+      await wrapper.vm.$nextTick();
+
+      await wrapper.find("#firstName").setValue("Test");
+      await wrapper.find("#lastName").setValue("User");
+      await wrapper.find("#email").setValue("test@example.com");
+      await wrapper.find("#dateOfBirth").setValue(dobForAge(10));
+      await wrapper.find("#password").setValue("Password123");
+      await wrapper.find("#confirmPassword").setValue("Password123");
+      await wrapper.find("#agreeToTerms").setValue(true);
+
+      await wrapper.find("form").trigger("submit.prevent");
+      await wrapper.vm.$nextTick();
+
+      expect(mockAuth.signup).not.toHaveBeenCalled();
+      expect(mockValidation.setErrors).toHaveBeenCalledWith([
+        {
+          field: "form",
+          message:
+            "Recruiting Compass is not available for players under 13. If you're a parent, please register with your own information.",
+        },
+      ]);
+    });
+
+    // Regression: a 13-17 player passed client validation and hit the DB's
+    // minor_requires_family_invite trigger, which rejects the upsert with a
+    // raw 400 the UI could only show as "Signup failed" (issue: QA signup
+    // for test.player2029@..., DOB implying age 16). Minors must join via
+    // pages/join.vue's parent/guardian family-invite flow instead.
+    it("blocks standalone player signup for ages 13-17, directing to the family-invite flow", async () => {
+      const wrapper = createWrapper();
+
+      const playerRadio = wrapper.find('[data-testid="user-type-player"]');
+      await playerRadio.setValue(true);
+      await playerRadio.trigger("change");
+      await wrapper.vm.$nextTick();
+
+      await wrapper.find("#firstName").setValue("Test");
+      await wrapper.find("#lastName").setValue("User");
+      await wrapper.find("#email").setValue("test@example.com");
+      await wrapper.find("#dateOfBirth").setValue(dobForAge(16));
+      await wrapper.find("#password").setValue("Password123");
+      await wrapper.find("#confirmPassword").setValue("Password123");
+      await wrapper.find("#agreeToTerms").setValue(true);
+
+      await wrapper.find("form").trigger("submit.prevent");
+      await wrapper.vm.$nextTick();
+
+      expect(mockAuth.signup).not.toHaveBeenCalled();
+      expect(mockValidation.setErrors).toHaveBeenCalledWith([
+        {
+          field: "form",
+          message: expect.stringContaining("parent or guardian"),
+        },
+      ]);
+    });
+
+    it("allows standalone player signup at 18+", async () => {
+      mockValidation.validate.mockResolvedValue({
+        fullName: "Test User",
+        email: "test@example.com",
+        dateOfBirth: dobForAge(18),
+        password: "Password123", // pragma: allowlist secret
+        confirmPassword: "Password123",
+        role: "player",
+      });
+
+      const wrapper = createWrapper();
+
+      const playerRadio = wrapper.find('[data-testid="user-type-player"]');
+      await playerRadio.setValue(true);
+      await playerRadio.trigger("change");
+      await wrapper.vm.$nextTick();
+
+      await wrapper.find("#firstName").setValue("Test");
+      await wrapper.find("#lastName").setValue("User");
+      await wrapper.find("#email").setValue("test@example.com");
+      await wrapper.find("#dateOfBirth").setValue(dobForAge(18));
+      await wrapper.find("#password").setValue("Password123");
+      await wrapper.find("#confirmPassword").setValue("Password123");
+      await wrapper.find("#agreeToTerms").setValue(true);
+
+      await wrapper.find("form").trigger("submit.prevent");
+      await wrapper.vm.$nextTick();
+
+      expect(mockAuth.signup).toHaveBeenCalled();
     });
   });
 

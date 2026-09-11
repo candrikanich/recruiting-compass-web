@@ -132,7 +132,7 @@ import { useUserStore } from "~/stores/user";
 import { useFormValidation } from "~/composables/useFormValidation";
 import { useFormErrorFocus } from "~/composables/useFormErrorFocus";
 import { signupSchema } from "~/utils/validation/schemas";
-import { isUnderMinimumAge } from "~/utils/age";
+import { isUnderMinimumAge, requiresGuardianInvite } from "~/utils/age";
 import {
   SIGNUP_EMAIL_SCHEMA,
   SIGNUP_PASSWORD_SCHEMA,
@@ -340,6 +340,22 @@ const handleSignup = async () => {
       loading.value = false;
       return;
     }
+
+    // Minors (13-17) can't hold a standalone account — the DB's
+    // minor_requires_family_invite trigger would reject this at the upsert
+    // below with an opaque 400. Catch it here with actionable guidance.
+    if (requiresGuardianInvite(dateOfBirth.value)) {
+      setErrors([
+        {
+          field: "form",
+          message:
+            "Players under 18 need a parent or guardian to invite them — please ask them to send a family invite instead of signing up here.",
+        },
+      ]);
+      await focusErrorSummary();
+      loading.value = false;
+      return;
+    }
   }
 
   const fullName = `${firstName.value} ${lastName.value}`.trim();
@@ -484,7 +500,13 @@ const handleSignup = async () => {
 
     await navigateTo(redirectUrl);
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Signup failed";
+    // Postgrest/Supabase errors carry `.message` but aren't `Error`
+    // instances — fall back to it before the generic string so a rejected
+    // upsert (e.g. a DB trigger check_violation) surfaces its real reason.
+    const message =
+      err instanceof Error
+        ? err.message
+        : ((err as { message?: string } | null)?.message ?? "Signup failed");
     // Set form-level error
     setErrors([{ field: "form", message }]);
     resetTurnstile();
