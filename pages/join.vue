@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, inject } from "vue";
+import { ref, computed, watch, onMounted, inject } from "vue";
+import { useRuntimeConfig } from "#app";
 import { useAuth } from "~/composables/useAuth";
 import { useUserStore } from "~/stores/user";
 import { useSupabase } from "~/composables/useSupabase";
@@ -64,6 +65,121 @@ const declining = ref(false);
 const signupError = ref<string | null>(null);
 const loginError = ref<string | null>(null);
 
+// --- Turnstile (optional, flag-gated) ----------------------------------------
+const runtimeConfig = useRuntimeConfig();
+const turnstileSiteKey = computed(
+  () => runtimeConfig.public?.turnstileSiteKey ?? "",
+);
+const turnstileEnabled = computed(() => turnstileSiteKey.value.length > 0);
+const turnstileToken = ref<string | undefined>(undefined);
+// Login and signup sections render simultaneously (both visible to an
+// unauthenticated visitor), so each needs its own widget instance/id.
+const turnstileLoginEl = ref<HTMLDivElement | null>(null);
+const turnstileSignupEl = ref<HTMLDivElement | null>(null);
+const turnstileLoginWidgetId = ref<string | undefined>(undefined);
+const turnstileSignupWidgetId = ref<string | undefined>(undefined);
+
+const TURNSTILE_SCRIPT_SRC =
+  "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+
+type TurnstileGlobal = {
+  render: (
+    el: HTMLElement,
+    options: {
+      sitekey: string;
+      action?: string;
+      callback: (token: string) => void;
+      "expired-callback"?: () => void;
+    },
+  ) => string;
+  reset: (widgetId?: string) => void;
+};
+
+// Turnstile tokens are single-use and expire (~5 min) — replaying a stale or
+// already-consumed token on retry surfaces as Supabase's opaque
+// "timeout-or-duplicate" captcha error, even when the prior request actually
+// succeeded.
+function resetTurnstile() {
+  const w = window as unknown as { turnstile?: TurnstileGlobal };
+  turnstileToken.value = undefined;
+  if (!w.turnstile) return;
+  if (turnstileLoginWidgetId.value) w.turnstile.reset(turnstileLoginWidgetId.value);
+  if (turnstileSignupWidgetId.value)
+    w.turnstile.reset(turnstileSignupWidgetId.value);
+}
+
+function loadTurnstileScript(): Promise<void> {
+  return new Promise((resolve) => {
+    const w = window as unknown as { turnstile?: TurnstileGlobal };
+    if (w.turnstile) {
+      resolve();
+      return;
+    }
+    const existing = document.querySelector<HTMLScriptElement>(
+      `script[src="${TURNSTILE_SCRIPT_SRC}"]`,
+    );
+    const script = existing ?? document.createElement("script");
+    script.addEventListener("load", () => resolve());
+    script.addEventListener("error", () => resolve());
+    if (!existing) {
+      try {
+        script.src = TURNSTILE_SCRIPT_SRC;
+        script.async = true;
+        document.head.appendChild(script);
+      } catch {
+        resolve();
+      }
+    }
+  });
+}
+
+// Mount a Turnstile widget into `el`, feeding the shared token ref. Used for
+// both the login and signup sections, which render simultaneously.
+async function mountTurnstile(
+  el: HTMLElement,
+  action: string,
+  widgetId: typeof turnstileLoginWidgetId,
+) {
+  try {
+    await loadTurnstileScript();
+    const w = window as unknown as { turnstile?: TurnstileGlobal };
+    if (w.turnstile) {
+      widgetId.value = w.turnstile.render(el, {
+        sitekey: turnstileSiteKey.value,
+        action,
+        callback: (token: string) => {
+          turnstileToken.value = token;
+        },
+        "expired-callback": () => {
+          turnstileToken.value = undefined;
+        },
+      });
+    }
+  } catch {
+    // Widget failure is non-fatal — Supabase verifies server-side only
+    // when CAPTCHA is enabled in the dashboard; otherwise auth proceeds.
+  }
+}
+
+watch(
+  [turnstileEnabled, turnstileLoginEl],
+  ([enabled, el]) => {
+    if (!enabled || !el || turnstileLoginWidgetId.value) return;
+    mountTurnstile(el, "join-login", turnstileLoginWidgetId);
+  },
+  { flush: "post" },
+);
+
+watch(
+  [turnstileEnabled, turnstileSignupEl],
+  ([enabled, el]) => {
+    if (!enabled || !el || turnstileSignupWidgetId.value) return;
+    mountTurnstile(el, "join-signup", turnstileSignupWidgetId);
+  },
+  { flush: "post" },
+);
+// ---------------------------------------------------------------------------
+
 onMounted(async () => {
   if (!token.value) {
     fetchStatus.value = "error";
@@ -90,7 +206,12 @@ async function accept() {
   loading.value = true;
   try {
     if (!userStore.isAuthenticated) {
-      await login(loginEmail.value, loginPassword.value);
+      await login(
+        loginEmail.value,
+        loginPassword.value,
+        false,
+        turnstileToken.value,
+      );
     }
     await $fetchAuth(`/api/family/invite/${token.value}/accept`, {
       method: "POST",
@@ -109,6 +230,7 @@ async function accept() {
       (err instanceof Error
         ? err.message
         : "Login failed. Please check your credentials.");
+    resetTurnstile();
   } finally {
     loading.value = false;
   }
@@ -148,6 +270,7 @@ async function signupAndConnect() {
       signupPassword.value,
       fullName,
       invite.value.role,
+      turnstileToken.value,
     );
 
     if (!authData?.data?.user?.id) throw new Error("Signup failed");
@@ -200,6 +323,7 @@ async function signupAndConnect() {
     signupError.value =
       e?.statusMessage ??
       (err instanceof Error ? err.message : "Could not create account");
+    resetTurnstile();
   } finally {
     loading.value = false;
   }
@@ -328,6 +452,12 @@ async function decline() {
             type="password"
             class="mb-4"
           />
+          <!-- Cloudflare Turnstile (flag-gated, renders only when site key set) -->
+          <div
+            v-if="turnstileEnabled"
+            ref="turnstileLoginEl"
+            class="mb-4 flex justify-center"
+          />
           <div class="flex gap-3">
             <DesignSystemButton
               data-testid="login-connect-button"
@@ -377,6 +507,12 @@ async function decline() {
             @update:confirm-password="signupConfirmPassword = $event"
             @update:agree-to-terms="signupAgreeToTerms = $event"
             @submit="signupAndConnect"
+          />
+          <!-- Cloudflare Turnstile (flag-gated, renders only when site key set) -->
+          <div
+            v-if="turnstileEnabled"
+            ref="turnstileSignupEl"
+            class="mt-4 flex justify-center"
           />
           <div class="mt-4">
             <DesignSystemButton
