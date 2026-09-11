@@ -73,9 +73,26 @@ export const useSupabase = () => {
 
     // Handle auth state changes and clear invalid sessions
     if (typeof window !== "undefined") {
-      supabaseClient.auth.onAuthStateChange((event, session) => {
+      supabaseClient.auth.onAuthStateChange(async (event, session) => {
         // Clear invalid session tokens to prevent refresh errors
         if (event === "TOKEN_REFRESHED" && !session) {
+          // Multi-tab race: this tab's in-memory refresh token can already
+          // be stale (another tab refreshed first and rotated it), so
+          // GoTrue reports "Refresh Token Not Found" here even though a
+          // valid session exists in shared localStorage. Re-check before
+          // signing out — only clear the session if none is recoverable.
+          const {
+            data: { session: recovered },
+          } = await (supabaseClient?.auth.getSession() ??
+            Promise.resolve({ data: { session: null } }));
+
+          if (recovered) {
+            logger.warn(
+              "Token refresh failed locally but a valid session was recovered (likely another tab already refreshed) — not signing out",
+            );
+            return;
+          }
+
           logger.warn("Token refresh failed, clearing session");
           // scope: "local" only clears this browser's session. Default
           // (global) scope revokes the refresh token server-side for every
