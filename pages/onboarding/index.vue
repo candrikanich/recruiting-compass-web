@@ -421,7 +421,10 @@ const nextScreen = async () => {
       hasRegisteredEligibility: false,
       hasTakenTestScores: false,
     };
-    await completeOnboarding(assessment);
+    await completeOnboarding(
+      assessment,
+      onboardingData.value.graduation_year as number | undefined,
+    );
 
     const { $posthog } = useNuxtApp();
     $posthog?.capture("onboarding_v2_complete");

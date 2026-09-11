@@ -7,6 +7,7 @@ import { ref } from "vue";
 import { useSupabase } from "./useSupabase";
 import { useAuthFetch } from "~/composables/useAuthFetch";
 import { createClientLogger } from "~/utils/logger";
+import { calculateCurrentGrade, gradeToPhase } from "~/utils/gradeHelpers";
 
 const logger = createClientLogger("useOnboarding");
 
@@ -45,19 +46,38 @@ export const useOnboarding = () => {
   const currentStep = ref(0);
   const onboardingData = ref<Record<string, unknown>>({});
 
+  const PHASE_RANK = { freshman: 0, sophomore: 1, junior: 2, senior: 3 };
+
   /**
-   * Determine appropriate starting phase based on assessment
+   * Determine appropriate starting phase.
+   *
+   * Combines two signals and takes whichever is further along:
+   * - the grade derived from `graduationYear` (the athlete's actual grade level)
+   * - the assessment questionnaire (late-joiner activity that implies advancement)
+   *
+   * Never regresses below the grade-derived phase — a freshman-grade athlete who
+   * already registered eligibility still starts at "junior", but a junior-grade
+   * athlete with no assessment signal still starts at "junior", not "freshman".
    */
   const calculateStartingPhase = (
     assessment: OnboardingAssessment,
-  ): "freshman" | "sophomore" | "junior" => {
+    graduationYear?: number,
+  ): "freshman" | "sophomore" | "junior" | "senior" => {
+    let assessmentPhase: "freshman" | "sophomore" | "junior" = "freshman";
     if (assessment.hasRegisteredEligibility || assessment.hasTakenTestScores) {
-      return "junior";
+      assessmentPhase = "junior";
+    } else if (assessment.hasHighlightVideo && assessment.hasTargetSchools) {
+      assessmentPhase = "sophomore";
     }
-    if (assessment.hasHighlightVideo && assessment.hasTargetSchools) {
-      return "sophomore";
+
+    if (!graduationYear) {
+      return assessmentPhase;
     }
-    return "freshman";
+
+    const gradeDerivedPhase = gradeToPhase(calculateCurrentGrade(graduationYear));
+    return PHASE_RANK[gradeDerivedPhase] > PHASE_RANK[assessmentPhase]
+      ? gradeDerivedPhase
+      : assessmentPhase;
   };
 
   /**
@@ -95,6 +115,7 @@ export const useOnboarding = () => {
    */
   const completeOnboarding = async (
     assessment: OnboardingAssessment,
+    graduationYear?: number,
   ): Promise<OnboardingResult> => {
     loading.value = true;
     error.value = null;
@@ -110,7 +131,7 @@ export const useOnboarding = () => {
 
       const userId = session.user.id;
       const tasksToComplete = getTasksToComplete(assessment);
-      const startingPhase = calculateStartingPhase(assessment);
+      const startingPhase = calculateStartingPhase(assessment, graduationYear);
 
       // Auto-complete tasks
       if (tasksToComplete.length > 0) {
