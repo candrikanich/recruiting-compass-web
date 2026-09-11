@@ -106,7 +106,8 @@ test.describe("Minor accepts a family invite (join.vue signup path)", () => {
   test("brand-new minor (13-17) can create an account from a pending player invite", async ({
     page,
   }) => {
-    const { parentEmail, familyUnitId } = await seedParentWithFamily(supabase);
+    const { parentEmail, parentUserId, familyUnitId } =
+      await seedParentWithFamily(supabase);
     createdUserEmails.push(parentEmail);
     createdUnitIds.push(familyUnitId);
 
@@ -116,6 +117,7 @@ test.describe("Minor accepts a family invite (join.vue signup path)", () => {
       .from("family_invitations")
       .insert({
         family_unit_id: familyUnitId,
+        invited_by: parentUserId,
         invited_email: minorEmail,
         role: "player",
         token,
