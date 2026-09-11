@@ -6,22 +6,48 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "~/types/database";
 
 /**
+ * Which Supabase project an admin request targets.
+ * "prod" is whatever this deployment's native env vars point at (the usual case).
+ * "qa" explicitly targets the QA/staging project via its _QA-suffixed vars, regardless
+ * of which environment (Production/Preview) is currently running — lets the admin panel
+ * reach QA data from the prod deployment. Only wired for admin user-management endpoints.
+ */
+export type AdminDbEnv = "prod" | "qa";
+
+/**
  * Create a server-side Supabase ADMIN client
  * REQUIRES service role key for full admin privileges
  * Use this for all server-side operations
+ *
+ * @param env - "qa" reads NUXT_PUBLIC_SUPABASE_URL_QA / SUPABASE_SERVICE_ROLE_KEY_QA instead
+ *   of the deployment's native vars. Defaults to "prod" (native vars) for every existing caller.
  */
-export function createServerSupabaseClient(): SupabaseClient<Database> {
-  const supabaseUrl = process.env.NUXT_PUBLIC_SUPABASE_URL;
-  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+export function createServerSupabaseClient(
+  env: AdminDbEnv = "prod",
+): SupabaseClient<Database> {
+  const supabaseUrl =
+    env === "qa"
+      ? process.env.NUXT_PUBLIC_SUPABASE_URL_QA
+      : process.env.NUXT_PUBLIC_SUPABASE_URL;
+  const supabaseServiceKey =
+    env === "qa"
+      ? process.env.SUPABASE_SERVICE_ROLE_KEY_QA
+      : process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!supabaseUrl) {
-    throw new Error("Missing NUXT_PUBLIC_SUPABASE_URL environment variable");
+    throw new Error(
+      env === "qa"
+        ? "Missing NUXT_PUBLIC_SUPABASE_URL_QA environment variable"
+        : "Missing NUXT_PUBLIC_SUPABASE_URL environment variable",
+    );
   }
 
   if (!supabaseServiceKey) {
     throw new Error(
-      "Missing SUPABASE_SERVICE_ROLE_KEY - required for all server operations. " +
-        "Set this environment variable in your deployment configuration.",
+      env === "qa"
+        ? "Missing SUPABASE_SERVICE_ROLE_KEY_QA - required to reach the QA project from this deployment."
+        : "Missing SUPABASE_SERVICE_ROLE_KEY - required for all server operations. " +
+            "Set this environment variable in your deployment configuration.",
     );
   }
 
@@ -55,8 +81,10 @@ export function createServerSupabaseUserClient(
  * Alias for createServerSupabaseClient for convenient access
  * Returns an admin client with full privileges using service role key
  */
-export function useSupabaseAdmin(): SupabaseClient<Database> {
-  return createServerSupabaseClient();
+export function useSupabaseAdmin(
+  env: AdminDbEnv = "prod",
+): SupabaseClient<Database> {
+  return createServerSupabaseClient(env);
 }
 
 /**

@@ -26,6 +26,7 @@
 
 interface BulkDeleteUserRequest {
   emails: string[];
+  env?: "prod" | "qa";
 }
 
 interface BulkDeleteError {
@@ -44,6 +45,7 @@ interface BulkDeleteUserResponse {
 import { defineEventHandler, readBody, createError } from "h3";
 import { requireAdmin } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
+import { resolveAdminDbEnv } from "~/server/utils/adminDbEnv";
 import { useLogger } from "~/server/utils/logger";
 
 export default defineEventHandler(
@@ -53,12 +55,13 @@ export default defineEventHandler(
       // 1. Verify user is an authenticated admin
       const user = await requireAdmin(event);
 
-      // Create admin client with service role
-      const supabaseAdmin = useSupabaseAdmin();
-
       // 2. Parse and validate request body
       const body = await readBody<BulkDeleteUserRequest>(event);
       const { emails } = body;
+      const dbEnv = resolveAdminDbEnv(body.env);
+
+      // Create admin client with service role, scoped to the requested DB
+      const supabaseAdmin = useSupabaseAdmin(dbEnv);
 
       if (!Array.isArray(emails)) {
         throw createError({
@@ -242,7 +245,7 @@ export default defineEventHandler(
 
       // 6. Log bulk operation summary
       logger.info(
-        `Bulk delete completed: ${deletedEmails.length} successful, ${errors.length} failed by admin ${user.id}`,
+        `Bulk delete completed on ${dbEnv}: ${deletedEmails.length} successful, ${errors.length} failed by admin ${user.id}`,
       );
 
       const message =

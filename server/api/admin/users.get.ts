@@ -15,6 +15,7 @@
 import { defineEventHandler, createError, getQuery } from "h3";
 import { requireAdmin } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
+import { resolveAdminDbEnv } from "~/server/utils/adminDbEnv";
 import { useLogger } from "~/server/utils/logger";
 
 interface User {
@@ -37,9 +38,10 @@ export default defineEventHandler(async (event): Promise<GetUsersResponse> => {
   const logger = useLogger(event, "admin/users");
   try {
     const user = await requireAdmin(event);
-    const supabaseAdmin = useSupabaseAdmin();
-
     const query = getQuery(event);
+    const dbEnv = resolveAdminDbEnv(query.env);
+    const supabaseAdmin = useSupabaseAdmin(dbEnv);
+
     const limit = Math.min(
       parseInt(String(query.limit ?? "50"), 10) || 50,
       100,
@@ -68,7 +70,7 @@ export default defineEventHandler(async (event): Promise<GetUsersResponse> => {
 
     const total = count ?? 0;
     logger.info(
-      `Admin ${user.id} fetched users (${users?.length ?? 0} of ${total})`,
+      `Admin ${user.id} fetched users from ${dbEnv} (${users?.length ?? 0} of ${total})`,
     );
 
     return {

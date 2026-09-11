@@ -30,6 +30,9 @@ export function useAdminUsers() {
   const showBulkDeleteModal = ref(false);
   const currentUserEmail = ref<string>("");
 
+  // Which Supabase project this panel targets - "prod" (default) or "qa"
+  const dbEnv = ref<"prod" | "qa">("prod");
+
   // Search / filter
   const searchQuery = ref("");
   const filterAdmin = ref<"all" | "yes" | "no">("all");
@@ -130,7 +133,7 @@ export function useAdminUsers() {
 
       while (true) {
         const httpRes = await fetch(
-          `/api/admin/users?limit=${PAGE_SIZE}&offset=${offset}`,
+          `/api/admin/users?limit=${PAGE_SIZE}&offset=${offset}&env=${dbEnv.value}`,
           { headers: { Authorization: `Bearer ${token}` } },
         );
         if (!httpRes.ok)
@@ -210,7 +213,7 @@ export function useAdminUsers() {
     try {
       const response = await $fetchAuth<{ success: boolean }>(
         "/api/admin/delete-user",
-        { method: "POST", body: { email } },
+        { method: "POST", body: { email, env: dbEnv.value } },
       );
 
       if (response.success) {
@@ -250,7 +253,10 @@ export function useAdminUsers() {
         message: string;
       }>("/api/admin/bulk-delete-users", {
         method: "POST",
-        body: { emails: Array.from(selectedUserEmails.value) },
+        body: {
+          emails: Array.from(selectedUserEmails.value),
+          env: dbEnv.value,
+        },
       });
 
       // Remove deleted users from table
@@ -292,6 +298,15 @@ export function useAdminUsers() {
     }
   };
 
+  const setDbEnv = (env: "prod" | "qa") => {
+    if (env === dbEnv.value) return;
+    dbEnv.value = env;
+    selectedUserEmails.value.clear();
+    isSelectMode.value = false;
+    currentPage.value = 1;
+    void loadUsers();
+  };
+
   watch(totalPages, (total) => {
     if (currentPage.value > total) {
       currentPage.value = total;
@@ -311,6 +326,8 @@ export function useAdminUsers() {
     selectedUserEmails,
     bulkDeleting,
     showBulkDeleteModal,
+    dbEnv,
+    setDbEnv,
     searchQuery,
     filterAdmin,
     filteredUsers,
