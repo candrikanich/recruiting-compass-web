@@ -2,6 +2,7 @@ import { defineEventHandler, readBody, createError } from "h3";
 import { z } from "zod";
 import { requireAuth } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
+import { assertGuardianConfirmed } from "~/server/utils/guardianGate";
 import { useLogger } from "~/server/utils/logger";
 import { invalidatePublicProfileForUser } from "~/server/utils/publicProfileRead";
 import {
@@ -138,6 +139,12 @@ export default defineEventHandler(async (event) => {
     }
 
     const updates = parsed.data;
+
+    // Gate publishing only, not profile editing. A pending minor should still be able to
+    // fill in their own profile — what needs guardian consent is making it public.
+    if (updates.is_published === true) {
+      await assertGuardianConfirmed(supabase, userId, "share your profile");
+    }
 
     if (updates.vanity_slug && RESERVED_SLUGS.has(updates.vanity_slug)) {
       throw createError({

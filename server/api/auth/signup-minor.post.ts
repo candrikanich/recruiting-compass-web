@@ -109,7 +109,23 @@ export default defineEventHandler(async (event) => {
       password: body.password,
       options: {
         captchaToken: body.captchaToken,
-        // Same `pending_*` carry as pages/signup.vue: player details live in
+        // DO NOT add `date_of_birth` here. It is load-bearing by its absence.
+        //
+        // handle_new_user() fires on the auth.users insert and immediately creates the
+        // public.users row, reading date_of_birth straight out of this metadata. That
+        // insert happens BEFORE the guardian_claims row below can exist (the claim's FK
+        // needs the auth user), so a DOB present here would make
+        // enforce_minor_requires_invite reject the row — and handle_new_user wraps its
+        // insert in `EXCEPTION WHEN OTHERS THEN RAISE LOG`, so the rejection is swallowed
+        // and the user is left with an auth account and no profile, silently.
+        //
+        // Omitting it means handle_new_user writes a NULL-DOB row, which the gate passes
+        // (it fails open on NULL), and the DOB lands in the upsert further down — by which
+        // time the claim exists and the gate is satisfied on UPDATE.
+        //
+        // Asserted by "omits date_of_birth from signUp metadata" in this route's spec.
+        //
+        // Otherwise the same `pending_*` carry as pages/signup.vue: player details live in
         // preferences, not on users, and are hydrated across the email-confirmation
         // gap by useAccountProvisioning.applyPendingOnboardingStep1.
         data: {
@@ -142,8 +158,10 @@ export default defineEventHandler(async (event) => {
     const supabase = useSupabaseAdmin();
     const token = randomUUID();
 
-    // Claim first: the users upsert below is what the trigger inspects, and it looks for
-    // exactly this row. FK targets auth.users, which the signUp above already created.
+    // Claim before the DOB-bearing upsert: that write is what the gate inspects, and it
+    // looks for exactly this row. FK targets auth.users, which the signUp above created.
+    // (handle_new_user has already written a NULL-DOB users row by this point — see the
+    // metadata note above for why that is safe and why it must stay NULL until now.)
     const { error: claimError } = await supabase
       .from("guardian_claims")
       .insert({

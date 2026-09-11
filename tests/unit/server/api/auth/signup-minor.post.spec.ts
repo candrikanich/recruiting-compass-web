@@ -19,7 +19,13 @@ const validBody = () => ({
   captchaToken: "tok",
 });
 
-const mockSignUp = vi.fn(async () => ({
+interface SignUpArgs {
+  email: string;
+  password: string;
+  options?: { captchaToken?: string; data?: Record<string, unknown> };
+}
+
+const mockSignUp = vi.fn(async (_args: SignUpArgs) => ({
   data: { user: { id: "player-uuid" } },
   error: null as { message: string } | null,
 }));
@@ -124,6 +130,22 @@ describe("POST /api/auth/signup-minor", () => {
     await call();
 
     expect(order).toEqual(["claim", "user"]);
+  });
+
+  it("omits date_of_birth from signUp metadata", async () => {
+    // handle_new_user() creates the public.users row from this metadata the instant the
+    // auth user exists — before the guardian_claims row can (its FK needs the auth user).
+    // A DOB here would make enforce_minor_requires_invite reject that insert, and
+    // handle_new_user swallows the exception, leaving an auth account with no profile and
+    // no error anywhere the user can see. The DOB must arrive in the later upsert instead.
+    await call();
+
+    const metadata = mockSignUp.mock.calls[0]?.[0]?.options?.data ?? {};
+    expect(metadata).not.toHaveProperty("date_of_birth");
+    expect(mockUserUpsert).toHaveBeenCalledWith(
+      expect.objectContaining({ date_of_birth: expect.any(String) }),
+      expect.anything(),
+    );
   });
 
   it("rejects a guardian email matching the player's own", async () => {

@@ -28,6 +28,19 @@ vi.mock("~/server/utils/logger", () => ({
 vi.mock("~/server/utils/supabase", () => ({
   useSupabaseAdmin: vi.fn(() => ({
     from: (table: string) => {
+      // The route now runs the guardian gate before inserting; that lookup finds no
+      // outstanding claim for these fixtures, so the send proceeds as before.
+      if (table === "guardian_claims") {
+        return {
+          select: () => ({
+            eq: () => ({
+              neq: () => ({
+                neq: () => ({ maybeSingle: async () => ({ data: null }) }),
+              }),
+            }),
+          }),
+        };
+      }
       expect(table).toBe("athlete_messages");
       return {
         insert: (row: Record<string, unknown>) => {

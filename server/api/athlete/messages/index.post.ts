@@ -14,6 +14,7 @@ import { useLogger } from "~/server/utils/logger";
 import { requireAuth } from "~/server/utils/auth";
 import { resolveTargetAthleteId } from "~/server/utils/athleteAccess";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
+import { assertGuardianConfirmed } from "~/server/utils/guardianGate";
 import type { Database } from "~/types/database";
 
 type AthleteMessageInsert =
@@ -50,6 +51,7 @@ export default defineEventHandler(async (event) => {
     b.athleteUserId,
   );
   const supabase = useSupabaseAdmin();
+  await assertGuardianConfirmed(supabase, user.id, "message coaches");
 
   const row: AthleteMessageInsert = {
     user_id: targetId,
