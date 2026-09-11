@@ -52,6 +52,7 @@ describe("GET /api/family/invite/[token]", () => {
       status: "pending",
       expires_at: new Date(Date.now() + 86_400_000).toISOString(),
       family_unit_id: "fam-1",
+      invited_email: "player@example.com",
     };
     mockState.familyUnit = {
       family_name: "The Smiths",
@@ -59,12 +60,12 @@ describe("GET /api/family/invite/[token]", () => {
     };
   });
 
-  it("returns invitationId, role, and familyName — no email or emailExists", async () => {
+  it("returns invitationId, role, familyName, and invitedEmail — no emailExists or inviterName", async () => {
     const result = await handler(mockEvent);
     expect(result.invitationId).toBe("inv-1");
     expect(result.role).toBe("player");
     expect(result.familyName).toBe("The Smiths");
-    expect(result).not.toHaveProperty("email");
+    expect(result.invitedEmail).toBe("player@example.com");
     expect(result).not.toHaveProperty("emailExists");
     expect(result).not.toHaveProperty("inviterName");
   });
@@ -84,6 +85,7 @@ describe("GET /api/family/invite/[token]", () => {
       invitationId: "inv-1",
       role: "player",
       familyName: "The Smiths",
+      invitedEmail: "player@example.com",
     });
     expect(result).not.toHaveProperty("prefill");
     expect(JSON.stringify(result)).not.toMatch(

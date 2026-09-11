@@ -36,11 +36,11 @@ const createWrapper = (props: Record<string, unknown> = {}) =>
   });
 
 describe("InviteSignupForm", () => {
-  it("renders an editable email field with the initial email value", () => {
+  it("renders the email field pre-filled and locked to the invited address", () => {
     const wrapper = createWrapper({ email: "test@example.com" });
     const emailInput = wrapper.find('[data-testid="invite-email"]');
     expect(emailInput.exists()).toBe(true);
-    expect(emailInput.attributes("disabled")).toBeUndefined();
+    expect(emailInput.attributes("disabled")).toBeDefined();
     expect((emailInput.element as HTMLInputElement).value).toBe(
       "test@example.com",
     );

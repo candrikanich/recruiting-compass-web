@@ -23,6 +23,7 @@ interface InviteDetails {
   invitationId: string;
   role: "player" | "parent";
   familyName: string;
+  invitedEmail: string;
 }
 
 interface AcceptPrefill {
@@ -198,6 +199,10 @@ onMounted(async () => {
     invite.value = await $fetch<InviteDetails>(
       `/api/family/invite/${token.value}`,
     );
+    // Prefill both forms with the address the invite was sent to — typing a
+    // different email is a real failure mode (accept rejects on mismatch).
+    loginEmail.value = invite.value.invitedEmail;
+    signupEmail.value = invite.value.invitedEmail;
     fetchStatus.value = "success";
   } catch (err: unknown) {
     fetchStatus.value = "error";
@@ -451,6 +456,8 @@ async function decline() {
             data-testid="email-input"
             label="Email"
             type="email"
+            disabled
+            hint="This invite was sent to this address"
             class="mb-3"
           />
           <DesignSystemInput

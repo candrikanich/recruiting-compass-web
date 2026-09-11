@@ -98,6 +98,7 @@ const validInviteResponse = {
   invitationId: "inv-123",
   role: "player",
   familyName: "The Smiths",
+  invitedEmail: "player@example.com",
 };
 
 describe("/join page", () => {
@@ -293,6 +294,7 @@ describe("/join page", () => {
           invitationId: "inv-1",
           role: "parent",
           familyName: "Smith",
+          invitedEmail: "parent@example.com",
         })
         .mockResolvedValueOnce({ success: true }); // accept
 
@@ -317,6 +319,7 @@ describe("/join page", () => {
           invitationId: "inv-1",
           role: "parent",
           familyName: "Jones",
+          invitedEmail: "parent@example.com",
         })
         .mockResolvedValueOnce({ success: true }); // accept
 
@@ -346,6 +349,7 @@ describe("/join page", () => {
           invitationId: "inv-123",
           role: "player",
           familyName: "The Smiths",
+          invitedEmail: "player@example.com",
         })
         .mockResolvedValueOnce({ success: true, familyUnitId: "fam-1" });
 
@@ -379,6 +383,7 @@ describe("/join page", () => {
           invitationId: "inv-123",
           role: "player",
           familyName: "The Smiths",
+          invitedEmail: "player@example.com",
         })
         .mockResolvedValueOnce({
           success: true,
@@ -415,6 +420,7 @@ describe("/join page", () => {
           invitationId: "inv-123",
           role: "parent",
           familyName: "The Smiths",
+          invitedEmail: "parent@example.com",
         })
         .mockResolvedValueOnce({ success: true });
 
