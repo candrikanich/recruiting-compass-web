@@ -39,6 +39,42 @@ export default defineEventHandler(async (event) => {
       };
     }
 
+    // The check above only catches families this user CREATED. A player who
+    // joined an existing family via invite accept has a family_members row
+    // but never created a family_units row — without this check they'd fall
+    // through to insert(), and the member-insert below would 500 on
+    // idx_player_one_family (a player can only belong to one family).
+    const membershipResponse = await supabase
+      .from("family_members")
+      .select("family_units!inner(id, family_code, family_name)")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    const { data: existingMembership } = membershipResponse as {
+      data: {
+        family_units: Pick<
+          Database["public"]["Tables"]["family_units"]["Row"],
+          "id" | "family_code" | "family_name"
+        >;
+      } | null;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      error: any;
+    };
+
+    if (existingMembership?.family_units) {
+      const family = existingMembership.family_units;
+      logger.info("User already belongs to a family via invite", {
+        familyId: family.id,
+      });
+      return {
+        success: true,
+        familyId: family.id,
+        familyCode: family.family_code,
+        familyName: family.family_name,
+        message: "Family already exists",
+      };
+    }
+
     // Generate unique code + inbound-email token (inbound_token is NOT NULL —
     // required for the family-<token>@... inbound-forwarding address)
     const familyCode = await generateFamilyCode(supabase);

@@ -5,6 +5,7 @@ const mockState = {
   userId: "player-user-id",
   userRole: "player" as string | null,
   existingFamily: null as object | null,
+  existingMembership: null as object | null,
 };
 
 vi.mock("~/server/utils/auth", () => ({
@@ -65,7 +66,18 @@ vi.mock("~/server/utils/supabase", () => ({
         };
       }
       if (table === "family_members") {
-        return { insert: () => Promise.resolve({ error: null }) };
+        return {
+          select: () => ({
+            eq: () => ({
+              maybeSingle: () =>
+                Promise.resolve({
+                  data: mockState.existingMembership,
+                  error: null,
+                }),
+            }),
+          }),
+          insert: () => Promise.resolve({ error: null }),
+        };
       }
       if (table === "family_code_usage_log") {
         const builder = Object.assign(
@@ -106,6 +118,7 @@ describe("POST /api/family/create — symmetric", () => {
     mockState.userId = "player-user-id";
     mockState.userRole = "player";
     mockState.existingFamily = null;
+    mockState.existingMembership = null;
     familyUnitsInsertSpy.mockClear();
   });
 
@@ -147,5 +160,25 @@ describe("POST /api/family/create — symmetric", () => {
       familyId: "existing-family",
       message: "Family already exists",
     });
+  });
+
+  it("returns the invited family instead of creating a duplicate when a player is already a family_members row (not the creator) — repro for idx_player_one_family 500", async () => {
+    mockState.existingMembership = {
+      family_units: {
+        id: "invited-family",
+        family_code: "FAM-INVITED",
+        family_name: "The Invite Family",
+      },
+    };
+
+    const result = await handler({} as Parameters<typeof handler>[0]);
+
+    expect(result).toMatchObject({
+      success: true,
+      familyId: "invited-family",
+      familyCode: "FAM-INVITED",
+      message: "Family already exists",
+    });
+    expect(familyUnitsInsertSpy).not.toHaveBeenCalled();
   });
 });
