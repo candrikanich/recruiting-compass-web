@@ -18,6 +18,7 @@
 
 interface DeleteUserRequest {
   email: string;
+  env?: "prod" | "qa";
 }
 
 interface DeleteUserResponse {
@@ -28,6 +29,7 @@ interface DeleteUserResponse {
 import { defineEventHandler, readBody, createError } from "h3";
 import { requireAdmin } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
+import { resolveAdminDbEnv } from "~/server/utils/adminDbEnv";
 import { useLogger } from "~/server/utils/logger";
 
 export default defineEventHandler(
@@ -37,12 +39,13 @@ export default defineEventHandler(
       // 1. Verify user is an authenticated admin
       const user = await requireAdmin(event);
 
-      // Create admin client with service role
-      const supabaseAdmin = useSupabaseAdmin();
-
       // 2. Parse and validate request body
       const body = await readBody<DeleteUserRequest>(event);
       const { email } = body;
+      const dbEnv = resolveAdminDbEnv(body.env);
+
+      // Create admin client with service role, scoped to the requested DB
+      const supabaseAdmin = useSupabaseAdmin(dbEnv);
 
       if (!email || typeof email !== "string") {
         throw createError({
@@ -207,7 +210,7 @@ export default defineEventHandler(
 
       // 8. Log successful deletion
       logger.info(
-        `User ${targetEmail} (${targetUserId}) and all associated data deleted by admin ${user.id}. Auth record deleted: ${authDeleted}`,
+        `User ${targetEmail} (${targetUserId}) and all associated data deleted from ${dbEnv} by admin ${user.id}. Auth record deleted: ${authDeleted}`,
       );
 
       return {

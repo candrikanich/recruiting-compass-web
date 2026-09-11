@@ -1,5 +1,53 @@
 <template>
   <div class="rounded-lg bg-white p-6 shadow-md">
+    <!-- Always-visible env banner: prevents deleting a real prod user while thinking you're in QA -->
+    <div
+      :class="[
+        'mb-4 flex items-center justify-between rounded-lg border-2 px-4 py-2',
+        dbEnv === 'prod'
+          ? 'border-red-300 bg-red-50'
+          : 'border-blue-300 bg-blue-50',
+      ]"
+      data-testid="admin-users-env-banner"
+    >
+      <span
+        :class="[
+          'text-sm font-bold tracking-wide uppercase',
+          dbEnv === 'prod' ? 'text-red-800' : 'text-blue-800',
+        ]"
+      >
+        {{ dbEnv === "prod" ? "⚠ Production — real users" : "QA — test data" }}
+      </span>
+      <div class="flex items-center gap-1 rounded-lg bg-white p-1 shadow-inner">
+        <button
+          type="button"
+          :class="[
+            'rounded-md px-3 py-1 text-sm font-medium transition',
+            dbEnv === 'prod'
+              ? 'bg-red-600 text-white'
+              : 'text-slate-600 hover:bg-slate-100',
+          ]"
+          data-testid="admin-users-env-prod-btn"
+          @click="setDbEnv('prod')"
+        >
+          Prod
+        </button>
+        <button
+          type="button"
+          :class="[
+            'rounded-md px-3 py-1 text-sm font-medium transition',
+            dbEnv === 'qa'
+              ? 'bg-blue-600 text-white'
+              : 'text-slate-600 hover:bg-slate-100',
+          ]"
+          data-testid="admin-users-env-qa-btn"
+          @click="setDbEnv('qa')"
+        >
+          QA
+        </button>
+      </div>
+    </div>
+
     <div class="mb-6 flex items-center justify-between">
       <h1 class="text-2xl font-bold text-slate-900">Users</h1>
 
@@ -328,6 +376,8 @@ const {
   selectedUserEmails,
   bulkDeleting,
   showBulkDeleteModal,
+  dbEnv,
+  setDbEnv,
   searchQuery,
   filterAdmin,
   filteredUsers,
