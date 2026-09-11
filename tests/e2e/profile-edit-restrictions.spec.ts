@@ -51,7 +51,7 @@ test.describe("Profile Edit Restrictions (User Story 2.2)", () => {
 
     test("parent sees position buttons ENABLED", async ({ page }) => {
       await page.goto("/settings/player-details");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Selects appear only once isLoading flips false. Wait for the seeded
       // sport too — availablePositions is empty until primary_sport is set, and
