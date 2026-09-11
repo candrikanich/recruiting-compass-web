@@ -33,7 +33,10 @@
       <!-- Timeline Summary -->
       <section aria-labelledby="timeline-heading">
         <h2 id="timeline-heading" class="sr-only">Timeline Summary</h2>
-        <DashboardTimelineCard />
+        <ParentNoAthleteEmptyState
+          v-if="userStore.isParent && !hasConnectedPlayer"
+        />
+        <DashboardTimelineCard v-else />
       </section>
 
       <!-- Statistics Overview Section -->
@@ -60,7 +63,10 @@
         <!-- Left: main content (4 cols) -->
         <div class="space-y-6 lg:col-span-4">
           <!-- Getting-started checklist — self-hides when dismissed -->
-          <GettingStartedChecklist />
+          <ParentNoAthleteEmptyState
+            v-if="userStore.isParent && !hasConnectedPlayer"
+          />
+          <GettingStartedChecklist v-else />
 
           <!-- Profile completeness card — shows progress + missing fields -->
           <ProfileCompletenessCard />
@@ -192,6 +198,7 @@ import { WIDGET_SIZES } from "~/types/models";
 import type { WidgetId, WidgetEntry } from "~/types/models";
 import ParentContextBanner from "~/components/Dashboard/ParentContextBanner.vue";
 import ParentOnboardingBanner from "~/components/Dashboard/ParentOnboardingBanner.vue";
+import ParentNoAthleteEmptyState from "~/components/Dashboard/ParentNoAthleteEmptyState.vue";
 import DashboardTimelineCard from "~/components/Dashboard/DashboardTimelineCard.vue";
 import DashboardStatsCards from "~/components/Dashboard/DashboardStatsCards.vue";
 import DashboardSuggestions from "~/components/Dashboard/DashboardSuggestions.vue";
@@ -389,6 +396,13 @@ const activeFamily = useFamilyCtx();
 
 // Destructure activeFamily refs used in template for auto-unwrapping
 const { isViewingAsParent, parentAccessibleFamilies } = activeFamily;
+
+// Parent has not yet linked a player to the family unit — data-bearing
+// cards (timeline, getting-started) would otherwise silently score/label
+// the parent's own blank profile. Same check as ParentOnboardingBanner.
+const hasConnectedPlayer = computed(() =>
+  parentAccessibleFamilies.value.some((f) => f.athleteId !== null),
+);
 
 // Local state
 const user = computed(() => userStore.user);
