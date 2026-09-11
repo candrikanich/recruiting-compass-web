@@ -88,7 +88,8 @@ const maxDateOfBirth = computed(() => new Date().toISOString().split("T")[0]);
       type="email"
       placeholder="Your email address"
       :model-value="email"
-      :disabled="loading"
+      :disabled="loading || !!email"
+      hint="This invite was sent to this address"
       @update:model-value="emit('update:email', $event as string)"
     />
 

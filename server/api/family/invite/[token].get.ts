@@ -15,7 +15,7 @@ export default defineEventHandler(async (event) => {
   try {
     const { data: invitation } = await supabase
       .from("family_invitations")
-      .select("id, role, status, expires_at, family_unit_id")
+      .select("id, role, status, expires_at, family_unit_id, invited_email")
       .eq("token", token)
       .single();
 
@@ -40,9 +40,14 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    // Unauthenticated preview: family name only. Athlete PII (name, grad year,
-    // sport, position) stays behind acceptance — this endpoint is reachable by
-    // anyone with the link (e.g. a forwarded invite), not just the invitee.
+    // Unauthenticated preview: family name + the invited address only. Athlete
+    // PII (name, DOB, grad year, sport, position) stays behind acceptance —
+    // this endpoint is reachable by anyone with the link (e.g. a forwarded
+    // invite), not just the invitee. The invited email itself is safe to
+    // return: it's already known to whoever holds the link (it's who the
+    // invite was addressed to), and prefilling it prevents a real failure
+    // mode where the visitor signs up with a different email than the one
+    // invited, which the accept endpoint then rejects.
     const { data: familyUnit } = await supabase
       .from("family_units")
       .select("family_name")
@@ -54,6 +59,7 @@ export default defineEventHandler(async (event) => {
       invitationId: invitation.id,
       role: invitation.role,
       familyName: familyUnit?.family_name ?? "My Family",
+      invitedEmail: invitation.invited_email,
     };
   } catch (err) {
     if (err instanceof Error && "statusCode" in err) throw err;
