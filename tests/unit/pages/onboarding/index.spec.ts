@@ -308,6 +308,7 @@ describe("pages/onboarding/index.vue", () => {
         hasHighlightVideo: false,
         hasContactedCoaches: false,
       }),
+      2028, // graduation_year from onboarding data, so the starting phase reflects actual grade
     );
     expect(navigateToMock).toHaveBeenCalledWith("/dashboard");
   });

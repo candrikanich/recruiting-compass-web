@@ -30,3 +30,16 @@ export function calculateCurrentGrade(graduationYear: number): number {
   // Clamp between 9 (freshman) and 12 (senior)
   return Math.max(9, Math.min(12, calculatedGrade));
 }
+
+export type GradePhase = "freshman" | "sophomore" | "junior" | "senior";
+
+/**
+ * Map grade level (9-12) to the grade-derived default phase.
+ */
+export function gradeToPhase(grade: number): GradePhase {
+  if (grade === 10) return "sophomore";
+  if (grade === 11) return "junior";
+  if (grade === 12) return "senior";
+  // Default to freshman if grade is 9 or out of range
+  return "freshman";
+}
