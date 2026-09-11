@@ -40,6 +40,12 @@ interface _AuthActions {
     captchaToken?: string,
     dateOfBirth?: string,
     pendingAdmin?: boolean,
+    onboardingStep1?: {
+      graduationYear: number;
+      primarySport: string;
+      gender?: string;
+      zipCode?: string;
+    },
   ) => Promise<{
     data: { user: User | null; session: Session | null } | null;
     error: { message: string; status?: number } | null;
@@ -259,6 +265,12 @@ export const useAuth = () => {
     captchaToken?: string,
     dateOfBirth?: string,
     pendingAdmin?: boolean,
+    onboardingStep1?: {
+      graduationYear: number;
+      primarySport: string;
+      gender?: string;
+      zipCode?: string;
+    },
   ) => {
     loading.value = true;
     error.value = null;
@@ -298,6 +310,24 @@ export const useAuth = () => {
       // directly) — consumed lazily on first login, not trusted again later.
       if (pendingAdmin) {
         metadata.pending_admin = true;
+      }
+
+      // Drafted onboarding step-1 answers (grad year/sport/gender/zip),
+      // entered on the signup form itself so a new user isn't idle while
+      // waiting on the confirmation email — carried the same way as
+      // pending_admin and flushed into real preferences on first sign-in by
+      // useAccountProvisioning.
+      if (onboardingStep1) {
+        metadata.pending_graduation_year = String(
+          onboardingStep1.graduationYear,
+        );
+        metadata.pending_primary_sport = onboardingStep1.primarySport;
+        if (onboardingStep1.gender) {
+          metadata.pending_gender = onboardingStep1.gender;
+        }
+        if (onboardingStep1.zipCode) {
+          metadata.pending_zip_code = onboardingStep1.zipCode;
+        }
       }
 
       // Add metadata + captcha token if present

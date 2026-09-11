@@ -27,10 +27,17 @@ import type { getSupabaseAdmin } from "./supabase-admin";
 
 type Admin = ReturnType<typeof getSupabaseAdmin>;
 
+/**
+ * Real personal accounts used for manual QA — not E2E fixtures, but easily
+ * mistaken for one. Never let a debris pattern match these.
+ */
+const MANUAL_QA_EMAILS = ["test.player2028@andrikanich.com"];
+
 /** Fixed accounts that must NEVER be deleted, even if a pattern matches. */
-export const PROTECT_EMAILS = new Set<string>(
-  Object.values(TEST_ACCOUNTS).map((a) => a.email),
-);
+export const PROTECT_EMAILS = new Set<string>([
+  ...Object.values(TEST_ACCOUNTS).map((a) => a.email),
+  ...MANUAL_QA_EMAILS,
+]);
 
 /**
  * Emails created by E2E spec runs. Every pattern requires a 10+ digit run id
@@ -45,7 +52,6 @@ export const TEST_USER_PATTERNS: RegExp[] = [
   /^e2e-[a-z-]*-?\d{10,}@/i,
   /^parent-e2e-\d{10,}@/i,
   /^player-e2e-\d{10,}@/i,
-  /^test\.player\d+@andrikanich\.com$/i,
 ];
 
 export function isDebris(email: string | null | undefined): boolean {

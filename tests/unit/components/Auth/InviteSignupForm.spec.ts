@@ -19,7 +19,7 @@ const createWrapper = (props: Record<string, unknown> = {}) =>
         },
         DesignSystemInput: {
           template:
-            '<input :data-testid="id" :value="modelValue" :disabled="disabled" @input="$emit(\'update:modelValue\', $event.target.value)" />',
+            '<input :data-testid="id" :value="modelValue" :disabled="disabled" :autocomplete="autocomplete" @input="$emit(\'update:modelValue\', $event.target.value)" />',
           props: [
             "modelValue",
             "label",
@@ -28,6 +28,7 @@ const createWrapper = (props: Record<string, unknown> = {}) =>
             "id",
             "placeholder",
             "hint",
+            "autocomplete",
           ],
           emits: ["update:modelValue"],
         },
@@ -36,11 +37,11 @@ const createWrapper = (props: Record<string, unknown> = {}) =>
   });
 
 describe("InviteSignupForm", () => {
-  it("renders an editable email field with the initial email value", () => {
+  it("renders the email field pre-filled and locked to the invited address", () => {
     const wrapper = createWrapper({ email: "test@example.com" });
     const emailInput = wrapper.find('[data-testid="invite-email"]');
     expect(emailInput.exists()).toBe(true);
-    expect(emailInput.attributes("disabled")).toBeUndefined();
+    expect(emailInput.attributes("disabled")).toBeDefined();
     expect((emailInput.element as HTMLInputElement).value).toBe(
       "test@example.com",
     );
@@ -80,6 +81,24 @@ describe("InviteSignupForm", () => {
     const wrapper = createWrapper();
     await wrapper.find('[data-testid="firstName"]').setValue("Sam");
     expect(wrapper.emitted("update:firstName")).toEqual([["Sam"]]);
+  });
+
+  it("locks name and password fields to nonstandard autocomplete values so the browser can't cross-fill a different person's saved identity from another form on the same site", () => {
+    const wrapper = createWrapper();
+    expect(
+      wrapper.find('[data-testid="firstName"]').attributes("autocomplete"),
+    ).toBe("invite-first-name");
+    expect(
+      wrapper.find('[data-testid="lastName"]').attributes("autocomplete"),
+    ).toBe("invite-last-name");
+    expect(
+      wrapper.find('[data-testid="password"]').attributes("autocomplete"),
+    ).toBe("new-password");
+    expect(
+      wrapper
+        .find('[data-testid="confirmPassword"]')
+        .attributes("autocomplete"),
+    ).toBe("new-password");
   });
 
   describe("role-conditional DOB field", () => {

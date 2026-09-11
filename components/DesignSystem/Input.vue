@@ -14,6 +14,7 @@ interface Props {
   hint?: string;
   required?: boolean;
   id?: string;
+  autocomplete?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -101,6 +102,7 @@ function handleInput(event: Event) {
         :type="type"
         :value="modelValue"
         :placeholder="placeholder"
+        :autocomplete="autocomplete"
         :disabled="disabled"
         :required="required"
         :aria-invalid="error ? 'true' : undefined"

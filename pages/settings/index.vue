@@ -179,6 +179,11 @@
 import { computed, onMounted } from "vue";
 import { usePreferenceManager } from "~/composables/usePreferenceManager";
 import { useEntitlement } from "~/composables/useEntitlement";
+import { useVideoLinks } from "~/composables/useVideoLinks";
+import {
+  calculateProfileCompleteness,
+  isHomeLocationPresent,
+} from "~/utils/profileCompletenessCalculation";
 import SettingsCard from "~/components/Settings/SettingsCard.vue";
 
 definePageMeta({
@@ -193,15 +198,24 @@ const {
 } = usePreferenceManager();
 
 const { planLabel, load: loadEntitlement } = useEntitlement();
+const { links: videoLinks, load: loadVideoLinks } = useVideoLinks();
 
 const hasHomeLocation = computed(() => {
   const loc = getHomeLocation.value;
   return !!(loc?.latitude && loc?.longitude);
 });
 
+// "Complete" here must match the canonical weighted score shown on
+// /settings/player-details (utils/profileCompletenessCalculation.ts) —
+// a naive presence check (grad_year set) previously showed "complete"
+// at 30% actual completion.
 const hasPlayerDetails = computed(() => {
   const details = getPlayerDetails();
-  return !!(details?.graduation_year || details?.positions?.length);
+  const score = calculateProfileCompleteness(details ?? {}, {
+    hasHighlightVideo: videoLinks.value.length > 0,
+    hasHomeLocation: isHomeLocationPresent(getHomeLocation.value),
+  });
+  return score >= 100;
 });
 
 const hasSchoolPreferences = computed(() => {
@@ -211,6 +225,10 @@ const hasSchoolPreferences = computed(() => {
 
 // Load all preferences when the page mounts to ensure reactive updates
 onMounted(async () => {
-  await Promise.all([loadAllPreferences(), loadEntitlement()]);
+  await Promise.all([
+    loadAllPreferences(),
+    loadEntitlement(),
+    loadVideoLinks(),
+  ]);
 });
 </script>

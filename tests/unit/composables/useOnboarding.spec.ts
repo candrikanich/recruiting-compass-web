@@ -88,6 +88,36 @@ describe("useOnboarding", () => {
       };
       expect(calculateStartingPhase(assessment)).toBe("junior");
     });
+
+    it("uses the grade derived from graduation year when the assessment has no signal", () => {
+      const assessment: OnboardingAssessment = {
+        hasHighlightVideo: false,
+        hasContactedCoaches: false,
+        hasTargetSchools: false,
+        hasRegisteredEligibility: false,
+        hasTakenTestScores: false,
+      };
+      // 2026-09-11 (mocked below), grad year 2028 => rising junior, not freshman
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date("2026-09-11"));
+      expect(calculateStartingPhase(assessment, 2028)).toBe("junior");
+      vi.useRealTimers();
+    });
+
+    it("does not let a stale grade-derived phase regress a real assessment signal", () => {
+      const assessment: OnboardingAssessment = {
+        hasHighlightVideo: false,
+        hasContactedCoaches: false,
+        hasTargetSchools: false,
+        hasRegisteredEligibility: true,
+        hasTakenTestScores: false,
+      };
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date("2026-09-11"));
+      // Grad year 2030 (freshman) but assessment says eligibility already registered (junior) — keep junior
+      expect(calculateStartingPhase(assessment, 2030)).toBe("junior");
+      vi.useRealTimers();
+    });
   });
 
   describe("getTasksToComplete", () => {

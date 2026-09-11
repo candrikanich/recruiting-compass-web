@@ -12,19 +12,9 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "~/types/database";
 import type { Phase } from "~/types/timeline";
 import type { TaskIdsBySlug } from "~/utils/phaseCalculation";
-import { calculateCurrentGrade } from "~/utils/gradeHelpers";
+import { calculateCurrentGrade, gradeToPhase } from "~/utils/gradeHelpers";
 
-/**
- * Map grade level (9-12) to the grade-derived default phase.
- */
-export function gradeToPhase(grade: number): Phase {
-  if (grade === 9) return "freshman";
-  if (grade === 10) return "sophomore";
-  if (grade === 11) return "junior";
-  if (grade === 12) return "senior";
-  // Default to freshman if grade is out of range
-  return "freshman";
-}
+export { gradeToPhase };
 
 /**
  * Compute the grade-derived default phase from a (possibly absent) graduation year.

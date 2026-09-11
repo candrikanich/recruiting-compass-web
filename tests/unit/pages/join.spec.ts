@@ -98,6 +98,7 @@ const validInviteResponse = {
   invitationId: "inv-123",
   role: "player",
   familyName: "The Smiths",
+  invitedEmail: "player@example.com",
 };
 
 describe("/join page", () => {
@@ -138,19 +139,21 @@ describe("/join page", () => {
       expect(wrapper.text()).toContain("A family member");
     });
 
-    it("shows login form when user is not authenticated", async () => {
+    it("shows signup form by default when user is not authenticated", async () => {
       const wrapper = createWrapper();
       await flushPromises();
-      expect(wrapper.find('[data-testid="email-input"]').exists()).toBe(true);
-      expect(wrapper.find('[data-testid="password-input"]').exists()).toBe(
+      expect(wrapper.find('[data-testid="invite-signup-form"]').exists()).toBe(
         true,
       );
     });
 
-    it("shows signup form when user is not authenticated", async () => {
+    it("shows login form after switching from signup", async () => {
       const wrapper = createWrapper();
       await flushPromises();
-      expect(wrapper.find('[data-testid="invite-signup-form"]').exists()).toBe(
+      await wrapper.find('[data-testid="switch-to-login"]').trigger("click");
+      await flushPromises();
+      expect(wrapper.find('[data-testid="email-input"]').exists()).toBe(true);
+      expect(wrapper.find('[data-testid="password-input"]').exists()).toBe(
         true,
       );
     });
@@ -192,6 +195,8 @@ describe("/join page", () => {
 
       const wrapper = createWrapper();
       await flushPromises();
+      await wrapper.find('[data-testid="switch-to-login"]').trigger("click");
+      await flushPromises();
 
       await wrapper
         .find('[data-testid="email-input"]')
@@ -202,7 +207,12 @@ describe("/join page", () => {
         .trigger("click");
       await flushPromises();
 
-      expect(mockLogin).toHaveBeenCalledWith("player@example.com", "secret");
+      expect(mockLogin).toHaveBeenCalledWith(
+        "player@example.com",
+        "secret",
+        false,
+        undefined, // captchaToken (Turnstile disabled in test)
+      );
       expect(global.navigateTo).toHaveBeenCalledWith("/dashboard");
     });
   });
@@ -284,6 +294,7 @@ describe("/join page", () => {
           invitationId: "inv-1",
           role: "parent",
           familyName: "Smith",
+          invitedEmail: "parent@example.com",
         })
         .mockResolvedValueOnce({ success: true }); // accept
 
@@ -308,6 +319,7 @@ describe("/join page", () => {
           invitationId: "inv-1",
           role: "parent",
           familyName: "Jones",
+          invitedEmail: "parent@example.com",
         })
         .mockResolvedValueOnce({ success: true }); // accept
 
@@ -317,7 +329,7 @@ describe("/join page", () => {
 
       const wrapper = createWrapper();
       await flushPromises();
-
+      
       await wrapper
         .find('[data-testid="invite-signup-form"]')
         .trigger("submit");
@@ -337,17 +349,24 @@ describe("/join page", () => {
           invitationId: "inv-123",
           role: "player",
           familyName: "The Smiths",
+          invitedEmail: "player@example.com",
         })
         .mockResolvedValueOnce({ success: true, familyUnitId: "fam-1" });
 
       const wrapper = createWrapper();
       await flushPromises();
-      await wrapper
+            await wrapper
         .find('[data-testid="invite-signup-form"]')
         .trigger("submit");
       await flushPromises();
 
-      expect(mockSignup).toHaveBeenCalled();
+      expect(mockSignup).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.any(String),
+        expect.any(String),
+        "player",
+        undefined, // captchaToken (Turnstile disabled in test)
+      );
       expect(mockFetch).toHaveBeenCalledWith(
         "/api/family/invite/valid-token-123/accept",
         { method: "POST" },
@@ -364,6 +383,7 @@ describe("/join page", () => {
           invitationId: "inv-123",
           role: "player",
           familyName: "The Smiths",
+          invitedEmail: "player@example.com",
         })
         .mockResolvedValueOnce({
           success: true,
@@ -379,7 +399,7 @@ describe("/join page", () => {
 
       const wrapper = createWrapper();
       await flushPromises();
-      await wrapper
+            await wrapper
         .find('[data-testid="invite-signup-form"]')
         .trigger("submit");
       await flushPromises();
@@ -400,12 +420,13 @@ describe("/join page", () => {
           invitationId: "inv-123",
           role: "parent",
           familyName: "The Smiths",
+          invitedEmail: "parent@example.com",
         })
         .mockResolvedValueOnce({ success: true });
 
       const wrapper = createWrapper();
       await flushPromises();
-      await wrapper
+            await wrapper
         .find('[data-testid="invite-signup-form"]')
         .trigger("submit");
       await flushPromises();
