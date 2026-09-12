@@ -32,6 +32,19 @@ vi.mock("~/server/utils/logger", () => ({
 vi.mock("~/server/utils/supabase", () => ({
   useSupabaseAdmin: vi.fn(() => ({
     from: (table: string) => {
+      // Publishing now runs the guardian gate first; these fixtures have no outstanding
+      // claim, so the update proceeds as before.
+      if (table === "guardian_claims") {
+        return {
+          select: () => ({
+            eq: () => ({
+              neq: () => ({
+                neq: () => ({ maybeSingle: async () => ({ data: null }) }),
+              }),
+            }),
+          }),
+        };
+      }
       if (table === "family_members") {
         return {
           select: () => ({

@@ -101,6 +101,10 @@ vi.mock("~/components/Auth/SignupForm.vue", () => ({
           <label for="dateOfBirth">Player Date of Birth</label>
           <input id="dateOfBirth" type="date" :value="dateOfBirth" @input="$emit('update:dateOfBirth', $event.target.value)" />
         </div>
+        <div v-if="requiresGuardian">
+          <label for="guardianEmail">Parent or Guardian Email</label>
+          <input id="guardianEmail" type="email" :value="guardianEmail" @input="$emit('update:guardianEmail', $event.target.value)" />
+        </div>
         <div>
           <label for="password">Password</label>
           <input id="password" type="password" :value="password" @input="$emit('update:password', $event.target.value)" @blur="$emit('validatePassword')" />
@@ -131,6 +135,8 @@ vi.mock("~/components/Auth/SignupForm.vue", () => ({
       </div>
     `,
     props: [
+      "guardianEmail",
+      "requiresGuardian",
       "userType",
       "firstName",
       "lastName",
@@ -968,14 +974,15 @@ describe("signup.vue", () => {
       ]);
     });
 
-    // Regression: a 13-17 player passed client validation and hit the DB's
-    // minor_requires_family_invite trigger, which rejects the upsert with a
-    // raw 400 the UI could only show as "Signup failed" (issue: QA signup
-    // for test.player2029@..., DOB implying age 16). Minors must join via
-    // pages/join.vue's parent/guardian family-invite flow instead.
-    it("blocks standalone player signup for ages 13-17, directing to the family-invite flow", async () => {
-      const wrapper = createWrapper();
-
+    // A 13-17 player used to be turned away here and told to go find an adult to invite
+    // them. They now start the account themselves and name a guardian, which routes
+    // through POST /api/auth/signup-minor rather than the browser-direct signup — the
+    // writes have to be ordered against the DB's minor gate, and the guardian_claims row
+    // that satisfies it is service-role only.
+    const fillMinorForm = async (
+      wrapper: ReturnType<typeof createWrapper>,
+      guardianEmail?: string,
+    ) => {
       const playerRadio = wrapper.find('[data-testid="user-type-player"]');
       await playerRadio.setValue(true);
       await playerRadio.trigger("change");
@@ -985,20 +992,85 @@ describe("signup.vue", () => {
       await wrapper.find("#lastName").setValue("User");
       await wrapper.find("#email").setValue("test@example.com");
       await wrapper.find("#dateOfBirth").setValue(dobForAge(16));
+      await wrapper.vm.$nextTick();
+      if (guardianEmail !== undefined) {
+        await wrapper.find("#guardianEmail").setValue(guardianEmail);
+      }
       await wrapper.find("#password").setValue("Password123");
       await wrapper.find("#confirmPassword").setValue("Password123");
       await wrapper.find("#agreeToTerms").setValue(true);
 
       await wrapper.find("form").trigger("submit.prevent");
       await wrapper.vm.$nextTick();
+    };
+
+    it("reveals the guardian email field once the DOB lands in 13-17", async () => {
+      const wrapper = createWrapper();
+
+      const playerRadio = wrapper.find('[data-testid="user-type-player"]');
+      await playerRadio.setValue(true);
+      await playerRadio.trigger("change");
+      await wrapper.vm.$nextTick();
+
+      expect(wrapper.find("#guardianEmail").exists()).toBe(false);
+
+      await wrapper.find("#dateOfBirth").setValue(dobForAge(16));
+      await wrapper.vm.$nextTick();
+
+      expect(wrapper.find("#guardianEmail").exists()).toBe(true);
+    });
+
+    it("does not show the guardian email field for an 18+ player", async () => {
+      const wrapper = createWrapper();
+
+      const playerRadio = wrapper.find('[data-testid="user-type-player"]');
+      await playerRadio.setValue(true);
+      await playerRadio.trigger("change");
+      await wrapper.vm.$nextTick();
+
+      await wrapper.find("#dateOfBirth").setValue(dobForAge(20));
+      await wrapper.vm.$nextTick();
+
+      expect(wrapper.find("#guardianEmail").exists()).toBe(false);
+    });
+
+    it("requires a guardian email before submitting a 13-17 signup", async () => {
+      const wrapper = createWrapper();
+
+      await fillMinorForm(wrapper, "");
 
       expect(mockAuth.signup).not.toHaveBeenCalled();
       expect(mockValidation.setErrors).toHaveBeenCalledWith([
         {
-          field: "form",
-          message: expect.stringContaining("parent or guardian"),
+          field: "guardianEmail",
+          message: expect.stringContaining("parent or guardian email"),
         },
       ]);
+    });
+
+    it("rejects a guardian email matching the player's own", async () => {
+      // Otherwise the minor receives their own consent link and confirms themselves.
+      const wrapper = createWrapper();
+
+      await fillMinorForm(wrapper, "test@example.com");
+
+      expect(mockAuth.signup).not.toHaveBeenCalled();
+      expect(mockValidation.setErrors).toHaveBeenCalledWith([
+        {
+          field: "guardianEmail",
+          message: expect.stringContaining("different email"),
+        },
+      ]);
+    });
+
+    it("does not use the browser-direct signup path for a 13-17 player", async () => {
+      const wrapper = createWrapper();
+
+      await fillMinorForm(wrapper, "parent@example.com");
+
+      // useAuth().signup writes public.users straight from the browser, which the DB gate
+      // rejects for a minor with no guardian link yet.
+      expect(mockAuth.signup).not.toHaveBeenCalled();
     });
 
     it("allows standalone player signup at 18+", async () => {

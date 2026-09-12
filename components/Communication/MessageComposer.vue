@@ -179,10 +179,15 @@
             <!-- Footer: preview stage (info stage supplies its own buttons) -->
             <div
               v-else-if="stage === 'preview'"
-              class="flex gap-3 border-t border-slate-200 p-6"
+              class="flex flex-col gap-3 border-t border-slate-200 p-6"
             >
+              <GuardianLockedAction
+                v-if="guardianLocked"
+                action="message coaches"
+              />
+              <div class="flex gap-3">
               <button
-                :disabled="channel.unresolved.value.length > 0"
+                :disabled="channel.unresolved.value.length > 0 || guardianLocked"
                 :class="[
                   'flex-1 rounded-lg bg-linear-to-r px-4 py-2 text-sm font-medium text-white transition disabled:cursor-not-allowed disabled:opacity-50',
                   ui.gradient,
@@ -199,6 +204,7 @@
               >
                 Back
               </button>
+              </div>
             </div>
           </div>
         </Transition>
@@ -209,6 +215,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, nextTick } from "vue";
+import { useGuardianStatus } from "~/composables/useGuardianStatus";
 import { useFocusTrap } from "~/composables/useFocusTrap";
 import { SMS_TEXT_LIMIT } from "~/utils/phone";
 import type { ChannelController } from "~/composables/useQuickCommunication";
@@ -225,6 +232,12 @@ const open = defineModel<boolean>("open", { required: true });
 const logInteraction = defineModel<boolean>("logInteraction", {
   required: true,
 });
+
+// A 13-17 player whose guardian hasn't confirmed can compose and preview, but not send:
+// drafting is the hook that motivates chasing the guardian, while outbound contact with
+// an adult is the part that needs consent on file. Server-side enforcement still applies.
+const { isLocked: guardianLocked, load: loadGuardianStatus } = useGuardianStatus();
+void loadGuardianStatus();
 
 // Staged flow: compose → info (skipped when nothing's missing) → preview + send.
 const stage = ref<"compose" | "info" | "preview">("compose");

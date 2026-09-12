@@ -92,6 +92,8 @@
             :primary-sport="primarySport"
             :gender="gender"
             :zip-code="zipCode"
+            :guardian-email="guardianEmail"
+            :requires-guardian="requiresGuardian"
             @update:first-name="firstName = $event"
             @update:last-name="lastName = $event"
             @update:email="email = $event"
@@ -103,6 +105,7 @@
             @update:primary-sport="primarySport = $event"
             @update:gender="gender = $event"
             @update:zip-code="zipCode = $event"
+            @update:guardian-email="guardianEmail = $event"
             @submit="handleSignup"
             @validate-email="validateEmail"
             @validate-password="validatePassword"
@@ -159,6 +162,13 @@ const graduationYear = ref<number | undefined>(undefined);
 const primarySport = ref("");
 const gender = ref<string | undefined>(undefined);
 const zipCode = ref("");
+
+// Guardian-linked signup: a 13-17 player names a guardian rather than waiting to be
+// invited by one. See planning/2026-09-11-guardian-linked-signup-spec.md (iOS repo).
+const guardianEmail = ref("");
+const requiresGuardian = computed(
+  () => userType.value === "player" && requiresGuardianInvite(dateOfBirth.value),
+);
 
 // --- Turnstile (optional, flag-gated) ----------------------------------------
 const runtimeConfig = useRuntimeConfig();
@@ -298,6 +308,56 @@ watch(agreeToTerms, (isChecked) => {
   }
 });
 
+/**
+ * Signup for a 13-17 player, who names a guardian to confirm their account.
+ *
+ * Goes through POST /api/auth/signup-minor rather than the browser-direct path below
+ * because the writes must be ordered against enforce_minor_requires_invite, and the
+ * guardian_claims row it depends on is service-role only.
+ */
+const submitMinorSignup = async (guardian: string) => {
+  try {
+    await $fetch("/api/auth/signup-minor", {
+      method: "POST",
+      body: {
+        email: email.value.trim(),
+        password: password.value,
+        firstName: firstName.value.trim(),
+        lastName: lastName.value.trim(),
+        dateOfBirth: dateOfBirth.value,
+        guardianEmail: guardian,
+        graduationYear: graduationYear.value,
+        primarySport: primarySport.value || undefined,
+        gender: gender.value,
+        zipCode: zipCode.value || undefined,
+        captchaToken: turnstileToken.value,
+      },
+    });
+
+    // Same destination as an adult signup: email confirmation still gates the session.
+    // The guardian-pending state is surfaced on the dashboard once they're in.
+    const params = new URLSearchParams({
+      email: email.value.trim(),
+      guardian,
+    });
+    if (primarySport.value && graduationYear.value) {
+      params.set("sport", primarySport.value);
+      params.set("gradYear", String(graduationYear.value));
+    }
+    loading.value = false;
+    await navigateTo(`/verify-email?${params.toString()}`);
+  } catch (err) {
+    const message =
+      (err as { data?: { statusMessage?: string } } | null)?.data
+        ?.statusMessage ??
+      (err instanceof Error ? err.message : "Signup failed");
+    setErrors([{ field: "form", message }]);
+    resetTurnstile();
+    await focusErrorSummary();
+    loading.value = false;
+  }
+};
+
 const handleSignup = async () => {
   // Guard against double-submit (double-click, Enter+click race) — a second
   // request would replay the already-consumed Turnstile token and get
@@ -341,19 +401,36 @@ const handleSignup = async () => {
       return;
     }
 
-    // Minors (13-17) can't hold a standalone account — the DB's
-    // minor_requires_family_invite trigger would reject this at the upsert
-    // below with an opaque 400. Catch it here with actionable guidance.
+    // Minors (13-17) hold an account linked to a guardian, not a standalone one, and
+    // the writes have to be ordered against the DB gate — so this path goes through a
+    // server endpoint rather than the browser-direct signup below.
     if (requiresGuardianInvite(dateOfBirth.value)) {
-      setErrors([
-        {
-          field: "form",
-          message:
-            "Players under 18 need a parent or guardian to invite them — please ask them to send a family invite instead of signing up here.",
-        },
-      ]);
-      await focusErrorSummary();
-      loading.value = false;
+      const guardian = guardianEmail.value.trim().toLowerCase();
+      if (!guardian) {
+        setErrors([
+          {
+            field: "guardianEmail",
+            message:
+              "Enter a parent or guardian email so we can ask them to confirm your account.",
+          },
+        ]);
+        await focusErrorSummary();
+        loading.value = false;
+        return;
+      }
+      if (guardian === email.value.trim().toLowerCase()) {
+        setErrors([
+          {
+            field: "guardianEmail",
+            message:
+              "Your parent or guardian needs a different email address than yours.",
+          },
+        ]);
+        await focusErrorSummary();
+        loading.value = false;
+        return;
+      }
+      await submitMinorSignup(guardian);
       return;
     }
   }

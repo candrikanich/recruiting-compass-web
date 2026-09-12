@@ -104,6 +104,37 @@
       <FieldError id="dateOfBirth-error" :error="fieldErrors.dateOfBirth" />
     </div>
 
+    <!-- Guardian email — revealed only for a 13-17 player. Minors may hold an
+         account, but it has to be linked to a guardian who confirms it; asking
+         here lets the player start now instead of being turned away until an
+         adult invites them. -->
+    <div v-if="requiresGuardian">
+      <div
+        class="mb-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900"
+      >
+        <p class="font-medium">
+          You're under 18, so a parent or guardian needs to confirm your account.
+        </p>
+        <p class="mt-1 text-amber-800">
+          We'll email them a link. You can start building your school list right
+          away — messaging coaches unlocks once they confirm.
+        </p>
+      </div>
+      <LoginInputField
+        id="guardianEmail"
+        label="Parent or Guardian Email"
+        type="email"
+        placeholder="parent.email@example.com"
+        autocomplete="off"
+        :model-value="guardianEmail ?? ''"
+        :error="fieldErrors.guardianEmail"
+        :disabled="disabled"
+        icon="i-heroicons-user-group"
+        :required="true"
+        @update:model-value="$emit('update:guardianEmail', $event)"
+      />
+    </div>
+
     <!-- Email -->
     <LoginInputField
       id="email"
@@ -423,6 +454,9 @@ const props = defineProps<{
   primarySport?: string;
   gender?: string;
   zipCode?: string;
+  guardianEmail?: string;
+  /** True when the entered DOB puts the player in the 13-17 band. */
+  requiresGuardian?: boolean;
 }>();
 
 defineEmits<{
@@ -437,6 +471,7 @@ defineEmits<{
   "update:primarySport": [value: string];
   "update:gender": [value: string];
   "update:zipCode": [value: string];
+  "update:guardianEmail": [value: string];
   submit: [];
   validateEmail: [];
   validatePassword: [];

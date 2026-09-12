@@ -29,6 +29,7 @@
 
       <!-- Parent onboarding banner: shown until athlete connects (self-managed) -->
       <ParentOnboardingBanner v-if="userStore.isParent" />
+      <GuardianPendingBanner />
 
       <!-- Timeline Summary -->
       <section aria-labelledby="timeline-heading">
@@ -198,6 +199,7 @@ import { WIDGET_SIZES } from "~/types/models";
 import type { WidgetId, WidgetEntry } from "~/types/models";
 import ParentContextBanner from "~/components/Dashboard/ParentContextBanner.vue";
 import ParentOnboardingBanner from "~/components/Dashboard/ParentOnboardingBanner.vue";
+import GuardianPendingBanner from "~/components/Guardian/GuardianPendingBanner.vue";
 import ParentNoAthleteEmptyState from "~/components/Dashboard/ParentNoAthleteEmptyState.vue";
 import DashboardTimelineCard from "~/components/Dashboard/DashboardTimelineCard.vue";
 import DashboardStatsCards from "~/components/Dashboard/DashboardStatsCards.vue";
