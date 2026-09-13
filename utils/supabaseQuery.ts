@@ -423,7 +423,6 @@ export async function queryRpc<T>(
     const supabase = useSupabase();
     // Type cast: useSupabase() returns an untyped client (no Database generic).
     // Cast to the expected RPC signature to match Record<string, unknown> params.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const rpcCall = (supabase.rpc as unknown) as (
       fn: string,
       params: Record<string, unknown>,

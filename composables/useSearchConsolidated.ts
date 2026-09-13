@@ -151,7 +151,7 @@ export const useSearchConsolidated = () => {
    *
    * Queries >= 3 chars go through the search_schools_fts RPC (tsvector
    * relevance + pg_trgm typo tolerance, ranked DB-side — see migration
-   * 20260913000000_schools_fts_search.sql). Shorter queries fall back to the
+   * 20260913000001_schools_fts_search.sql). Shorter queries fall back to the
    * ILIKE path: to_tsquery/websearch_to_tsquery need real tokens and don't
    * behave usefully on 1-2 char fragments.
    */
@@ -178,9 +178,7 @@ export const useSearchConsolidated = () => {
         return;
       }
 
-      const filterObj: Record<string, string | number | boolean | null> = {
-        user_id: userStore.user.id,
-      };
+      const filterObj: Record<string, string | number | boolean | null> = {};
       if (filters.value.schools.division) {
         filterObj.division = filters.value.schools.division;
       }
@@ -194,7 +192,7 @@ export const useSearchConsolidated = () => {
           select: "*",
           filters: filterObj,
           search: {
-            columns: ["name", "address", "city", "state"],
+            columns: ["name", "city", "state"],
             term: trimmed,
           },
           limit: 20,

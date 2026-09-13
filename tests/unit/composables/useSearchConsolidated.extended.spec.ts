@@ -334,10 +334,10 @@ describe("useSearchConsolidated (extended)", () => {
         (args) => args[0] === "schools",
       );
       expect(call?.[1].filters).toMatchObject({
-        user_id: "user-1",
         division: "D1",
         state: "CA",
       });
+      expect(call?.[1].filters).not.toHaveProperty("user_id");
     });
 
     // `verified` has no search_schools_fts RPC param and is no longer

@@ -1,4 +1,4 @@
--- 20260913000000_schools_fts_search.sql
+-- 20260913000001_schools_fts_search.sql
 -- Issue #606: Postgres full-text search for schools, replacing the
 -- ILIKE + Fuse.js client-side fuzzy re-rank in useSearchConsolidated.ts.
 --
@@ -35,19 +35,20 @@ LANGUAGE sql
 STABLE
 SECURITY INVOKER
 SET search_path = public, extensions
+SET pg_trgm.word_similarity_threshold = 0.3
 AS $$
   SELECT s.*
   FROM public.schools s
   WHERE
     (
       s.search_vector @@ websearch_to_tsquery('english', p_search_term)
-      OR extensions.similarity(s.name, p_search_term) > 0.3
+      OR p_search_term %> s.name
     )
-    AND (p_division IS NULL OR s.division = p_division)
+    AND (p_division IS NULL OR s.division::text = p_division)
     AND (p_state IS NULL OR s.state = p_state)
   ORDER BY
     ts_rank(s.search_vector, websearch_to_tsquery('english', p_search_term)) DESC,
-    extensions.similarity(s.name, p_search_term) DESC
+    word_similarity(p_search_term, s.name) DESC
   LIMIT p_limit;
 $$;
 
