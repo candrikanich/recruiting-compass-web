@@ -89,4 +89,24 @@ describe("SignupForm wizard steps (13-17 player)", () => {
     expect(wrapper.find('[data-testid="signup-step-continue"]').exists()).toBe(false);
     expect(wrapper.find("[data-testid='signup-button']").exists()).toBe(true);
   });
+
+  it("keeps account-step fields in document order for tab navigation", () => {
+    const wrapper = mount(SignupForm, { props: baseProps });
+
+    const allFocusable = wrapper.findAll("input, button");
+    const ids = ["firstName", "lastName", "dateOfBirth", "email", "password", "confirmPassword"];
+    const indices = ids.map((id) =>
+      allFocusable.findIndex((el) => el.attributes("id") === id),
+    );
+
+    expect(indices.every((idx) => idx !== -1)).toBe(true);
+    for (let i = 1; i < indices.length; i++) {
+      expect(indices[i]).toBeGreaterThan(indices[i - 1]);
+    }
+    // Continue is the last focusable element on this step.
+    const continueIdx = allFocusable.findIndex(
+      (el) => el.attributes("data-testid") === "signup-step-continue",
+    );
+    expect(continueIdx).toBeGreaterThan(indices[indices.length - 1]);
+  });
 });

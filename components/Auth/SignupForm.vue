@@ -42,7 +42,13 @@
       />
     </form>
 
-    <div v-else data-testid="signup-form-player">
+    <div
+      v-else
+      id="signup-form"
+      aria-label="Create player account"
+      :aria-describedby="hasErrors ? 'form-error-summary' : undefined"
+      data-testid="signup-form-player"
+    >
       <h2 class="sr-only">Player Information</h2>
       <SignupStepAccount
         v-if="currentStep === 'account'"

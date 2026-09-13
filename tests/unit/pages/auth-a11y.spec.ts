@@ -327,8 +327,11 @@ describe("Auth Form Accessibility", () => {
   describe("SignupForm keyboard navigation", () => {
     // Parent signup stays a single screen (no wizard), so it's the shape
     // that exercises tab order and keyboard-submit across the whole form in
-    // one render. The 13-17 player wizard's step-by-step keyboard flow is
-    // covered separately by tests/unit/components/Auth/SignupForm.spec.ts.
+    // one render. tests/unit/components/Auth/SignupForm.spec.ts covers the
+    // 13-17 player wizard's step transitions (Continue/Skip clicks), and a
+    // light tab-order check within the account step — neither file asserts
+    // full keyboard-submit or terms-checkbox tab order for the wizard path,
+    // since the terms checkbox only exists on its final ("info") step.
     const mountSignupForm = () =>
       mount(SignupForm, {
         props: {
