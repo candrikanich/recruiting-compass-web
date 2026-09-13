@@ -18,7 +18,12 @@ vi.mock("~/composables/useGuardianStatus", () => ({
   useGuardianStatus: () => ({
     isPending: { value: mockStatus.value.status === "pending" },
     isLocked: { value: mockStatus.value.locked },
-    hasNoGuardianYet: { value: mockStatus.value.status === "none" },
+    hasNoGuardianYet: {
+      value:
+        mockStatus.value.status === "none" ||
+        mockStatus.value.status === "expired" ||
+        mockStatus.value.status === "revoked",
+    },
     guardianEmailMasked: { value: mockStatus.value.guardianEmailMasked },
     status: mockStatus,
     load: mockLoad,

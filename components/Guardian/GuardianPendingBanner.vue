@@ -7,25 +7,16 @@ const {
   isLocked,
   hasNoGuardianYet: hasNoGuardianYetFromComposable,
   guardianEmailMasked,
-  status,
   load,
   resend,
 } = useGuardianStatus();
 const { showToast } = useAppToast();
 
-// Re-derived locally (rather than bound straight to the composable's refs) so the
-// template unwraps correctly no matter what shape a caller's mock returns. Falls back
-// to deriving from `status` directly for callers whose mock predates this export.
+// Wrapped locally (rather than bound straight to the composable's refs) so the
+// template unwraps correctly no matter what shape a caller's mock returns — the
+// predicate logic itself lives only in useGuardianStatus, not re-derived here.
 const showBanner = computed(() => isLocked.value);
-// "expired"/"revoked" get the same invite shape as "none": there is no live claim to
-// resend (resend()'s pending-claim lookup won't find one either), so this must be the
-// create-a-fresh-claim form, not the "waiting/resend" copy. Both are reachable in
-// practice — expiry is real, and revoke happens on every guardian-email change.
-const hasNoGuardianYet = computed(() => {
-  const currentStatus = status.value?.status;
-  if (currentStatus === "expired" || currentStatus === "revoked") return true;
-  return hasNoGuardianYetFromComposable?.value ?? currentStatus === "none";
-});
+const hasNoGuardianYet = computed(() => hasNoGuardianYetFromComposable.value);
 const maskedEmail = computed(() => guardianEmailMasked.value);
 
 const sending = ref(false);

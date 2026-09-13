@@ -38,7 +38,19 @@ export const useGuardianStatus = () => {
    */
   const isLocked = computed(() => status.value?.locked === true);
 
-  const hasNoGuardianYet = computed(() => status.value?.status === "none");
+  // "expired"/"revoked" get the same invite shape as "none": there is no live claim to
+  // resend (resend()'s pending-claim lookup won't find one either), so every gated
+  // surface must treat this as create-a-fresh-claim, not wait-for-the-existing-one.
+  // Single source of truth — GuardianPendingBanner and GuardianLockedAction both read
+  // this rather than each re-deriving it, which is how they drifted apart before.
+  const hasNoGuardianYet = computed(() => {
+    const currentStatus = status.value?.status;
+    return (
+      currentStatus === "none" ||
+      currentStatus === "expired" ||
+      currentStatus === "revoked"
+    );
+  });
 
   const resend = async (guardianEmail?: string) => {
     await $fetchAuth("/api/guardian/resend", {

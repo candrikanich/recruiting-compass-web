@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { useGuardianStatus } from "~/composables/useGuardianStatus";
 import { useAppToast } from "~/composables/useAppToast";
 
@@ -11,10 +11,20 @@ withDefaults(
   { action: "do this" },
 );
 
-const { guardianEmailMasked, hasNoGuardianYet, resend } = useGuardianStatus();
+const {
+  guardianEmailMasked: guardianEmailMaskedFromComposable,
+  hasNoGuardianYet: hasNoGuardianYetFromComposable,
+  resend,
+} = useGuardianStatus();
 const { showToast } = useAppToast();
 const sending = ref(false);
 const newEmail = ref("");
+
+// Wrapped locally (rather than bound straight to the composable's refs) so the
+// template unwraps correctly no matter what shape a caller's mock returns — the
+// predicate logic itself lives only in useGuardianStatus, not re-derived here.
+const guardianEmailMasked = computed(() => guardianEmailMaskedFromComposable.value);
+const hasNoGuardianYet = computed(() => hasNoGuardianYetFromComposable.value);
 
 // Mirrors GuardianPendingBanner's "no guardian named yet" branch: a player who
 // skipped naming a guardian at signup has no pending claim for "Remind them" to
