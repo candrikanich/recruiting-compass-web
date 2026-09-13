@@ -152,6 +152,15 @@ export default defineEventHandler(
 
         // Delete all user data from database tables in order of dependencies.
         // One query per table per column covers all target users at once.
+        //
+        // "users" is deliberately NOT in this list — see the dedicated step
+        // below. Two FK columns are NO ACTION (RESTRICT, not CASCADE/SET NULL)
+        // and silently block the users-row delete if left in place:
+        // guardian_claims.claimed_by, and users' own self-referencing
+        // guardian_consent_by. Same bug as the single-user delete-user.post.ts
+        // endpoint (fixed alongside this one) — a guardian who'd confirmed a
+        // claim could never actually be deleted, and this endpoint counted them
+        // as successfully deleted anyway, based only on the auth-record delete.
         const tableDeleteAttempts = [
           {
             table: "parent_view_log",
@@ -174,7 +183,8 @@ export default defineEventHandler(
           { table: "family_invitations", columns: ["invited_by"] },
           { table: "family_members", columns: ["user_id"] },
           { table: "family_units", columns: ["created_by_user_id"] },
-          { table: "users", columns: ["id"] },
+          // NO ACTION FK to users.id — must be cleared before the users delete.
+          { table: "guardian_claims", columns: ["claimed_by"] },
         ];
 
         for (const { table, columns } of tableDeleteAttempts) {
@@ -199,10 +209,76 @@ export default defineEventHandler(
           }
         }
 
-        // Delete each user from the auth system and record results
+        // Clear the self-referencing guardian_consent_by FK (also NO ACTION) on
+        // any other user's row naming one of these users as the confirming
+        // guardian.
+        try {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const { error: consentClearError } = await (supabaseAdmin as any)
+            .from("users")
+            .update({
+              guardian_consent_by: null,
+              guardian_consent_at: null,
+              guardian_consent_terms_version: null,
+            })
+            .in("guardian_consent_by", targetUserIds);
+          if (consentClearError) {
+            logger.warn(
+              "Failed to clear guardian_consent_by for bulk delete:",
+              consentClearError,
+            );
+          }
+        } catch (error) {
+          logger.warn("Error clearing guardian_consent_by:", error);
+        }
+
+        // Delete the users rows themselves as their own step, NOT swallowed
+        // like the tables above — this is what the whole endpoint exists to
+        // remove, and counting a user as deleted without it actually being gone
+        // is the exact ghost-data bug this fix closes.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { error: usersDeleteError } = await (supabaseAdmin as any)
+          .from("users")
+          .delete()
+          .in("id", targetUserIds);
+
+        if (usersDeleteError) {
+          logger.error("Failed to delete users rows in bulk:", usersDeleteError);
+        }
+
+        // Verify — a NO ACTION FK violation (or an RLS denial) can come back as
+        // a silently-no-op delete rather than a populated error, same as the
+        // single-user endpoint. Anyone still present here is a real failure,
+        // regardless of what the delete call above reported.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data: survivors } = await (supabaseAdmin as any)
+          .from("users")
+          .select("id")
+          .in("id", targetUserIds);
+        const survivorIds = new Set(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          ((survivors ?? []) as any[]).map((row) => row.id as string),
+        );
+
+        // Delete each surviving-in-auth user from the auth system and record
+        // results — but only for users whose users row is actually confirmed
+        // gone; a survivor is reported as a failure, not a success.
         await Promise.all(
           resolvedUsers.map(
             async ({ email: targetEmail, id: targetUserId }) => {
+              if (survivorIds.has(targetUserId)) {
+                errors.push({
+                  email: targetEmail,
+                  reason:
+                    usersDeleteError?.message ??
+                    "User row still exists after deletion (likely a foreign key constraint)",
+                });
+                logger.error(
+                  `users row ${targetUserId} (${targetEmail}) still exists after bulk delete — reporting failure instead of a false success`,
+                );
+                return;
+              }
+
               try {
                 if (supabaseAdmin.auth.admin?.deleteUser) {
                   const { error: deleteError } =
