@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="space-y-6">
     <!-- Loading indicator (screen reader announcement) -->
     <div
       v-if="loading"
