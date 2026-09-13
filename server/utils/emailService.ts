@@ -299,15 +299,18 @@ export function renderWeeklyDigestEmail(
         )
         .join("")
     : "<li>No upcoming deadlines</li>";
-  return `<!DOCTYPE html><html><body style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px">
-    <h2 style="color:#1a1a1a">Your Weekly Recruiting Recap</h2>
-    <ul style="padding-left:20px">${lineItems}</ul>
-    <h3 style="color:#1a1a1a">Upcoming Deadlines</h3>
-    <ul style="padding-left:20px">${deadlineItems}</ul>
-    <p style="color:#888;font-size:12px;margin-top:32px">
-      You're receiving this because you have a Recruiting Compass account.${unsubscribeFooterLink(unsubscribeUrl)}
-    </p>
-  </body></html>`;
+
+  const bodyHtml = `
+    <h2 style="color:#1e293b;font-size:18px;margin:0 0 12px 0;">Your Weekly Recruiting Recap</h2>
+    <ul style="padding-left:20px;margin:0 0 20px 0;color:#475569;">${lineItems}</ul>
+    <h3 style="color:#1e293b;font-size:15px;margin:0 0 8px 0;">Upcoming Deadlines</h3>
+    <ul style="padding-left:20px;margin:0;color:#475569;">${deadlineItems}</ul>
+  `;
+
+  return wrapEmailLayout(bodyHtml, {
+    preheader: "Your weekly recruiting recap is here",
+    unsubscribeUrl,
+  });
 }
 
 export function renderDeadlineAlertEmail(

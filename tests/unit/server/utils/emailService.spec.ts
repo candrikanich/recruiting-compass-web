@@ -273,6 +273,15 @@ describe("emailService (Resend SDK)", () => {
       expect(html.toLowerCase()).not.toContain("unsubscribe");
     });
 
+    it("wraps the digest body in the shared branded layout", () => {
+      const html = renderWeeklyDigestEmail({
+        lines: ["3 new school matches"],
+        upcomingDeadlines: [],
+      });
+      expect(html).toContain('alt="The Recruiting Compass"');
+      expect(html).toContain("Your Weekly Recruiting Recap");
+    });
+
     it("renders an unsubscribe link in the deadline alert footer when given a url", () => {
       const html = renderDeadlineAlertEmail(
         { label: "App", daysUntil: 1, deadline_date: "2026-07-01" },
