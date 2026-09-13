@@ -96,30 +96,51 @@ export default defineEventHandler(async (event) => {
         .select("id")
         .single();
 
-      if (familyError || !newFamily) {
+      if (familyError?.code === "23505") {
+        // Lost the create race to a concurrent caller (e.g. plugins/auth.client.ts's
+        // SIGNED_IN listener, which fires /api/family/create automatically on every
+        // new session -- this endpoint runs right after a guardian's own signup, so
+        // both can land within milliseconds of each other).
+        // idx_family_units_one_per_creator turned the second INSERT into this
+        // conflict instead of a silent duplicate family. Reuse the winner's row.
+        const { data: raceWinner } = await supabase
+          .from("family_units")
+          .select("id")
+          .eq("created_by_user_id", guardian.id)
+          .maybeSingle();
+        if (raceWinner) familyUnitId = raceWinner.id;
+      } else if (newFamily) {
+        familyUnitId = newFamily.id;
+      }
+
+      if (!familyUnitId) {
         logger.error("Failed to create family unit for guardian", familyError);
         throw createError({
           statusCode: 500,
           statusMessage: "Could not set up your family",
         });
       }
-      familyUnitId = newFamily.id;
 
-      const { error: guardianMemberError } = await supabase
-        .from("family_members")
-        .insert({
-          family_unit_id: familyUnitId,
-          user_id: guardian.id,
-          role: "parent",
-        } as Database["public"]["Tables"]["family_members"]["Insert"]);
+      if (newFamily) {
+        // We won the race (or there was no race) -- add the guardian ourselves.
+        const { error: guardianMemberError } = await supabase
+          .from("family_members")
+          .insert({
+            family_unit_id: familyUnitId,
+            user_id: guardian.id,
+            role: "parent",
+          } as Database["public"]["Tables"]["family_members"]["Insert"]);
 
-      if (guardianMemberError) {
-        logger.error("Failed to add guardian to family", guardianMemberError);
-        throw createError({
-          statusCode: 500,
-          statusMessage: "Could not set up your family",
-        });
+        if (guardianMemberError) {
+          logger.error("Failed to add guardian to family", guardianMemberError);
+          throw createError({
+            statusCode: 500,
+            statusMessage: "Could not set up your family",
+          });
+        }
       }
+      // else: we lost the race -- the winning /api/family/create call already added
+      // the guardian to family_members as part of creating the family. Nothing to do.
     }
 
     // Membership before consent: family_members is what the DB gate accepts as a permanent
