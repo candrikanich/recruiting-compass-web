@@ -30,8 +30,8 @@ All 10 product emails use generic inline HTML or Supabase defaults. No consisten
 | Rollout scope | **Build system + migrate all 6 at once**, not a single-email pilot. |
 | Auth emails (Supabase) | **Deferred** to a follow-up issue. |
 | Copy ownership | **Claude drafts** voice guide + copy for all 6 emails; Chris reviews/edits before merge. |
-| Legal footer address | **Registered business address** (TRC LLC/corp registered address). Value supplied by Chris as `EMAIL_LEGAL_ADDRESS` env var — placeholder in code until provided. |
-| Social links | **Include Instagram + X/Twitter.** URLs to be supplied by Chris before implementation lands — placeholder in Figma/code until provided. |
+| Legal footer address | **Registered business address**, Olmsted Township, OH 44138. City/state/zip alone doesn't satisfy CAN-SPAM's physical-address requirement — need a street address or PO box number. **Still open**, blocking, tracked below. |
+| Social links | **Instagram, X/Twitter, Facebook.** URLs confirmed — see Footer Links below. |
 
 ## Architecture
 
@@ -53,7 +53,7 @@ Existing send path (Resend client, retry, logging) — UNCHANGED
 ## Components
 
 ### 1. Figma brand kit
-Master components: shared header (TRC logo, top bar), shared footer (legal address, Instagram/X links, unsubscribe, CAN-SPAM boilerplate), CTA button styles (primary blue, secondary outline), card/section layout primitives, typography scale (heading/body/caption), color tokens (brand blue, slate grays, alert red/amber/green — reuse `docs/design/tokens.md` values where they map). Built and iterated in Figma using Chris's logo asset; Figma MCP (`get_design_context`, `get_variable_defs`) pulls the finished spec into code.
+Master components: shared header (TRC logo, top bar), shared footer (legal address, Instagram/X/Facebook links, unsubscribe, CAN-SPAM boilerplate), CTA button styles (primary blue, secondary outline), card/section layout primitives, typography scale (heading/body/caption), color tokens (brand blue, slate grays, alert red/amber/green — reuse `docs/design/tokens.md` values where they map). Built and iterated in Figma using Chris's logo asset; Figma MCP (`get_design_context`, `get_variable_defs`) pulls the finished spec into code.
 
 ### 2. Voice guide (1-pager, markdown)
 Tone: encouraging coach, not corporate. Vocabulary: recruiting-specific terms (matches existing in-app copy conventions). Do/don't examples. Drafted by Claude, lives in `docs/` alongside this spec, reviewed by Chris before copy pass begins.
@@ -82,8 +82,13 @@ Each of the 6 renderers changes its body-construction to call `wrapEmailLayout()
 - Existing renderer tests (that assert on send behavior, not exact HTML) stay green — only markup shape changes, not the renderer's I/O contract.
 - Manual cross-client QA per issue's Phase 4 checklist: Gmail (web + mobile), Outlook (desktop + web), Apple Mail, Yahoo; dark-mode spot-check on Apple Mail + Gmail; verify unsubscribe links still work post-migration.
 
-## Open Items (non-blocking, tracked not resolved here)
+## Footer Links
 
-- `EMAIL_LEGAL_ADDRESS` env var value — Chris to supply before merge.
-- Instagram/X URLs — Chris to supply before merge.
+- Instagram: `https://www.instagram.com/therecruitingcompass`
+- X/Twitter: `https://x.com/recruitCompass`
+- Facebook: `https://www.facebook.com/TheRecruitingCompass/`
+
+## Open Items
+
+- **BLOCKING:** `EMAIL_LEGAL_ADDRESS` env var value. `9866 Ethan Circle, Olmsted Township, OH 44138` was proposed but rejected — reads as a home address, Chris is getting a PO box instead. Renderer migration (component 5) cannot ship to production without a real value here (CAN-SPAM requirement); implementation can proceed with a placeholder constant in the meantime, wired to the env var.
 - Follow-up issue for the 4 Supabase Auth emails (content + custom-SMTP-vs-dashboard decision) — to be filed separately.
