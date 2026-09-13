@@ -93,7 +93,8 @@ export function wrapEmailLayout(
         .trc-email-text h1, .trc-email-text h2, .trc-email-text h3,
         .trc-email-text p, .trc-email-text li, .trc-email-text strong { color:#e2e8f0 !important; }
         .trc-email-text h2.trc-urgent { color:#f87171 !important; }
-        .trc-email-text a { color:#60a5fa !important; }
+        .trc-email-text a:not(.trc-email-btn) { color:#60a5fa !important; }
+        .trc-email-text a.trc-email-btn { color:#ffffff !important; }
       }
     </style>
   </head>
