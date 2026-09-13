@@ -4,6 +4,16 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 let mockExistingClaim: { value: unknown } = { value: null };
 let mockInsertError: unknown = null;
 let mockBody: Record<string, unknown> = {};
+// Locked 13-17 player with no consent by default — the only caller shape allowed
+// to create a fresh claim from the no-existing-claim branch.
+let mockUserRow: { value: unknown } = {
+  value: {
+    role: "player",
+    date_of_birth: "2012-01-01",
+    guardian_consent_at: null,
+    full_name: "Player One",
+  },
+};
 
 const mockInsert = vi.fn(async () => ({ error: mockInsertError }));
 
@@ -27,17 +37,29 @@ vi.mock("~/server/utils/emailService", () => ({
 
 vi.mock("~/server/utils/supabase", () => ({
   useSupabaseAdmin: vi.fn(() => ({
-    from: () => ({
-      select: () => ({
-        eq: () => ({
+    from: (table: string) => {
+      if (table === "users") {
+        return {
+          select: () => ({
+            eq: () => ({
+              maybeSingle: async () => ({ data: mockUserRow.value }),
+            }),
+          }),
+        };
+      }
+      // guardian_claims
+      return {
+        select: () => ({
           eq: () => ({
-            maybeSingle: async () => ({ data: mockExistingClaim.value }),
+            eq: () => ({
+              maybeSingle: async () => ({ data: mockExistingClaim.value }),
+            }),
           }),
         }),
-      }),
-      insert: mockInsert,
-      update: () => ({ eq: async () => ({ error: null }) }),
-    }),
+        insert: mockInsert,
+        update: () => ({ eq: async () => ({ error: null }) }),
+      };
+    },
   })),
 }));
 
@@ -59,6 +81,14 @@ describe("POST /api/guardian/resend — no existing claim", () => {
     mockExistingClaim = { value: null };
     mockInsertError = null;
     mockBody = {};
+    mockUserRow = {
+      value: {
+        role: "player",
+        date_of_birth: "2012-01-01",
+        guardian_consent_at: null,
+        full_name: "Player One",
+      },
+    };
   });
 
   it("creates a fresh claim when no claim exists and an email is provided", async () => {
@@ -86,6 +116,52 @@ describe("POST /api/guardian/resend — no existing claim", () => {
     mockBody = { guardianEmail: "player@example.com" };
 
     await expect(handler(fakeEvent)).rejects.toMatchObject({ statusCode: 400 });
+    expect(mockInsert).not.toHaveBeenCalled();
+  });
+
+  it("uses the player's full_name in the email rather than the email-address prefix", async () => {
+    mockBody = { guardianEmail: "newparent@example.com" };
+
+    await handler(fakeEvent);
+
+    const { sendGuardianClaimEmail } = await import("~/server/utils/emailService");
+    expect(sendGuardianClaimEmail).toHaveBeenCalledWith(
+      expect.objectContaining({ playerName: "Player One" }),
+    );
+  });
+
+  it("rejects an adult with no pending claim, even with an email provided", async () => {
+    mockUserRow = {
+      value: { role: "player", date_of_birth: "2000-01-01", guardian_consent_at: null, full_name: "Adult Player" },
+    };
+    mockBody = { guardianEmail: "newparent@example.com" };
+
+    await expect(handler(fakeEvent)).rejects.toMatchObject({ statusCode: 403 });
+    expect(mockInsert).not.toHaveBeenCalled();
+  });
+
+  it("rejects a parent caller with no pending claim", async () => {
+    mockUserRow = {
+      value: { role: "parent", date_of_birth: null, guardian_consent_at: null, full_name: "A Parent" },
+    };
+    mockBody = { guardianEmail: "newparent@example.com" };
+
+    await expect(handler(fakeEvent)).rejects.toMatchObject({ statusCode: 403 });
+    expect(mockInsert).not.toHaveBeenCalled();
+  });
+
+  it("rejects an already-consented 13-17 player with no pending claim", async () => {
+    mockUserRow = {
+      value: {
+        role: "player",
+        date_of_birth: "2012-01-01",
+        guardian_consent_at: "2026-09-01T00:00:00.000Z",
+        full_name: "Consented Player",
+      },
+    };
+    mockBody = { guardianEmail: "newparent@example.com" };
+
+    await expect(handler(fakeEvent)).rejects.toMatchObject({ statusCode: 403 });
     expect(mockInsert).not.toHaveBeenCalled();
   });
 });

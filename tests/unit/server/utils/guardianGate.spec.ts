@@ -94,6 +94,23 @@ describe("assertGuardianConfirmed", () => {
     ).resolves.toBeUndefined();
   });
 
+  it("fails open (resolves) for a player with a null date_of_birth", async () => {
+    // requiresGuardianInvite(null) is false by contract — a row with no DOB must
+    // never lock someone out, even though this is also the exact fail-open window
+    // signup-minor.post.ts's atomic-metadata fix (see date_of_birth in signUp())
+    // exists to prevent ever landing in the DB in the first place.
+    const { client } = makeSupabase({
+      role: "player",
+      date_of_birth: null,
+      guardian_consent_at: null,
+    });
+
+    await expect(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      assertGuardianConfirmed(client as any, "player-null-dob"),
+    ).resolves.toBeUndefined();
+  });
+
   it("fails open when the user row can't be found", async () => {
     const { client } = makeSupabase(null);
 

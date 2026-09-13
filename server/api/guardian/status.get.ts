@@ -2,7 +2,7 @@ import { defineEventHandler, createError } from "h3";
 import { useLogger } from "~/server/utils/logger";
 import { requireAuth } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
-import { requiresGuardianInvite } from "~/utils/age";
+import { computeGuardianLock } from "~/server/utils/guardianGate";
 
 export interface GuardianStatus {
   /** True when outbound features are locked — mirrors assertGuardianConfirmed exactly. */
@@ -45,11 +45,7 @@ export default defineEventHandler(async (event): Promise<GuardianStatus> => {
       .eq("id", authUser.id)
       .maybeSingle();
 
-    const locked =
-      !!user &&
-      user.role === "player" &&
-      requiresGuardianInvite(user.date_of_birth) &&
-      !user.guardian_consent_at;
+    const locked = computeGuardianLock(user);
 
     const { data: claim } = await supabase
       .from("guardian_claims")

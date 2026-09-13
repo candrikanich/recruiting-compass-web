@@ -3,6 +3,33 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "~/types/database";
 import { requiresGuardianInvite } from "~/utils/age";
 
+export interface GuardianLockUserRow {
+  role: string;
+  date_of_birth: string | null;
+  guardian_consent_at: string | null;
+}
+
+/**
+ * The single predicate for "is this player's account locked pending guardian
+ * confirmation" — a 13-17 player without a stamped `guardian_consent_at`, regardless
+ * of whether a guardian_claims row exists, is pending, was never created, or expired.
+ *
+ * The one place this is computed. `assertGuardianConfirmed` (the enforcement),
+ * `server/api/guardian/status.get.ts` (what the client renders), and
+ * `server/api/guardian/resend.post.ts` (eligibility to create a fresh claim) all call
+ * this rather than each re-deriving it — two independently-built copies of this exact
+ * predicate is how this app's messaging lock and this endpoint's create-eligibility
+ * check drifted apart in the first place.
+ */
+export function computeGuardianLock(user: GuardianLockUserRow | null): boolean {
+  return (
+    !!user &&
+    user.role === "player" &&
+    requiresGuardianInvite(user.date_of_birth) &&
+    !user.guardian_consent_at
+  );
+}
+
 /**
  * Blocks outbound actions for a 13-17 player whose guardian hasn't confirmed their
  * account — including one who never named a guardian at all (skipped the signup
@@ -34,10 +61,7 @@ export async function assertGuardianConfirmed(
     .eq("id", userId)
     .maybeSingle();
 
-  if (!user) return;
-  if (user.role !== "player") return;
-  if (!requiresGuardianInvite(user.date_of_birth)) return;
-  if (user.guardian_consent_at) return;
+  if (!computeGuardianLock(user)) return;
 
   throw createError({
     statusCode: 403,

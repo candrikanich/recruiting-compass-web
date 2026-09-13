@@ -18,6 +18,7 @@ vi.mock("~/composables/useGuardianStatus", () => ({
   useGuardianStatus: () => ({
     isPending: { value: mockStatus.value.status === "pending" },
     isLocked: { value: mockStatus.value.locked },
+    hasNoGuardianYet: { value: mockStatus.value.status === "none" },
     guardianEmailMasked: { value: mockStatus.value.guardianEmailMasked },
     status: mockStatus,
     load: mockLoad,
@@ -52,6 +53,24 @@ describe("GuardianPendingBanner", () => {
 
     expect(wrapper.text()).toContain("Waiting on your parent or guardian");
     expect(wrapper.find('[data-testid="guardian-invite-email"]').exists()).toBe(false);
+  });
+
+  it("shows an 'invite a parent' form when locked with status 'expired'", async () => {
+    mockStatus.value = { locked: true, status: "expired", guardianEmailMasked: "p****@example.com" };
+    const wrapper = mount(GuardianPendingBanner);
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.text()).toContain("Invite a parent or guardian");
+    expect(wrapper.find('[data-testid="guardian-invite-email"]').exists()).toBe(true);
+  });
+
+  it("shows an 'invite a parent' form when locked with status 'revoked'", async () => {
+    mockStatus.value = { locked: true, status: "revoked", guardianEmailMasked: null };
+    const wrapper = mount(GuardianPendingBanner);
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.text()).toContain("Invite a parent or guardian");
+    expect(wrapper.find('[data-testid="guardian-invite-email"]').exists()).toBe(true);
   });
 
   it("renders nothing when not locked", async () => {

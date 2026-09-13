@@ -5,6 +5,7 @@ import { requireAuth } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import { rateLimitByUser, throwIfRateLimited } from "~/server/utils/rateLimit";
 import { sendGuardianClaimEmail } from "~/server/utils/emailService";
+import { computeGuardianLock } from "~/server/utils/guardianGate";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -27,6 +28,12 @@ export default defineEventHandler(async (event) => {
     const body = await readBody<{ guardianEmail?: string }>(event);
     const supabase = useSupabaseAdmin();
 
+    const { data: userRow } = await supabase
+      .from("users")
+      .select("role, date_of_birth, guardian_consent_at, full_name")
+      .eq("id", user.id)
+      .maybeSingle();
+
     const { data: claim } = await supabase
       .from("guardian_claims")
       .select("id, guardian_email, token, status, expires_at, reminder_count")
@@ -42,6 +49,18 @@ export default defineEventHandler(async (event) => {
       // Same endpoint, same UX action from the player's point of view ("send/resend a
       // confirmation email to my guardian"); only the DB write differs (insert vs.
       // revoke-and-reissue below).
+      //
+      // Gated on computeGuardianLock rather than "authenticated at all": without this,
+      // any adult, parent, or already-consented player could insert a guardian_claims
+      // row and send mail to an arbitrary address, and a second "guardian" accepting for
+      // an already-consented player would hit claim/[token]/accept.post.ts's
+      // idx_player_one_family unique constraint (500, membership half-written).
+      if (!computeGuardianLock(userRow)) {
+        throw createError({
+          statusCode: 403,
+          statusMessage: "Your account doesn't have a guardian invite to send",
+        });
+      }
       if (!requestedEmail) {
         throw createError({
           statusCode: 400,
@@ -76,7 +95,7 @@ export default defineEventHandler(async (event) => {
         });
       }
 
-      const playerName = (user.email ?? "Your athlete").split("@")[0];
+      const playerName = userRow?.full_name ?? (user.email ?? "Your athlete").split("@")[0];
       const mail = await sendGuardianClaimEmail({
         to: requestedEmail,
         playerName,
@@ -156,7 +175,7 @@ export default defineEventHandler(async (event) => {
         .eq("id", claim.id);
     }
 
-    const playerName = (user.email ?? "Your athlete").split("@")[0];
+    const playerName = userRow?.full_name ?? (user.email ?? "Your athlete").split("@")[0];
     const mail = await sendGuardianClaimEmail({
       to: guardianEmail,
       playerName,

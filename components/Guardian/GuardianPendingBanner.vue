@@ -17,9 +17,15 @@ const { showToast } = useAppToast();
 // template unwraps correctly no matter what shape a caller's mock returns. Falls back
 // to deriving from `status` directly for callers whose mock predates this export.
 const showBanner = computed(() => isLocked.value);
-const hasNoGuardianYet = computed(
-  () => hasNoGuardianYetFromComposable?.value ?? status.value?.status === "none",
-);
+// "expired"/"revoked" get the same invite shape as "none": there is no live claim to
+// resend (resend()'s pending-claim lookup won't find one either), so this must be the
+// create-a-fresh-claim form, not the "waiting/resend" copy. Both are reachable in
+// practice — expiry is real, and revoke happens on every guardian-email change.
+const hasNoGuardianYet = computed(() => {
+  const currentStatus = status.value?.status;
+  if (currentStatus === "expired" || currentStatus === "revoked") return true;
+  return hasNoGuardianYetFromComposable?.value ?? currentStatus === "none";
+});
 const maskedEmail = computed(() => guardianEmailMasked.value);
 
 const sending = ref(false);
