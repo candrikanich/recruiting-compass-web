@@ -1,23 +1,36 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { assertGuardianConfirmed } from "~/server/utils/guardianGate";
 
-const makeSupabase = (claim: { status: string } | null) => {
-  const maybeSingle = vi.fn(async () => ({ data: claim }));
-  const neq2 = vi.fn(() => ({ maybeSingle }));
-  const neq1 = vi.fn(() => ({ neq: neq2 }));
-  const eq = vi.fn(() => ({ neq: neq1 }));
+const makeSupabase = (
+  user: {
+    role: string;
+    date_of_birth: string | null;
+    guardian_consent_at: string | null;
+  } | null,
+) => {
+  const maybeSingle = vi.fn(async () => ({ data: user }));
+  const eq = vi.fn(() => ({ maybeSingle }));
   const select = vi.fn(() => ({ eq }));
   return {
     client: { from: vi.fn(() => ({ select })) },
-    spies: { select, eq, neq1, neq2, maybeSingle },
   };
+};
+
+const yearsAgo = (n: number): string => {
+  const d = new Date();
+  d.setFullYear(d.getFullYear() - n);
+  return d.toISOString().slice(0, 10);
 };
 
 describe("assertGuardianConfirmed", () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it("blocks a player with an outstanding claim", async () => {
-    const { client } = makeSupabase({ status: "pending" });
+  it("blocks a 13-17 player with no guardian consent on file", async () => {
+    const { client } = makeSupabase({
+      role: "player",
+      date_of_birth: yearsAgo(15),
+      guardian_consent_at: null,
+    });
 
     await expect(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -25,9 +38,29 @@ describe("assertGuardianConfirmed", () => {
     ).rejects.toMatchObject({ statusCode: 403 });
   });
 
-  it("allows a player whose guardian confirmed", async () => {
-    // A claimed claim is filtered out by the query, so the lookup returns nothing.
-    const { client } = makeSupabase(null);
+  it("blocks a player who skipped naming a guardian at signup (no claim ever existed)", async () => {
+    // Identical DB state to the pending-claim case from the gate's point of view —
+    // this is the regression this task exists to close: pre-fix, a skip left
+    // guardian_claims with no row at all, and the old claims-keyed check silently
+    // unlocked messaging for exactly this case.
+    const { client } = makeSupabase({
+      role: "player",
+      date_of_birth: yearsAgo(14),
+      guardian_consent_at: null,
+    });
+
+    await expect(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      assertGuardianConfirmed(client as any, "player-2"),
+    ).rejects.toMatchObject({ statusCode: 403 });
+  });
+
+  it("allows a 13-17 player whose guardian has confirmed", async () => {
+    const { client } = makeSupabase({
+      role: "player",
+      date_of_birth: yearsAgo(15),
+      guardian_consent_at: "2026-09-01T00:00:00.000Z",
+    });
 
     await expect(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -35,10 +68,12 @@ describe("assertGuardianConfirmed", () => {
     ).resolves.toBeUndefined();
   });
 
-  it("allows a user who never had a claim", async () => {
-    // Adults, parents, and minors who joined via the older family-invite path. Keying on
-    // consent instead of claims would have locked this group retroactively.
-    const { client } = makeSupabase(null);
+  it("allows an adult player regardless of consent", async () => {
+    const { client } = makeSupabase({
+      role: "player",
+      date_of_birth: yearsAgo(20),
+      guardian_consent_at: null,
+    });
 
     await expect(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -46,8 +81,34 @@ describe("assertGuardianConfirmed", () => {
     ).resolves.toBeUndefined();
   });
 
+  it("allows a parent regardless of consent", async () => {
+    const { client } = makeSupabase({
+      role: "parent",
+      date_of_birth: null,
+      guardian_consent_at: null,
+    });
+
+    await expect(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      assertGuardianConfirmed(client as any, "parent-1"),
+    ).resolves.toBeUndefined();
+  });
+
+  it("fails open when the user row can't be found", async () => {
+    const { client } = makeSupabase(null);
+
+    await expect(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      assertGuardianConfirmed(client as any, "missing-user"),
+    ).resolves.toBeUndefined();
+  });
+
   it("names the attempted action in the error", async () => {
-    const { client } = makeSupabase({ status: "pending" });
+    const { client } = makeSupabase({
+      role: "player",
+      date_of_birth: yearsAgo(15),
+      guardian_consent_at: null,
+    });
 
     await expect(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
