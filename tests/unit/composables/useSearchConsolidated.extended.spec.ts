@@ -68,8 +68,10 @@ vi.mock("fuse.js", () => ({
 // Capture the most recent querySelect args so tests can assert on filter
 // objects passed into the supabase service layer.
 const querySelectMock = vi.fn();
+const queryRpcMock = vi.fn();
 vi.mock("~/utils/supabaseQuery", () => ({
   querySelect: (...args: unknown[]) => querySelectMock(...args),
+  queryRpc: (...args: unknown[]) => queryRpcMock(...args),
 }));
 
 // ---------------------------------------------------------------------------
@@ -111,6 +113,7 @@ describe("useSearchConsolidated (extended)", () => {
   beforeEach(async () => {
     setActivePinia(createPinia());
     querySelectMock.mockReset();
+    queryRpcMock.mockReset();
     installNuxtApp();
     ({ useSearchConsolidated } =
       await import("~/composables/useSearchConsolidated"));
@@ -213,34 +216,88 @@ describe("useSearchConsolidated (extended)", () => {
       const c = useSearchConsolidated();
       c.searchType.value = "schools";
       c.useFuzzySearch.value = false;
-      querySelectMock.mockResolvedValue(
+      // "stan" is >= 3 chars → routes through the search_schools_fts RPC.
+      queryRpcMock.mockResolvedValue(
         ok([{ id: "s1", name: "Stanford", state: "CA" }]),
       );
 
       await c.performSearch("stan");
       await flushDebounce();
 
-      expect(querySelectMock).toHaveBeenCalledTimes(1);
-      expect(querySelectMock.mock.calls[0][0]).toBe("schools");
+      expect(queryRpcMock).toHaveBeenCalledTimes(1);
+      expect(queryRpcMock.mock.calls[0][0]).toBe("search_schools_fts");
+      expect(querySelectMock).not.toHaveBeenCalled();
       expect(c.schoolResults.value).toHaveLength(1);
+    });
+
+    it("uses search_schools_fts RPC for queries >= 3 chars, not querySelect", async () => {
+      setUser();
+      const c = useSearchConsolidated();
+      c.searchType.value = "schools";
+      queryRpcMock.mockResolvedValue(ok([{ id: "s1", name: "Michigan" }]));
+
+      await c.performSearch("Michgan"); // typo, 7 chars
+      await flushDebounce();
+
+      expect(queryRpcMock).toHaveBeenCalledWith(
+        "search_schools_fts",
+        expect.objectContaining({ p_search_term: "Michgan" }),
+        expect.objectContaining({ context: "searchSchools" }),
+      );
+      expect(querySelectMock).not.toHaveBeenCalled();
+      expect(c.schoolResults.value).toEqual([{ id: "s1", name: "Michigan" }]);
+    });
+
+    it("falls back to the ILIKE querySelect path for queries under 3 chars", async () => {
+      setUser();
+      const c = useSearchConsolidated();
+      c.searchType.value = "schools";
+      querySelectMock.mockResolvedValue(ok([]));
+
+      await c.performSearch("mi");
+      await flushDebounce();
+
+      expect(querySelectMock).toHaveBeenCalled();
+      expect(queryRpcMock).not.toHaveBeenCalled();
+    });
+
+    it("passes active division/state filters as RPC params", async () => {
+      setUser();
+      const c = useSearchConsolidated();
+      c.searchType.value = "schools";
+      queryRpcMock.mockResolvedValue(ok([]));
+      c.applyFilter("schools", "division", "D1");
+      c.applyFilter("schools", "state", "MI");
+
+      await c.performSearch("Michigan");
+      await flushDebounce();
+
+      expect(queryRpcMock).toHaveBeenCalledWith(
+        "search_schools_fts",
+        expect.objectContaining({ p_division: "D1", p_state: "MI" }),
+        expect.anything(),
+      );
     });
 
     it("runs all four entity searches when searchType='all'", async () => {
       setUser();
       const c = useSearchConsolidated();
       querySelectMock.mockResolvedValue(ok([]));
+      queryRpcMock.mockResolvedValue(ok([]));
 
       await c.performSearch("anything");
       await flushDebounce();
 
+      // Schools ("anything" is >= 3 chars) now route through the RPC, not
+      // querySelect — the other three entities are unaffected.
       const tables = querySelectMock.mock.calls.map((args) => args[0]);
       expect(tables).toEqual(
-        expect.arrayContaining([
-          "schools",
-          "coaches",
-          "interactions",
-          "performance_metrics",
-        ]),
+        expect.arrayContaining(["coaches", "interactions", "performance_metrics"]),
+      );
+      expect(queryRpcMock).toHaveBeenCalledWith(
+        "search_schools_fts",
+        expect.objectContaining({ p_search_term: "anything" }),
+        expect.anything(),
       );
     });
 
@@ -263,12 +320,11 @@ describe("useSearchConsolidated (extended)", () => {
   describe("filter wiring", () => {
     beforeEach(() => setUser());
 
-    it("school filters (division/state/verified) flow into querySelect", async () => {
+    it("school division/state filters flow into querySelect on the ILIKE (<3 char) path", async () => {
       const c = useSearchConsolidated();
       c.searchType.value = "schools";
       c.filters.value.schools.division = "D1";
       c.filters.value.schools.state = "CA";
-      c.filters.value.schools.verified = true;
       querySelectMock.mockResolvedValue(ok([]));
 
       await c.performSearch("x");
@@ -281,8 +337,27 @@ describe("useSearchConsolidated (extended)", () => {
         user_id: "user-1",
         division: "D1",
         state: "CA",
-        verified: true,
       });
+    });
+
+    // `verified` has no search_schools_fts RPC param and is no longer
+    // threaded into the ILIKE fallback's filterObj either — see
+    // composables/useSearchConsolidated.ts#searchSchools (#606).
+    it("school division/state filters flow into the RPC on the >=3 char path", async () => {
+      const c = useSearchConsolidated();
+      c.searchType.value = "schools";
+      c.filters.value.schools.division = "D1";
+      c.filters.value.schools.state = "CA";
+      queryRpcMock.mockResolvedValue(ok([]));
+
+      await c.performSearch("stanford");
+      await flushDebounce();
+
+      expect(queryRpcMock).toHaveBeenCalledWith(
+        "search_schools_fts",
+        expect.objectContaining({ p_division: "D1", p_state: "CA" }),
+        expect.anything(),
+      );
     });
 
     it("coach sport/verified filter into querySelect; responseRate post-filters in JS", async () => {
@@ -384,28 +459,49 @@ describe("useSearchConsolidated (extended)", () => {
   describe("fuzzy search", () => {
     beforeEach(() => setUser());
 
+    // Schools no longer run applyFuzzySearch — search_schools_fts ranks
+    // DB-side (tsvector + pg_trgm) for both the RPC and ILIKE paths, so
+    // useFuzzySearch is a no-op for schools now (#606). Coaches still use
+    // the JS fuzzy layer, so that's what exercises the toggle here.
     it("applies fuzzy filtering by default", async () => {
       const c = useSearchConsolidated();
-      c.searchType.value = "schools";
+      c.searchType.value = "coaches";
       querySelectMock.mockResolvedValue(
         ok([
-          { id: "s1", name: "Stanford", state: "CA" },
-          { id: "s2", name: "Harvard", state: "MA" },
+          { id: "c1", name: "Stanford Coach" },
+          { id: "c2", name: "Harvard Coach" },
         ]),
       );
 
       await c.performSearch("stan");
       await flushDebounce();
 
-      // Fuse mock filters by substring → only Stanford matches "stan"
-      expect(c.schoolResults.value.map((s) => s.id)).toEqual(["s1"]);
+      // Fuse mock filters by substring → only "Stanford Coach" matches "stan"
+      expect(c.coachResults.value.map((c2) => c2.id)).toEqual(["c1"]);
     });
 
     it("returns all rows when useFuzzySearch=false", async () => {
       const c = useSearchConsolidated();
-      c.searchType.value = "schools";
+      c.searchType.value = "coaches";
       c.useFuzzySearch.value = false;
       querySelectMock.mockResolvedValue(
+        ok([
+          { id: "c1", name: "Stanford Coach" },
+          { id: "c2", name: "Harvard Coach" },
+        ]),
+      );
+
+      await c.performSearch("stan");
+      await flushDebounce();
+
+      expect(c.coachResults.value.map((c2) => c2.id)).toEqual(["c1", "c2"]);
+    });
+
+    it("schools results pass through unfiltered regardless of useFuzzySearch (ranking is DB-side)", async () => {
+      const c = useSearchConsolidated();
+      c.searchType.value = "schools";
+      c.useFuzzySearch.value = true;
+      queryRpcMock.mockResolvedValue(
         ok([
           { id: "s1", name: "Stanford", state: "CA" },
           { id: "s2", name: "Harvard", state: "MA" },
@@ -482,21 +578,21 @@ describe("useSearchConsolidated (extended)", () => {
   describe("cache behavior", () => {
     beforeEach(() => setUser());
 
-    it("serves the second identical search from cache (no new querySelect calls)", async () => {
+    it("serves the second identical search from cache (no new RPC calls)", async () => {
       const c = useSearchConsolidated();
       c.searchType.value = "schools";
       c.useFuzzySearch.value = false;
-      querySelectMock.mockResolvedValue(
+      queryRpcMock.mockResolvedValue(
         ok([{ id: "s1", name: "Stanford", state: "CA" }]),
       );
 
       await c.performSearch("stanford");
       await flushDebounce();
-      const firstCalls = querySelectMock.mock.calls.length;
+      const firstCalls = queryRpcMock.mock.calls.length;
 
       await c.performSearch("stanford");
       // Cache hit: no debounce, no extra query
-      expect(querySelectMock.mock.calls.length).toBe(firstCalls);
+      expect(queryRpcMock.mock.calls.length).toBe(firstCalls);
       expect(c.schoolResults.value).toHaveLength(1);
     });
 
@@ -504,26 +600,26 @@ describe("useSearchConsolidated (extended)", () => {
       const c = useSearchConsolidated();
       c.searchType.value = "schools";
       c.useFuzzySearch.value = false;
-      querySelectMock.mockResolvedValue(
+      queryRpcMock.mockResolvedValue(
         ok([{ id: "s1", name: "Stanford", state: "CA" }]),
       );
 
       await c.performSearch("stanford");
       await flushDebounce();
-      const firstCalls = querySelectMock.mock.calls.length;
+      const firstCalls = queryRpcMock.mock.calls.length;
 
       c.clearCache();
       await c.performSearch("stanford");
       await flushDebounce();
 
-      expect(querySelectMock.mock.calls.length).toBeGreaterThan(firstCalls);
+      expect(queryRpcMock.mock.calls.length).toBeGreaterThan(firstCalls);
     });
 
     it("expires cache entries after TTL (5 minutes)", async () => {
       const c = useSearchConsolidated();
       c.searchType.value = "schools";
       c.useFuzzySearch.value = false;
-      querySelectMock.mockResolvedValue(
+      queryRpcMock.mockResolvedValue(
         ok([{ id: "s1", name: "Stanford", state: "CA" }]),
       );
 
@@ -533,7 +629,7 @@ describe("useSearchConsolidated (extended)", () => {
 
       await c.performSearch("stanford");
       await flushDebounce();
-      const firstCalls = querySelectMock.mock.calls.length;
+      const firstCalls = queryRpcMock.mock.calls.length;
 
       // Jump past the 5 min TTL
       nowSpy.mockReturnValue(t0 + 5 * 60 * 1000 + 1);
@@ -541,7 +637,7 @@ describe("useSearchConsolidated (extended)", () => {
       await c.performSearch("stanford");
       await flushDebounce();
 
-      expect(querySelectMock.mock.calls.length).toBeGreaterThan(firstCalls);
+      expect(queryRpcMock.mock.calls.length).toBeGreaterThan(firstCalls);
       nowSpy.mockRestore();
     });
   });
@@ -557,18 +653,18 @@ describe("useSearchConsolidated (extended)", () => {
       const c = useSearchConsolidated();
       c.searchType.value = "schools";
       c.useFuzzySearch.value = false;
-      querySelectMock.mockResolvedValue(ok([]));
+      queryRpcMock.mockResolvedValue(ok([]));
 
       // Prime an active query
       await c.performSearch("stanford");
       await flushDebounce();
-      const callsBefore = querySelectMock.mock.calls.length;
+      const callsBefore = queryRpcMock.mock.calls.length;
 
       await c.applyFilter("schools", "division", "D1");
       await flushDebounce();
 
       expect(c.filters.value.schools.division).toBe("D1");
-      expect(querySelectMock.mock.calls.length).toBeGreaterThan(callsBefore);
+      expect(queryRpcMock.mock.calls.length).toBeGreaterThan(callsBefore);
     });
 
     it("applyFilter does not re-run when there is no active query", async () => {
