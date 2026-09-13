@@ -167,32 +167,39 @@ describe("Auth Form Accessibility", () => {
         },
       });
 
-    it("should have dynamic aria-label for player form", () => {
+    // A 13-17 (or unstated) player no longer renders a single wrapping
+    // <form id="signup-form"> — the account/guardian/player-info fields are
+    // spread across wizard steps instead, each with their own submit-less
+    // markup until the final step. Only the parent path (single screen,
+    // no wizard) still has that form.
+    it("should not wrap the player wizard in a single form#signup-form", () => {
       const wrapper = mountSignupForm({ userType: "player" });
-      const form = wrapper.find("form#signup-form");
-      expect(form.attributes("aria-label")).toBe("Create player account");
+      expect(wrapper.find("form#signup-form").exists()).toBe(false);
+      expect(
+        wrapper.find('[data-testid="signup-form-player"]').exists(),
+      ).toBe(true);
     });
 
-    it("should have dynamic aria-label for parent form", () => {
+    it("should have a static aria-label for parent form", () => {
       const wrapper = mountSignupForm({ userType: "parent" });
       const form = wrapper.find("form#signup-form");
       expect(form.attributes("aria-label")).toBe("Create parent account");
     });
 
     it("should link to error summary when errors exist", () => {
-      const wrapper = mountSignupForm({ hasErrors: true });
+      const wrapper = mountSignupForm({ userType: "parent", hasErrors: true });
       const form = wrapper.find("form#signup-form");
       expect(form.attributes("aria-describedby")).toBe("form-error-summary");
     });
 
     it("should have aria-label on submit button", () => {
-      const wrapper = mountSignupForm();
+      const wrapper = mountSignupForm({ userType: "parent" });
       const button = wrapper.find('[data-testid="signup-button"]');
       expect(button.attributes("aria-label")).toBe("Create Account");
     });
 
     it("should update submit button aria-label during loading", () => {
-      const wrapper = mountSignupForm({ loading: true });
+      const wrapper = mountSignupForm({ userType: "parent", loading: true });
       const button = wrapper.find('[data-testid="signup-button"]');
       expect(button.attributes("aria-label")).toBe(
         "Creating account, please wait",
@@ -200,7 +207,7 @@ describe("Auth Form Accessibility", () => {
     });
 
     it("should have aria-busy on submit button during loading", () => {
-      const wrapper = mountSignupForm({ loading: true });
+      const wrapper = mountSignupForm({ userType: "parent", loading: true });
       const button = wrapper.find('[data-testid="signup-button"]');
       expect(button.attributes("aria-busy")).toBe("true");
     });
@@ -318,10 +325,14 @@ describe("Auth Form Accessibility", () => {
   });
 
   describe("SignupForm keyboard navigation", () => {
+    // Parent signup stays a single screen (no wizard), so it's the shape
+    // that exercises tab order and keyboard-submit across the whole form in
+    // one render. The 13-17 player wizard's step-by-step keyboard flow is
+    // covered separately by tests/unit/components/Auth/SignupForm.spec.ts.
     const mountSignupForm = () =>
       mount(SignupForm, {
         props: {
-          userType: "player",
+          userType: "parent",
           firstName: "",
           lastName: "",
           email: "",

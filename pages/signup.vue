@@ -406,19 +406,7 @@ const handleSignup = async () => {
     // server endpoint rather than the browser-direct signup below.
     if (requiresGuardianInvite(dateOfBirth.value)) {
       const guardian = guardianEmail.value.trim().toLowerCase();
-      if (!guardian) {
-        setErrors([
-          {
-            field: "guardianEmail",
-            message:
-              "Enter a parent or guardian email so we can ask them to confirm your account.",
-          },
-        ]);
-        await focusErrorSummary();
-        loading.value = false;
-        return;
-      }
-      if (guardian === email.value.trim().toLowerCase()) {
+      if (guardian && guardian === email.value.trim().toLowerCase()) {
         setErrors([
           {
             field: "guardianEmail",
