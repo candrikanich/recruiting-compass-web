@@ -15,6 +15,9 @@ let mockUserRow: { value: unknown } = {
   },
 };
 
+let mockFamilyMembership: { value: { family_unit_id: string } | null } = { value: null };
+let mockFamilyHasParent: { value: boolean } = { value: false };
+
 const mockInsert = vi.fn(async () => ({ error: mockInsertError }));
 
 // All vi.mock calls first
@@ -43,6 +46,24 @@ vi.mock("~/server/utils/supabase", () => ({
           select: () => ({
             eq: () => ({
               maybeSingle: async () => ({ data: mockUserRow.value }),
+            }),
+          }),
+        };
+      }
+      if (table === "family_members") {
+        // No family membership by default — resolveGuardianLock's override only
+        // matters for the dedicated eligibility test below.
+        return {
+          select: () => ({
+            eq: () => ({
+              maybeSingle: async () => ({ data: mockFamilyMembership.value }),
+              eq: () => ({
+                limit: () => ({
+                  maybeSingle: async () => ({
+                    data: mockFamilyHasParent.value ? { user_id: "some-parent" } : null,
+                  }),
+                }),
+              }),
             }),
           }),
         };
@@ -81,6 +102,8 @@ describe("POST /api/guardian/resend — no existing claim", () => {
     mockExistingClaim = { value: null };
     mockInsertError = null;
     mockBody = {};
+    mockFamilyMembership = { value: null };
+    mockFamilyHasParent = { value: false };
     mockUserRow = {
       value: {
         role: "player",
@@ -159,6 +182,19 @@ describe("POST /api/guardian/resend — no existing claim", () => {
         full_name: "Consented Player",
       },
     };
+    mockBody = { guardianEmail: "newparent@example.com" };
+
+    await expect(handler(fakeEvent)).rejects.toMatchObject({ statusCode: 403 });
+    expect(mockInsert).not.toHaveBeenCalled();
+  });
+
+  it("rejects a locked player who already belongs to a family with a parent", async () => {
+    // A real guardian is already present via family membership even though
+    // guardian_consent_at was never stamped — the same override
+    // assertGuardianConfirmed honors, so this endpoint can't be used to spam an
+    // arbitrary address for a player who already has a parent in their family.
+    mockFamilyMembership = { value: { family_unit_id: "family-1" } };
+    mockFamilyHasParent = { value: true };
     mockBody = { guardianEmail: "newparent@example.com" };
 
     await expect(handler(fakeEvent)).rejects.toMatchObject({ statusCode: 403 });

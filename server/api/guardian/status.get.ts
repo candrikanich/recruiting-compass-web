@@ -2,7 +2,7 @@ import { defineEventHandler, createError } from "h3";
 import { useLogger } from "~/server/utils/logger";
 import { requireAuth } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
-import { computeGuardianLock } from "~/server/utils/guardianGate";
+import { resolveGuardianLock } from "~/server/utils/guardianGate";
 
 export interface GuardianStatus {
   /** True when outbound features are locked — mirrors assertGuardianConfirmed exactly. */
@@ -24,10 +24,12 @@ const maskEmail = (email: string): string => {
  * Guardian-confirmation state for the signed-in player.
  *
  * `locked` is computed identically to server/utils/guardianGate.ts's
- * assertGuardianConfirmed — keyed on `users.guardian_consent_at`, not on whether a
- * guardian_claims row exists. `status` is presentation-only, telling the dashboard
- * banner which message to show ("invite a parent" vs. "waiting on confirmation" vs.
- * nothing) — it must never be used to decide whether something is locked.
+ * assertGuardianConfirmed (both call resolveGuardianLock) — keyed on
+ * `users.guardian_consent_at`, with a family-membership override for a minor already
+ * sitting alongside a parent, not on whether a guardian_claims row exists. `status`
+ * is presentation-only, telling the dashboard banner which message to show ("invite
+ * a parent" vs. "waiting on confirmation" vs. nothing) — it must never be used to
+ * decide whether something is locked.
  *
  * Never returns `token`. It is the guardian's authorization to consent, and handing
  * it to the player would let a minor confirm their own account.
@@ -45,7 +47,7 @@ export default defineEventHandler(async (event): Promise<GuardianStatus> => {
       .eq("id", authUser.id)
       .maybeSingle();
 
-    const locked = computeGuardianLock(user);
+    const locked = await resolveGuardianLock(supabase, user, authUser.id);
 
     const { data: claim } = await supabase
       .from("guardian_claims")

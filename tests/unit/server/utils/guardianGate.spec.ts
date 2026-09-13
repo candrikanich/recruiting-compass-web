@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { assertGuardianConfirmed } from "~/server/utils/guardianGate";
+import { assertGuardianConfirmed, hasParentInFamily } from "~/server/utils/guardianGate";
 
 const makeSupabase = (
   user: {
@@ -7,13 +7,34 @@ const makeSupabase = (
     date_of_birth: string | null;
     guardian_consent_at: string | null;
   } | null,
+  // No family membership by default — every existing test case here predates the
+  // family-override and expects it to be a no-op unless explicitly opted into.
+  familyMembership: { family_unit_id: string } | null = null,
+  familyHasParent = false,
 ) => {
-  const maybeSingle = vi.fn(async () => ({ data: user }));
-  const eq = vi.fn(() => ({ maybeSingle }));
-  const select = vi.fn(() => ({ eq }));
-  return {
-    client: { from: vi.fn(() => ({ select })) },
-  };
+  const usersMaybeSingle = vi.fn(async () => ({ data: user }));
+  const usersEq = vi.fn(() => ({ maybeSingle: usersMaybeSingle }));
+  const usersSelect = vi.fn(() => ({ eq: usersEq }));
+
+  const membershipMaybeSingle = vi.fn(async () => ({ data: familyMembership }));
+  const parentMaybeSingle = vi.fn(async () => ({
+    data: familyHasParent ? { user_id: "some-parent" } : null,
+  }));
+  // hasParentInFamily's second query chains .eq().eq().limit().maybeSingle();
+  // the first (own membership) query is .eq().maybeSingle() only.
+  const familyMembersSelect = vi.fn(() => ({
+    eq: vi.fn(() => ({
+      maybeSingle: membershipMaybeSingle,
+      eq: vi.fn(() => ({ limit: vi.fn(() => ({ maybeSingle: parentMaybeSingle })) })),
+    })),
+  }));
+
+  const from = vi.fn((table: string) => {
+    if (table === "family_members") return { select: familyMembersSelect };
+    return { select: usersSelect };
+  });
+
+  return { client: { from } };
 };
 
 const yearsAgo = (n: number): string => {
@@ -133,5 +154,64 @@ describe("assertGuardianConfirmed", () => {
     ).rejects.toMatchObject({
       statusMessage: expect.stringContaining("share your profile"),
     });
+  });
+
+  it("allows a locked minor who already belongs to a family unit with a parent", async () => {
+    // A minor invited by a parent whose date_of_birth was only added/corrected AFTER
+    // the invite was accepted: accept.post.ts's requiresGuardianInvite(dob) check ran
+    // against a null DOB at the time, so guardian_consent_at was never stamped — but a
+    // real parent already sits in the same family. Without the override this player
+    // is permanently locked despite a real guardian being present.
+    const { client } = makeSupabase(
+      { role: "player", date_of_birth: yearsAgo(15), guardian_consent_at: null },
+      { family_unit_id: "family-1" },
+      true,
+    );
+
+    await expect(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      assertGuardianConfirmed(client as any, "player-with-family-parent"),
+    ).resolves.toBeUndefined();
+  });
+
+  it("still blocks a locked minor whose family unit has no parent (self-created family)", async () => {
+    // Both players and parents can call /api/family/create — a solo player's
+    // self-created family has a family_members row but no parent role in it. Family
+    // membership alone isn't the signal; a parent within that family is.
+    const { client } = makeSupabase(
+      { role: "player", date_of_birth: yearsAgo(15), guardian_consent_at: null },
+      { family_unit_id: "family-2" },
+      false,
+    );
+
+    await expect(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      assertGuardianConfirmed(client as any, "player-solo-family"),
+    ).rejects.toMatchObject({ statusCode: 403 });
+  });
+});
+
+describe("hasParentInFamily", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("returns false when the player has no family membership at all", async () => {
+    const { client } = makeSupabase(null, null, false);
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await expect(hasParentInFamily(client as any, "solo-player")).resolves.toBe(false);
+  });
+
+  it("returns true when a sibling family_members row has role 'parent'", async () => {
+    const { client } = makeSupabase(null, { family_unit_id: "family-1" }, true);
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await expect(hasParentInFamily(client as any, "player-1")).resolves.toBe(true);
+  });
+
+  it("returns false when the family unit has membership but no parent role", async () => {
+    const { client } = makeSupabase(null, { family_unit_id: "family-2" }, false);
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await expect(hasParentInFamily(client as any, "player-2")).resolves.toBe(false);
   });
 });
