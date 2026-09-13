@@ -1,5 +1,5 @@
 <template>
-  <form @submit.prevent="$emit('submit')">
+  <form class="space-y-6" @submit.prevent="$emit('submit')">
     <!-- Onboarding step 1 (player only) — captured now so there's nothing
          left to ask once the confirmation email is clicked. -->
     <div class="space-y-4 border-t border-slate-200 pt-6">

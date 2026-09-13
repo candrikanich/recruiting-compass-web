@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="space-y-6">
     <!-- Name Fields -->
     <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
       <LoginInputField
