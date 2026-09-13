@@ -11,9 +11,31 @@ withDefaults(
   { action: "do this" },
 );
 
-const { guardianEmailMasked, resend } = useGuardianStatus();
+const { guardianEmailMasked, hasNoGuardianYet, resend } = useGuardianStatus();
 const { showToast } = useAppToast();
 const sending = ref(false);
+const newEmail = ref("");
+
+// Mirrors GuardianPendingBanner's "no guardian named yet" branch: a player who
+// skipped naming a guardian at signup has no pending claim for "Remind them" to
+// resend, so resend()'s create-branch needs an email from them instead.
+const invite = async () => {
+  if (sending.value || !newEmail.value.trim()) return;
+  sending.value = true;
+  try {
+    await resend(newEmail.value.trim());
+    showToast("Invitation sent.", "success");
+    newEmail.value = "";
+  } catch (err) {
+    showToast(
+      (err as { data?: { statusMessage?: string } } | null)?.data
+        ?.statusMessage ?? "Couldn't send that invitation.",
+      "error",
+    );
+  } finally {
+    sending.value = false;
+  }
+};
 
 const remind = async () => {
   if (sending.value) return;
@@ -52,7 +74,31 @@ const remind = async () => {
         </span>
       </span>
     </p>
+
+    <div v-if="hasNoGuardianYet" class="flex shrink-0 gap-2">
+      <label for="guardian-locked-action-email" class="sr-only">
+        Parent or guardian email
+      </label>
+      <input
+        id="guardian-locked-action-email"
+        v-model="newEmail"
+        data-testid="guardian-locked-invite-email"
+        type="email"
+        placeholder="parent.email@example.com"
+        class="min-w-0 flex-1 rounded-lg border border-amber-300 px-3 py-1.5 text-sm"
+      />
+      <button
+        type="button"
+        data-testid="guardian-locked-invite-submit"
+        :disabled="sending || !newEmail.trim()"
+        class="shrink-0 rounded-lg border border-amber-300 bg-white px-3 py-1.5 font-medium text-amber-900 disabled:opacity-60"
+        @click="invite"
+      >
+        {{ sending ? "Sending…" : "Invite" }}
+      </button>
+    </div>
     <button
+      v-else
       type="button"
       :disabled="sending"
       class="shrink-0 rounded-lg border border-amber-300 bg-white px-3 py-1.5 font-medium text-amber-900 disabled:opacity-60"
