@@ -29,14 +29,14 @@ export const useGuardianStatus = () => {
     return status.value;
   };
 
-  const isPending = computed(() => status.value?.pending === true);
+  const isPending = computed(() => status.value?.status === "pending");
 
   /**
-   * True when outbound features must be disabled. Identical to `isPending` today; kept
-   * distinct so the lock can diverge from the banner later (e.g. the 21-day freeze, which
-   * restricts more than the pending state does) without touching every call site.
+   * True when outbound features must be disabled — mirrors the `locked` field from
+   * server/api/guardian/status.get.ts, which is computed identically to
+   * server/utils/guardianGate.ts's assertGuardianConfirmed.
    */
-  const isLocked = computed(() => isPending.value);
+  const isLocked = computed(() => status.value?.locked === true);
 
   const resend = async (guardianEmail?: string) => {
     await $fetchAuth("/api/guardian/resend", {
