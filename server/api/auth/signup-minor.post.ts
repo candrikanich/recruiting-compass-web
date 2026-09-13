@@ -153,6 +153,12 @@ export default defineEventHandler(async (event) => {
 
     const userId = signUpData.user.id;
     const supabase = useSupabaseAdmin();
+    // Some environments (QA, E2E) have Supabase's email-confirmation requirement
+    // turned off, so signUp() confirms the account immediately with no
+    // confirmation email ever sent — `session` is only populated in that case.
+    // The client needs to know this: it used to always redirect to /verify-email,
+    // a dead end when no email is ever coming (found live on QA).
+    const emailConfirmed = !!signUpData.session;
 
     // handle_new_user() has already created the public.users row from the signUp
     // metadata above (same trigger the adult path relies on). Upsert here to add the
@@ -183,7 +189,7 @@ export default defineEventHandler(async (event) => {
 
     if (!guardianEmail) {
       logger.info("Minor signup created, no guardian named");
-      return { ok: true, guardianEmail: null, guardianEmailSent: false };
+      return { ok: true, guardianEmail: null, guardianEmailSent: false, emailConfirmed };
     }
 
     const token = randomUUID();
@@ -200,7 +206,7 @@ export default defineEventHandler(async (event) => {
       // The account itself is already created and valid (guardian-optional as of
       // this migration) — a failed claim write must not fail the whole signup. The
       // player can invite a guardian later from the dashboard.
-      return { ok: true, guardianEmail, guardianEmailSent: false };
+      return { ok: true, guardianEmail, guardianEmailSent: false, emailConfirmed };
     }
 
     // Non-fatal: the account exists, so a mail failure must not fail the signup.
@@ -217,7 +223,7 @@ export default defineEventHandler(async (event) => {
     }
 
     logger.info("Minor signup created, awaiting guardian confirmation");
-    return { ok: true, guardianEmail, guardianEmailSent: mail.success };
+    return { ok: true, guardianEmail, guardianEmailSent: mail.success, emailConfirmed };
   } catch (err) {
     if (err instanceof Error && "statusCode" in err) throw err;
     logger.error("Minor signup failed", err);

@@ -113,6 +113,28 @@ describe("POST /api/auth/signup-minor", () => {
     expect(mockSendGuardianClaimEmail).toHaveBeenCalledOnce();
   });
 
+  it("reports emailConfirmed:false when signUp() returns no session (confirmation required)", async () => {
+    // Default mockSignUp shape: no `session` key, matching a real environment
+    // where email confirmation is required and Supabase withholds the session.
+    const result = await call();
+
+    expect(result).toMatchObject({ emailConfirmed: false });
+  });
+
+  it("reports emailConfirmed:true when signUp() returns a session (confirmation off)", async () => {
+    // Found live on QA: environments with email confirmation disabled confirm the
+    // account immediately and return a session from signUp() -- the client used to
+    // always route to /verify-email regardless, a dead end with no email ever sent.
+    mockSignUp.mockResolvedValueOnce({
+      data: { user: { id: "player-uuid" }, session: { access_token: "tok" } },
+      error: null,
+    });
+
+    const result = await call();
+
+    expect(result).toMatchObject({ emailConfirmed: true });
+  });
+
   it("puts the real date_of_birth in signUp metadata, so handle_new_user() writes it atomically", async () => {
     // A null-DOB row must never exist even momentarily: requiresGuardianInvite(null) is
     // false, so a row with no DOB reads as unlocked. Putting the exact DOB in signUp

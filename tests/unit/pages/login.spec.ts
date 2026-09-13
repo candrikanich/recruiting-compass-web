@@ -833,6 +833,17 @@ describe("login.vue", () => {
       expect(wrapper.find("#timeout-message").exists()).toBe(false);
     });
 
+    it("should display an account-created message when reason=account_created query param is present", () => {
+      // Landed here from a minor's signup on an environment with email
+      // confirmation off (signup-minor.post.ts's emailConfirmed) — this replaces
+      // what used to be a dead-end /verify-email wait for an email never coming.
+      mockRoute.query = { reason: "account_created" };
+      const wrapper = createWrapper();
+
+      expect(wrapper.find("#timeout-message").exists()).toBe(true);
+      expect(wrapper.text()).toContain("Account created! Sign in to continue.");
+    });
+
     it("should display a not-admin message when reason=not_admin query param is present", () => {
       // middleware/admin.ts sends a non-admin here after the admin subdomain
       // redirect-loop fix — regression guard for that message actually
@@ -870,6 +881,26 @@ describe("login.vue", () => {
       // Message should still be there (doesn't auto-dismiss on input)
       // This is expected behavior - message stays until form is submitted or page is refreshed
       expect(wrapper.find("#timeout-message").exists()).toBe(true);
+    });
+  });
+
+  describe("Email Prefill", () => {
+    it("prefills the email field from the ?email= query param", () => {
+      mockRoute.query = { email: "player@example.com" };
+      const wrapper = createWrapper();
+
+      const emailInput = wrapper.find('input[type="email"]')
+        .element as HTMLInputElement;
+      expect(emailInput.value).toBe("player@example.com");
+    });
+
+    it("leaves the email field empty when no ?email= query param is present", () => {
+      mockRoute.query = {};
+      const wrapper = createWrapper();
+
+      const emailInput = wrapper.find('input[type="email"]')
+        .element as HTMLInputElement;
+      expect(emailInput.value).toBe("");
     });
   });
 
