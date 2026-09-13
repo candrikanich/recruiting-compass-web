@@ -42,7 +42,7 @@ AS $$
   WHERE
     (
       s.search_vector @@ websearch_to_tsquery('english', p_search_term)
-      OR p_search_term %> s.name
+      OR s.name %> p_search_term
     )
     AND (p_division IS NULL OR s.division::text = p_division)
     AND (p_state IS NULL OR s.state = p_state)
