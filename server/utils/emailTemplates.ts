@@ -34,6 +34,19 @@ function legalAddress(): string {
   return process.env.EMAIL_LEGAL_ADDRESS ?? "The Recruiting Compass";
 }
 
+function sanitizeUrl(url: string): string {
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+      return "#";
+    }
+    return url;
+  } catch {
+    // Relative URLs (starting with /) are allowed as-is
+    return url.startsWith("/") ? url : "#";
+  }
+}
+
 function socialLinksHtml(): string {
   return SOCIAL_LINKS.map(
     (s) =>
@@ -43,7 +56,7 @@ function socialLinksHtml(): string {
 
 function footerHtml(unsubscribeUrl?: string): string {
   const unsubscribeLine = unsubscribeUrl
-    ? `You're receiving this because you have a Recruiting Compass account. <a href="${unsubscribeUrl}" style="color:#64748b;">Unsubscribe</a>.`
+    ? `You're receiving this because you have a Recruiting Compass account. <a href="${sanitizeUrl(unsubscribeUrl)}" style="color:#64748b;">Unsubscribe</a>.`
     : "";
   return `
     <tr>
@@ -77,6 +90,10 @@ export function wrapEmailLayout(
         .trc-email-bg { background:#0f172a !important; }
         .trc-email-card { background:#1e293b !important; }
         .trc-email-text { color:#e2e8f0 !important; }
+        .trc-email-text h1, .trc-email-text h2, .trc-email-text h3,
+        .trc-email-text p, .trc-email-text li, .trc-email-text strong { color:#e2e8f0 !important; }
+        .trc-email-text h2.trc-urgent { color:#f87171 !important; }
+        .trc-email-text a { color:#60a5fa !important; }
       }
     </style>
   </head>

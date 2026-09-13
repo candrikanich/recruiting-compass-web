@@ -35,7 +35,10 @@ describe("renderOnboardingNudgeEmail", () => {
       completedCount: 2,
       totalCount: 8,
       topIncompleteItems: [
-        { label: "Explore recommended schools", link: "https://app.example.com/schools" },
+        {
+          label: "Explore recommended schools",
+          link: "https://app.example.com/schools",
+        },
       ],
       dashboardUrl: "https://app.example.com/dashboard",
     });

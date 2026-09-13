@@ -4,13 +4,16 @@
  * visual QA in dev/QA. No email is sent. Admin-gated, SELECT-free (no DB
  * reads — fixture data only).
  */
-import { defineEventHandler, getQuery, createError } from "h3";
+import { defineEventHandler, getQuery, createError, setHeader } from "h3";
 import { requireAdmin } from "~/server/utils/auth";
 import {
   renderWeeklyDigestEmail,
   renderDeadlineAlertEmail,
+  renderInviteBody,
+  renderNotificationBody,
 } from "~/server/utils/emailService";
 import { renderOnboardingNudgeEmail } from "~/server/utils/onboardingEmail";
+import { renderFeedbackBody } from "~/server/api/feedback.post";
 import { wrapEmailLayout } from "~/server/utils/emailTemplates";
 
 const TEMPLATES = [
@@ -31,10 +34,11 @@ function renderFixture(template: TemplateName): string {
   switch (template) {
     case "invite":
       return wrapEmailLayout(
-        `<h1 style="margin:0 0 12px 0;font-size:20px;color:#1e293b;">Jordan invited you to join Smith Family's recruiting journey</h1>
-         <p style="margin:0 0 20px 0;color:#475569;">Track your recruiting progress, message coaches, and manage deadlines — all in one place.</p>
-         <a href="#" style="display:inline-block;background:#2563eb;color:#ffffff;padding:12px 24px;text-decoration:none;border-radius:6px;font-weight:600;">Join Smith Family</a>`,
-        { preheader: "Jordan invited you to join Smith Family's recruiting profile" },
+        renderInviteBody("Jordan", "Smith Family", "player", "#"),
+        {
+          preheader:
+            "Jordan invited you to join Smith Family's recruiting profile",
+        },
       );
     case "nudge":
       return renderOnboardingNudgeEmail({
@@ -62,14 +66,23 @@ function renderFixture(template: TemplateName): string {
       });
     case "notification":
       return wrapEmailLayout(
-        `<h1 style="margin:0 0 8px 0;font-size:18px;color:#1e293b;">Coach Martinez viewed your profile</h1>
-         <p style="margin:12px 0 0 0;color:#475569;">They spent 3 minutes on your highlight reel.</p>`,
+        renderNotificationBody(
+          "Coach Martinez viewed your profile",
+          "They spent 3 minutes on your highlight reel.",
+          "normal",
+        ),
         { preheader: "Coach Martinez viewed your profile" },
       );
     case "feedback":
       return wrapEmailLayout(
-        `<h2 style="color:#1e40af;font-size:18px;margin:0 0 12px 0;">[Feedback] Bug Report</h2>
-         <p style="margin:0;color:#475569;"><strong>From:</strong> Fixture User (fixture@example.com)</p>`,
+        renderFeedbackBody(
+          "Bug Report",
+          "Fixture User",
+          "fixture@example.com",
+          "fixture-user-id",
+          undefined,
+          "This is a fixture feedback message for preview purposes.",
+        ),
       );
   }
 }
@@ -86,5 +99,6 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  return { html: renderFixture(template) };
+  setHeader(event, "content-type", "text/html; charset=utf-8");
+  return renderFixture(template);
 });

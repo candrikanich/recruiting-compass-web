@@ -29,9 +29,22 @@ describe("wrapEmailLayout", () => {
   });
 
   it("includes a hidden preheader when provided", () => {
-    const html = wrapEmailLayout("<p>x</p>", { preheader: "Your weekly recap is here" });
+    const html = wrapEmailLayout("<p>x</p>", {
+      preheader: "Your weekly recap is here",
+    });
     expect(html).toContain("Your weekly recap is here");
     expect(html).toContain("display:none");
+  });
+
+  it("omits the hidden-preheader markup when no preheader is given", () => {
+    const html = wrapEmailLayout("<p>x</p>");
+    expect(html).not.toContain("display:none");
+  });
+
+  it("renders a table-based layout for cross-client compatibility", () => {
+    const html = wrapEmailLayout("<p>x</p>");
+    expect(html).toContain("<table");
+    expect(html).toContain('role="presentation"');
   });
 
   it("omits the unsubscribe line when no unsubscribeUrl is given", () => {

@@ -20,6 +20,29 @@ const feedbackTypeLabels: Record<"bug" | "feature" | "other", string> = {
   other: "Other Feedback",
 };
 
+export function renderFeedbackBody(
+  typeLabel: string,
+  name: string,
+  email: string,
+  userId: string,
+  page: string | undefined,
+  message: string,
+): string {
+  const pageInfo = page
+    ? `<p><strong>Page:</strong> ${escapeHtml(page)}</p>`
+    : "";
+
+  return `
+      <h2 style="color:#1e40af;font-size:18px;margin:0 0 12px 0;">[Feedback] ${typeLabel}</h2>
+      <p style="margin:0 0 4px 0;color:#475569;"><strong>From:</strong> ${escapeHtml(name ?? "")} (${escapeHtml(email ?? "")})</p>
+      <p style="margin:0 0 4px 0;color:#475569;"><strong>User ID:</strong> ${userId}</p>
+      <p style="margin:0 0 12px 0;color:#475569;"><strong>Category:</strong> ${typeLabel}</p>
+      ${pageInfo}
+      <hr style="border:none;border-top:1px solid #e2e8f0;margin:16px 0;" />
+      <p style="white-space:pre-wrap;color:#1e293b;margin:0;">${escapeHtml(message ?? "")}</p>
+    `;
+}
+
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "feedback");
   try {
@@ -37,19 +60,15 @@ export default defineEventHandler(async (event) => {
 
     const { name, email, feedbackType, page, message } = parsed.data;
     const typeLabel = feedbackTypeLabels[feedbackType];
-    const pageInfo = page
-      ? `<p><strong>Page:</strong> ${escapeHtml(page)}</p>`
-      : "";
 
-    const bodyHtml = `
-      <h2 style="color:#1e40af;font-size:18px;margin:0 0 12px 0;">[Feedback] ${typeLabel}</h2>
-      <p style="margin:0 0 4px 0;color:#475569;"><strong>From:</strong> ${escapeHtml(name ?? "")} (${escapeHtml(email ?? "")})</p>
-      <p style="margin:0 0 4px 0;color:#475569;"><strong>User ID:</strong> ${user.id}</p>
-      <p style="margin:0 0 12px 0;color:#475569;"><strong>Category:</strong> ${typeLabel}</p>
-      ${pageInfo}
-      <hr style="border:none;border-top:1px solid #e2e8f0;margin:16px 0;" />
-      <p style="white-space:pre-wrap;color:#1e293b;margin:0;">${escapeHtml(message ?? "")}</p>
-    `;
+    const bodyHtml = renderFeedbackBody(
+      typeLabel,
+      name ?? "",
+      email ?? "",
+      user.id,
+      page ?? undefined,
+      message ?? "",
+    );
 
     const html = wrapEmailLayout(bodyHtml);
 

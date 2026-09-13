@@ -8,3 +8,7 @@ Read when deploying or changing build/runtime config.
 - **Publish**: `.vercel/output/`
 - **Env vars**: set in Vercel project dashboard
 - **Runtime**: Node.js (serverless functions for API routes)
+
+## Blocking Before Production: `EMAIL_LEGAL_ADDRESS`
+
+The branded email footer (`server/utils/emailTemplates.ts`) requires a real physical mailing address for CAN-SPAM compliance. `EMAIL_LEGAL_ADDRESS` must be set to the real address on Vercel Production before any of the 6 app-sent emails (invite, digest, deadline, nudge, notification, feedback ack) go live — see `docs/superpowers/specs/2026-09-13-trc-email-design-system-design.md`. Unset, it falls back to a placeholder ("The Recruiting Compass") which is not compliant.

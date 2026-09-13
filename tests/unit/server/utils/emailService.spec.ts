@@ -74,7 +74,11 @@ describe("emailService (Resend SDK)", () => {
       vi.resetModules();
       const fresh = await import("~/server/utils/emailService");
 
-      await fresh.sendEmail({ to: "a@b.com", subject: "Hi", html: "<p>Hi</p>" });
+      await fresh.sendEmail({
+        to: "a@b.com",
+        subject: "Hi",
+        html: "<p>Hi</p>",
+      });
       await fresh.sendEmail({
         to: "c@d.com",
         subject: "Hi 2",
@@ -263,7 +267,9 @@ describe("emailService (Resend SDK)", () => {
       const [payload] = sendMock.mock.calls[0];
       expect(payload.html).toContain('alt="The Recruiting Compass"');
       expect(payload.html).toContain("Coach Martinez viewed your profile");
-      expect(payload.html).toContain("They spent 3 minutes on your highlight reel.");
+      expect(payload.html).toContain(
+        "They spent 3 minutes on your highlight reel.",
+      );
       expect(payload.html).toContain("https://app.example.com/profile");
       expect(payload.html).toContain("HIGH PRIORITY");
     });

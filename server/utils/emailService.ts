@@ -201,6 +201,33 @@ export interface SendEmailOptions {
   context?: EmailSendContext;
 }
 
+export function renderNotificationBody(
+  title: string,
+  message: string,
+  priority: NotificationPriority,
+  actionUrl?: string,
+): string {
+  const priorityBadge =
+    priority === "high"
+      ? '<span style="display:inline-block;background:#dc2626;color:#ffffff;padding:4px 8px;border-radius:4px;font-size:12px;font-weight:bold;">HIGH PRIORITY</span>'
+      : "";
+
+  const actionButton = actionUrl
+    ? `<a href="${sanitizeUrl(actionUrl)}" style="display:inline-block;background:#2563eb;color:#ffffff;padding:12px 24px;text-decoration:none;border-radius:6px;font-weight:600;margin-top:16px;">View Details</a>`
+    : "";
+
+  return `
+    <h1 style="margin:0 0 8px 0;font-size:18px;color:#1e293b;">
+      ${escapeHtml(title)}
+    </h1>
+    ${priorityBadge}
+    <p style="margin:12px 0 0 0;color:#475569;">
+      ${escapeHtml(message)}
+    </p>
+    ${actionButton}
+  `;
+}
+
 export const sendNotificationEmail = async (
   options: SendNotificationEmailOptions,
 ): Promise<SendResult> => {
@@ -216,25 +243,7 @@ export const sendNotificationEmail = async (
     context,
   } = options;
 
-  const priorityBadge =
-    priority === "high"
-      ? '<span style="display:inline-block;background:#dc2626;color:#ffffff;padding:4px 8px;border-radius:4px;font-size:12px;font-weight:bold;">HIGH PRIORITY</span>'
-      : "";
-
-  const actionButton = actionUrl
-    ? `<a href="${sanitizeUrl(actionUrl)}" style="display:inline-block;background:#2563eb;color:#ffffff;padding:12px 24px;text-decoration:none;border-radius:6px;font-weight:600;margin-top:16px;">View Details</a>`
-    : "";
-
-  const bodyHtml = `
-    <h1 style="margin:0 0 8px 0;font-size:18px;color:#1e293b;">
-      ${escapeHtml(title)}
-    </h1>
-    ${priorityBadge}
-    <p style="margin:12px 0 0 0;color:#475569;">
-      ${escapeHtml(message)}
-    </p>
-    ${actionButton}
-  `;
+  const bodyHtml = renderNotificationBody(title, message, priority, actionUrl);
 
   const htmlContent = wrapEmailLayout(bodyHtml, {
     preheader: escapeHtml(title),
@@ -313,7 +322,7 @@ export function renderDeadlineAlertEmail(
       : `in ${data.daysUntil} day${data.daysUntil !== 1 ? "s" : ""}`;
 
   const bodyHtml = `
-    <h2 style="color:#dc2626;font-size:18px;margin:0 0 12px 0;">Deadline ${urgency}</h2>
+    <h2 class="trc-urgent" style="color:#dc2626;font-size:18px;margin:0 0 12px 0;">Deadline ${urgency}</h2>
     <p style="color:#475569;margin:0;">
       <strong style="color:#1e293b;">${escapeHtml(data.label)}</strong> is due ${urgency} (${escapeHtml(data.deadline_date)}).
     </p>
@@ -332,15 +341,13 @@ const ROLE_VALUE_PROPS: Record<"player" | "parent", string> = {
     "Follow along on the recruiting journey, help manage deadlines, and stay in the loop with coaches.",
 };
 
-export const sendInviteEmail = async (
-  options: SendInviteEmailOptions,
-): Promise<{ success: boolean; messageId?: string; error?: string }> => {
-  const { to, inviterName, familyName, role, token, context } = options;
-  const baseUrl =
-    process.env.PUBLIC_BASE_URL ?? "https://myrecruitingcompass.com";
-  const joinUrl = `${baseUrl}/join?token=${encodeURIComponent(token)}`;
-
-  const bodyHtml = `
+export function renderInviteBody(
+  inviterName: string,
+  familyName: string,
+  role: "player" | "parent",
+  joinUrl: string,
+): string {
+  return `
     <h1 style="margin:0 0 12px 0;font-size:20px;color:#1e293b;">
       ${escapeHtml(inviterName)} invited you to join ${escapeHtml(familyName)}'s recruiting journey
     </h1>
@@ -354,6 +361,17 @@ export const sendInviteEmail = async (
       This invite link expires in 7 days.
     </p>
   `;
+}
+
+export const sendInviteEmail = async (
+  options: SendInviteEmailOptions,
+): Promise<{ success: boolean; messageId?: string; error?: string }> => {
+  const { to, inviterName, familyName, role, token, context } = options;
+  const baseUrl =
+    process.env.PUBLIC_BASE_URL ?? "https://myrecruitingcompass.com";
+  const joinUrl = `${baseUrl}/join?token=${encodeURIComponent(token)}`;
+
+  const bodyHtml = renderInviteBody(inviterName, familyName, role, joinUrl);
 
   const htmlContent = wrapEmailLayout(bodyHtml, {
     preheader: `${escapeHtml(inviterName)} invited you to join ${escapeHtml(familyName)}'s recruiting profile`,
