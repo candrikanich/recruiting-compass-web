@@ -421,7 +421,14 @@ export async function queryRpc<T>(
 ): Promise<QueryResult<T[]>> {
   try {
     const supabase = useSupabase();
-    const { data, error } = await supabase.rpc(fn, params);
+    // Type cast: useSupabase() returns an untyped client (no Database generic).
+    // Cast to the expected RPC signature to match Record<string, unknown> params.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const rpcCall = (supabase.rpc as unknown) as (
+      fn: string,
+      params: Record<string, unknown>,
+    ) => Promise<{ data: unknown; error: { message: string } | null }>;
+    const { data, error } = await rpcCall(fn, params);
 
     if (error) {
       throw new Error(`[${fn}] ${error.message}`);
