@@ -74,7 +74,11 @@ describe("emailService (Resend SDK)", () => {
       vi.resetModules();
       const fresh = await import("~/server/utils/emailService");
 
-      await fresh.sendEmail({ to: "a@b.com", subject: "Hi", html: "<p>Hi</p>" });
+      await fresh.sendEmail({
+        to: "a@b.com",
+        subject: "Hi",
+        html: "<p>Hi</p>",
+      });
       await fresh.sendEmail({
         to: "c@d.com",
         subject: "Hi 2",
@@ -250,6 +254,25 @@ describe("emailService (Resend SDK)", () => {
       const [, options] = sendMock.mock.calls[0];
       expect(options).toMatchObject({ idempotencyKey: "notif-99" });
     });
+
+    it("wraps the notification body in the shared branded layout and preserves title/message/action", async () => {
+      await sendNotificationEmail({
+        to: "a@b.com",
+        subject: "New coach view",
+        title: "Coach Martinez viewed your profile",
+        message: "They spent 3 minutes on your highlight reel.",
+        actionUrl: "https://app.example.com/profile",
+        priority: "high",
+      });
+      const [payload] = sendMock.mock.calls[0];
+      expect(payload.html).toContain('alt="The Recruiting Compass"');
+      expect(payload.html).toContain("Coach Martinez viewed your profile");
+      expect(payload.html).toContain(
+        "They spent 3 minutes on your highlight reel.",
+      );
+      expect(payload.html).toContain("https://app.example.com/profile");
+      expect(payload.html).toContain("HIGH PRIORITY");
+    });
   });
 
   describe("recurring-email footer unsubscribe link", () => {
@@ -273,12 +296,31 @@ describe("emailService (Resend SDK)", () => {
       expect(html.toLowerCase()).not.toContain("unsubscribe");
     });
 
+    it("wraps the digest body in the shared branded layout", () => {
+      const html = renderWeeklyDigestEmail({
+        lines: ["3 new school matches"],
+        upcomingDeadlines: [],
+      });
+      expect(html).toContain('alt="The Recruiting Compass"');
+      expect(html).toContain("Your Weekly Recruiting Recap");
+    });
+
     it("renders an unsubscribe link in the deadline alert footer when given a url", () => {
       const html = renderDeadlineAlertEmail(
         { label: "App", daysUntil: 1, deadline_date: "2026-07-01" },
         url,
       );
       expect(html).toContain(`href="${url}"`);
+    });
+
+    it("wraps the deadline alert body in the shared branded layout", () => {
+      const html = renderDeadlineAlertEmail({
+        label: "Offer from Ohio State",
+        daysUntil: 3,
+        deadline_date: "2026-10-01",
+      });
+      expect(html).toContain('alt="The Recruiting Compass"');
+      expect(html).toContain("#dc2626");
     });
   });
 
@@ -294,6 +336,47 @@ describe("emailService (Resend SDK)", () => {
 
       const [, options] = sendMock.mock.calls[0];
       expect(options).toMatchObject({ idempotencyKey: "invite-tok_xyz" });
+    });
+
+    it("uses role-specific value-prop copy and preserves the join link", async () => {
+      await sendInviteEmail({
+        to: "player@example.com",
+        inviterName: "Jordan",
+        familyName: "Smith Family",
+        role: "player",
+        token: "tok_abc",
+      });
+      const [payload] = sendMock.mock.calls[0];
+      expect(payload.html).toContain("Jordan");
+      expect(payload.html).toContain("Smith Family");
+      expect(payload.html).toContain("Track your recruiting progress");
+      expect(payload.html).toContain("/join?token=tok_abc");
+      expect(payload.html.toLowerCase()).not.toContain("unsubscribe");
+    });
+
+    it("uses parent value-prop copy for the parent role", async () => {
+      await sendInviteEmail({
+        to: "parent@example.com",
+        inviterName: "Jordan",
+        familyName: "Smith Family",
+        role: "parent",
+        token: "tok_def",
+      });
+      const [payload] = sendMock.mock.calls[0];
+      expect(payload.html).toContain("Follow along on the recruiting journey");
+    });
+
+    it("escapes HTML in the preheader to prevent injection via inviter/family name", async () => {
+      await sendInviteEmail({
+        to: "player@example.com",
+        inviterName: "Jordan",
+        familyName: "<script>alert(1)</script>",
+        role: "player",
+        token: "tok_ghi",
+      });
+      const [payload] = sendMock.mock.calls[0];
+      expect(payload.html).not.toContain("<script>alert(1)</script>");
+      expect(payload.html).toContain("&lt;script&gt;alert(1)&lt;/script&gt;");
     });
   });
 });

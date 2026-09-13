@@ -26,4 +26,23 @@ describe("renderOnboardingNudgeEmail", () => {
     expect(html).toContain("Complete your academics");
     expect(html).toContain("https://app.example.com/dashboard");
   });
+
+  it("wraps the body in the shared branded layout", async () => {
+    const { renderOnboardingNudgeEmail } =
+      await import("~/server/utils/onboardingEmail");
+    const html = renderOnboardingNudgeEmail({
+      userName: "Chris",
+      completedCount: 2,
+      totalCount: 8,
+      topIncompleteItems: [
+        {
+          label: "Explore recommended schools",
+          link: "https://app.example.com/schools",
+        },
+      ],
+      dashboardUrl: "https://app.example.com/dashboard",
+    });
+    expect(html).toContain('alt="The Recruiting Compass"');
+    expect(html).toContain("https://www.instagram.com/therecruitingcompass");
+  });
 });
