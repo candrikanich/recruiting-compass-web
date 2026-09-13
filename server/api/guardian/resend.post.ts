@@ -5,7 +5,7 @@ import { requireAuth } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import { rateLimitByUser, throwIfRateLimited } from "~/server/utils/rateLimit";
 import { sendGuardianClaimEmail } from "~/server/utils/emailService";
-import { computeGuardianLock } from "~/server/utils/guardianGate";
+import { resolveGuardianLock } from "~/server/utils/guardianGate";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -50,12 +50,12 @@ export default defineEventHandler(async (event) => {
       // confirmation email to my guardian"); only the DB write differs (insert vs.
       // revoke-and-reissue below).
       //
-      // Gated on computeGuardianLock rather than "authenticated at all": without this,
+      // Gated on resolveGuardianLock rather than "authenticated at all": without this,
       // any adult, parent, or already-consented player could insert a guardian_claims
       // row and send mail to an arbitrary address, and a second "guardian" accepting for
       // an already-consented player would hit claim/[token]/accept.post.ts's
       // idx_player_one_family unique constraint (500, membership half-written).
-      if (!computeGuardianLock(userRow)) {
+      if (!(await resolveGuardianLock(supabase, userRow, user.id))) {
         throw createError({
           statusCode: 403,
           statusMessage: "Your account doesn't have a guardian invite to send",

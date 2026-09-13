@@ -6,6 +6,8 @@ const mockUserRow: {
 const mockClaimRow: {
   value: { guardian_email: string; status: string; expires_at: string } | null;
 } = { value: null };
+const mockFamilyMembership: { value: { family_unit_id: string } | null } = { value: null };
+const mockFamilyHasParent: { value: boolean } = { value: false };
 
 vi.mock("~/server/utils/auth", () => ({
   requireAuth: vi.fn(async () => ({ id: "player-1", email: "p@example.com" })),
@@ -20,6 +22,22 @@ vi.mock("~/server/utils/supabase", () => ({
     from: (table: string) => {
       if (table === "users") {
         return { select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: mockUserRow.value }) }) }) };
+      }
+      if (table === "family_members") {
+        return {
+          select: () => ({
+            eq: () => ({
+              maybeSingle: async () => ({ data: mockFamilyMembership.value }),
+              eq: () => ({
+                limit: () => ({
+                  maybeSingle: async () => ({
+                    data: mockFamilyHasParent.value ? { user_id: "some-parent" } : null,
+                  }),
+                }),
+              }),
+            }),
+          }),
+        };
       }
       // guardian_claims
       return {
@@ -44,6 +62,8 @@ describe("GET /api/guardian/status", () => {
     vi.clearAllMocks();
     mockUserRow.value = null;
     mockClaimRow.value = null;
+    mockFamilyMembership.value = null;
+    mockFamilyHasParent.value = false;
   });
 
   it("returns status 'none' and locked:true for a 13-17 player who never named a guardian", async () => {
@@ -99,6 +119,19 @@ describe("GET /api/guardian/status", () => {
     const result = await statusHandler(fakeEvent);
 
     expect(result.locked).toBe(false);
+    expect(result.status).toBe("none");
+  });
+
+  it("returns locked:false for a minor already in a family with a parent, even with no consent stamped", async () => {
+    mockUserRow.value = { role: "player", date_of_birth: "2012-01-01", guardian_consent_at: null };
+    mockFamilyMembership.value = { family_unit_id: "family-1" };
+    mockFamilyHasParent.value = true;
+
+    const result = await statusHandler(fakeEvent);
+
+    expect(result.locked).toBe(false);
+    // Presentation-only status is untouched by the override — no claim exists here,
+    // so it's still "none"; the banner text is display-only, `locked` is authoritative.
     expect(result.status).toBe("none");
   });
 });
