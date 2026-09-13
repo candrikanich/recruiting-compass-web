@@ -289,6 +289,16 @@ describe("emailService (Resend SDK)", () => {
       );
       expect(html).toContain(`href="${url}"`);
     });
+
+    it("wraps the deadline alert body in the shared branded layout", () => {
+      const html = renderDeadlineAlertEmail({
+        label: "Offer from Ohio State",
+        daysUntil: 3,
+        deadline_date: "2026-10-01",
+      });
+      expect(html).toContain('alt="The Recruiting Compass"');
+      expect(html).toContain("#dc2626");
+    });
   });
 
   describe("sendInviteEmail", () => {

@@ -276,11 +276,6 @@ export interface SendInviteEmailOptions {
   context?: EmailSendContext;
 }
 
-function unsubscribeFooterLink(url?: string): string {
-  if (!url) return "";
-  return ` <a href="${sanitizeUrl(url)}" style="color:#888">Unsubscribe</a>.`;
-}
-
 export function renderWeeklyDigestEmail(
   data: {
     lines: string[];
@@ -325,13 +320,18 @@ export function renderDeadlineAlertEmail(
     data.daysUntil === 0
       ? "TODAY"
       : `in ${data.daysUntil} day${data.daysUntil !== 1 ? "s" : ""}`;
-  return `<!DOCTYPE html><html><body style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px">
-    <h2 style="color:#dc2626">Deadline ${urgency}</h2>
-    <p><strong>${escapeHtml(data.label)}</strong> is due ${urgency} (${escapeHtml(data.deadline_date)}).</p>
-    <p style="color:#888;font-size:12px;margin-top:32px">
-      You're receiving this because you have a Recruiting Compass account.${unsubscribeFooterLink(unsubscribeUrl)}
+
+  const bodyHtml = `
+    <h2 style="color:#dc2626;font-size:18px;margin:0 0 12px 0;">Deadline ${urgency}</h2>
+    <p style="color:#475569;margin:0;">
+      <strong style="color:#1e293b;">${escapeHtml(data.label)}</strong> is due ${urgency} (${escapeHtml(data.deadline_date)}).
     </p>
-  </body></html>`;
+  `;
+
+  return wrapEmailLayout(bodyHtml, {
+    preheader: `Deadline ${urgency}: ${escapeHtml(data.label)}`,
+    unsubscribeUrl,
+  });
 }
 
 const ROLE_VALUE_PROPS: Record<"player" | "parent", string> = {
