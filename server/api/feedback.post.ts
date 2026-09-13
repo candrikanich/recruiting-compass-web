@@ -2,6 +2,7 @@ import { defineEventHandler, readBody, createError } from "h3";
 import { useLogger } from "~/server/utils/logger";
 import { requireAuth } from "~/server/utils/auth";
 import { sendEmail } from "~/server/utils/emailService";
+import { wrapEmailLayout } from "~/server/utils/emailTemplates";
 import { feedbackSchema } from "~/utils/validation/schemas";
 
 const FEEDBACK_EMAIL = "info@therecruitingcompass.com";
@@ -40,21 +41,17 @@ export default defineEventHandler(async (event) => {
       ? `<p><strong>Page:</strong> ${escapeHtml(page)}</p>`
       : "";
 
-    const html = `
-      <!DOCTYPE html>
-      <html>
-        <head><meta charset="utf-8"></head>
-        <body style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h2 style="color: #1e40af;">[Feedback] ${typeLabel}</h2>
-          <p><strong>From:</strong> ${escapeHtml(name ?? "")} (${escapeHtml(email ?? "")})</p>
-          <p><strong>User ID:</strong> ${user.id}</p>
-          <p><strong>Category:</strong> ${typeLabel}</p>
-          ${pageInfo}
-          <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 16px 0;">
-          <p style="white-space: pre-wrap;">${escapeHtml(message ?? "")}</p>
-        </body>
-      </html>
+    const bodyHtml = `
+      <h2 style="color:#1e40af;font-size:18px;margin:0 0 12px 0;">[Feedback] ${typeLabel}</h2>
+      <p style="margin:0 0 4px 0;color:#475569;"><strong>From:</strong> ${escapeHtml(name ?? "")} (${escapeHtml(email ?? "")})</p>
+      <p style="margin:0 0 4px 0;color:#475569;"><strong>User ID:</strong> ${user.id}</p>
+      <p style="margin:0 0 12px 0;color:#475569;"><strong>Category:</strong> ${typeLabel}</p>
+      ${pageInfo}
+      <hr style="border:none;border-top:1px solid #e2e8f0;margin:16px 0;" />
+      <p style="white-space:pre-wrap;color:#1e293b;margin:0;">${escapeHtml(message ?? "")}</p>
     `;
+
+    const html = wrapEmailLayout(bodyHtml);
 
     const result = await sendEmail({
       to: FEEDBACK_EMAIL,
