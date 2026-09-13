@@ -237,8 +237,18 @@ const timeoutMessage = computed(() => {
   if (typeof reason === "string" && reason === "not_admin") {
     return "You don't have access to the admin area.";
   }
+  if (typeof reason === "string" && reason === "account_created") {
+    return "Account created! Sign in to continue.";
+  }
   return null;
 });
+
+// A minor's account is created server-side (signup-minor.post.ts) — its session
+// never reaches this browser, so the player always lands here to log in
+// explicitly. Prefilling the email they just chose saves retyping it.
+if (typeof route.query.email === "string") {
+  email.value = route.query.email;
+}
 
 const validateEmail = async () => {
   validating.value = true;

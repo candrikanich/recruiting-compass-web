@@ -1079,6 +1079,44 @@ describe("signup.vue", () => {
       expect(mockAuth.signup).not.toHaveBeenCalled();
     });
 
+    it("sends a confirmed minor to login, not the dead-end verify-email wait screen", async () => {
+      // Some environments (QA, E2E) have email confirmation off — signup-minor.post.ts
+      // confirms the account immediately with no email ever sent. Found live on QA:
+      // testers stuck on /verify-email waiting for an email that was never coming.
+      global.$fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        guardianEmail: "parent@example.com",
+        guardianEmailSent: true,
+        emailConfirmed: true,
+      });
+      const wrapper = createWrapper();
+
+      await fillMinorForm(wrapper, "parent@example.com");
+
+      expect(global.navigateTo).toHaveBeenCalledWith(
+        "/login?reason=account_created&email=test%40example.com",
+      );
+      expect(global.navigateTo).not.toHaveBeenCalledWith(
+        expect.stringContaining("/verify-email"),
+      );
+    });
+
+    it("still sends an unconfirmed minor to /verify-email as before", async () => {
+      global.$fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        guardianEmail: "parent@example.com",
+        guardianEmailSent: true,
+        emailConfirmed: false,
+      });
+      const wrapper = createWrapper();
+
+      await fillMinorForm(wrapper, "parent@example.com");
+
+      expect(global.navigateTo).toHaveBeenCalledWith(
+        "/verify-email?email=test%40example.com",
+      );
+    });
+
     it("allows standalone player signup at 18+", async () => {
       mockValidation.validate.mockResolvedValue({
         fullName: "Test User",

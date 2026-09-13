@@ -317,7 +317,7 @@ watch(agreeToTerms, (isChecked) => {
  */
 const submitMinorSignup = async (guardian: string) => {
   try {
-    await $fetch("/api/auth/signup-minor", {
+    const result = await $fetch("/api/auth/signup-minor", {
       method: "POST",
       body: {
         email: email.value.trim(),
@@ -334,8 +334,22 @@ const submitMinorSignup = async (guardian: string) => {
       },
     });
 
-    // Same destination as an adult signup: email confirmation still gates the session.
-    // The guardian-pending state is surfaced on the dashboard once they're in.
+    loading.value = false;
+
+    // signUp() runs server-side here (see signup-minor.post.ts's own doc comment
+    // on why), so its session never reaches this browser regardless — the player
+    // always needs an explicit login either way. But WHERE we send them differs:
+    // some environments (QA, E2E) have Supabase's email-confirmation requirement
+    // off, so the account is already confirmed with no email ever sent — sending
+    // everyone to /verify-email unconditionally left QA testers stuck on a dead
+    // end waiting for an email that was never coming.
+    if (result.emailConfirmed) {
+      await navigateTo(
+        `/login?reason=account_created&email=${encodeURIComponent(email.value.trim())}`,
+      );
+      return;
+    }
+
     // (guardian's email deliberately isn't threaded through this URL — verify-email.vue
     // never read it, and putting it in the query string would only expose the
     // guardian's address in the URL bar/browser history for no benefit.)
@@ -346,7 +360,6 @@ const submitMinorSignup = async (guardian: string) => {
       params.set("sport", primarySport.value);
       params.set("gradYear", String(graduationYear.value));
     }
-    loading.value = false;
     await navigateTo(`/verify-email?${params.toString()}`);
   } catch (err) {
     const message =
