@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
+import { useRuntimeConfig } from "#app";
 import { useAuth } from "~/composables/useAuth";
 import { useUserStore } from "~/stores/user";
 import { useAuthFetch } from "~/composables/useAuthFetch";
@@ -45,6 +46,103 @@ const isSignedInAsGuardian = computed(
       claim.value?.guardianEmail.trim().toLowerCase(),
 );
 
+// --- Turnstile (optional, flag-gated) ----------------------------------------
+// Both the signup and login branches on this page create/authenticate a real
+// Supabase account, same as pages/signup.vue and pages/login.vue — same CAPTCHA
+// requirement, same gap class if omitted (see login-turnstile-captcha-gap.md /
+// join-turnstile-captcha-gap.md: the Supabase Attack Protection toggle is
+// project-wide, so every auth entry point needs this independently).
+const runtimeConfig = useRuntimeConfig();
+const turnstileSiteKey = computed(
+  () => runtimeConfig.public?.turnstileSiteKey ?? "",
+);
+const turnstileEnabled = computed(() => turnstileSiteKey.value.length > 0);
+const turnstileToken = ref<string | undefined>(undefined);
+const turnstileEl = ref<HTMLDivElement | null>(null);
+const turnstileWidgetId = ref<string | undefined>(undefined);
+
+const TURNSTILE_SCRIPT_SRC =
+  "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+
+type TurnstileGlobal = {
+  render: (
+    el: HTMLElement,
+    options: {
+      sitekey: string;
+      action?: string;
+      callback: (token: string) => void;
+      "expired-callback"?: () => void;
+    },
+  ) => string;
+  reset: (widgetId?: string) => void;
+};
+
+// Turnstile tokens are single-use and expire (~5 min) — replaying a stale or
+// already-consumed token on retry surfaces as Supabase's opaque
+// "timeout-or-duplicate" captcha error.
+function resetTurnstile() {
+  const w = window as unknown as { turnstile?: TurnstileGlobal };
+  turnstileToken.value = undefined;
+  if (w.turnstile && turnstileWidgetId.value) {
+    w.turnstile.reset(turnstileWidgetId.value);
+  }
+}
+
+function loadTurnstileScript(): Promise<void> {
+  return new Promise((resolve) => {
+    const w = window as unknown as { turnstile?: TurnstileGlobal };
+    if (w.turnstile) {
+      resolve();
+      return;
+    }
+    const existing = document.querySelector<HTMLScriptElement>(
+      `script[src="${TURNSTILE_SCRIPT_SRC}"]`,
+    );
+    const script = existing ?? document.createElement("script");
+    script.addEventListener("load", () => resolve());
+    script.addEventListener("error", () => resolve());
+    if (!existing) {
+      try {
+        script.src = TURNSTILE_SCRIPT_SRC;
+        script.async = true;
+        document.head.appendChild(script);
+      } catch {
+        resolve();
+      }
+    }
+  });
+}
+
+// Mount Turnstile once the guardian needs to sign up or log in (not needed at all
+// when already signed in as the matching guardian — confirmClaim skips both).
+watch(
+  [turnstileEnabled, isSignedInAsGuardian, turnstileEl],
+  async ([enabled, signedIn, el]) => {
+    if (!enabled || signedIn || !el || turnstileWidgetId.value) return;
+    try {
+      await loadTurnstileScript();
+      const w = window as unknown as { turnstile?: TurnstileGlobal };
+      if (w.turnstile && el) {
+        turnstileWidgetId.value = w.turnstile.render(el, {
+          sitekey: turnstileSiteKey.value,
+          action: "guardian-claim",
+          callback: (token: string) => {
+            turnstileToken.value = token;
+          },
+          "expired-callback": () => {
+            turnstileToken.value = undefined;
+          },
+        });
+      }
+    } catch {
+      // Widget failure is non-fatal — Supabase verifies server-side only when
+      // CAPTCHA is enabled in the dashboard; otherwise signup/login proceeds.
+    }
+  },
+  { flush: "post" },
+);
+// ---------------------------------------------------------------------------
+
 onMounted(async () => {
   try {
     claim.value = await $fetch<ClaimDetails>(
@@ -82,7 +180,12 @@ const handleSubmit = async () => {
     }
 
     if (mode.value === "login") {
-      await login(claim.value!.guardianEmail, password.value);
+      await login(
+        claim.value!.guardianEmail,
+        password.value,
+        false,
+        turnstileToken.value,
+      );
       await confirmClaim();
       return;
     }
@@ -112,6 +215,7 @@ const handleSubmit = async () => {
       password.value,
       `${firstName.value.trim()} ${lastName.value.trim()}`,
       "parent",
+      turnstileToken.value,
     );
     await confirmClaim();
   } catch (err) {
@@ -119,6 +223,7 @@ const handleSubmit = async () => {
       (err as { data?: { statusMessage?: string } } | null)?.data
         ?.statusMessage ??
       (err instanceof Error ? err.message : "Something went wrong.");
+    resetTurnstile();
   } finally {
     submitting.value = false;
   }
@@ -253,6 +358,13 @@ const handleSubmit = async () => {
             </span>
           </label>
         </template>
+
+        <!-- Cloudflare Turnstile (flag-gated, renders only when site key set) -->
+        <div
+          v-if="turnstileEnabled && !isSignedInAsGuardian"
+          ref="turnstileEl"
+          class="flex justify-center"
+        />
 
         <p
           v-if="formError"
