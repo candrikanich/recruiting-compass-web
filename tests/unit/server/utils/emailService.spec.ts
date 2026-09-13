@@ -295,5 +295,33 @@ describe("emailService (Resend SDK)", () => {
       const [, options] = sendMock.mock.calls[0];
       expect(options).toMatchObject({ idempotencyKey: "invite-tok_xyz" });
     });
+
+    it("uses role-specific value-prop copy and preserves the join link", async () => {
+      await sendInviteEmail({
+        to: "player@example.com",
+        inviterName: "Jordan",
+        familyName: "Smith Family",
+        role: "player",
+        token: "tok_abc",
+      });
+      const [payload] = sendMock.mock.calls[0];
+      expect(payload.html).toContain("Jordan");
+      expect(payload.html).toContain("Smith Family");
+      expect(payload.html).toContain("Track your recruiting progress");
+      expect(payload.html).toContain("/join?token=tok_abc");
+      expect(payload.html.toLowerCase()).not.toContain("unsubscribe");
+    });
+
+    it("uses parent value-prop copy for the parent role", async () => {
+      await sendInviteEmail({
+        to: "parent@example.com",
+        inviterName: "Jordan",
+        familyName: "Smith Family",
+        role: "parent",
+        token: "tok_def",
+      });
+      const [payload] = sendMock.mock.calls[0];
+      expect(payload.html).toContain("Follow along on the recruiting journey");
+    });
   });
 });
