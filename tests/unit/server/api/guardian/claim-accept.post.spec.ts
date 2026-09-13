@@ -7,11 +7,18 @@ const past = () => new Date(Date.now() - 86_400_000).toISOString();
 const state = {
   claim: null as Record<string, unknown> | null,
   guardian: { id: "guardian-1", email: "parent@example.com" },
+  // Truthy by default so most tests don't need to touch the family-creation
+  // branch at all. Set to null to exercise it (see the dedicated tests below).
+  existingMembership: { family_unit_id: "fam-1" } as { family_unit_id: string } | null,
+  // Only consulted when existingMembership is null (family-creation branch).
+  familyUnitsInsertError: null as { code: string; message: string } | null,
+  raceWinnerFamilyId: null as string | null,
 };
 
 const mockClaimUpdate = vi.fn(async () => ({ error: null }));
 const mockUserUpdate = vi.fn(async () => ({ error: null }));
 const mockMemberInsert = vi.fn(async () => ({ error: null }));
+const mockFamilyUnitsInsert = vi.fn();
 
 const table = (name: string) => {
   if (name === "guardian_claims") {
@@ -26,10 +33,34 @@ const table = (name: string) => {
     return {
       select: () => ({
         eq: () => ({
-          maybeSingle: async () => ({ data: { family_unit_id: "fam-1" } }),
+          maybeSingle: async () => ({ data: state.existingMembership }),
         }),
       }),
       insert: (v: unknown) => mockMemberInsert(v as never),
+    };
+  }
+  if (name === "family_units") {
+    return {
+      insert: (payload: unknown) => {
+        mockFamilyUnitsInsert(payload);
+        return {
+          select: () => ({
+            single: async () =>
+              state.familyUnitsInsertError
+                ? { data: null, error: state.familyUnitsInsertError }
+                : { data: { id: "new-family-1" }, error: null },
+          }),
+        };
+      },
+      select: () => ({
+        eq: () => ({
+          maybeSingle: async () => ({
+            data: state.raceWinnerFamilyId
+              ? { id: state.raceWinnerFamilyId }
+              : null,
+          }),
+        }),
+      }),
     };
   }
   if (name === "users") {
@@ -87,6 +118,10 @@ describe("POST /api/guardian/claim/[token]/accept", () => {
     mockClaimUpdate.mockResolvedValue({ error: null });
     mockUserUpdate.mockResolvedValue({ error: null });
     mockMemberInsert.mockResolvedValue({ error: null });
+    mockFamilyUnitsInsert.mockClear();
+    state.existingMembership = { family_unit_id: "fam-1" };
+    state.familyUnitsInsertError = null;
+    state.raceWinnerFamilyId = null;
   });
 
   it("stamps guardian consent and closes the claim", async () => {
@@ -159,5 +194,54 @@ describe("POST /api/guardian/claim/[token]/accept", () => {
       statusCode: 500,
     });
     expect(mockClaimUpdate).not.toHaveBeenCalled();
+  });
+
+  it("creates a new family and adds the guardian to it when they have none yet", async () => {
+    state.existingMembership = null;
+
+    const result = await handler({} as never);
+
+    expect(result).toMatchObject({ success: true, familyUnitId: "new-family-1" });
+    expect(mockFamilyUnitsInsert).toHaveBeenCalledWith(
+      expect.objectContaining({ created_by_user_id: "guardian-1" }),
+    );
+    expect(mockMemberInsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        family_unit_id: "new-family-1",
+        user_id: "guardian-1",
+        role: "parent",
+      }),
+    );
+  });
+
+  it("reuses the winner's family when the create INSERT loses a concurrent race (23505)", async () => {
+    // A guardian's own signup fires plugins/auth.client.ts's SIGNED_IN listener
+    // (calls /api/family/create) at the same moment this endpoint runs its own
+    // family-creation branch. idx_family_units_one_per_creator turns whichever
+    // INSERT loses into a 23505 conflict instead of a silent duplicate family —
+    // this reproduces that exact race, found live on QA.
+    state.existingMembership = null;
+    state.familyUnitsInsertError = { code: "23505", message: "duplicate key value" };
+    state.raceWinnerFamilyId = "race-winner-family";
+
+    const result = await handler({} as never);
+
+    expect(result).toMatchObject({
+      success: true,
+      familyUnitId: "race-winner-family",
+    });
+    // We lost the race — the winning /api/family/create call already added the
+    // guardian to family_members as part of creating the family. Adding them
+    // again here would 500 on family_members_family_unit_id_user_id_key. The
+    // player still gets added to whichever family we ended up resolving to.
+    expect(mockMemberInsert).not.toHaveBeenCalledWith(
+      expect.objectContaining({ user_id: "guardian-1" }),
+    );
+    expect(mockMemberInsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        user_id: "player-1",
+        family_unit_id: "race-winner-family",
+      }),
+    );
   });
 });

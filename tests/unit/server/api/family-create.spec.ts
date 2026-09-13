@@ -6,6 +6,9 @@ const mockState = {
   userRole: "player" as string | null,
   existingFamily: null as object | null,
   existingMembership: null as object | null,
+  // Set to simulate losing the create race: the insert below returns a 23505
+  // conflict, and this is what the post-conflict re-select finds.
+  raceWinnerFamily: null as object | null,
 };
 
 vi.mock("~/server/utils/auth", () => ({
@@ -31,6 +34,11 @@ vi.mock("~/server/utils/familyInboundToken", () => ({
 }));
 
 const familyUnitsInsertSpy = vi.fn();
+// Module-level, not per-`.from()`-call scoped: real code calls
+// `.from("family_units")` separately for the initial existing-family check, the
+// insert, and (on a race) the post-conflict re-select — each is a fresh `from()`
+// invocation, so a counter declared inside the closure would reset every time.
+let familyUnitsSelectCallCount = 0;
 
 vi.mock("~/server/utils/supabase", () => ({
   useSupabaseAdmin: vi.fn(() => ({
@@ -39,11 +47,16 @@ vi.mock("~/server/utils/supabase", () => ({
         return {
           select: () => ({
             eq: () => ({
-              maybeSingle: () =>
-                Promise.resolve({
-                  data: mockState.existingFamily,
-                  error: null,
-                }),
+              maybeSingle: () => {
+                familyUnitsSelectCallCount += 1;
+                // First call is the initial existing-family check; a second call
+                // only happens on the race-recovery path after a 23505 conflict.
+                const data =
+                  familyUnitsSelectCallCount === 1
+                    ? mockState.existingFamily
+                    : mockState.raceWinnerFamily;
+                return Promise.resolve({ data, error: null });
+              },
             }),
           }),
           insert: (payload: object) => {
@@ -51,14 +64,19 @@ vi.mock("~/server/utils/supabase", () => ({
             return {
               select: () => ({
                 single: () =>
-                  Promise.resolve({
-                    data: {
-                      id: "family-123",
-                      family_code: "FAM-TESTCODE",
-                      family_name: "My Family",
-                    },
-                    error: null,
-                  }),
+                  mockState.raceWinnerFamily
+                    ? Promise.resolve({
+                        data: null,
+                        error: { code: "23505", message: "duplicate key value" },
+                      })
+                    : Promise.resolve({
+                        data: {
+                          id: "family-123",
+                          family_code: "FAM-TESTCODE",
+                          family_name: "My Family",
+                        },
+                        error: null,
+                      }),
               }),
             };
           },
@@ -119,7 +137,9 @@ describe("POST /api/family/create — symmetric", () => {
     mockState.userRole = "player";
     mockState.existingFamily = null;
     mockState.existingMembership = null;
+    mockState.raceWinnerFamily = null;
     familyUnitsInsertSpy.mockClear();
+    familyUnitsSelectCallCount = 0;
   });
 
   it("sets inbound_token on insert — DB column is NOT NULL, omitting it 500s in prod", async () => {
@@ -180,5 +200,27 @@ describe("POST /api/family/create — symmetric", () => {
       message: "Family already exists",
     });
     expect(familyUnitsInsertSpy).not.toHaveBeenCalled();
+  });
+
+  it("reuses the winner's family when the create INSERT loses a concurrent race (23505)", async () => {
+    // The initial existing-family SELECT found nothing (a genuine race — a
+    // concurrent caller, e.g. plugins/auth.client.ts's SIGNED_IN listener, hadn't
+    // committed its own INSERT yet), so this caller's own INSERT hits
+    // idx_family_units_one_per_creator and gets back a 23505 conflict instead of a
+    // silent duplicate family.
+    mockState.raceWinnerFamily = {
+      id: "race-winner-family",
+      family_code: "FAM-WINNER",
+      family_name: "My Family",
+    };
+
+    const result = await handler({} as Parameters<typeof handler>[0]);
+
+    expect(result).toMatchObject({
+      success: true,
+      familyId: "race-winner-family",
+      familyCode: "FAM-WINNER",
+      message: "Family already exists",
+    });
   });
 });
