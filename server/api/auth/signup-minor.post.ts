@@ -35,9 +35,16 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
  * their own guardian's confirmation token — see 20260926000000_guardian_claims.sql),
  * so the browser cannot write it directly. There is no longer a write-ordering
  * constraint against the DB gate (supabase/migrations/20260927000000_guardian_link_optional.sql
- * removed the trigger this endpoint used to route around), so this is now a single
- * signUp() call with the real DOB in metadata from the start — handle_new_user()
- * creates the full public.users row itself, same as the ordinary adult signup path.
+ * removed the trigger this endpoint used to route around).
+ *
+ * date_of_birth rides in signUp()'s metadata (not just the users upsert below), so
+ * handle_new_user() writes it atomically as part of the initial row creation — see
+ * 20260910200619_handle_new_user_date_of_birth.sql. Without this, a null-DOB row could
+ * briefly exist between signUp() succeeding and the upsert running, and
+ * requiresGuardianInvite(null) is false — a player row with no DOB reads as
+ * unlocked. The upsert below still runs (it also carries graduation_year/zip_code,
+ * which the trigger doesn't know about), but the lock-relevant field is no longer
+ * gated on it succeeding.
  *
  * Auth user creation deliberately goes through the ordinary anon-key `signUp` rather
  * than `admin.createUser`, so email confirmation behaves exactly as it does for every
@@ -120,6 +127,7 @@ export default defineEventHandler(async (event) => {
         data: {
           full_name: fullName,
           role: "player",
+          date_of_birth: dateOfBirth,
           ...(body.graduationYear
             ? { pending_graduation_year: String(body.graduationYear) }
             : {}),

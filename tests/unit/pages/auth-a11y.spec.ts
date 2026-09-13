@@ -167,17 +167,38 @@ describe("Auth Form Accessibility", () => {
         },
       });
 
-    // A 13-17 (or unstated) player no longer renders a single wrapping
-    // <form id="signup-form"> — the account/guardian/player-info fields are
-    // spread across wizard steps instead, each with their own submit-less
-    // markup until the final step. Only the parent path (single screen,
-    // no wizard) still has that form.
-    it("should not wrap the player wizard in a single form#signup-form", () => {
+    // A 13-17 (or unstated) player renders a wizard: account/guardian/player-info
+    // fields are spread across steps rather than one screen, but each step is its
+    // own real <form> — not a bare div — so it keeps an accessible name/description,
+    // Enter-to-submit, and the password manager's form-boundary heuristic for the
+    // new-password field. The account step (rendered first) carries the id the
+    // parent form also uses, since only one is ever mounted at a time.
+    it("should wrap the player wizard's account step in form#signup-form", () => {
       const wrapper = mountSignupForm({ userType: "player" });
-      expect(wrapper.find("form#signup-form").exists()).toBe(false);
+      const form = wrapper.find("form#signup-form");
+      expect(form.exists()).toBe(true);
+      expect(form.attributes("aria-label")).toBe("Create player account");
       expect(
         wrapper.find('[data-testid="signup-form-player"]').exists(),
       ).toBe(true);
+    });
+
+    it("should link the player wizard's account step to the error summary when errors exist", () => {
+      const wrapper = mountSignupForm({ userType: "player", hasErrors: true });
+      const form = wrapper.find("form#signup-form");
+      expect(form.attributes("aria-describedby")).toBe("form-error-summary");
+    });
+
+    it("should advance the player wizard on Enter key press (form submit) in the account step", async () => {
+      const wrapper = mountSignupForm({ userType: "player" });
+      const form = wrapper.find("form#signup-form");
+
+      await form.trigger("submit");
+
+      // requiresGuardian isn't set, so the wizard skips straight to the info step —
+      // proof the account step's <form> submit actually drives navigation, not just
+      // exists cosmetically.
+      expect(wrapper.find("#signup-graduation-year").exists()).toBe(true);
     });
 
     it("should have a static aria-label for parent form", () => {

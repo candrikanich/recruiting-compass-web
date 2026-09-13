@@ -113,17 +113,17 @@ describe("POST /api/auth/signup-minor", () => {
     expect(mockSendGuardianClaimEmail).toHaveBeenCalledOnce();
   });
 
-  it("omits date_of_birth from signUp metadata", async () => {
-    // There is no longer a write-ordering constraint to route around (Task 1's migration
-    // dropped the trigger that used to require it), but the real DOB still never goes into
-    // signUp metadata — it lands straight in the users upsert below, same as the rest of
-    // the profile fields the auth trigger doesn't know about.
-    await call();
+  it("puts the real date_of_birth in signUp metadata, so handle_new_user() writes it atomically", async () => {
+    // A null-DOB row must never exist even momentarily: requiresGuardianInvite(null) is
+    // false, so a row with no DOB reads as unlocked. Putting the exact DOB in signUp
+    // metadata (not just the later upsert) closes that fail-open window.
+    const dob = yearsAgo(15);
+    await call({ dateOfBirth: dob });
 
     const metadata = mockSignUp.mock.calls[0]?.[0]?.options?.data ?? {};
-    expect(metadata).not.toHaveProperty("date_of_birth");
+    expect(metadata).toMatchObject({ date_of_birth: dob });
     expect(mockUserUpsert).toHaveBeenCalledWith(
-      expect.objectContaining({ date_of_birth: expect.any(String) }),
+      expect.objectContaining({ date_of_birth: dob }),
       expect.anything(),
     );
   });

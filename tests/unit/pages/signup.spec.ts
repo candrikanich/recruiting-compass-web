@@ -1034,18 +1034,24 @@ describe("signup.vue", () => {
       expect(wrapper.find("#guardianEmail").exists()).toBe(false);
     });
 
-    it("requires a guardian email before submitting a 13-17 signup", async () => {
+    it("allows submitting a 13-17 signup with no guardian email (skip-guardian is optional)", async () => {
+      // Guardian-optional signup wizard: an empty guardianEmail is a valid skip, not a
+      // validation error — see docs/superpowers/specs/2026-09-12-guardian-optional-signup-wizard-design.md.
       const wrapper = createWrapper();
 
       await fillMinorForm(wrapper, "");
 
       expect(mockAuth.signup).not.toHaveBeenCalled();
-      expect(mockValidation.setErrors).toHaveBeenCalledWith([
-        {
-          field: "guardianEmail",
-          message: expect.stringContaining("parent or guardian email"),
-        },
+      expect(mockValidation.setErrors).not.toHaveBeenCalledWith([
+        expect.objectContaining({ field: "guardianEmail" }),
       ]);
+      expect(global.$fetch).toHaveBeenCalledWith(
+        "/api/auth/signup-minor",
+        expect.objectContaining({
+          method: "POST",
+          body: expect.objectContaining({ guardianEmail: "" }),
+        }),
+      );
     });
 
     it("rejects a guardian email matching the player's own", async () => {

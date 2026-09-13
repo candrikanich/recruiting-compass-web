@@ -55,16 +55,18 @@ describe.skipIf(!hasLiveSupabase)("guardian link is optional at insert", () => {
     expect(authError).toBeNull();
     const userId = authUser!.user!.id;
 
-    const { error: insertError } = await supabase.from("users").upsert({
-      id: userId,
-      email,
-      full_name: "Guardian Optional Test",
-      role: "player",
-      date_of_birth: yearsAgo(15),
-    });
+    try {
+      const { error: insertError } = await supabase.from("users").upsert({
+        id: userId,
+        email,
+        full_name: "Guardian Optional Test",
+        role: "player",
+        date_of_birth: yearsAgo(15),
+      });
 
-    expect(insertError).toBeNull();
-
-    await supabase.auth.admin.deleteUser(userId);
+      expect(insertError).toBeNull();
+    } finally {
+      await supabase.auth.admin.deleteUser(userId).catch(() => {});
+    }
   });
 });

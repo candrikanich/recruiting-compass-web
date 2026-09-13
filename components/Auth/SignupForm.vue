@@ -42,54 +42,59 @@
       />
     </form>
 
-    <div
-      v-else
-      id="signup-form"
-      aria-label="Create player account"
-      :aria-describedby="hasErrors ? 'form-error-summary' : undefined"
-      data-testid="signup-form-player"
-    >
+    <div v-else data-testid="signup-form-player">
       <h2 class="sr-only">Player Information</h2>
-      <SignupStepAccount
+      <form
         v-if="currentStep === 'account'"
-        :user-type="userType"
-        :first-name="firstName"
-        :last-name="lastName"
-        :email="email"
-        :date-of-birth="dateOfBirth"
-        :password="password"
-        :confirm-password="confirmPassword"
-        :loading="loading"
-        :field-errors="fieldErrors"
-        @update:first-name="$emit('update:firstName', $event)"
-        @update:last-name="$emit('update:lastName', $event)"
-        @update:email="$emit('update:email', $event)"
-        @update:date-of-birth="$emit('update:dateOfBirth', $event)"
-        @update:password="$emit('update:password', $event)"
-        @update:confirm-password="$emit('update:confirmPassword', $event)"
-        @validate-email="$emit('validateEmail')"
-        @validate-password="$emit('validatePassword')"
-      />
-      <button
-        v-if="currentStep === 'account'"
-        type="button"
-        data-testid="signup-step-continue"
-        :disabled="!canContinueAccount"
-        class="mt-4 w-full rounded-lg bg-linear-to-r from-blue-500 to-blue-600 px-6 py-3 font-semibold text-white shadow-lg disabled:cursor-not-allowed disabled:from-slate-400 disabled:to-slate-400"
-        @click="goToStepAfterAccount"
+        id="signup-form"
+        aria-label="Create player account"
+        :aria-describedby="hasErrors ? 'form-error-summary' : undefined"
+        @submit.prevent="goToStepAfterAccount"
       >
-        Continue
-      </button>
+        <SignupStepAccount
+          :user-type="userType"
+          :first-name="firstName"
+          :last-name="lastName"
+          :email="email"
+          :date-of-birth="dateOfBirth"
+          :password="password"
+          :confirm-password="confirmPassword"
+          :loading="loading"
+          :field-errors="fieldErrors"
+          @update:first-name="$emit('update:firstName', $event)"
+          @update:last-name="$emit('update:lastName', $event)"
+          @update:email="$emit('update:email', $event)"
+          @update:date-of-birth="$emit('update:dateOfBirth', $event)"
+          @update:password="$emit('update:password', $event)"
+          @update:confirm-password="$emit('update:confirmPassword', $event)"
+          @validate-email="$emit('validateEmail')"
+          @validate-password="$emit('validatePassword')"
+        />
+        <button
+          type="submit"
+          data-testid="signup-step-continue"
+          :disabled="!canContinueAccount"
+          class="mt-4 w-full rounded-lg bg-linear-to-r from-blue-500 to-blue-600 px-6 py-3 font-semibold text-white shadow-lg disabled:cursor-not-allowed disabled:from-slate-400 disabled:to-slate-400"
+          @click="goToStepAfterAccount"
+        >
+          Continue
+        </button>
+      </form>
 
-      <SignupStepGuardian
+      <form
         v-if="currentStep === 'guardian'"
-        :guardian-email="guardianEmail"
-        :loading="loading"
-        :field-errors="fieldErrors"
-        @update:guardian-email="$emit('update:guardianEmail', $event)"
-        @continue="currentStep = 'info'"
-        @skip="skipGuardian"
-      />
+        aria-label="Add a parent or guardian"
+        @submit.prevent="currentStep = 'info'"
+      >
+        <SignupStepGuardian
+          :guardian-email="guardianEmail"
+          :loading="loading"
+          :field-errors="fieldErrors"
+          @update:guardian-email="$emit('update:guardianEmail', $event)"
+          @continue="currentStep = 'info'"
+          @skip="skipGuardian"
+        />
+      </form>
 
       <SignupStepPlayerInfo
         v-if="currentStep === 'info'"
@@ -184,22 +189,22 @@ const currentStep = ref<"account" | "guardian" | "info">("account");
 const canContinueAccount = computed(
   () =>
     !props.hasErrors &&
-    props.firstName.trim() &&
-    props.lastName.trim() &&
-    props.email.trim() &&
-    props.dateOfBirth.trim() &&
-    props.password.trim() &&
-    props.confirmPassword.trim(),
+    !!props.firstName.trim() &&
+    !!props.lastName.trim() &&
+    !!props.email.trim() &&
+    !!props.dateOfBirth.trim() &&
+    !!props.password.trim() &&
+    !!props.confirmPassword.trim(),
 );
 
 const isParentFormValid = computed(
   () =>
     !props.hasErrors &&
-    props.firstName.trim() &&
-    props.lastName.trim() &&
-    props.email.trim() &&
-    props.password.trim() &&
-    props.confirmPassword.trim() &&
+    !!props.firstName.trim() &&
+    !!props.lastName.trim() &&
+    !!props.email.trim() &&
+    !!props.password.trim() &&
+    !!props.confirmPassword.trim() &&
     props.agreeToTerms,
 );
 

@@ -55,28 +55,32 @@ test.describe("signup: skip the guardian step", () => {
     // (unlike user_preferences/guardian_claims, which do cascade transitively
     // through auth.users) — deleting the auth user first would leave this FK
     // dangling and abort the whole delete. Clean up family rows first, mirroring
-    // minor-invite-accept.spec.ts's afterAll ordering.
-    const supabase = getSupabaseAdmin();
-    const { data: player } = await supabase
-      .from("users")
-      .select("id")
-      .eq("email", PLAYER_EMAIL)
-      .maybeSingle();
-    if (player?.id) {
-      const { data: unit } = await supabase
-        .from("family_units")
+    // minor-invite-accept.spec.ts's afterAll ordering. Wrapped in try/finally so a
+    // throw partway through this cleanup can't leave the auth user leaked.
+    try {
+      const supabase = getSupabaseAdmin();
+      const { data: player } = await supabase
+        .from("users")
         .select("id")
-        .eq("created_by_user_id", player.id)
+        .eq("email", PLAYER_EMAIL)
         .maybeSingle();
-      if (unit?.id) {
-        await supabase.from("family_members").delete().eq("family_unit_id", unit.id);
-        await supabase.from("family_units").delete().eq("id", unit.id);
+      if (player?.id) {
+        const { data: unit } = await supabase
+          .from("family_units")
+          .select("id")
+          .eq("created_by_user_id", player.id)
+          .maybeSingle();
+        if (unit?.id) {
+          await supabase.from("family_members").delete().eq("family_unit_id", unit.id);
+          await supabase.from("family_units").delete().eq("id", unit.id);
+        }
       }
+    } finally {
+      await deleteOneOffTestUser(PLAYER_EMAIL).catch(() => {});
     }
-    await deleteOneOffTestUser(PLAYER_EMAIL).catch(() => {});
   });
 
-  test("skip at signup -> dashboard banner -> messaging blocked -> invite later -> unlocked", async ({
+  test("skip at signup -> dashboard banner -> messaging blocked -> invite later -> confirmed -> unlocked", async ({
     page,
   }) => {
     await page.goto("/signup");
@@ -198,7 +202,7 @@ test.describe("signup: skip the guardian step", () => {
     // drive state that would otherwise need a second browser session/inbox).
     const { data: claim } = await supabase
       .from("guardian_claims")
-      .select("token")
+      .select("id, token")
       .eq("guardian_email", GUARDIAN_EMAIL)
       .single();
     expect(claim?.token).toBeTruthy();
@@ -209,10 +213,35 @@ test.describe("signup: skip the guardian step", () => {
     await page.reload();
     await expect(page.getByText(/waiting on your parent or guardian/i)).toBeVisible();
 
-    // (Guardian-side accept flow already has its own E2E coverage in
-    // minor-invite-accept.spec.ts's sibling specs — this test only needs to prove
-    // the claim was created reachably, and that the lock state before this point
-    // was real, not client-only. Full guardian-side UI walkthrough is out of scope
-    // here to avoid duplicating that coverage.)
+    // Simulate the guardian confirming, via the same DB effects
+    // claim/[token]/accept.post.ts writes (stamp guardian_consent_at on the player,
+    // close the claim) — driving the full guardian-side sign-in/accept UI to produce
+    // the same state is out of scope here (already covered by
+    // minor-invite-accept.spec.ts's sibling specs); this is the minimal correct way
+    // to simulate "guardian confirmed" for what this spec is actually proving: that
+    // the lock genuinely lifts once consent lands, not just that the invite sends.
+    const { error: consentError } = await supabase
+      .from("users")
+      .update({ guardian_consent_at: new Date().toISOString() })
+      .eq("id", playerId);
+    expect(consentError).toBeNull();
+
+    const { error: claimCloseError } = await supabase
+      .from("guardian_claims")
+      .update({ status: "claimed", claimed_at: new Date().toISOString() })
+      .eq("id", claim!.id);
+    expect(claimCloseError).toBeNull();
+
+    // Re-check the messaging endpoint with the same session/token used for the
+    // earlier 403 — this is the unlock half of the feature's core promise.
+    const unlockedResponse = await page.request.post("/api/athlete/messages", {
+      data: {
+        athleteUserId: playerId,
+        schoolId: "00000000-0000-0000-0000-000000000000",
+        body: "hello",
+      },
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    expect(unlockedResponse.status()).not.toBe(403);
   });
 });
