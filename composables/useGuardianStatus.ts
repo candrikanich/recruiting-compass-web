@@ -38,6 +38,8 @@ export const useGuardianStatus = () => {
    */
   const isLocked = computed(() => status.value?.locked === true);
 
+  const hasNoGuardianYet = computed(() => status.value?.status === "none");
+
   const resend = async (guardianEmail?: string) => {
     await $fetchAuth("/api/guardian/resend", {
       method: "POST",
@@ -50,6 +52,7 @@ export const useGuardianStatus = () => {
     status,
     isPending,
     isLocked,
+    hasNoGuardianYet,
     guardianEmailMasked: computed(() => status.value?.guardianEmailMasked ?? null),
     load,
     resend,
