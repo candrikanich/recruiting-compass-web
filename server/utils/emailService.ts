@@ -362,7 +362,7 @@ export const sendInviteEmail = async (
   `;
 
   const htmlContent = wrapEmailLayout(bodyHtml, {
-    preheader: `${inviterName} invited you to join ${familyName}'s recruiting profile`,
+    preheader: `${escapeHtml(inviterName)} invited you to join ${escapeHtml(familyName)}'s recruiting profile`,
   });
 
   return sendEmail({

@@ -323,5 +323,18 @@ describe("emailService (Resend SDK)", () => {
       const [payload] = sendMock.mock.calls[0];
       expect(payload.html).toContain("Follow along on the recruiting journey");
     });
+
+    it("escapes HTML in the preheader to prevent injection via inviter/family name", async () => {
+      await sendInviteEmail({
+        to: "player@example.com",
+        inviterName: "Jordan",
+        familyName: "<script>alert(1)</script>",
+        role: "player",
+        token: "tok_ghi",
+      });
+      const [payload] = sendMock.mock.calls[0];
+      expect(payload.html).not.toContain("<script>alert(1)</script>");
+      expect(payload.html).toContain("&lt;script&gt;alert(1)&lt;/script&gt;");
+    });
   });
 });
