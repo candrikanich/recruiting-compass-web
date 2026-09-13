@@ -250,6 +250,23 @@ describe("emailService (Resend SDK)", () => {
       const [, options] = sendMock.mock.calls[0];
       expect(options).toMatchObject({ idempotencyKey: "notif-99" });
     });
+
+    it("wraps the notification body in the shared branded layout and preserves title/message/action", async () => {
+      await sendNotificationEmail({
+        to: "a@b.com",
+        subject: "New coach view",
+        title: "Coach Martinez viewed your profile",
+        message: "They spent 3 minutes on your highlight reel.",
+        actionUrl: "https://app.example.com/profile",
+        priority: "high",
+      });
+      const [payload] = sendMock.mock.calls[0];
+      expect(payload.html).toContain('alt="The Recruiting Compass"');
+      expect(payload.html).toContain("Coach Martinez viewed your profile");
+      expect(payload.html).toContain("They spent 3 minutes on your highlight reel.");
+      expect(payload.html).toContain("https://app.example.com/profile");
+      expect(payload.html).toContain("HIGH PRIORITY");
+    });
   });
 
   describe("recurring-email footer unsubscribe link", () => {
