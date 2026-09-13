@@ -5,6 +5,7 @@ import {
   queryInsert,
   queryUpdate,
   queryDelete,
+  queryRpc,
   isQuerySuccess,
   isQueryError,
   getQueryErrorMessage,
@@ -38,6 +39,7 @@ describe("supabaseQuery utilities", () => {
       update: vi.fn().mockReturnThis(),
       delete: vi.fn().mockReturnThis(),
       single: vi.fn(),
+      rpc: vi.fn(),
     };
 
     vi.mocked(useSupabase).mockReturnValue(mockSupabase);
@@ -509,6 +511,38 @@ describe("supabaseQuery utilities", () => {
       await queryDelete("coaches", { id: "1" }, { context: "deleteCoach" });
 
       expect(console.log).toHaveBeenCalled();
+    });
+  });
+
+  // ============================================
+  // queryRpc Tests
+  // ============================================
+
+  describe("queryRpc", () => {
+    it("calls supabase.rpc with the function name and params, returns data", async () => {
+      mockSupabase.rpc = vi.fn().mockResolvedValue({ data: [{ id: "s1" }], error: null });
+
+      const result = await queryRpc<{ id: string }>(
+        "search_schools_fts",
+        { p_search_term: "Michigan", p_limit: 20 },
+        { context: "searchSchools", silent: true },
+      );
+
+      expect(mockSupabase.rpc).toHaveBeenCalledWith("search_schools_fts", {
+        p_search_term: "Michigan",
+        p_limit: 20,
+      });
+      expect(result.data).toEqual([{ id: "s1" }]);
+      expect(result.error).toBeNull();
+    });
+
+    it("wraps an RPC error into QueryResult.error", async () => {
+      mockSupabase.rpc = vi.fn().mockResolvedValue({ data: null, error: { message: "boom" } });
+
+      const result = await queryRpc("search_schools_fts", { p_search_term: "x" });
+
+      expect(result.data).toBeNull();
+      expect(result.error?.message).toContain("boom");
     });
   });
 

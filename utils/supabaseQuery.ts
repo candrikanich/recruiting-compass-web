@@ -403,6 +403,51 @@ export async function queryDelete(
 }
 
 /**
+ * Call a Postgres RPC function through the same error/logging wrapper as
+ * querySelect. Used for queries that need DB-side ranking (e.g. ts_rank)
+ * that PostgREST's query-string filters can't express.
+ *
+ * @example
+ * const { data, error } = await queryRpc<School>(
+ *   'search_schools_fts',
+ *   { p_search_term: 'Michigan', p_limit: 20 },
+ *   { context: 'searchSchools' }
+ * )
+ */
+export async function queryRpc<T>(
+  fn: string,
+  params: Record<string, unknown>,
+  ctx?: QueryContext,
+): Promise<QueryResult<T[]>> {
+  try {
+    const supabase = useSupabase();
+    const { data, error } = await supabase.rpc(fn, params);
+
+    if (error) {
+      throw new Error(`[${fn}] ${error.message}`);
+    }
+
+    if (!ctx?.silent) {
+      logger.debug(
+        `[queryRpc] ${fn}${ctx?.context ? ` (${ctx.context})` : ""}`,
+        `returned ${Array.isArray(data) ? data.length : 0} records`,
+      );
+    }
+
+    return { data: data as T[], error: null };
+  } catch (err) {
+    const error = err instanceof Error ? err : new Error(String(err));
+    if (!ctx?.silent) {
+      logger.error(
+        `[queryRpc] ${fn}${ctx?.context ? ` (${ctx.context})` : ""}`,
+        { message: error.message, metadata: ctx?.metadata },
+      );
+    }
+    return { data: null, error };
+  }
+}
+
+/**
  * Helper to extract error message from query result
  *
  * @example
