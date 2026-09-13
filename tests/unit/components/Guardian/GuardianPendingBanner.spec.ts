@@ -1,11 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { mount } from "@vue/test-utils";
+import { ref } from "vue";
 
-const mockStatus: { value: { locked: boolean; status: string; guardianEmailMasked: string | null } } = {
-  value: { locked: false, status: "none", guardianEmailMasked: null },
-};
+// A genuine ref (not a plain { value } object) so the one regression test below that
+// mutates status mid-test — simulating resend()'s internal reload — actually exercises
+// Vue's reactivity, the same way the composable's real useState-backed status does.
+const mockStatus = ref<{ locked: boolean; status: string; guardianEmailMasked: string | null }>({
+  locked: false,
+  status: "none",
+  guardianEmailMasked: null,
+});
 const mockLoad = vi.fn(async () => mockStatus.value);
 const mockResend = vi.fn(async () => {});
+const mockShowToast = vi.fn();
 
 vi.mock("~/composables/useGuardianStatus", () => ({
   useGuardianStatus: () => ({
@@ -18,13 +25,16 @@ vi.mock("~/composables/useGuardianStatus", () => ({
   }),
 }));
 vi.mock("~/composables/useAppToast", () => ({
-  useAppToast: () => ({ showToast: vi.fn() }),
+  useAppToast: () => ({ showToast: mockShowToast }),
 }));
 
 import GuardianPendingBanner from "~/components/Guardian/GuardianPendingBanner.vue";
 
 describe("GuardianPendingBanner", () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockResend.mockImplementation(async () => {});
+  });
 
   it("shows an 'invite a parent' form when locked with status 'none'", async () => {
     mockStatus.value = { locked: true, status: "none", guardianEmailMasked: null };
@@ -61,5 +71,23 @@ describe("GuardianPendingBanner", () => {
     await wrapper.find('[data-testid="guardian-invite-submit"]').trigger("click");
 
     expect(mockResend).toHaveBeenCalledWith("mom@example.com");
+  });
+
+  it("still shows 'Invitation sent.' even though resend's reload flips status away from 'none'", async () => {
+    mockStatus.value = { locked: true, status: "none", guardianEmailMasked: null };
+    // resend() calls load(true) internally, which re-fetches status — for a real
+    // first-time invite that reload lands on "pending", not "none" anymore.
+    mockResend.mockImplementation(async () => {
+      mockStatus.value = { locked: true, status: "pending", guardianEmailMasked: "m****@example.com" };
+    });
+    const wrapper = mount(GuardianPendingBanner);
+    await wrapper.vm.$nextTick();
+
+    await wrapper.find('[data-testid="guardian-invite-email"]').setValue("mom@example.com");
+    await wrapper.find('[data-testid="guardian-invite-submit"]').trigger("click");
+    await wrapper.vm.$nextTick();
+    await wrapper.vm.$nextTick();
+
+    expect(mockShowToast).toHaveBeenCalledWith("Invitation sent.", "success");
   });
 });

@@ -3,13 +3,23 @@ import { ref, computed, onMounted } from "vue";
 import { useGuardianStatus } from "~/composables/useGuardianStatus";
 import { useAppToast } from "~/composables/useAppToast";
 
-const { isLocked, guardianEmailMasked, status, load, resend } = useGuardianStatus();
+const {
+  isLocked,
+  hasNoGuardianYet: hasNoGuardianYetFromComposable,
+  guardianEmailMasked,
+  status,
+  load,
+  resend,
+} = useGuardianStatus();
 const { showToast } = useAppToast();
 
 // Re-derived locally (rather than bound straight to the composable's refs) so the
-// template unwraps correctly no matter what shape a caller's mock returns.
+// template unwraps correctly no matter what shape a caller's mock returns. Falls back
+// to deriving from `status` directly for callers whose mock predates this export.
 const showBanner = computed(() => isLocked.value);
-const hasNoGuardianYet = computed(() => status.value?.status === "none");
+const hasNoGuardianYet = computed(
+  () => hasNoGuardianYetFromComposable?.value ?? status.value?.status === "none",
+);
 const maskedEmail = computed(() => guardianEmailMasked.value);
 
 const sending = ref(false);
@@ -21,14 +31,14 @@ onMounted(load);
 const submit = async (email?: string) => {
   if (sending.value) return;
   sending.value = true;
+  // Captured before resend() runs: resend() reloads status internally, and a
+  // successful first-time invite flips it away from "none" — read too late, this
+  // would misreport the invite as a plain resend.
+  const wasUninvited = hasNoGuardianYet.value;
   try {
     await resend(email);
     showToast(
-      email
-        ? hasNoGuardianYet.value
-          ? "Invitation sent."
-          : "Sent to the new address."
-        : "Reminder sent.",
+      email ? (wasUninvited ? "Invitation sent." : "Sent to the new address.") : "Reminder sent.",
       "success",
     );
     editing.value = false;
