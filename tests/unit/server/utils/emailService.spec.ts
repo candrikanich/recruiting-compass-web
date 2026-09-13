@@ -272,6 +272,7 @@ describe("emailService (Resend SDK)", () => {
       );
       expect(payload.html).toContain("https://app.example.com/profile");
       expect(payload.html).toContain("HIGH PRIORITY");
+      expect(payload.html).toContain('class="trc-email-btn"');
     });
   });
 
@@ -352,6 +353,7 @@ describe("emailService (Resend SDK)", () => {
       expect(payload.html).toContain("Track your recruiting progress");
       expect(payload.html).toContain("/join?token=tok_abc");
       expect(payload.html.toLowerCase()).not.toContain("unsubscribe");
+      expect(payload.html).toContain('class="trc-email-btn"');
     });
 
     it("uses parent value-prop copy for the parent role", async () => {

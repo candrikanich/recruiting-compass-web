@@ -49,7 +49,7 @@ export function renderOnboardingNudgeEmail(
     <ul style="color:#475569;line-height:1.8;padding-left:20px;margin:0 0 20px 0;">
       ${itemsHtml}
     </ul>
-    <a href="${data.dashboardUrl}" style="display:inline-block;background:#2563eb;color:#ffffff;padding:10px 20px;border-radius:6px;text-decoration:none;font-weight:600;">
+    <a href="${data.dashboardUrl}" class="trc-email-btn" style="display:inline-block;background:#2563eb;color:#ffffff;padding:10px 20px;border-radius:6px;text-decoration:none;font-weight:600;">
       Continue where you left off →
     </a>
   `;

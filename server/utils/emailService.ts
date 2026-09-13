@@ -213,7 +213,7 @@ export function renderNotificationBody(
       : "";
 
   const actionButton = actionUrl
-    ? `<a href="${sanitizeUrl(actionUrl)}" style="display:inline-block;background:#2563eb;color:#ffffff;padding:12px 24px;text-decoration:none;border-radius:6px;font-weight:600;margin-top:16px;">View Details</a>`
+    ? `<a href="${sanitizeUrl(actionUrl)}" class="trc-email-btn" style="display:inline-block;background:#2563eb;color:#ffffff;padding:12px 24px;text-decoration:none;border-radius:6px;font-weight:600;margin-top:16px;">View Details</a>`
     : "";
 
   return `
@@ -418,7 +418,7 @@ export function renderInviteBody(
     <p style="margin:0 0 20px 0;color:#475569;">
       ${ROLE_VALUE_PROPS[role]}
     </p>
-    <a href="${sanitizeUrl(joinUrl)}" style="display:inline-block;background:#2563eb;color:#ffffff;padding:12px 24px;text-decoration:none;border-radius:6px;font-weight:600;">
+    <a href="${sanitizeUrl(joinUrl)}" class="trc-email-btn" style="display:inline-block;background:#2563eb;color:#ffffff;padding:12px 24px;text-decoration:none;border-radius:6px;font-weight:600;">
       Join ${escapeHtml(familyName)}
     </a>
     <p style="margin-top:20px;font-size:13px;color:#94a3b8;">

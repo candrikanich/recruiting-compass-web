@@ -45,4 +45,17 @@ describe("renderOnboardingNudgeEmail", () => {
     expect(html).toContain('alt="The Recruiting Compass"');
     expect(html).toContain("https://www.instagram.com/therecruitingcompass");
   });
+
+  it("tags the CTA button so dark mode keeps its white text", async () => {
+    const { renderOnboardingNudgeEmail } =
+      await import("~/server/utils/onboardingEmail");
+    const html = renderOnboardingNudgeEmail({
+      userName: "Chris",
+      completedCount: 2,
+      totalCount: 8,
+      topIncompleteItems: [],
+      dashboardUrl: "https://app.example.com/dashboard",
+    });
+    expect(html).toContain('class="trc-email-btn"');
+  });
 });
