@@ -25,18 +25,30 @@ interface SignupMinorBody {
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /**
- * Standalone signup for a 13-17 player, who names a guardian instead of waiting to be
- * invited by one. See planning/2026-09-11-guardian-linked-signup-spec.md (iOS repo).
+ * Standalone signup for a 13-17 player. Naming a guardian is optional — see
+ * docs/superpowers/specs/2026-09-12-guardian-optional-signup-wizard-design.md. A
+ * player who skips can invite one later from the dashboard (POST /api/guardian/resend,
+ * extended to create a claim where none exists).
  *
- * Exists as a server endpoint for one structural reason: the writes must be ordered.
- * `trg_enforce_minor_requires_invite` is a BEFORE INSERT trigger on public.users that
- * rejects an under-18 player with no guardian link, so the guardian_claims row has to land
- * first — and guardian_claims is service-role only, so the browser cannot write it. Doing
- * this from the client in either order fails.
+ * Exists as a server endpoint for one reason that survives the guardian-optional
+ * change: guardian_claims is service-role-only (a minor must never be able to read
+ * their own guardian's confirmation token — see 20260926000000_guardian_claims.sql),
+ * so the browser cannot write it directly. There is no longer a write-ordering
+ * constraint against the DB gate (supabase/migrations/20260927000000_guardian_link_optional.sql
+ * removed the trigger this endpoint used to route around).
  *
- * Auth user creation deliberately goes through the ordinary anon-key `signUp` rather than
- * `admin.createUser`, so email confirmation behaves exactly as it does for every other
- * signup instead of forking into a second, separately-maintained path.
+ * date_of_birth rides in signUp()'s metadata (not just the users upsert below), so
+ * handle_new_user() writes it atomically as part of the initial row creation — see
+ * 20260910200619_handle_new_user_date_of_birth.sql. Without this, a null-DOB row could
+ * briefly exist between signUp() succeeding and the upsert running, and
+ * requiresGuardianInvite(null) is false — a player row with no DOB reads as
+ * unlocked. The upsert below still runs (it also carries graduation_year/zip_code,
+ * which the trigger doesn't know about), but the lock-relevant field is no longer
+ * gated on it succeeding.
+ *
+ * Auth user creation deliberately goes through the ordinary anon-key `signUp` rather
+ * than `admin.createUser`, so email confirmation behaves exactly as it does for every
+ * other signup instead of forking into a second, separately-maintained path.
  */
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "auth/signup-minor");
@@ -48,7 +60,7 @@ export default defineEventHandler(async (event) => {
 
     const body = await readBody<SignupMinorBody>(event);
     const email = body.email?.trim().toLowerCase() ?? "";
-    const guardianEmail = body.guardianEmail?.trim().toLowerCase() ?? "";
+    const guardianEmail = body.guardianEmail?.trim().toLowerCase() || null;
     const firstName = body.firstName?.trim() ?? "";
     const lastName = body.lastName?.trim() ?? "";
     const dateOfBirth = body.dateOfBirth?.trim() ?? "";
@@ -65,20 +77,23 @@ export default defineEventHandler(async (event) => {
         statusMessage: "First and last name are required",
       });
     }
-    if (!EMAIL_RE.test(guardianEmail)) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: "A valid parent or guardian email is required",
-      });
-    }
-    // A minor cannot be their own guardian. Without this the whole consent mechanism is
-    // self-serve: the player would receive the claim link at their own inbox.
-    if (guardianEmail === email) {
-      throw createError({
-        statusCode: 400,
-        statusMessage:
-          "Your parent or guardian needs a different email address than yours",
-      });
+    if (guardianEmail) {
+      if (!EMAIL_RE.test(guardianEmail)) {
+        throw createError({
+          statusCode: 400,
+          statusMessage: "Enter a valid parent or guardian email",
+        });
+      }
+      // A minor cannot be their own guardian. Without this the whole consent
+      // mechanism is self-serve: the player would receive the claim link at their
+      // own inbox.
+      if (guardianEmail === email) {
+        throw createError({
+          statusCode: 400,
+          statusMessage:
+            "Your parent or guardian needs a different email address than yours",
+        });
+      }
     }
     if (isUnderMinimumAge(dateOfBirth)) {
       throw createError({
@@ -87,8 +102,8 @@ export default defineEventHandler(async (event) => {
           "Recruiting Compass is not available for players under 13",
       });
     }
-    // 18+ belongs on the ordinary signup path; routing an adult through here would attach
-    // a guardian claim they neither need nor can clear.
+    // 18+ belongs on the ordinary signup path; routing an adult through here would
+    // pointlessly involve a guardian on an account that doesn't need one.
     if (!requiresGuardianInvite(dateOfBirth)) {
       throw createError({
         statusCode: 400,
@@ -109,28 +124,10 @@ export default defineEventHandler(async (event) => {
       password: body.password,
       options: {
         captchaToken: body.captchaToken,
-        // DO NOT add `date_of_birth` here. It is load-bearing by its absence.
-        //
-        // handle_new_user() fires on the auth.users insert and immediately creates the
-        // public.users row, reading date_of_birth straight out of this metadata. That
-        // insert happens BEFORE the guardian_claims row below can exist (the claim's FK
-        // needs the auth user), so a DOB present here would make
-        // enforce_minor_requires_invite reject the row — and handle_new_user wraps its
-        // insert in `EXCEPTION WHEN OTHERS THEN RAISE LOG`, so the rejection is swallowed
-        // and the user is left with an auth account and no profile, silently.
-        //
-        // Omitting it means handle_new_user writes a NULL-DOB row, which the gate passes
-        // (it fails open on NULL), and the DOB lands in the upsert further down — by which
-        // time the claim exists and the gate is satisfied on UPDATE.
-        //
-        // Asserted by "omits date_of_birth from signUp metadata" in this route's spec.
-        //
-        // Otherwise the same `pending_*` carry as pages/signup.vue: player details live in
-        // preferences, not on users, and are hydrated across the email-confirmation
-        // gap by useAccountProvisioning.applyPendingOnboardingStep1.
         data: {
           full_name: fullName,
           role: "player",
+          date_of_birth: dateOfBirth,
           ...(body.graduationYear
             ? { pending_graduation_year: String(body.graduationYear) }
             : {}),
@@ -156,28 +153,12 @@ export default defineEventHandler(async (event) => {
 
     const userId = signUpData.user.id;
     const supabase = useSupabaseAdmin();
-    const token = randomUUID();
 
-    // Claim before the DOB-bearing upsert: that write is what the gate inspects, and it
-    // looks for exactly this row. FK targets auth.users, which the signUp above created.
-    // (handle_new_user has already written a NULL-DOB users row by this point — see the
-    // metadata note above for why that is safe and why it must stay NULL until now.)
-    const { error: claimError } = await supabase
-      .from("guardian_claims")
-      .insert({
-        player_user_id: userId,
-        guardian_email: guardianEmail,
-        token,
-      });
-
-    if (claimError) {
-      logger.error("Failed to create guardian claim", claimError);
-      throw createError({
-        statusCode: 500,
-        statusMessage: "Could not start guardian confirmation",
-      });
-    }
-
+    // handle_new_user() has already created the public.users row from the signUp
+    // metadata above (same trigger the adult path relies on). Upsert here to add the
+    // fields that trigger doesn't know about (date_of_birth, graduation_year,
+    // zip_code as real columns rather than pending_* metadata) — same idempotent
+    // upsert pattern pages/signup.vue uses for the adult path.
     const userRecord: Database["public"]["Tables"]["users"]["Insert"] = {
       id: userId,
       email,
@@ -200,9 +181,31 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    // Non-fatal: the account exists and the claim is live, so a mail failure must not fail
-    // the signup. The player can resend from the pending banner, and the reminder cron
-    // retries on its own schedule.
+    if (!guardianEmail) {
+      logger.info("Minor signup created, no guardian named");
+      return { ok: true, guardianEmail: null, guardianEmailSent: false };
+    }
+
+    const token = randomUUID();
+    const { error: claimError } = await supabase
+      .from("guardian_claims")
+      .insert({
+        player_user_id: userId,
+        guardian_email: guardianEmail,
+        token,
+      });
+
+    if (claimError) {
+      logger.error("Failed to create guardian claim", claimError);
+      // The account itself is already created and valid (guardian-optional as of
+      // this migration) — a failed claim write must not fail the whole signup. The
+      // player can invite a guardian later from the dashboard.
+      return { ok: true, guardianEmail, guardianEmailSent: false };
+    }
+
+    // Non-fatal: the account exists, so a mail failure must not fail the signup.
+    // The player can resend from the pending banner, and the reminder cron retries
+    // on its own schedule.
     const mail = await sendGuardianClaimEmail({
       to: guardianEmail,
       playerName: firstName,

@@ -29,14 +29,28 @@ export const useGuardianStatus = () => {
     return status.value;
   };
 
-  const isPending = computed(() => status.value?.pending === true);
+  const isPending = computed(() => status.value?.status === "pending");
 
   /**
-   * True when outbound features must be disabled. Identical to `isPending` today; kept
-   * distinct so the lock can diverge from the banner later (e.g. the 21-day freeze, which
-   * restricts more than the pending state does) without touching every call site.
+   * True when outbound features must be disabled — mirrors the `locked` field from
+   * server/api/guardian/status.get.ts, which is computed identically to
+   * server/utils/guardianGate.ts's assertGuardianConfirmed.
    */
-  const isLocked = computed(() => isPending.value);
+  const isLocked = computed(() => status.value?.locked === true);
+
+  // "expired"/"revoked" get the same invite shape as "none": there is no live claim to
+  // resend (resend()'s pending-claim lookup won't find one either), so every gated
+  // surface must treat this as create-a-fresh-claim, not wait-for-the-existing-one.
+  // Single source of truth — GuardianPendingBanner and GuardianLockedAction both read
+  // this rather than each re-deriving it, which is how they drifted apart before.
+  const hasNoGuardianYet = computed(() => {
+    const currentStatus = status.value?.status;
+    return (
+      currentStatus === "none" ||
+      currentStatus === "expired" ||
+      currentStatus === "revoked"
+    );
+  });
 
   const resend = async (guardianEmail?: string) => {
     await $fetchAuth("/api/guardian/resend", {
@@ -50,6 +64,7 @@ export const useGuardianStatus = () => {
     status,
     isPending,
     isLocked,
+    hasNoGuardianYet,
     guardianEmailMasked: computed(() => status.value?.guardianEmailMasked ?? null),
     load,
     resend,

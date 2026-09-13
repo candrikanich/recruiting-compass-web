@@ -309,11 +309,11 @@ watch(agreeToTerms, (isChecked) => {
 });
 
 /**
- * Signup for a 13-17 player, who names a guardian to confirm their account.
+ * Signup for a 13-17 player. Naming a guardian is optional — see
+ * docs/superpowers/specs/2026-09-12-guardian-optional-signup-wizard-design.md.
  *
  * Goes through POST /api/auth/signup-minor rather than the browser-direct path below
- * because the writes must be ordered against enforce_minor_requires_invite, and the
- * guardian_claims row it depends on is service-role only.
+ * because guardian_claims is service-role-only — the browser cannot write it directly.
  */
 const submitMinorSignup = async (guardian: string) => {
   try {
@@ -336,9 +336,11 @@ const submitMinorSignup = async (guardian: string) => {
 
     // Same destination as an adult signup: email confirmation still gates the session.
     // The guardian-pending state is surfaced on the dashboard once they're in.
+    // (guardian's email deliberately isn't threaded through this URL — verify-email.vue
+    // never read it, and putting it in the query string would only expose the
+    // guardian's address in the URL bar/browser history for no benefit.)
     const params = new URLSearchParams({
       email: email.value.trim(),
-      guardian,
     });
     if (primarySport.value && graduationYear.value) {
       params.set("sport", primarySport.value);
@@ -401,24 +403,12 @@ const handleSignup = async () => {
       return;
     }
 
-    // Minors (13-17) hold an account linked to a guardian, not a standalone one, and
-    // the writes have to be ordered against the DB gate — so this path goes through a
-    // server endpoint rather than the browser-direct signup below.
+    // Minors (13-17) go through a server endpoint rather than the browser-direct
+    // signup below because guardian_claims is service-role-only and the browser can't
+    // write it directly — naming a guardian itself is optional.
     if (requiresGuardianInvite(dateOfBirth.value)) {
       const guardian = guardianEmail.value.trim().toLowerCase();
-      if (!guardian) {
-        setErrors([
-          {
-            field: "guardianEmail",
-            message:
-              "Enter a parent or guardian email so we can ask them to confirm your account.",
-          },
-        ]);
-        await focusErrorSummary();
-        loading.value = false;
-        return;
-      }
-      if (guardian === email.value.trim().toLowerCase()) {
+      if (guardian && guardian === email.value.trim().toLowerCase()) {
         setErrors([
           {
             field: "guardianEmail",

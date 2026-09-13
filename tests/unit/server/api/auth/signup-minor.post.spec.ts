@@ -113,37 +113,17 @@ describe("POST /api/auth/signup-minor", () => {
     expect(mockSendGuardianClaimEmail).toHaveBeenCalledOnce();
   });
 
-  it("writes the claim before the users row", async () => {
-    // Ordering is load-bearing, not incidental: trg_enforce_minor_requires_invite is a
-    // BEFORE INSERT trigger on users that rejects an under-18 player with no guardian
-    // link, so a users-first sequence would fail every minor signup.
-    const order: string[] = [];
-    mockClaimInsert.mockImplementation(async () => {
-      order.push("claim");
-      return { error: null };
-    });
-    mockUserUpsert.mockImplementation(async () => {
-      order.push("user");
-      return { error: null };
-    });
-
-    await call();
-
-    expect(order).toEqual(["claim", "user"]);
-  });
-
-  it("omits date_of_birth from signUp metadata", async () => {
-    // handle_new_user() creates the public.users row from this metadata the instant the
-    // auth user exists — before the guardian_claims row can (its FK needs the auth user).
-    // A DOB here would make enforce_minor_requires_invite reject that insert, and
-    // handle_new_user swallows the exception, leaving an auth account with no profile and
-    // no error anywhere the user can see. The DOB must arrive in the later upsert instead.
-    await call();
+  it("puts the real date_of_birth in signUp metadata, so handle_new_user() writes it atomically", async () => {
+    // A null-DOB row must never exist even momentarily: requiresGuardianInvite(null) is
+    // false, so a row with no DOB reads as unlocked. Putting the exact DOB in signUp
+    // metadata (not just the later upsert) closes that fail-open window.
+    const dob = yearsAgo(15);
+    await call({ dateOfBirth: dob });
 
     const metadata = mockSignUp.mock.calls[0]?.[0]?.options?.data ?? {};
-    expect(metadata).not.toHaveProperty("date_of_birth");
+    expect(metadata).toMatchObject({ date_of_birth: dob });
     expect(mockUserUpsert).toHaveBeenCalledWith(
-      expect.objectContaining({ date_of_birth: expect.any(String) }),
+      expect.objectContaining({ date_of_birth: dob }),
       expect.anything(),
     );
   });
@@ -170,11 +150,36 @@ describe("POST /api/auth/signup-minor", () => {
     expect(mockSignUp).not.toHaveBeenCalled();
   });
 
-  it("rejects a missing guardian email", async () => {
-    await expect(call({ guardianEmail: "" })).rejects.toMatchObject({
-      statusCode: 400,
+  it("creates the account with no guardian_claims row when guardianEmail is omitted", async () => {
+    const result = await call({ guardianEmail: undefined });
+
+    expect(result).toMatchObject({
+      ok: true,
+      guardianEmail: null,
+      guardianEmailSent: false,
     });
-    expect(mockSignUp).not.toHaveBeenCalled();
+    expect(mockClaimInsert).not.toHaveBeenCalled();
+    expect(mockUserUpsert).toHaveBeenCalledWith(
+      expect.objectContaining({ date_of_birth: expect.any(String) }),
+      expect.anything(),
+    );
+    expect(mockSendGuardianClaimEmail).not.toHaveBeenCalled();
+  });
+
+  it("still creates a guardian_claims row and sends the email when guardianEmail is provided", async () => {
+    const result = await call();
+
+    expect(result).toMatchObject({ ok: true, guardianEmailSent: true });
+    expect(mockClaimInsert).toHaveBeenCalled();
+    expect(mockSendGuardianClaimEmail).toHaveBeenCalled();
+  });
+
+  it("treats an empty guardian email as omitted, same as a missing one", async () => {
+    const result = await call({ guardianEmail: "" });
+
+    expect(result).toMatchObject({ ok: true, guardianEmail: null });
+    expect(mockClaimInsert).not.toHaveBeenCalled();
+    expect(mockSignUp).toHaveBeenCalled();
   });
 
   it("still succeeds when the guardian email fails to send", async () => {
@@ -186,12 +191,20 @@ describe("POST /api/auth/signup-minor", () => {
     expect(result).toMatchObject({ ok: true, guardianEmailSent: false });
   });
 
-  it("fails the request when the claim cannot be created", async () => {
-    // Without a claim the users insert would be rejected by the trigger anyway; failing
-    // here keeps the error legible instead of surfacing a raw constraint violation.
+  it("still succeeds when the guardian claim cannot be created", async () => {
+    // The account itself is already created and valid (guardian-optional) — a failed
+    // claim write must not fail the whole signup. The player can invite a guardian later
+    // from the dashboard.
     mockClaimInsert.mockResolvedValue({ error: { message: "boom" } });
 
-    await expect(call()).rejects.toMatchObject({ statusCode: 500 });
-    expect(mockUserUpsert).not.toHaveBeenCalled();
+    const result = await call();
+
+    expect(result).toMatchObject({
+      ok: true,
+      guardianEmail: "parent@example.com",
+      guardianEmailSent: false,
+    });
+    expect(mockUserUpsert).toHaveBeenCalled();
+    expect(mockSendGuardianClaimEmail).not.toHaveBeenCalled();
   });
 });

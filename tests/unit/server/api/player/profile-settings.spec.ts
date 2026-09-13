@@ -32,14 +32,18 @@ vi.mock("~/server/utils/logger", () => ({
 vi.mock("~/server/utils/supabase", () => ({
   useSupabaseAdmin: vi.fn(() => ({
     from: (table: string) => {
-      // Publishing now runs the guardian gate first; these fixtures have no outstanding
-      // claim, so the update proceeds as before.
-      if (table === "guardian_claims") {
+      // Publishing now runs the guardian gate first; these fixtures return an adult
+      // player who passes the gate, so the update proceeds as before.
+      if (table === "users") {
         return {
           select: () => ({
             eq: () => ({
-              neq: () => ({
-                neq: () => ({ maybeSingle: async () => ({ data: null }) }),
+              maybeSingle: async () => ({
+                data: {
+                  role: "player",
+                  date_of_birth: "2004-01-01", // 20+ years old
+                  guardian_consent_at: null,
+                },
               }),
             }),
           }),

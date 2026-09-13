@@ -2,60 +2,65 @@ import { defineEventHandler, createError } from "h3";
 import { useLogger } from "~/server/utils/logger";
 import { requireAuth } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
+import { computeGuardianLock } from "~/server/utils/guardianGate";
 
 export interface GuardianStatus {
-  /** True while an unconfirmed guardian claim is outstanding — outbound features stay locked. */
-  pending: boolean;
+  /** True when outbound features are locked — mirrors assertGuardianConfirmed exactly. */
+  locked: boolean;
   /** Obfuscated for display; the full address is never returned to the player. */
   guardianEmailMasked: string | null;
   expiresAt: string | null;
-  status: "pending" | "claimed" | "expired" | "revoked" | null;
+  status: "none" | "pending" | "claimed" | "expired" | "revoked";
 }
 
-/** j***@example.com — enough for the player to recognize the address, not to read it back. */
+/** p****@example.com — enough for the player to recognize the address, not to read it back. */
 const maskEmail = (email: string): string => {
   const [local, domain] = email.split("@");
   if (!local || !domain) return "…";
-  return `${local.slice(0, 1)}${"*".repeat(Math.max(local.length - 1, 1))}@${domain}`;
+  return `${local.slice(0, 1)}${"*".repeat(Math.max(local.length - 2, 1))}@${domain}`;
 };
 
 /**
  * Guardian-confirmation state for the signed-in player.
  *
- * Gated on the existence of a guardian_claims row rather than on guardian_consent_at being
- * null, deliberately: minors who joined through the older family-invite path predate the
- * consent columns, and keying off consent would retroactively lock accounts that were
- * never part of this flow.
+ * `locked` is computed identically to server/utils/guardianGate.ts's
+ * assertGuardianConfirmed — keyed on `users.guardian_consent_at`, not on whether a
+ * guardian_claims row exists. `status` is presentation-only, telling the dashboard
+ * banner which message to show ("invite a parent" vs. "waiting on confirmation" vs.
+ * nothing) — it must never be used to decide whether something is locked.
  *
- * Never returns `token`. It is the guardian's authorization to consent, and handing it to
- * the player would let a minor confirm their own account.
+ * Never returns `token`. It is the guardian's authorization to consent, and handing
+ * it to the player would let a minor confirm their own account.
  */
 export default defineEventHandler(async (event): Promise<GuardianStatus> => {
   const logger = useLogger(event, "guardian/status");
 
   try {
-    const user = await requireAuth(event);
+    const authUser = await requireAuth(event);
     const supabase = useSupabaseAdmin();
+
+    const { data: user } = await supabase
+      .from("users")
+      .select("role, date_of_birth, guardian_consent_at")
+      .eq("id", authUser.id)
+      .maybeSingle();
+
+    const locked = computeGuardianLock(user);
 
     const { data: claim } = await supabase
       .from("guardian_claims")
       .select("guardian_email, status, expires_at")
-      .eq("player_user_id", user.id)
+      .eq("player_user_id", authUser.id)
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();
 
     if (!claim) {
-      return {
-        pending: false,
-        guardianEmailMasked: null,
-        expiresAt: null,
-        status: null,
-      };
+      return { locked, guardianEmailMasked: null, expiresAt: null, status: "none" };
     }
 
     return {
-      pending: claim.status !== "claimed",
+      locked,
       guardianEmailMasked: maskEmail(claim.guardian_email),
       expiresAt: claim.expires_at,
       status: claim.status as GuardianStatus["status"],

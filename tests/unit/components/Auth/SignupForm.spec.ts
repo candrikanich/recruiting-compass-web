@@ -1,415 +1,112 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 import { mount } from "@vue/test-utils";
 import SignupForm from "~/components/Auth/SignupForm.vue";
 
 const baseProps = {
   userType: "player" as const,
-  firstName: "Jane",
+  firstName: "Owen",
   lastName: "Smith",
-  email: "jane@example.com",
-  dateOfBirth: "2005-06-15",
-  password: "Password1",
-  confirmPassword: "Password1",
-  agreeToTerms: true,
+  email: "",
+  dateOfBirth: "",
+  password: "",
+  confirmPassword: "",
+  agreeToTerms: false,
   loading: false,
   hasErrors: false,
   fieldErrors: {},
-  graduationYear: 2027,
-  primarySport: "Basketball",
-  gender: undefined as string | undefined,
-  zipCode: "",
+  requiresGuardian: true,
+  guardianEmail: "",
 };
 
-const createWrapper = (props: Record<string, unknown> = {}) =>
-  mount(SignupForm, {
-    props: { ...baseProps, ...props },
-    global: {
-      stubs: {
-        NuxtLink: { template: "<a><slot /></a>", props: ["to"] },
-        LoginInputField: {
-          template:
-            '<input :data-testid="id" :value="modelValue" @blur="$emit(\'blur\')" @input="$emit(\'update:modelValue\', $event.target.value)" />',
-          props: [
-            "id",
-            "modelValue",
-            "error",
-            "disabled",
-            "icon",
-            "required",
-            "label",
-            "type",
-            "placeholder",
-            "autocomplete",
-          ],
-          emits: ["update:modelValue", "blur"],
-        },
-        FieldError: {
-          template:
-            '<span v-if="error" :data-testid="id + \'-error\'">{{ error }}</span>',
-          props: ["id", "error"],
-        },
+describe("SignupForm wizard steps (13-17 player)", () => {
+  it("starts on the account step and does not show guardian or player-info fields", () => {
+    const wrapper = mount(SignupForm, { props: baseProps });
+
+    expect(wrapper.find("#firstName").exists()).toBe(true);
+    expect(wrapper.find("#guardianEmail").exists()).toBe(false);
+    expect(wrapper.find("#signup-graduation-year").exists()).toBe(false);
+  });
+
+  it("advances to the guardian step after Continue, once account-step fields are valid", async () => {
+    const wrapper = mount(SignupForm, {
+      props: {
+        ...baseProps,
+        email: "owen@example.com",
+        dateOfBirth: "2012-01-01",
+        password: "StrongPass123",
+        confirmPassword: "StrongPass123",
       },
-    },
+    });
+
+    await wrapper.find('[data-testid="signup-step-continue"]').trigger("click");
+
+    expect(wrapper.find("#guardianEmail").exists()).toBe(true);
+    expect(wrapper.find("#signup-graduation-year").exists()).toBe(false);
   });
 
-describe("SignupForm", () => {
-  describe("Conditional DOB field", () => {
-    it("shows dateOfBirth input when userType is player", () => {
-      const wrapper = createWrapper({ userType: "player" });
-      expect(wrapper.find("#dateOfBirth").exists()).toBe(true);
+  it("advancing past the guardian step via Skip emits an empty guardianEmail and reaches player-info", async () => {
+    const wrapper = mount(SignupForm, {
+      props: {
+        ...baseProps,
+        email: "owen@example.com",
+        dateOfBirth: "2012-01-01",
+        password: "StrongPass123",
+        confirmPassword: "StrongPass123",
+      },
     });
 
-    it("hides dateOfBirth input when userType is parent", () => {
-      const wrapper = createWrapper({ userType: "parent" });
-      expect(wrapper.find("#dateOfBirth").exists()).toBe(false);
-    });
+    await wrapper.find('[data-testid="signup-step-continue"]').trigger("click");
+    await wrapper.find('[data-testid="signup-guardian-skip"]').trigger("click");
+
+    expect(wrapper.emitted("update:guardianEmail")?.at(-1)).toEqual([""]);
+    expect(wrapper.find("#signup-graduation-year").exists()).toBe(true);
+    expect(wrapper.find("#guardianEmail").exists()).toBe(false);
   });
 
-  describe("isFormValid (submit button disabled/enabled)", () => {
-    it("enables button when all fields are filled and no errors", () => {
-      const wrapper = createWrapper();
-      expect(
-        wrapper.find('[data-testid="signup-button"]').attributes("disabled"),
-      ).toBeUndefined();
+  it("skips the guardian step entirely for an 18+ player (requiresGuardian false)", async () => {
+    const wrapper = mount(SignupForm, {
+      props: {
+        ...baseProps,
+        requiresGuardian: false,
+        email: "owen@example.com",
+        dateOfBirth: "1990-01-01",
+        password: "StrongPass123",
+        confirmPassword: "StrongPass123",
+      },
     });
 
-    it("disables button when firstName is empty", () => {
-      const wrapper = createWrapper({ firstName: "" });
-      expect(
-        wrapper.find('[data-testid="signup-button"]').attributes("disabled"),
-      ).toBeDefined();
-    });
+    await wrapper.find('[data-testid="signup-step-continue"]').trigger("click");
 
-    it("disables button when lastName is empty", () => {
-      const wrapper = createWrapper({ lastName: "" });
-      expect(
-        wrapper.find('[data-testid="signup-button"]').attributes("disabled"),
-      ).toBeDefined();
-    });
-
-    it("disables button when email is empty", () => {
-      const wrapper = createWrapper({ email: "" });
-      expect(
-        wrapper.find('[data-testid="signup-button"]').attributes("disabled"),
-      ).toBeDefined();
-    });
-
-    it("disables button when password is empty", () => {
-      const wrapper = createWrapper({ password: "" });
-      expect(
-        wrapper.find('[data-testid="signup-button"]').attributes("disabled"),
-      ).toBeDefined();
-    });
-
-    it("disables button when confirmPassword is empty", () => {
-      const wrapper = createWrapper({ confirmPassword: "" });
-      expect(
-        wrapper.find('[data-testid="signup-button"]').attributes("disabled"),
-      ).toBeDefined();
-    });
-
-    it("disables button when agreeToTerms is false", () => {
-      const wrapper = createWrapper({ agreeToTerms: false });
-      expect(
-        wrapper.find('[data-testid="signup-button"]').attributes("disabled"),
-      ).toBeDefined();
-    });
-
-    it("disables button when hasErrors is true", () => {
-      const wrapper = createWrapper({ hasErrors: true });
-      expect(
-        wrapper.find('[data-testid="signup-button"]').attributes("disabled"),
-      ).toBeDefined();
-    });
-
-    it("disables button when player dateOfBirth is empty", () => {
-      const wrapper = createWrapper({ userType: "player", dateOfBirth: "" });
-      expect(
-        wrapper.find('[data-testid="signup-button"]').attributes("disabled"),
-      ).toBeDefined();
-    });
-
-    it("enables button when parent dateOfBirth is empty (DOB not required for parents)", () => {
-      const wrapper = createWrapper({ userType: "parent", dateOfBirth: "" });
-      expect(
-        wrapper.find('[data-testid="signup-button"]').attributes("disabled"),
-      ).toBeUndefined();
-    });
+    expect(wrapper.find("#guardianEmail").exists()).toBe(false);
+    expect(wrapper.find("#signup-graduation-year").exists()).toBe(true);
   });
 
-  describe("Emit: submit", () => {
-    it("emits submit when form is submitted", async () => {
-      const wrapper = createWrapper();
-      await wrapper.find("form").trigger("submit");
-      expect(wrapper.emitted("submit")).toHaveLength(1);
+  it("renders a single unstepped form for a parent (no wizard)", () => {
+    const wrapper = mount(SignupForm, {
+      props: { ...baseProps, userType: "parent", requiresGuardian: false },
     });
+
+    expect(wrapper.find('[data-testid="signup-step-continue"]').exists()).toBe(false);
+    expect(wrapper.find("[data-testid='signup-button']").exists()).toBe(true);
   });
 
-  describe("Emit: update:firstName", () => {
-    it("emits update:firstName when firstName input changes", async () => {
-      const wrapper = createWrapper();
-      await wrapper.find('[data-testid="firstName"]').setValue("John");
-      expect(wrapper.emitted("update:firstName")).toEqual([["John"]]);
-    });
-  });
+  it("keeps account-step fields in document order for tab navigation", () => {
+    const wrapper = mount(SignupForm, { props: baseProps });
 
-  describe("Emit: update:lastName", () => {
-    it("emits update:lastName when lastName input changes", async () => {
-      const wrapper = createWrapper();
-      await wrapper.find('[data-testid="lastName"]').setValue("Doe");
-      expect(wrapper.emitted("update:lastName")).toEqual([["Doe"]]);
-    });
-  });
+    const allFocusable = wrapper.findAll("input, button");
+    const ids = ["firstName", "lastName", "dateOfBirth", "email", "password", "confirmPassword"];
+    const indices = ids.map((id) =>
+      allFocusable.findIndex((el) => el.attributes("id") === id),
+    );
 
-  describe("Emit: update:email", () => {
-    it("emits update:email when email input changes", async () => {
-      const wrapper = createWrapper();
-      await wrapper.find('[data-testid="email"]').setValue("new@example.com");
-      expect(wrapper.emitted("update:email")).toEqual([["new@example.com"]]);
-    });
-  });
-
-  describe("Emit: update:dateOfBirth", () => {
-    it("emits update:dateOfBirth when dateOfBirth input fires input event", async () => {
-      const wrapper = createWrapper({ userType: "player" });
-      const input = wrapper.find("#dateOfBirth");
-      await input.trigger("input");
-      expect(wrapper.emitted("update:dateOfBirth")).toBeDefined();
-    });
-
-    // Safari/WebKit's native date-picker UI (clicking a day in the calendar,
-    // rather than typing digits) is known to fire only `change`, not `input`,
-    // on <input type="date"> — issue #696: the Create Account button stayed
-    // disabled because dateOfBirth never updated, even though the picker
-    // visibly showed the selected date.
-    it("emits update:dateOfBirth when dateOfBirth input fires change without input (Safari picker, #696)", async () => {
-      const wrapper = createWrapper({ userType: "player" });
-      const input = wrapper.find("#dateOfBirth");
-      (input.element as HTMLInputElement).value = "2005-06-15";
-      await input.trigger("change");
-      expect(wrapper.emitted("update:dateOfBirth")).toEqual([["2005-06-15"]]);
-    });
-  });
-
-  describe("Emit: update:password", () => {
-    it("emits update:password when password input changes", async () => {
-      const wrapper = createWrapper();
-      await wrapper.find('[data-testid="password"]').setValue("NewPass1");
-      expect(wrapper.emitted("update:password")).toEqual([["NewPass1"]]);
-    });
-  });
-
-  describe("Emit: update:confirmPassword", () => {
-    it("emits update:confirmPassword when confirmPassword input fires input", async () => {
-      const wrapper = createWrapper();
-      const input = wrapper.find("#confirmPassword");
-      (input.element as HTMLInputElement).value = "NewPass1";
-      await input.trigger("input");
-      expect(wrapper.emitted("update:confirmPassword")).toEqual([["NewPass1"]]);
-    });
-  });
-
-  describe("Emit: update:agreeToTerms", () => {
-    it("emits update:agreeToTerms when checkbox changes", async () => {
-      const wrapper = createWrapper({ agreeToTerms: true });
-      const checkbox = wrapper.find("#agreeToTerms");
-      (checkbox.element as HTMLInputElement).checked = false;
-      await checkbox.trigger("change");
-      expect(wrapper.emitted("update:agreeToTerms")).toEqual([[false]]);
-    });
-  });
-
-  describe("Emit: validateEmail", () => {
-    it("emits validateEmail when email input blurs", async () => {
-      const wrapper = createWrapper();
-      await wrapper.find('[data-testid="email"]').trigger("blur");
-      expect(wrapper.emitted("validateEmail")).toHaveLength(1);
-    });
-  });
-
-  describe("Emit: validatePassword", () => {
-    it("emits validatePassword when password input blurs", async () => {
-      const wrapper = createWrapper();
-      await wrapper.find('[data-testid="password"]').trigger("blur");
-      expect(wrapper.emitted("validatePassword")).toHaveLength(1);
-    });
-  });
-
-  describe("Disabled state", () => {
-    it("disables dateOfBirth input when loading is true", () => {
-      const wrapper = createWrapper({ userType: "player", loading: true });
-      expect(wrapper.find("#dateOfBirth").attributes("disabled")).toBeDefined();
-    });
-
-    it("does not disable agreeToTerms checkbox when loading is true (only dateOfBirth is disabled)", () => {
-      const wrapper = createWrapper({ loading: true });
-      // The agreeToTerms checkbox does not receive the disabled prop in the template;
-      // only the raw dateOfBirth input (and LoginInputField wrappers) are gated by `disabled`.
-      expect(
-        wrapper.find("#agreeToTerms").attributes("disabled"),
-      ).toBeUndefined();
-    });
-  });
-
-  describe("Field errors", () => {
-    it("shows dateOfBirth-error span when fieldErrors.dateOfBirth is set", () => {
-      const wrapper = createWrapper({
-        userType: "player",
-        fieldErrors: { dateOfBirth: "Date of birth is required" },
-      });
-      expect(
-        wrapper.find('[data-testid="dateOfBirth-error-error"]').exists(),
-      ).toBe(true);
-    });
-
-    it("shows terms-error span when fieldErrors.terms is set", () => {
-      const wrapper = createWrapper({
-        fieldErrors: { terms: "You must agree to the terms" },
-      });
-      expect(wrapper.find('[data-testid="terms-error-error"]').exists()).toBe(
-        true,
-      );
-    });
-  });
-
-  describe("aria-invalid on dateOfBirth", () => {
-    it("sets aria-invalid to true when fieldErrors.dateOfBirth is set", () => {
-      const wrapper = createWrapper({
-        userType: "player",
-        fieldErrors: { dateOfBirth: "Required" },
-      });
-      expect(wrapper.find("#dateOfBirth").attributes("aria-invalid")).toBe(
-        "true",
-      );
-    });
-
-    it("sets aria-invalid to false when no dateOfBirth error", () => {
-      const wrapper = createWrapper({ userType: "player", fieldErrors: {} });
-      expect(wrapper.find("#dateOfBirth").attributes("aria-invalid")).toBe(
-        "false",
-      );
-    });
-  });
-
-  describe("Loading indicator", () => {
-    it("renders role=status div when loading is true", () => {
-      const wrapper = createWrapper({ loading: true });
-      expect(wrapper.find('[role="status"]').exists()).toBe(true);
-    });
-
-    it("does not render role=status div when loading is false", () => {
-      const wrapper = createWrapper({ loading: false });
-      expect(wrapper.find('[role="status"]').exists()).toBe(false);
-    });
-  });
-
-  describe("Form accessibility", () => {
-    it("sets aria-describedby to form-error-summary when hasErrors is true", () => {
-      const wrapper = createWrapper({ hasErrors: true });
-      expect(wrapper.find("form").attributes("aria-describedby")).toBe(
-        "form-error-summary",
-      );
-    });
-
-    it("omits aria-describedby when hasErrors is false", () => {
-      const wrapper = createWrapper({ hasErrors: false });
-      expect(
-        wrapper.find("form").attributes("aria-describedby"),
-      ).toBeUndefined();
-    });
-  });
-
-  describe("Pre-confirmation onboarding fields (step 1, player only)", () => {
-    it("shows graduation year and sport fields for player signup", () => {
-      const wrapper = createWrapper({ userType: "player" });
-      expect(wrapper.find("#signup-graduation-year").exists()).toBe(true);
-      expect(wrapper.find("#signup-primary-sport").exists()).toBe(true);
-      expect(wrapper.find("#signup-zip-code").exists()).toBe(true);
-    });
-
-    it("hides onboarding fields for parent signup", () => {
-      const wrapper = createWrapper({ userType: "parent" });
-      expect(wrapper.find("#signup-graduation-year").exists()).toBe(false);
-      expect(wrapper.find("#signup-primary-sport").exists()).toBe(false);
-      expect(wrapper.find("#signup-zip-code").exists()).toBe(false);
-    });
-
-    it("shows gender field when sport doesn't auto-derive it", () => {
-      const wrapper = createWrapper({ primarySport: "Basketball" });
-      expect(wrapper.find("#signup-gender").exists()).toBe(true);
-    });
-
-    it("hides gender field when sport auto-derives it (e.g. Baseball)", () => {
-      const wrapper = createWrapper({ primarySport: "Baseball" });
-      expect(wrapper.find("#signup-gender").exists()).toBe(false);
-    });
-
-    it("disables submit when player is missing graduation year", () => {
-      const wrapper = createWrapper({ graduationYear: undefined });
-      expect(
-        wrapper.find('[data-testid="signup-button"]').attributes("disabled"),
-      ).toBeDefined();
-    });
-
-    it("disables submit when player is missing primary sport", () => {
-      const wrapper = createWrapper({ primarySport: "" });
-      expect(
-        wrapper.find('[data-testid="signup-button"]').attributes("disabled"),
-      ).toBeDefined();
-    });
-
-    it("does not require graduation year/sport for parent signup", () => {
-      const wrapper = createWrapper({
-        userType: "parent",
-        graduationYear: undefined,
-        primarySport: "",
-      });
-      expect(
-        wrapper.find('[data-testid="signup-button"]').attributes("disabled"),
-      ).toBeUndefined();
-    });
-
-    it("emits update:primarySport when sport select changes", async () => {
-      const wrapper = createWrapper();
-      await wrapper.find("#signup-primary-sport").setValue("Soccer");
-      expect(wrapper.emitted("update:primarySport")).toEqual([["Soccer"]]);
-    });
-
-    it("emits update:graduationYear when year select changes", async () => {
-      const wrapper = createWrapper();
-      await wrapper.find("#signup-graduation-year").setValue("2028");
-      expect(wrapper.emitted("update:graduationYear")).toEqual([[2028]]);
-    });
-
-    it("emits update:zipCode when zip input changes", async () => {
-      const wrapper = createWrapper();
-      await wrapper.find("#signup-zip-code").setValue("90210");
-      expect(wrapper.emitted("update:zipCode")).toEqual([["90210"]]);
-    });
-  });
-
-  describe("Players 13+ can sign up independently", () => {
-    const yearsAgo = (years: number) =>
-      `${new Date().getFullYear() - years}-06-15`;
-
-    it("allows a 13–17 player to submit (no guardian gate)", () => {
-      const wrapper = createWrapper({ dateOfBirth: yearsAgo(15) });
-      expect(
-        wrapper.find('[data-testid="minor-guardian-notice"]').exists(),
-      ).toBe(false);
-      expect(
-        wrapper.find('[data-testid="signup-button"]').attributes("disabled"),
-      ).toBeUndefined();
-    });
-
-    it("allows an adult (18+) player to submit", () => {
-      const wrapper = createWrapper({ dateOfBirth: yearsAgo(20) });
-      expect(
-        wrapper.find('[data-testid="minor-guardian-notice"]').exists(),
-      ).toBe(false);
-      expect(
-        wrapper.find('[data-testid="signup-button"]').attributes("disabled"),
-      ).toBeUndefined();
-    });
+    expect(indices.every((idx) => idx !== -1)).toBe(true);
+    for (let i = 1; i < indices.length; i++) {
+      expect(indices[i]).toBeGreaterThan(indices[i - 1]);
+    }
+    // Continue is the last focusable element on this step.
+    const continueIdx = allFocusable.findIndex(
+      (el) => el.attributes("data-testid") === "signup-step-continue",
+    );
+    expect(continueIdx).toBeGreaterThan(indices[indices.length - 1]);
   });
 });

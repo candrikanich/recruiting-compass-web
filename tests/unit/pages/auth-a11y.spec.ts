@@ -167,32 +167,60 @@ describe("Auth Form Accessibility", () => {
         },
       });
 
-    it("should have dynamic aria-label for player form", () => {
+    // A 13-17 (or unstated) player renders a wizard: account/guardian/player-info
+    // fields are spread across steps rather than one screen, but each step is its
+    // own real <form> — not a bare div — so it keeps an accessible name/description,
+    // Enter-to-submit, and the password manager's form-boundary heuristic for the
+    // new-password field. The account step (rendered first) carries the id the
+    // parent form also uses, since only one is ever mounted at a time.
+    it("should wrap the player wizard's account step in form#signup-form", () => {
       const wrapper = mountSignupForm({ userType: "player" });
       const form = wrapper.find("form#signup-form");
+      expect(form.exists()).toBe(true);
       expect(form.attributes("aria-label")).toBe("Create player account");
+      expect(
+        wrapper.find('[data-testid="signup-form-player"]').exists(),
+      ).toBe(true);
     });
 
-    it("should have dynamic aria-label for parent form", () => {
+    it("should link the player wizard's account step to the error summary when errors exist", () => {
+      const wrapper = mountSignupForm({ userType: "player", hasErrors: true });
+      const form = wrapper.find("form#signup-form");
+      expect(form.attributes("aria-describedby")).toBe("form-error-summary");
+    });
+
+    it("should advance the player wizard on Enter key press (form submit) in the account step", async () => {
+      const wrapper = mountSignupForm({ userType: "player" });
+      const form = wrapper.find("form#signup-form");
+
+      await form.trigger("submit");
+
+      // requiresGuardian isn't set, so the wizard skips straight to the info step —
+      // proof the account step's <form> submit actually drives navigation, not just
+      // exists cosmetically.
+      expect(wrapper.find("#signup-graduation-year").exists()).toBe(true);
+    });
+
+    it("should have a static aria-label for parent form", () => {
       const wrapper = mountSignupForm({ userType: "parent" });
       const form = wrapper.find("form#signup-form");
       expect(form.attributes("aria-label")).toBe("Create parent account");
     });
 
     it("should link to error summary when errors exist", () => {
-      const wrapper = mountSignupForm({ hasErrors: true });
+      const wrapper = mountSignupForm({ userType: "parent", hasErrors: true });
       const form = wrapper.find("form#signup-form");
       expect(form.attributes("aria-describedby")).toBe("form-error-summary");
     });
 
     it("should have aria-label on submit button", () => {
-      const wrapper = mountSignupForm();
+      const wrapper = mountSignupForm({ userType: "parent" });
       const button = wrapper.find('[data-testid="signup-button"]');
       expect(button.attributes("aria-label")).toBe("Create Account");
     });
 
     it("should update submit button aria-label during loading", () => {
-      const wrapper = mountSignupForm({ loading: true });
+      const wrapper = mountSignupForm({ userType: "parent", loading: true });
       const button = wrapper.find('[data-testid="signup-button"]');
       expect(button.attributes("aria-label")).toBe(
         "Creating account, please wait",
@@ -200,7 +228,7 @@ describe("Auth Form Accessibility", () => {
     });
 
     it("should have aria-busy on submit button during loading", () => {
-      const wrapper = mountSignupForm({ loading: true });
+      const wrapper = mountSignupForm({ userType: "parent", loading: true });
       const button = wrapper.find('[data-testid="signup-button"]');
       expect(button.attributes("aria-busy")).toBe("true");
     });
@@ -318,10 +346,17 @@ describe("Auth Form Accessibility", () => {
   });
 
   describe("SignupForm keyboard navigation", () => {
+    // Parent signup stays a single screen (no wizard), so it's the shape
+    // that exercises tab order and keyboard-submit across the whole form in
+    // one render. tests/unit/components/Auth/SignupForm.spec.ts covers the
+    // 13-17 player wizard's step transitions (Continue/Skip clicks), and a
+    // light tab-order check within the account step — neither file asserts
+    // full keyboard-submit or terms-checkbox tab order for the wizard path,
+    // since the terms checkbox only exists on its final ("info") step.
     const mountSignupForm = () =>
       mount(SignupForm, {
         props: {
-          userType: "player",
+          userType: "parent",
           firstName: "",
           lastName: "",
           email: "",
