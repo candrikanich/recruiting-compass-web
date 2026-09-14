@@ -1,9 +1,17 @@
 import { defineEventHandler, getRouterParam, createError } from "h3";
 import { useLogger } from "~/server/utils/logger";
+import { rateLimitByIp, throwIfRateLimited } from "~/server/utils/rateLimit";
 import { consumeVerificationToken } from "~/server/utils/emailVerificationTokens";
 
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "auth/verify-email");
+
+  // Unauthenticated and token-guessable — cap attempts per IP the same way
+  // signup does.
+  throwIfRateLimited(
+    await rateLimitByIp(event, { requests: 10, window: "1 h" }),
+  );
+
   const token = getRouterParam(event, "token");
 
   if (!token) {

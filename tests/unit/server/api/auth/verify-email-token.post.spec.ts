@@ -8,6 +8,11 @@ vi.mock("~/server/utils/emailVerificationTokens", () => ({
 vi.mock("~/server/utils/logger", () => ({
   useLogger: () => ({ info: vi.fn(), error: vi.fn(), warn: vi.fn(), debug: vi.fn() }),
 }));
+const mockRateLimitByIp = vi.fn(async () => ({ success: true }));
+vi.mock("~/server/utils/rateLimit", () => ({
+  rateLimitByIp: mockRateLimitByIp,
+  throwIfRateLimited: vi.fn(),
+}));
 
 vi.mock("h3", async (importOriginal) => {
   const actual = await importOriginal<typeof import("h3")>();
@@ -48,6 +53,10 @@ describe("POST /api/auth/verify-email/:token", () => {
     const result = await handler({} as Parameters<typeof handler>[0]);
 
     expect(result).toEqual({ status: "verified" });
+    expect(mockRateLimitByIp).toHaveBeenCalledWith(
+      expect.anything(),
+      { requests: 10, window: "1 h" },
+    );
   });
 
   it("returns already_verified status when email was already verified", async () => {

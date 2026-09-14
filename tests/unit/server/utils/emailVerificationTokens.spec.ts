@@ -33,9 +33,13 @@ vi.mock("~/server/utils/supabase", () => ({
         return {
           update: (fields: Record<string, unknown>) => {
             mockUsersUpdateCalls.push(fields);
-            return {
-              eq: async () => ({ error: null }),
-            };
+            // .eq(...) is awaitable on its own AND chains into .is(...) for
+            // the "only if still null" guard on the already_verified path.
+            const eqResult = Object.assign(
+              Promise.resolve({ error: null }),
+              { is: async () => ({ error: null }) },
+            );
+            return { eq: () => eqResult };
           },
         };
       }
@@ -93,6 +97,24 @@ describe("emailVerificationTokens", () => {
     const result = await consumeVerificationToken("used");
     expect(result.status).toBe("already_verified");
     expect(result.userId).toBe("user-1");
+  });
+
+  it("stamps email_verified_at on a consumed token that was never verified", async () => {
+    // consumed_at is also set when issueVerificationToken invalidates a prior
+    // token on resend — clicking that older email must not report success
+    // while leaving users.email_verified_at null.
+    mockTokenRow = {
+      user_id: "user-1",
+      expires_at: new Date(Date.now() + 1000).toISOString(),
+      consumed_at: new Date().toISOString(),
+    };
+
+    const result = await consumeVerificationToken("invalidated-by-resend");
+
+    expect(result.status).toBe("already_verified");
+    expect(mockUsersUpdateCalls[0]).toMatchObject({
+      email_verified_at: expect.any(String),
+    });
   });
 
   it("verifies a valid unconsumed token", async () => {

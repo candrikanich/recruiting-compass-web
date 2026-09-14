@@ -50,7 +50,16 @@ export async function consumeVerificationToken(token: string): Promise<{
 
   if (row.consumed_at) {
     // Idempotent — a double-click or stale tab replaying the same link is
-    // a success, not an error (spec §4).
+    // a success, not an error (spec §4). But consumed_at is also set when a
+    // token is invalidated by a resend (issueVerificationToken above), which
+    // is NOT the same as having verified — without this the old email's link
+    // would report success while email_verified_at stayed null.
+    await supabase
+      .from("users")
+      .update({ email_verified_at: new Date().toISOString() })
+      .eq("id", row.user_id)
+      .is("email_verified_at", null);
+
     return { status: "already_verified", userId: row.user_id };
   }
 
