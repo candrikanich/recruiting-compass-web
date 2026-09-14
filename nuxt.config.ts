@@ -229,9 +229,17 @@ export default defineNuxtConfig({
     org: "chris-andrikanich",
     project: "javascript-nuxt",
     autoInjectServerSentry: "top-level-import",
+    // Sourcemap upload hits the Sentry API at build time and only pays off where
+    // release symbolication actually matters. Preview builds get thrown away on
+    // the next push; production keeps full upload so stack traces stay readable.
+    sourceMapsUploadOptions: {
+      enabled: process.env.VERCEL_ENV === "production",
+    },
   },
 
   sourcemap: {
-    client: "hidden",
+    // Generating client sourcemaps is itself real build-time cost, not just the
+    // upload above — skip it entirely on preview, where nothing consumes it.
+    client: process.env.VERCEL_ENV === "production" ? "hidden" : false,
   },
 });
