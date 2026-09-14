@@ -96,6 +96,19 @@ export default defineEventHandler(async (event) => {
       }
     }
 
+    // The invite link was emailed to invitation.invited_email and the
+    // caller only reaches here after the emailMismatch check above passed —
+    // clicking it already proves ownership of this address.
+    const { error: verifyStampError } = await supabase
+      .from("users")
+      .update({ email_verified_at: new Date().toISOString() })
+      .eq("id", user.id)
+      .is("email_verified_at", null);
+
+    if (verifyStampError) {
+      logger.error("Failed to stamp email as verified", verifyStampError);
+    }
+
     await supabase
       .from("family_invitations")
       .update({ status: "accepted", accepted_at: new Date().toISOString() })

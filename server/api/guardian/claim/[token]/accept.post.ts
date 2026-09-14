@@ -159,6 +159,19 @@ export default defineEventHandler(async (event) => {
       }
     }
 
+    // The claim link was emailed to claim.guardian_email and the caller only
+    // reaches here after the email match check above passed — clicking it
+    // already proves ownership of this address.
+    const { error: verifyStampError } = await supabase
+      .from("users")
+      .update({ email_verified_at: new Date().toISOString() })
+      .eq("id", guardian.id)
+      .is("email_verified_at", null);
+
+    if (verifyStampError) {
+      logger.error("Failed to stamp email as verified", verifyStampError);
+    }
+
     // Membership before consent: family_members is what the DB gate accepts as a permanent
     // link (it is expiry-proof, unlike the claim), so establishing it first means the
     // consent UPDATE below cannot be rejected once the claim is marked claimed.
