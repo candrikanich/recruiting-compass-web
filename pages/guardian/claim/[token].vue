@@ -5,6 +5,8 @@ import { useAuth } from "~/composables/useAuth";
 import { useUserStore } from "~/stores/user";
 import { useAuthFetch } from "~/composables/useAuthFetch";
 import { useAppToast } from "~/composables/useAppToast";
+import { useFamilyCtx } from "~/composables/useFamilyCtx";
+import { suppressAutoFamilyCreateOnNextSignIn } from "~/composables/useAccountProvisioning";
 
 definePageMeta({ auth: false, layout: "public" });
 
@@ -15,6 +17,7 @@ const { login, signup } = useAuth();
 const userStore = useUserStore();
 const { $fetchAuth } = useAuthFetch();
 const { showToast } = useAppToast();
+const familyCtx = useFamilyCtx();
 
 interface ClaimDetails {
   guardianEmail: string;
@@ -161,6 +164,13 @@ const confirmClaim = async () => {
   await $fetchAuth(`/api/guardian/claim/${encodeURIComponent(token.value)}/accept`, {
     method: "POST",
   });
+  // The app-wide family-context singleton (provided once at app.vue mount) already
+  // fetched /api/family/accessible the moment signup() flipped the guardian's role to
+  // "parent" -- before this accept call ran -- and caches that result until something
+  // refetches it. Without this, the dashboard reads that stale (family-less) snapshot
+  // and shows "Your athlete isn't connected yet" even though the accept above just
+  // connected them. Found live on QA.
+  await familyCtx.refetchFamilies();
   showToast(
     `${claim.value?.playerName ?? "Your athlete"} is all set.`,
     "success",
@@ -180,6 +190,9 @@ const handleSubmit = async () => {
     }
 
     if (mode.value === "login") {
+      // See suppressAutoFamilyCreateOnNextSignIn's own comment: confirmClaim below
+      // already handles family setup for this guardian.
+      suppressAutoFamilyCreateOnNextSignIn();
       await login(
         claim.value!.guardianEmail,
         password.value,
@@ -210,6 +223,12 @@ const handleSubmit = async () => {
 
     // The guardian's own account is created with the email the player named, so the
     // accept endpoint's email binding matches.
+    //
+    // See suppressAutoFamilyCreateOnNextSignIn's own comment: confirmClaim below
+    // already handles family setup for this guardian (joins the player's existing
+    // family, or creates one) -- without this the SIGNED_IN listener's own blind
+    // /api/family/create call races it and splits the guardian across two families.
+    suppressAutoFamilyCreateOnNextSignIn();
     await signup(
       claim.value!.guardianEmail,
       password.value,

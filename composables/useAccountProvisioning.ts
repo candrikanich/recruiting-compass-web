@@ -8,6 +8,21 @@ import { createClientLogger } from "~/utils/logger";
 
 const logger = createClientLogger("account-provisioning");
 
+// A page that already handles its own family setup after sign-in (the guardian-claim
+// accept flow: /api/guardian/claim/[token]/accept both joins the guardian to the
+// player's family AND creates one if needed) sets this immediately before calling
+// signup()/login(). Without it, the SIGNED_IN listener's blind ensureAccountProvisioned
+// call races that page's own explicit flow -- both independently check "does this user
+// have a family?" and, seeing none yet, both create one, leaving the guardian split
+// across two family_units (one real, one empty and orphaned). Found live on QA. A
+// module-level flag (not a ref) is deliberate: it must be set synchronously before the
+// async signup()/login() call, well before the async SIGNED_IN listener that consumes
+// it ever runs, so there is no race on the flag itself.
+let suppressNextFamilyCreate = false;
+export const suppressAutoFamilyCreateOnNextSignIn = () => {
+  suppressNextFamilyCreate = true;
+};
+
 /**
  * Backfills server-side state that a signup couldn't set up itself because
  * Supabase withheld the session until email confirmation (prod's
@@ -74,10 +89,14 @@ export const useAccountProvisioning = () => {
   };
 
   const ensureAccountProvisioned = async (user: User) => {
-    try {
-      await $fetchAuth("/api/family/create", { method: "POST" });
-    } catch (err) {
-      logger.error("Failed to ensure family unit on sign-in", err);
+    if (suppressNextFamilyCreate) {
+      suppressNextFamilyCreate = false;
+    } else {
+      try {
+        await $fetchAuth("/api/family/create", { method: "POST" });
+      } catch (err) {
+        logger.error("Failed to ensure family unit on sign-in", err);
+      }
     }
 
     if (
