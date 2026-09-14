@@ -1,8 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 let mockTokenRow: Record<string, unknown> | null = null;
-let mockUpdateCalls: Record<string, unknown>[] = [];
+let mockTokenUpdateCalls: Record<string, unknown>[] = [];
 let mockInsertCalls: Record<string, unknown>[] = [];
+let mockUsersUpdateCalls: Record<string, unknown>[] = [];
 
 vi.mock("~/server/utils/supabase", () => ({
   useSupabaseAdmin: vi.fn(() => ({
@@ -10,7 +11,7 @@ vi.mock("~/server/utils/supabase", () => ({
       if (table === "email_verification_tokens") {
         return {
           update: (fields: Record<string, unknown>) => {
-            mockUpdateCalls.push(fields);
+            mockTokenUpdateCalls.push(fields);
             return {
               eq: () => ({
                 is: async () => ({ error: null }),
@@ -31,7 +32,7 @@ vi.mock("~/server/utils/supabase", () => ({
       if (table === "users") {
         return {
           update: (fields: Record<string, unknown>) => {
-            mockUpdateCalls.push(fields);
+            mockUsersUpdateCalls.push(fields);
             return {
               eq: async () => ({ error: null }),
             };
@@ -51,8 +52,9 @@ import {
 describe("emailVerificationTokens", () => {
   beforeEach(() => {
     mockTokenRow = null;
-    mockUpdateCalls = [];
+    mockTokenUpdateCalls = [];
     mockInsertCalls = [];
+    mockUsersUpdateCalls = [];
   });
 
   it("issues a token with a 24h expiry and invalidates prior tokens first", async () => {
@@ -62,7 +64,7 @@ describe("emailVerificationTokens", () => {
     const expiresMs = new Date(expiresAt).getTime() - Date.now();
     expect(expiresMs).toBeGreaterThan(23.9 * 60 * 60 * 1000);
     expect(expiresMs).toBeLessThan(24.1 * 60 * 60 * 1000);
-    expect(mockUpdateCalls).toEqual([{ consumed_at: expect.any(String) }]);
+    expect(mockTokenUpdateCalls).toEqual([{ consumed_at: expect.any(String) }]);
     expect(mockInsertCalls[0]).toMatchObject({ user_id: "user-1", token });
   });
 
@@ -102,5 +104,13 @@ describe("emailVerificationTokens", () => {
     const result = await consumeVerificationToken("good");
     expect(result.status).toBe("verified");
     expect(result.userId).toBe("user-1");
+    // Verify that token was marked consumed
+    expect(mockTokenUpdateCalls[0]).toMatchObject({
+      consumed_at: expect.any(String),
+    });
+    // Verify that users.email_verified_at was set (the key side effect)
+    expect(mockUsersUpdateCalls[0]).toMatchObject({
+      email_verified_at: expect.any(String),
+    });
   });
 });
