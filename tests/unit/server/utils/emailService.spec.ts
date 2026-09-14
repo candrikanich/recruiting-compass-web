@@ -35,6 +35,7 @@ import {
   sendEmail,
   sendNotificationEmail,
   sendInviteEmail,
+  sendVerificationEmail,
   renderWeeklyDigestEmail,
   renderDeadlineAlertEmail,
 } from "~/server/utils/emailService";
@@ -379,6 +380,22 @@ describe("emailService (Resend SDK)", () => {
       const [payload] = sendMock.mock.calls[0];
       expect(payload.html).not.toContain("<script>alert(1)</script>");
       expect(payload.html).toContain("&lt;script&gt;alert(1)&lt;/script&gt;");
+    });
+  });
+
+  describe("sendVerificationEmail", () => {
+    it("includes the token link and a stable idempotency key", async () => {
+      const result = await sendVerificationEmail({
+        to: "parent@example.com",
+        token: "abc-123",
+      });
+
+      expect(result.success).toBe(true);
+      const [payload] = sendMock.mock.calls[0];
+      expect(payload.html).toContain("/verify-email/abc-123");
+
+      const [, options] = sendMock.mock.calls[0];
+      expect(options).toMatchObject({ idempotencyKey: "verify-email-abc-123" });
     });
   });
 });
