@@ -2,6 +2,7 @@ import { ref, readonly } from "vue";
 import { useSupabase } from "~/composables/useSupabase";
 import { useAuthFetch } from "~/composables/useAuthFetch";
 import { createClientLogger } from "~/utils/logger";
+import type { User } from "~/types/models";
 
 const logger = createClientLogger("useEmailVerification");
 
@@ -89,7 +90,11 @@ export const useEmailVerification = () => {
           .eq("id", user.id)
           .maybeSingle();
 
-        const verified = profile?.email_verified_at != null;
+        // useSupabase()'s client has no Database generic, so this resolves
+        // to `never` — same root cause as stores/user.ts's identical cast.
+        const verified =
+          (profile as Pick<User, "email_verified_at"> | null)
+            ?.email_verified_at != null;
         isVerified.value = verified;
         return verified;
       },
