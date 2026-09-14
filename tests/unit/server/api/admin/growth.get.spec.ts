@@ -107,10 +107,30 @@ describe("GET /api/admin/growth", () => {
   it("returns inboundEmail confirmation + coach-match rates over the window", async () => {
     const now = new Date().toISOString();
     data["inbound_email_drafts"] = [
-      { status: "confirmed", matched_coach_id: "c1", created_at: now, family_unit_id: "fam-1" },
-      { status: "confirmed", matched_coach_id: null, created_at: now, family_unit_id: "fam-1" },
-      { status: "discarded", matched_coach_id: null, created_at: now, family_unit_id: "fam-2" },
-      { status: "pending", matched_coach_id: null, created_at: now, family_unit_id: "fam-3" },
+      {
+        status: "confirmed",
+        matched_coach_id: "c1",
+        created_at: now,
+        family_unit_id: "fam-1",
+      },
+      {
+        status: "confirmed",
+        matched_coach_id: null,
+        created_at: now,
+        family_unit_id: "fam-1",
+      },
+      {
+        status: "discarded",
+        matched_coach_id: null,
+        created_at: now,
+        family_unit_id: "fam-2",
+      },
+      {
+        status: "pending",
+        matched_coach_id: null,
+        created_at: now,
+        family_unit_id: "fam-3",
+      },
     ];
 
     const res = await handler(ev("30"));
@@ -137,10 +157,25 @@ describe("GET /api/admin/growth", () => {
     const now = new Date().toISOString();
     counts["family_units"] = 4;
     data["inbound_email_drafts"] = [
-      { status: "confirmed", matched_coach_id: "c1", created_at: now, family_unit_id: "fam-1" },
-      { status: "confirmed", matched_coach_id: "c2", created_at: now, family_unit_id: "fam-2" },
+      {
+        status: "confirmed",
+        matched_coach_id: "c1",
+        created_at: now,
+        family_unit_id: "fam-1",
+      },
+      {
+        status: "confirmed",
+        matched_coach_id: "c2",
+        created_at: now,
+        family_unit_id: "fam-2",
+      },
       // Same family as fam-1 — must dedupe, not double-count.
-      { status: "pending", matched_coach_id: null, created_at: now, family_unit_id: "fam-1" },
+      {
+        status: "pending",
+        matched_coach_id: null,
+        created_at: now,
+        family_unit_id: "fam-1",
+      },
     ];
 
     const res = await handler(ev("30"));
@@ -149,7 +184,9 @@ describe("GET /api/admin/growth", () => {
     expect(res.inboundEmail.familyAdoptionPct).toBe(50);
     // Never appears in the shared users-denominator adoption feature list.
     expect(
-      res.adoption.features.some((f: { feature: string }) => f.feature === "inbound_email_drafts"),
+      res.adoption.features.some(
+        (f: { feature: string }) => f.feature === "inbound_email_drafts",
+      ),
     ).toBe(false);
   });
 });

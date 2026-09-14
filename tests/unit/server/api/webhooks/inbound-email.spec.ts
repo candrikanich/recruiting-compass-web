@@ -8,7 +8,9 @@ vi.mock("h3", async () => {
     readRawBody: vi.fn(),
     getHeaders: vi.fn(),
     createError: (opts: { statusCode: number; statusMessage?: string }) =>
-      Object.assign(new Error(opts.statusMessage ?? "error"), { statusCode: opts.statusCode }),
+      Object.assign(new Error(opts.statusMessage ?? "error"), {
+        statusCode: opts.statusCode,
+      }),
   };
 });
 
@@ -27,14 +29,24 @@ vi.mock("~/server/utils/matchCoachByEmail", () => ({
   autoCreateCoachByEmailDomain: vi.fn(),
 }));
 vi.mock("~/server/utils/logger", () => ({
-  useLogger: () => ({ debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() }),
+  useLogger: () => ({
+    debug: vi.fn(),
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+  }),
 }));
 
 const receivingGetMock = vi.fn();
 const attachmentsGetMock = vi.fn();
 vi.mock("resend", () => ({
   Resend: class {
-    emails = { receiving: { get: receivingGetMock, attachments: { get: attachmentsGetMock } } };
+    emails = {
+      receiving: {
+        get: receivingGetMock,
+        attachments: { get: attachmentsGetMock },
+      },
+    };
   },
 }));
 
@@ -53,7 +65,9 @@ function lastDraftInsertRow(): Record<string, unknown> | undefined {
   return mockState.draftInsertRows[mockState.draftInsertRows.length - 1];
 }
 function lastNotificationRows(): Record<string, unknown>[] | undefined {
-  return mockState.notificationRowBatches[mockState.notificationRowBatches.length - 1];
+  return mockState.notificationRowBatches[
+    mockState.notificationRowBatches.length - 1
+  ];
 }
 
 let draftIdCounter = 0;
@@ -65,7 +79,10 @@ vi.mock("~/server/utils/supabase", () => ({
         return {
           insert: () => ({
             select: () => ({
-              single: async () => ({ data: { id: mockState.rawInsertId }, error: null }),
+              single: async () => ({
+                data: { id: mockState.rawInsertId },
+                error: null,
+              }),
             }),
           }),
         };
@@ -86,7 +103,10 @@ vi.mock("~/server/utils/supabase", () => ({
       if (table === "family_members") {
         return {
           select: () => ({
-            eq: async () => ({ data: [{ user_id: "parent-1" }, { user_id: "player-1" }], error: null }),
+            eq: async () => ({
+              data: [{ user_id: "parent-1" }, { user_id: "player-1" }],
+              error: null,
+            }),
           }),
         };
       }
@@ -110,9 +130,19 @@ vi.mock("~/server/utils/supabase", () => ({
     },
     storage: {
       from: (bucket: string) => ({
-        upload: (path: string, _body: unknown, options?: { contentType?: string }) => {
-          mockState.storageUploads.push({ path, contentType: options?.contentType });
-          return Promise.resolve({ data: { path: `${bucket}/${path}` }, error: mockState.storageUploadResult.error });
+        upload: (
+          path: string,
+          _body: unknown,
+          options?: { contentType?: string },
+        ) => {
+          mockState.storageUploads.push({
+            path,
+            contentType: options?.contentType,
+          });
+          return Promise.resolve({
+            data: { path: `${bucket}/${path}` },
+            error: mockState.storageUploadResult.error,
+          });
         },
       }),
     },
@@ -121,9 +151,15 @@ vi.mock("~/server/utils/supabase", () => ({
 
 import { readRawBody, getHeaders } from "h3";
 import { verifyResendWebhook } from "~/server/utils/verifyResendWebhook";
-import { parseInboundToken, resolveFamilyByInboundToken } from "~/server/utils/familyInboundToken";
+import {
+  parseInboundToken,
+  resolveFamilyByInboundToken,
+} from "~/server/utils/familyInboundToken";
 import { parseForwardedThread } from "~/server/utils/parseForwardedEmail";
-import { matchCoachByEmail, autoCreateCoachByEmailDomain } from "~/server/utils/matchCoachByEmail";
+import {
+  matchCoachByEmail,
+  autoCreateCoachByEmailDomain,
+} from "~/server/utils/matchCoachByEmail";
 
 describe("POST /api/webhooks/inbound-email", () => {
   beforeEach(() => {
@@ -143,7 +179,12 @@ describe("POST /api/webhooks/inbound-email", () => {
     attachmentsGetMock.mockReset();
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValue({ ok: true, arrayBuffer: async () => new ArrayBuffer(4) }),
+      vi
+        .fn()
+        .mockResolvedValue({
+          ok: true,
+          arrayBuffer: async () => new ArrayBuffer(4),
+        }),
     );
     vi.mocked(parseForwardedThread).mockReset();
     vi.mocked(autoCreateCoachByEmailDomain).mockReset().mockResolvedValue({
@@ -156,8 +197,11 @@ describe("POST /api/webhooks/inbound-email", () => {
     vi.mocked(verifyResendWebhook).mockImplementation(() => {
       throw new Error("Invalid webhook signature");
     });
-    const { default: handler } = await import("~/server/api/webhooks/inbound-email.post");
-    await expect(handler({} as Parameters<typeof handler>[0])).rejects.toMatchObject({
+    const { default: handler } =
+      await import("~/server/api/webhooks/inbound-email.post");
+    await expect(
+      handler({} as Parameters<typeof handler>[0]),
+    ).rejects.toMatchObject({
       statusCode: 401,
     });
   });
@@ -176,7 +220,8 @@ describe("POST /api/webhooks/inbound-email", () => {
     vi.mocked(parseInboundToken).mockReturnValue("deadbeef");
     vi.mocked(resolveFamilyByInboundToken).mockResolvedValue(null);
 
-    const { default: handler } = await import("~/server/api/webhooks/inbound-email.post");
+    const { default: handler } =
+      await import("~/server/api/webhooks/inbound-email.post");
     const result = await handler({} as Parameters<typeof handler>[0]);
     expect(result).toEqual({ ok: true, skipped: "unknown-family" });
     expect(mockState.draftInsertRows).toHaveLength(0);
@@ -197,10 +242,13 @@ describe("POST /api/webhooks/inbound-email", () => {
     vi.mocked(parseInboundToken).mockReturnValue("ab3d9f2c");
     vi.mocked(resolveFamilyByInboundToken).mockResolvedValue("family-1");
     receivingGetMock.mockResolvedValue({
-      data: { text: "On Mon, Sep 2, 2026 at 3:15 PM Coach Smith <smith@osu.edu> wrote:\n> hi" },
+      data: {
+        text: "On Mon, Sep 2, 2026 at 3:15 PM Coach Smith <smith@osu.edu> wrote:\n> hi",
+      },
       error: null,
     });
-    const bodyText = "On Mon, Sep 2, 2026 at 3:15 PM Coach Smith <smith@osu.edu> wrote:\n> hi";
+    const bodyText =
+      "On Mon, Sep 2, 2026 at 3:15 PM Coach Smith <smith@osu.edu> wrote:\n> hi";
     vi.mocked(parseForwardedThread).mockReturnValue([
       {
         parsed: {
@@ -211,9 +259,13 @@ describe("POST /api/webhooks/inbound-email", () => {
         segmentText: bodyText,
       },
     ]);
-    vi.mocked(matchCoachByEmail).mockResolvedValue({ coachId: "coach-1", schoolId: "school-1" });
+    vi.mocked(matchCoachByEmail).mockResolvedValue({
+      coachId: "coach-1",
+      schoolId: "school-1",
+    });
 
-    const { default: handler } = await import("~/server/api/webhooks/inbound-email.post");
+    const { default: handler } =
+      await import("~/server/api/webhooks/inbound-email.post");
     const result = await handler({} as Parameters<typeof handler>[0]);
 
     expect(autoCreateCoachByEmailDomain).not.toHaveBeenCalled();
@@ -260,10 +312,17 @@ describe("POST /api/webhooks/inbound-email", () => {
     });
     vi.mocked(parseInboundToken).mockReturnValue("ab3d9f2c");
     vi.mocked(resolveFamilyByInboundToken).mockResolvedValue("family-1");
-    receivingGetMock.mockResolvedValue({ data: null, error: { message: "not found" } });
-    vi.mocked(matchCoachByEmail).mockResolvedValue({ coachId: null, schoolId: null });
+    receivingGetMock.mockResolvedValue({
+      data: null,
+      error: { message: "not found" },
+    });
+    vi.mocked(matchCoachByEmail).mockResolvedValue({
+      coachId: null,
+      schoolId: null,
+    });
 
-    const { default: handler } = await import("~/server/api/webhooks/inbound-email.post");
+    const { default: handler } =
+      await import("~/server/api/webhooks/inbound-email.post");
     const result = await handler({} as Parameters<typeof handler>[0]);
 
     expect(result).toEqual({ ok: true });
@@ -292,7 +351,9 @@ describe("POST /api/webhooks/inbound-email", () => {
     vi.mocked(parseInboundToken).mockReturnValue("ab3d9f2c");
     vi.mocked(resolveFamilyByInboundToken).mockResolvedValue("family-1");
     receivingGetMock.mockResolvedValue({
-      data: { text: "On Mon, Sep 2, 2026 at 3:15 PM Coach Smith <smith@osu.edu> wrote:\n> hi" },
+      data: {
+        text: "On Mon, Sep 2, 2026 at 3:15 PM Coach Smith <smith@osu.edu> wrote:\n> hi",
+      },
       error: null,
     });
     vi.mocked(parseForwardedThread).mockReturnValue([
@@ -302,23 +363,31 @@ describe("POST /api/webhooks/inbound-email", () => {
           senderEmail: "smith@osu.edu",
           originalDate: "Mon, Sep 2, 2026 at 3:15 PM",
         },
-        segmentText: "On Mon, Sep 2, 2026 at 3:15 PM Coach Smith <smith@osu.edu> wrote:\n> hi",
+        segmentText:
+          "On Mon, Sep 2, 2026 at 3:15 PM Coach Smith <smith@osu.edu> wrote:\n> hi",
       },
     ]);
-    vi.mocked(matchCoachByEmail).mockResolvedValue({ coachId: null, schoolId: null });
+    vi.mocked(matchCoachByEmail).mockResolvedValue({
+      coachId: null,
+      schoolId: null,
+    });
     vi.mocked(autoCreateCoachByEmailDomain).mockResolvedValue({
       coachId: "auto-coach-1",
       schoolId: "school-1",
     });
 
-    const { default: handler } = await import("~/server/api/webhooks/inbound-email.post");
+    const { default: handler } =
+      await import("~/server/api/webhooks/inbound-email.post");
     const result = await handler({} as Parameters<typeof handler>[0]);
 
-    expect(autoCreateCoachByEmailDomain).toHaveBeenCalledWith(expect.anything(), {
-      familyUnitId: "family-1",
-      senderEmail: "smith@osu.edu",
-      senderName: "Coach Smith",
-    });
+    expect(autoCreateCoachByEmailDomain).toHaveBeenCalledWith(
+      expect.anything(),
+      {
+        familyUnitId: "family-1",
+        senderEmail: "smith@osu.edu",
+        senderName: "Coach Smith",
+      },
+    );
     expect(result).toEqual({ ok: true });
     expect(mockState.draftInsertRows).toHaveLength(1);
     expect(lastDraftInsertRow()).toMatchObject({
@@ -343,18 +412,33 @@ describe("POST /api/webhooks/inbound-email", () => {
     vi.mocked(parseInboundToken).mockReturnValue("ab3d9f2c");
     vi.mocked(resolveFamilyByInboundToken).mockResolvedValue("family-1");
     const fullBody = "thread body";
-    receivingGetMock.mockResolvedValue({ data: { text: fullBody }, error: null });
+    receivingGetMock.mockResolvedValue({
+      data: { text: fullBody },
+      error: null,
+    });
     vi.mocked(parseForwardedThread).mockReturnValue([
       {
-        parsed: { senderName: "Coach A", senderEmail: "a@osu.edu", originalDate: "Sep 3, 2026" },
+        parsed: {
+          senderName: "Coach A",
+          senderEmail: "a@osu.edu",
+          originalDate: "Sep 3, 2026",
+        },
         segmentText: "segment-1",
       },
       {
-        parsed: { senderName: "Coach B", senderEmail: "b@osu.edu", originalDate: "Sep 2, 2026" },
+        parsed: {
+          senderName: "Coach B",
+          senderEmail: "b@osu.edu",
+          originalDate: "Sep 2, 2026",
+        },
         segmentText: "segment-2",
       },
       {
-        parsed: { senderName: "Coach C", senderEmail: "c@osu.edu", originalDate: "Sep 1, 2026" },
+        parsed: {
+          senderName: "Coach C",
+          senderEmail: "c@osu.edu",
+          originalDate: "Sep 1, 2026",
+        },
         segmentText: "segment-3",
       },
     ]);
@@ -367,7 +451,8 @@ describe("POST /api/webhooks/inbound-email", () => {
       schoolId: "school-c",
     });
 
-    const { default: handler } = await import("~/server/api/webhooks/inbound-email.post");
+    const { default: handler } =
+      await import("~/server/api/webhooks/inbound-email.post");
     const result = await handler({} as Parameters<typeof handler>[0]);
 
     expect(result).toEqual({ ok: true });
@@ -404,16 +489,34 @@ describe("POST /api/webhooks/inbound-email", () => {
     // One notification per draft, not a single bundled summary.
     expect(mockState.notificationRowBatches).toHaveLength(3);
     expect(mockState.notificationRowBatches[0]).toEqual([
-      expect.objectContaining({ user_id: "parent-1", related_entity_id: "draft-1" }),
-      expect.objectContaining({ user_id: "player-1", related_entity_id: "draft-1" }),
+      expect.objectContaining({
+        user_id: "parent-1",
+        related_entity_id: "draft-1",
+      }),
+      expect.objectContaining({
+        user_id: "player-1",
+        related_entity_id: "draft-1",
+      }),
     ]);
     expect(mockState.notificationRowBatches[1]).toEqual([
-      expect.objectContaining({ user_id: "parent-1", related_entity_id: "draft-2" }),
-      expect.objectContaining({ user_id: "player-1", related_entity_id: "draft-2" }),
+      expect.objectContaining({
+        user_id: "parent-1",
+        related_entity_id: "draft-2",
+      }),
+      expect.objectContaining({
+        user_id: "player-1",
+        related_entity_id: "draft-2",
+      }),
     ]);
     expect(mockState.notificationRowBatches[2]).toEqual([
-      expect.objectContaining({ user_id: "parent-1", related_entity_id: "draft-3" }),
-      expect.objectContaining({ user_id: "player-1", related_entity_id: "draft-3" }),
+      expect.objectContaining({
+        user_id: "parent-1",
+        related_entity_id: "draft-3",
+      }),
+      expect.objectContaining({
+        user_id: "player-1",
+        related_entity_id: "draft-3",
+      }),
     ]);
   });
 
@@ -431,7 +534,9 @@ describe("POST /api/webhooks/inbound-email", () => {
     vi.mocked(parseInboundToken).mockReturnValue("ab3d9f2c");
     vi.mocked(resolveFamilyByInboundToken).mockResolvedValue("family-1");
     receivingGetMock.mockResolvedValue({
-      data: { text: "On Mon, Sep 2, 2026 at 3:15 PM Coach Smith <smith@osu.edu> wrote:\n> hi" },
+      data: {
+        text: "On Mon, Sep 2, 2026 at 3:15 PM Coach Smith <smith@osu.edu> wrote:\n> hi",
+      },
       error: null,
     });
     // "at" between the date and the time is not reliably parseable by `Date`
@@ -445,12 +550,17 @@ describe("POST /api/webhooks/inbound-email", () => {
           senderEmail: "smith@osu.edu",
           originalDate: "Mon, Sep 2, 2026 at 3:15 PM",
         },
-        segmentText: "On Mon, Sep 2, 2026 at 3:15 PM Coach Smith <smith@osu.edu> wrote:\n> hi",
+        segmentText:
+          "On Mon, Sep 2, 2026 at 3:15 PM Coach Smith <smith@osu.edu> wrote:\n> hi",
       },
     ]);
-    vi.mocked(matchCoachByEmail).mockResolvedValue({ coachId: "coach-1", schoolId: "school-1" });
+    vi.mocked(matchCoachByEmail).mockResolvedValue({
+      coachId: "coach-1",
+      schoolId: "school-1",
+    });
 
-    const { default: handler } = await import("~/server/api/webhooks/inbound-email.post");
+    const { default: handler } =
+      await import("~/server/api/webhooks/inbound-email.post");
     await handler({} as Parameters<typeof handler>[0]);
 
     expect(lastDraftInsertRow()).toMatchObject({
@@ -473,11 +583,18 @@ describe("POST /api/webhooks/inbound-email", () => {
     vi.mocked(resolveFamilyByInboundToken).mockResolvedValue("family-1");
     vi.mocked(parseForwardedThread).mockReturnValue([
       {
-        parsed: { senderName: "Coach Smith", senderEmail: "smith@osu.edu", originalDate: null },
+        parsed: {
+          senderName: "Coach Smith",
+          senderEmail: "smith@osu.edu",
+          originalDate: null,
+        },
         segmentText: "hi",
       },
     ]);
-    vi.mocked(matchCoachByEmail).mockResolvedValue({ coachId: "coach-1", schoolId: "school-1" });
+    vi.mocked(matchCoachByEmail).mockResolvedValue({
+      coachId: "coach-1",
+      schoolId: "school-1",
+    });
   }
 
   it("stages a valid attachment to storage + raw_inbound_attachments on the created draft", async () => {
@@ -485,7 +602,14 @@ describe("POST /api/webhooks/inbound-email", () => {
     receivingGetMock.mockResolvedValue({
       data: {
         text: "hi",
-        attachments: [{ id: "att-1", filename: "camp-invite.pdf", size: 1024, content_type: "application/pdf" }],
+        attachments: [
+          {
+            id: "att-1",
+            filename: "camp-invite.pdf",
+            size: 1024,
+            content_type: "application/pdf",
+          },
+        ],
       },
       error: null,
     });
@@ -494,14 +618,22 @@ describe("POST /api/webhooks/inbound-email", () => {
       error: null,
     });
 
-    const { default: handler } = await import("~/server/api/webhooks/inbound-email.post");
+    const { default: handler } =
+      await import("~/server/api/webhooks/inbound-email.post");
     const result = await handler({} as Parameters<typeof handler>[0]);
 
     expect(result).toEqual({ ok: true });
-    expect(attachmentsGetMock).toHaveBeenCalledWith({ emailId: "email-1", id: "att-1" });
-    expect(vi.mocked(fetch)).toHaveBeenCalledWith("https://resend.example/signed/att-1");
+    expect(attachmentsGetMock).toHaveBeenCalledWith({
+      emailId: "email-1",
+      id: "att-1",
+    });
+    expect(vi.mocked(fetch)).toHaveBeenCalledWith(
+      "https://resend.example/signed/att-1",
+    );
     expect(mockState.storageUploads).toHaveLength(1);
-    expect(mockState.storageUploads[0].path).toBe("family-1/inbound/draft-1-camp-invite.pdf");
+    expect(mockState.storageUploads[0].path).toBe(
+      "family-1/inbound/draft-1-camp-invite.pdf",
+    );
     expect(mockState.storageUploads[0].contentType).toBe("application/pdf");
     expect(mockState.attachmentInsertRows).toEqual([
       {
@@ -520,7 +652,12 @@ describe("POST /api/webhooks/inbound-email", () => {
       data: {
         text: "hi",
         attachments: [
-          { id: "att-1", filename: "../../etc/passwd.pdf", size: 1024, content_type: "application/pdf" },
+          {
+            id: "att-1",
+            filename: "../../etc/passwd.pdf",
+            size: 1024,
+            content_type: "application/pdf",
+          },
         ],
       },
       error: null,
@@ -530,7 +667,8 @@ describe("POST /api/webhooks/inbound-email", () => {
       error: null,
     });
 
-    const { default: handler } = await import("~/server/api/webhooks/inbound-email.post");
+    const { default: handler } =
+      await import("~/server/api/webhooks/inbound-email.post");
     const result = await handler({} as Parameters<typeof handler>[0]);
 
     expect(result).toEqual({ ok: true });
@@ -541,7 +679,9 @@ describe("POST /api/webhooks/inbound-email", () => {
     expect(uploadedPath).not.toContain("..");
     expect(uploadedPath).not.toContain("/passwd.pdf");
     // Display metadata keeps the original filename.
-    expect(mockState.attachmentInsertRows[0].filename).toBe("../../etc/passwd.pdf");
+    expect(mockState.attachmentInsertRows[0].filename).toBe(
+      "../../etc/passwd.pdf",
+    );
   });
 
   it("skips an attachment whose type isn't on the coach_attachment allowlist, without failing the webhook", async () => {
@@ -550,13 +690,19 @@ describe("POST /api/webhooks/inbound-email", () => {
       data: {
         text: "hi",
         attachments: [
-          { id: "att-1", filename: "malware.exe", size: 1024, content_type: "application/x-msdownload" },
+          {
+            id: "att-1",
+            filename: "malware.exe",
+            size: 1024,
+            content_type: "application/x-msdownload",
+          },
         ],
       },
       error: null,
     });
 
-    const { default: handler } = await import("~/server/api/webhooks/inbound-email.post");
+    const { default: handler } =
+      await import("~/server/api/webhooks/inbound-email.post");
     const result = await handler({} as Parameters<typeof handler>[0]);
 
     expect(result).toEqual({ ok: true });
@@ -584,7 +730,8 @@ describe("POST /api/webhooks/inbound-email", () => {
       error: null,
     });
 
-    const { default: handler } = await import("~/server/api/webhooks/inbound-email.post");
+    const { default: handler } =
+      await import("~/server/api/webhooks/inbound-email.post");
     const result = await handler({} as Parameters<typeof handler>[0]);
 
     expect(result).toEqual({ ok: true });
@@ -595,9 +742,13 @@ describe("POST /api/webhooks/inbound-email", () => {
 
   it("does not stage anything, and never touches the storage/attachments tables, when the email has no attachments", async () => {
     mockSingleSegmentEmail();
-    receivingGetMock.mockResolvedValue({ data: { text: "hi", attachments: [] }, error: null });
+    receivingGetMock.mockResolvedValue({
+      data: { text: "hi", attachments: [] },
+      error: null,
+    });
 
-    const { default: handler } = await import("~/server/api/webhooks/inbound-email.post");
+    const { default: handler } =
+      await import("~/server/api/webhooks/inbound-email.post");
     const result = await handler({} as Parameters<typeof handler>[0]);
 
     expect(result).toEqual({ ok: true });
@@ -619,27 +770,44 @@ describe("POST /api/webhooks/inbound-email", () => {
     });
     vi.mocked(parseInboundToken).mockReturnValue("ab3d9f2c");
     vi.mocked(resolveFamilyByInboundToken).mockResolvedValue("family-1");
-    receivingGetMock.mockResolvedValue({ data: { text: "irrelevant, parseForwardedThread is mocked" }, error: null });
+    receivingGetMock.mockResolvedValue({
+      data: { text: "irrelevant, parseForwardedThread is mocked" },
+      error: null,
+    });
     // Coach's segment first, then the coach's reply quoting the player's own
     // earlier message — the second segment's parsed sender is the forwarder.
     vi.mocked(parseForwardedThread).mockReturnValue([
       {
-        parsed: { senderName: "Coach Alpha", senderEmail: "alpha@osu.edu", originalDate: "Sep 2, 2026" },
+        parsed: {
+          senderName: "Coach Alpha",
+          senderEmail: "alpha@osu.edu",
+          originalDate: "Sep 2, 2026",
+        },
         segmentText: "segment-coach",
       },
       {
-        parsed: { senderName: "Player Kid", senderEmail: "kid@example.com", originalDate: "Sep 1, 2026" },
+        parsed: {
+          senderName: "Player Kid",
+          senderEmail: "kid@example.com",
+          originalDate: "Sep 1, 2026",
+        },
         segmentText: "segment-player-quote",
       },
     ]);
-    vi.mocked(matchCoachByEmail).mockResolvedValue({ coachId: "coach-1", schoolId: "school-1" });
+    vi.mocked(matchCoachByEmail).mockResolvedValue({
+      coachId: "coach-1",
+      schoolId: "school-1",
+    });
 
-    const { default: handler } = await import("~/server/api/webhooks/inbound-email.post");
+    const { default: handler } =
+      await import("~/server/api/webhooks/inbound-email.post");
     const result = await handler({} as Parameters<typeof handler>[0]);
 
     expect(result).toEqual({ ok: true });
     expect(mockState.draftInsertRows).toHaveLength(1);
-    expect(mockState.draftInsertRows[0]).toMatchObject({ sender_email: "alpha@osu.edu" });
+    expect(mockState.draftInsertRows[0]).toMatchObject({
+      sender_email: "alpha@osu.edu",
+    });
     expect(mockState.notificationRowBatches).toHaveLength(1);
   });
 
@@ -656,25 +824,45 @@ describe("POST /api/webhooks/inbound-email", () => {
     });
     vi.mocked(parseInboundToken).mockReturnValue("ab3d9f2c");
     vi.mocked(resolveFamilyByInboundToken).mockResolvedValue("family-1");
-    receivingGetMock.mockResolvedValue({ data: { text: "thread body" }, error: null });
+    receivingGetMock.mockResolvedValue({
+      data: { text: "thread body" },
+      error: null,
+    });
     vi.mocked(parseForwardedThread).mockReturnValue([
       {
-        parsed: { senderName: "Coach A", senderEmail: "a@osu.edu", originalDate: "Sep 3, 2026" },
+        parsed: {
+          senderName: "Coach A",
+          senderEmail: "a@osu.edu",
+          originalDate: "Sep 3, 2026",
+        },
         segmentText: "segment-1",
       },
       {
-        parsed: { senderName: "Coach B", senderEmail: "b@osu.edu", originalDate: "Sep 2, 2026" },
+        parsed: {
+          senderName: "Coach B",
+          senderEmail: "b@osu.edu",
+          originalDate: "Sep 2, 2026",
+        },
         segmentText: "segment-2",
       },
     ]);
-    vi.mocked(matchCoachByEmail).mockResolvedValue({ coachId: "coach-1", schoolId: "school-1" });
+    vi.mocked(matchCoachByEmail).mockResolvedValue({
+      coachId: "coach-1",
+      schoolId: "school-1",
+    });
 
     let insertCall = 0;
     vi.doMock("~/server/utils/supabase", () => ({
       useSupabaseAdmin: () => ({
         from: (table: string) => {
           if (table === "raw_inbound_emails") {
-            return { insert: () => ({ select: () => ({ single: async () => ({ data: { id: "raw-1" }, error: null }) }) }) };
+            return {
+              insert: () => ({
+                select: () => ({
+                  single: async () => ({ data: { id: "raw-1" }, error: null }),
+                }),
+              }),
+            };
           }
           if (table === "inbound_email_drafts") {
             return {
@@ -682,16 +870,34 @@ describe("POST /api/webhooks/inbound-email", () => {
                 insertCall++;
                 if (insertCall === 1) {
                   // First segment's insert fails.
-                  return { select: () => ({ single: async () => ({ data: null, error: { message: "db error" } }) }) };
+                  return {
+                    select: () => ({
+                      single: async () => ({
+                        data: null,
+                        error: { message: "db error" },
+                      }),
+                    }),
+                  };
                 }
                 mockState.draftInsertRows.push(row);
                 const id = `draft-${insertCall}`;
-                return { select: () => ({ single: async () => ({ data: { id }, error: null }) }) };
+                return {
+                  select: () => ({
+                    single: async () => ({ data: { id }, error: null }),
+                  }),
+                };
               },
             };
           }
           if (table === "family_members") {
-            return { select: () => ({ eq: async () => ({ data: [{ user_id: "parent-1" }], error: null }) }) };
+            return {
+              select: () => ({
+                eq: async () => ({
+                  data: [{ user_id: "parent-1" }],
+                  error: null,
+                }),
+              }),
+            };
           }
           if (table === "notifications") {
             return {
@@ -707,7 +913,8 @@ describe("POST /api/webhooks/inbound-email", () => {
     }));
     vi.resetModules();
 
-    const { default: handler } = await import("~/server/api/webhooks/inbound-email.post");
+    const { default: handler } =
+      await import("~/server/api/webhooks/inbound-email.post");
     const result = await handler({} as Parameters<typeof handler>[0]);
 
     // Still 200 — Resend must not retry (a retry would re-insert segment 2's
@@ -716,7 +923,9 @@ describe("POST /api/webhooks/inbound-email", () => {
     // Only the second segment's draft actually landed; the first's failure
     // didn't abort the loop or throw.
     expect(mockState.draftInsertRows).toHaveLength(1);
-    expect(mockState.draftInsertRows[0]).toMatchObject({ sender_name: "Coach B" });
+    expect(mockState.draftInsertRows[0]).toMatchObject({
+      sender_name: "Coach B",
+    });
     expect(mockState.notificationRowBatches).toHaveLength(1);
   });
 });

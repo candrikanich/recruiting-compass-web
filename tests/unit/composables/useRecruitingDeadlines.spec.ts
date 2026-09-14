@@ -5,14 +5,12 @@ import type { AppSport, Division } from "~/utils/recruitingCalendar/types";
 // Mock the recruiting calendar resolver
 vi.mock("~/utils/recruitingCalendar/resolver", () => ({
   getUpcomingMilestones: vi.fn().mockReturnValue([]),
-  getSportCalendar: vi
-    .fn()
-    .mockReturnValue({
-      periods: [],
-      milestones: [],
-      source: "",
-      verifiedOn: "",
-    }),
+  getSportCalendar: vi.fn().mockReturnValue({
+    periods: [],
+    milestones: [],
+    source: "",
+    verifiedOn: "",
+  }),
 }));
 
 vi.mock("~/utils/recruitingCalendar/calendarData", () => ({

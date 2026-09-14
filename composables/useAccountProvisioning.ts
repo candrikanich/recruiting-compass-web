@@ -35,8 +35,12 @@ export const useAccountProvisioning = () => {
     if (!primarySport) return;
 
     try {
-      const { getPlayerDetails, setPlayerDetails, setHomeLocation, loadAllPreferences } =
-        usePreferenceManager();
+      const {
+        getPlayerDetails,
+        setPlayerDetails,
+        setHomeLocation,
+        loadAllPreferences,
+      } = usePreferenceManager();
 
       // Player details are a separate preferences store from the users table
       // (unlike is_admin), so they must be loaded before the idempotency
@@ -48,8 +52,7 @@ export const useAccountProvisioning = () => {
         ? Number(metadata.pending_graduation_year)
         : undefined;
       const gender = metadata.pending_gender as
-        | PlayerDetails["gender"]
-        | undefined;
+        PlayerDetails["gender"] | undefined;
       const zipCode = metadata.pending_zip_code as string | undefined;
 
       const details: Partial<PlayerDetails> = {

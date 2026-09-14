@@ -74,7 +74,11 @@ describe("emailService (Resend SDK)", () => {
       vi.resetModules();
       const fresh = await import("~/server/utils/emailService");
 
-      await fresh.sendEmail({ to: "a@b.com", subject: "Hi", html: "<p>Hi</p>" });
+      await fresh.sendEmail({
+        to: "a@b.com",
+        subject: "Hi",
+        html: "<p>Hi</p>",
+      });
       await fresh.sendEmail({
         to: "c@d.com",
         subject: "Hi 2",

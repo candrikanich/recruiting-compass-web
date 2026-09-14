@@ -112,7 +112,8 @@ function resetTurnstile() {
   const w = window as unknown as { turnstile?: TurnstileGlobal };
   turnstileToken.value = undefined;
   if (!w.turnstile) return;
-  if (turnstileLoginWidgetId.value) w.turnstile.reset(turnstileLoginWidgetId.value);
+  if (turnstileLoginWidgetId.value)
+    w.turnstile.reset(turnstileLoginWidgetId.value);
   if (turnstileSignupWidgetId.value)
     w.turnstile.reset(turnstileSignupWidgetId.value);
 }

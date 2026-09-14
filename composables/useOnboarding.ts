@@ -74,7 +74,9 @@ export const useOnboarding = () => {
       return assessmentPhase;
     }
 
-    const gradeDerivedPhase = gradeToPhase(calculateCurrentGrade(graduationYear));
+    const gradeDerivedPhase = gradeToPhase(
+      calculateCurrentGrade(graduationYear),
+    );
     return PHASE_RANK[gradeDerivedPhase] > PHASE_RANK[assessmentPhase]
       ? gradeDerivedPhase
       : assessmentPhase;

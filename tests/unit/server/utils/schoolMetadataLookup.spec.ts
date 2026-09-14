@@ -23,12 +23,16 @@ describe("lookupSchoolMetadata", () => {
 
   it("falls back to ncaaSchools.json athleticWebsite when a school isn't in schoolMetadata.json, prefixing https://", () => {
     // Present in ncaaSchools.json only (not schoolMetadata.json), scheme-less athleticWebsite
-    const result = lookupSchoolMetadata("Millersville University of Pennsylvania");
+    const result = lookupSchoolMetadata(
+      "Millersville University of Pennsylvania",
+    );
     expect(result.athleticsUrl).toBe("https://www.millersvilleathletics.com");
   });
 
   it("returns all-null fields for a school not found in any seed file, never throws", () => {
-    expect(() => lookupSchoolMetadata("Definitely Not A Real School XYZ123")).not.toThrow();
+    expect(() =>
+      lookupSchoolMetadata("Definitely Not A Real School XYZ123"),
+    ).not.toThrow();
     const result = lookupSchoolMetadata("Definitely Not A Real School XYZ123");
     expect(result).toEqual({
       mascot: null,

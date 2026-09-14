@@ -94,7 +94,7 @@
             </button>
           </div>
 
-          <div class="flex gap-1 rounded-lg bg-brand-slate-100 p-1 w-fit">
+          <div class="flex w-fit gap-1 rounded-lg bg-brand-slate-100 p-1">
             <button
               type="button"
               class="rounded-md px-3 py-1 text-xs font-medium transition-colors"
@@ -175,7 +175,9 @@
                 <span
                   v-if="deadlinesByDate.has(dateKey)"
                   class="mt-0.5 h-1.5 w-1.5 rounded-full"
-                  :class="dateKey === selectedDay ? 'bg-white' : 'bg-brand-blue-500'"
+                  :class="
+                    dateKey === selectedDay ? 'bg-white' : 'bg-brand-blue-500'
+                  "
                 />
               </button>
             </div>
@@ -240,151 +242,154 @@
         </template>
 
         <template v-else>
-        <DesignSystemEmptyState
-          v-if="upcomingByMonth.size === 0 && pastByMonth.size === 0"
-          title="No deadlines match your filters"
-          description="Try a different category or search term"
-        >
-          <template #icon>
-            <UIcon
-              name="i-heroicons-magnifying-glass"
-              class="h-8 w-8 text-brand-slate-400"
-            />
-          </template>
-        </DesignSystemEmptyState>
-        <section
-          v-for="[monthKey, items] in upcomingByMonth"
-          :key="monthKey"
-          class="mb-6"
-        >
-          <h2
-            class="sticky top-0 z-10 bg-[var(--background)] py-2 text-xs font-semibold tracking-wide text-brand-slate-500 uppercase"
+          <DesignSystemEmptyState
+            v-if="upcomingByMonth.size === 0 && pastByMonth.size === 0"
+            title="No deadlines match your filters"
+            description="Try a different category or search term"
           >
-            {{ formatMonthHeader(monthKey) }}
-          </h2>
-          <ul class="space-y-3">
-            <li
-              v-for="d in items"
-              :key="d.id"
-              class="flex items-center justify-between rounded-lg border border-brand-slate-200 bg-[var(--card)] p-4"
-            >
-              <div>
-                <p class="font-medium text-brand-slate-900">{{ d.label }}</p>
-                <div
-                  class="mt-1 flex flex-wrap items-center gap-2 text-sm text-brand-slate-500"
-                >
-                  <span>{{ formatDate(d.date, d.endDate) }}</span>
-                  <DesignSystemBadge
-                    :color="categoryColor(d.category)"
-                    size="sm"
-                  >
-                    {{ categoryLabel(d.category) }}
-                  </DesignSystemBadge>
-                  <DesignSystemBadge
-                    v-if="d.source === 'system'"
-                    color="slate"
-                    size="sm"
-                  >
-                    NCAA Calendar
-                  </DesignSystemBadge>
-                </div>
-              </div>
-              <div v-if="d.source === 'user'" class="flex items-center gap-3">
-                <button
-                  type="button"
-                  class="text-sm font-medium text-brand-slate-600 hover:text-brand-slate-900"
-                  :aria-label="`Edit ${d.label}`"
-                  @click="openEdit(d)"
-                >
-                  Edit
-                </button>
-                <button
-                  type="button"
-                  class="text-sm font-medium text-brand-red-600 hover:text-brand-red-700"
-                  :aria-label="`Remove ${d.label}`"
-                  @click="removeDeadline(d.id)"
-                >
-                  Remove
-                </button>
-              </div>
-            </li>
-          </ul>
-        </section>
-
-        <section v-if="filteredPastCount > 0" class="mt-8">
-          <DesignSystemButton
-            variant="ghost"
-            color="slate"
-            size="sm"
-            @click="showPast = !showPast"
+            <template #icon>
+              <UIcon
+                name="i-heroicons-magnifying-glass"
+                class="h-8 w-8 text-brand-slate-400"
+              />
+            </template>
+          </DesignSystemEmptyState>
+          <section
+            v-for="[monthKey, items] in upcomingByMonth"
+            :key="monthKey"
+            class="mb-6"
           >
-            {{ showPast ? "Hide" : "Show" }} {{ filteredPastCount }} past
-            deadline{{ filteredPastCount === 1 ? "" : "s" }}
-          </DesignSystemButton>
-
-          <div v-if="showPast" class="mt-4 opacity-50">
-            <section
-              v-for="[monthKey, items] in pastByMonth"
-              :key="monthKey"
-              class="mb-6"
+            <h2
+              class="sticky top-0 z-10 bg-[var(--background)] py-2 text-xs font-semibold tracking-wide text-brand-slate-500 uppercase"
             >
-              <h2
-                class="py-2 text-xs font-semibold tracking-wide text-brand-slate-500 uppercase"
+              {{ formatMonthHeader(monthKey) }}
+            </h2>
+            <ul class="space-y-3">
+              <li
+                v-for="d in items"
+                :key="d.id"
+                class="flex items-center justify-between rounded-lg border border-brand-slate-200 bg-[var(--card)] p-4"
               >
-                {{ formatMonthHeader(monthKey) }}
-              </h2>
-              <ul class="space-y-3">
-                <li
-                  v-for="d in items"
-                  :key="d.id"
-                  class="flex items-center justify-between rounded-lg border border-brand-slate-200 bg-[var(--card)] p-4"
+                <div>
+                  <p class="font-medium text-brand-slate-900">{{ d.label }}</p>
+                  <div
+                    class="mt-1 flex flex-wrap items-center gap-2 text-sm text-brand-slate-500"
+                  >
+                    <span>{{ formatDate(d.date, d.endDate) }}</span>
+                    <DesignSystemBadge
+                      :color="categoryColor(d.category)"
+                      size="sm"
+                    >
+                      {{ categoryLabel(d.category) }}
+                    </DesignSystemBadge>
+                    <DesignSystemBadge
+                      v-if="d.source === 'system'"
+                      color="slate"
+                      size="sm"
+                    >
+                      NCAA Calendar
+                    </DesignSystemBadge>
+                  </div>
+                </div>
+                <div v-if="d.source === 'user'" class="flex items-center gap-3">
+                  <button
+                    type="button"
+                    class="text-sm font-medium text-brand-slate-600 hover:text-brand-slate-900"
+                    :aria-label="`Edit ${d.label}`"
+                    @click="openEdit(d)"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    class="text-sm font-medium text-brand-red-600 hover:text-brand-red-700"
+                    :aria-label="`Remove ${d.label}`"
+                    @click="removeDeadline(d.id)"
+                  >
+                    Remove
+                  </button>
+                </div>
+              </li>
+            </ul>
+          </section>
+
+          <section v-if="filteredPastCount > 0" class="mt-8">
+            <DesignSystemButton
+              variant="ghost"
+              color="slate"
+              size="sm"
+              @click="showPast = !showPast"
+            >
+              {{ showPast ? "Hide" : "Show" }} {{ filteredPastCount }} past
+              deadline{{ filteredPastCount === 1 ? "" : "s" }}
+            </DesignSystemButton>
+
+            <div v-if="showPast" class="mt-4 opacity-50">
+              <section
+                v-for="[monthKey, items] in pastByMonth"
+                :key="monthKey"
+                class="mb-6"
+              >
+                <h2
+                  class="py-2 text-xs font-semibold tracking-wide text-brand-slate-500 uppercase"
                 >
-                  <div>
-                    <p class="font-medium text-brand-slate-900">
-                      {{ d.label }}
-                    </p>
-                    <div
-                      class="mt-1 flex flex-wrap items-center gap-2 text-sm text-brand-slate-500"
-                    >
-                      <span>{{ formatDate(d.date, d.endDate) }}</span>
-                      <DesignSystemBadge
-                        :color="categoryColor(d.category)"
-                        size="sm"
+                  {{ formatMonthHeader(monthKey) }}
+                </h2>
+                <ul class="space-y-3">
+                  <li
+                    v-for="d in items"
+                    :key="d.id"
+                    class="flex items-center justify-between rounded-lg border border-brand-slate-200 bg-[var(--card)] p-4"
+                  >
+                    <div>
+                      <p class="font-medium text-brand-slate-900">
+                        {{ d.label }}
+                      </p>
+                      <div
+                        class="mt-1 flex flex-wrap items-center gap-2 text-sm text-brand-slate-500"
                       >
-                        {{ categoryLabel(d.category) }}
-                      </DesignSystemBadge>
-                      <DesignSystemBadge
-                        v-if="d.source === 'system'"
-                        color="slate"
-                        size="sm"
-                      >
-                        NCAA Calendar
-                      </DesignSystemBadge>
+                        <span>{{ formatDate(d.date, d.endDate) }}</span>
+                        <DesignSystemBadge
+                          :color="categoryColor(d.category)"
+                          size="sm"
+                        >
+                          {{ categoryLabel(d.category) }}
+                        </DesignSystemBadge>
+                        <DesignSystemBadge
+                          v-if="d.source === 'system'"
+                          color="slate"
+                          size="sm"
+                        >
+                          NCAA Calendar
+                        </DesignSystemBadge>
+                      </div>
                     </div>
-                  </div>
-                  <div v-if="d.source === 'user'" class="flex items-center gap-3">
-                    <button
-                      type="button"
-                      class="text-sm font-medium text-brand-slate-600 hover:text-brand-slate-900"
-                      :aria-label="`Edit ${d.label}`"
-                      @click="openEdit(d)"
+                    <div
+                      v-if="d.source === 'user'"
+                      class="flex items-center gap-3"
                     >
-                      Edit
-                    </button>
-                    <button
-                      type="button"
-                      class="text-sm font-medium text-brand-red-600 hover:text-brand-red-700"
-                      :aria-label="`Remove ${d.label}`"
-                      @click="removeDeadline(d.id)"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                </li>
-              </ul>
-            </section>
-          </div>
-        </section>
+                      <button
+                        type="button"
+                        class="text-sm font-medium text-brand-slate-600 hover:text-brand-slate-900"
+                        :aria-label="`Edit ${d.label}`"
+                        @click="openEdit(d)"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        class="text-sm font-medium text-brand-red-600 hover:text-brand-red-700"
+                        :aria-label="`Remove ${d.label}`"
+                        @click="removeDeadline(d.id)"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </li>
+                </ul>
+              </section>
+            </div>
+          </section>
         </template>
       </template>
     </div>

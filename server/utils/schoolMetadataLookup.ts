@@ -72,7 +72,11 @@ function levenshteinDistance(a: string, b: string): number {
       matrix[i][j] =
         b.charAt(i - 1) === a.charAt(j - 1)
           ? matrix[i - 1][j - 1]
-          : Math.min(matrix[i - 1][j - 1] + 1, matrix[i][j - 1] + 1, matrix[i - 1][j] + 1);
+          : Math.min(
+              matrix[i - 1][j - 1] + 1,
+              matrix[i][j - 1] + 1,
+              matrix[i - 1][j] + 1,
+            );
     }
   }
   return matrix[b.length][a.length];
@@ -84,7 +88,12 @@ function fuzzyNamesMatch(a: string, b: string): boolean {
   // generic word (e.g. "pennsylvania") spuriously anchors an unrelated long compound name.
   const shorter = Math.min(a.length, b.length);
   const longer = Math.max(a.length, b.length);
-  if (shorter > 8 && shorter / longer >= 0.6 && (a.includes(b) || b.includes(a))) return true;
+  if (
+    shorter > 8 &&
+    shorter / longer >= 0.6 &&
+    (a.includes(b) || b.includes(a))
+  )
+    return true;
   const lenDiff = Math.abs(a.length - b.length);
   if (lenDiff <= 3) {
     const maxDistance = Math.max(a.length, b.length) > 6 ? 2 : 1;
@@ -93,7 +102,10 @@ function fuzzyNamesMatch(a: string, b: string): boolean {
   return false;
 }
 
-function findByNormalizedName<T>(normalized: string, index: Map<string, T>): T | undefined {
+function findByNormalizedName<T>(
+  normalized: string,
+  index: Map<string, T>,
+): T | undefined {
   const exact = index.get(normalized);
   if (exact) return exact;
   for (const [key, value] of index) {
@@ -118,7 +130,9 @@ function loadCaches(): void {
   }
 
   metadataByNormalizedName = new Map();
-  for (const [name, entry] of Object.entries(schoolMetadataData as Record<string, SeedMetadataEntry>)) {
+  for (const [name, entry] of Object.entries(
+    schoolMetadataData as Record<string, SeedMetadataEntry>,
+  )) {
     metadataByNormalizedName.set(normalizeSchoolName(name), entry);
   }
 }
@@ -129,10 +143,14 @@ function normalizeUrl(url: string | null | undefined): string | null {
   return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
 }
 
-function resolveConferenceUrl(conference: string | null | undefined): string | null {
+function resolveConferenceUrl(
+  conference: string | null | undefined,
+): string | null {
   if (!conference) return null;
   const conferenceUrls = conferenceUrlsData as Record<string, string>;
-  const key = conferenceUrls[conference] ? conference : CONFERENCE_ALIASES[conference];
+  const key = conferenceUrls[conference]
+    ? conference
+    : CONFERENCE_ALIASES[conference];
   return (key && conferenceUrls[key]) ?? null;
 }
 
@@ -154,14 +172,20 @@ export function lookupSchoolMetadata(schoolName: string): SchoolMetadataResult {
 
     loadCaches();
     const normalized = normalizeSchoolName(schoolName);
-    const metadata = findByNormalizedName(normalized, metadataByNormalizedName!);
+    const metadata = findByNormalizedName(
+      normalized,
+      metadataByNormalizedName!,
+    );
     const ncaa = findByNormalizedName(normalized, ncaaByNormalizedName!);
 
     return {
       mascot: metadata?.mascot ?? null,
-      athleticsUrl: normalizeUrl(metadata?.athleticsUrl) ?? normalizeUrl(ncaa?.athleticWebsite),
+      athleticsUrl:
+        normalizeUrl(metadata?.athleticsUrl) ??
+        normalizeUrl(ncaa?.athleticWebsite),
       colors: metadata?.colors ?? null,
-      conferenceUrl: metadata?.conferenceUrl ?? resolveConferenceUrl(ncaa?.conference),
+      conferenceUrl:
+        metadata?.conferenceUrl ?? resolveConferenceUrl(ncaa?.conference),
     };
   } catch {
     return EMPTY_RESULT;

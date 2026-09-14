@@ -27,13 +27,18 @@ function daysAgo(days: number): string {
   return new Date(Date.now() - days * DAY_MS).toISOString();
 }
 
-async function purgeOrphanedAttachments(supabase: ReturnType<typeof useSupabaseAdmin>): Promise<number> {
+async function purgeOrphanedAttachments(
+  supabase: ReturnType<typeof useSupabaseAdmin>,
+): Promise<number> {
   const { data: nonConfirmedDrafts, error: draftsError } = await supabase
     .from("inbound_email_drafts")
     .select("id")
     .neq("status", "confirmed");
   if (draftsError) {
-    logger.error("Failed to list non-confirmed drafts for attachment purge", draftsError);
+    logger.error(
+      "Failed to list non-confirmed drafts for attachment purge",
+      draftsError,
+    );
     return 0;
   }
   const draftIds = (nonConfirmedDrafts ?? []).map((draft) => draft.id);
@@ -45,7 +50,10 @@ async function purgeOrphanedAttachments(supabase: ReturnType<typeof useSupabaseA
     .in("draft_id", draftIds)
     .lt("created_at", daysAgo(RAW_EMAIL_RETENTION_DAYS));
   if (attachmentsError) {
-    logger.error("Failed to list orphaned raw_inbound_attachments", attachmentsError);
+    logger.error(
+      "Failed to list orphaned raw_inbound_attachments",
+      attachmentsError,
+    );
     return 0;
   }
   if (!orphaned || orphaned.length === 0) return 0;
@@ -58,7 +66,10 @@ async function purgeOrphanedAttachments(supabase: ReturnType<typeof useSupabaseA
     // outlives its row, which is a smaller problem than the row (and its
     // reference to a to-be-deleted draft) sticking around forever because a
     // storage error keeps blocking the delete.
-    logger.error("Failed to remove orphaned inbound attachment storage objects", storageError);
+    logger.error(
+      "Failed to remove orphaned inbound attachment storage objects",
+      storageError,
+    );
   }
 
   const { error: deleteError } = await supabase
@@ -69,7 +80,10 @@ async function purgeOrphanedAttachments(supabase: ReturnType<typeof useSupabaseA
       orphaned.map((attachment) => attachment.id),
     );
   if (deleteError) {
-    logger.error("Failed to purge orphaned raw_inbound_attachments rows", deleteError);
+    logger.error(
+      "Failed to purge orphaned raw_inbound_attachments rows",
+      deleteError,
+    );
     return 0;
   }
 
@@ -89,8 +103,13 @@ export default defineEventHandler(async (event) =>
 
     const deletedOrphanedAttachments = await purgeOrphanedAttachments(supabase);
 
-    const result = { deletedRawEmails: deleted?.length ?? 0, deletedOrphanedAttachments };
-    ctx.setProcessed(result.deletedRawEmails + result.deletedOrphanedAttachments);
+    const result = {
+      deletedRawEmails: deleted?.length ?? 0,
+      deletedOrphanedAttachments,
+    };
+    ctx.setProcessed(
+      result.deletedRawEmails + result.deletedOrphanedAttachments,
+    );
     logger.info("Raw inbound email purge complete", result);
     return result;
   }),

@@ -24,7 +24,10 @@ export default defineEventHandler(async (event) => {
       .single();
     if (familyError || !family) {
       logger.error("Failed to load family inbound token", familyError);
-      throw createError({ statusCode: 500, statusMessage: "Failed to load inbound address" });
+      throw createError({
+        statusCode: 500,
+        statusMessage: "Failed to load inbound address",
+      });
     }
 
     const domain = useRuntimeConfig().public.inboundEmailDomain;
@@ -32,6 +35,9 @@ export default defineEventHandler(async (event) => {
   } catch (err) {
     if (err instanceof Error && "statusCode" in err) throw err;
     logger.error("Failed to load inbound address", err);
-    throw createError({ statusCode: 500, statusMessage: "Failed to load inbound address" });
+    throw createError({
+      statusCode: 500,
+      statusMessage: "Failed to load inbound address",
+    });
   }
 });

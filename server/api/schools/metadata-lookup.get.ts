@@ -19,7 +19,10 @@ export default defineEventHandler(async (event) => {
   const name = typeof query.name === "string" ? query.name.trim() : "";
 
   if (!name) {
-    throw createError({ statusCode: 400, statusMessage: "School name required" });
+    throw createError({
+      statusCode: 400,
+      statusMessage: "School name required",
+    });
   }
 
   const data = lookupSchoolMetadata(name);

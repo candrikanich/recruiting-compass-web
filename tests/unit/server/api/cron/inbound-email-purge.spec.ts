@@ -8,8 +8,11 @@ vi.mock("~/server/utils/logger", () => ({
   createLogger: () => ({ info: vi.fn(), error: vi.fn() }),
 }));
 vi.mock("~/server/utils/cronRunner", () => ({
-  withCronRun: async (_event: unknown, _name: string, fn: (ctx: unknown) => unknown) =>
-    fn({ setProcessed: vi.fn(), setFailed: vi.fn() }),
+  withCronRun: async (
+    _event: unknown,
+    _name: string,
+    fn: (ctx: unknown) => unknown,
+  ) => fn({ setProcessed: vi.fn(), setFailed: vi.fn() }),
 }));
 
 const mockState = {
@@ -27,7 +30,10 @@ vi.mock("~/server/utils/supabase", () => ({
         return {
           delete: () => ({
             lt: () => ({
-              select: async () => ({ data: mockState.deletedRawEmails, error: null }),
+              select: async () => ({
+                data: mockState.deletedRawEmails,
+                error: null,
+              }),
             }),
           }),
         };
@@ -35,7 +41,10 @@ vi.mock("~/server/utils/supabase", () => ({
       if (table === "inbound_email_drafts") {
         return {
           select: () => ({
-            neq: async () => ({ data: mockState.nonConfirmedDrafts, error: null }),
+            neq: async () => ({
+              data: mockState.nonConfirmedDrafts,
+              error: null,
+            }),
           }),
         };
       }
@@ -43,7 +52,10 @@ vi.mock("~/server/utils/supabase", () => ({
         return {
           select: () => ({
             in: () => ({
-              lt: async () => ({ data: mockState.orphanedAttachments, error: null }),
+              lt: async () => ({
+                data: mockState.orphanedAttachments,
+                error: null,
+              }),
             }),
           }),
           delete: () => ({
@@ -77,22 +89,39 @@ describe("GET /api/cron/inbound-email-purge", () => {
   });
 
   it("purges raw_inbound_emails older than 7 days and reports the count", async () => {
-    const { default: handler } = await import("~/server/api/cron/inbound-email-purge.get");
+    const { default: handler } =
+      await import("~/server/api/cron/inbound-email-purge.get");
     const result = await handler({} as Parameters<typeof handler>[0]);
-    expect(result).toEqual({ deletedRawEmails: 2, deletedOrphanedAttachments: 0 });
+    expect(result).toEqual({
+      deletedRawEmails: 2,
+      deletedOrphanedAttachments: 0,
+    });
   });
 
   it("purges orphaned raw_inbound_attachments (discarded/never-confirmed) + their storage objects", async () => {
-    mockState.nonConfirmedDrafts = [{ id: "draft-discarded" }, { id: "draft-stale-pending" }];
+    mockState.nonConfirmedDrafts = [
+      { id: "draft-discarded" },
+      { id: "draft-stale-pending" },
+    ];
     mockState.orphanedAttachments = [
-      { id: "att-1", storage_path: "family-1/inbound/draft-discarded-camp.pdf" },
-      { id: "att-2", storage_path: "family-1/inbound/draft-stale-pending-roster.pdf" },
+      {
+        id: "att-1",
+        storage_path: "family-1/inbound/draft-discarded-camp.pdf",
+      },
+      {
+        id: "att-2",
+        storage_path: "family-1/inbound/draft-stale-pending-roster.pdf",
+      },
     ];
 
-    const { default: handler } = await import("~/server/api/cron/inbound-email-purge.get");
+    const { default: handler } =
+      await import("~/server/api/cron/inbound-email-purge.get");
     const result = await handler({} as Parameters<typeof handler>[0]);
 
-    expect(result).toEqual({ deletedRawEmails: 2, deletedOrphanedAttachments: 2 });
+    expect(result).toEqual({
+      deletedRawEmails: 2,
+      deletedOrphanedAttachments: 2,
+    });
     expect(mockState.removedStoragePaths).toEqual([
       "family-1/inbound/draft-discarded-camp.pdf",
       "family-1/inbound/draft-stale-pending-roster.pdf",
@@ -102,9 +131,13 @@ describe("GET /api/cron/inbound-email-purge", () => {
 
   it("never queries raw_inbound_attachments when there are no non-confirmed drafts", async () => {
     mockState.nonConfirmedDrafts = [];
-    const { default: handler } = await import("~/server/api/cron/inbound-email-purge.get");
+    const { default: handler } =
+      await import("~/server/api/cron/inbound-email-purge.get");
     const result = await handler({} as Parameters<typeof handler>[0]);
-    expect(result).toEqual({ deletedRawEmails: 2, deletedOrphanedAttachments: 0 });
+    expect(result).toEqual({
+      deletedRawEmails: 2,
+      deletedOrphanedAttachments: 0,
+    });
     expect(mockState.removedStoragePaths).toEqual([]);
   });
 });

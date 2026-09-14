@@ -45,11 +45,15 @@ export async function matchCoachByEmail(
  * domain (`osu.edu`). Returns null for anything that doesn't parse to a
  * hostname — missing value, empty string, garbage input.
  */
-export function extractDomain(website: string | null | undefined): string | null {
+export function extractDomain(
+  website: string | null | undefined,
+): string | null {
   const trimmed = website?.trim();
   if (!trimmed) return null;
 
-  const withProtocol = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+  const withProtocol = /^https?:\/\//i.test(trimmed)
+    ? trimmed
+    : `https://${trimmed}`;
   try {
     const hostname = new URL(withProtocol).hostname.toLowerCase();
     return hostname.replace(/^www\./, "") || null;
@@ -130,7 +134,8 @@ export async function autoCreateCoachByEmailDomain(
   const atIndex = senderEmail.lastIndexOf("@");
   if (atIndex < 0) return NO_MATCH;
   const senderDomain = senderEmail.slice(atIndex + 1).toLowerCase();
-  if (!senderDomain || PERSONAL_EMAIL_DOMAINS.has(senderDomain)) return NO_MATCH;
+  if (!senderDomain || PERSONAL_EMAIL_DOMAINS.has(senderDomain))
+    return NO_MATCH;
 
   const { data: schools } = await admin
     .from("schools")
@@ -138,11 +143,16 @@ export async function autoCreateCoachByEmailDomain(
     .eq("family_unit_id", params.familyUnitId);
   if (!schools || schools.length === 0) return NO_MATCH;
 
-  const matches = schools.filter((school) => extractDomain(school.website) === senderDomain);
+  const matches = schools.filter(
+    (school) => extractDomain(school.website) === senderDomain,
+  );
   if (matches.length !== 1) return NO_MATCH; // zero or ambiguous — leave it for a human
 
   const school = matches[0];
-  const { firstName, lastName } = splitSenderName(params.senderName ?? null, senderEmail);
+  const { firstName, lastName } = splitSenderName(
+    params.senderName ?? null,
+    senderEmail,
+  );
 
   const { data: newCoach } = await admin
     .from("coaches")

@@ -191,13 +191,11 @@ async function loadInboundDraftRows(
       logger.warn("Inbound draft read failed", { error });
       return [];
     }
-    return ((data ?? []) as unknown as Record<string, unknown>[]).map(
-      (r) => ({
-        status: String(r.status),
-        matchedCoachId: (r.matched_coach_id as string | null) ?? null,
-        familyUnitId: (r.family_unit_id as string | null) ?? null,
-      }),
-    );
+    return ((data ?? []) as unknown as Record<string, unknown>[]).map((r) => ({
+      status: String(r.status),
+      matchedCoachId: (r.matched_coach_id as string | null) ?? null,
+      familyUnitId: (r.family_unit_id as string | null) ?? null,
+    }));
   } catch (err) {
     logger.warn("Inbound draft read threw", { err: String(err) });
     return [];

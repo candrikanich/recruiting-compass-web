@@ -251,8 +251,7 @@ describe("PATCH /api/deadlines/:id (family-scoped)", () => {
       throw new Error(`unexpected table ${table}`);
     });
 
-    const handler = (await import("~/server/api/deadlines/[id].patch"))
-      .default;
+    const handler = (await import("~/server/api/deadlines/[id].patch")).default;
     await expect(handler(fakeEvent({ id: VALID_ID }))).rejects.toMatchObject({
       statusCode: 404,
     });
@@ -294,8 +293,7 @@ describe("PATCH /api/deadlines/:id (family-scoped)", () => {
       throw new Error(`unexpected table ${table}`);
     });
 
-    const handler = (await import("~/server/api/deadlines/[id].patch"))
-      .default;
+    const handler = (await import("~/server/api/deadlines/[id].patch")).default;
     const result = await handler(fakeEvent({ id: VALID_ID }));
 
     expect(updateSpy).toHaveBeenCalledWith({ label: "Renamed" });
@@ -308,16 +306,14 @@ describe("PATCH /api/deadlines/:id (family-scoped)", () => {
       throw new Error("should not query supabase on invalid body");
     });
 
-    const handler = (await import("~/server/api/deadlines/[id].patch"))
-      .default;
+    const handler = (await import("~/server/api/deadlines/[id].patch")).default;
     await expect(handler(fakeEvent({ id: VALID_ID }))).rejects.toMatchObject({
       statusCode: 422,
     });
   });
 
   it("returns 400 when id param is missing", async () => {
-    const handler = (await import("~/server/api/deadlines/[id].patch"))
-      .default;
+    const handler = (await import("~/server/api/deadlines/[id].patch")).default;
     await expect(handler(fakeEvent())).rejects.toMatchObject({
       statusCode: 400,
     });
