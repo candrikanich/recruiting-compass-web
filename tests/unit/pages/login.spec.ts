@@ -844,6 +844,17 @@ describe("login.vue", () => {
       expect(wrapper.text()).toContain("Account created! Sign in to continue.");
     });
 
+    it("should display a success message when reason=email_verified query param is present", () => {
+      // pages/verify-email/[token].vue routes here when the token check
+      // succeeds but no browser session exists yet (email verified from a
+      // different device/browser than the one that will sign in).
+      mockRoute.query = { reason: "email_verified" };
+      const wrapper = createWrapper();
+
+      expect(wrapper.find("#timeout-message").exists()).toBe(true);
+      expect(wrapper.text()).toContain("Email verified");
+    });
+
     it("should display a not-admin message when reason=not_admin query param is present", () => {
       // middleware/admin.ts sends a non-admin here after the admin subdomain
       // redirect-loop fix — regression guard for that message actually

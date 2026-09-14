@@ -96,7 +96,7 @@ async function routeOnward() {
   if (session) {
     await navigateTo("/dashboard");
   } else {
-    await navigateTo("/login?verified=1");
+    await navigateTo("/login?reason=email_verified");
   }
 }
 

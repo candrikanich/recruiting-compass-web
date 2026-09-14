@@ -38,7 +38,7 @@ describe("pages/verify-email/[token].vue", () => {
     await flushPromises();
 
     expect(global.navigateTo).toHaveBeenCalledWith(
-      expect.stringContaining("/login"),
+      "/login?reason=email_verified",
     );
   });
 

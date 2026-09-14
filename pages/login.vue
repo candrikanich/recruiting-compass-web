@@ -240,6 +240,9 @@ const timeoutMessage = computed(() => {
   if (typeof reason === "string" && reason === "account_created") {
     return "Account created! Sign in to continue.";
   }
+  if (typeof reason === "string" && reason === "email_verified") {
+    return "Email verified — sign in to continue.";
+  }
   return null;
 });
 
