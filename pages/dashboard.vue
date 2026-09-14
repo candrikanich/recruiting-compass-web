@@ -21,15 +21,20 @@
       class="mx-auto max-w-7xl px-4 py-8 sm:px-6"
       role="main"
     >
-      <!-- Parent Context Banner -->
-      <ParentContextBanner
-        :is-viewing-as-parent="isViewingAsParent"
-        :athlete-name="activeAthleteName"
-      />
+      <!-- Banners: each is independently conditional (0-3 can render at once), so they
+           need their own gap and separation from the timeline below rather than relying
+           on a parent space-y-* that can't reach across v-if boundaries. -->
+      <div class="mb-6 space-y-4">
+        <!-- Parent Context Banner -->
+        <ParentContextBanner
+          :is-viewing-as-parent="isViewingAsParent"
+          :athlete-name="activeAthleteName"
+        />
 
-      <!-- Parent onboarding banner: shown until athlete connects (self-managed) -->
-      <ParentOnboardingBanner v-if="userStore.isParent" />
-      <GuardianPendingBanner />
+        <!-- Parent onboarding banner: shown until athlete connects (self-managed) -->
+        <ParentOnboardingBanner v-if="userStore.isParent" />
+        <GuardianPendingBanner />
+      </div>
 
       <!-- Timeline Summary -->
       <section aria-labelledby="timeline-heading">
