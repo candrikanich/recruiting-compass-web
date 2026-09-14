@@ -235,6 +235,12 @@ const handleSubmit = async () => {
       `${firstName.value.trim()} ${lastName.value.trim()}`,
       "parent",
       turnstileToken.value,
+      undefined, // dateOfBirth
+      undefined, // pendingAdmin
+      undefined, // onboardingStep1
+      undefined, // inviteToken
+      undefined, // getFreshCaptchaToken
+      true, // skipVerificationEmail — confirmClaim stamps email_verified_at
     );
     await confirmClaim();
   } catch (err) {

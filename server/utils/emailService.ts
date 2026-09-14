@@ -331,6 +331,46 @@ export const sendGuardianClaimEmail = async (
   });
 };
 
+export interface SendVerificationEmailOptions {
+  to: string;
+  token: string;
+  context?: EmailSendContext;
+}
+
+export const sendVerificationEmail = async (
+  options: SendVerificationEmailOptions,
+): Promise<{ success: boolean; messageId?: string; error?: string }> => {
+  const { to, token, context } = options;
+  const baseUrl =
+    process.env.PUBLIC_BASE_URL ?? "https://myrecruitingcompass.com";
+  const verifyUrl = `${baseUrl}/verify-email/${encodeURIComponent(token)}`;
+
+  const bodyHtml = `
+    <h1 style="margin:0 0 16px 0;font-size:24px;color:#111827;">Verify your email</h1>
+    <p style="margin:0 0 16px 0;color:#4b5563;font-size:16px;">
+      You're all set — your dashboard is ready. Confirming your email keeps
+      your account secure and makes sure we can reach you.
+    </p>
+    <a href="${sanitizeUrl(verifyUrl)}" style="display:inline-block;background:#2563eb;color:#ffffff;padding:12px 24px;text-decoration:none;border-radius:6px;font-weight:600;">
+      Verify my email
+    </a>
+    <p style="margin-top:24px;font-size:13px;color:#9ca3af;">
+      This link expires in 24 hours. If you didn't create this account, you
+      can ignore this email.
+    </p>
+  `;
+
+  return sendEmail({
+    to,
+    subject: "Verify your email — The Recruiting Compass",
+    html: wrapEmailLayout(bodyHtml, {
+      preheader: "Confirm your email to keep your account secure.",
+    }),
+    idempotencyKey: `verify-email-${token}`,
+    context,
+  });
+};
+
 export interface SendInviteEmailOptions {
   to: string;
   inviterName: string;

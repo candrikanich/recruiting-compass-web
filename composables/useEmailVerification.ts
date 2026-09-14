@@ -1,11 +1,14 @@
 import { ref, readonly } from "vue";
 import { useSupabase } from "~/composables/useSupabase";
+import { useAuthFetch } from "~/composables/useAuthFetch";
 import { createClientLogger } from "~/utils/logger";
+import type { User } from "~/types/models";
 
 const logger = createClientLogger("useEmailVerification");
 
 export const useEmailVerification = () => {
   const supabase = useSupabase();
+  const { $fetchAuth } = useAuthFetch();
 
   const loading = ref(false);
   const error = ref<string | null>(null);
@@ -29,57 +32,22 @@ export const useEmailVerification = () => {
     }
   };
 
-  const verifyEmailToken = async (token: string): Promise<boolean> => {
-    if (!token || token.trim() === "") {
-      loading.value = true;
-      error.value = "Verification token is missing";
-      loading.value = false;
-      return false;
-    }
-
-    const result = await withAsyncState(
-      "Email verification failed",
-      async () => {
-        const response = await $fetch("/api/auth/verify-email", {
-          method: "POST",
-          body: { token: token.trim() },
-        });
-
-        if (response && response.success) {
-          isVerified.value = true;
-          return true;
-        }
-
-        error.value = response?.message || "Email verification failed";
-        return false;
-      },
-    );
-
-    return result ?? false;
-  };
-
-  const resendVerificationEmail = async (email: string): Promise<boolean> => {
-    if (!email || email.trim() === "") {
-      loading.value = true;
-      error.value = "Email address is required";
-      loading.value = false;
-      return false;
-    }
-
+  const resendVerificationEmail = async (): Promise<boolean> => {
     const result = await withAsyncState(
       "Failed to resend verification email",
       async () => {
-        const response = await $fetch("/api/auth/resend-verification", {
-          method: "POST",
-          body: { email: email.trim() },
-        });
+        // /api/auth/verify-email/resend is requireAuth-gated and this app sets
+        // no auth cookie — a bare $fetch would 401 on every real browser call.
+        const response = await $fetchAuth<{ success?: boolean }>(
+          "/api/auth/verify-email/resend",
+          { method: "POST" },
+        );
 
         if (response && response.success) {
           return true;
         }
 
-        error.value =
-          response?.message || "Failed to resend verification email";
+        error.value = "Failed to resend verification email";
         return false;
       },
     );
@@ -116,11 +84,18 @@ export const useEmailVerification = () => {
           return false;
         }
 
-        const verified =
-          user.email_confirmed_at !== null &&
-          user.email_confirmed_at !== undefined;
-        isVerified.value = verified;
+        const { data: profile } = await supabase
+          .from("users")
+          .select("email_verified_at")
+          .eq("id", user.id)
+          .maybeSingle();
 
+        // useSupabase()'s client has no Database generic, so this resolves
+        // to `never` — same root cause as stores/user.ts's identical cast.
+        const verified =
+          (profile as Pick<User, "email_verified_at"> | null)
+            ?.email_verified_at != null;
+        isVerified.value = verified;
         return verified;
       },
     );
@@ -136,7 +111,6 @@ export const useEmailVerification = () => {
     loading: readonly(loading),
     error: readonly(error),
     isVerified: readonly(isVerified),
-    verifyEmailToken,
     resendVerificationEmail,
     checkEmailVerificationStatus,
     clearError,

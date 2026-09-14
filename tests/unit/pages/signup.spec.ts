@@ -215,6 +215,7 @@ describe("signup.vue", () => {
       auth: {
         getSession: vi.fn(),
         setSession: vi.fn().mockResolvedValue({ error: null }),
+        signInWithPassword: vi.fn().mockResolvedValue({ error: null }),
       },
       from: vi.fn(),
     };
@@ -610,264 +611,6 @@ describe("signup.vue", () => {
     });
   });
 
-  describe("Full Submission Flow", () => {
-    beforeEach(() => {
-      mockValidation.validate.mockResolvedValue({
-        fullName: "Test User",
-        email: "test@example.com",
-        password: "Password123", // pragma: allowlist secret
-        confirmPassword: "Password123",
-        role: "player",
-      });
-      mockAuth.signup.mockResolvedValue({
-        data: { user: { id: "user-123" }, session: null },
-        error: null,
-      });
-      mockSupabase.from.mockReturnValue({
-        upsert: vi.fn().mockResolvedValue({ error: null }),
-      });
-    });
-
-    it("should submit player signup with correct role", async () => {
-      const wrapper = createWrapper();
-
-      const playerRadio = wrapper.find('[data-testid="user-type-player"]');
-      await playerRadio.setValue(true);
-      await playerRadio.trigger("change");
-      await wrapper.vm.$nextTick();
-
-      await wrapper.find("#firstName").setValue("Test");
-      await wrapper.find("#lastName").setValue("User");
-      await wrapper.find("#email").setValue("test@example.com");
-      await wrapper.find("#password").setValue("Password123");
-      await wrapper.find("#confirmPassword").setValue("Password123");
-      await wrapper.find("#agreeToTerms").setValue(true);
-
-      await wrapper.find("form").trigger("submit.prevent");
-      await wrapper.vm.$nextTick();
-
-      expect(mockAuth.signup).toHaveBeenCalledWith(
-        "test@example.com",
-        "Password123",
-        "Test User",
-        "player",
-        undefined, // captchaToken (Turnstile disabled in test)
-        undefined, // dateOfBirth (not set in this fixture)
-      );
-    });
-
-    // No session comes back (email confirmation required in prod) — nothing
-    // authenticated can happen client-side, so hand off to verify-email
-    // instead of hitting family/create (which would 401 under RLS).
-    it("should NOT call POST /api/family/create when no session yet", async () => {
-      const wrapper = createWrapper();
-
-      const playerRadio = wrapper.find('[data-testid="user-type-player"]');
-      await playerRadio.setValue(true);
-      await playerRadio.trigger("change");
-      await wrapper.vm.$nextTick();
-
-      await wrapper.find("#firstName").setValue("Test");
-      await wrapper.find("#lastName").setValue("User");
-      await wrapper.find("#email").setValue("test@example.com");
-      await wrapper.find("#password").setValue("Password123");
-      await wrapper.find("#confirmPassword").setValue("Password123");
-      await wrapper.find("#agreeToTerms").setValue(true);
-
-      await wrapper.find("form").trigger("submit.prevent");
-      await flushPromises();
-
-      expect(mockAuthFetch.$fetchAuth).not.toHaveBeenCalledWith(
-        "/api/family/create",
-        { method: "POST" },
-      );
-    });
-
-    it("should navigate to /verify-email when no session yet", async () => {
-      const wrapper = createWrapper();
-
-      const playerRadio = wrapper.find('[data-testid="user-type-player"]');
-      await playerRadio.setValue(true);
-      await playerRadio.trigger("change");
-      await wrapper.vm.$nextTick();
-
-      await wrapper.find("#firstName").setValue("Test");
-      await wrapper.find("#lastName").setValue("User");
-      await wrapper.find("#email").setValue("test@example.com");
-      await wrapper.find("#password").setValue("Password123");
-      await wrapper.find("#confirmPassword").setValue("Password123");
-      await wrapper.find("#agreeToTerms").setValue(true);
-
-      await wrapper.find("form").trigger("submit.prevent");
-      await flushPromises();
-
-      expect(global.navigateTo).toHaveBeenCalledWith(
-        "/verify-email?email=test%40example.com",
-      );
-    });
-
-    it("carries drafted onboarding step-1 fields into signup() when player fills them in", async () => {
-      const wrapper = createWrapper();
-
-      const playerRadio = wrapper.find('[data-testid="user-type-player"]');
-      await playerRadio.setValue(true);
-      await playerRadio.trigger("change");
-      await wrapper.vm.$nextTick();
-
-      await wrapper.find("#firstName").setValue("Test");
-      await wrapper.find("#lastName").setValue("User");
-      await wrapper.find("#email").setValue("test@example.com");
-      await wrapper.find("#password").setValue("Password123");
-      await wrapper.find("#confirmPassword").setValue("Password123");
-      await wrapper.find("#signup-graduation-year").setValue("2027");
-      await wrapper.find("#signup-primary-sport").setValue("Baseball");
-      await wrapper.find("#signup-zip-code").setValue("90210");
-      await wrapper.find("#agreeToTerms").setValue(true);
-
-      await wrapper.find("form").trigger("submit.prevent");
-      await wrapper.vm.$nextTick();
-
-      expect(mockAuth.signup).toHaveBeenCalledWith(
-        "test@example.com",
-        "Password123",
-        "Test User",
-        "player",
-        undefined, // captchaToken (Turnstile disabled in test)
-        undefined, // dateOfBirth (not set in this fixture)
-        undefined, // pendingAdmin
-        {
-          graduationYear: 2027,
-          primarySport: "Baseball",
-          zipCode: "90210",
-        },
-      );
-    });
-
-    it("carries sport/gradYear as query params on the /verify-email handoff so the wait screen can personalize", async () => {
-      const wrapper = createWrapper();
-
-      const playerRadio = wrapper.find('[data-testid="user-type-player"]');
-      await playerRadio.setValue(true);
-      await playerRadio.trigger("change");
-      await wrapper.vm.$nextTick();
-
-      await wrapper.find("#firstName").setValue("Test");
-      await wrapper.find("#lastName").setValue("User");
-      await wrapper.find("#email").setValue("test@example.com");
-      await wrapper.find("#password").setValue("Password123");
-      await wrapper.find("#confirmPassword").setValue("Password123");
-      await wrapper.find("#signup-graduation-year").setValue("2027");
-      await wrapper.find("#signup-primary-sport").setValue("Baseball");
-      await wrapper.find("#agreeToTerms").setValue(true);
-
-      await wrapper.find("form").trigger("submit.prevent");
-      await flushPromises();
-
-      expect(global.navigateTo).toHaveBeenCalledWith(
-        "/verify-email?email=test%40example.com&sport=Baseball&gradYear=2027",
-      );
-    });
-
-    it("should submit parent signup with correct role", async () => {
-      mockValidation.validate.mockResolvedValue({
-        fullName: "Parent User",
-        email: "parent@example.com",
-        password: "Password123", // pragma: allowlist secret
-        confirmPassword: "Password123",
-        role: "parent",
-      });
-
-      const wrapper = createWrapper();
-
-      const parentRadio = wrapper.find('[data-testid="user-type-parent"]');
-      await parentRadio.setValue(true);
-      await parentRadio.trigger("change");
-      await wrapper.vm.$nextTick();
-
-      await wrapper.find("#firstName").setValue("Parent");
-      await wrapper.find("#lastName").setValue("User");
-      await wrapper.find("#email").setValue("parent@example.com");
-      await wrapper.find("#password").setValue("Password123");
-      await wrapper.find("#confirmPassword").setValue("Password123");
-      await wrapper.find("#agreeToTerms").setValue(true);
-
-      await wrapper.find("form").trigger("submit.prevent");
-      await wrapper.vm.$nextTick();
-
-      expect(mockAuth.signup).toHaveBeenCalledWith(
-        "parent@example.com",
-        "Password123",
-        "Parent User",
-        "parent",
-        undefined, // captchaToken (Turnstile disabled in test)
-        undefined, // dateOfBirth (not set in this fixture)
-      );
-    });
-
-    it("should NOT call POST /api/family/create when no session yet (parent)", async () => {
-      mockValidation.validate.mockResolvedValue({
-        fullName: "Parent User",
-        email: "parent@example.com",
-        password: "Password123", // pragma: allowlist secret
-        confirmPassword: "Password123",
-        role: "parent",
-      });
-
-      const wrapper = createWrapper();
-
-      const parentRadio = wrapper.find('[data-testid="user-type-parent"]');
-      await parentRadio.setValue(true);
-      await parentRadio.trigger("change");
-      await wrapper.vm.$nextTick();
-
-      await wrapper.find("#firstName").setValue("Parent");
-      await wrapper.find("#lastName").setValue("User");
-      await wrapper.find("#email").setValue("parent@example.com");
-      await wrapper.find("#password").setValue("Password123");
-      await wrapper.find("#confirmPassword").setValue("Password123");
-      await wrapper.find("#agreeToTerms").setValue(true);
-
-      await wrapper.find("form").trigger("submit.prevent");
-      await flushPromises();
-
-      expect(mockAuthFetch.$fetchAuth).not.toHaveBeenCalledWith(
-        "/api/family/create",
-        { method: "POST" },
-      );
-    });
-
-    it("should navigate to /verify-email when no session yet (parent)", async () => {
-      mockValidation.validate.mockResolvedValue({
-        fullName: "Parent User",
-        email: "parent@example.com",
-        password: "Password123", // pragma: allowlist secret
-        confirmPassword: "Password123",
-        role: "parent",
-      });
-
-      const wrapper = createWrapper();
-
-      const parentRadio = wrapper.find('[data-testid="user-type-parent"]');
-      await parentRadio.setValue(true);
-      await parentRadio.trigger("change");
-      await wrapper.vm.$nextTick();
-
-      await wrapper.find("#firstName").setValue("Parent");
-      await wrapper.find("#lastName").setValue("User");
-      await wrapper.find("#email").setValue("parent@example.com");
-      await wrapper.find("#password").setValue("Password123");
-      await wrapper.find("#confirmPassword").setValue("Password123");
-      await wrapper.find("#agreeToTerms").setValue(true);
-
-      await wrapper.find("form").trigger("submit.prevent");
-      await flushPromises();
-
-      expect(global.navigateTo).toHaveBeenCalledWith(
-        "/verify-email?email=parent%40example.com",
-      );
-    });
-  });
-
   describe("Full Submission Flow (session present — confirmation disabled)", () => {
     beforeEach(() => {
       mockValidation.validate.mockResolvedValue({
@@ -1091,29 +834,22 @@ describe("signup.vue", () => {
       expect(mockAuth.signup).not.toHaveBeenCalled();
     });
 
-    it("adopts the session and lands a confirmed minor straight on the dashboard", async () => {
-      // Some environments (QA, E2E) have email confirmation off — signup-minor.post.ts
-      // confirms the account immediately and returns a real session. Found live on QA:
-      // the earlier fix correctly avoided the /verify-email dead end but still forced
-      // an unnecessary /login screen even though a usable session was sitting right
-      // there in the response ("seems like an extra barrier" — Chris). The player
-      // already completed the whole wizard including onboarding info, so they should
-      // land straight on the dashboard.
+    it("signs in and lands a newly-created minor straight on the dashboard", async () => {
+      // signup-minor.post.ts creates the account server-side (auto-confirmed,
+      // same as the adult path) but doesn't sign in for us — the client
+      // signs in immediately after, same pattern as the adult flow.
       global.$fetch = vi.fn().mockResolvedValue({
         ok: true,
         guardianEmail: "parent@example.com",
         guardianEmailSent: true,
-        emailConfirmed: true,
-        session: { access_token: "at-1", refresh_token: "rt-1" },
       });
       const wrapper = createWrapper();
 
       await fillMinorForm(wrapper, "parent@example.com");
 
-      expect(mockSupabase.auth.setSession).toHaveBeenCalledWith({
-        access_token: "at-1",
-        refresh_token: "rt-1",
-      });
+      expect(mockSupabase.auth.signInWithPassword).toHaveBeenCalledWith(
+        expect.objectContaining({ email: "test@example.com" }),
+      );
       expect(mockAuthFetch.$fetchAuth).toHaveBeenCalledWith("/api/family/create", {
         method: "POST",
       });
@@ -1127,62 +863,23 @@ describe("signup.vue", () => {
       );
     });
 
-    it("falls back to the login handoff if session adoption itself fails", async () => {
-      // Defensive path: session adoption shouldn't ever leave the player on a dead
-      // screen if setSession() errors for some reason.
+    it("shows a form error if sign-in fails right after account creation", async () => {
       global.$fetch = vi.fn().mockResolvedValue({
         ok: true,
         guardianEmail: "parent@example.com",
         guardianEmailSent: true,
-        emailConfirmed: true,
-        session: { access_token: "at-1", refresh_token: "rt-1" },
       });
-      mockSupabase.auth.setSession.mockResolvedValueOnce({
+      mockSupabase.auth.signInWithPassword.mockResolvedValueOnce({
         error: { message: "invalid token" },
       });
       const wrapper = createWrapper();
 
       await fillMinorForm(wrapper, "parent@example.com");
 
-      expect(global.navigateTo).toHaveBeenCalledWith(
-        "/login?reason=account_created&email=test%40example.com",
-      );
-    });
-
-    it("sends a confirmed-but-sessionless minor to login (fallback shape, no /verify-email dead end)", async () => {
-      global.$fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        guardianEmail: "parent@example.com",
-        guardianEmailSent: true,
-        emailConfirmed: true,
-        session: null,
-      });
-      const wrapper = createWrapper();
-
-      await fillMinorForm(wrapper, "parent@example.com");
-
-      expect(global.navigateTo).toHaveBeenCalledWith(
-        "/login?reason=account_created&email=test%40example.com",
-      );
-      expect(global.navigateTo).not.toHaveBeenCalledWith(
-        expect.stringContaining("/verify-email"),
-      );
-    });
-
-    it("still sends an unconfirmed minor to /verify-email as before", async () => {
-      global.$fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        guardianEmail: "parent@example.com",
-        guardianEmailSent: true,
-        emailConfirmed: false,
-      });
-      const wrapper = createWrapper();
-
-      await fillMinorForm(wrapper, "parent@example.com");
-
-      expect(global.navigateTo).toHaveBeenCalledWith(
-        "/verify-email?email=test%40example.com",
-      );
+      expect(mockValidation.setErrors).toHaveBeenCalledWith([
+        expect.objectContaining({ field: "form" }),
+      ]);
+      expect(global.navigateTo).not.toHaveBeenCalledWith("/dashboard");
     });
 
     it("allows standalone player signup at 18+", async () => {
@@ -1309,7 +1006,13 @@ describe("signup.vue", () => {
         confirmPassword: "Password123",
         role: "player",
       });
-      mockAuth.signup.mockRejectedValue(new Error("User already registered"));
+      // The endpoint tags duplicates with a structured code — the page must
+      // branch on that, not on message text.
+      mockAuth.signup.mockRejectedValue(
+        Object.assign(new Error("An account with this email already exists"), {
+          data: { data: { code: "email_taken" } },
+        }),
+      );
       mockSupabase.auth.getSession.mockResolvedValue({
         data: { session: { user: { id: "user-123" } } },
       });
@@ -1333,6 +1036,45 @@ describe("signup.vue", () => {
 
       // Should attempt to get existing session
       expect(mockSupabase.auth.getSession).toHaveBeenCalled();
+    });
+
+    it("surfaces actionable guidance on a captcha_failed error code", async () => {
+      mockValidation.validate.mockResolvedValue({
+        fullName: "Test User",
+        email: "test@example.com",
+        password: "Password123", // pragma: allowlist secret
+        confirmPassword: "Password123",
+        role: "player",
+      });
+      mockAuth.signup.mockRejectedValue(
+        Object.assign(new Error("Verification failed. Please try again."), {
+          data: { data: { code: "captcha_failed" } },
+        }),
+      );
+
+      const wrapper = createWrapper();
+
+      const playerRadio = wrapper.find('[data-testid="user-type-player"]');
+      await playerRadio.setValue(true);
+      await playerRadio.trigger("change");
+      await wrapper.vm.$nextTick();
+
+      await wrapper.find("#firstName").setValue("Test");
+      await wrapper.find("#lastName").setValue("User");
+      await wrapper.find("#email").setValue("test@example.com");
+      await wrapper.find("#password").setValue("Password123");
+      await wrapper.find("#confirmPassword").setValue("Password123");
+      await wrapper.find("#agreeToTerms").setValue(true);
+
+      await wrapper.find("form").trigger("submit.prevent");
+      await flushPromises();
+
+      expect(mockValidation.setErrors).toHaveBeenCalledWith([
+        {
+          field: "form",
+          message: expect.stringContaining("couldn't confirm you're not a robot"),
+        },
+      ]);
     });
   });
 

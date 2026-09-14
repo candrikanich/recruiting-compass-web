@@ -10,15 +10,15 @@ import { getSupabaseAdmin, deleteOneOffTestUser } from "./seed/helpers/supabase-
  * Regression coverage for docs/superpowers/specs/2026-09-12-guardian-optional-signup-wizard-design.md.
  *
  * Deviations from a plain "signup -> dashboard" journey, confirmed against the
- * real code rather than assumed (see task-8-report.md for the full trace):
+ * real code rather than assumed:
  *
- * 1. Minor signup (pages/signup.vue's submitMinorSignup) always lands on
- *    /verify-email, not /dashboard — POST /api/auth/signup-minor signs the user
- *    up via a server-side anon Supabase client, so no session ever reaches the
- *    browser from that call, even with auto-confirm on. A real session needs a
- *    subsequent /login with the same credentials, same as clicking the
- *    confirmation link would establish.
- * 2. Even after login, middleware/onboarding.global.ts redirects any player
+ * 1. POST /api/auth/signup-minor creates the account server-side
+ *    (auto-confirmed) but doesn't sign in for us — pages/signup.vue's
+ *    submitMinorSignup calls supabase.auth.signInWithPassword() itself right
+ *    after, same pattern as the adult path (composables/useAuth.ts's
+ *    signup()). A real browser session exists before the client ever
+ *    navigates anywhere; there's no separate /login step to drive.
+ * 2. middleware/onboarding.global.ts redirects any player
  *    without users.phase_milestone_data.onboarding_complete === true to
  *    /onboarding — true for every signup path, not specific to this flow (see
  *    tests/e2e/signup-flow.spec.ts, which already asserts /onboarding for a
@@ -102,10 +102,11 @@ test.describe("signup: skip the guardian step", () => {
     await page.check("#agreeToTerms");
     await page.getByTestId("signup-button").click();
 
-    // Minor signup always detours through /verify-email first — see the file
-    // header. Confirms the account was actually created (not just that the
-    // client reached some URL) before seeding onboarding past it.
-    await page.waitForURL(/\/verify-email/, { timeout: 15000 });
+    // The client signs itself in right after account creation (see file
+    // header) and lands on a real session immediately — onboarding isn't
+    // complete yet, so the global middleware redirects to /onboarding on
+    // this very first navigation, same as the adult signup path.
+    await page.waitForURL(/\/onboarding/, { timeout: 15000 });
 
     const supabase = getSupabaseAdmin();
     const { data: player } = await supabase
@@ -142,21 +143,10 @@ test.describe("signup: skip the guardian step", () => {
     );
     expect(prefsError).toBeNull();
 
-    // Establish a real browser session — the minor-signup endpoint's session
-    // never reaches the browser (see file header).
-    await page.goto("/login");
-    await page.locator('input[type="email"]').fill(PLAYER_EMAIL);
-    await page.locator('input[type="email"]').blur();
-    await page.locator('input[type="password"]').fill(PASSWORD);
-    await page.locator('input[type="password"]').blur();
-    await page.waitForFunction(
-      () =>
-        !document
-          .querySelector('[data-testid="login-button"]')
-          ?.hasAttribute("disabled"),
-    );
-    await page.getByTestId("login-button").click();
-
+    // The browser session from signup is already real (see file header) —
+    // no separate login needed. Navigate to /dashboard directly now that
+    // onboarding is seeded complete.
+    await page.goto("/dashboard");
     await page.waitForURL(/\/dashboard/, { timeout: 15000 });
     await expect(page.getByText(/invite a parent or guardian/i)).toBeVisible();
 

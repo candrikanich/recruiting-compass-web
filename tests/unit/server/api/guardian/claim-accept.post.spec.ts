@@ -25,6 +25,10 @@ const state = {
 
 const mockClaimUpdate = vi.fn(async () => ({ error: null }));
 const mockUserUpdate = vi.fn(async () => ({ error: null }));
+// Separate from mockUserUpdate so the email-verification stamp (a distinct
+// .update() call on the same table) doesn't get mixed into guardian-consent
+// call/order assertions below.
+const mockVerifyStamp = vi.fn(async () => ({ error: null }));
 const mockMemberInsert = vi.fn(
   async (_payload: Record<string, unknown>) =>
     ({ error: null }) as { error: { code: string; message: string } | null },
@@ -92,7 +96,15 @@ const table = (name: string) => {
     };
   }
   if (name === "users") {
-    return { update: (v: unknown) => ({ eq: () => mockUserUpdate(v as never) }) };
+    return {
+      update: (v: unknown) => {
+        const payload = v as Record<string, unknown>;
+        if ("email_verified_at" in payload) {
+          return { eq: () => ({ is: () => mockVerifyStamp(payload as never) }) };
+        }
+        return { eq: () => mockUserUpdate(v as never) };
+      },
+    };
   }
   return {};
 };
@@ -145,6 +157,7 @@ describe("POST /api/guardian/claim/[token]/accept", () => {
     };
     mockClaimUpdate.mockResolvedValue({ error: null });
     mockUserUpdate.mockResolvedValue({ error: null });
+    mockVerifyStamp.mockResolvedValue({ error: null });
     mockMemberInsert.mockResolvedValue({ error: null });
     mockMemberUpdate.mockResolvedValue({ error: null });
     mockFamilyUnitsInsert.mockClear();
@@ -152,6 +165,16 @@ describe("POST /api/guardian/claim/[token]/accept", () => {
     state.playerMembership = null;
     state.familyUnitsInsertError = null;
     state.raceWinnerFamilyId = null;
+  });
+
+  it("stamps the guardian's email as verified", async () => {
+    // Clicking the claim link already proves ownership of guardian_email
+    // (checked above); the guardian, not the player, is the one confirmed here.
+    await handler({} as never);
+
+    expect(mockVerifyStamp).toHaveBeenCalledWith(
+      expect.objectContaining({ email_verified_at: expect.any(String) }),
+    );
   });
 
   it("stamps guardian consent and closes the claim", async () => {

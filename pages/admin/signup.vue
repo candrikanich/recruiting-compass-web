@@ -458,7 +458,6 @@ const handleSignup = async () => {
 
   try {
     let userId: string;
-    let hasSession = true;
 
     try {
       // Sign up with Supabase Auth (register as parent, will set admin flag after)
@@ -470,6 +469,9 @@ const handleSignup = async () => {
         undefined, // captchaToken — admin signup doesn't use Turnstile
         undefined, // dateOfBirth — not collected on this form
         true, // pendingAdmin — carries validated adminToken intent past confirmation
+        // NOT skipVerificationEmail: unlike the invite/guardian-claim paths
+        // (spec §5), nothing stamps email_verified_at for an admin signup, so
+        // the verification email is still the only thing that can verify them.
       );
 
       if (!authData?.data?.user?.id) {
@@ -480,7 +482,6 @@ const handleSignup = async () => {
       logger.debug("Signup response received");
 
       userId = authData.data.user.id;
-      hasSession = !!authData.data.session;
     } catch (signupErr: unknown) {
       // Handle "User already registered" error
       const errMessage =
@@ -509,42 +510,30 @@ const handleSignup = async () => {
       }
     }
 
-    if (hasSession) {
-      // Create or update admin user profile using server endpoint
-      // This bypasses RLS using the service role key; requires adminToken for server-side validation.
-      // $fetchAuth (not bare $fetch) is required here — admin-profile.post.ts
-      // is an authed endpoint gated by requireAuth, which reads the session
-      // Bearer token/cookie that only $fetchAuth attaches.
-      await $fetchAuth("/api/auth/admin-profile", {
-        method: "POST",
-        body: {
-          userId,
-          email: validated.email,
-          fullName: validated.fullName,
-          adminToken: adminToken.value,
-        },
-      }).catch((err) => {
-        throw new Error(
-          err.data?.statusMessage || "Failed to create admin profile",
-        );
-      });
-
-      logger.info("Admin profile created successfully");
-    } else {
-      // Prod requires email confirmation, so signup() returned no session —
-      // there's no authenticated context to apply the admin flag with yet.
-      // The pendingAdmin intent (already validated via adminToken above) is
-      // carried in signUp()'s user_metadata and applied lazily on first
-      // login (see pages/login.vue).
-      logger.debug(
-        "No session yet (email confirmation required) — admin flag will be applied on first login",
+    // signup() creates the account server-side and always returns a real
+    // session now (see composables/useAuth.ts) — no more "email confirmation
+    // required, apply admin flag on first login" branch to fall back to.
+    // $fetchAuth (not bare $fetch) is required here — admin-profile.post.ts
+    // is an authed endpoint gated by requireAuth, which reads the session
+    // Bearer token/cookie that only $fetchAuth attaches.
+    await $fetchAuth("/api/auth/admin-profile", {
+      method: "POST",
+      body: {
+        userId,
+        email: validated.email,
+        fullName: validated.fullName,
+        adminToken: adminToken.value,
+      },
+    }).catch((err) => {
+      throw new Error(
+        err.data?.statusMessage || "Failed to create admin profile",
       );
-    }
+    });
 
-    // Redirect to email verification page
-    await navigateTo(
-      `/verify-email?email=${encodeURIComponent(validated.email)}`,
-    );
+    logger.info("Admin profile created successfully");
+
+    await userStore.initializeUser();
+    await navigateTo("/dashboard");
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Signup failed";
     // Set form-level error

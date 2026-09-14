@@ -208,6 +208,25 @@ function resetTurnstile() {
   }
 }
 
+// After server-side account creation, the Turnstile token collected for
+// signup has already been consumed by /api/auth/signup's own verifyTurnstile
+// call — reusing it for the immediate post-signup sign-in would be rejected
+// as a replayed token by Supabase's native CAPTCHA check (if enabled). Reset
+// the widget and wait briefly for it to auto-resolve a fresh token via its
+// existing callback, the same mechanism already used for retry-after-failure.
+async function getFreshTurnstileToken(): Promise<string | undefined> {
+  if (!turnstileEnabled.value || !turnstileWidgetId.value) return undefined;
+  const w = window as unknown as { turnstile?: TurnstileGlobal };
+  if (!w.turnstile) return undefined;
+  turnstileToken.value = undefined;
+  w.turnstile.reset(turnstileWidgetId.value);
+  const start = Date.now();
+  while (!turnstileToken.value && Date.now() - start < 8000) {
+    await new Promise((resolve) => setTimeout(resolve, 150));
+  }
+  return turnstileToken.value;
+}
+
 function loadTurnstileScript(): Promise<void> {
   return new Promise((resolve) => {
     const w = window as unknown as { turnstile?: TurnstileGlobal };
@@ -327,7 +346,7 @@ watch(agreeToTerms, (isChecked) => {
  */
 const submitMinorSignup = async (guardian: string) => {
   try {
-    const result = await $fetch("/api/auth/signup-minor", {
+    await $fetch("/api/auth/signup-minor", {
       method: "POST",
       body: {
         email: email.value.trim(),
@@ -344,60 +363,28 @@ const submitMinorSignup = async (guardian: string) => {
       },
     });
 
-    // signUp() runs server-side here (see signup-minor.post.ts's own doc comment
-    // on why), so this browser has no session yet even though one may already
-    // exist. Some environments (QA, E2E) have Supabase's email-confirmation
-    // requirement off, in which case the endpoint's own signUp() call already
-    // got a real session back — adopt it directly rather than forcing an extra
-    // login screen (found live on QA: "seems like an extra barrier" — the
-    // player already finished the whole wizard including onboarding info, so
-    // they should land straight on the dashboard, guardian banner and all).
-    if (result.session) {
-      try {
-        const { error: setSessionError } = await supabase.auth.setSession({
-          access_token: result.session.access_token,
-          refresh_token: result.session.refresh_token,
-        });
-        if (setSessionError) throw setSessionError;
-
-        // Mirrors the adult signup's own-session branch below: family unit +
-        // pending onboarding fields (primary_sport/gender, still only
-        // pending_* metadata at this point — see signup-minor.post.ts) also
-        // get flushed by plugins/auth.client.ts's SIGNED_IN listener, but
-        // awaiting these explicitly here keeps the redirect from racing it.
-        await $fetchAuth("/api/family/create", { method: "POST" });
-        await userStore.initializeUser();
-        loading.value = false;
-        await navigateTo("/dashboard");
-        return;
-      } catch {
-        // Never leave the player on a dead screen if session adoption itself
-        // fails for some reason — fall through to the login handoff below,
-        // same destination the pre-session-adoption fix used for every case.
-      }
-    }
-
-    if (result.emailConfirmed) {
-      loading.value = false;
-      await navigateTo(
-        `/login?reason=account_created&email=${encodeURIComponent(email.value.trim())}`,
-      );
-      return;
-    }
-
-    loading.value = false;
-
-    // (guardian's email deliberately isn't threaded through this URL — verify-email.vue
-    // never read it, and putting it in the query string would only expose the
-    // guardian's address in the URL bar/browser history for no benefit.)
-    const params = new URLSearchParams({
+    // The endpoint creates the account server-side (auto-confirmed, same as
+    // the adult path) but doesn't sign in for us — the signup Turnstile
+    // token it just verified is already consumed, so mint a fresh one for
+    // this sign-in the same way the adult path does.
+    const signInCaptchaToken = await getFreshTurnstileToken();
+    const { error: signInError } = await supabase.auth.signInWithPassword({
       email: email.value.trim(),
+      password: password.value,
+      ...(signInCaptchaToken && {
+        options: { captchaToken: signInCaptchaToken },
+      }),
     });
-    if (primarySport.value && graduationYear.value) {
-      params.set("sport", primarySport.value);
-      params.set("gradYear", String(graduationYear.value));
-    }
-    await navigateTo(`/verify-email?${params.toString()}`);
+    if (signInError) throw signInError;
+
+    // Family unit + pending onboarding fields (primary_sport/gender, still
+    // only pending_* metadata at this point — see signup-minor.post.ts) also
+    // get flushed by plugins/auth.client.ts's SIGNED_IN listener, but
+    // awaiting these explicitly here keeps the redirect from racing it.
+    await $fetchAuth("/api/family/create", { method: "POST" });
+    await userStore.initializeUser();
+    loading.value = false;
+    await navigateTo("/dashboard");
   } catch (err) {
     const message =
       (err as { data?: { statusMessage?: string } } | null)?.data
@@ -528,6 +515,10 @@ const handleSignup = async () => {
       if (onboardingStep1) {
         signupArgs.push(undefined, onboardingStep1);
       }
+      // Pad to the getFreshCaptchaToken slot (7th–9th are pendingAdmin,
+      // onboardingStep1, inviteToken — none set here beyond the above).
+      while (signupArgs.length < 9) signupArgs.push(undefined);
+      signupArgs.push(getFreshTurnstileToken);
       const authData = await signup(...signupArgs);
 
       if (!authData?.data?.user?.id) {
@@ -535,30 +526,23 @@ const handleSignup = async () => {
       }
 
       userId = authData.data.user.id;
-
-      // Prod requires email confirmation, so Supabase withholds the session
-      // until the link is clicked. handle_new_user() already created the
-      // public.users row server-side (SECURITY DEFINER trigger); everything
-      // below this point needs an authenticated session for RLS, so there's
-      // nothing left to do client-side. Hand off to verify-email instead of
-      // failing — family creation happens on first login (pages/login.vue).
-      if (!authData.data.session) {
-        loading.value = false;
-        const params = new URLSearchParams({ email: validated.email });
-        if (onboardingStep1) {
-          params.set("sport", onboardingStep1.primarySport);
-          params.set("gradYear", String(onboardingStep1.graduationYear));
-        }
-        await navigateTo(`/verify-email?${params.toString()}`);
-        return;
-      }
     } catch (signupErr: unknown) {
-      // Handle "User already registered" error - the account may have been created
-      // in a previous request (race condition or double-submit)
-      const errMessage =
-        signupErr instanceof Error ? signupErr.message : String(signupErr);
+      // /api/auth/signup tags its own failures with a stable `data.code` —
+      // message text is not a contract and changed once already when account
+      // creation moved server-side.
+      // h3 nests `data` inside the serialized error body, so the client sees
+      // it one level deeper than the server set it; read both shapes so this
+      // holds whether the error was thrown locally or came over the wire.
+      const errData = (
+        signupErr as {
+          data?: { code?: string; data?: { code?: string } };
+        } | null
+      )?.data;
+      const errCode = errData?.code ?? errData?.data?.code;
 
-      if (errMessage.includes("already registered")) {
+      // The account may have been created in a previous request (race
+      // condition or double-submit).
+      if (errCode === "email_taken") {
         // Try to get the current session
         const {
           data: { session },
@@ -570,13 +554,11 @@ const handleSignup = async () => {
           // No active session - this is a real error
           throw signupErr;
         }
-      } else if (errMessage.includes("timeout-or-duplicate")) {
-        // Supabase's captcha layer rejected a replayed/expired Turnstile
-        // token — commonly the second half of a double-submit, where the
-        // first request already created the account (confirmation email
-        // sent). There's no session yet (unconfirmed email), so we can't
-        // silently recover a userId here; surface actionable guidance and
-        // reset the widget so a genuine retry gets a fresh token.
+      } else if (errCode === "captcha_failed") {
+        // The Turnstile check rejected a replayed/expired token — commonly
+        // the second half of a double-submit, where the first request already
+        // created the account (verification email sent). Surface actionable
+        // guidance; the widget reset below gets a genuine retry a fresh token.
         throw new Error(
           "We couldn't confirm you're not a robot in time. If you already received a confirmation email, check your inbox — otherwise, please try again.",
         );

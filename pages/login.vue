@@ -240,12 +240,15 @@ const timeoutMessage = computed(() => {
   if (typeof reason === "string" && reason === "account_created") {
     return "Account created! Sign in to continue.";
   }
+  if (typeof reason === "string" && reason === "email_verified") {
+    return "Email verified — sign in to continue.";
+  }
   return null;
 });
 
-// A minor's account is created server-side (signup-minor.post.ts) — its session
-// never reaches this browser, so the player always lands here to log in
-// explicitly. Prefilling the email they just chose saves retyping it.
+// Any flow that hands off to an explicit login with a known email (the
+// account_created reason above included) can prefill it here to save
+// retyping.
 if (typeof route.query.email === "string") {
   email.value = route.query.email;
 }

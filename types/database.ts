@@ -995,6 +995,35 @@ export type Database = {
         };
         Relationships: [];
       };
+      email_verification_tokens: {
+        Row: {
+          consumed_at: string | null;
+          created_at: string;
+          expires_at: string;
+          id: string;
+          token: string;
+          user_id: string;
+        };
+        Insert: {
+          consumed_at?: string | null;
+          created_at?: string;
+          expires_at: string;
+          id?: string;
+          token: string;
+          user_id: string;
+        };
+        Update: {
+          consumed_at?: string | null;
+          created_at?: string;
+          expires_at?: string;
+          id?: string;
+          token?: string;
+          user_id?: string;
+        };
+        // FK targets auth.users, not public.users — not representable in
+        // this generator's Relationships array (cross-schema).
+        Relationships: [];
+      };
       events: {
         Row: {
           address: string | null;
@@ -3511,6 +3540,7 @@ export type Database = {
           deletion_requested_at: string | null;
           dominant_side: string | null;
           email: string;
+          email_verified_at: string | null;
           full_name: string | null;
           gpa: number | null;
           graduation_year: number | null;
@@ -3555,6 +3585,7 @@ export type Database = {
           deletion_requested_at?: string | null;
           dominant_side?: string | null;
           email: string;
+          email_verified_at?: string | null;
           full_name?: string | null;
           gpa?: number | null;
           graduation_year?: number | null;
@@ -3599,6 +3630,7 @@ export type Database = {
           deletion_requested_at?: string | null;
           dominant_side?: string | null;
           email?: string;
+          email_verified_at?: string | null;
           full_name?: string | null;
           gpa?: number | null;
           graduation_year?: number | null;
