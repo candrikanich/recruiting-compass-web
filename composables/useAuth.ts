@@ -280,45 +280,13 @@ export const useAuth = () => {
     try {
       const trimmedEmail = email.trim().toLowerCase();
 
-      const signUpParams: {
-        email: string;
-        password: string;
-        options?: {
-          data: Record<string, string | boolean>;
-          captchaToken?: string;
-        };
-      } = {
-        email: trimmedEmail,
-        password,
-      };
-
-      // Build user metadata
+      // Carries pending intent across the account-creation call the same way
+      // the old options.data did — consumed lazily on first sign-in by
+      // useAccountProvisioning, not trusted again later.
       const metadata: Record<string, string | boolean> = {};
-
-      if (fullName) {
-        metadata.full_name = fullName;
-      }
-
-      if (role) {
-        metadata.role = role;
-      }
-
-      if (dateOfBirth) {
-        metadata.date_of_birth = dateOfBirth;
-      }
-
-      // Carries the already-validated admin-signup intent across the
-      // email-confirmation gap (no session exists yet to apply is_admin
-      // directly) — consumed lazily on first login, not trusted again later.
       if (pendingAdmin) {
         metadata.pending_admin = true;
       }
-
-      // Drafted onboarding step-1 answers (grad year/sport/gender/zip),
-      // entered on the signup form itself so a new user isn't idle while
-      // waiting on the confirmation email — carried the same way as
-      // pending_admin and flushed into real preferences on first sign-in by
-      // useAccountProvisioning.
       if (onboardingStep1) {
         metadata.pending_graduation_year = String(
           onboardingStep1.graduationYear,
@@ -331,33 +299,35 @@ export const useAuth = () => {
           metadata.pending_zip_code = onboardingStep1.zipCode;
         }
       }
-
-      // Carries a family-invite token across the email-confirmation gap the
-      // same way pending_admin does — the accept call needs an authenticated
-      // session (RLS), which doesn't exist until the link is clicked, so it's
-      // deferred and consumed on first sign-in by useAccountProvisioning
-      // instead of attempted here.
       if (inviteToken) {
         metadata.pending_invite_token = inviteToken;
       }
 
-      // Add metadata + captcha token if present
-      if (Object.keys(metadata).length > 0 || captchaToken) {
-        signUpParams.options = {
-          data: metadata,
-          ...(captchaToken && { captchaToken }),
-        };
+      await $fetch("/api/auth/signup", {
+        method: "POST",
+        body: {
+          email: trimmedEmail,
+          password,
+          fullName,
+          role,
+          dateOfBirth,
+          captchaToken,
+          metadata,
+        },
+      });
+
+      // Session issuance is a normal password sign-in now that the account
+      // is auto-confirmed server-side — no confirmation gap to wait out.
+      const { data, error: signInError } =
+        await supabase.auth.signInWithPassword({
+          email: trimmedEmail,
+          password,
+        });
+
+      if (signInError) {
+        error.value = signInError;
+        throw signInError;
       }
-
-      const { data, error: signUpError } =
-        await supabase.auth.signUp(signUpParams);
-
-      if (signUpError) {
-        error.value = signUpError;
-        throw signUpError;
-      }
-
-      // Store initialization is handled by caller
 
       return { data, error: null };
     } catch (err: unknown) {

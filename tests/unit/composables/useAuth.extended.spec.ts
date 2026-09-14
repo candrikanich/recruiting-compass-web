@@ -436,11 +436,13 @@ describe("useAuth - Extended Error Handling for Login", () => {
   });
 
   describe("Signup metadata", () => {
-    it("passes role and full_name into supabase.auth.signUp user metadata", async () => {
-      mockAuth.signUp.mockResolvedValue({
-        data: { user: mockUser, session: null },
+    it("passes role and full_name into the server-side signup call", async () => {
+      mockAuth.signInWithPassword.mockResolvedValue({
+        data: { user: mockUser, session: mockSession },
         error: null,
       });
+      const mockFetch = vi.fn(async () => ({ userId: mockUser.id }));
+      vi.stubGlobal("$fetch", mockFetch);
 
       const auth = useAuth();
       await auth.signup(
@@ -450,36 +452,43 @@ describe("useAuth - Extended Error Handling for Login", () => {
         "player",
       );
 
-      expect(mockAuth.signUp).toHaveBeenCalledTimes(1);
-      const params = mockAuth.signUp.mock.calls[0][0];
-      // Email is normalized (trimmed + lowercased) before hitting Supabase.
-      expect(params.email).toBe("new@example.com");
-      expect(params.password).toBe("SecurePass123");
-      expect(params.options.data).toMatchObject({
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+      const [, requestInit] = mockFetch.mock.calls[0];
+      // Email is normalized (trimmed + lowercased) before hitting the endpoint.
+      expect(requestInit.body.email).toBe("new@example.com");
+      expect(requestInit.body.password).toBe("SecurePass123");
+      expect(requestInit.body).toMatchObject({
         role: "player",
-        full_name: "New Player",
+        fullName: "New Player",
       });
+
+      vi.unstubAllGlobals();
     });
 
-    it("omits the options block entirely when no role or name is given", async () => {
-      mockAuth.signUp.mockResolvedValue({
-        data: { user: mockUser, session: null },
+    it("sends undefined role/fullName when neither is given", async () => {
+      mockAuth.signInWithPassword.mockResolvedValue({
+        data: { user: mockUser, session: mockSession },
         error: null,
       });
+      const mockFetch = vi.fn(async () => ({ userId: mockUser.id }));
+      vi.stubGlobal("$fetch", mockFetch);
 
       const auth = useAuth();
       await auth.signup("solo@example.com", "SecurePass123");
 
-      const params = mockAuth.signUp.mock.calls[0][0];
-      expect(params.options).toBeUndefined();
+      const [, requestInit] = mockFetch.mock.calls[0];
+      expect(requestInit.body.role).toBeUndefined();
+      expect(requestInit.body.fullName).toBeUndefined();
+
+      vi.unstubAllGlobals();
     });
 
     it("surfaces a signup error and sets error state", async () => {
       const signUpError = new Error("User already registered");
-      mockAuth.signUp.mockResolvedValue({
-        data: { user: null, session: null },
-        error: signUpError,
+      const mockFetch = vi.fn(async () => {
+        throw signUpError;
       });
+      vi.stubGlobal("$fetch", mockFetch);
 
       const auth = useAuth();
       await expect(
@@ -487,6 +496,9 @@ describe("useAuth - Extended Error Handling for Login", () => {
       ).rejects.toThrow("User already registered");
       expect(auth.error.value).toEqual(signUpError);
       expect(auth.loading.value).toBe(false);
+      expect(mockAuth.signInWithPassword).not.toHaveBeenCalled();
+
+      vi.unstubAllGlobals();
     });
   });
 });
