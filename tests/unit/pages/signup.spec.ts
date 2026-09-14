@@ -214,6 +214,7 @@ describe("signup.vue", () => {
     mockSupabase = {
       auth: {
         getSession: vi.fn(),
+        setSession: vi.fn().mockResolvedValue({ error: null }),
       },
       from: vi.fn(),
     };
@@ -1079,15 +1080,71 @@ describe("signup.vue", () => {
       expect(mockAuth.signup).not.toHaveBeenCalled();
     });
 
-    it("sends a confirmed minor to login, not the dead-end verify-email wait screen", async () => {
+    it("adopts the session and lands a confirmed minor straight on the dashboard", async () => {
       // Some environments (QA, E2E) have email confirmation off — signup-minor.post.ts
-      // confirms the account immediately with no email ever sent. Found live on QA:
-      // testers stuck on /verify-email waiting for an email that was never coming.
+      // confirms the account immediately and returns a real session. Found live on QA:
+      // the earlier fix correctly avoided the /verify-email dead end but still forced
+      // an unnecessary /login screen even though a usable session was sitting right
+      // there in the response ("seems like an extra barrier" — Chris). The player
+      // already completed the whole wizard including onboarding info, so they should
+      // land straight on the dashboard.
       global.$fetch = vi.fn().mockResolvedValue({
         ok: true,
         guardianEmail: "parent@example.com",
         guardianEmailSent: true,
         emailConfirmed: true,
+        session: { access_token: "at-1", refresh_token: "rt-1" },
+      });
+      const wrapper = createWrapper();
+
+      await fillMinorForm(wrapper, "parent@example.com");
+
+      expect(mockSupabase.auth.setSession).toHaveBeenCalledWith({
+        access_token: "at-1",
+        refresh_token: "rt-1",
+      });
+      expect(mockAuthFetch.$fetchAuth).toHaveBeenCalledWith("/api/family/create", {
+        method: "POST",
+      });
+      expect(mockUserStore.initializeUser).toHaveBeenCalled();
+      expect(global.navigateTo).toHaveBeenCalledWith("/dashboard");
+      expect(global.navigateTo).not.toHaveBeenCalledWith(
+        expect.stringContaining("/login"),
+      );
+      expect(global.navigateTo).not.toHaveBeenCalledWith(
+        expect.stringContaining("/verify-email"),
+      );
+    });
+
+    it("falls back to the login handoff if session adoption itself fails", async () => {
+      // Defensive path: session adoption shouldn't ever leave the player on a dead
+      // screen if setSession() errors for some reason.
+      global.$fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        guardianEmail: "parent@example.com",
+        guardianEmailSent: true,
+        emailConfirmed: true,
+        session: { access_token: "at-1", refresh_token: "rt-1" },
+      });
+      mockSupabase.auth.setSession.mockResolvedValueOnce({
+        error: { message: "invalid token" },
+      });
+      const wrapper = createWrapper();
+
+      await fillMinorForm(wrapper, "parent@example.com");
+
+      expect(global.navigateTo).toHaveBeenCalledWith(
+        "/login?reason=account_created&email=test%40example.com",
+      );
+    });
+
+    it("sends a confirmed-but-sessionless minor to login (fallback shape, no /verify-email dead end)", async () => {
+      global.$fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        guardianEmail: "parent@example.com",
+        guardianEmailSent: true,
+        emailConfirmed: true,
+        session: null,
       });
       const wrapper = createWrapper();
 

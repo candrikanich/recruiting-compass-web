@@ -334,21 +334,48 @@ const submitMinorSignup = async (guardian: string) => {
       },
     });
 
-    loading.value = false;
-
     // signUp() runs server-side here (see signup-minor.post.ts's own doc comment
-    // on why), so its session never reaches this browser regardless — the player
-    // always needs an explicit login either way. But WHERE we send them differs:
-    // some environments (QA, E2E) have Supabase's email-confirmation requirement
-    // off, so the account is already confirmed with no email ever sent — sending
-    // everyone to /verify-email unconditionally left QA testers stuck on a dead
-    // end waiting for an email that was never coming.
+    // on why), so this browser has no session yet even though one may already
+    // exist. Some environments (QA, E2E) have Supabase's email-confirmation
+    // requirement off, in which case the endpoint's own signUp() call already
+    // got a real session back — adopt it directly rather than forcing an extra
+    // login screen (found live on QA: "seems like an extra barrier" — the
+    // player already finished the whole wizard including onboarding info, so
+    // they should land straight on the dashboard, guardian banner and all).
+    if (result.session) {
+      try {
+        const { error: setSessionError } = await supabase.auth.setSession({
+          access_token: result.session.access_token,
+          refresh_token: result.session.refresh_token,
+        });
+        if (setSessionError) throw setSessionError;
+
+        // Mirrors the adult signup's own-session branch below: family unit +
+        // pending onboarding fields (primary_sport/gender, still only
+        // pending_* metadata at this point — see signup-minor.post.ts) also
+        // get flushed by plugins/auth.client.ts's SIGNED_IN listener, but
+        // awaiting these explicitly here keeps the redirect from racing it.
+        await $fetchAuth("/api/family/create", { method: "POST" });
+        await userStore.initializeUser();
+        loading.value = false;
+        await navigateTo("/dashboard");
+        return;
+      } catch {
+        // Never leave the player on a dead screen if session adoption itself
+        // fails for some reason — fall through to the login handoff below,
+        // same destination the pre-session-adoption fix used for every case.
+      }
+    }
+
     if (result.emailConfirmed) {
+      loading.value = false;
       await navigateTo(
         `/login?reason=account_created&email=${encodeURIComponent(email.value.trim())}`,
       );
       return;
     }
+
+    loading.value = false;
 
     // (guardian's email deliberately isn't threaded through this URL — verify-email.vue
     // never read it, and putting it in the query string would only expose the
