@@ -72,14 +72,29 @@ export default defineEventHandler(async (event) => {
     }
 
     // A guardian confirming a second child already has a family — reuse it rather than
-    // stranding siblings in separate units.
-    const { data: existingMembership } = await supabase
+    // stranding siblings in separate units. A player who signed up solo (guardian-optional
+    // signup, the common case) already has their own single-member family from
+    // /api/family/create by the time a guardian claims them -- prefer THAT family whenever
+    // the guardian has none yet, so anything the player already added (schools,
+    // interactions, ...) stays attached to the family it's actually scoped to instead of
+    // getting silently orphaned under a fresh family the player is then moved out of.
+    // idx_player_one_family (unique on family_members.user_id where role='player')
+    // guarantees at most one such row to consider.
+    const { data: guardianMembership } = await supabase
       .from("family_members")
       .select("family_unit_id")
       .eq("user_id", guardian.id)
       .maybeSingle();
 
-    let familyUnitId = existingMembership?.family_unit_id ?? null;
+    const { data: playerMembership } = await supabase
+      .from("family_members")
+      .select("id, family_unit_id")
+      .eq("user_id", claim.player_user_id)
+      .eq("role", "player")
+      .maybeSingle();
+
+    let familyUnitId =
+      guardianMembership?.family_unit_id ?? playerMembership?.family_unit_id ?? null;
 
     if (!familyUnitId) {
       const familyCode = await generateFamilyCode(supabase);
@@ -120,46 +135,68 @@ export default defineEventHandler(async (event) => {
           statusMessage: "Could not set up your family",
         });
       }
+    }
 
-      if (newFamily) {
-        // We won the race (or there was no race) -- add the guardian ourselves.
-        const { error: guardianMemberError } = await supabase
-          .from("family_members")
-          .insert({
-            family_unit_id: familyUnitId,
-            user_id: guardian.id,
-            role: "parent",
-          } as Database["public"]["Tables"]["family_members"]["Insert"]);
+    // Ensure the guardian belongs to the chosen family. Skipped when we just reused
+    // their existing family_unit_id above.
+    if (!guardianMembership || guardianMembership.family_unit_id !== familyUnitId) {
+      const { error: guardianMemberError } = await supabase
+        .from("family_members")
+        .insert({
+          family_unit_id: familyUnitId,
+          user_id: guardian.id,
+          role: "parent",
+        } as Database["public"]["Tables"]["family_members"]["Insert"]);
 
-        if (guardianMemberError) {
-          logger.error("Failed to add guardian to family", guardianMemberError);
-          throw createError({
-            statusCode: 500,
-            statusMessage: "Could not set up your family",
-          });
-        }
+      // 23505 here means a concurrent call (a retried accept, or the create-race path
+      // above) already added the guardian -- not an error.
+      if (guardianMemberError && guardianMemberError.code !== "23505") {
+        logger.error("Failed to add guardian to family", guardianMemberError);
+        throw createError({
+          statusCode: 500,
+          statusMessage: "Could not set up your family",
+        });
       }
-      // else: we lost the race -- the winning /api/family/create call already added
-      // the guardian to family_members as part of creating the family. Nothing to do.
     }
 
     // Membership before consent: family_members is what the DB gate accepts as a permanent
     // link (it is expiry-proof, unlike the claim), so establishing it first means the
     // consent UPDATE below cannot be rejected once the claim is marked claimed.
-    const { error: memberError } = await supabase
-      .from("family_members")
-      .insert({
-        family_unit_id: familyUnitId,
-        user_id: claim.player_user_id,
-        role: "player",
-      } as Database["public"]["Tables"]["family_members"]["Insert"]);
+    //
+    // Ensure the player belongs to the chosen family. If they already have their own
+    // single-member family (the common case above) and it's the one that won, this is a
+    // no-op. If the guardian's existing family won instead (second child, guardian
+    // already has one), move the player into it -- idx_player_one_family forbids a
+    // second player row, and a family_units row left with zero members is harmless.
+    if (!playerMembership) {
+      const { error: memberError } = await supabase
+        .from("family_members")
+        .insert({
+          family_unit_id: familyUnitId,
+          user_id: claim.player_user_id,
+          role: "player",
+        } as Database["public"]["Tables"]["family_members"]["Insert"]);
 
-    if (memberError) {
-      logger.error("Failed to add player to family", memberError);
-      throw createError({
-        statusCode: 500,
-        statusMessage: "Could not connect your athlete",
-      });
+      if (memberError) {
+        logger.error("Failed to add player to family", memberError);
+        throw createError({
+          statusCode: 500,
+          statusMessage: "Could not connect your athlete",
+        });
+      }
+    } else if (playerMembership.family_unit_id !== familyUnitId) {
+      const { error: memberError } = await supabase
+        .from("family_members")
+        .update({ family_unit_id: familyUnitId })
+        .eq("id", playerMembership.id);
+
+      if (memberError) {
+        logger.error("Failed to move player into guardian's family", memberError);
+        throw createError({
+          statusCode: 500,
+          statusMessage: "Could not connect your athlete",
+        });
+      }
     }
 
     const { error: consentError } = await supabase
