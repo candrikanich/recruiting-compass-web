@@ -9,15 +9,27 @@ const state = {
   guardian: { id: "guardian-1", email: "parent@example.com" },
   // Truthy by default so most tests don't need to touch the family-creation
   // branch at all. Set to null to exercise it (see the dedicated tests below).
-  existingMembership: { family_unit_id: "fam-1" } as { family_unit_id: string } | null,
-  // Only consulted when existingMembership is null (family-creation branch).
+  guardianMembership: { family_unit_id: "fam-1" } as
+    | { family_unit_id: string }
+    | null,
+  // The common guardian-optional-signup case: null by default (player has no family
+  // yet in most existing tests, matching pre-existing coverage). Dedicated tests below
+  // set this to reproduce the real bug found live on QA (player already self-provisioned
+  // into their own solo family before the guardian ever claims them).
+  playerMembership: null as { id: string; family_unit_id: string } | null,
+  // Only consulted when neither membership above resolves a family (family-creation
+  // branch).
   familyUnitsInsertError: null as { code: string; message: string } | null,
   raceWinnerFamilyId: null as string | null,
 };
 
 const mockClaimUpdate = vi.fn(async () => ({ error: null }));
 const mockUserUpdate = vi.fn(async () => ({ error: null }));
-const mockMemberInsert = vi.fn(async () => ({ error: null }));
+const mockMemberInsert = vi.fn(
+  async (_payload: Record<string, unknown>) =>
+    ({ error: null }) as { error: { code: string; message: string } | null },
+);
+const mockMemberUpdate = vi.fn(async () => ({ error: null }));
 const mockFamilyUnitsInsert = vi.fn();
 
 const table = (name: string) => {
@@ -31,12 +43,28 @@ const table = (name: string) => {
   }
   if (name === "family_members") {
     return {
-      select: () => ({
-        eq: () => ({
-          maybeSingle: async () => ({ data: state.existingMembership }),
-        }),
-      }),
-      insert: (v: unknown) => mockMemberInsert(v as never),
+      select: () => {
+        const filters: Record<string, unknown> = {};
+        const builder = {
+          eq: (col: string, val: unknown) => {
+            filters[col] = val;
+            return builder;
+          },
+          maybeSingle: async () => {
+            if (filters.role === "player") {
+              return { data: state.playerMembership };
+            }
+            if (filters.user_id === state.guardian.id) {
+              return { data: state.guardianMembership };
+            }
+            return { data: null };
+          },
+        };
+        return builder;
+      },
+      insert: (v: unknown) =>
+        mockMemberInsert(v as Record<string, unknown>),
+      update: (v: unknown) => ({ eq: () => mockMemberUpdate(v as never) }),
     };
   }
   if (name === "family_units") {
@@ -118,8 +146,10 @@ describe("POST /api/guardian/claim/[token]/accept", () => {
     mockClaimUpdate.mockResolvedValue({ error: null });
     mockUserUpdate.mockResolvedValue({ error: null });
     mockMemberInsert.mockResolvedValue({ error: null });
+    mockMemberUpdate.mockResolvedValue({ error: null });
     mockFamilyUnitsInsert.mockClear();
-    state.existingMembership = { family_unit_id: "fam-1" };
+    state.guardianMembership = { family_unit_id: "fam-1" };
+    state.playerMembership = null;
     state.familyUnitsInsertError = null;
     state.raceWinnerFamilyId = null;
   });
@@ -197,7 +227,7 @@ describe("POST /api/guardian/claim/[token]/accept", () => {
   });
 
   it("creates a new family and adds the guardian to it when they have none yet", async () => {
-    state.existingMembership = null;
+    state.guardianMembership = null;
 
     const result = await handler({} as never);
 
@@ -220,9 +250,18 @@ describe("POST /api/guardian/claim/[token]/accept", () => {
     // family-creation branch. idx_family_units_one_per_creator turns whichever
     // INSERT loses into a 23505 conflict instead of a silent duplicate family —
     // this reproduces that exact race, found live on QA.
-    state.existingMembership = null;
+    state.guardianMembership = null;
     state.familyUnitsInsertError = { code: "23505", message: "duplicate key value" };
     state.raceWinnerFamilyId = "race-winner-family";
+    // The winning /api/family/create call already added the guardian to
+    // family_members as part of creating the family -- our own attempt to add
+    // them again hits the same unique constraint.
+    mockMemberInsert.mockImplementation(
+      async (payload: Record<string, unknown>) =>
+        payload.user_id === "guardian-1"
+          ? { error: { code: "23505", message: "duplicate key value" } }
+          : { error: null },
+    );
 
     const result = await handler({} as never);
 
@@ -230,18 +269,64 @@ describe("POST /api/guardian/claim/[token]/accept", () => {
       success: true,
       familyUnitId: "race-winner-family",
     });
-    // We lost the race — the winning /api/family/create call already added the
-    // guardian to family_members as part of creating the family. Adding them
-    // again here would 500 on family_members_family_unit_id_user_id_key. The
-    // player still gets added to whichever family we ended up resolving to.
-    expect(mockMemberInsert).not.toHaveBeenCalledWith(
-      expect.objectContaining({ user_id: "guardian-1" }),
-    );
     expect(mockMemberInsert).toHaveBeenCalledWith(
       expect.objectContaining({
         user_id: "player-1",
         family_unit_id: "race-winner-family",
       }),
+    );
+  });
+
+  it("reuses the player's existing solo family when the guardian has none yet", async () => {
+    // Found live on QA: guardian-optional signup means the player already
+    // self-provisioned into their own single-member family (via
+    // /api/family/create's SIGNED_IN listener) by the time the guardian confirms.
+    // The old code always tried to INSERT the player into a family, which violated
+    // idx_player_one_family (unique on user_id where role='player') and surfaced
+    // as "Could not connect your athlete" on every first-time claim.
+    state.guardianMembership = null;
+    state.playerMembership = { id: "player-member-1", family_unit_id: "player-fam" };
+
+    const result = await handler({} as never);
+
+    expect(result).toMatchObject({ success: true, familyUnitId: "player-fam" });
+    // No new family created -- the player's existing one won.
+    expect(mockFamilyUnitsInsert).not.toHaveBeenCalled();
+    // Player already belongs to player-fam: no insert, no move.
+    expect(mockMemberInsert).not.toHaveBeenCalledWith(
+      expect.objectContaining({ user_id: "player-1" }),
+    );
+    expect(mockMemberUpdate).not.toHaveBeenCalled();
+    // Guardian gets added to the player's family.
+    expect(mockMemberInsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        family_unit_id: "player-fam",
+        user_id: "guardian-1",
+        role: "parent",
+      }),
+    );
+  });
+
+  it("moves the player into the guardian's existing family for a second child", async () => {
+    // Guardian already has a family (an older sibling). This player self-provisioned
+    // their own solo family on signup same as any guardian-optional signup -- move them
+    // into the guardian's family rather than fail on idx_player_one_family.
+    state.guardianMembership = { family_unit_id: "fam-1" };
+    state.playerMembership = { id: "player-member-1", family_unit_id: "player-fam" };
+
+    const result = await handler({} as never);
+
+    expect(result).toMatchObject({ success: true, familyUnitId: "fam-1" });
+    // Guardian already belongs to fam-1: no insert needed.
+    expect(mockMemberInsert).not.toHaveBeenCalledWith(
+      expect.objectContaining({ user_id: "guardian-1" }),
+    );
+    // Player's row gets moved (UPDATE), not duplicated (INSERT).
+    expect(mockMemberInsert).not.toHaveBeenCalledWith(
+      expect.objectContaining({ user_id: "player-1" }),
+    );
+    expect(mockMemberUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({ family_unit_id: "fam-1" }),
     );
   });
 });
