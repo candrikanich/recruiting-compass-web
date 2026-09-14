@@ -318,11 +318,21 @@ export const useAuth = () => {
 
       // Session issuance is a normal password sign-in now that the account
       // is auto-confirmed server-side — no confirmation gap to wait out.
+      const signInParams: {
+        email: string;
+        password: string;
+        options?: { captchaToken: string };
+      } = {
+        email: trimmedEmail,
+        password,
+      };
+
+      if (captchaToken) {
+        signInParams.options = { captchaToken };
+      }
+
       const { data, error: signInError } =
-        await supabase.auth.signInWithPassword({
-          email: trimmedEmail,
-          password,
-        });
+        await supabase.auth.signInWithPassword(signInParams);
 
       if (signInError) {
         error.value = signInError;

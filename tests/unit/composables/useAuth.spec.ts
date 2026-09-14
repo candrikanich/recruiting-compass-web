@@ -671,6 +671,33 @@ describe("useAuth", () => {
       vi.unstubAllGlobals();
     });
 
+    it("forwards captchaToken to the signInWithPassword call", async () => {
+      const { mockAuth } = getMockSupabase();
+      mockAuth.signInWithPassword.mockResolvedValue({
+        data: { user: mockUser, session: mockSession },
+        error: null,
+      });
+      const mockFetch = vi.fn(async () => ({ userId: mockUser.id }));
+      vi.stubGlobal("$fetch", mockFetch);
+
+      const auth = useAuth();
+      await auth.signup(
+        "new@example.com",
+        "password123",
+        undefined,
+        undefined,
+        "turnstile-token-abc",
+      );
+
+      expect(mockAuth.signInWithPassword).toHaveBeenCalledWith({
+        email: "new@example.com",
+        password: "password123",
+        options: { captchaToken: "turnstile-token-abc" },
+      });
+
+      vi.unstubAllGlobals();
+    });
+
     it("should handle signup error", async () => {
       const { mockAuth } = getMockSupabase();
 
