@@ -190,7 +190,19 @@ describe("Auth Form Accessibility", () => {
     });
 
     it("should advance the player wizard on Enter key press (form submit) in the account step", async () => {
-      const wrapper = mountSignupForm({ userType: "player" });
+      // The account step guards navigation on canContinueAccount — every required
+      // field (incl. date of birth) must be filled and the passwords must match —
+      // so mount with a complete account step, otherwise goToStepAfterAccount()
+      // returns early and the wizard (correctly) stays put.
+      const wrapper = mountSignupForm({
+        userType: "player",
+        firstName: "Test",
+        lastName: "Player",
+        email: "test.player@example.com",
+        dateOfBirth: "2008-01-01",
+        password: "Password123!",
+        confirmPassword: "Password123!",
+      });
       const form = wrapper.find("form#signup-form");
 
       await form.trigger("submit");
