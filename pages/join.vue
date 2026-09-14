@@ -625,13 +625,17 @@ async function decline() {
             @update:confirm-password="signupConfirmPassword = $event"
             @update:agree-to-terms="signupAgreeToTerms = $event"
             @submit="signupAndConnect"
-          />
-          <!-- Cloudflare Turnstile (flag-gated, renders only when site key set) -->
-          <div
-            v-if="turnstileEnabled"
-            ref="turnstileSignupEl"
-            class="mt-4 flex justify-center"
-          />
+          >
+            <template #captcha>
+              <!-- Cloudflare Turnstile (flag-gated, renders only when site
+                   key set) -->
+              <div
+                v-if="turnstileEnabled"
+                ref="turnstileSignupEl"
+                class="flex justify-center"
+              />
+            </template>
+          </AuthInviteSignupForm>
           <p class="mt-4 text-sm text-gray-500">
             Already have an account?
             <button

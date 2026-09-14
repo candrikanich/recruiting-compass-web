@@ -109,14 +109,19 @@
             @submit="handleSignup"
             @validate-email="validateEmail"
             @validate-password="validatePassword"
-          />
-
-          <!-- Cloudflare Turnstile (flag-gated, renders only when site key set) -->
-          <div
-            v-if="turnstileEnabled && userType"
-            ref="turnstileEl"
-            class="mt-4 flex justify-center"
-          />
+          >
+            <template #captcha>
+              <!-- Cloudflare Turnstile (flag-gated, renders only when site
+                   key set) — mounted above the submit button via a slot so
+                   a user who clicks Create Account without scrolling
+                   further doesn't miss an interactive challenge below it. -->
+              <div
+                v-if="turnstileEnabled && userType"
+                ref="turnstileEl"
+                class="flex justify-center"
+              />
+            </template>
+          </SignupForm>
         </div>
       </div>
     </div>

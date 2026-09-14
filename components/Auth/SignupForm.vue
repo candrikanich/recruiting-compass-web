@@ -39,7 +39,11 @@
         :field-errors="fieldErrors"
         :disabled="!isParentFormValid"
         @update:agree-to-terms="$emit('update:agreeToTerms', $event)"
-      />
+      >
+        <template #captcha>
+          <slot name="captcha" />
+        </template>
+      </TermsAndSubmit>
     </form>
 
     <div v-else data-testid="signup-form-player">
@@ -111,7 +115,11 @@
         @update:zip-code="$emit('update:zipCode', $event)"
         @update:agree-to-terms="$emit('update:agreeToTerms', $event)"
         @submit="$emit('submit')"
-      />
+      >
+        <template #captcha>
+          <slot name="captcha" />
+        </template>
+      </SignupStepPlayerInfo>
     </div>
 
     <!-- Divider -->

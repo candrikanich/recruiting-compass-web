@@ -57,6 +57,11 @@
       />
     </div>
 
+    <!-- Captcha widget mounts here, above the submit button — below it, a
+         user who clicks submit without scrolling further never sees it if
+         Cloudflare surfaces an interactive challenge. -->
+    <slot name="captcha" />
+
     <!-- Submit -->
     <button
       data-testid="signup-button"

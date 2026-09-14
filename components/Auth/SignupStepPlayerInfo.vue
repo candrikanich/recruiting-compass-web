@@ -126,7 +126,11 @@
       :field-errors="fieldErrors"
       :disabled="!canSubmit || loading"
       @update:agree-to-terms="$emit('update:agreeToTerms', $event)"
-    />
+    >
+      <template #captcha>
+        <slot name="captcha" />
+      </template>
+    </TermsAndSubmit>
   </form>
 </template>
 
