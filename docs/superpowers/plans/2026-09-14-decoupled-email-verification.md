@@ -1704,6 +1704,95 @@ git commit -m "docs: correct stale email-verification description"
 
 ---
 
+## Task 14: `pages/login.vue` — success indicator for the no-session verify redirect
+
+**Added mid-implementation:** Task 9's review found that `pages/verify-email/[token].vue`'s no-session branch correctly navigates to `/login?verified=1`, but no task ever added a consumer for that param — the "success indicator" spec §4 requires never renders. `pages/login.vue` already has an established, tested pattern for exactly this (`timeoutMessage`, a computed reading `route.query.reason`, rendered in an existing `role="alert" aria-live="polite"` banner at `pages/login.vue:49-59` — its `account_created` branch already reuses this same banner for a positive-outcome message). Reusing that mechanism is smaller and safer than introducing a second, parallel query-param convention.
+
+**Files:**
+- Modify: `pages/verify-email/[token].vue:99` (switch from `?verified=1` to the existing `?reason=` convention)
+- Modify: `pages/login.vue:229-243` (`timeoutMessage` computed — add one branch)
+- Test: `tests/unit/pages/verify-email-token.spec.ts` (update the existing no-session-routing test's assertion), `tests/unit/pages/login.spec.ts` (add a case for the new reason)
+
+**Interfaces:**
+- Consumes: the existing `timeoutMessage` computed and its template binding (unchanged shape — just one more `if` branch and one more string).
+
+- [ ] **Step 1: Update the existing no-session-routing test to expect the new URL**
+
+In `tests/unit/pages/verify-email-token.spec.ts`, find the test asserting `mockNavigateTo` was called with a string containing `/login` (the "routes to login with a success banner when no session exists" case) and change its expectation to:
+
+```typescript
+expect(mockNavigateTo).toHaveBeenCalledWith("/login?reason=email_verified");
+```
+
+- [ ] **Step 2: Run it to confirm it now fails against the current implementation**
+
+Run: `npm run test -- tests/unit/pages/verify-email-token.spec.ts`
+Expected: FAIL — still calls `navigateTo` with `/login?verified=1`
+
+- [ ] **Step 3: Update `routeOnward` in the verify-email page**
+
+In `pages/verify-email/[token].vue`, replace:
+
+```typescript
+    await navigateTo("/login?verified=1");
+```
+
+with:
+
+```typescript
+    await navigateTo("/login?reason=email_verified");
+```
+
+- [ ] **Step 4: Run the page test to confirm it passes**
+
+Run: `npm run test -- tests/unit/pages/verify-email-token.spec.ts`
+Expected: PASS
+
+- [ ] **Step 5: Write a failing test for the new login banner**
+
+In `tests/unit/pages/login.spec.ts`, find the existing tests for `timeoutMessage` (there should be ones covering `reason=timeout`, `session_expired`, `not_admin`, `account_created` — follow that file's exact mounting/route-mocking convention) and add:
+
+```typescript
+it("shows a success message when redirected after email verification", async () => {
+  // Follow this file's existing pattern for setting route.query (e.g. the
+  // account_created test a few lines above) — set route.query.reason to
+  // "email_verified" before mounting.
+  const wrapper = mountLoginPage({ query: { reason: "email_verified" } });
+  expect(wrapper.text()).toContain("Email verified");
+});
+```
+
+(Adapt the mounting call to this file's real helper — do not invent `mountLoginPage` if the file uses a different pattern; match whatever the `account_created` test already does.)
+
+- [ ] **Step 6: Run it to confirm it fails**
+
+Run: `npm run test -- tests/unit/pages/login.spec.ts -t "email verification"`
+Expected: FAIL — no such message renders yet
+
+- [ ] **Step 7: Add the branch**
+
+In `pages/login.vue`'s `timeoutMessage` computed (~line 229-243), add one more branch alongside the existing ones (order doesn't matter, but keep it with its siblings):
+
+```typescript
+  if (typeof reason === "string" && reason === "email_verified") {
+    return "Email verified — sign in to continue.";
+  }
+```
+
+- [ ] **Step 8: Run the new test and the full login/verify-email test files**
+
+Run: `npm run test -- tests/unit/pages/login.spec.ts tests/unit/pages/verify-email-token.spec.ts`
+Expected: PASS
+
+- [ ] **Step 9: Commit**
+
+```bash
+git add pages/verify-email/[token].vue pages/login.vue tests/unit/pages/verify-email-token.spec.ts tests/unit/pages/login.spec.ts
+git commit -m "fix: show success banner on login after email verification (no session)"
+```
+
+---
+
 ## Post-plan manual step (not part of this diff)
 
 Once this plan is merged and deployed to QA/prod: disable `enable_confirmations` in both Supabase Studio projects (spec §7). Until that toggle is off, existing prod/QA signups will still hit Supabase's native confirmation gate ahead of ever reaching the new server-side signup endpoint's auto-confirm behavior — the toggle-off is what actually retires the old block.
