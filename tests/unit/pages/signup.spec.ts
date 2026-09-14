@@ -215,6 +215,7 @@ describe("signup.vue", () => {
       auth: {
         getSession: vi.fn(),
         setSession: vi.fn().mockResolvedValue({ error: null }),
+        signInWithPassword: vi.fn().mockResolvedValue({ error: null }),
       },
       from: vi.fn(),
     };
@@ -833,29 +834,22 @@ describe("signup.vue", () => {
       expect(mockAuth.signup).not.toHaveBeenCalled();
     });
 
-    it("adopts the session and lands a confirmed minor straight on the dashboard", async () => {
-      // Some environments (QA, E2E) have email confirmation off — signup-minor.post.ts
-      // confirms the account immediately and returns a real session. Found live on QA:
-      // the earlier fix correctly avoided the /verify-email dead end but still forced
-      // an unnecessary /login screen even though a usable session was sitting right
-      // there in the response ("seems like an extra barrier" — Chris). The player
-      // already completed the whole wizard including onboarding info, so they should
-      // land straight on the dashboard.
+    it("signs in and lands a newly-created minor straight on the dashboard", async () => {
+      // signup-minor.post.ts creates the account server-side (auto-confirmed,
+      // same as the adult path) but doesn't sign in for us — the client
+      // signs in immediately after, same pattern as the adult flow.
       global.$fetch = vi.fn().mockResolvedValue({
         ok: true,
         guardianEmail: "parent@example.com",
         guardianEmailSent: true,
-        emailConfirmed: true,
-        session: { access_token: "at-1", refresh_token: "rt-1" },
       });
       const wrapper = createWrapper();
 
       await fillMinorForm(wrapper, "parent@example.com");
 
-      expect(mockSupabase.auth.setSession).toHaveBeenCalledWith({
-        access_token: "at-1",
-        refresh_token: "rt-1",
-      });
+      expect(mockSupabase.auth.signInWithPassword).toHaveBeenCalledWith(
+        expect.objectContaining({ email: "test@example.com" }),
+      );
       expect(mockAuthFetch.$fetchAuth).toHaveBeenCalledWith("/api/family/create", {
         method: "POST",
       });
@@ -869,65 +863,23 @@ describe("signup.vue", () => {
       );
     });
 
-    it("falls back to the login handoff if session adoption itself fails", async () => {
-      // Defensive path: session adoption shouldn't ever leave the player on a dead
-      // screen if setSession() errors for some reason.
+    it("shows a form error if sign-in fails right after account creation", async () => {
       global.$fetch = vi.fn().mockResolvedValue({
         ok: true,
         guardianEmail: "parent@example.com",
         guardianEmailSent: true,
-        emailConfirmed: true,
-        session: { access_token: "at-1", refresh_token: "rt-1" },
       });
-      mockSupabase.auth.setSession.mockResolvedValueOnce({
+      mockSupabase.auth.signInWithPassword.mockResolvedValueOnce({
         error: { message: "invalid token" },
       });
       const wrapper = createWrapper();
 
       await fillMinorForm(wrapper, "parent@example.com");
 
-      expect(global.navigateTo).toHaveBeenCalledWith(
-        "/login?reason=account_created&email=test%40example.com",
-      );
-    });
-
-    it("sends a confirmed-but-sessionless minor to login (fallback shape, no /verify-email dead end)", async () => {
-      global.$fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        guardianEmail: "parent@example.com",
-        guardianEmailSent: true,
-        emailConfirmed: true,
-        session: null,
-      });
-      const wrapper = createWrapper();
-
-      await fillMinorForm(wrapper, "parent@example.com");
-
-      expect(global.navigateTo).toHaveBeenCalledWith(
-        "/login?reason=account_created&email=test%40example.com",
-      );
-      expect(global.navigateTo).not.toHaveBeenCalledWith(
-        expect.stringContaining("/verify-email"),
-      );
-    });
-
-    it("sends an unconfirmed minor to the login handoff, not the deleted verify-email page", async () => {
-      global.$fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        guardianEmail: "parent@example.com",
-        guardianEmailSent: true,
-        emailConfirmed: false,
-      });
-      const wrapper = createWrapper();
-
-      await fillMinorForm(wrapper, "parent@example.com");
-
-      expect(global.navigateTo).toHaveBeenCalledWith(
-        "/login?reason=account_created&email=test%40example.com",
-      );
-      expect(global.navigateTo).not.toHaveBeenCalledWith(
-        expect.stringContaining("/verify-email"),
-      );
+      expect(mockValidation.setErrors).toHaveBeenCalledWith([
+        expect.objectContaining({ field: "form" }),
+      ]);
+      expect(global.navigateTo).not.toHaveBeenCalledWith("/dashboard");
     });
 
     it("allows standalone player signup at 18+", async () => {

@@ -346,7 +346,7 @@ watch(agreeToTerms, (isChecked) => {
  */
 const submitMinorSignup = async (guardian: string) => {
   try {
-    const result = await $fetch("/api/auth/signup-minor", {
+    await $fetch("/api/auth/signup-minor", {
       method: "POST",
       body: {
         email: email.value.trim(),
@@ -363,57 +363,28 @@ const submitMinorSignup = async (guardian: string) => {
       },
     });
 
-    // signUp() runs server-side here (see signup-minor.post.ts's own doc comment
-    // on why), so this browser has no session yet even though one may already
-    // exist. Some environments (QA, E2E) have Supabase's email-confirmation
-    // requirement off, in which case the endpoint's own signUp() call already
-    // got a real session back — adopt it directly rather than forcing an extra
-    // login screen (found live on QA: "seems like an extra barrier" — the
-    // player already finished the whole wizard including onboarding info, so
-    // they should land straight on the dashboard, guardian banner and all).
-    if (result.session) {
-      try {
-        const { error: setSessionError } = await supabase.auth.setSession({
-          access_token: result.session.access_token,
-          refresh_token: result.session.refresh_token,
-        });
-        if (setSessionError) throw setSessionError;
+    // The endpoint creates the account server-side (auto-confirmed, same as
+    // the adult path) but doesn't sign in for us — the signup Turnstile
+    // token it just verified is already consumed, so mint a fresh one for
+    // this sign-in the same way the adult path does.
+    const signInCaptchaToken = await getFreshTurnstileToken();
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: email.value.trim(),
+      password: password.value,
+      ...(signInCaptchaToken && {
+        options: { captchaToken: signInCaptchaToken },
+      }),
+    });
+    if (signInError) throw signInError;
 
-        // Mirrors the adult signup's own-session branch below: family unit +
-        // pending onboarding fields (primary_sport/gender, still only
-        // pending_* metadata at this point — see signup-minor.post.ts) also
-        // get flushed by plugins/auth.client.ts's SIGNED_IN listener, but
-        // awaiting these explicitly here keeps the redirect from racing it.
-        await $fetchAuth("/api/family/create", { method: "POST" });
-        await userStore.initializeUser();
-        loading.value = false;
-        await navigateTo("/dashboard");
-        return;
-      } catch {
-        // Never leave the player on a dead screen if session adoption itself
-        // fails for some reason — fall through to the login handoff below,
-        // same destination the pre-session-adoption fix used for every case.
-      }
-    }
-
-    if (result.emailConfirmed) {
-      loading.value = false;
-      await navigateTo(
-        `/login?reason=account_created&email=${encodeURIComponent(email.value.trim())}`,
-      );
-      return;
-    }
-
+    // Family unit + pending onboarding fields (primary_sport/gender, still
+    // only pending_* metadata at this point — see signup-minor.post.ts) also
+    // get flushed by plugins/auth.client.ts's SIGNED_IN listener, but
+    // awaiting these explicitly here keeps the redirect from racing it.
+    await $fetchAuth("/api/family/create", { method: "POST" });
+    await userStore.initializeUser();
     loading.value = false;
-
-    // No session yet and Supabase hasn't confirmed the email either — same
-    // "check your inbox, then log in" handoff as the emailConfirmed branch
-    // above. (Guardian's email deliberately isn't threaded through this URL
-    // — it would only expose the guardian's address in the URL bar/browser
-    // history for no benefit.)
-    await navigateTo(
-      `/login?reason=account_created&email=${encodeURIComponent(email.value.trim())}`,
-    );
+    await navigateTo("/dashboard");
   } catch (err) {
     const message =
       (err as { data?: { statusMessage?: string } } | null)?.data

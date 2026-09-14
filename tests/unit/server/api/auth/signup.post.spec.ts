@@ -107,18 +107,23 @@ describe("POST /api/auth/signup", () => {
     expect(mockCreateUser).not.toHaveBeenCalled();
   });
 
-  it("tags a duplicate-email failure with a stable error code", async () => {
-    // The client branches on this code, not on message text (which changed
-    // once already when account creation moved server-side).
+  it("responds to a duplicate email the same generic way as any other creation failure", async () => {
+    // A distinct "account already exists" response is an account-existence
+    // enumeration oracle Supabase's own signUp() deliberately avoids — this
+    // endpoint must not reintroduce one. No statusCode/message/data
+    // distinguishes a duplicate email from any other creation failure.
     mockCreateUser.mockResolvedValueOnce({
       data: { user: null },
       error: { message: "A user with this email address has already been registered" },
     } as never);
 
-    await expect(call()).rejects.toMatchObject({
-      statusCode: 409,
-      data: { code: "email_taken" },
+    const rejection = await call().catch((e) => e);
+
+    expect(rejection).toMatchObject({
+      statusCode: 400,
+      statusMessage: "Unable to create account. Please try again.",
     });
+    expect(rejection.data).toBeUndefined();
   });
 
   it("skips the verification token and email when skipVerificationEmail is set", async () => {

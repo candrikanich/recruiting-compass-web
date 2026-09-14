@@ -2,9 +2,7 @@ import { defineEventHandler, readBody, createError, getRequestIP } from "h3";
 import { useLogger } from "~/server/utils/logger";
 import { rateLimitByIp, throwIfRateLimited } from "~/server/utils/rateLimit";
 import { verifyTurnstile } from "~/server/utils/turnstile";
-import { useSupabaseAdmin } from "~/server/utils/supabase";
-import { issueVerificationToken } from "~/server/utils/emailVerificationTokens";
-import { sendVerificationEmail } from "~/server/utils/emailService";
+import { createVerifiedAccount } from "~/server/utils/accountCreation";
 
 interface SignupBody {
   email: string;
@@ -23,10 +21,11 @@ interface SignupBody {
 }
 
 /**
- * Server-side account creation for the decoupled email-verification flow.
- * Accounts are auto-confirmed (email_confirm: true) — verification is now a
- * separate, resendable step (issueVerificationToken + sendVerificationEmail)
- * rather than gating login the way Supabase's own confirmation email does.
+ * Server-side account creation for the adult signup path. Account creation
+ * and email verification themselves live in createVerifiedAccount()
+ * (server/utils/accountCreation.ts), shared with the 13-17 minor path
+ * (signup-minor.post.ts) — this endpoint's own job is just this form's
+ * Turnstile check and adult-specific metadata shaping.
  *
  * The signup form's Turnstile widget today gets verified natively by
  * Supabase's own signUp() call. Moving account creation server-side means
@@ -84,44 +83,22 @@ export default defineEventHandler(async (event) => {
       ...(dateOfBirth ? { date_of_birth: dateOfBirth } : {}),
     };
 
-    const supabase = useSupabaseAdmin();
-
-    const { data, error } = await supabase.auth.admin.createUser({
+    const result = await createVerifiedAccount(event, {
       email,
       password,
-      email_confirm: true,
-      user_metadata: userMetadata,
+      userMetadata,
+      skipVerificationEmail,
     });
 
-    if (error || !data.user) {
-      logger.error("Signup failed", error);
-      const statusCode =
-        error?.message?.toLowerCase().includes("already registered") ||
-        error?.message?.toLowerCase().includes("already been registered")
-          ? 409
-          : 400;
+    if (!result.ok) {
       throw createError({
-        statusCode,
-        statusMessage:
-          statusCode === 409
-            ? "An account with this email already exists"
-            : "Unable to create account. Please try again.",
-        ...(statusCode === 409 ? { data: { code: "email_taken" } } : {}),
+        statusCode: result.statusCode,
+        statusMessage: result.statusMessage,
       });
     }
 
-    if (!skipVerificationEmail) {
-      const { token } = await issueVerificationToken(data.user.id);
-      const emailResult = await sendVerificationEmail({ to: email, token });
-      if (!emailResult.success) {
-        // Non-fatal — the account exists and is usable; the dashboard resend
-        // button covers this. Log for visibility only.
-        logger.error("Verification email failed to send", emailResult.error);
-      }
-    }
-
-    logger.info("Signup succeeded", { userId: data.user.id });
-    return { userId: data.user.id };
+    logger.info("Signup succeeded", { userId: result.userId });
+    return { userId: result.userId };
   } catch (err) {
     if (err instanceof Error && "statusCode" in err) throw err;
     logger.error("Signup failed", err);

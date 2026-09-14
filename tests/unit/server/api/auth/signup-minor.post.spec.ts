@@ -19,22 +19,21 @@ const validBody = () => ({
   captchaToken: "tok",
 });
 
-interface SignUpArgs {
-  email: string;
-  password: string;
-  options?: { captchaToken?: string; data?: Record<string, unknown> };
-}
-
-const mockSignUp = vi.fn(async (_args: SignUpArgs) => ({
-  data: { user: { id: "player-uuid" } },
-  error: null as { message: string } | null,
+const mockCreateVerifiedAccount = vi.fn(async () => ({
+  ok: true as const,
+  userId: "player-uuid",
 }));
+const mockVerifyTurnstile = vi.fn(async () => ({ ok: true }));
 const mockClaimInsert = vi.fn(async () => ({ error: null }));
 const mockUserUpsert = vi.fn(async () => ({ error: null }));
 const mockSendGuardianClaimEmail = vi.fn(async () => ({ success: true }));
 
-vi.mock("@supabase/supabase-js", () => ({
-  createClient: vi.fn(() => ({ auth: { signUp: mockSignUp } })),
+vi.mock("~/server/utils/accountCreation", () => ({
+  createVerifiedAccount: mockCreateVerifiedAccount,
+}));
+
+vi.mock("~/server/utils/turnstile", () => ({
+  verifyTurnstile: mockVerifyTurnstile,
 }));
 
 vi.mock("~/server/utils/supabase", () => ({
@@ -94,11 +93,10 @@ const call = async (overrides: Record<string, unknown> = {}) => {
 describe("POST /api/auth/signup-minor", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    process.env.NUXT_PUBLIC_SUPABASE_URL = "https://example.supabase.co";
-    process.env.NUXT_PUBLIC_SUPABASE_ANON_KEY = "anon-key";
-    mockSignUp.mockResolvedValue({
-      data: { user: { id: "player-uuid" } },
-      error: null,
+    mockVerifyTurnstile.mockResolvedValue({ ok: true });
+    mockCreateVerifiedAccount.mockResolvedValue({
+      ok: true,
+      userId: "player-uuid",
     });
     mockClaimInsert.mockResolvedValue({ error: null });
     mockUserUpsert.mockResolvedValue({ error: null });
@@ -113,45 +111,44 @@ describe("POST /api/auth/signup-minor", () => {
     expect(mockSendGuardianClaimEmail).toHaveBeenCalledOnce();
   });
 
-  it("reports emailConfirmed:false and session:null when signUp() returns no session (confirmation required)", async () => {
-    // Default mockSignUp shape: no `session` key, matching a real environment
-    // where email confirmation is required and Supabase withholds the session.
-    const result = await call();
+  it("verifies Turnstile before creating the account", async () => {
+    mockVerifyTurnstile.mockResolvedValueOnce({ ok: false, reason: "missing_token" });
 
-    expect(result).toMatchObject({ emailConfirmed: false, session: null });
+    await expect(call()).rejects.toMatchObject({
+      statusCode: 403,
+      data: { code: "captcha_failed" },
+    });
+    expect(mockCreateVerifiedAccount).not.toHaveBeenCalled();
   });
 
-  it("returns the session's access/refresh tokens when signUp() confirms immediately (confirmation off)", async () => {
-    // Found live on QA: environments with email confirmation disabled confirm the
-    // account immediately and return a session from signUp(). The client adopts
-    // these tokens directly (supabase.auth.setSession()) to land the player on
-    // their dashboard with no extra login step -- a boolean alone isn't enough
-    // for that, the client needs the actual tokens.
-    mockSignUp.mockResolvedValueOnce({
-      data: {
-        user: { id: "player-uuid" },
-        session: { access_token: "access-tok", refresh_token: "refresh-tok" },
-      },
-      error: null,
-    });
+  it("creates the account through the shared createVerifiedAccount, with its own verification email", async () => {
+    // A 13-17 player's own email is verified exactly like an adult's,
+    // independent of guardian confirmation — never skipVerificationEmail.
+    await call();
 
-    const result = await call();
-
-    expect(result).toMatchObject({
-      emailConfirmed: true,
-      session: { access_token: "access-tok", refresh_token: "refresh-tok" },
-    });
+    expect(mockCreateVerifiedAccount).toHaveBeenCalledWith(
+      {},
+      expect.objectContaining({
+        email: "player@example.com",
+        userMetadata: expect.objectContaining({
+          full_name: "Owen Smith",
+          role: "player",
+        }),
+      }),
+    );
+    const [, options] = mockCreateVerifiedAccount.mock.calls[0]!;
+    expect(options.skipVerificationEmail).toBeFalsy();
   });
 
-  it("puts the real date_of_birth in signUp metadata, so handle_new_user() writes it atomically", async () => {
+  it("puts the real date_of_birth in the account metadata, so handle_new_user() writes it atomically", async () => {
     // A null-DOB row must never exist even momentarily: requiresGuardianInvite(null) is
-    // false, so a row with no DOB reads as unlocked. Putting the exact DOB in signUp
-    // metadata (not just the later upsert) closes that fail-open window.
+    // false, so a row with no DOB reads as unlocked. Putting the exact DOB in the
+    // account metadata (not just the later upsert) closes that fail-open window.
     const dob = yearsAgo(15);
     await call({ dateOfBirth: dob });
 
-    const metadata = mockSignUp.mock.calls[0]?.[0]?.options?.data ?? {};
-    expect(metadata).toMatchObject({ date_of_birth: dob });
+    const [, options] = mockCreateVerifiedAccount.mock.calls[0]!;
+    expect(options.userMetadata).toMatchObject({ date_of_birth: dob });
     expect(mockUserUpsert).toHaveBeenCalledWith(
       expect.objectContaining({ date_of_birth: dob }),
       expect.anything(),
@@ -163,21 +160,21 @@ describe("POST /api/auth/signup-minor", () => {
     await expect(call({ guardianEmail: "player@example.com" })).rejects.toMatchObject(
       { statusCode: 400 },
     );
-    expect(mockSignUp).not.toHaveBeenCalled();
+    expect(mockCreateVerifiedAccount).not.toHaveBeenCalled();
   });
 
   it("rejects an under-13 player", async () => {
     await expect(call({ dateOfBirth: yearsAgo(11) })).rejects.toMatchObject({
       statusCode: 400,
     });
-    expect(mockSignUp).not.toHaveBeenCalled();
+    expect(mockCreateVerifiedAccount).not.toHaveBeenCalled();
   });
 
   it("rejects an 18+ player, who belongs on the ordinary signup route", async () => {
     await expect(call({ dateOfBirth: yearsAgo(19) })).rejects.toMatchObject({
       statusCode: 400,
     });
-    expect(mockSignUp).not.toHaveBeenCalled();
+    expect(mockCreateVerifiedAccount).not.toHaveBeenCalled();
   });
 
   it("creates the account with no guardian_claims row when guardianEmail is omitted", async () => {
@@ -209,7 +206,7 @@ describe("POST /api/auth/signup-minor", () => {
 
     expect(result).toMatchObject({ ok: true, guardianEmail: null });
     expect(mockClaimInsert).not.toHaveBeenCalled();
-    expect(mockSignUp).toHaveBeenCalled();
+    expect(mockCreateVerifiedAccount).toHaveBeenCalled();
   });
 
   it("still succeeds when the guardian email fails to send", async () => {
@@ -236,5 +233,21 @@ describe("POST /api/auth/signup-minor", () => {
     });
     expect(mockUserUpsert).toHaveBeenCalled();
     expect(mockSendGuardianClaimEmail).not.toHaveBeenCalled();
+  });
+
+  it("propagates a generic account-creation failure without a distinguishing status/code", async () => {
+    mockCreateVerifiedAccount.mockResolvedValueOnce({
+      ok: false,
+      statusCode: 400,
+      statusMessage: "Unable to create account. Please try again.",
+    });
+
+    const rejection = await call().catch((e) => e);
+
+    expect(rejection).toMatchObject({
+      statusCode: 400,
+      statusMessage: "Unable to create account. Please try again.",
+    });
+    expect(rejection.data).toBeUndefined();
   });
 });

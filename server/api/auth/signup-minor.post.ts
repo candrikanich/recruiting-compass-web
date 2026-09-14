@@ -1,9 +1,10 @@
 import { randomUUID } from "node:crypto";
-import { createClient } from "@supabase/supabase-js";
-import { defineEventHandler, readBody, createError } from "h3";
+import { defineEventHandler, readBody, createError, getRequestIP } from "h3";
 import { useLogger } from "~/server/utils/logger";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import { rateLimitByIp, throwIfRateLimited } from "~/server/utils/rateLimit";
+import { verifyTurnstile } from "~/server/utils/turnstile";
+import { createVerifiedAccount } from "~/server/utils/accountCreation";
 import { sendGuardianClaimEmail } from "~/server/utils/emailService";
 import { isUnderMinimumAge, requiresGuardianInvite } from "~/utils/age";
 import type { Database } from "~/types/database";
@@ -33,22 +34,24 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
  * Exists as a server endpoint for one reason that survives the guardian-optional
  * change: guardian_claims is service-role-only (a minor must never be able to read
  * their own guardian's confirmation token — see 20260926000000_guardian_claims.sql),
- * so the browser cannot write it directly. There is no longer a write-ordering
- * constraint against the DB gate (supabase/migrations/20260927000000_guardian_link_optional.sql
- * removed the trigger this endpoint used to route around).
+ * so the browser cannot write it directly.
  *
- * date_of_birth rides in signUp()'s metadata (not just the users upsert below), so
+ * date_of_birth rides in the account's metadata (not just the users upsert below), so
  * handle_new_user() writes it atomically as part of the initial row creation — see
  * 20260910200619_handle_new_user_date_of_birth.sql. Without this, a null-DOB row could
- * briefly exist between signUp() succeeding and the upsert running, and
+ * briefly exist between account creation succeeding and the upsert running, and
  * requiresGuardianInvite(null) is false — a player row with no DOB reads as
  * unlocked. The upsert below still runs (it also carries graduation_year/zip_code,
  * which the trigger doesn't know about), but the lock-relevant field is no longer
  * gated on it succeeding.
  *
- * Auth user creation deliberately goes through the ordinary anon-key `signUp` rather
- * than `admin.createUser`, so email confirmation behaves exactly as it does for every
- * other signup instead of forking into a second, separately-maintained path.
+ * Account creation and its own email verification go through the same
+ * createVerifiedAccount() the adult path uses (server/utils/accountCreation.ts) —
+ * a 13-17 player's own email gets verified exactly like an adult's, independent of
+ * and parallel to the guardian-claim confirmation below. Guardian consent (access
+ * gating — can this player message coaches, share their profile) and email
+ * ownership (security — is this address real and reachable) are separate concerns;
+ * the guardian confirming their own inbox proves nothing about the player's.
  */
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "auth/signup-minor");
@@ -111,64 +114,53 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    const supabaseUrl = process.env.NUXT_PUBLIC_SUPABASE_URL;
-    const supabaseAnonKey = process.env.NUXT_PUBLIC_SUPABASE_ANON_KEY;
-    if (!supabaseUrl || !supabaseAnonKey) {
-      throw new Error("Missing Supabase configuration (URL or anon key)");
-    }
-
-    const fullName = `${firstName} ${lastName}`;
-    const anon = createClient<Database>(supabaseUrl, supabaseAnonKey);
-    const { data: signUpData, error: signUpError } = await anon.auth.signUp({
-      email,
-      password: body.password,
-      options: {
-        captchaToken: body.captchaToken,
-        data: {
-          full_name: fullName,
-          role: "player",
-          date_of_birth: dateOfBirth,
-          ...(body.graduationYear
-            ? { pending_graduation_year: String(body.graduationYear) }
-            : {}),
-          ...(body.primarySport
-            ? { pending_primary_sport: body.primarySport }
-            : {}),
-          ...(body.gender ? { pending_gender: body.gender } : {}),
-          ...(body.zipCode ? { pending_zip_code: body.zipCode } : {}),
-        },
-      },
+    // No explicit `expectedAction` — the signup form's Turnstile widget
+    // renders with no action configured, so none is expected here either.
+    const turnstileResult = await verifyTurnstile(body.captchaToken, {
+      ip: getRequestIP(event, { xForwardedFor: true }),
+      expectedAction: undefined,
     });
-
-    if (signUpError || !signUpData.user) {
-      logger.warn("Minor signup rejected at auth layer", signUpError);
+    if (!turnstileResult.ok) {
+      logger.warn("Minor signup blocked: Turnstile verification failed", {
+        reason: turnstileResult.reason,
+      });
       throw createError({
-        statusCode: 400,
-        statusMessage:
-          signUpError?.message.includes("already registered") === true
-            ? "An account with this email already exists"
-            : "Could not create the account. Please try again.",
+        statusCode: 403,
+        statusMessage: "Verification failed. Please try again.",
+        data: { code: "captcha_failed" },
       });
     }
 
-    const userId = signUpData.user.id;
-    const supabase = useSupabaseAdmin();
-    // Some environments (QA, E2E) have Supabase's email-confirmation requirement
-    // turned off, so signUp() confirms the account immediately and returns a
-    // real session — the client can adopt it directly (supabase.auth.setSession())
-    // and land the player on their dashboard with no extra login step. Handing
-    // back only a boolean here first sent everyone through an unnecessary
-    // /login screen even when the session was sitting right there unused
-    // (found live on QA — Chris: "seems like an extra barrier").
-    const emailConfirmed = !!signUpData.session;
-    const session = signUpData.session
-      ? {
-          access_token: signUpData.session.access_token,
-          refresh_token: signUpData.session.refresh_token,
-        }
-      : null;
+    const fullName = `${firstName} ${lastName}`;
+    const accountResult = await createVerifiedAccount(event, {
+      email,
+      password: body.password,
+      userMetadata: {
+        full_name: fullName,
+        role: "player",
+        date_of_birth: dateOfBirth,
+        ...(body.graduationYear
+          ? { pending_graduation_year: String(body.graduationYear) }
+          : {}),
+        ...(body.primarySport
+          ? { pending_primary_sport: body.primarySport }
+          : {}),
+        ...(body.gender ? { pending_gender: body.gender } : {}),
+        ...(body.zipCode ? { pending_zip_code: body.zipCode } : {}),
+      },
+    });
 
-    // handle_new_user() has already created the public.users row from the signUp
+    if (!accountResult.ok) {
+      throw createError({
+        statusCode: accountResult.statusCode,
+        statusMessage: accountResult.statusMessage,
+      });
+    }
+
+    const userId = accountResult.userId;
+    const supabase = useSupabaseAdmin();
+
+    // handle_new_user() has already created the public.users row from the account
     // metadata above (same trigger the adult path relies on). Upsert here to add the
     // fields that trigger doesn't know about (date_of_birth, graduation_year,
     // zip_code as real columns rather than pending_* metadata) — same idempotent
@@ -197,7 +189,7 @@ export default defineEventHandler(async (event) => {
 
     if (!guardianEmail) {
       logger.info("Minor signup created, no guardian named");
-      return { ok: true, guardianEmail: null, guardianEmailSent: false, emailConfirmed, session };
+      return { ok: true, guardianEmail: null, guardianEmailSent: false };
     }
 
     const token = randomUUID();
@@ -214,7 +206,7 @@ export default defineEventHandler(async (event) => {
       // The account itself is already created and valid (guardian-optional as of
       // this migration) — a failed claim write must not fail the whole signup. The
       // player can invite a guardian later from the dashboard.
-      return { ok: true, guardianEmail, guardianEmailSent: false, emailConfirmed, session };
+      return { ok: true, guardianEmail, guardianEmailSent: false };
     }
 
     // Non-fatal: the account exists, so a mail failure must not fail the signup.
@@ -231,7 +223,7 @@ export default defineEventHandler(async (event) => {
     }
 
     logger.info("Minor signup created, awaiting guardian confirmation");
-    return { ok: true, guardianEmail, guardianEmailSent: mail.success, emailConfirmed, session };
+    return { ok: true, guardianEmail, guardianEmailSent: mail.success };
   } catch (err) {
     if (err instanceof Error && "statusCode" in err) throw err;
     logger.error("Minor signup failed", err);
