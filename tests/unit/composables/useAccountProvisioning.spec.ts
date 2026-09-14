@@ -1,6 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { User } from "@supabase/supabase-js";
-import { useAccountProvisioning } from "~/composables/useAccountProvisioning";
+import {
+  useAccountProvisioning,
+  suppressAutoFamilyCreateOnNextSignIn,
+} from "~/composables/useAccountProvisioning";
 import { useAuthFetch } from "~/composables/useAuthFetch";
 import { useUserStore } from "~/stores/user";
 import { usePreferenceManager } from "~/composables/usePreferenceManager";
@@ -75,6 +78,28 @@ describe("useAccountProvisioning", () => {
 
   it("calls /api/family/create for every provisioned user", async () => {
     const { ensureAccountProvisioned } = useAccountProvisioning();
+    await ensureAccountProvisioned(buildUser());
+
+    expect(fetchAuthMock).toHaveBeenCalledWith("/api/family/create", {
+      method: "POST",
+    });
+  });
+
+  it("skips /api/family/create once when suppressed, then resumes calling it normally", async () => {
+    // Found live on QA: the guardian-claim accept flow already handles family setup
+    // itself. Without this suppression, this listener's own blind /api/family/create
+    // call races it and splits the guardian across two family_units.
+    suppressAutoFamilyCreateOnNextSignIn();
+
+    const { ensureAccountProvisioned } = useAccountProvisioning();
+    await ensureAccountProvisioned(buildUser());
+
+    expect(fetchAuthMock).not.toHaveBeenCalledWith("/api/family/create", {
+      method: "POST",
+    });
+
+    // One-shot: the very next sign-in (not suppressed) calls it as normal.
+    fetchAuthMock.mockClear();
     await ensureAccountProvisioned(buildUser());
 
     expect(fetchAuthMock).toHaveBeenCalledWith("/api/family/create", {
