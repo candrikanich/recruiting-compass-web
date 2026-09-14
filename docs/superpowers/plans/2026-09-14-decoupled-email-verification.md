@@ -964,11 +964,21 @@ git commit -m "feat: token-table-based verify-email endpoint, retire native-OTP 
 **Files:**
 - Delete: `server/api/auth/resend-verification.post.ts`, `tests/unit/server/api/auth/resend-verification.spec.ts`, `tests/unit/server/api/auth/resend-verification.post.spec.ts` (superseded — unauthenticated email-in-body + native `generateLink`, replaced by session-authed resend)
 - Create: `server/api/auth/verify-email/resend.post.ts`
-- Test: `tests/unit/server/api/auth/verify-email-resend.post.spec.ts`
+- Modify: `composables/useEmailVerification.ts` (`resendVerificationEmail`, `checkEmailVerificationStatus`)
+- Modify: `components/Dashboard/EmailVerificationBanner.vue:27` (dead `/verify-email` link)
+- Test: `tests/unit/server/api/auth/verify-email-resend.post.spec.ts`, `tests/unit/composables/useEmailVerification.spec.ts` (update existing resend/status tests)
 
 **Interfaces:**
 - Consumes: `requireAuth` (`server/utils/auth.ts`, existing), `issueVerificationToken` (Task 3), `sendVerificationEmail` (Task 4), `rateLimitByUser`/`throwIfRateLimited` (existing).
-- Produces: `POST /api/auth/verify-email/resend` (session-authenticated, no body) → `{ success: true }`. Consumed by Task 9 (expired-link inline resend) and the dashboard banner.
+- Produces: `POST /api/auth/verify-email/resend` (session-authenticated, no body) → `{ success: true }`. Consumed by Task 9 (expired-link inline resend) and, via `useEmailVerification.resendVerificationEmail()`, the dashboard banner.
+
+**Plan-defect fix (found in pre-flight scan, not in the original spec text):**
+`components/Dashboard/EmailVerificationBanner.vue` calls
+`useEmailVerification().resendVerificationEmail(email)`, which currently
+posts `{ email }` to the old `/api/auth/resend-verification` — deleted in
+this task — and links to `/verify-email` — deleted in Task 9, and with no
+token-less destination to replace it. Both must be fixed here, or the
+banner breaks the moment Tasks 8-9 land.
 
 - [ ] **Step 1: Delete the superseded endpoint and tests**
 
@@ -1059,10 +1069,114 @@ export default defineEventHandler(async (event) => {
 Run: `npm run test -- tests/unit/server/api/auth/verify-email-resend.post.spec.ts`
 Expected: PASS
 
-- [ ] **Step 6: Commit**
+- [ ] **Step 6: Fix `useEmailVerification.resendVerificationEmail` to call the new endpoint**
+
+In `composables/useEmailVerification.ts`, replace the `resendVerificationEmail` function:
+
+```typescript
+  const resendVerificationEmail = async (): Promise<boolean> => {
+    const result = await withAsyncState(
+      "Failed to resend verification email",
+      async () => {
+        const response = await $fetch("/api/auth/verify-email/resend", {
+          method: "POST",
+        });
+
+        if (response && response.success) {
+          return true;
+        }
+
+        error.value = "Failed to resend verification email";
+        return false;
+      },
+    );
+
+    return result ?? false;
+  };
+```
+
+It's now session-authenticated (no `email` argument) since the caller is
+always a logged-in user (spec's decoupled model has no unauthenticated
+resend path). Also replace `checkEmailVerificationStatus` — it currently
+reads Supabase's native `email_confirmed_at`, which this app no longer
+treats as the source of truth (Task 11):
+
+```typescript
+  const checkEmailVerificationStatus = async (): Promise<boolean> => {
+    const result = await withAsyncState(
+      "Failed to check verification status",
+      async () => {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+
+        if (!user) {
+          return false;
+        }
+
+        const { data: profile } = await supabase
+          .from("users")
+          .select("email_verified_at")
+          .eq("id", user.id)
+          .maybeSingle();
+
+        const verified = profile?.email_verified_at != null;
+        isVerified.value = verified;
+        return verified;
+      },
+    );
+
+    return result ?? false;
+  };
+```
+
+Also delete the now-unused `verifyEmailToken` function (its only caller was
+the old `pages/verify-email.vue`, deleted in Task 9 — the new
+`pages/verify-email/[token].vue` calls `$fetch` directly, not through this
+composable) and remove it from the returned object.
+
+- [ ] **Step 7: Update `EmailVerificationBanner.vue`'s call site and dead link**
+
+In `components/Dashboard/EmailVerificationBanner.vue`, update `handleResend`
+to match the new no-argument signature:
+
+```typescript
+async function handleResend() {
+  sent.value = false;
+  const success = await emailVerification.resendVerificationEmail();
+  sent.value = success;
+}
+```
+
+Remove the `userStore.user?.email` guard above it (no longer needed) and
+delete the dead link (no token-less verification-status page exists
+anymore — replace lines around `components/Dashboard/EmailVerificationBanner.vue:27`):
+
+```html
+      <NuxtLink to="/verify-email" class="font-semibold underline underline-offset-2">
+        View verification status
+      </NuxtLink>
+```
+
+with nothing (remove the line entirely; the resend button and the "Sent!"/
+error feedback already next to it cover the banner's job).
+
+- [ ] **Step 8: Update `useEmailVerification`'s existing tests and run them**
+
+Find and update the existing tests for `resendVerificationEmail` (drop the
+`email` argument, assert the call hits `/api/auth/verify-email/resend` with
+no body) and `checkEmailVerificationStatus` (mock the `users` table select
+instead of `email_confirmed_at`) in
+`tests/unit/composables/useEmailVerification.spec.ts`. Remove any test for
+`verifyEmailToken` (function deleted).
+
+Run: `npm run test -- tests/unit/composables/useEmailVerification.spec.ts tests/unit/components/Dashboard/EmailVerificationBanner.spec.ts`
+Expected: PASS
+
+- [ ] **Step 9: Commit**
 
 ```bash
-git add server/api/auth/verify-email/resend.post.ts tests/unit/server/api/auth/verify-email-resend.post.spec.ts
+git add server/api/auth/verify-email/resend.post.ts tests/unit/server/api/auth/verify-email-resend.post.spec.ts composables/useEmailVerification.ts components/Dashboard/EmailVerificationBanner.vue tests/unit/composables/useEmailVerification.spec.ts tests/unit/components/Dashboard/EmailVerificationBanner.spec.ts
 git rm --cached server/api/auth/resend-verification.post.ts 2>/dev/null || true
 git commit -m "feat: session-authed resend-verification endpoint, retire native one"
 ```
