@@ -144,6 +144,24 @@ watch(
   },
   { flush: "post" },
 );
+
+// signup() consumes this widget's token server-side (verifyTurnstile, before
+// creating the account) -- reusing that same token for the
+// signInWithPassword call that follows gets rejected as replayed
+// ("timeout-or-duplicate"), same bug class pages/signup.vue fixed. Reset the
+// widget and wait for it to auto-resolve a fresh token.
+async function getFreshTurnstileToken(): Promise<string | undefined> {
+  if (!turnstileEnabled.value || !turnstileWidgetId.value) return undefined;
+  const w = window as unknown as { turnstile?: TurnstileGlobal };
+  if (!w.turnstile) return undefined;
+  turnstileToken.value = undefined;
+  w.turnstile.reset(turnstileWidgetId.value);
+  const start = Date.now();
+  while (!turnstileToken.value && Date.now() - start < 8000) {
+    await new Promise((resolve) => setTimeout(resolve, 150));
+  }
+  return turnstileToken.value;
+}
 // ---------------------------------------------------------------------------
 
 onMounted(async () => {
@@ -239,7 +257,7 @@ const handleSubmit = async () => {
       undefined, // pendingAdmin
       undefined, // onboardingStep1
       undefined, // inviteToken
-      undefined, // getFreshCaptchaToken
+      getFreshTurnstileToken,
       true, // skipVerificationEmail — confirmClaim stamps email_verified_at
     );
     await confirmClaim();
