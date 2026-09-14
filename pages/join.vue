@@ -103,11 +103,15 @@ type TurnstileGlobal = {
     options: {
       sitekey: string;
       action?: string;
+      size?: "normal" | "compact" | "invisible";
+      execution?: "render" | "execute";
       callback: (token: string) => void;
       "expired-callback"?: () => void;
+      "error-callback"?: () => void;
     },
   ) => string;
   reset: (widgetId?: string) => void;
+  execute: (widgetId?: string) => void;
 };
 
 // Turnstile tokens are single-use and expire (~5 min) — replaying a stale or
@@ -194,22 +198,61 @@ watch(
   { flush: "post" },
 );
 
-// signup() consumes the signup widget's token server-side (verifyTurnstile,
-// before creating the account) -- reusing that same token for the
-// signInWithPassword call that follows gets rejected as replayed
-// ("timeout-or-duplicate"), same bug class pages/signup.vue fixed. Reset the
-// signup widget and wait for it to auto-resolve a fresh token.
+// A second, invisible widget dedicated to minting the post-signup sign-in
+// token. signup() consumes the signup checkbox widget's token server-side
+// (verifyTurnstile, before creating the account) -- resetting and re-polling
+// THAT widget was tried first, but reset() on a managed/interactive widget
+// re-arms its checkbox and waits for a user click that never comes, so the
+// poll just times out and signInWithPassword fires with no token at all
+// ("no captcha_token found"). An invisible, execute-mode widget solves
+// itself without user interaction. Same bug class pages/signup.vue fixed.
+const turnstileSessionEl = ref<HTMLDivElement | null>(null);
+const turnstileSessionWidgetId = ref<string | undefined>(undefined);
+const turnstileSessionToken = ref<string | undefined>(undefined);
+
+watch(
+  [turnstileEnabled, turnstileSessionEl],
+  async ([enabled, el]) => {
+    if (!enabled || !el || turnstileSessionWidgetId.value) return;
+    try {
+      await loadTurnstileScript();
+      const w = window as unknown as { turnstile?: TurnstileGlobal };
+      if (w.turnstile) {
+        turnstileSessionWidgetId.value = w.turnstile.render(el, {
+          sitekey: turnstileSiteKey.value,
+          action: "join-session",
+          size: "invisible",
+          execution: "execute",
+          callback: (token: string) => {
+            turnstileSessionToken.value = token;
+          },
+          "expired-callback": () => {
+            turnstileSessionToken.value = undefined;
+          },
+          "error-callback": () => {
+            turnstileSessionToken.value = undefined;
+          },
+        });
+      }
+    } catch {
+      // Non-fatal — see mountTurnstile's catch above.
+    }
+  },
+  { flush: "post" },
+);
+
 async function getFreshTurnstileToken(): Promise<string | undefined> {
-  if (!turnstileEnabled.value || !turnstileSignupWidgetId.value) return undefined;
+  if (!turnstileEnabled.value || !turnstileSessionWidgetId.value)
+    return undefined;
   const w = window as unknown as { turnstile?: TurnstileGlobal };
   if (!w.turnstile) return undefined;
-  turnstileToken.value = undefined;
-  w.turnstile.reset(turnstileSignupWidgetId.value);
+  turnstileSessionToken.value = undefined;
+  w.turnstile.execute(turnstileSessionWidgetId.value);
   const start = Date.now();
-  while (!turnstileToken.value && Date.now() - start < 8000) {
+  while (!turnstileSessionToken.value && Date.now() - start < 8000) {
     await new Promise((resolve) => setTimeout(resolve, 150));
   }
-  return turnstileToken.value;
+  return turnstileSessionToken.value;
 }
 // ---------------------------------------------------------------------------
 
@@ -634,6 +677,9 @@ async function decline() {
                 ref="turnstileSignupEl"
                 class="flex justify-center"
               />
+              <!-- Invisible widget dedicated to the post-signup sign-in
+                   token mint — see getFreshTurnstileToken. Renders nothing. -->
+              <div v-if="turnstileEnabled" ref="turnstileSessionEl" />
             </template>
           </AuthInviteSignupForm>
           <p class="mt-4 text-sm text-gray-500">
