@@ -3,12 +3,19 @@ import { useEmailVerification } from "~/composables/useEmailVerification";
 import { useSupabase } from "~/composables/useSupabase";
 import type { User } from "@supabase/supabase-js";
 
-// Mock useSupabase and $fetch
+// The resend endpoint is requireAuth-gated and this app sets no auth cookie,
+// so the composable must go through useAuthFetch's $fetchAuth (which injects
+// the Bearer token + CSRF header) — mocking a bare global $fetch would pass
+// regardless of which mechanism the code actually used.
+const mock$fetchAuth = vi.fn();
+vi.mock("~/composables/useAuthFetch", () => ({
+  useAuthFetch: () => ({ $fetchAuth: mock$fetchAuth }),
+}));
+
 vi.mock("~/composables/useSupabase");
 vi.stubGlobal("$fetch", vi.fn());
 
 const mockUseSupabase = vi.mocked(useSupabase);
-const mock$fetch = vi.mocked(global.$fetch);
 
 describe("useEmailVerification", () => {
   const mockUnverifiedUser: User = {
@@ -94,15 +101,17 @@ describe("useEmailVerification", () => {
     it("should resend verification email successfully", async () => {
       getMockSupabase();
 
-      mock$fetch.mockResolvedValue({ success: true });
+      mock$fetchAuth.mockResolvedValue({ success: true });
 
       const verification = useEmailVerification();
       const result = await verification.resendVerificationEmail();
 
-      expect(mock$fetch).toHaveBeenCalledWith(
+      expect(mock$fetchAuth).toHaveBeenCalledWith(
         "/api/auth/verify-email/resend",
         { method: "POST" },
       );
+      // Explicitly NOT the unauthenticated global $fetch — that would 401.
+      expect(global.$fetch).not.toHaveBeenCalled();
       expect(verification.loading.value).toBe(false);
       expect(verification.error.value).toBe(null);
       expect(result).toBe(true);
@@ -111,7 +120,7 @@ describe("useEmailVerification", () => {
     it("should surface a failure response", async () => {
       getMockSupabase();
 
-      mock$fetch.mockResolvedValue({ success: false });
+      mock$fetchAuth.mockResolvedValue({ success: false });
 
       const verification = useEmailVerification();
       const result = await verification.resendVerificationEmail();
@@ -126,7 +135,7 @@ describe("useEmailVerification", () => {
       getMockSupabase();
 
       const apiError = new Error("Server error");
-      mock$fetch.mockRejectedValue(apiError);
+      mock$fetchAuth.mockRejectedValue(apiError);
 
       const verification = useEmailVerification();
       const result = await verification.resendVerificationEmail();
@@ -143,7 +152,7 @@ describe("useEmailVerification", () => {
         resolvePromise = resolve;
       });
 
-      mock$fetch.mockReturnValue(resendPromise as any);
+      mock$fetchAuth.mockReturnValue(resendPromise as any);
 
       const verification = useEmailVerification();
       const resendCall = verification.resendVerificationEmail();
@@ -249,7 +258,7 @@ describe("useEmailVerification", () => {
     it("should clear error message", async () => {
       getMockSupabase();
 
-      mock$fetch.mockResolvedValue({
+      mock$fetchAuth.mockResolvedValue({
         success: false,
       });
 
@@ -268,7 +277,7 @@ describe("useEmailVerification", () => {
     it("should clear loading state on success", async () => {
       getMockSupabase();
 
-      mock$fetch.mockResolvedValue({ success: true });
+      mock$fetchAuth.mockResolvedValue({ success: true });
 
       const verification = useEmailVerification();
       await verification.resendVerificationEmail();
@@ -279,7 +288,7 @@ describe("useEmailVerification", () => {
     it("should clear loading state on error", async () => {
       getMockSupabase();
 
-      mock$fetch.mockRejectedValue(new Error("Error"));
+      mock$fetchAuth.mockRejectedValue(new Error("Error"));
 
       const verification = useEmailVerification();
       await verification.resendVerificationEmail();
@@ -291,7 +300,7 @@ describe("useEmailVerification", () => {
       getMockSupabase();
 
       // First call fails
-      mock$fetch.mockResolvedValueOnce({ success: false });
+      mock$fetchAuth.mockResolvedValueOnce({ success: false });
 
       const verification = useEmailVerification();
       await verification.resendVerificationEmail();
@@ -300,7 +309,7 @@ describe("useEmailVerification", () => {
       );
 
       // Second call succeeds
-      mock$fetch.mockResolvedValueOnce({ success: true });
+      mock$fetchAuth.mockResolvedValueOnce({ success: true });
 
       await verification.resendVerificationEmail();
       expect(verification.error.value).toBe(null);
@@ -311,7 +320,7 @@ describe("useEmailVerification", () => {
     it("should handle non-Error objects in resendVerificationEmail", async () => {
       getMockSupabase();
 
-      mock$fetch.mockRejectedValue("String error");
+      mock$fetchAuth.mockRejectedValue("String error");
 
       const verification = useEmailVerification();
       const result =

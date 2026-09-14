@@ -1,11 +1,13 @@
 import { ref, readonly } from "vue";
 import { useSupabase } from "~/composables/useSupabase";
+import { useAuthFetch } from "~/composables/useAuthFetch";
 import { createClientLogger } from "~/utils/logger";
 
 const logger = createClientLogger("useEmailVerification");
 
 export const useEmailVerification = () => {
   const supabase = useSupabase();
+  const { $fetchAuth } = useAuthFetch();
 
   const loading = ref(false);
   const error = ref<string | null>(null);
@@ -33,9 +35,12 @@ export const useEmailVerification = () => {
     const result = await withAsyncState(
       "Failed to resend verification email",
       async () => {
-        const response = await $fetch("/api/auth/verify-email/resend", {
-          method: "POST",
-        });
+        // /api/auth/verify-email/resend is requireAuth-gated and this app sets
+        // no auth cookie — a bare $fetch would 401 on every real browser call.
+        const response = await $fetchAuth<{ success?: boolean }>(
+          "/api/auth/verify-email/resend",
+          { method: "POST" },
+        );
 
         if (response && response.success) {
           return true;
