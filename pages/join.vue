@@ -301,21 +301,11 @@ async function signupAndConnect() {
 
     if (!authData?.data?.user?.id) throw new Error("Signup failed");
 
-    // Prod requires email confirmation, so Supabase withholds the session until
-    // the link is clicked. handle_new_user() already created the public.users
-    // row server-side; everything below needs an authenticated session (RLS),
-    // so there's nothing left to do client-side. The invite acceptance itself
-    // is deferred to first sign-in (useAccountProvisioning, pending_invite_token
-    // metadata set above). Found live on QA: the client-side upsert below was
-    // unconditionally attempted with no session, failing RLS on every
-    // confirm-email-required signup with "Could not save account details".
-    if (!authData.data.session) {
-      loading.value = false;
-      await navigateTo(
-        `/verify-email?${new URLSearchParams({ email: signupEmail.value }).toString()}`,
-      );
-      return;
-    }
+    // signup() creates the account server-side and always returns a real
+    // session now (see composables/useAuth.ts) — the invite acceptance is
+    // still deferred to first sign-in (useAccountProvisioning,
+    // pending_invite_token metadata set above), but there's no more
+    // no-session branch to fall back to here.
 
     const userRecord: Record<string, unknown> = {
       id: authData.data.user.id,

@@ -911,7 +911,7 @@ describe("signup.vue", () => {
       );
     });
 
-    it("still sends an unconfirmed minor to /verify-email as before", async () => {
+    it("sends an unconfirmed minor to the login handoff, not the deleted verify-email page", async () => {
       global.$fetch = vi.fn().mockResolvedValue({
         ok: true,
         guardianEmail: "parent@example.com",
@@ -923,7 +923,10 @@ describe("signup.vue", () => {
       await fillMinorForm(wrapper, "parent@example.com");
 
       expect(global.navigateTo).toHaveBeenCalledWith(
-        "/verify-email?email=test%40example.com",
+        "/login?reason=account_created&email=test%40example.com",
+      );
+      expect(global.navigateTo).not.toHaveBeenCalledWith(
+        expect.stringContaining("/verify-email"),
       );
     });
 

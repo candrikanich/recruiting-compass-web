@@ -406,17 +406,14 @@ const submitMinorSignup = async (guardian: string) => {
 
     loading.value = false;
 
-    // (guardian's email deliberately isn't threaded through this URL — verify-email.vue
-    // never read it, and putting it in the query string would only expose the
-    // guardian's address in the URL bar/browser history for no benefit.)
-    const params = new URLSearchParams({
-      email: email.value.trim(),
-    });
-    if (primarySport.value && graduationYear.value) {
-      params.set("sport", primarySport.value);
-      params.set("gradYear", String(graduationYear.value));
-    }
-    await navigateTo(`/verify-email?${params.toString()}`);
+    // No session yet and Supabase hasn't confirmed the email either — same
+    // "check your inbox, then log in" handoff as the emailConfirmed branch
+    // above. (Guardian's email deliberately isn't threaded through this URL
+    // — it would only expose the guardian's address in the URL bar/browser
+    // history for no benefit.)
+    await navigateTo(
+      `/login?reason=account_created&email=${encodeURIComponent(email.value.trim())}`,
+    );
   } catch (err) {
     const message =
       (err as { data?: { statusMessage?: string } } | null)?.data
