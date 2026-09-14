@@ -21,8 +21,10 @@ const mockSession: { value: { user: { id: string } } | null } = {
 vi.mock("~/composables/useAuth", () => ({
   useAuth: () => ({ session: mockSession }),
 }));
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let mockSupabaseImpl: any = {};
 vi.mock("~/composables/useSupabase", () => ({
-  useSupabase: () => ({}),
+  useSupabase: () => mockSupabaseImpl,
 }));
 vi.mock("~/utils/logger", () => ({
   createClientLogger: () => ({ error: vi.fn() }),
@@ -258,6 +260,55 @@ describe("onboarding middleware", () => {
       );
 
       expect(isCompleted).toBe(true);
+    });
+  });
+
+  describe("verify-email link exemption", () => {
+    const notOnboarded = () => ({
+      from: vi.fn().mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            single: vi.fn().mockResolvedValue({
+              data: {
+                phase_milestone_data: { onboarding_complete: false },
+                is_admin: false,
+                role: "player",
+              },
+              error: null,
+            }),
+          }),
+        }),
+      }),
+    });
+
+    const runMiddleware = async (path: string) => {
+      const mod = await import("~/middleware/onboarding.global");
+      const middleware = mod.default as (
+        to: { path: string; fullPath: string },
+        from: unknown,
+      ) => unknown;
+      return middleware({ path, fullPath: path }, {});
+    };
+
+    beforeEach(() => {
+      mockSession.value = { user: { id: "user-123" } };
+      mockSupabaseImpl = notOnboarded();
+      mockNavigateTo.mockClear();
+    });
+
+    it("does not redirect a not-onboarded user away from /verify-email/<token>", async () => {
+      // Without the exemption the page's onMounted verification POST never
+      // runs, so the token is silently never consumed.
+      const result = await runMiddleware("/verify-email/some-token-value");
+
+      expect(result).toBeUndefined();
+      expect(mockNavigateTo).not.toHaveBeenCalled();
+    });
+
+    it("still redirects the same user from a gated route (control)", async () => {
+      await runMiddleware("/dashboard");
+
+      expect(mockNavigateTo).toHaveBeenCalledWith("/onboarding");
     });
   });
 

@@ -42,8 +42,8 @@ describe("resolveHostRedirect", () => {
     expect(resolveHostRedirect(admin, "/login", admin)).toBeNull();
   });
 
-  it("allows /verify-email on the admin host", () => {
-    expect(resolveHostRedirect(admin, "/verify-email", admin)).toBeNull();
+  it("allows a /verify-email/<token> link on the admin host", () => {
+    expect(resolveHostRedirect(admin, "/verify-email/tok-1", admin)).toBeNull();
   });
 
   it("allows /reset-password on the admin host", () => {
