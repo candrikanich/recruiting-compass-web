@@ -27,9 +27,10 @@ export const suppressAutoFamilyCreateOnNextSignIn = () => {
  * Backfills server-side state that a signup couldn't set up itself because
  * Supabase withheld the session until email confirmation (prod's
  * confirm-email setting) — the family unit, an admin signup's is_admin flag
- * (pending_admin metadata, see pages/admin/signup.vue), and step-1 onboarding
+ * (pending_admin metadata, see pages/admin/signup.vue), step-1 onboarding
  * fields drafted on the signup form itself (pending_* metadata, see
- * pages/signup.vue) so a new user doesn't re-answer them post-confirm.
+ * pages/signup.vue), and a pending family-invite acceptance (pending_invite_token
+ * metadata, see pages/join.vue) so a new user doesn't re-answer them post-confirm.
  *
  * Call this on every SIGNED_IN event, not just an explicit /login form
  * submit — Supabase's own confirmation-link redirect establishes a session
@@ -88,6 +89,34 @@ export const useAccountProvisioning = () => {
     }
   };
 
+  /**
+   * Consumes a family-invite token drafted at signup (pages/join.vue,
+   * pending_invite_token metadata) once a real session exists. Deferred here
+   * for the same reason as the admin flag and onboarding step 1: the accept
+   * endpoint is auth-gated (RLS), and no session exists until the
+   * confirmation email is clicked. Errors are logged, not surfaced -- a
+   * SECOND accept call after a first successful one (e.g. a stale metadata
+   * value on a later sign-in) 409s harmlessly, since family_invitations.status
+   * flips to "accepted" on success and the endpoint rejects any non-pending
+   * status; membership itself was already established by the first call.
+   */
+  const applyPendingInviteToken = async (user: User) => {
+    const token = user.user_metadata?.pending_invite_token as
+      | string
+      | undefined;
+    if (!token) return;
+
+    try {
+      await $fetchAuth(`/api/family/invite/${token}/accept`, {
+        method: "POST",
+      });
+      const activeFamily = await import("~/composables/useFamilyCtx");
+      await activeFamily.useFamilyCtx().refetchFamilies();
+    } catch (err) {
+      logger.error("Failed to apply pending invite token on sign-in", err);
+    }
+  };
+
   const ensureAccountProvisioned = async (user: User) => {
     if (suppressNextFamilyCreate) {
       suppressNextFamilyCreate = false;
@@ -118,6 +147,7 @@ export const useAccountProvisioning = () => {
     }
 
     await applyPendingOnboardingStep1(user);
+    await applyPendingInviteToken(user);
   };
 
   return { ensureAccountProvisioned };

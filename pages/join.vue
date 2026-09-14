@@ -5,6 +5,7 @@ import { useAuth } from "~/composables/useAuth";
 import { useUserStore } from "~/stores/user";
 import { useSupabase } from "~/composables/useSupabase";
 import { useAppToast } from "~/composables/useAppToast";
+import { suppressAutoFamilyCreateOnNextSignIn } from "~/composables/useAccountProvisioning";
 import type { UseActiveFamilyReturn } from "~/composables/useActiveFamily";
 
 definePageMeta({ auth: false });
@@ -278,15 +279,41 @@ async function signupAndConnect() {
   loading.value = true;
   try {
     const fullName = `${signupFirstName.value} ${signupLastName.value}`.trim();
+    // The invite-accept endpoint handles all family membership itself (adds this
+    // user directly into invitation.family_unit_id) -- the SIGNED_IN listener's
+    // own blind /api/family/create call would otherwise race it and create a
+    // spurious solo family, colliding with idx_player_one_family the same way
+    // the guardian-claim flow did (see suppressAutoFamilyCreateOnNextSignIn).
+    suppressAutoFamilyCreateOnNextSignIn();
     const authData = await signup(
       signupEmail.value,
       signupPassword.value,
       fullName,
       invite.value.role,
       turnstileToken.value,
+      invite.value.role === "player" ? signupDateOfBirth.value : undefined,
+      undefined,
+      undefined,
+      token.value,
     );
 
     if (!authData?.data?.user?.id) throw new Error("Signup failed");
+
+    // Prod requires email confirmation, so Supabase withholds the session until
+    // the link is clicked. handle_new_user() already created the public.users
+    // row server-side; everything below needs an authenticated session (RLS),
+    // so there's nothing left to do client-side. The invite acceptance itself
+    // is deferred to first sign-in (useAccountProvisioning, pending_invite_token
+    // metadata set above). Found live on QA: the client-side upsert below was
+    // unconditionally attempted with no session, failing RLS on every
+    // confirm-email-required signup with "Could not save account details".
+    if (!authData.data.session) {
+      loading.value = false;
+      await navigateTo(
+        `/verify-email?${new URLSearchParams({ email: signupEmail.value }).toString()}`,
+      );
+      return;
+    }
 
     const userRecord: Record<string, unknown> = {
       id: authData.data.user.id,
