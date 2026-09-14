@@ -208,6 +208,25 @@ function resetTurnstile() {
   }
 }
 
+// After server-side account creation, the Turnstile token collected for
+// signup has already been consumed by /api/auth/signup's own verifyTurnstile
+// call — reusing it for the immediate post-signup sign-in would be rejected
+// as a replayed token by Supabase's native CAPTCHA check (if enabled). Reset
+// the widget and wait briefly for it to auto-resolve a fresh token via its
+// existing callback, the same mechanism already used for retry-after-failure.
+async function getFreshTurnstileToken(): Promise<string | undefined> {
+  if (!turnstileEnabled.value || !turnstileWidgetId.value) return undefined;
+  const w = window as unknown as { turnstile?: TurnstileGlobal };
+  if (!w.turnstile) return undefined;
+  turnstileToken.value = undefined;
+  w.turnstile.reset(turnstileWidgetId.value);
+  const start = Date.now();
+  while (!turnstileToken.value && Date.now() - start < 8000) {
+    await new Promise((resolve) => setTimeout(resolve, 150));
+  }
+  return turnstileToken.value;
+}
+
 function loadTurnstileScript(): Promise<void> {
   return new Promise((resolve) => {
     const w = window as unknown as { turnstile?: TurnstileGlobal };
@@ -528,6 +547,10 @@ const handleSignup = async () => {
       if (onboardingStep1) {
         signupArgs.push(undefined, onboardingStep1);
       }
+      // Pad to the getFreshCaptchaToken slot (7th–9th are pendingAdmin,
+      // onboardingStep1, inviteToken — none set here beyond the above).
+      while (signupArgs.length < 9) signupArgs.push(undefined);
+      signupArgs.push(getFreshTurnstileToken);
       const authData = await signup(...signupArgs);
 
       if (!authData?.data?.user?.id) {
@@ -536,12 +559,22 @@ const handleSignup = async () => {
 
       userId = authData.data.user.id;
     } catch (signupErr: unknown) {
-      // Handle "User already registered" error - the account may have been created
-      // in a previous request (race condition or double-submit)
-      const errMessage =
-        signupErr instanceof Error ? signupErr.message : String(signupErr);
+      // /api/auth/signup tags its own failures with a stable `data.code` —
+      // message text is not a contract and changed once already when account
+      // creation moved server-side.
+      // h3 nests `data` inside the serialized error body, so the client sees
+      // it one level deeper than the server set it; read both shapes so this
+      // holds whether the error was thrown locally or came over the wire.
+      const errData = (
+        signupErr as {
+          data?: { code?: string; data?: { code?: string } };
+        } | null
+      )?.data;
+      const errCode = errData?.code ?? errData?.data?.code;
 
-      if (errMessage.includes("already registered")) {
+      // The account may have been created in a previous request (race
+      // condition or double-submit).
+      if (errCode === "email_taken") {
         // Try to get the current session
         const {
           data: { session },
@@ -553,13 +586,11 @@ const handleSignup = async () => {
           // No active session - this is a real error
           throw signupErr;
         }
-      } else if (errMessage.includes("timeout-or-duplicate")) {
-        // Supabase's captcha layer rejected a replayed/expired Turnstile
-        // token — commonly the second half of a double-submit, where the
-        // first request already created the account (confirmation email
-        // sent). There's no session yet (unconfirmed email), so we can't
-        // silently recover a userId here; surface actionable guidance and
-        // reset the widget so a genuine retry gets a fresh token.
+      } else if (errCode === "captcha_failed") {
+        // The Turnstile check rejected a replayed/expired token — commonly
+        // the second half of a double-submit, where the first request already
+        // created the account (verification email sent). Surface actionable
+        // guidance; the widget reset below gets a genuine retry a fresh token.
         throw new Error(
           "We couldn't confirm you're not a robot in time. If you already received a confirmation email, check your inbox — otherwise, please try again.",
         );

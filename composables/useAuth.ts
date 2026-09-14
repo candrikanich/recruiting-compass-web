@@ -47,6 +47,8 @@ interface _AuthActions {
       zipCode?: string;
     },
     inviteToken?: string,
+    getFreshCaptchaToken?: () => Promise<string | undefined>,
+    skipVerificationEmail?: boolean,
   ) => Promise<{
     data: { user: User | null; session: Session | null } | null;
     error: { message: string; status?: number } | null;
@@ -254,9 +256,19 @@ export const useAuth = () => {
 
   /**
    * Sign up new user with optional full name, role, and CAPTCHA token.
-   * When `captchaToken` is provided it is forwarded to Supabase Auth's
-   * built-in Turnstile verification (requires CAPTCHA enabled in the
-   * Supabase Dashboard → Authentication → Bot Protection).
+   *
+   * `captchaToken` is verified server-side by POST /api/auth/signup (this
+   * app's own `verifyTurnstile` check) — it is no longer Supabase Auth's
+   * built-in verification that owns the signup gate. Turnstile tokens are
+   * single-use, so that same token is already spent by the time the
+   * post-creation `signInWithPassword` runs: pass `getFreshCaptchaToken` to
+   * mint a new one for that call (Supabase's native CAPTCHA is still on for
+   * sign-in, which has no other bot defense). Omitting it reuses
+   * `captchaToken`, preserving the behavior of callers that don't opt in.
+   *
+   * `skipVerificationEmail` suppresses the verification token + email for
+   * signups whose accept/claim handler stamps `email_verified_at` moments
+   * later anyway (invite, guardian claim, admin) — spec §5.
    */
   const signup = async (
     email: string,
@@ -273,6 +285,8 @@ export const useAuth = () => {
       zipCode?: string;
     },
     inviteToken?: string,
+    getFreshCaptchaToken?: () => Promise<string | undefined>,
+    skipVerificationEmail?: boolean,
   ) => {
     loading.value = true;
     error.value = null;
@@ -313,11 +327,19 @@ export const useAuth = () => {
           dateOfBirth,
           captchaToken,
           metadata,
+          ...(skipVerificationEmail ? { skipVerificationEmail: true } : {}),
         },
       });
 
       // Session issuance is a normal password sign-in now that the account
       // is auto-confirmed server-side — no confirmation gap to wait out.
+      // The signup token was just consumed by the endpoint's own Turnstile
+      // check, so replaying it here would read as a duplicate to Supabase's
+      // native CAPTCHA — callers that can mint a fresh one do so.
+      const signInCaptchaToken = getFreshCaptchaToken
+        ? await getFreshCaptchaToken()
+        : captchaToken;
+
       const signInParams: {
         email: string;
         password: string;
@@ -327,8 +349,8 @@ export const useAuth = () => {
         password,
       };
 
-      if (captchaToken) {
-        signInParams.options = { captchaToken };
+      if (signInCaptchaToken) {
+        signInParams.options = { captchaToken: signInCaptchaToken };
       }
 
       const { data, error: signInError } =

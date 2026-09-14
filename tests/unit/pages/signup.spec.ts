@@ -1051,7 +1051,13 @@ describe("signup.vue", () => {
         confirmPassword: "Password123",
         role: "player",
       });
-      mockAuth.signup.mockRejectedValue(new Error("User already registered"));
+      // The endpoint tags duplicates with a structured code — the page must
+      // branch on that, not on message text.
+      mockAuth.signup.mockRejectedValue(
+        Object.assign(new Error("An account with this email already exists"), {
+          data: { data: { code: "email_taken" } },
+        }),
+      );
       mockSupabase.auth.getSession.mockResolvedValue({
         data: { session: { user: { id: "user-123" } } },
       });
@@ -1075,6 +1081,45 @@ describe("signup.vue", () => {
 
       // Should attempt to get existing session
       expect(mockSupabase.auth.getSession).toHaveBeenCalled();
+    });
+
+    it("surfaces actionable guidance on a captcha_failed error code", async () => {
+      mockValidation.validate.mockResolvedValue({
+        fullName: "Test User",
+        email: "test@example.com",
+        password: "Password123", // pragma: allowlist secret
+        confirmPassword: "Password123",
+        role: "player",
+      });
+      mockAuth.signup.mockRejectedValue(
+        Object.assign(new Error("Verification failed. Please try again."), {
+          data: { data: { code: "captcha_failed" } },
+        }),
+      );
+
+      const wrapper = createWrapper();
+
+      const playerRadio = wrapper.find('[data-testid="user-type-player"]');
+      await playerRadio.setValue(true);
+      await playerRadio.trigger("change");
+      await wrapper.vm.$nextTick();
+
+      await wrapper.find("#firstName").setValue("Test");
+      await wrapper.find("#lastName").setValue("User");
+      await wrapper.find("#email").setValue("test@example.com");
+      await wrapper.find("#password").setValue("Password123");
+      await wrapper.find("#confirmPassword").setValue("Password123");
+      await wrapper.find("#agreeToTerms").setValue(true);
+
+      await wrapper.find("form").trigger("submit.prevent");
+      await flushPromises();
+
+      expect(mockValidation.setErrors).toHaveBeenCalledWith([
+        {
+          field: "form",
+          message: expect.stringContaining("couldn't confirm you're not a robot"),
+        },
+      ]);
     });
   });
 

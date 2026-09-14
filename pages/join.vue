@@ -295,6 +295,8 @@ async function signupAndConnect() {
       undefined,
       undefined,
       token.value,
+      undefined, // getFreshCaptchaToken — this page doesn't re-mint one
+      true, // skipVerificationEmail — the invite accept stamps email_verified_at
     );
 
     if (!authData?.data?.user?.id) throw new Error("Signup failed");

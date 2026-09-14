@@ -470,6 +470,9 @@ const handleSignup = async () => {
         undefined, // captchaToken — admin signup doesn't use Turnstile
         undefined, // dateOfBirth — not collected on this form
         true, // pendingAdmin — carries validated adminToken intent past confirmation
+        // NOT skipVerificationEmail: unlike the invite/guardian-claim paths
+        // (spec §5), nothing stamps email_verified_at for an admin signup, so
+        // the verification email is still the only thing that can verify them.
       );
 
       if (!authData?.data?.user?.id) {

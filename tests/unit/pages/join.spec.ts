@@ -380,6 +380,8 @@ describe("/join page", () => {
         undefined, // pendingAdmin
         undefined, // onboardingStep1
         "valid-token-123", // inviteToken -- carried across the confirmation gap
+        undefined, // getFreshCaptchaToken
+        true, // skipVerificationEmail -- the accept endpoint stamps verification
       );
       expect(mockFetch).toHaveBeenCalledWith(
         "/api/family/invite/valid-token-123/accept",
@@ -483,6 +485,8 @@ describe("/join page", () => {
         undefined,
         undefined,
         "valid-token-123",
+        undefined, // getFreshCaptchaToken
+        true, // skipVerificationEmail
       );
       // No client-side upsert, no accept call -- both need a session that
       // doesn't exist yet.

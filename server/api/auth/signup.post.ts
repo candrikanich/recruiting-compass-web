@@ -14,6 +14,12 @@ interface SignupBody {
   dateOfBirth?: string;
   captchaToken?: string;
   metadata?: Record<string, string | boolean>;
+  /**
+   * Invite / guardian-claim / admin signups have their `email_verified_at`
+   * stamped by the accept handler moments later, so they must never see the
+   * verify-email flow at all — including the email (spec §5).
+   */
+  skipVerificationEmail?: boolean;
 }
 
 /**
@@ -37,8 +43,15 @@ export default defineEventHandler(async (event) => {
 
     const body = await readBody<SignupBody>(event);
     const email = body.email?.trim().toLowerCase();
-    const { password, fullName, role, dateOfBirth, captchaToken, metadata } =
-      body;
+    const {
+      password,
+      fullName,
+      role,
+      dateOfBirth,
+      captchaToken,
+      metadata,
+      skipVerificationEmail,
+    } = body;
 
     if (!email || !password) {
       throw createError({
@@ -60,6 +73,7 @@ export default defineEventHandler(async (event) => {
       throw createError({
         statusCode: 403,
         statusMessage: "Verification failed. Please try again.",
+        data: { code: "captcha_failed" },
       });
     }
 
@@ -92,15 +106,18 @@ export default defineEventHandler(async (event) => {
           statusCode === 409
             ? "An account with this email already exists"
             : "Unable to create account. Please try again.",
+        ...(statusCode === 409 ? { data: { code: "email_taken" } } : {}),
       });
     }
 
-    const { token } = await issueVerificationToken(data.user.id);
-    const emailResult = await sendVerificationEmail({ to: email, token });
-    if (!emailResult.success) {
-      // Non-fatal — the account exists and is usable; the dashboard resend
-      // button covers this. Log for visibility only.
-      logger.error("Verification email failed to send", emailResult.error);
+    if (!skipVerificationEmail) {
+      const { token } = await issueVerificationToken(data.user.id);
+      const emailResult = await sendVerificationEmail({ to: email, token });
+      if (!emailResult.success) {
+        // Non-fatal — the account exists and is usable; the dashboard resend
+        // button covers this. Log for visibility only.
+        logger.error("Verification email failed to send", emailResult.error);
+      }
     }
 
     logger.info("Signup succeeded", { userId: data.user.id });

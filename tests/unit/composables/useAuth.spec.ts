@@ -698,6 +698,128 @@ describe("useAuth", () => {
       vi.unstubAllGlobals();
     });
 
+    it("signs in with a freshly-minted captcha token when a callback is given", async () => {
+      // The signup token was already consumed by /api/auth/signup's own
+      // Turnstile check — replaying it would read as a duplicate to
+      // Supabase's native CAPTCHA on the sign-in endpoint.
+      const { mockAuth } = getMockSupabase();
+      mockAuth.signInWithPassword.mockResolvedValue({
+        data: { user: mockUser, session: mockSession },
+        error: null,
+      });
+      const mockFetch = vi.fn(async () => ({ userId: mockUser.id }));
+      vi.stubGlobal("$fetch", mockFetch);
+      const getFresh = vi.fn(async () => "fresh-token-xyz");
+
+      const auth = useAuth();
+      await auth.signup(
+        "new@example.com",
+        "password123",
+        undefined,
+        undefined,
+        "consumed-token-abc",
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        getFresh,
+      );
+
+      expect(getFresh).toHaveBeenCalled();
+      expect(mockAuth.signInWithPassword).toHaveBeenCalledWith({
+        email: "new@example.com",
+        password: "password123",
+        options: { captchaToken: "fresh-token-xyz" },
+      });
+
+      vi.unstubAllGlobals();
+    });
+
+    it("omits captcha options when the fresh-token callback yields nothing", async () => {
+      const { mockAuth } = getMockSupabase();
+      mockAuth.signInWithPassword.mockResolvedValue({
+        data: { user: mockUser, session: mockSession },
+        error: null,
+      });
+      vi.stubGlobal(
+        "$fetch",
+        vi.fn(async () => ({ userId: mockUser.id })),
+      );
+
+      const auth = useAuth();
+      await auth.signup(
+        "new@example.com",
+        "password123",
+        undefined,
+        undefined,
+        "consumed-token-abc",
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        async () => undefined,
+      );
+
+      expect(mockAuth.signInWithPassword).toHaveBeenCalledWith({
+        email: "new@example.com",
+        password: "password123",
+      });
+
+      vi.unstubAllGlobals();
+    });
+
+    it("forwards skipVerificationEmail to the signup endpoint", async () => {
+      const { mockAuth } = getMockSupabase();
+      mockAuth.signInWithPassword.mockResolvedValue({
+        data: { user: mockUser, session: mockSession },
+        error: null,
+      });
+      const mockFetch = vi.fn(async () => ({ userId: mockUser.id }));
+      vi.stubGlobal("$fetch", mockFetch);
+
+      const auth = useAuth();
+      await auth.signup(
+        "new@example.com",
+        "password123",
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        true,
+      );
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        "/api/auth/signup",
+        expect.objectContaining({
+          body: expect.objectContaining({ skipVerificationEmail: true }),
+        }),
+      );
+
+      vi.unstubAllGlobals();
+    });
+
+    it("omits skipVerificationEmail from the body by default", async () => {
+      const { mockAuth } = getMockSupabase();
+      mockAuth.signInWithPassword.mockResolvedValue({
+        data: { user: mockUser, session: mockSession },
+        error: null,
+      });
+      const mockFetch = vi.fn(async () => ({ userId: mockUser.id }));
+      vi.stubGlobal("$fetch", mockFetch);
+
+      const auth = useAuth();
+      await auth.signup("new@example.com", "password123");
+
+      const body = (mockFetch.mock.calls[0] as unknown as [string, { body: Record<string, unknown> }])[1].body;
+      expect(body).not.toHaveProperty("skipVerificationEmail");
+
+      vi.unstubAllGlobals();
+    });
+
     it("should handle signup error", async () => {
       const { mockAuth } = getMockSupabase();
 

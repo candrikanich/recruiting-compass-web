@@ -66,6 +66,8 @@ const call = async (overrides: Record<string, unknown> = {}) => {
 describe("POST /api/auth/signup", () => {
   beforeEach(() => {
     mockCreateUser.mockClear();
+    mockIssueToken.mockClear();
+    mockSendVerification.mockClear();
     mockVerifyTurnstile.mockClear();
     mockVerifyTurnstile.mockResolvedValue({ ok: true });
     mockCreateUser.mockResolvedValue({
@@ -98,7 +100,34 @@ describe("POST /api/auth/signup", () => {
 
     await expect(
       call({ fullName: undefined, role: undefined }),
-    ).rejects.toMatchObject({ statusCode: 403 });
+    ).rejects.toMatchObject({
+      statusCode: 403,
+      data: { code: "captcha_failed" },
+    });
     expect(mockCreateUser).not.toHaveBeenCalled();
+  });
+
+  it("tags a duplicate-email failure with a stable error code", async () => {
+    // The client branches on this code, not on message text (which changed
+    // once already when account creation moved server-side).
+    mockCreateUser.mockResolvedValueOnce({
+      data: { user: null },
+      error: { message: "A user with this email address has already been registered" },
+    } as never);
+
+    await expect(call()).rejects.toMatchObject({
+      statusCode: 409,
+      data: { code: "email_taken" },
+    });
+  });
+
+  it("skips the verification token and email when skipVerificationEmail is set", async () => {
+    // Invite / guardian-claim signups get email_verified_at stamped by their
+    // own accept handler — they must never receive a verification email.
+    const result = await call({ skipVerificationEmail: true });
+
+    expect(mockIssueToken).not.toHaveBeenCalled();
+    expect(mockSendVerification).not.toHaveBeenCalled();
+    expect(result).toEqual({ userId: "user-1" });
   });
 });
