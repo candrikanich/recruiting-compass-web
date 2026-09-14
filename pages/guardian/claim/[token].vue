@@ -231,161 +231,197 @@ const handleSubmit = async () => {
 </script>
 
 <template>
-  <div class="mx-auto max-w-lg px-4 py-10">
-    <div v-if="loading" class="text-center text-slate-600">
-      Loading your confirmation link…
-    </div>
+  <div class="relative min-h-screen overflow-hidden bg-emerald-600">
+    <!-- Multi-Sport Field Background -->
+    <MultiSportFieldBackground />
 
+    <!-- Content -->
     <div
-      v-else-if="loadError"
-      class="rounded-lg border border-red-200 bg-red-50 p-6 text-center"
+      class="relative z-10 flex min-h-screen items-center justify-center px-6 py-12"
     >
-      <h1 class="text-lg font-semibold text-red-900">
-        This link isn't usable
-      </h1>
-      <p class="mt-2 text-sm text-red-800">{{ loadError }}</p>
-      <p class="mt-4 text-sm text-red-800">
-        Ask your athlete to resend it from their dashboard.
-      </p>
-    </div>
-
-    <div v-else-if="claim" class="rounded-xl border border-slate-200 bg-white p-6">
-      <h1 class="text-xl font-bold text-slate-900">
-        {{ claim.playerName }} started a recruiting profile
-      </h1>
-      <p class="mt-2 text-sm text-slate-600">
-        They listed you as their parent or guardian. Because they're under 18,
-        their account stays limited until you confirm it — they can't message
-        coaches or share their profile in the meantime.
-      </p>
-
-      <dl class="mt-4 rounded-lg bg-slate-50 p-4 text-sm">
-        <div class="flex justify-between py-1">
-          <dt class="text-slate-500">Athlete</dt>
-          <dd class="font-medium text-slate-900">{{ claim.playerName }}</dd>
-        </div>
-        <div v-if="claim.playerGraduationYear" class="flex justify-between py-1">
-          <dt class="text-slate-500">Class of</dt>
-          <dd class="font-medium text-slate-900">
-            {{ claim.playerGraduationYear }}
-          </dd>
-        </div>
-        <div class="flex justify-between py-1">
-          <dt class="text-slate-500">Your email</dt>
-          <dd class="font-medium text-slate-900">{{ claim.guardianEmail }}</dd>
-        </div>
-      </dl>
-
-      <form class="mt-6 space-y-4" @submit.prevent="handleSubmit">
-        <template v-if="!isSignedInAsGuardian">
-          <div class="flex gap-2 text-sm">
-            <button
-              type="button"
-              :class="[
-                'flex-1 rounded-lg border px-3 py-2',
-                mode === 'signup'
-                  ? 'border-blue-600 bg-blue-50 font-medium text-blue-700'
-                  : 'border-slate-300 text-slate-600',
-              ]"
-              @click="mode = 'signup'"
-            >
-              I'm new here
-            </button>
-            <button
-              type="button"
-              :class="[
-                'flex-1 rounded-lg border px-3 py-2',
-                mode === 'login'
-                  ? 'border-blue-600 bg-blue-50 font-medium text-blue-700'
-                  : 'border-slate-300 text-slate-600',
-              ]"
-              @click="mode = 'login'"
-            >
-              I already have an account
-            </button>
-          </div>
-
-          <div v-if="mode === 'signup'" class="grid grid-cols-2 gap-3">
-            <input
-              v-model="firstName"
-              type="text"
-              placeholder="First name"
-              autocomplete="given-name"
-              class="rounded-lg border border-slate-300 px-3 py-2"
-            />
-            <input
-              v-model="lastName"
-              type="text"
-              placeholder="Last name"
-              autocomplete="family-name"
-              class="rounded-lg border border-slate-300 px-3 py-2"
-            />
-          </div>
-
-          <input
-            v-model="password"
-            type="password"
-            :placeholder="mode === 'signup' ? 'Create a password' : 'Password'"
-            :autocomplete="
-              mode === 'signup' ? 'new-password' : 'current-password'
-            "
-            class="w-full rounded-lg border border-slate-300 px-3 py-2"
-          />
-
-          <input
-            v-if="mode === 'signup'"
-            v-model="confirmPassword"
-            type="password"
-            placeholder="Confirm password"
-            autocomplete="new-password"
-            class="w-full rounded-lg border border-slate-300 px-3 py-2"
-          />
-
-          <label
-            v-if="mode === 'signup'"
-            class="flex items-start gap-2 text-sm text-slate-600"
-          >
-            <input v-model="agreeToTerms" type="checkbox" class="mt-1" />
-            <span>
-              I agree to the
-              <NuxtLink to="/legal/terms" class="text-blue-600 underline"
-                >Terms</NuxtLink
-              >
-              and
-              <NuxtLink to="/legal/privacy" class="text-blue-600 underline"
-                >Privacy Policy</NuxtLink
-              >, on my own behalf and on behalf of my athlete.
-            </span>
-          </label>
-        </template>
-
-        <!-- Cloudflare Turnstile (flag-gated, renders only when site key set) -->
+      <div class="w-full max-w-lg">
+        <!-- Card -->
         <div
-          v-if="turnstileEnabled && !isSignedInAsGuardian"
-          ref="turnstileEl"
-          class="flex justify-center"
-        />
-
-        <p
-          v-if="formError"
-          class="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800"
-          role="alert"
+          class="rounded-2xl border border-white/20 bg-white/95 p-8 shadow-2xl backdrop-blur-xs"
         >
-          {{ formError }}
-        </p>
+          <!-- Header -->
+          <div class="mb-8 text-center">
+            <img
+              src="~/assets/logos/recruiting-compass-stacked.svg"
+              alt="The Recruiting Compass - Find your path, make your move"
+              class="mx-auto w-80"
+            />
+          </div>
 
-        <button
-          type="submit"
-          :disabled="submitting"
-          class="w-full rounded-lg bg-blue-600 px-4 py-3 font-semibold text-white disabled:opacity-60"
-        >
-          {{
-            submitting
-              ? "Confirming…"
-              : `Confirm ${claim.playerName}'s account`
-          }}
-        </button>
-      </form>
+          <div v-if="loading" class="text-center text-slate-600">
+            Loading your confirmation link…
+          </div>
+
+          <div
+            v-else-if="loadError"
+            class="rounded-lg border border-red-200 bg-red-50 p-6 text-center"
+          >
+            <h1 class="text-lg font-semibold text-red-900">
+              This link isn't usable
+            </h1>
+            <p class="mt-2 text-sm text-red-800">{{ loadError }}</p>
+            <p class="mt-4 text-sm text-red-800">
+              Ask your athlete to resend it from their dashboard.
+            </p>
+          </div>
+
+          <div v-else-if="claim">
+            <h1 class="text-xl font-bold text-slate-900">
+              {{ claim.playerName }} started a recruiting profile
+            </h1>
+            <p class="mt-2 text-sm text-slate-600">
+              They listed you as their parent or guardian. Because they're
+              under 18, their account stays limited until you confirm it —
+              they can't message coaches or share their profile in the
+              meantime.
+            </p>
+
+            <dl class="mt-4 rounded-lg bg-slate-50 p-4 text-sm">
+              <div class="flex justify-between py-1">
+                <dt class="text-slate-500">Athlete</dt>
+                <dd class="font-medium text-slate-900">
+                  {{ claim.playerName }}
+                </dd>
+              </div>
+              <div
+                v-if="claim.playerGraduationYear"
+                class="flex justify-between py-1"
+              >
+                <dt class="text-slate-500">Class of</dt>
+                <dd class="font-medium text-slate-900">
+                  {{ claim.playerGraduationYear }}
+                </dd>
+              </div>
+              <div class="flex justify-between py-1">
+                <dt class="text-slate-500">Your email</dt>
+                <dd class="font-medium text-slate-900">
+                  {{ claim.guardianEmail }}
+                </dd>
+              </div>
+            </dl>
+
+            <form class="mt-6 space-y-4" @submit.prevent="handleSubmit">
+              <template v-if="!isSignedInAsGuardian">
+                <div class="flex gap-2 text-sm">
+                  <button
+                    type="button"
+                    :class="[
+                      'flex-1 rounded-lg border px-3 py-2',
+                      mode === 'signup'
+                        ? 'border-blue-600 bg-blue-50 font-medium text-blue-700'
+                        : 'border-slate-300 text-slate-600',
+                    ]"
+                    @click="mode = 'signup'"
+                  >
+                    I'm new here
+                  </button>
+                  <button
+                    type="button"
+                    :class="[
+                      'flex-1 rounded-lg border px-3 py-2',
+                      mode === 'login'
+                        ? 'border-blue-600 bg-blue-50 font-medium text-blue-700'
+                        : 'border-slate-300 text-slate-600',
+                    ]"
+                    @click="mode = 'login'"
+                  >
+                    I already have an account
+                  </button>
+                </div>
+
+                <div v-if="mode === 'signup'" class="grid grid-cols-2 gap-3">
+                  <input
+                    v-model="firstName"
+                    type="text"
+                    placeholder="First name"
+                    autocomplete="given-name"
+                    class="rounded-lg border border-slate-300 px-3 py-2"
+                  />
+                  <input
+                    v-model="lastName"
+                    type="text"
+                    placeholder="Last name"
+                    autocomplete="family-name"
+                    class="rounded-lg border border-slate-300 px-3 py-2"
+                  />
+                </div>
+
+                <input
+                  v-model="password"
+                  type="password"
+                  :placeholder="
+                    mode === 'signup' ? 'Create a password' : 'Password'
+                  "
+                  :autocomplete="
+                    mode === 'signup' ? 'new-password' : 'current-password'
+                  "
+                  class="w-full rounded-lg border border-slate-300 px-3 py-2"
+                />
+
+                <input
+                  v-if="mode === 'signup'"
+                  v-model="confirmPassword"
+                  type="password"
+                  placeholder="Confirm password"
+                  autocomplete="new-password"
+                  class="w-full rounded-lg border border-slate-300 px-3 py-2"
+                />
+
+                <label
+                  v-if="mode === 'signup'"
+                  class="flex items-start gap-2 text-sm text-slate-600"
+                >
+                  <input v-model="agreeToTerms" type="checkbox" class="mt-1" />
+                  <span>
+                    I agree to the
+                    <NuxtLink to="/legal/terms" class="text-blue-600 underline"
+                      >Terms</NuxtLink
+                    >
+                    and
+                    <NuxtLink
+                      to="/legal/privacy"
+                      class="text-blue-600 underline"
+                      >Privacy Policy</NuxtLink
+                    >, on my own behalf and on behalf of my athlete.
+                  </span>
+                </label>
+              </template>
+
+              <!-- Cloudflare Turnstile (flag-gated, renders only when site key set) -->
+              <div
+                v-if="turnstileEnabled && !isSignedInAsGuardian"
+                ref="turnstileEl"
+                class="flex justify-center"
+              />
+
+              <p
+                v-if="formError"
+                class="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800"
+                role="alert"
+              >
+                {{ formError }}
+              </p>
+
+              <button
+                type="submit"
+                :disabled="submitting"
+                class="w-full rounded-lg bg-blue-600 px-4 py-3 font-semibold text-white disabled:opacity-60"
+              >
+                {{
+                  submitting
+                    ? "Confirming…"
+                    : `Confirm ${claim.playerName}'s account`
+                }}
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
