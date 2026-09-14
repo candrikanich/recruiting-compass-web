@@ -1,54 +1,69 @@
 <template>
-  <div
-    class="min-h-screen bg-linear-to-br from-blue-50 to-indigo-100 px-4 py-12"
-  >
-    <div class="mx-auto max-w-md">
-      <div class="mb-8 text-center">
-        <h1 class="mb-2 text-3xl font-bold text-slate-900">One quick thing</h1>
-        <p class="text-slate-600">
-          Pick your primary sport so we can tailor Recruiting Compass to you.
-        </p>
-      </div>
+  <div class="relative min-h-screen overflow-hidden bg-emerald-600">
+    <!-- Multi-Sport Field Background -->
+    <MultiSportFieldBackground />
 
-      <div class="space-y-6 rounded-lg bg-white p-8 shadow-lg">
-        <div>
-          <label
-            for="select-sport"
-            class="mb-2 block text-sm font-medium text-slate-700"
-          >
-            Primary Sport <span class="text-red-600">*</span>
-          </label>
-          <select
-            id="select-sport"
-            v-model="selectedSport"
-            data-testid="select-sport"
-            class="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
-            required
-          >
-            <option value="">Select your sport</option>
-            <option v-for="sport in sports" :key="sport" :value="sport">
-              {{ sport }}
-            </option>
-          </select>
+    <div
+      class="relative z-10 flex min-h-screen items-center justify-center px-6 py-12"
+    >
+      <div class="w-full max-w-md">
+        <div class="mb-8 text-center">
+          <img
+            src="~/assets/logos/recruiting-compass-stacked.svg"
+            alt="The Recruiting Compass - Find your path, make your move"
+            class="mx-auto w-80"
+          />
+          <h1 class="mt-6 mb-2 text-2xl font-bold text-white">
+            One quick thing
+          </h1>
+          <p class="text-white/90">
+            Pick your primary sport so we can tailor Recruiting Compass to
+            you.
+          </p>
         </div>
 
         <div
-          v-if="error"
-          role="alert"
-          class="rounded-lg border border-red-200 bg-red-50 p-4"
+          class="space-y-6 rounded-2xl border border-white/20 bg-white/95 p-8 shadow-2xl backdrop-blur-xs"
         >
-          <p class="text-sm text-red-800">{{ error }}</p>
-        </div>
+          <div>
+            <label
+              for="select-sport"
+              class="mb-2 block text-sm font-medium text-slate-700"
+            >
+              Primary Sport <span class="text-red-600">*</span>
+            </label>
+            <select
+              id="select-sport"
+              v-model="selectedSport"
+              data-testid="select-sport"
+              class="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
+              required
+            >
+              <option value="">Select your sport</option>
+              <option v-for="sport in sports" :key="sport" :value="sport">
+                {{ sport }}
+              </option>
+            </select>
+          </div>
 
-        <button
-          data-testid="save-sport"
-          type="button"
-          :disabled="!selectedSport || saving"
-          class="w-full rounded-lg bg-blue-500 px-6 py-3 font-medium text-white transition-colors hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
-          @click="saveSport"
-        >
-          {{ saving ? "Saving..." : "Continue" }}
-        </button>
+          <div
+            v-if="error"
+            role="alert"
+            class="rounded-lg border border-red-200 bg-red-50 p-4"
+          >
+            <p class="text-sm text-red-800">{{ error }}</p>
+          </div>
+
+          <button
+            data-testid="save-sport"
+            type="button"
+            :disabled="!selectedSport || saving"
+            class="w-full rounded-lg bg-blue-500 px-6 py-3 font-medium text-white transition-colors hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
+            @click="saveSport"
+          >
+            {{ saving ? "Saving..." : "Continue" }}
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -62,7 +77,7 @@ import { SPORT_POSITIONS } from "~/utils/positions/canonical";
 
 const logger = createClientLogger("SelectSport");
 
-definePageMeta({ layout: "default", middleware: "auth" });
+definePageMeta({ layout: "public", middleware: "auth" });
 
 // Source the sport list from the canonical position registry — the single
 // source of truth shared by onboarding, the edit form, and iOS — rather than a

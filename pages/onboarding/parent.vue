@@ -226,7 +226,7 @@ import type { SchoolRecommendation } from "~/types/schoolRecommendations";
 
 const logger = createClientLogger("ParentOnboarding");
 
-definePageMeta({ layout: "default", middleware: "auth" });
+definePageMeta({ layout: "public", middleware: "auth" });
 
 const step = ref(1);
 const totalSteps = 2;
