@@ -834,9 +834,10 @@ describe("login.vue", () => {
     });
 
     it("should display an account-created message when reason=account_created query param is present", () => {
-      // Landed here from a minor's signup on an environment with email
-      // confirmation off (signup-minor.post.ts's emailConfirmed) — this replaces
-      // what used to be a dead-end /verify-email wait for an email never coming.
+      // Currently unreached by any live caller (every signup path signs
+      // itself in immediately now) but kept as the generic "account
+      // created, please sign in" recovery message for any future flow that
+      // needs one — cheaper to keep tested than to reinvent.
       mockRoute.query = { reason: "account_created" };
       const wrapper = createWrapper();
 
