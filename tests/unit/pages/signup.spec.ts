@@ -940,10 +940,21 @@ describe("signup.vue", () => {
   describe("Age Gates", () => {
     // Whole-years-old helper mirroring utils/age.ts semantics, avoids
     // hardcoded dates going stale as the suite ages.
+    //
+    // Builds the YYYY-MM-DD string from LOCAL date components, not
+    // toISOString() -- utils/age.ts's ageFromDateOfBirth() parses the date as
+    // local midnight (`${dob}T00:00:00`, no "Z"), so a UTC-serialized string
+    // is a real mismatch, not a formatting nicety. Near a UTC day boundary in
+    // a timezone behind UTC (e.g. US evenings), toISOString() rolls the date
+    // forward a day; parsed back as local midnight, that reads as one day
+    // short of the birthday, computing 17 instead of 18. Confirmed live: this
+    // exact test failed only in the evening, passed everywhere else today.
     const dobForAge = (years: number) => {
       const d = new Date();
       d.setFullYear(d.getFullYear() - years);
-      return d.toISOString().split("T")[0];
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${d.getFullYear()}-${month}-${day}`;
     };
 
     it("blocks player signup under 13 (COPPA) without calling signup()", async () => {
@@ -1200,7 +1211,12 @@ describe("signup.vue", () => {
       await wrapper.find("#agreeToTerms").setValue(true);
 
       await wrapper.find("form").trigger("submit.prevent");
-      await wrapper.vm.$nextTick();
+      // handleSignup is async with multiple awaits (validate, then signup) before
+      // it reaches this call — a single $nextTick() only waits for one Vue render
+      // tick, not the full microtask chain, so this assertion could run before
+      // signup() was actually invoked. flushPromises() (used by every sibling test
+      // in this file that asserts on a post-submit async call) drains it properly.
+      await flushPromises();
 
       expect(mockAuth.signup).toHaveBeenCalled();
     });
