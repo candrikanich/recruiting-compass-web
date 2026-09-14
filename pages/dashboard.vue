@@ -30,6 +30,9 @@
       <!-- Parent onboarding banner: shown until athlete connects (self-managed) -->
       <ParentOnboardingBanner v-if="userStore.isParent" />
 
+      <!-- Verify-email reminder: shown until email confirmed (self-managed) -->
+      <EmailVerificationBanner />
+
       <!-- Timeline Summary -->
       <section aria-labelledby="timeline-heading">
         <h2 id="timeline-heading" class="sr-only">Timeline Summary</h2>
