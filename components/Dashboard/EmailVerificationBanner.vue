@@ -24,9 +24,6 @@
           emailVerification.loading.value ? "Sending…" : "Resend email"
         }}
       </button>
-      <NuxtLink to="/verify-email" class="font-semibold underline underline-offset-2">
-        View verification status
-      </NuxtLink>
       <span v-if="sent" class="text-sm">Sent!</span>
       <span v-else-if="emailVerification.error.value" class="text-sm">
         {{ emailVerification.error.value }}
@@ -62,10 +59,7 @@ onMounted(() => {
 
 async function handleResend() {
   sent.value = false;
-  if (!userStore.user?.email) return;
-  const success = await emailVerification.resendVerificationEmail(
-    userStore.user.email,
-  );
+  const success = await emailVerification.resendVerificationEmail();
   sent.value = success;
 }
 

@@ -58,28 +58,19 @@ export const useEmailVerification = () => {
     return result ?? false;
   };
 
-  const resendVerificationEmail = async (email: string): Promise<boolean> => {
-    if (!email || email.trim() === "") {
-      loading.value = true;
-      error.value = "Email address is required";
-      loading.value = false;
-      return false;
-    }
-
+  const resendVerificationEmail = async (): Promise<boolean> => {
     const result = await withAsyncState(
       "Failed to resend verification email",
       async () => {
-        const response = await $fetch("/api/auth/resend-verification", {
+        const response = await $fetch("/api/auth/verify-email/resend", {
           method: "POST",
-          body: { email: email.trim() },
         });
 
         if (response && response.success) {
           return true;
         }
 
-        error.value =
-          response?.message || "Failed to resend verification email";
+        error.value = "Failed to resend verification email";
         return false;
       },
     );
@@ -116,11 +107,14 @@ export const useEmailVerification = () => {
           return false;
         }
 
-        const verified =
-          user.email_confirmed_at !== null &&
-          user.email_confirmed_at !== undefined;
-        isVerified.value = verified;
+        const { data: profile } = await supabase
+          .from("users")
+          .select("email_verified_at")
+          .eq("id", user.id)
+          .maybeSingle();
 
+        const verified = profile?.email_verified_at != null;
+        isVerified.value = verified;
         return verified;
       },
     );

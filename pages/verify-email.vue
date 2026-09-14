@@ -341,9 +341,7 @@ const checkVerificationStatus = async () => {
 };
 
 const handleResendEmail = async () => {
-  const success = await emailVerification.resendVerificationEmail(
-    userEmail.value,
-  );
+  const success = await emailVerification.resendVerificationEmail();
 
   if (success) {
     resendCooldown.value = 60;

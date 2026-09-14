@@ -37,7 +37,10 @@ describe("useEmailVerification", () => {
     vi.restoreAllMocks();
   });
 
-  const getMockSupabase = (user: User = mockUnverifiedUser) => {
+  const getMockSupabase = (
+    user: User = mockUnverifiedUser,
+    emailVerifiedAt: string | null = null,
+  ) => {
     const mockAuth = {
       getUser: vi.fn().mockResolvedValue({
         data: { user },
@@ -45,12 +48,21 @@ describe("useEmailVerification", () => {
       }),
     };
 
+    const mockMaybeSingle = vi.fn().mockResolvedValue({
+      data: { email_verified_at: emailVerifiedAt },
+      error: null,
+    });
+    const mockEq = vi.fn().mockReturnValue({ maybeSingle: mockMaybeSingle });
+    const mockSelect = vi.fn().mockReturnValue({ eq: mockEq });
+    const mockFrom = vi.fn().mockReturnValue({ select: mockSelect });
+
     const mockSupabase = {
       auth: mockAuth,
+      from: mockFrom,
     };
 
     mockUseSupabase.mockReturnValue(mockSupabase as any);
-    return { mockSupabase, mockAuth };
+    return { mockSupabase, mockAuth, mockFrom, mockMaybeSingle };
   };
 
   describe("Initial State", () => {
@@ -219,66 +231,31 @@ describe("useEmailVerification", () => {
     it("should resend verification email successfully", async () => {
       getMockSupabase();
 
-      mock$fetch.mockResolvedValue({
-        success: true,
-        message: "Verification email sent successfully.",
-      });
+      mock$fetch.mockResolvedValue({ success: true });
 
       const verification = useEmailVerification();
-      const result =
-        await verification.resendVerificationEmail("test@example.com");
+      const result = await verification.resendVerificationEmail();
 
-      expect(mock$fetch).toHaveBeenCalledWith("/api/auth/resend-verification", {
-        method: "POST",
-        body: { email: "test@example.com" },
-      });
+      expect(mock$fetch).toHaveBeenCalledWith(
+        "/api/auth/verify-email/resend",
+        { method: "POST" },
+      );
       expect(verification.loading.value).toBe(false);
       expect(verification.error.value).toBe(null);
       expect(result).toBe(true);
     });
 
-    it("should reject empty email", async () => {
+    it("should surface a failure response", async () => {
       getMockSupabase();
 
-      const verification = useEmailVerification();
-      const result = await verification.resendVerificationEmail("");
-
-      expect(mock$fetch).not.toHaveBeenCalled();
-      expect(result).toBe(false);
-      expect(verification.error.value).toBe("Email address is required");
-    });
-
-    it("should handle already verified email", async () => {
-      getMockSupabase();
-
-      mock$fetch.mockResolvedValue({
-        success: true,
-        message: "Your email is already verified.",
-      });
+      mock$fetch.mockResolvedValue({ success: false });
 
       const verification = useEmailVerification();
-      const result =
-        await verification.resendVerificationEmail("test@example.com");
-
-      expect(result).toBe(true);
-    });
-
-    it("should handle rate limiting", async () => {
-      getMockSupabase();
-
-      mock$fetch.mockResolvedValue({
-        success: false,
-        message:
-          "Too many verification requests. Please wait a few minutes before trying again.",
-      });
-
-      const verification = useEmailVerification();
-      const result =
-        await verification.resendVerificationEmail("test@example.com");
+      const result = await verification.resendVerificationEmail();
 
       expect(result).toBe(false);
-      expect(verification.error.value).toContain(
-        "Too many verification requests",
+      expect(verification.error.value).toBe(
+        "Failed to resend verification email",
       );
     });
 
@@ -289,8 +266,7 @@ describe("useEmailVerification", () => {
       mock$fetch.mockRejectedValue(apiError);
 
       const verification = useEmailVerification();
-      const result =
-        await verification.resendVerificationEmail("test@example.com");
+      const result = await verification.resendVerificationEmail();
 
       expect(result).toBe(false);
       expect(verification.error.value).toBe("Server error");
@@ -307,38 +283,23 @@ describe("useEmailVerification", () => {
       mock$fetch.mockReturnValue(resendPromise as any);
 
       const verification = useEmailVerification();
-      const resendCall =
-        verification.resendVerificationEmail("test@example.com");
+      const resendCall = verification.resendVerificationEmail();
 
       expect(verification.loading.value).toBe(true);
 
-      resolvePromise!({ success: true, message: "Sent!" });
+      resolvePromise!({ success: true });
       await resendCall;
 
       expect(verification.loading.value).toBe(false);
     });
-
-    it("should trim whitespace from email", async () => {
-      getMockSupabase();
-
-      mock$fetch.mockResolvedValue({
-        success: true,
-        message: "Verification email sent successfully.",
-      });
-
-      const verification = useEmailVerification();
-      await verification.resendVerificationEmail("  test@example.com  ");
-
-      expect(mock$fetch).toHaveBeenCalledWith("/api/auth/resend-verification", {
-        method: "POST",
-        body: { email: "test@example.com" },
-      });
-    });
   });
 
   describe("checkEmailVerificationStatus", () => {
-    it("should return true for verified email", async () => {
-      getMockSupabase(mockVerifiedUser);
+    it("should return true when users.email_verified_at is set", async () => {
+      const { mockFrom, mockMaybeSingle } = getMockSupabase(
+        mockVerifiedUser,
+        "2024-01-02T00:00:00Z",
+      );
 
       const verification = useEmailVerification();
       const result = await verification.checkEmailVerificationStatus();
@@ -346,10 +307,12 @@ describe("useEmailVerification", () => {
       expect(result).toBe(true);
       expect(verification.isVerified.value).toBe(true);
       expect(verification.error.value).toBe(null);
+      expect(mockFrom).toHaveBeenCalledWith("users");
+      expect(mockMaybeSingle).toHaveBeenCalled();
     });
 
-    it("should return false for unverified email", async () => {
-      getMockSupabase(mockUnverifiedUser);
+    it("should return false when users.email_verified_at is null", async () => {
+      getMockSupabase(mockUnverifiedUser, null);
 
       const verification = useEmailVerification();
       const result = await verification.checkEmailVerificationStatus();

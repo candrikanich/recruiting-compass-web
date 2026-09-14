@@ -98,9 +98,7 @@ describe("EmailVerificationBanner", () => {
     await flushPromises();
     await wrapper.get('[data-testid="resend-verification"]').trigger("click");
     await flushPromises();
-    expect(mockResendVerificationEmail).toHaveBeenCalledWith(
-      "player@example.com",
-    );
+    expect(mockResendVerificationEmail).toHaveBeenCalledWith();
     expect(wrapper.text()).toContain("Sent");
   });
 
