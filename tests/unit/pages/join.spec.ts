@@ -110,7 +110,12 @@ describe("/join page", () => {
     (global.navigateTo as ReturnType<typeof vi.fn>).mockResolvedValue(
       undefined,
     );
-    mockSignup.mockResolvedValue({ data: { user: { id: "new-u-1" } } });
+    mockSignup.mockResolvedValue({
+      data: {
+        user: { id: "new-u-1" },
+        session: { access_token: "tok", refresh_token: "tok" },
+      },
+    });
   });
 
   describe("loading state", () => {
@@ -323,7 +328,12 @@ describe("/join page", () => {
         })
         .mockResolvedValueOnce({ success: true }); // accept
 
-      mockSignup.mockResolvedValueOnce({ data: { user: { id: "u2" } } });
+      mockSignup.mockResolvedValueOnce({
+        data: {
+          user: { id: "u2" },
+          session: { access_token: "tok", refresh_token: "tok" },
+        },
+      });
       mockUserStore.isAuthenticated = false;
       mockUserStore.user.value = null;
 
@@ -366,6 +376,10 @@ describe("/join page", () => {
         expect.any(String),
         "player",
         undefined, // captchaToken (Turnstile disabled in test)
+        expect.any(String), // dateOfBirth
+        undefined, // pendingAdmin
+        undefined, // onboardingStep1
+        "valid-token-123", // inviteToken -- carried across the confirmation gap
       );
       expect(mockFetch).toHaveBeenCalledWith(
         "/api/family/invite/valid-token-123/accept",
@@ -433,6 +447,52 @@ describe("/join page", () => {
 
       expect(mockSignup).toHaveBeenCalled();
       expect(global.navigateTo).toHaveBeenCalledWith("/dashboard");
+    });
+
+    it("sends an unconfirmed signup to /verify-email instead of attempting an unauthenticated upsert", async () => {
+      // Found live on QA: with Supabase email confirmation required, signUp()
+      // withholds the session -- the old code unconditionally tried a
+      // client-side (RLS-gated) users upsert with no session, failing on
+      // every confirm-email-required invite signup with "Could not save
+      // account details". The invite acceptance itself is deferred to first
+      // sign-in (useAccountProvisioning, pending_invite_token metadata).
+      mockSignup.mockResolvedValueOnce({
+        data: { user: { id: "new-u-1" }, session: null },
+      });
+      mockFetch.mockResolvedValueOnce({
+        invitationId: "inv-123",
+        role: "player",
+        familyName: "The Smiths",
+        invitedEmail: "player@example.com",
+      });
+
+      const wrapper = createWrapper();
+      await flushPromises();
+      await wrapper
+        .find('[data-testid="invite-signup-form"]')
+        .trigger("submit");
+      await flushPromises();
+
+      expect(mockSignup).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.any(String),
+        expect.any(String),
+        "player",
+        undefined,
+        expect.any(String),
+        undefined,
+        undefined,
+        "valid-token-123",
+      );
+      // No client-side upsert, no accept call -- both need a session that
+      // doesn't exist yet.
+      expect(mockFetch).not.toHaveBeenCalledWith(
+        "/api/family/invite/valid-token-123/accept",
+        { method: "POST" },
+      );
+      expect(global.navigateTo).toHaveBeenCalledWith(
+        "/verify-email?email=player%40example.com",
+      );
     });
   });
 });

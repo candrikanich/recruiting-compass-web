@@ -46,6 +46,7 @@ interface _AuthActions {
       gender?: string;
       zipCode?: string;
     },
+    inviteToken?: string,
   ) => Promise<{
     data: { user: User | null; session: Session | null } | null;
     error: { message: string; status?: number } | null;
@@ -271,6 +272,7 @@ export const useAuth = () => {
       gender?: string;
       zipCode?: string;
     },
+    inviteToken?: string,
   ) => {
     loading.value = true;
     error.value = null;
@@ -328,6 +330,15 @@ export const useAuth = () => {
         if (onboardingStep1.zipCode) {
           metadata.pending_zip_code = onboardingStep1.zipCode;
         }
+      }
+
+      // Carries a family-invite token across the email-confirmation gap the
+      // same way pending_admin does — the accept call needs an authenticated
+      // session (RLS), which doesn't exist until the link is clicked, so it's
+      // deferred and consumed on first sign-in by useAccountProvisioning
+      // instead of attempted here.
+      if (inviteToken) {
+        metadata.pending_invite_token = inviteToken;
       }
 
       // Add metadata + captcha token if present

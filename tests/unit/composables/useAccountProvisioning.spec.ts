@@ -24,6 +24,10 @@ vi.mock("~/composables/useOnboarding", () => ({
 vi.mock("~/utils/logger", () => ({
   createClientLogger: () => ({ error: vi.fn(), debug: vi.fn(), info: vi.fn() }),
 }));
+const mockRefetchFamilies = vi.fn().mockResolvedValue(undefined);
+vi.mock("~/composables/useFamilyCtx", () => ({
+  useFamilyCtx: () => ({ refetchFamilies: mockRefetchFamilies }),
+}));
 
 const mockUseAuthFetch = vi.mocked(useAuthFetch);
 const mockUseUserStore = vi.mocked(useUserStore);
@@ -231,6 +235,49 @@ describe("useAccountProvisioning", () => {
               pending_primary_sport: "Baseball",
             },
           }),
+        ),
+      ).resolves.toBeUndefined();
+    });
+  });
+
+  describe("pending invite token (family-invite signup, pages/join.vue)", () => {
+    it("accepts the invite once a session exists and refetches families", async () => {
+      const { ensureAccountProvisioned } = useAccountProvisioning();
+      await ensureAccountProvisioned(
+        buildUser({ user_metadata: { pending_invite_token: "tok-123" } }),
+      );
+
+      expect(fetchAuthMock).toHaveBeenCalledWith(
+        "/api/family/invite/tok-123/accept",
+        { method: "POST" },
+      );
+      expect(mockRefetchFamilies).toHaveBeenCalled();
+    });
+
+    it("does nothing when there is no pending invite token", async () => {
+      const { ensureAccountProvisioned } = useAccountProvisioning();
+      await ensureAccountProvisioned(buildUser());
+
+      expect(fetchAuthMock).not.toHaveBeenCalledWith(
+        expect.stringContaining("/api/family/invite/"),
+        expect.anything(),
+      );
+    });
+
+    it("does not throw when the accept call fails — must never block sign-in", async () => {
+      // A second sign-in after the invite was already accepted 409s
+      // (family_invitations.status flips to "accepted" on success) -- harmless,
+      // since membership was already established by the first call.
+      fetchAuthMock.mockImplementation(async (url: string) =>
+        url.includes("/api/family/invite/")
+          ? Promise.reject(new Error("409: already accepted"))
+          : {},
+      );
+
+      const { ensureAccountProvisioned } = useAccountProvisioning();
+      await expect(
+        ensureAccountProvisioned(
+          buildUser({ user_metadata: { pending_invite_token: "tok-123" } }),
         ),
       ).resolves.toBeUndefined();
     });
