@@ -194,7 +194,8 @@ const canContinueAccount = computed(
     !!props.email.trim() &&
     !!props.dateOfBirth.trim() &&
     !!props.password.trim() &&
-    !!props.confirmPassword.trim(),
+    !!props.confirmPassword.trim() &&
+    props.password === props.confirmPassword,
 );
 
 const isParentFormValid = computed(
@@ -209,6 +210,7 @@ const isParentFormValid = computed(
 );
 
 function goToStepAfterAccount() {
+  if (!canContinueAccount.value) return;
   currentStep.value = props.requiresGuardian ? "guardian" : "info";
 }
 

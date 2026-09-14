@@ -157,6 +157,7 @@
                 ($event.target as HTMLInputElement).value,
               )
             "
+            @blur="$emit('validatePassword')"
           />
         </div>
         <FieldError
