@@ -29,35 +29,6 @@ export const useEmailVerification = () => {
     }
   };
 
-  const verifyEmailToken = async (token: string): Promise<boolean> => {
-    if (!token || token.trim() === "") {
-      loading.value = true;
-      error.value = "Verification token is missing";
-      loading.value = false;
-      return false;
-    }
-
-    const result = await withAsyncState(
-      "Email verification failed",
-      async () => {
-        const response = await $fetch("/api/auth/verify-email", {
-          method: "POST",
-          body: { token: token.trim() },
-        });
-
-        if (response && response.success) {
-          isVerified.value = true;
-          return true;
-        }
-
-        error.value = response?.message || "Email verification failed";
-        return false;
-      },
-    );
-
-    return result ?? false;
-  };
-
   const resendVerificationEmail = async (): Promise<boolean> => {
     const result = await withAsyncState(
       "Failed to resend verification email",
@@ -130,7 +101,6 @@ export const useEmailVerification = () => {
     loading: readonly(loading),
     error: readonly(error),
     isVerified: readonly(isVerified),
-    verifyEmailToken,
     resendVerificationEmail,
     checkEmailVerificationStatus,
     clearError,
