@@ -140,13 +140,11 @@ describe.skipIf(!hasLiveSupabase)(
         .single();
       if (familyErr || !family) throw new Error(familyErr?.message);
       familyId = family.id as string;
-      await admin
-        .from("family_members")
-        .insert({
-          family_unit_id: familyId,
-          user_id: playerId,
-          role: "player",
-        });
+      await admin.from("family_members").insert({
+        family_unit_id: familyId,
+        user_id: playerId,
+        role: "player",
+      });
 
       // offers.school_id is NOT NULL; seed a school as admin (bypasses RLS)
       // purely as an FK target for the offers RLS tests below.

@@ -36,7 +36,9 @@ const buildUser = (overrides: Partial<User> = {}): User =>
 
 describe("useAccountProvisioning", () => {
   let fetchAuthMock: ReturnType<typeof vi.fn>;
-  let userStoreState: { user: { is_admin: boolean; full_name?: string } | null };
+  let userStoreState: {
+    user: { is_admin: boolean; full_name?: string } | null;
+  };
   let getPlayerDetailsMock: ReturnType<typeof vi.fn>;
   let setPlayerDetailsMock: ReturnType<typeof vi.fn>;
   let setHomeLocationMock: ReturnType<typeof vi.fn>;
@@ -86,7 +88,9 @@ describe("useAccountProvisioning", () => {
     fetchAuthMock.mockRejectedValueOnce(new Error("network error"));
 
     const { ensureAccountProvisioned } = useAccountProvisioning();
-    await expect(ensureAccountProvisioned(buildUser())).resolves.toBeUndefined();
+    await expect(
+      ensureAccountProvisioned(buildUser()),
+    ).resolves.toBeUndefined();
   });
 
   it("applies the pending admin flag when metadata carries it and the user isn't already admin", async () => {

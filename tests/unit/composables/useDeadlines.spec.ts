@@ -209,9 +209,9 @@ describe("useDeadlines", () => {
     mockFetchAuth.mockRejectedValue(fetchError);
     const { useDeadlines } = await import("~/composables/useDeadlines");
     const { updateDeadline } = useDeadlines();
-    await expect(
-      updateDeadline("dead-1", { label: "X" }),
-    ).rejects.toThrow("Update failed");
+    await expect(updateDeadline("dead-1", { label: "X" })).rejects.toThrow(
+      "Update failed",
+    );
     expect(mockLogger.error).toHaveBeenCalledWith(
       "Failed to update deadline",
       fetchError,

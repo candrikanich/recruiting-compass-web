@@ -66,14 +66,18 @@ async function vercelFetch(token, path, teamId) {
 async function resolveTeamId(token, teamSlugOrId) {
   if (teamSlugOrId.startsWith("team_")) return teamSlugOrId;
   const { teams } = await vercelFetch(token, "/v2/teams");
-  const team = teams.find((t) => t.slug === teamSlugOrId || t.id === teamSlugOrId);
+  const team = teams.find(
+    (t) => t.slug === teamSlugOrId || t.id === teamSlugOrId,
+  );
   if (!team) throw new Error(`Team not found: ${teamSlugOrId}`);
   return team.id;
 }
 
 async function resolveProjectId(token, teamId, projectNameOrId) {
   const { projects } = await vercelFetch(token, "/v10/projects", teamId);
-  const project = projects.find((p) => p.name === projectNameOrId || p.id === projectNameOrId);
+  const project = projects.find(
+    (p) => p.name === projectNameOrId || p.id === projectNameOrId,
+  );
   if (!project) throw new Error(`Project not found: ${projectNameOrId}`);
   return project.id;
 }
@@ -109,7 +113,8 @@ function groupByBranch(deployments) {
   return byBranch;
 }
 
-const sleep = (ms) => new Promise((resolve) => globalThis.setTimeout(resolve, ms));
+const sleep = (ms) =>
+  new Promise((resolve) => globalThis.setTimeout(resolve, ms));
 
 async function deleteDeployment(token, teamId, id) {
   const url = new URL(`${API}/v13/deployments/${id}`);
@@ -122,7 +127,9 @@ async function deleteDeployment(token, teamId, id) {
     if (res.ok || res.status === 404) return;
     if (res.status === 429) {
       const body = await res.json().catch(() => null);
-      const resetMs = body?.error?.limit?.reset ? body.error.limit.reset - Date.now() : 60_000;
+      const resetMs = body?.error?.limit?.reset
+        ? body.error.limit.reset - Date.now()
+        : 60_000;
       const waitMs = Math.max(resetMs, 5000) + 2000; // small buffer past reset
       console.log(`  rate limited, waiting ${Math.ceil(waitMs / 1000)}s...`);
       await sleep(waitMs);
@@ -144,7 +151,10 @@ async function main() {
     fetchAliasedDeploymentIds(token, teamId),
   ]);
 
-  const cutoff = opts.olderThanDays != null ? Date.now() - opts.olderThanDays * DAY_MS : null;
+  const cutoff =
+    opts.olderThanDays != null
+      ? Date.now() - opts.olderThanDays * DAY_MS
+      : null;
 
   const byBranch = groupByBranch(deployments);
   const toDelete = [];
@@ -165,7 +175,9 @@ async function main() {
   );
 
   for (const d of toDelete) {
-    console.log(`  ${opts.execute ? "DELETE" : "would delete"}  ${d.branch}  ${d.url}  (${new Date(d.created).toISOString()})`);
+    console.log(
+      `  ${opts.execute ? "DELETE" : "would delete"}  ${d.branch}  ${d.url}  (${new Date(d.created).toISOString()})`,
+    );
   }
 
   if (!opts.execute) {

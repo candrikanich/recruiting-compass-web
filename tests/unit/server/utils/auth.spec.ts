@@ -416,5 +416,4 @@ describe("server/utils/auth", () => {
       expect(mockFrom).toHaveBeenCalled();
     });
   });
-
 });

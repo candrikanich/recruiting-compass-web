@@ -189,7 +189,10 @@
 
     <!-- Onboarding step 1 (player only) — captured now so there's nothing
          left to ask once the confirmation email is clicked. -->
-    <div v-if="userType === 'player'" class="space-y-4 border-t border-slate-200 pt-6">
+    <div
+      v-if="userType === 'player'"
+      class="space-y-4 border-t border-slate-200 pt-6"
+    >
       <h3 class="text-sm font-semibold text-slate-700">About the player</h3>
 
       <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -263,10 +266,7 @@
           :disabled="disabled"
           class="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
           @change="
-            $emit(
-              'update:gender',
-              ($event.target as HTMLSelectElement).value,
-            )
+            $emit('update:gender', ($event.target as HTMLSelectElement).value)
           "
         >
           <option :value="undefined">Select gender</option>
@@ -294,10 +294,7 @@
           :disabled="disabled"
           class="w-full rounded-lg border border-slate-300 px-4 py-2 focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-blue-500"
           @input="
-            $emit(
-              'update:zipCode',
-              ($event.target as HTMLInputElement).value,
-            )
+            $emit('update:zipCode', ($event.target as HTMLInputElement).value)
           "
         />
         <p class="mt-1 text-xs text-slate-500">
@@ -461,8 +458,8 @@ const SPORT_GENDER_MAP: Record<string, "male" | "female"> = {
   wrestling: "male",
 };
 
-const genderIsAutoDerived = computed(() =>
-  (props.primarySport ?? "").toLowerCase() in SPORT_GENDER_MAP,
+const genderIsAutoDerived = computed(
+  () => (props.primarySport ?? "").toLowerCase() in SPORT_GENDER_MAP,
 );
 
 const isFormValid = computed(() => {
@@ -473,8 +470,7 @@ const isFormValid = computed(() => {
     props.email.trim() &&
     (props.userType === "parent" || props.dateOfBirth.trim()) &&
     (props.userType === "parent" ||
-      (props.graduationYear !== undefined &&
-        !!props.primarySport?.trim())) &&
+      (props.graduationYear !== undefined && !!props.primarySport?.trim())) &&
     props.password.trim() &&
     props.confirmPassword.trim() &&
     props.agreeToTerms

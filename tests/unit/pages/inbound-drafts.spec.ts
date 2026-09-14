@@ -35,7 +35,9 @@ function mountPage() {
         DesignSystemErrorState: true,
         DesignSystemEmptyState: true,
         DesignSystemCard: { template: "<div><slot /></div>" },
-        DesignSystemButton: { template: "<button @click=\"$emit('click')\"><slot /></button>" },
+        DesignSystemButton: {
+          template: "<button @click=\"$emit('click')\"><slot /></button>",
+        },
       },
     },
   });
@@ -62,17 +64,28 @@ describe("inbox/inbound-drafts page", () => {
     const buttons = wrapper.findAll("button");
     await buttons[0]!.trigger("click");
     await flushPromises();
-    expect(mockNavigateTo).toHaveBeenCalledWith("/interactions/add?draftId=draft-1");
+    expect(mockNavigateTo).toHaveBeenCalledWith(
+      "/interactions/add?draftId=draft-1",
+    );
     expect(mockConfirmDraft).not.toHaveBeenCalled();
   });
 
   it("navigates to review even when the draft has no matched school yet", async () => {
-    drafts.value = [{ id: "draft-2", subject: "Fwd: Info", body_text: "hi", matched_school_id: null }];
+    drafts.value = [
+      {
+        id: "draft-2",
+        subject: "Fwd: Info",
+        body_text: "hi",
+        matched_school_id: null,
+      },
+    ];
     const wrapper = mountPage();
     const buttons = wrapper.findAll("button");
     await buttons[0]!.trigger("click");
     await flushPromises();
-    expect(mockNavigateTo).toHaveBeenCalledWith("/interactions/add?draftId=draft-2");
+    expect(mockNavigateTo).toHaveBeenCalledWith(
+      "/interactions/add?draftId=draft-2",
+    );
   });
 
   it("shows an error toast when discarding a draft fails", async () => {

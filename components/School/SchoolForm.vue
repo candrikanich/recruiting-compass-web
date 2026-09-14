@@ -363,8 +363,10 @@ watch(
       formData.mascot = newData.mascot ?? formData.mascot;
       formData.athletics_url = newData.athletics_url ?? formData.athletics_url;
       if (newData.school_colors) {
-        formData.schoolColorPrimary = newData.school_colors[0] || formData.schoolColorPrimary;
-        formData.schoolColorSecondary = newData.school_colors[1] || formData.schoolColorSecondary;
+        formData.schoolColorPrimary =
+          newData.school_colors[0] || formData.schoolColorPrimary;
+        formData.schoolColorSecondary =
+          newData.school_colors[1] || formData.schoolColorSecondary;
       }
 
       // Division and conference need special handling.
@@ -403,8 +405,10 @@ watch(
         division: newFields.division || autoFilledFields.division,
         conference: newFields.conference || autoFilledFields.conference,
         mascot: newFields.mascot || autoFilledFields.mascot,
-        athletics_url: newFields.athletics_url || autoFilledFields.athletics_url,
-        school_colors: newFields.school_colors || autoFilledFields.school_colors,
+        athletics_url:
+          newFields.athletics_url || autoFilledFields.athletics_url,
+        school_colors:
+          newFields.school_colors || autoFilledFields.school_colors,
       });
 
       // When the parent fully resets (name goes false with no other fields true),
@@ -537,7 +541,10 @@ const handleCollegeSelect = async (college: CollegeSearchResult) => {
 };
 
 const handleSubmit = async () => {
-  const school_colors = [formData.schoolColorPrimary, formData.schoolColorSecondary]
+  const school_colors = [
+    formData.schoolColorPrimary,
+    formData.schoolColorSecondary,
+  ]
     .map((c) => c.trim())
     .filter((c) => c.length > 0);
 
