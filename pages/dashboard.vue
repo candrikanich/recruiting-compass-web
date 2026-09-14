@@ -36,8 +36,12 @@
         <GuardianPendingBanner />
       </div>
 
-      <!-- Verify-email reminder: shown until email confirmed (self-managed) -->
-      <EmailVerificationBanner />
+      <!-- Verify-email reminder: shown until email confirmed (self-managed).
+           Nuxt auto-imports components/Dashboard/*.vue under the Dashboard-
+           prefixed tag (see every sibling usage in this file) — the bare tag
+           below silently resolved to nothing, so this banner never rendered
+           at all in production despite the underlying logic being correct. -->
+      <DashboardEmailVerificationBanner />
 
       <!-- Timeline Summary -->
       <section aria-labelledby="timeline-heading">
