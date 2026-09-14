@@ -1,190 +1,208 @@
 <template>
-  <div
-    class="min-h-screen bg-linear-to-br from-blue-50 to-indigo-100 px-4 py-12"
-  >
-    <div class="mx-auto max-w-xl">
-      <!-- Step indicator -->
-      <div class="mb-8 text-center">
-        <h1 class="mb-2 text-3xl font-bold text-slate-900">
-          Welcome to The Recruiting Compass
-        </h1>
-        <div class="mt-4 flex items-center justify-center gap-2">
-          <div
-            v-for="n in totalSteps"
-            :key="n"
-            :class="[
-              'h-3 w-3 rounded-full transition-colors',
-              n <= step ? 'bg-blue-500' : 'bg-slate-200',
-            ]"
+  <div class="relative min-h-screen overflow-hidden bg-emerald-600">
+    <!-- Multi-Sport Field Background -->
+    <MultiSportFieldBackground />
+
+    <div
+      class="relative z-10 flex min-h-screen items-center justify-center px-6 py-12"
+    >
+      <div class="w-full max-w-xl">
+        <!-- Header -->
+        <div class="mb-8 text-center">
+          <img
+            src="~/assets/logos/recruiting-compass-stacked.svg"
+            alt="The Recruiting Compass - Find your path, make your move"
+            class="mx-auto w-80"
           />
-          <span class="ml-3 text-sm font-medium text-slate-600">
-            {{ step }} of {{ totalSteps }}
-          </span>
         </div>
-      </div>
 
-      <div class="rounded-lg bg-white p-8 shadow-lg">
-        <!-- Step 1: Player Details -->
-        <div v-if="step === 1" data-testid="step-1" class="space-y-6">
-          <div>
-            <h2 class="mb-1 text-2xl font-bold text-slate-900">
-              Tell us about your athlete
-            </h2>
-            <p class="text-sm text-slate-500">
-              We'll pre-fill their profile so they can hit the ground running.
-              Name is optional.
-            </p>
+        <div
+          class="rounded-2xl border border-white/20 bg-white/95 p-8 shadow-2xl backdrop-blur-xs"
+        >
+          <!-- Step indicator -->
+          <div class="mb-8 text-center">
+            <h1 class="mb-2 text-2xl font-bold text-slate-900">
+              Welcome to The Recruiting Compass
+            </h1>
+            <div class="mt-4 flex items-center justify-center gap-2">
+              <div
+                v-for="n in totalSteps"
+                :key="n"
+                :class="[
+                  'h-3 w-3 rounded-full transition-colors',
+                  n <= step ? 'bg-blue-500' : 'bg-slate-200',
+                ]"
+              />
+              <span class="ml-3 text-sm font-medium text-slate-600">
+                {{ step }} of {{ totalSteps }}
+              </span>
+            </div>
           </div>
 
-          <div class="space-y-4">
+          <!-- Step 1: Player Details -->
+          <div v-if="step === 1" data-testid="step-1" class="space-y-6">
             <div>
-              <label
-                for="playerName"
-                class="mb-1 block text-sm font-medium text-slate-700"
-              >
-                Player's name
-              </label>
-              <input
-                id="playerName"
-                v-model="playerName"
-                data-testid="player-name"
-                type="text"
-                autocomplete="name"
-                placeholder="First Last"
-                class="w-full rounded-lg border border-slate-300 px-4 py-2 focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-blue-500"
-              />
-            </div>
-
-            <!-- Player DOB — required for COPPA age gate -->
-            <div>
-              <label
-                for="playerDob"
-                class="mb-1 block text-sm font-medium text-slate-700"
-              >
-                Player's date of birth <span class="text-red-600">*</span>
-              </label>
-              <input
-                id="playerDob"
-                v-model="playerDob"
-                data-testid="player-dob"
-                type="date"
-                :max="today"
-                class="w-full rounded-lg border px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
-                :class="playerTooYoung ? 'border-red-400' : 'border-slate-300'"
-              />
-              <p class="mt-1 text-xs text-slate-500">
-                Recruiting Compass is for ages 13 and up. By entering a date of
-                birth, you confirm the player is 13 or older.
-              </p>
-              <p
-                v-if="playerTooYoung"
-                data-testid="age-error"
-                class="mt-1 text-sm text-red-600"
-              >
-                Your player must be 13 or older to use Recruiting Compass.
-                Players under 13 cannot create an account.
+              <h2 class="mb-1 text-2xl font-bold text-slate-900">
+                Tell us about your athlete
+              </h2>
+              <p class="text-sm text-slate-500">
+                We'll pre-fill their profile so they can hit the ground running.
+                Name is optional.
               </p>
             </div>
 
-            <div>
-              <label
-                for="graduationYear"
-                class="mb-1 block text-sm font-medium text-slate-700"
-              >
-                Graduation year <span class="text-red-600">*</span>
-              </label>
-              <select
-                id="graduationYear"
-                v-model="graduationYear"
-                data-testid="graduation-year"
-                class="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">Select graduation year</option>
-                <option
-                  v-for="year in graduationYears"
-                  :key="year"
-                  :value="String(year)"
+            <div class="space-y-4">
+              <div>
+                <label
+                  for="playerName"
+                  class="mb-1 block text-sm font-medium text-slate-700"
                 >
-                  {{ year }}
-                </option>
-              </select>
+                  Player's name
+                </label>
+                <input
+                  id="playerName"
+                  v-model="playerName"
+                  data-testid="player-name"
+                  type="text"
+                  autocomplete="name"
+                  placeholder="First Last"
+                  class="w-full rounded-lg border border-slate-300 px-4 py-2 focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-blue-500"
+                />
+              </div>
+
+              <!-- Player DOB — required for COPPA age gate -->
+              <div>
+                <label
+                  for="playerDob"
+                  class="mb-1 block text-sm font-medium text-slate-700"
+                >
+                  Player's date of birth <span class="text-red-600">*</span>
+                </label>
+                <input
+                  id="playerDob"
+                  v-model="playerDob"
+                  data-testid="player-dob"
+                  type="date"
+                  :max="today"
+                  class="w-full rounded-lg border px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
+                  :class="
+                    playerTooYoung ? 'border-red-400' : 'border-slate-300'
+                  "
+                />
+                <p class="mt-1 text-xs text-slate-500">
+                  Recruiting Compass is for ages 13 and up. By entering a date
+                  of birth, you confirm the player is 13 or older.
+                </p>
+                <p
+                  v-if="playerTooYoung"
+                  data-testid="age-error"
+                  class="mt-1 text-sm text-red-600"
+                >
+                  Your player must be 13 or older to use Recruiting Compass.
+                  Players under 13 cannot create an account.
+                </p>
+              </div>
+
+              <div>
+                <label
+                  for="graduationYear"
+                  class="mb-1 block text-sm font-medium text-slate-700"
+                >
+                  Graduation year <span class="text-red-600">*</span>
+                </label>
+                <select
+                  id="graduationYear"
+                  v-model="graduationYear"
+                  data-testid="graduation-year"
+                  class="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Select graduation year</option>
+                  <option
+                    v-for="year in graduationYears"
+                    :key="year"
+                    :value="String(year)"
+                  >
+                    {{ year }}
+                  </option>
+                </select>
+              </div>
+
+              <div>
+                <label
+                  for="sport"
+                  class="mb-1 block text-sm font-medium text-slate-700"
+                >
+                  Primary sport <span class="text-red-600">*</span>
+                </label>
+                <select
+                  id="sport"
+                  v-model="sport"
+                  data-testid="sport"
+                  class="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Select sport</option>
+                  <option v-for="s in commonSports" :key="s" :value="s">
+                    {{ s }}
+                  </option>
+                </select>
+              </div>
             </div>
 
-            <div>
-              <label
-                for="sport"
-                class="mb-1 block text-sm font-medium text-slate-700"
+            <div class="pt-2">
+              <p
+                v-if="savePlayerDetailsError"
+                data-testid="save-player-details-error"
+                class="mb-2 text-sm text-red-600"
               >
-                Primary sport <span class="text-red-600">*</span>
-              </label>
-              <select
-                id="sport"
-                v-model="sport"
-                data-testid="sport"
-                class="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
+                {{ savePlayerDetailsError }}
+              </p>
+              <button
+                data-testid="next-button"
+                type="button"
+                :disabled="
+                  !playerDob ||
+                  playerTooYoung ||
+                  !sport ||
+                  !graduationYear ||
+                  !familyReady
+                "
+                class="w-full rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                @click="savePlayerDetails"
               >
-                <option value="">Select sport</option>
-                <option v-for="s in commonSports" :key="s" :value="s">
-                  {{ s }}
-                </option>
-              </select>
+                Next
+              </button>
             </div>
           </div>
 
-          <div class="pt-2">
-            <p
-              v-if="savePlayerDetailsError"
-              data-testid="save-player-details-error"
-              class="mb-2 text-sm text-red-600"
-            >
-              {{ savePlayerDetailsError }}
-            </p>
+          <!-- Step 2: Schools to explore -->
+          <div v-if="step === 2" data-testid="step-2" class="space-y-6">
+            <div>
+              <h2 class="mb-1 text-2xl font-bold text-slate-900">
+                Schools to explore
+              </h2>
+              <p class="text-sm text-slate-500">
+                Based on what you told us, here are a few schools to start with.
+              </p>
+            </div>
+
+            <RecommendedSchools
+              :items="recommendations"
+              :loading="recommendationsLoading"
+              :error="recommendationsError || recommendationActionError"
+              :adding-key="addingRecommendationKey"
+              @add="handleAddRecommendation"
+              @dismiss="handleDismissRecommendation"
+            />
+
             <button
-              data-testid="next-button"
+              data-testid="go-to-dashboard"
               type="button"
-              :disabled="
-                !playerDob ||
-                playerTooYoung ||
-                !sport ||
-                !graduationYear ||
-                !familyReady
-              "
-              class="w-full rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-              @click="savePlayerDetails"
+              class="w-full rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700"
+              @click="goToDashboard"
             >
-              Next
+              Go to your dashboard →
             </button>
           </div>
-        </div>
-
-        <!-- Step 2: Schools to explore -->
-        <div v-if="step === 2" data-testid="step-2" class="space-y-6">
-          <div>
-            <h2 class="mb-1 text-2xl font-bold text-slate-900">
-              Schools to explore
-            </h2>
-            <p class="text-sm text-slate-500">
-              Based on what you told us, here are a few schools to start with.
-            </p>
-          </div>
-
-          <RecommendedSchools
-            :items="recommendations"
-            :loading="recommendationsLoading"
-            :error="recommendationsError || recommendationActionError"
-            :adding-key="addingRecommendationKey"
-            @add="handleAddRecommendation"
-            @dismiss="handleDismissRecommendation"
-          />
-
-          <button
-            data-testid="go-to-dashboard"
-            type="button"
-            class="w-full rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700"
-            @click="goToDashboard"
-          >
-            Go to your dashboard →
-          </button>
         </div>
       </div>
     </div>
