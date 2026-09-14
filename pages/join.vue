@@ -8,7 +8,7 @@ import { useAppToast } from "~/composables/useAppToast";
 import { suppressAutoFamilyCreateOnNextSignIn } from "~/composables/useAccountProvisioning";
 import type { UseActiveFamilyReturn } from "~/composables/useActiveFamily";
 
-definePageMeta({ auth: false });
+definePageMeta({ auth: false, layout: "public" });
 
 const route = useRoute();
 const token = computed(() => route.query.token as string);
@@ -188,6 +188,24 @@ watch(
   },
   { flush: "post" },
 );
+
+// signup() consumes the signup widget's token server-side (verifyTurnstile,
+// before creating the account) -- reusing that same token for the
+// signInWithPassword call that follows gets rejected as replayed
+// ("timeout-or-duplicate"), same bug class pages/signup.vue fixed. Reset the
+// signup widget and wait for it to auto-resolve a fresh token.
+async function getFreshTurnstileToken(): Promise<string | undefined> {
+  if (!turnstileEnabled.value || !turnstileSignupWidgetId.value) return undefined;
+  const w = window as unknown as { turnstile?: TurnstileGlobal };
+  if (!w.turnstile) return undefined;
+  turnstileToken.value = undefined;
+  w.turnstile.reset(turnstileSignupWidgetId.value);
+  const start = Date.now();
+  while (!turnstileToken.value && Date.now() - start < 8000) {
+    await new Promise((resolve) => setTimeout(resolve, 150));
+  }
+  return turnstileToken.value;
+}
 // ---------------------------------------------------------------------------
 
 onMounted(async () => {
@@ -295,7 +313,7 @@ async function signupAndConnect() {
       undefined,
       undefined,
       token.value,
-      undefined, // getFreshCaptchaToken — this page doesn't re-mint one
+      getFreshTurnstileToken,
       true, // skipVerificationEmail — the invite accept stamps email_verified_at
     );
 
@@ -380,52 +398,105 @@ async function decline() {
 </script>
 
 <template>
-  <div class="mx-auto max-w-md px-4 py-16">
-    <!-- Loading -->
-    <div v-if="fetchStatus === 'pending'" data-testid="loading">
-      Loading invite...
-    </div>
+  <div class="relative min-h-screen overflow-hidden bg-emerald-600">
+    <!-- Multi-Sport Field Background -->
+    <MultiSportFieldBackground />
 
-    <!-- Declined -->
-    <div v-else-if="fetchStatus === 'declined'" data-testid="invite-declined">
-      <h1 class="mb-2 text-xl font-semibold">Invitation declined</h1>
-      <p class="text-gray-600">
-        You've declined this invitation. No action is needed.
-      </p>
-    </div>
-
-    <!-- Error: expired -->
-    <div v-else-if="fetchError?.statusCode === 410" data-testid="error-expired">
-      <h1 class="mb-2 text-xl font-semibold">This invite has expired</h1>
-      <p class="text-gray-600">Ask a family member to send a new invite.</p>
-    </div>
-
-    <!-- Error: already accepted -->
+    <!-- Content -->
     <div
-      v-else-if="fetchError?.statusCode === 409"
-      data-testid="error-accepted"
+      class="relative z-10 flex min-h-screen items-center justify-center px-6 py-12"
     >
-      <h1 class="mb-2 text-xl font-semibold">Already connected</h1>
-      <p class="text-gray-600">You're already a member of this family.</p>
-      <DesignSystemButton to="/dashboard" class="mt-4"
-        >Go to dashboard</DesignSystemButton
-      >
-    </div>
+      <div class="w-full max-w-lg">
+        <!-- Card -->
+        <div
+          class="rounded-2xl border border-white/20 bg-white/95 p-8 shadow-2xl backdrop-blur-xs"
+        >
+          <!-- Header -->
+          <div class="mb-8 text-center">
+            <img
+              src="~/assets/logos/recruiting-compass-stacked.svg"
+              alt="The Recruiting Compass - Find your path, make your move"
+              class="mx-auto w-80"
+            />
+          </div>
 
-    <!-- Error: not found or other -->
-    <div v-else-if="fetchStatus === 'error'" data-testid="error-not-found">
-      <h1 class="mb-2 text-xl font-semibold">Invite not found</h1>
-      <p class="text-gray-600">This link may be invalid or already used.</p>
-    </div>
+          <!-- Loading -->
+          <div
+            v-if="fetchStatus === 'pending'"
+            data-testid="loading"
+            class="text-center text-slate-600"
+          >
+            Loading invite…
+          </div>
 
-    <!-- Valid invite -->
-    <div v-else-if="invite">
-      <h1 class="mb-1 text-2xl font-semibold">
-        You're invited to join {{ invite.familyName }}'s recruiting journey
-      </h1>
-      <p class="mb-6 text-gray-600">
-        A family member has invited you as a {{ invite.role }}.
-      </p>
+          <!-- Declined -->
+          <div
+            v-else-if="fetchStatus === 'declined'"
+            data-testid="invite-declined"
+            class="text-center"
+          >
+            <h1 class="text-lg font-semibold text-slate-900">
+              Invitation declined
+            </h1>
+            <p class="mt-2 text-sm text-slate-600">
+              You've declined this invitation. No action is needed.
+            </p>
+          </div>
+
+          <!-- Error: expired -->
+          <div
+            v-else-if="fetchError?.statusCode === 410"
+            data-testid="error-expired"
+            class="rounded-lg border border-red-200 bg-red-50 p-6 text-center"
+          >
+            <h1 class="text-lg font-semibold text-red-900">
+              This invite has expired
+            </h1>
+            <p class="mt-2 text-sm text-red-800">
+              Ask a family member to send a new invite.
+            </p>
+          </div>
+
+          <!-- Error: already accepted -->
+          <div
+            v-else-if="fetchError?.statusCode === 409"
+            data-testid="error-accepted"
+            class="text-center"
+          >
+            <h1 class="text-lg font-semibold text-slate-900">
+              Already connected
+            </h1>
+            <p class="mt-2 text-sm text-slate-600">
+              You're already a member of this family.
+            </p>
+            <DesignSystemButton to="/dashboard" class="mt-4"
+              >Go to dashboard</DesignSystemButton
+            >
+          </div>
+
+          <!-- Error: not found or other -->
+          <div
+            v-else-if="fetchStatus === 'error'"
+            data-testid="error-not-found"
+            class="rounded-lg border border-red-200 bg-red-50 p-6 text-center"
+          >
+            <h1 class="text-lg font-semibold text-red-900">
+              Invite not found
+            </h1>
+            <p class="mt-2 text-sm text-red-800">
+              This link may be invalid or already used.
+            </p>
+          </div>
+
+          <!-- Valid invite -->
+          <div v-else-if="invite">
+            <h1 class="text-xl font-bold text-slate-900">
+              You're invited to join {{ invite.familyName }}'s recruiting
+              journey
+            </h1>
+            <p class="mt-2 text-sm text-slate-600">
+              A family member has invited you as a {{ invite.role }}.
+            </p>
 
       <!-- Already authenticated: just confirm -->
       <div v-if="userStore.isAuthenticated">
@@ -578,6 +649,9 @@ async function decline() {
               Decline invitation
             </DesignSystemButton>
           </div>
+        </div>
+      </div>
+    </div>
         </div>
       </div>
     </div>

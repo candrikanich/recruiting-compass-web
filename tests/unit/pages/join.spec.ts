@@ -380,7 +380,7 @@ describe("/join page", () => {
         undefined, // pendingAdmin
         undefined, // onboardingStep1
         "valid-token-123", // inviteToken -- carried across the confirmation gap
-        undefined, // getFreshCaptchaToken
+        expect.any(Function), // getFreshCaptchaToken -- mints a fresh token before sign-in
         true, // skipVerificationEmail -- the accept endpoint stamps verification
       );
       expect(mockFetch).toHaveBeenCalledWith(
