@@ -44,6 +44,27 @@ describe("SignupForm wizard steps (13-17 player)", () => {
     expect(wrapper.find("#signup-graduation-year").exists()).toBe(false);
   });
 
+  it("does not advance past the account step when passwords don't match", async () => {
+    const wrapper = mount(SignupForm, {
+      props: {
+        ...baseProps,
+        email: "owen@example.com",
+        dateOfBirth: "2012-01-01",
+        password: "StrongPass123",
+        confirmPassword: "DifferentPass456",
+      },
+    });
+
+    const continueButton = wrapper.find('[data-testid="signup-step-continue"]');
+    expect(continueButton.attributes("disabled")).toBeDefined();
+
+    await continueButton.trigger("click");
+
+    expect(wrapper.find("#guardianEmail").exists()).toBe(false);
+    expect(wrapper.find("#signup-graduation-year").exists()).toBe(false);
+    expect(wrapper.find("#firstName").exists()).toBe(true);
+  });
+
   it("advancing past the guardian step via Skip emits an empty guardianEmail and reaches player-info", async () => {
     const wrapper = mount(SignupForm, {
       props: {

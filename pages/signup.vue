@@ -273,6 +273,7 @@ const {
   validate,
   validateField,
   clearErrors,
+  clearFieldError,
   hasErrors,
   setErrors,
 } = useFormValidation();
@@ -294,6 +295,15 @@ const validatePassword = async () => {
     password.value,
     SIGNUP_PASSWORD_SCHEMA.shape.password,
   );
+
+  if (confirmPassword.value && password.value !== confirmPassword.value) {
+    setErrors([
+      ...errors.value.filter((e) => e.field !== "confirmPassword"),
+      { field: "confirmPassword", message: "Passwords don't match" },
+    ]);
+  } else {
+    clearFieldError("confirmPassword");
+  }
 };
 
 // Clear terms error when checkbox is checked
