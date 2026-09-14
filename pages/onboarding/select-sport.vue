@@ -74,6 +74,11 @@ import { ref, onMounted } from "vue";
 import { usePreferenceManager } from "~/composables/usePreferenceManager";
 import { createClientLogger } from "~/utils/logger";
 import { SPORT_POSITIONS } from "~/utils/positions/canonical";
+// The bare <MultiSportFieldBackground /> tag silently resolves to nothing
+// without this — Nuxt auto-imports components/Auth/*.vue under the
+// Auth-prefixed tag; pages/signup.vue and pages/login.vue only work because
+// they import it explicitly.
+import MultiSportFieldBackground from "~/components/Auth/MultiSportFieldBackground.vue";
 
 const logger = createClientLogger("SelectSport");
 

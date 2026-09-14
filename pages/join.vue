@@ -7,6 +7,11 @@ import { useSupabase } from "~/composables/useSupabase";
 import { useAppToast } from "~/composables/useAppToast";
 import { suppressAutoFamilyCreateOnNextSignIn } from "~/composables/useAccountProvisioning";
 import type { UseActiveFamilyReturn } from "~/composables/useActiveFamily";
+// The bare <MultiSportFieldBackground /> tag silently resolves to nothing
+// without this — Nuxt auto-imports components/Auth/*.vue under the
+// Auth-prefixed tag; pages/signup.vue and pages/login.vue only work because
+// they import it explicitly.
+import MultiSportFieldBackground from "~/components/Auth/MultiSportFieldBackground.vue";
 
 definePageMeta({ auth: false, layout: "public" });
 
