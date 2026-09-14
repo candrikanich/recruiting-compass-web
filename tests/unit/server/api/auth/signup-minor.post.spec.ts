@@ -113,26 +113,34 @@ describe("POST /api/auth/signup-minor", () => {
     expect(mockSendGuardianClaimEmail).toHaveBeenCalledOnce();
   });
 
-  it("reports emailConfirmed:false when signUp() returns no session (confirmation required)", async () => {
+  it("reports emailConfirmed:false and session:null when signUp() returns no session (confirmation required)", async () => {
     // Default mockSignUp shape: no `session` key, matching a real environment
     // where email confirmation is required and Supabase withholds the session.
     const result = await call();
 
-    expect(result).toMatchObject({ emailConfirmed: false });
+    expect(result).toMatchObject({ emailConfirmed: false, session: null });
   });
 
-  it("reports emailConfirmed:true when signUp() returns a session (confirmation off)", async () => {
+  it("returns the session's access/refresh tokens when signUp() confirms immediately (confirmation off)", async () => {
     // Found live on QA: environments with email confirmation disabled confirm the
-    // account immediately and return a session from signUp() -- the client used to
-    // always route to /verify-email regardless, a dead end with no email ever sent.
+    // account immediately and return a session from signUp(). The client adopts
+    // these tokens directly (supabase.auth.setSession()) to land the player on
+    // their dashboard with no extra login step -- a boolean alone isn't enough
+    // for that, the client needs the actual tokens.
     mockSignUp.mockResolvedValueOnce({
-      data: { user: { id: "player-uuid" }, session: { access_token: "tok" } },
+      data: {
+        user: { id: "player-uuid" },
+        session: { access_token: "access-tok", refresh_token: "refresh-tok" },
+      },
       error: null,
     });
 
     const result = await call();
 
-    expect(result).toMatchObject({ emailConfirmed: true });
+    expect(result).toMatchObject({
+      emailConfirmed: true,
+      session: { access_token: "access-tok", refresh_token: "refresh-tok" },
+    });
   });
 
   it("puts the real date_of_birth in signUp metadata, so handle_new_user() writes it atomically", async () => {
