@@ -7,6 +7,15 @@ import { resolveGuardianLock } from "~/server/utils/guardianGate";
 export interface GuardianStatus {
   /** True when outbound features are locked — mirrors assertGuardianConfirmed exactly. */
   locked: boolean;
+  /**
+   * @deprecated True only while the latest guardian claim is itself outstanding
+   * (`status === "pending"`). Kept for the deployed iOS client's `GuardianStatus.pending`
+   * decode, which reads this as "is there an unconfirmed claim right now" — narrower than
+   * `locked`, which also covers a claim that was never created, expired, or revoked, and
+   * is overridden by family membership. Do not widen this back to mirror `locked`; that
+   * was the bug this field is fixing. Remove once iOS ships a `locked`-reading build.
+   */
+  pending: boolean;
   /** Obfuscated for display; the full address is never returned to the player. */
   guardianEmailMasked: string | null;
   expiresAt: string | null;
@@ -58,11 +67,12 @@ export default defineEventHandler(async (event): Promise<GuardianStatus> => {
       .maybeSingle();
 
     if (!claim) {
-      return { locked, guardianEmailMasked: null, expiresAt: null, status: "none" };
+      return { locked, pending: false, guardianEmailMasked: null, expiresAt: null, status: "none" };
     }
 
     return {
       locked,
+      pending: claim.status === "pending",
       guardianEmailMasked: maskEmail(claim.guardian_email),
       expiresAt: claim.expires_at,
       status: claim.status as GuardianStatus["status"],

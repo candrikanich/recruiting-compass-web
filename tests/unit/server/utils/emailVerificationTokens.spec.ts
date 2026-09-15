@@ -4,6 +4,8 @@ let mockTokenRow: Record<string, unknown> | null = null;
 let mockTokenUpdateCalls: Record<string, unknown>[] = [];
 let mockInsertCalls: Record<string, unknown>[] = [];
 let mockUsersUpdateCalls: Record<string, unknown>[] = [];
+let mockTokenUpdateError: { message: string } | null = null;
+let mockUsersUpdateError: { message: string } | null = null;
 
 vi.mock("~/server/utils/supabase", () => ({
   useSupabaseAdmin: vi.fn(() => ({
@@ -12,13 +14,19 @@ vi.mock("~/server/utils/supabase", () => ({
         return {
           update: (fields: Record<string, unknown>) => {
             mockTokenUpdateCalls.push(fields);
-            return {
-              eq: () => ({
-                is: () => ({
-                  is: async () => ({ error: null }),
-                }),
-              }),
-            };
+            // .eq(...) is awaitable on its own (the plain consume-token path)
+            // AND chains into .is(...).is(...) for the resend-invalidation
+            // path (issueVerificationToken double-guards on consumed_at AND
+            // invalidated_at), which must itself stay awaitable.
+            const isResult = Object.assign(
+              Promise.resolve({ error: mockTokenUpdateError }),
+              { is: async () => ({ error: mockTokenUpdateError }) },
+            );
+            const eqResult = Object.assign(
+              Promise.resolve({ error: mockTokenUpdateError }),
+              { is: () => isResult },
+            );
+            return { eq: () => eqResult };
           },
           insert: (fields: Record<string, unknown>) => {
             mockInsertCalls.push(fields);
@@ -38,8 +46,8 @@ vi.mock("~/server/utils/supabase", () => ({
             // .eq(...) is awaitable on its own AND chains into .is(...) for
             // the "only if still null" guard on the already_verified path.
             const eqResult = Object.assign(
-              Promise.resolve({ error: null }),
-              { is: async () => ({ error: null }) },
+              Promise.resolve({ error: mockUsersUpdateError }),
+              { is: async () => ({ error: mockUsersUpdateError }) },
             );
             return { eq: () => eqResult };
           },
@@ -61,6 +69,8 @@ describe("emailVerificationTokens", () => {
     mockTokenUpdateCalls = [];
     mockInsertCalls = [];
     mockUsersUpdateCalls = [];
+    mockTokenUpdateError = null;
+    mockUsersUpdateError = null;
   });
 
   it("issues a token with a 24h expiry and invalidates prior tokens first", async () => {
@@ -132,5 +142,50 @@ describe("emailVerificationTokens", () => {
     expect(mockUsersUpdateCalls[0]).toMatchObject({
       email_verified_at: expect.any(String),
     });
+  });
+
+  it("does not report verified when marking the token consumed fails", async () => {
+    mockTokenRow = {
+      user_id: "user-1",
+      expires_at: new Date(Date.now() + 1000).toISOString(),
+      consumed_at: null,
+    };
+    mockTokenUpdateError = { message: "connection reset" };
+
+    await expect(consumeVerificationToken("good")).rejects.toThrow(
+      "connection reset",
+    );
+    // Must not have gone on to stamp email_verified_at off an unconfirmed write.
+    expect(mockUsersUpdateCalls).toEqual([]);
+  });
+
+  it("does not report verified when stamping email_verified_at fails", async () => {
+    mockTokenRow = {
+      user_id: "user-1",
+      expires_at: new Date(Date.now() + 1000).toISOString(),
+      consumed_at: null,
+    };
+    mockUsersUpdateError = { message: "connection reset" };
+
+    await expect(consumeVerificationToken("good")).rejects.toThrow(
+      "connection reset",
+    );
+  });
+
+  it("does not report already_verified on retry when the profile write failed both times", async () => {
+    // First request: token gets marked consumed, then the users update
+    // throws (simulated by the caller not being modeled here — we start
+    // the retry from the post-consume state the first call would have left).
+    mockTokenRow = {
+      user_id: "user-1",
+      expires_at: new Date(Date.now() + 1000).toISOString(),
+      consumed_at: new Date().toISOString(),
+    };
+    mockUsersUpdateError = { message: "connection reset" };
+
+    // Retry lands in the already-consumed branch; its backfill also fails.
+    await expect(consumeVerificationToken("good")).rejects.toThrow(
+      "connection reset",
+    );
   });
 });

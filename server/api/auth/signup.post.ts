@@ -21,6 +21,34 @@ interface SignupBody {
 }
 
 /**
+ * Harmless pending-onboarding/invite fields the client is allowed to seed
+ * into user_metadata at signup — never privileged flags like `pending_admin`.
+ * `admin-profile.post.ts` never trusts unverified metadata for admin
+ * promotion (always requires a freshly validated adminToken), so this
+ * endpoint must never let a caller write metadata that pretends otherwise.
+ */
+const ALLOWED_METADATA_KEYS = new Set([
+  "pending_primary_sport",
+  "pending_graduation_year",
+  "pending_gender",
+  "pending_zip_code",
+  "pending_invite_token",
+]);
+
+function pickAllowedMetadata(
+  metadata: Record<string, string | boolean> | undefined,
+): Record<string, string> {
+  const allowed: Record<string, string> = {};
+  if (!metadata) return allowed;
+  for (const [key, value] of Object.entries(metadata)) {
+    if (ALLOWED_METADATA_KEYS.has(key) && typeof value === "string") {
+      allowed[key] = value;
+    }
+  }
+  return allowed;
+}
+
+/**
  * Server-side account creation for the adult signup path. Account creation
  * and email verification themselves live in createVerifiedAccount()
  * (server/utils/accountCreation.ts), shared with the 13-17 minor path
@@ -77,7 +105,7 @@ export default defineEventHandler(async (event) => {
     }
 
     const userMetadata: Record<string, string | boolean> = {
-      ...(metadata ?? {}),
+      ...pickAllowedMetadata(metadata),
       ...(fullName ? { full_name: fullName } : {}),
       ...(role ? { role } : {}),
       ...(dateOfBirth ? { date_of_birth: dateOfBirth } : {}),

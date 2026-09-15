@@ -48,12 +48,16 @@ function makeSupabaseMock({
   // the old code never cleared. Empty by default (clean delete).
   survivorIds = [],
   usersDeleteError,
+  // Makes the post-delete survivors SELECT itself fail (RLS denial, network
+  // blip) — must not be treated as proof no one survived.
+  verifyReadError,
 }: {
   lookupData?: { id: string } | null;
   lookupError?: object | null;
   deleteUserError?: object | null;
   survivorIds?: string[];
   usersDeleteError?: object | null;
+  verifyReadError?: { message: string } | null;
 } = {}) {
   const deleteUserMock = vi.fn().mockResolvedValue({
     error: deleteUserError ?? null,
@@ -73,7 +77,7 @@ function makeSupabaseMock({
         in: vi.fn().mockResolvedValue({
           data:
             table === "users" ? survivorIds.map((id) => ({ id })) : [],
-          error: null,
+          error: table === "users" ? (verifyReadError ?? null) : null,
         }),
       }),
       delete: vi.fn().mockReturnValue({
@@ -257,6 +261,32 @@ describe("POST /api/admin/bulk-delete-users", () => {
     expect(result.failed).toBe(1);
     expect(result.errors[0]).toMatchObject({ email: "user@example.com" });
     // The still-present user must not reach the auth-delete step at all.
+    expect(supabaseMock._deleteUserMock).not.toHaveBeenCalled();
+  });
+
+  it("reports failure, not success, when the post-delete survivors read itself errors", async () => {
+    // qodo finding: an errored survivors SELECT (RLS denial, network blip)
+    // must not be treated as proof no one survived. Old code destructured
+    // only `data` and ignored `error`, so an errored read (data: undefined ??
+    // []) produced an empty survivor set — a false success.
+    mockRequireAdmin.mockResolvedValue(makeAdminUser());
+    const supabaseMock = makeSupabaseMock({
+      lookupData: { id: "target-uuid" },
+      verifyReadError: { message: "permission denied for table users" },
+    });
+    mockUseSupabaseAdmin.mockReturnValue(
+      supabaseMock as ReturnType<typeof useSupabaseAdmin>,
+    );
+    mockReadBody.mockResolvedValue({ emails: ["user@example.com"] });
+
+    const { default: handler } =
+      await import("~/server/api/admin/bulk-delete-users.post");
+
+    const result = await handler(mockEvent);
+
+    expect(result.success).toBe(0);
+    expect(result.failed).toBe(1);
+    expect(result.errors[0]).toMatchObject({ email: "user@example.com" });
     expect(supabaseMock._deleteUserMock).not.toHaveBeenCalled();
   });
 

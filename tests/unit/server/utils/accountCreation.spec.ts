@@ -97,6 +97,21 @@ describe("createVerifiedAccount", () => {
     });
   });
 
+  it("still reports success when token issuance throws after account creation already succeeded", async () => {
+    mockIssueToken.mockRejectedValueOnce(
+      new Error("Failed to issue verification token: connection reset"),
+    );
+
+    const result = await createVerifiedAccount({} as never, {
+      email: "player@example.com",
+      password: "correct-horse-1",
+      userMetadata: {},
+    });
+
+    expect(mockSendVerification).not.toHaveBeenCalled();
+    expect(result).toEqual({ ok: true, userId: "user-1" });
+  });
+
   it("returns the same generic failure shape for an unrelated creation error", async () => {
     mockCreateUser.mockResolvedValueOnce({
       data: { user: null },

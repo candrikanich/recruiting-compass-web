@@ -237,12 +237,25 @@ export default defineEventHandler(
         );
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data: stillExists } = await (supabaseAdmin as any)
+      const { data: stillExists, error: verifyError } = await (
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        supabaseAdmin as any
+      )
         .from("users")
         .select("id")
         .eq("id", targetUserId)
         .maybeSingle();
+
+      if (verifyError) {
+        logger.error(
+          `Could not verify deletion of users row ${targetUserId} (${targetEmail}):`,
+          verifyError,
+        );
+        throw createError({
+          statusCode: 500,
+          statusMessage: `Could not confirm user deletion: verification read failed (${verifyError.message ?? "unknown database error"})`,
+        });
+      }
 
       if (stillExists) {
         logger.error(
