@@ -6,6 +6,7 @@ let mockInsertCalls: Record<string, unknown>[] = [];
 let mockUsersUpdateCalls: Record<string, unknown>[] = [];
 let mockTokenUpdateError: { message: string } | null = null;
 let mockUsersUpdateError: { message: string } | null = null;
+let mockUsersUpdateRows: Record<string, unknown>[] = [{ id: "user-1" }];
 
 vi.mock("~/server/utils/supabase", () => ({
   useSupabaseAdmin: vi.fn(() => ({
@@ -41,7 +42,13 @@ vi.mock("~/server/utils/supabase", () => ({
             // the "only if still null" guard on the already_verified path.
             const eqResult = Object.assign(
               Promise.resolve({ error: mockUsersUpdateError }),
-              { is: async () => ({ error: mockUsersUpdateError }) },
+              {
+                is: async () => ({ error: mockUsersUpdateError }),
+                select: async () => ({
+                  data: mockUsersUpdateError ? null : mockUsersUpdateRows,
+                  error: mockUsersUpdateError,
+                }),
+              },
             );
             return { eq: () => eqResult };
           },
@@ -65,6 +72,7 @@ describe("emailVerificationTokens", () => {
     mockUsersUpdateCalls = [];
     mockTokenUpdateError = null;
     mockUsersUpdateError = null;
+    mockUsersUpdateRows = [{ id: "user-1" }];
   });
 
   it("issues a token with a 24h expiry and invalidates prior tokens first", async () => {
@@ -167,6 +175,19 @@ describe("emailVerificationTokens", () => {
 
     await expect(consumeVerificationToken("good")).rejects.toThrow(
       "connection reset",
+    );
+  });
+
+  it("does not report verified when the profile update matches zero rows", async () => {
+    mockTokenRow = {
+      user_id: "user-1",
+      expires_at: new Date(Date.now() + 1000).toISOString(),
+      consumed_at: null,
+    };
+    mockUsersUpdateRows = [];
+
+    await expect(consumeVerificationToken("good")).rejects.toThrow(
+      /no matching user row/,
     );
   });
 });

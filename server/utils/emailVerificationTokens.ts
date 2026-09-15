@@ -76,13 +76,20 @@ export async function consumeVerificationToken(token: string): Promise<{
     throw new Error(`Failed to consume verification token: ${consumeError.message}`);
   }
 
-  const { error: verifyError } = await supabase
+  const { data: verifiedRows, error: verifyError } = await supabase
     .from("users")
     .update({ email_verified_at: new Date().toISOString() })
-    .eq("id", row.user_id);
+    .eq("id", row.user_id)
+    .select("id");
 
   if (verifyError) {
     throw new Error(`Failed to mark email verified: ${verifyError.message}`);
+  }
+
+  if (verifiedRows?.length !== 1) {
+    throw new Error(
+      `Failed to mark email verified: update matched no matching user row for user ${row.user_id}`,
+    );
   }
 
   return { status: "verified", userId: row.user_id };
