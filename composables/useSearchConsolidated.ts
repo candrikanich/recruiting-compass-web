@@ -192,7 +192,7 @@ export const useSearchConsolidated = () => {
           select: "*",
           filters: filterObj,
           search: {
-            columns: ["name", "city", "state"],
+            columns: ["name", "address", "city", "state"],
             term: trimmed,
           },
           limit: 20,

@@ -340,6 +340,22 @@ describe("useSearchConsolidated (extended)", () => {
       expect(call?.[1].filters).not.toHaveProperty("user_id");
     });
 
+    it("school ILIKE fallback (<3 char) searches address alongside name/city/state", async () => {
+      const c = useSearchConsolidated();
+      c.searchType.value = "schools";
+      querySelectMock.mockResolvedValue(ok([]));
+
+      await c.performSearch("x");
+      await flushDebounce();
+
+      const call = querySelectMock.mock.calls.find(
+        (args) => args[0] === "schools",
+      );
+      expect(call?.[1].search?.columns).toEqual(
+        expect.arrayContaining(["name", "address", "city", "state"]),
+      );
+    });
+
     // `verified` has no search_schools_fts RPC param and is no longer
     // threaded into the ILIKE fallback's filterObj either — see
     // composables/useSearchConsolidated.ts#searchSchools (#606).
