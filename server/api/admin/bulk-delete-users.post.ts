@@ -113,39 +113,87 @@ export default defineEventHandler(
               .eq("email", targetEmail)
               .single();
 
-          if (getUserError || !targetUserData?.id) {
-            return { resolved: false, email: targetEmail } as const;
+          // PGRST116 = zero rows matched: a confirmed absence, not a lookup
+          // failure. An earlier bulk-delete run can leave this state if the
+          // public.users delete succeeded but the auth deletion below it
+          // didn't (crash, transient error) — the row is gone but the auth
+          // account survives. Only treat a confirmed absence as a candidate
+          // for auth-only recovery; any other error must stay "failed" so a
+          // retry doesn't silently skip it again. Check the error before the
+          // data: a non-PGRST116 error means the data can't be trusted.
+          if (getUserError && getUserError.code !== "PGRST116") {
+            return { status: "lookup-error", email: targetEmail } as const;
           }
-          return {
-            resolved: true,
-            email: targetEmail,
-            id: targetUserData.id,
-          } as const;
+          if (!getUserError && targetUserData?.id) {
+            return {
+              status: "resolved",
+              email: targetEmail,
+              id: targetUserData.id,
+            } as const;
+          }
+          return { status: "absent", email: targetEmail } as const;
         }),
       );
 
       const resolvedUsers: Array<{ email: string; id: string }> = [];
+      const absentEmails: string[] = [];
 
       resolutionResults.forEach((result, index) => {
-        if (result.status === "fulfilled") {
-          if (result.value.resolved) {
-            resolvedUsers.push({
-              email: result.value.email,
-              id: result.value.id,
-            });
-          } else {
-            errors.push({
-              email: result.value.email,
-              reason: "User not found",
-            });
-          }
-        } else {
+        if (result.status !== "fulfilled") {
           errors.push({
             email: normalizedEmails[index],
             reason: "Resolution failed",
           });
+          return;
+        }
+
+        const value = result.value;
+        if (value.status === "resolved") {
+          resolvedUsers.push({ email: value.email, id: value.id });
+        } else if (value.status === "absent") {
+          absentEmails.push(value.email);
+        } else {
+          errors.push({ email: value.email, reason: "Resolution failed" });
         }
       });
+
+      // Recover auth-only accounts: confirmed absent from public.users, but
+      // may still exist in the auth system from a prior partial delete.
+      // One listUsers call covers every absent email in this batch.
+      const authOnlyUsers: Array<{ email: string; id: string }> = [];
+      if (absentEmails.length > 0) {
+        try {
+          const { data: authUserData, error: authListError } =
+            await supabaseAdmin.auth.admin.listUsers();
+
+          if (authListError) {
+            throw authListError;
+          }
+
+          const authUsersByEmail = new Map(
+            (authUserData?.users ?? [])
+              .filter((u) => u.email)
+              .map((u) => [u.email as string, u.id]),
+          );
+
+          for (const email of absentEmails) {
+            const authId = authUsersByEmail.get(email);
+            if (authId) {
+              authOnlyUsers.push({ email, id: authId });
+            } else {
+              errors.push({ email, reason: "User not found" });
+            }
+          }
+        } catch (authLookupError) {
+          logger.warn(
+            "Failed to resolve auth-only users for absent emails:",
+            authLookupError,
+          );
+          for (const email of absentEmails) {
+            errors.push({ email, reason: "User not found" });
+          }
+        }
+      }
 
       if (resolvedUsers.length > 0) {
         const targetUserIds = resolvedUsers.map((u) => u.id);
@@ -198,10 +246,15 @@ export default defineEventHandler(
             logger.warn(`Error deleting from ${table}:`, error);
           }
         }
+      }
 
-        // Delete each user from the auth system and record results
+      // Delete each user from the auth system and record results. Includes
+      // authOnlyUsers, whose public.users row is already gone — no table
+      // deletes needed for them, just the auth cleanup a prior run missed.
+      const authTargets = [...resolvedUsers, ...authOnlyUsers];
+      if (authTargets.length > 0) {
         await Promise.all(
-          resolvedUsers.map(
+          authTargets.map(
             async ({ email: targetEmail, id: targetUserId }) => {
               try {
                 if (supabaseAdmin.auth.admin?.deleteUser) {
