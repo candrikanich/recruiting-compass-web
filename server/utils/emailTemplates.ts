@@ -106,7 +106,7 @@ export function wrapEmailLayout(
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="trc-email-card" style="max-width:560px;background:#ffffff;border-radius:12px;overflow:hidden;">
             <tr>
               <td style="padding:24px 32px 0 32px;text-align:left;">
-                <img src="${logoUrl()}" alt="The Recruiting Compass" height="28" style="display:block;" />
+                <img src="${logoUrl()}" alt="The Recruiting Compass" height="40" style="display:block;" />
               </td>
             </tr>
             <tr>
