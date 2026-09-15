@@ -116,6 +116,7 @@ type TurnstileGlobal = {
   ) => string;
   reset: (widgetId?: string) => void;
   execute: (widgetId?: string) => void;
+  remove: (widgetId?: string) => void;
 };
 
 // Turnstile tokens are single-use and expire (~5 min) — replaying a stale or
@@ -185,10 +186,35 @@ async function mountTurnstile(
   }
 }
 
+// authMode toggles the login/signup sections with v-if/v-else, which
+// unmounts one section's Turnstile container div while the other mounts.
+// Without this, the widget id ref stays set after its element is gone —
+// blocking the mount watcher's guard from ever re-rendering the widget, and
+// leaving a stale widget registered against a detached DOM node.
+function unmountTurnstile(
+  widgetId: typeof turnstileLoginWidgetId,
+  tokenRef?: typeof turnstileToken,
+) {
+  const w = window as unknown as { turnstile?: TurnstileGlobal };
+  if (widgetId.value && w.turnstile) {
+    try {
+      w.turnstile.remove(widgetId.value);
+    } catch {
+      // Best-effort cleanup — a removed widget id is harmless to leave stale.
+    }
+  }
+  widgetId.value = undefined;
+  if (tokenRef) tokenRef.value = undefined;
+}
+
 watch(
   [turnstileEnabled, turnstileLoginEl],
-  ([enabled, el]) => {
-    if (!enabled || !el || turnstileLoginWidgetId.value) return;
+  ([enabled, el], [, prevEl]) => {
+    if (!el) {
+      if (prevEl) unmountTurnstile(turnstileLoginWidgetId, turnstileToken);
+      return;
+    }
+    if (!enabled || turnstileLoginWidgetId.value) return;
     mountTurnstile(el, "join-login", turnstileLoginWidgetId);
   },
   { flush: "post" },
@@ -196,8 +222,12 @@ watch(
 
 watch(
   [turnstileEnabled, turnstileSignupEl],
-  ([enabled, el]) => {
-    if (!enabled || !el || turnstileSignupWidgetId.value) return;
+  ([enabled, el], [, prevEl]) => {
+    if (!el) {
+      if (prevEl) unmountTurnstile(turnstileSignupWidgetId, turnstileToken);
+      return;
+    }
+    if (!enabled || turnstileSignupWidgetId.value) return;
     mountTurnstile(el, "join-signup", turnstileSignupWidgetId);
   },
   { flush: "post" },
@@ -217,8 +247,13 @@ const turnstileSessionToken = ref<string | undefined>(undefined);
 
 watch(
   [turnstileEnabled, turnstileSessionEl],
-  async ([enabled, el]) => {
-    if (!enabled || !el || turnstileSessionWidgetId.value) return;
+  async ([enabled, el], [, prevEl]) => {
+    if (!el) {
+      if (prevEl)
+        unmountTurnstile(turnstileSessionWidgetId, turnstileSessionToken);
+      return;
+    }
+    if (!enabled || turnstileSessionWidgetId.value) return;
     try {
       await loadTurnstileScript();
       const w = window as unknown as { turnstile?: TurnstileGlobal };
