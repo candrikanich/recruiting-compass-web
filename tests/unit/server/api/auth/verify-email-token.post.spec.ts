@@ -74,6 +74,14 @@ describe("POST /api/auth/verify-email/:token", () => {
     ).rejects.toMatchObject({ statusCode: 410 });
   });
 
+  it("returns 410 for a token invalidated by a resend", async () => {
+    mockConsume.mockResolvedValue({ status: "invalidated", userId: "user-1" });
+
+    await expect(
+      handler({} as Parameters<typeof handler>[0]),
+    ).rejects.toMatchObject({ statusCode: 410 });
+  });
+
   it("returns 404 for an unknown token", async () => {
     mockConsume.mockResolvedValue({ status: "not_found" });
 
