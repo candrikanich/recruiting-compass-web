@@ -19,6 +19,7 @@ let mockFamilyMembership: { value: { family_unit_id: string } | null } = { value
 let mockFamilyHasParent: { value: boolean } = { value: false };
 
 const mockInsert = vi.fn(async () => ({ error: mockInsertError }));
+const mockUpdate = vi.fn(() => ({ eq: async () => ({ error: null }) }));
 
 // All vi.mock calls first
 vi.mock("~/server/utils/auth", () => ({
@@ -78,7 +79,7 @@ vi.mock("~/server/utils/supabase", () => ({
           }),
         }),
         insert: mockInsert,
-        update: () => ({ eq: async () => ({ error: null }) }),
+        update: mockUpdate,
       };
     },
   })),
@@ -198,6 +199,56 @@ describe("POST /api/guardian/resend — no existing claim", () => {
     mockBody = { guardianEmail: "newparent@example.com" };
 
     await expect(handler(fakeEvent)).rejects.toMatchObject({ statusCode: 403 });
+    expect(mockInsert).not.toHaveBeenCalled();
+  });
+});
+
+describe("POST /api/guardian/resend — expired pending claim", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockInsertError = null;
+    mockFamilyMembership = { value: null };
+    mockFamilyHasParent = { value: false };
+    mockUserRow = {
+      value: {
+        role: "player",
+        date_of_birth: "2012-01-01",
+        guardian_consent_at: null,
+        full_name: "Player One",
+      },
+    };
+    mockExistingClaim = {
+      value: {
+        id: "claim-1",
+        guardian_email: "oldparent@example.com",
+        token: "old-token",
+        status: "pending",
+        expires_at: "2020-01-01T00:00:00.000Z",
+        reminder_count: 0,
+      },
+    };
+    mockBody = { guardianEmail: "newparent@example.com" };
+  });
+
+  it("expires the stale row and issues a fresh claim instead of rejecting", async () => {
+    const result = await handler(fakeEvent);
+
+    expect(result).toEqual({ success: true });
+    expect(mockUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({ status: "expired" }),
+    );
+    expect(mockInsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        player_user_id: "player-1",
+        guardian_email: "newparent@example.com",
+      }),
+    );
+  });
+
+  it("still requires a guardian email since the old claim is no longer usable", async () => {
+    mockBody = {};
+
+    await expect(handler(fakeEvent)).rejects.toMatchObject({ statusCode: 400 });
     expect(mockInsert).not.toHaveBeenCalled();
   });
 });
