@@ -12,6 +12,8 @@ const mockIssueToken = vi.fn(async () => ({
   expiresAt: "2026-09-16T00:00:00.000Z",
 }));
 const mockSendVerification = vi.fn(async () => ({ success: true }));
+const mockInvalidateOutstanding = vi.fn(async () => undefined);
+const mockDiscardToken = vi.fn(async () => undefined);
 
 vi.mock("~/server/utils/auth", () => ({
   requireAuth: vi.fn(async () => ({
@@ -21,6 +23,8 @@ vi.mock("~/server/utils/auth", () => ({
 }));
 vi.mock("~/server/utils/emailVerificationTokens", () => ({
   issueVerificationToken: mockIssueToken,
+  invalidateOutstandingTokens: mockInvalidateOutstanding,
+  discardVerificationToken: mockDiscardToken,
 }));
 vi.mock("~/server/utils/emailService", () => ({
   sendVerificationEmail: mockSendVerification,
@@ -74,15 +78,50 @@ describe("POST /api/auth/verify-email/resend", () => {
     mockSendVerification.mockResolvedValue({ success: true });
   });
 
-  it("issues a new token and re-sends for the authenticated user", async () => {
+  it("issues a new token (without invalidating the prior one yet) and re-sends for the authenticated user", async () => {
     const result = await handler({} as Parameters<typeof handler>[0]);
 
     expect(requireAuth).toHaveBeenCalled();
-    expect(mockIssueToken).toHaveBeenCalledWith("user-1");
+    expect(mockIssueToken).toHaveBeenCalledWith("user-1", {
+      invalidatePrior: false,
+    });
     expect(mockSendVerification).toHaveBeenCalledWith(
       expect.objectContaining({ to: "parent@example.com", token: "tok-2" }),
     );
     expect(result).toEqual({ success: true });
+  });
+
+  it("invalidates the prior token only after the send succeeds", async () => {
+    await handler({} as Parameters<typeof handler>[0]);
+
+    expect(mockInvalidateOutstanding).toHaveBeenCalledWith("user-1", "tok-2");
+    expect(mockDiscardToken).not.toHaveBeenCalled();
+  });
+
+  it("throws instead of reporting success when the email fails to send", async () => {
+    mockSendVerification.mockResolvedValue({
+      success: false,
+      error: "resend-api-down",
+    });
+
+    await expect(
+      handler({} as Parameters<typeof handler>[0]),
+    ).rejects.toThrow();
+
+    expect(mockInvalidateOutstanding).not.toHaveBeenCalled();
+  });
+
+  it("discards the newly-issued token on send failure so the prior link stays valid", async () => {
+    mockSendVerification.mockResolvedValue({
+      success: false,
+      error: "resend-api-down",
+    });
+
+    await expect(
+      handler({} as Parameters<typeof handler>[0]),
+    ).rejects.toThrow();
+
+    expect(mockDiscardToken).toHaveBeenCalledWith("tok-2");
   });
 
   it("rate-limits by the authenticated user id", async () => {
