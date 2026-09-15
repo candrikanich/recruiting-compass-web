@@ -66,7 +66,7 @@ describe("GET /api/guardian/status", () => {
     mockFamilyHasParent.value = false;
   });
 
-  it("returns status 'none' and locked:true for a 13-17 player who never named a guardian", async () => {
+  it("returns status 'none', locked:true, pending:false for a 13-17 player who never named a guardian (no claim outstanding)", async () => {
     mockUserRow.value = { role: "player", date_of_birth: "2012-01-01", guardian_consent_at: null };
     mockClaimRow.value = null;
 
@@ -74,22 +74,14 @@ describe("GET /api/guardian/status", () => {
 
     expect(result).toEqual({
       locked: true,
-      pending: true,
+      pending: false,
       guardianEmailMasked: null,
       expiresAt: null,
       status: "none",
     });
   });
 
-  it("mirrors `pending` to `locked` for the deployed iOS client's decode", async () => {
-    mockUserRow.value = { role: "player", date_of_birth: "2000-01-01", guardian_consent_at: null };
-
-    const result = await statusHandler(fakeEvent);
-
-    expect(result.pending).toBe(result.locked);
-  });
-
-  it("returns status 'pending' and locked:true for an outstanding claim", async () => {
+  it("returns status 'pending', locked:true, pending:true for an outstanding claim", async () => {
     mockUserRow.value = { role: "player", date_of_birth: "2012-01-01", guardian_consent_at: null };
     mockClaimRow.value = {
       guardian_email: "parent@example.com",
@@ -101,10 +93,42 @@ describe("GET /api/guardian/status", () => {
 
     expect(result.status).toBe("pending");
     expect(result.locked).toBe(true);
+    expect(result.pending).toBe(true);
     expect(result.guardianEmailMasked).toBe("p****@example.com");
   });
 
-  it("returns locked:false once guardian_consent_at is stamped, even with a stale claim row", async () => {
+  it("decouples pending from locked for an expired claim — still locked, but nothing is outstanding", async () => {
+    mockUserRow.value = { role: "player", date_of_birth: "2012-01-01", guardian_consent_at: null };
+    mockClaimRow.value = {
+      guardian_email: "parent@example.com",
+      status: "expired",
+      expires_at: "2026-01-01T00:00:00.000Z",
+    };
+
+    const result = await statusHandler(fakeEvent);
+
+    expect(result.status).toBe("expired");
+    expect(result.locked).toBe(true);
+    expect(result.pending).toBe(false);
+  });
+
+  it("decouples pending from locked for a family-membership override with a still-outstanding claim", async () => {
+    mockUserRow.value = { role: "player", date_of_birth: "2012-01-01", guardian_consent_at: null };
+    mockClaimRow.value = {
+      guardian_email: "parent@example.com",
+      status: "pending",
+      expires_at: "2026-11-01T00:00:00.000Z",
+    };
+    mockFamilyMembership.value = { family_unit_id: "family-1" };
+    mockFamilyHasParent.value = true;
+
+    const result = await statusHandler(fakeEvent);
+
+    expect(result.locked).toBe(false);
+    expect(result.pending).toBe(true);
+  });
+
+  it("returns locked:false, pending:false once guardian_consent_at is stamped, even with a stale claim row", async () => {
     mockUserRow.value = {
       role: "player",
       date_of_birth: "2012-01-01",
@@ -119,6 +143,7 @@ describe("GET /api/guardian/status", () => {
     const result = await statusHandler(fakeEvent);
 
     expect(result.locked).toBe(false);
+    expect(result.pending).toBe(false);
     expect(result.status).toBe("claimed");
   });
 
