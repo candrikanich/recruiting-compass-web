@@ -980,6 +980,39 @@ export type Database = {
         };
         Relationships: [];
       };
+      email_events: {
+        Row: {
+          created_at: string;
+          event_type: string;
+          id: string;
+          message_id: string;
+          occurred_at: string;
+          raw_payload: Json;
+          recipient_email: string | null;
+          subject: string | null;
+        };
+        Insert: {
+          created_at?: string;
+          event_type: string;
+          id?: string;
+          message_id: string;
+          occurred_at: string;
+          raw_payload: Json;
+          recipient_email?: string | null;
+          subject?: string | null;
+        };
+        Update: {
+          created_at?: string;
+          event_type?: string;
+          id?: string;
+          message_id?: string;
+          occurred_at?: string;
+          raw_payload?: Json;
+          recipient_email?: string | null;
+          subject?: string | null;
+        };
+        Relationships: [];
+      };
       email_optouts: {
         Row: {
           created_at: string;
@@ -994,6 +1027,66 @@ export type Database = {
           email?: string;
         };
         Relationships: [];
+      };
+      email_sends: {
+        Row: {
+          created_at: string;
+          entity_id: string | null;
+          entity_type: string | null;
+          error: string | null;
+          family_unit_id: string | null;
+          id: string;
+          message_id: string | null;
+          purpose: string;
+          recipient_email: string;
+          subject: string | null;
+          success: boolean;
+          user_id: string | null;
+        };
+        Insert: {
+          created_at?: string;
+          entity_id?: string | null;
+          entity_type?: string | null;
+          error?: string | null;
+          family_unit_id?: string | null;
+          id?: string;
+          message_id?: string | null;
+          purpose: string;
+          recipient_email: string;
+          subject?: string | null;
+          success: boolean;
+          user_id?: string | null;
+        };
+        Update: {
+          created_at?: string;
+          entity_id?: string | null;
+          entity_type?: string | null;
+          error?: string | null;
+          family_unit_id?: string | null;
+          id?: string;
+          message_id?: string | null;
+          purpose?: string;
+          recipient_email?: string;
+          subject?: string | null;
+          success?: boolean;
+          user_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "email_sends_family_unit_id_fkey";
+            columns: ["family_unit_id"];
+            isOneToOne: false;
+            referencedRelation: "family_units";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "email_sends_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       email_verification_tokens: {
         Row: {
@@ -1023,8 +1116,6 @@ export type Database = {
           token?: string;
           user_id?: string;
         };
-        // FK targets auth.users, not public.users — not representable in
-        // this generator's Relationships array (cross-schema).
         Relationships: [];
       };
       events: {
@@ -2871,6 +2962,7 @@ export type Database = {
           questionnaire_completed_at: string | null;
           recruiting_approach: string | null;
           school_colors: string[] | null;
+          search_vector: unknown;
           state: string | null;
           status: Database["public"]["Enums"]["school_status"] | null;
           status_changed_at: string | null;
@@ -2913,6 +3005,7 @@ export type Database = {
           questionnaire_completed_at?: string | null;
           recruiting_approach?: string | null;
           school_colors?: string[] | null;
+          search_vector?: unknown;
           state?: string | null;
           status?: Database["public"]["Enums"]["school_status"] | null;
           status_changed_at?: string | null;
@@ -2955,6 +3048,7 @@ export type Database = {
           questionnaire_completed_at?: string | null;
           recruiting_approach?: string | null;
           school_colors?: string[] | null;
+          search_vector?: unknown;
           state?: string | null;
           status?: Database["public"]["Enums"]["school_status"] | null;
           status_changed_at?: string | null;
@@ -3768,6 +3862,13 @@ export type Database = {
         Args: { target_user: string };
         Returns: boolean;
       };
+      consume_email_verification_token: {
+        Args: { p_token: string };
+        Returns: {
+          status: string;
+          user_id: string;
+        }[];
+      };
       create_audit_log: {
         Args: {
           p_action: string;
@@ -3856,6 +3957,63 @@ export type Database = {
         Returns: Database["public"]["Enums"]["school_status"];
       };
       safe_jsonb_extract: { Args: { key: string; obj: Json }; Returns: Json };
+      search_schools_fts: {
+        Args: {
+          p_division?: string;
+          p_limit?: number;
+          p_search_term: string;
+          p_state?: string;
+        };
+        Returns: {
+          academic_info: Json | null;
+          amenities: Json | null;
+          athletics_url: string | null;
+          city: string | null;
+          coaching_philosophy: string | null;
+          coaching_style: string | null;
+          communication_style: string | null;
+          conference: string | null;
+          cons: string[] | null;
+          created_at: string | null;
+          created_by: string | null;
+          division: Database["public"]["Enums"]["school_division"] | null;
+          family_unit_id: string | null;
+          favicon_url: string | null;
+          fit_reason: string | null;
+          fit_tier: string | null;
+          id: string;
+          instagram_handle: string | null;
+          is_favorite: boolean | null;
+          location: string | null;
+          mascot: string | null;
+          name: string;
+          notes: string | null;
+          offer_details: Json | null;
+          phone: string | null;
+          pros: string[] | null;
+          questionnaire_completed: boolean;
+          questionnaire_completed_at: string | null;
+          recruiting_approach: string | null;
+          school_colors: string[] | null;
+          search_vector: unknown;
+          state: string | null;
+          status: Database["public"]["Enums"]["school_status"] | null;
+          status_changed_at: string | null;
+          success_metrics: string | null;
+          twitter_handle: string | null;
+          updated_at: string | null;
+          updated_by: string | null;
+          user_id: string;
+          website: string | null;
+          why_program: string | null;
+        }[];
+        SetofOptions: {
+          from: "*";
+          to: "schools";
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
       set_athlete_profile_photo: {
         Args: { athlete_id: string; photo_url: string };
         Returns: undefined;
