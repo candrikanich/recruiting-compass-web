@@ -169,4 +169,21 @@ describe("emailVerificationTokens", () => {
       "connection reset",
     );
   });
+
+  it("does not report already_verified on retry when the profile write failed both times", async () => {
+    // First request: token gets marked consumed, then the users update
+    // throws (simulated by the caller not being modeled here — we start
+    // the retry from the post-consume state the first call would have left).
+    mockTokenRow = {
+      user_id: "user-1",
+      expires_at: new Date(Date.now() + 1000).toISOString(),
+      consumed_at: new Date().toISOString(),
+    };
+    mockUsersUpdateError = { message: "connection reset" };
+
+    // Retry lands in the already-consumed branch; its backfill also fails.
+    await expect(consumeVerificationToken("good")).rejects.toThrow(
+      "connection reset",
+    );
+  });
 });
