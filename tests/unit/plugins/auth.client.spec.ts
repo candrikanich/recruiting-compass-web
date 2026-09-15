@@ -11,8 +11,10 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 global.defineNuxtPlugin = (fn: (ctx: unknown) => unknown) => fn;
 
 type AuthSession = { user: { id: string } } | undefined;
-let authStateCallback: (event: string, session?: AuthSession) => void =
-  () => {};
+let authStateCallback: (
+  event: string,
+  session?: AuthSession,
+) => void = () => {};
 const mockOnAuthStateChange = vi.fn(
   (cb: (event: string, session?: AuthSession) => void) => {
     authStateCallback = cb;

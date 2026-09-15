@@ -48,9 +48,7 @@ export default defineEventHandler(async (event) =>
     const { data: schools, error } = (await supabase
       .from("schools")
       .select("id, name, mascot, athletics_url, school_colors")
-      .or(
-        "mascot.is.null,athletics_url.is.null,school_colors.is.null",
-      )) as {
+      .or("mascot.is.null,athletics_url.is.null,school_colors.is.null")) as {
       data: SchoolRow[] | null;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       error: any;

@@ -8,19 +8,30 @@ export interface GuardianStatus {
   /** True when outbound features are locked — mirrors assertGuardianConfirmed exactly. */
   locked: boolean;
   /**
-   * @deprecated True only while the latest guardian claim is itself outstanding
-   * (`status === "pending"`). Kept for the deployed iOS client's `GuardianStatus.pending`
-   * decode, which reads this as "is there an unconfirmed claim right now" — narrower than
-   * `locked`, which also covers a claim that was never created, expired, or revoked, and
-   * is overridden by family membership. Do not widen this back to mirror `locked`; that
-   * was the bug this field is fixing. Remove once iOS ships a `locked`-reading build.
+   * @deprecated Alias of `locked`, kept for the deployed iOS client's `GuardianStatus.pending`
+   * decode — that build enforces restrictions off this field, not `locked`, so it MUST mirror
+   * `locked` exactly (PR #839). A prior change (#845) narrowed this to `claim.status ===
+   * "pending"`, which unlocks the deployed client whenever `locked` is true but the claim has
+   * expired/was never created — an enforcement bypass. Use `claimOutstanding` for "is there a
+   * live unconfirmed claim right now" instead. Remove `pending` once iOS ships a
+   * `locked`-reading build.
    */
   pending: boolean;
+  /** True only while the latest guardian claim is itself outstanding and unexpired. Display-only — never gates enforcement. */
+  claimOutstanding: boolean;
   /** Obfuscated for display; the full address is never returned to the player. */
   guardianEmailMasked: string | null;
   expiresAt: string | null;
   status: "none" | "pending" | "claimed" | "expired" | "revoked";
 }
+
+/** A stored "pending" claim whose expires_at has elapsed is effectively expired, even if no cron has flipped the row yet. */
+const effectiveStatus = (claim: { status: string; expires_at: string }): GuardianStatus["status"] => {
+  if (claim.status === "pending" && new Date(claim.expires_at).getTime() <= Date.now()) {
+    return "expired";
+  }
+  return claim.status as GuardianStatus["status"];
+};
 
 /** p****@example.com — enough for the player to recognize the address, not to read it back. */
 const maskEmail = (email: string): string => {
@@ -67,15 +78,18 @@ export default defineEventHandler(async (event): Promise<GuardianStatus> => {
       .maybeSingle();
 
     if (!claim) {
-      return { locked, pending: false, guardianEmailMasked: null, expiresAt: null, status: "none" };
+      return { locked, pending: locked, claimOutstanding: false, guardianEmailMasked: null, expiresAt: null, status: "none" };
     }
+
+    const status = effectiveStatus(claim);
 
     return {
       locked,
-      pending: claim.status === "pending",
+      pending: locked,
+      claimOutstanding: status === "pending",
       guardianEmailMasked: maskEmail(claim.guardian_email),
       expiresAt: claim.expires_at,
-      status: claim.status as GuardianStatus["status"],
+      status,
     };
   } catch (err) {
     if (err instanceof Error && "statusCode" in err) throw err;

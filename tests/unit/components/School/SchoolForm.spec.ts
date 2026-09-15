@@ -229,9 +229,7 @@ describe("SchoolForm", () => {
       const wrapper = mountForm();
       expect(wrapper.find("#mascot").exists()).toBe(true);
       expect(wrapper.find("#athleticswebsite").exists()).toBe(true);
-      expect(
-        wrapper.find('input[placeholder="#RRGGBB"]').exists(),
-      ).toBe(true);
+      expect(wrapper.find('input[placeholder="#RRGGBB"]').exists()).toBe(true);
       expect(
         wrapper.find('input[placeholder="#RRGGBB (optional)"]').exists(),
       ).toBe(true);

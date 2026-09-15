@@ -15,8 +15,14 @@ vi.mock("~/server/utils/supabase", () => ({
         return {
           update: (fields: Record<string, unknown>) => {
             mockTokenUpdateCalls.push(fields);
-            const eqResult = Object.assign(Promise.resolve({ error: null }), {
+            // issueVerificationToken chains .eq(...).is(...).is(...) to
+            // double-guard on consumed_at AND invalidated_at when
+            // invalidating a prior token on resend.
+            const isResult = Object.assign(Promise.resolve({ error: null }), {
               is: async () => ({ error: null }),
+            });
+            const eqResult = Object.assign(Promise.resolve({ error: null }), {
+              is: () => isResult,
             });
             return { eq: () => eqResult };
           },
@@ -55,7 +61,7 @@ describe("emailVerificationTokens", () => {
     const expiresMs = new Date(expiresAt).getTime() - Date.now();
     expect(expiresMs).toBeGreaterThan(23.9 * 60 * 60 * 1000);
     expect(expiresMs).toBeLessThan(24.1 * 60 * 60 * 1000);
-    expect(mockTokenUpdateCalls).toEqual([{ consumed_at: expect.any(String) }]);
+    expect(mockTokenUpdateCalls).toEqual([{ invalidated_at: expect.any(String) }]);
     expect(mockInsertCalls[0]).toMatchObject({ user_id: "user-1", token });
   });
 
@@ -86,6 +92,12 @@ describe("emailVerificationTokens", () => {
     mockRpcResult = { data: { status: "already_verified", user_id: "user-1" }, error: null };
     const result = await consumeVerificationToken("used");
     expect(result).toEqual({ status: "already_verified", userId: "user-1" });
+  });
+
+  it("returns invalidated for a token superseded by a resend, without touching email_verified_at", async () => {
+    mockRpcResult = { data: { status: "invalidated", user_id: "user-1" }, error: null };
+    const result = await consumeVerificationToken("invalidated-by-resend");
+    expect(result).toEqual({ status: "invalidated", userId: "user-1" });
   });
 
   // Root-cause regression: the two-write sequence (mark token consumed, then

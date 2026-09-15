@@ -131,8 +131,8 @@ describe("resolveActingAthleteId", () => {
   it("throws 404 when a parent has no linked athlete", async () => {
     getUserRole.mockResolvedValue("parent");
     const sb = supabaseReturning([null]);
-    await expect(resolveActingAthleteId("parent-1", sb)).rejects.toMatchObject(
-      { statusCode: 404 },
-    );
+    await expect(resolveActingAthleteId("parent-1", sb)).rejects.toMatchObject({
+      statusCode: 404,
+    });
   });
 });

@@ -9,12 +9,15 @@ export async function issueVerificationToken(
   const supabase = useSupabaseAdmin();
 
   // Invalidate any outstanding unconsumed token first — resend must kill
-  // the old link, not leave two valid ones.
+  // the old link, not leave two valid ones. invalidated_at is distinct from
+  // consumed_at: a superseded token was never actually used to verify, so
+  // consumeVerificationToken must not treat it as a successful verify.
   await supabase
     .from("email_verification_tokens")
-    .update({ consumed_at: new Date().toISOString() })
+    .update({ invalidated_at: new Date().toISOString() })
     .eq("user_id", userId)
-    .is("consumed_at", null);
+    .is("consumed_at", null)
+    .is("invalidated_at", null);
 
   const token = randomUUID();
   const expiresAt = new Date(Date.now() + TOKEN_TTL_MS).toISOString();
@@ -33,7 +36,7 @@ export async function issueVerificationToken(
 }
 
 export async function consumeVerificationToken(token: string): Promise<{
-  status: "verified" | "already_verified" | "expired" | "not_found";
+  status: "verified" | "already_verified" | "expired" | "invalidated" | "not_found";
   userId?: string;
 }> {
   const supabase = useSupabaseAdmin();
@@ -41,8 +44,9 @@ export async function consumeVerificationToken(token: string): Promise<{
   // Token consumption and profile verification happen atomically in
   // consume_email_verification_token() — a zero-row profile update raises
   // and rolls back the whole call (including the token's consumed_at write)
-  // instead of silently reporting success. See migration
-  // 20260928000003_consume_email_verification_token_rpc.sql.
+  // instead of silently reporting success. It also carries develop's
+  // invalidated_at guard (a resend must not let the stale link verify).
+  // See migration 20260928000003_consume_email_verification_token_rpc.sql.
   const { data, error } = await supabase
     .rpc("consume_email_verification_token", { p_token: token })
     .single();
@@ -52,7 +56,12 @@ export async function consumeVerificationToken(token: string): Promise<{
   }
 
   return {
-    status: data.status as "verified" | "already_verified" | "expired" | "not_found",
+    status: data.status as
+      | "verified"
+      | "already_verified"
+      | "expired"
+      | "invalidated"
+      | "not_found",
     userId: data.user_id ?? undefined,
   };
 }

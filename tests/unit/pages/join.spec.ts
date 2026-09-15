@@ -339,7 +339,7 @@ describe("/join page", () => {
 
       const wrapper = createWrapper();
       await flushPromises();
-      
+
       await wrapper
         .find('[data-testid="invite-signup-form"]')
         .trigger("submit");
@@ -365,7 +365,7 @@ describe("/join page", () => {
 
       const wrapper = createWrapper();
       await flushPromises();
-            await wrapper
+      await wrapper
         .find('[data-testid="invite-signup-form"]')
         .trigger("submit");
       await flushPromises();
@@ -379,7 +379,9 @@ describe("/join page", () => {
         expect.any(String), // dateOfBirth
         undefined, // pendingAdmin
         undefined, // onboardingStep1
-        "valid-token-123", // inviteToken -- carried across the confirmation gap
+        undefined, // inviteToken -- omitted; this page owns acceptance explicitly below,
+        // not via pending_invite_token metadata (would race useAccountProvisioning's
+        // SIGNED_IN listener over the same single-use invitation)
         expect.any(Function), // getFreshCaptchaToken -- mints a fresh token before sign-in
         true, // skipVerificationEmail -- the accept endpoint stamps verification
       );
@@ -415,7 +417,7 @@ describe("/join page", () => {
 
       const wrapper = createWrapper();
       await flushPromises();
-            await wrapper
+      await wrapper
         .find('[data-testid="invite-signup-form"]')
         .trigger("submit");
       await flushPromises();
@@ -442,7 +444,7 @@ describe("/join page", () => {
 
       const wrapper = createWrapper();
       await flushPromises();
-            await wrapper
+      await wrapper
         .find('[data-testid="invite-signup-form"]')
         .trigger("submit");
       await flushPromises();

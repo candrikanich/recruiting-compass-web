@@ -43,7 +43,9 @@ const buildUser = (overrides: Partial<User> = {}): User =>
 
 describe("useAccountProvisioning", () => {
   let fetchAuthMock: ReturnType<typeof vi.fn>;
-  let userStoreState: { user: { is_admin: boolean; full_name?: string } | null };
+  let userStoreState: {
+    user: { is_admin: boolean; full_name?: string } | null;
+  };
   let getPlayerDetailsMock: ReturnType<typeof vi.fn>;
   let setPlayerDetailsMock: ReturnType<typeof vi.fn>;
   let setHomeLocationMock: ReturnType<typeof vi.fn>;
@@ -115,7 +117,9 @@ describe("useAccountProvisioning", () => {
     fetchAuthMock.mockRejectedValueOnce(new Error("network error"));
 
     const { ensureAccountProvisioned } = useAccountProvisioning();
-    await expect(ensureAccountProvisioned(buildUser())).resolves.toBeUndefined();
+    await expect(
+      ensureAccountProvisioned(buildUser()),
+    ).resolves.toBeUndefined();
   });
 
   it("never calls admin-profile from a pending_admin metadata flag — admin promotion only happens via a synchronous, freshly-validated adminToken call from pages/admin/signup.vue", async () => {

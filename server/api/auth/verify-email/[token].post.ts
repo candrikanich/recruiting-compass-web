@@ -34,6 +34,13 @@ export default defineEventHandler(async (event) => {
     });
   }
 
+  if (result.status === "invalidated") {
+    throw createError({
+      statusCode: 410,
+      statusMessage: "This link is no longer valid — a newer verification email was sent. Please use that one.",
+    });
+  }
+
   logger.info("Email verification result", { status: result.status, userId: result.userId });
   return { status: result.status };
 });

@@ -4,7 +4,9 @@ vi.mock("h3", async () => {
   const actual = await vi.importActual<typeof import("h3")>("h3");
   return { ...actual, getQuery: vi.fn() };
 });
-vi.mock("~/server/utils/auth", () => ({ requireAuth: vi.fn(async () => ({ id: "user-1" })) }));
+vi.mock("~/server/utils/auth", () => ({
+  requireAuth: vi.fn(async () => ({ id: "user-1" })),
+}));
 vi.mock("~/server/utils/schoolMetadataLookup", () => ({
   lookupSchoolMetadata: vi.fn(() => ({
     mascot: "Tigers",

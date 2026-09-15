@@ -50,7 +50,9 @@ export default defineEventHandler(async (event) => {
 
   const { data: school, error: schoolError } = await supabase
     .from("schools")
-    .select("id, name, academic_info, family_unit_id, mascot, school_colors, athletics_url")
+    .select(
+      "id, name, academic_info, family_unit_id, mascot, school_colors, athletics_url",
+    )
     .eq("id", schoolId)
     .eq("family_unit_id", membership.family_unit_id)
     .single();

@@ -53,6 +53,7 @@ collisions (same timestamp, unrelated migrations on each side) — all
 harmless, every migration involved is idempotent (`DROP COLUMN IF EXISTS`
 / `ADD COLUMN IF NOT EXISTS`) and both sides' effects are confirmed
 already live:
+
 - `20260315000001-3`: repo has `remove_private_notes` /
   `remove_responsiveness_score_from_coaches` / `remove_fit_score_from_schools`
   at these stamps now (old repo history reused the March timestamps);

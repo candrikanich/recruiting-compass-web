@@ -140,7 +140,9 @@ function makeAutoCreateAdmin(options: {
     if (table === "schools") {
       return {
         select: vi.fn(() => ({
-          eq: vi.fn(() => Promise.resolve({ data: options.schools, error: null })),
+          eq: vi.fn(() =>
+            Promise.resolve({ data: options.schools, error: null }),
+          ),
         })),
       };
     }
@@ -170,7 +172,13 @@ function makeAutoCreateAdmin(options: {
 describe("autoCreateCoachByEmailDomain", () => {
   it("inserts a new coach when the sender domain uniquely matches a tracked school", async () => {
     const { admin, insertCalls } = makeAutoCreateAdmin({
-      schools: [{ id: "school-1", user_id: "user-1", website: "https://www.osu.edu/athletics" }],
+      schools: [
+        {
+          id: "school-1",
+          user_id: "user-1",
+          website: "https://www.osu.edu/athletics",
+        },
+      ],
       insertedCoach: { id: "auto-coach-1" },
     });
 
@@ -207,7 +215,10 @@ describe("autoCreateCoachByEmailDomain", () => {
       senderName: null,
     });
 
-    expect(insertCalls[0]).toMatchObject({ first_name: "Coach", last_name: "jsmith" });
+    expect(insertCalls[0]).toMatchObject({
+      first_name: "Coach",
+      last_name: "jsmith",
+    });
   });
 
   it("never inserts an empty-string last_name for a single-token sender name", async () => {
@@ -222,12 +233,17 @@ describe("autoCreateCoachByEmailDomain", () => {
       senderName: "Buckeyes",
     });
 
-    expect(insertCalls[0]).toMatchObject({ first_name: "Buckeyes", last_name: "Coach" });
+    expect(insertCalls[0]).toMatchObject({
+      first_name: "Buckeyes",
+      last_name: "Coach",
+    });
   });
 
   it("does not auto-create for a personal-email-provider domain", async () => {
     const { admin, from, insertCalls } = makeAutoCreateAdmin({
-      schools: [{ id: "school-1", user_id: "user-1", website: "https://www.gmail.com" }],
+      schools: [
+        { id: "school-1", user_id: "user-1", website: "https://www.gmail.com" },
+      ],
     });
 
     const result = await autoCreateCoachByEmailDomain(admin, {
@@ -245,7 +261,11 @@ describe("autoCreateCoachByEmailDomain", () => {
     const { admin, insertCalls } = makeAutoCreateAdmin({
       schools: [
         { id: "school-1", user_id: "user-1", website: "https://osu.edu" },
-        { id: "school-2", user_id: "user-2", website: "https://www.osu.edu/football" },
+        {
+          id: "school-2",
+          user_id: "user-2",
+          website: "https://www.osu.edu/football",
+        },
       ],
     });
 
@@ -261,7 +281,9 @@ describe("autoCreateCoachByEmailDomain", () => {
 
   it("does not auto-create when the domain matches zero tracked schools", async () => {
     const { admin, insertCalls } = makeAutoCreateAdmin({
-      schools: [{ id: "school-1", user_id: "user-1", website: "https://michigan.edu" }],
+      schools: [
+        { id: "school-1", user_id: "user-1", website: "https://michigan.edu" },
+      ],
     });
 
     const result = await autoCreateCoachByEmailDomain(admin, {

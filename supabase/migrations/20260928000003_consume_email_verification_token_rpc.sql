@@ -28,6 +28,13 @@ begin
     return;
   end if;
 
+  if v_row.invalidated_at is not null then
+    -- Superseded by a resend before it was ever used — the stale email's
+    -- link must not report success or touch email_verified_at.
+    return query select 'invalidated'::text, v_row.user_id;
+    return;
+  end if;
+
   if v_row.consumed_at is not null then
     -- consumed_at is also set when a token is invalidated by a resend
     -- (issueVerificationToken) — that's not the same as having verified,

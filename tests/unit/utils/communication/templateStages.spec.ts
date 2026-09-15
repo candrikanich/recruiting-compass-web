@@ -7,7 +7,10 @@ import {
 import type { CommunicationTemplate } from "~/types/models";
 
 const tpl = (
-  overrides: Partial<CommunicationTemplate> & { name: string; stage?: string | null },
+  overrides: Partial<CommunicationTemplate> & {
+    name: string;
+    stage?: string | null;
+  },
 ): CommunicationTemplate => ({
   id: overrides.name,
   user_id: null,

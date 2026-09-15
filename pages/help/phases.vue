@@ -103,10 +103,9 @@
         and finish the milestone tasks required for your current phase.
       </HelpStepCard>
       <HelpCallout type="warning">
-        Phase advancement isn't yet automatic in the app — there's currently
-        no button that moves you to the next phase, even once every required
-        task is complete. If you believe you're ready to move up, check with
-        support.
+        Phase advancement isn't yet automatic in the app — there's currently no
+        button that moves you to the next phase, even once every required task
+        is complete. If you believe you're ready to move up, check with support.
       </HelpCallout>
     </section>
 
