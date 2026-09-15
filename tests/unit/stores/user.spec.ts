@@ -382,6 +382,27 @@ describe("useUserStore", () => {
       expect(store.user).toBeNull();
       expect(store.isAuthenticated).toBe(false);
     });
+
+    it("should reset guardian status so the next signed-in user doesn't see a stale cached status", async () => {
+      const { useGuardianStatus } = await import(
+        "~/composables/useGuardianStatus"
+      );
+      const { status, loaded } = useGuardianStatus();
+      status.value = {
+        locked: true,
+        guardianEmailMasked: "a***@example.com",
+        expiresAt: null,
+        status: "pending",
+      };
+      loaded.value = true;
+
+      store.logout();
+
+      expect(status.value).toBeNull();
+      // `loaded` must also be cleared, or a bare load() for the next user
+      // silently reuses this stale-but-now-null value instead of refetching.
+      expect(loaded.value).toBe(false);
+    });
   });
 
   describe("State Persistence", () => {

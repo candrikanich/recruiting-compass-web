@@ -52,4 +52,21 @@ describe("useGuardianStatus", () => {
 
     expect(hasNoGuardianYet.value).toBe(false);
   });
+
+  it("reset() clears cached status and forces the next load() to refetch — prevents a new user's session from seeing the previous user's cached status", async () => {
+    mockFetchAuth.mockResolvedValueOnce(statusOf({ status: "pending" }));
+    const { status, reset, load } = useGuardianStatus();
+
+    await load(true);
+    expect(status.value?.status).toBe("pending");
+
+    reset();
+    expect(status.value).toBeNull();
+
+    mockFetchAuth.mockResolvedValueOnce(statusOf({ status: "claimed" }));
+    await load(); // no force — must still refetch because reset() cleared `loaded`
+
+    expect(mockFetchAuth).toHaveBeenCalledTimes(2);
+    expect(status.value?.status).toBe("claimed");
+  });
 });

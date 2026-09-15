@@ -60,13 +60,23 @@ export const useGuardianStatus = () => {
     await load(true);
   };
 
+  // `status`/`loaded` are app-level useState, so they survive a sign-out inside the same
+  // SPA session. Call this from the sign-out path (stores/user.ts logout()) so the next
+  // signed-in user's first load() refetches instead of reusing the previous user's cache.
+  const reset = () => {
+    status.value = null;
+    loaded.value = false;
+  };
+
   return {
     status,
+    loaded,
     isPending,
     isLocked,
     hasNoGuardianYet,
     guardianEmailMasked: computed(() => status.value?.guardianEmailMasked ?? null),
     load,
     resend,
+    reset,
   };
 };

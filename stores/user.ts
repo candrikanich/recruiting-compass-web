@@ -3,6 +3,7 @@ import { ref, computed } from "vue";
 import type { User } from "~/types/models";
 import { useSupabase } from "~/composables/useSupabase";
 import { clearAllFilterCaches } from "~/composables/usePageFilters";
+import { useGuardianStatus } from "~/composables/useGuardianStatus";
 import { createClientLogger } from "~/utils/logger";
 
 const logger = createClientLogger("stores/user");
@@ -201,6 +202,7 @@ export const useUserStore = defineStore("user", () => {
     isAuthenticated.value = false;
     isEmailVerified.value = false;
     clearAllFilterCaches();
+    useGuardianStatus().reset();
   }
 
   async function refreshVerificationStatus() {
