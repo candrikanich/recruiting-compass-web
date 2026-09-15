@@ -34,7 +34,7 @@ export default defineEventHandler(async (event) => {
       .eq("id", user.id)
       .maybeSingle();
 
-    const { data: claim } = await supabase
+    const { data: pendingClaim } = await supabase
       .from("guardian_claims")
       .select("id, guardian_email, token, status, expires_at, reminder_count")
       .eq("player_user_id", user.id)
@@ -42,6 +42,19 @@ export default defineEventHandler(async (event) => {
       .maybeSingle();
 
     const requestedEmail = body.guardianEmail?.trim().toLowerCase();
+
+    // A pending row past its expiry is dead weight, not a live claim: the partial unique
+    // index only excludes 'pending' rows, so leaving its status alone would collide with
+    // a fresh insert below. Mark it expired and fall through to the same "no claim" path
+    // a player who never had one takes, instead of 410-ing them into a support dead end.
+    let claim = pendingClaim;
+    if (claim && new Date(claim.expires_at) < new Date()) {
+      await supabase
+        .from("guardian_claims")
+        .update({ status: "expired" })
+        .eq("id", claim.id);
+      claim = null;
+    }
 
     if (!claim) {
       // No pending claim — this is the "invite a parent" path for a player who skipped
@@ -113,14 +126,6 @@ export default defineEventHandler(async (event) => {
       logger.info("Guardian claim created from dashboard invite");
       return { success: true };
     }
-    if (new Date(claim.expires_at) < new Date()) {
-      throw createError({
-        statusCode: 410,
-        statusMessage:
-          "This confirmation request has expired. Please contact support.",
-      });
-    }
-
     let guardianEmail = claim.guardian_email;
     let token = claim.token;
 
