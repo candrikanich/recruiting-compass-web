@@ -14,7 +14,9 @@ vi.mock("~/server/utils/supabase", () => ({
             mockTokenUpdateCalls.push(fields);
             return {
               eq: () => ({
-                is: async () => ({ error: null }),
+                is: () => ({
+                  is: async () => ({ error: null }),
+                }),
               }),
             };
           },
@@ -68,7 +70,7 @@ describe("emailVerificationTokens", () => {
     const expiresMs = new Date(expiresAt).getTime() - Date.now();
     expect(expiresMs).toBeGreaterThan(23.9 * 60 * 60 * 1000);
     expect(expiresMs).toBeLessThan(24.1 * 60 * 60 * 1000);
-    expect(mockTokenUpdateCalls).toEqual([{ consumed_at: expect.any(String) }]);
+    expect(mockTokenUpdateCalls).toEqual([{ invalidated_at: expect.any(String) }]);
     expect(mockInsertCalls[0]).toMatchObject({ user_id: "user-1", token });
   });
 
@@ -99,22 +101,18 @@ describe("emailVerificationTokens", () => {
     expect(result.userId).toBe("user-1");
   });
 
-  it("stamps email_verified_at on a consumed token that was never verified", async () => {
-    // consumed_at is also set when issueVerificationToken invalidates a prior
-    // token on resend — clicking that older email must not report success
-    // while leaving users.email_verified_at null.
+  it("returns invalidated for a token superseded by a resend, without touching email_verified_at", async () => {
     mockTokenRow = {
       user_id: "user-1",
       expires_at: new Date(Date.now() + 1000).toISOString(),
-      consumed_at: new Date().toISOString(),
+      consumed_at: null,
+      invalidated_at: new Date().toISOString(),
     };
 
     const result = await consumeVerificationToken("invalidated-by-resend");
 
-    expect(result.status).toBe("already_verified");
-    expect(mockUsersUpdateCalls[0]).toMatchObject({
-      email_verified_at: expect.any(String),
-    });
+    expect(result.status).toBe("invalidated");
+    expect(mockUsersUpdateCalls).toEqual([]);
   });
 
   it("verifies a valid unconsumed token", async () => {
