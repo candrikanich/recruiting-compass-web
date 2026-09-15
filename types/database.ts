@@ -995,6 +995,38 @@ export type Database = {
         };
         Relationships: [];
       };
+      email_verification_tokens: {
+        Row: {
+          consumed_at: string | null;
+          created_at: string;
+          expires_at: string;
+          id: string;
+          invalidated_at: string | null;
+          token: string;
+          user_id: string;
+        };
+        Insert: {
+          consumed_at?: string | null;
+          created_at?: string;
+          expires_at: string;
+          id?: string;
+          invalidated_at?: string | null;
+          token: string;
+          user_id: string;
+        };
+        Update: {
+          consumed_at?: string | null;
+          created_at?: string;
+          expires_at?: string;
+          id?: string;
+          invalidated_at?: string | null;
+          token?: string;
+          user_id?: string;
+        };
+        // FK targets auth.users, not public.users — not representable in
+        // this generator's Relationships array (cross-schema).
+        Relationships: [];
+      };
       events: {
         Row: {
           address: string | null;
@@ -1520,6 +1552,56 @@ export type Database = {
           {
             foreignKeyName: "follow_up_reminders_user_id_fkey";
             columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      guardian_claims: {
+        Row: {
+          claimed_at: string | null;
+          claimed_by: string | null;
+          created_at: string;
+          expires_at: string;
+          guardian_email: string;
+          id: string;
+          last_reminder_at: string | null;
+          player_user_id: string;
+          reminder_count: number;
+          status: string;
+          token: string;
+        };
+        Insert: {
+          claimed_at?: string | null;
+          claimed_by?: string | null;
+          created_at?: string;
+          expires_at?: string;
+          guardian_email: string;
+          id?: string;
+          last_reminder_at?: string | null;
+          player_user_id: string;
+          reminder_count?: number;
+          status?: string;
+          token: string;
+        };
+        Update: {
+          claimed_at?: string | null;
+          claimed_by?: string | null;
+          created_at?: string;
+          expires_at?: string;
+          guardian_email?: string;
+          id?: string;
+          last_reminder_at?: string | null;
+          player_user_id?: string;
+          reminder_count?: number;
+          status?: string;
+          token?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "guardian_claims_claimed_by_fkey";
+            columns: ["claimed_by"];
             isOneToOne: false;
             referencedRelation: "users";
             referencedColumns: ["id"];
@@ -3461,6 +3543,7 @@ export type Database = {
           deletion_requested_at: string | null;
           dominant_side: string | null;
           email: string;
+          email_verified_at: string | null;
           full_name: string | null;
           gpa: number | null;
           graduation_year: number | null;
@@ -3505,6 +3588,7 @@ export type Database = {
           deletion_requested_at?: string | null;
           dominant_side?: string | null;
           email: string;
+          email_verified_at?: string | null;
           full_name?: string | null;
           gpa?: number | null;
           graduation_year?: number | null;
@@ -3549,6 +3633,7 @@ export type Database = {
           deletion_requested_at?: string | null;
           dominant_side?: string | null;
           email?: string;
+          email_verified_at?: string | null;
           full_name?: string | null;
           gpa?: number | null;
           graduation_year?: number | null;
@@ -3670,6 +3755,15 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      accept_guardian_claim: {
+        Args: {
+          p_token: string;
+          p_guardian_id: string;
+          p_guardian_email: string;
+          p_terms_version: string;
+        };
+        Returns: string;
+      };
       can_access_family_player_prefs: {
         Args: { target_user: string };
         Returns: boolean;

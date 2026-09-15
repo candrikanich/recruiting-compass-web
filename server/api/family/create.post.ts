@@ -99,6 +99,31 @@ export default defineEventHandler(async (event) => {
       error: any;
     };
 
+    if (familyError?.code === "23505") {
+      // Lost the create race to a concurrent caller (e.g. plugins/auth.client.ts's
+      // SIGNED_IN listener firing at the same moment as an explicit call from a
+      // page) -- idx_family_units_one_per_creator turned what used to be a silent
+      // duplicate family into this conflict. Reuse the winner's row.
+      const { data: raceWinner } = await supabase
+        .from("family_units")
+        .select("id, family_code, family_name")
+        .eq("created_by_user_id", user.id)
+        .maybeSingle();
+
+      if (raceWinner) {
+        logger.info("Lost family-creation race, reusing existing family", {
+          familyId: raceWinner.id,
+        });
+        return {
+          success: true,
+          familyId: raceWinner.id,
+          familyCode: raceWinner.family_code,
+          familyName: raceWinner.family_name,
+          message: "Family already exists",
+        };
+      }
+    }
+
     if (familyError || !newFamily) {
       logger.error("Family creation failed", familyError);
       throw createError({

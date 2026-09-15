@@ -1,6 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { User } from "@supabase/supabase-js";
-import { useAccountProvisioning } from "~/composables/useAccountProvisioning";
+import {
+  useAccountProvisioning,
+  suppressAutoFamilyCreateOnNextSignIn,
+} from "~/composables/useAccountProvisioning";
 import { useAuthFetch } from "~/composables/useAuthFetch";
 import { useUserStore } from "~/stores/user";
 import { usePreferenceManager } from "~/composables/usePreferenceManager";
@@ -20,6 +23,10 @@ vi.mock("~/composables/useOnboarding", () => ({
 }));
 vi.mock("~/utils/logger", () => ({
   createClientLogger: () => ({ error: vi.fn(), debug: vi.fn(), info: vi.fn() }),
+}));
+const mockRefetchFamilies = vi.fn().mockResolvedValue(undefined);
+vi.mock("~/composables/useFamilyCtx", () => ({
+  useFamilyCtx: () => ({ refetchFamilies: mockRefetchFamilies }),
 }));
 
 const mockUseAuthFetch = vi.mocked(useAuthFetch);
@@ -84,6 +91,28 @@ describe("useAccountProvisioning", () => {
     });
   });
 
+  it("skips /api/family/create once when suppressed, then resumes calling it normally", async () => {
+    // Found live on QA: the guardian-claim accept flow already handles family setup
+    // itself. Without this suppression, this listener's own blind /api/family/create
+    // call races it and splits the guardian across two family_units.
+    suppressAutoFamilyCreateOnNextSignIn();
+
+    const { ensureAccountProvisioned } = useAccountProvisioning();
+    await ensureAccountProvisioned(buildUser());
+
+    expect(fetchAuthMock).not.toHaveBeenCalledWith("/api/family/create", {
+      method: "POST",
+    });
+
+    // One-shot: the very next sign-in (not suppressed) calls it as normal.
+    fetchAuthMock.mockClear();
+    await ensureAccountProvisioned(buildUser());
+
+    expect(fetchAuthMock).toHaveBeenCalledWith("/api/family/create", {
+      method: "POST",
+    });
+  });
+
   it("does not throw when family creation fails — must never block sign-in", async () => {
     fetchAuthMock.mockRejectedValueOnce(new Error("network error"));
 
@@ -93,16 +122,16 @@ describe("useAccountProvisioning", () => {
     ).resolves.toBeUndefined();
   });
 
-  it("applies the pending admin flag when metadata carries it and the user isn't already admin", async () => {
+  it("never calls admin-profile from a pending_admin metadata flag — admin promotion only happens via a synchronous, freshly-validated adminToken call from pages/admin/signup.vue", async () => {
     const { ensureAccountProvisioned } = useAccountProvisioning();
     await ensureAccountProvisioned(
       buildUser({ user_metadata: { pending_admin: true } }),
     );
 
-    expect(fetchAuthMock).toHaveBeenCalledWith("/api/auth/admin-profile", {
-      method: "POST",
-      body: { fullName: "Existing Name" },
-    });
+    expect(fetchAuthMock).not.toHaveBeenCalledWith(
+      "/api/auth/admin-profile",
+      expect.anything(),
+    );
   });
 
   it("does not call admin-profile when there is no pending admin intent", async () => {
@@ -210,6 +239,49 @@ describe("useAccountProvisioning", () => {
               pending_primary_sport: "Baseball",
             },
           }),
+        ),
+      ).resolves.toBeUndefined();
+    });
+  });
+
+  describe("pending invite token (family-invite signup, pages/join.vue)", () => {
+    it("accepts the invite once a session exists and refetches families", async () => {
+      const { ensureAccountProvisioned } = useAccountProvisioning();
+      await ensureAccountProvisioned(
+        buildUser({ user_metadata: { pending_invite_token: "tok-123" } }),
+      );
+
+      expect(fetchAuthMock).toHaveBeenCalledWith(
+        "/api/family/invite/tok-123/accept",
+        { method: "POST" },
+      );
+      expect(mockRefetchFamilies).toHaveBeenCalled();
+    });
+
+    it("does nothing when there is no pending invite token", async () => {
+      const { ensureAccountProvisioned } = useAccountProvisioning();
+      await ensureAccountProvisioned(buildUser());
+
+      expect(fetchAuthMock).not.toHaveBeenCalledWith(
+        expect.stringContaining("/api/family/invite/"),
+        expect.anything(),
+      );
+    });
+
+    it("does not throw when the accept call fails — must never block sign-in", async () => {
+      // A second sign-in after the invite was already accepted 409s
+      // (family_invitations.status flips to "accepted" on success) -- harmless,
+      // since membership was already established by the first call.
+      fetchAuthMock.mockImplementation(async (url: string) =>
+        url.includes("/api/family/invite/")
+          ? Promise.reject(new Error("409: already accepted"))
+          : {},
+      );
+
+      const { ensureAccountProvisioned } = useAccountProvisioning();
+      await expect(
+        ensureAccountProvisioned(
+          buildUser({ user_metadata: { pending_invite_token: "tok-123" } }),
         ),
       ).resolves.toBeUndefined();
     });

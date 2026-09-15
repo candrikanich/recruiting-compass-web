@@ -5,6 +5,7 @@ import { createLogger } from "~/server/utils/logger";
 import { retryWithBackoff } from "~/server/utils/retry";
 import { logEmailSend, type EmailSendContext } from "~/server/utils/emailSends";
 import { shouldCaptureInSentry } from "~/server/utils/sentryContext";
+import { wrapEmailLayout } from "~/server/utils/emailTemplates";
 
 const logger = createLogger("email");
 
@@ -200,6 +201,33 @@ export interface SendEmailOptions {
   context?: EmailSendContext;
 }
 
+export function renderNotificationBody(
+  title: string,
+  message: string,
+  priority: NotificationPriority,
+  actionUrl?: string,
+): string {
+  const priorityBadge =
+    priority === "high"
+      ? '<span style="display:inline-block;background:#dc2626;color:#ffffff;padding:4px 8px;border-radius:4px;font-size:12px;font-weight:bold;">HIGH PRIORITY</span>'
+      : "";
+
+  const actionButton = actionUrl
+    ? `<a href="${sanitizeUrl(actionUrl)}" class="trc-email-btn" style="display:inline-block;background:#2563eb;color:#ffffff;padding:12px 24px;text-decoration:none;border-radius:6px;font-weight:600;margin-top:16px;">View Details</a>`
+    : "";
+
+  return `
+    <h1 style="margin:0 0 8px 0;font-size:18px;color:#1e293b;">
+      ${escapeHtml(title)}
+    </h1>
+    ${priorityBadge}
+    <p style="margin:12px 0 0 0;color:#475569;">
+      ${escapeHtml(message)}
+    </p>
+    ${actionButton}
+  `;
+}
+
 export const sendNotificationEmail = async (
   options: SendNotificationEmailOptions,
 ): Promise<SendResult> => {
@@ -215,39 +243,12 @@ export const sendNotificationEmail = async (
     context,
   } = options;
 
-  const priorityBadge =
-    priority === "high"
-      ? '<span style="display: inline-block; background: #dc2626; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold;">HIGH PRIORITY</span>'
-      : "";
+  const bodyHtml = renderNotificationBody(title, message, priority, actionUrl);
 
-  const actionButton = actionUrl
-    ? `<a href="${sanitizeUrl(actionUrl)}" style="display: inline-block; background: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 600; margin-top: 20px;">View Details</a>`
-    : "";
-
-  const htmlContent = `
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      </head>
-      <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-        <div style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 24px;">
-          <h1 style="margin: 0 0 8px 0; font-size: 24px; color: #111827;">
-            ${escapeHtml(title)}
-          </h1>
-          ${priorityBadge}
-          <p style="margin: 16px 0; color: #4b5563; font-size: 16px;">
-            ${escapeHtml(message)}
-          </p>
-          ${actionButton}
-        </div>
-        <p style="margin-top: 24px; font-size: 12px; color: #9ca3af; text-align: center;">
-          The Recruiting Compass
-        </p>
-      </body>
-    </html>
-  `;
+  const htmlContent = wrapEmailLayout(bodyHtml, {
+    preheader: escapeHtml(title),
+    unsubscribeUrl: listUnsubscribeUrl,
+  });
 
   return sendViaResend(
     { to, subject, html: htmlContent },
@@ -266,6 +267,110 @@ export const sendEmail = async (
   );
 };
 
+export interface SendGuardianClaimEmailOptions {
+  to: string;
+  playerName: string;
+  token: string;
+  context?: EmailSendContext;
+}
+
+/**
+ * Player-initiated guardian confirmation. The mirror image of `sendInviteEmail`: here the
+ * 13-17 player has already started an account and is asking a parent/guardian to confirm
+ * it, rather than the guardian inviting the player in.
+ */
+export const sendGuardianClaimEmail = async (
+  options: SendGuardianClaimEmailOptions,
+): Promise<{ success: boolean; messageId?: string; error?: string }> => {
+  const { to, playerName, token, context } = options;
+  const baseUrl =
+    process.env.PUBLIC_BASE_URL ?? "https://myrecruitingcompass.com";
+  const claimUrl = `${baseUrl}/guardian/claim/${encodeURIComponent(token)}`;
+
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 24px;">
+          <h1 style="margin: 0 0 16px 0; font-size: 24px; color: #111827;">
+            ${escapeHtml(playerName)} started a recruiting profile
+          </h1>
+          <p style="margin: 0 0 16px 0; color: #4b5563; font-size: 16px;">
+            ${escapeHtml(playerName)} is using The Recruiting Compass to track schools, deadlines
+            and coach contacts — and listed you as their parent or guardian.
+          </p>
+          <p style="margin: 0 0 24px 0; color: #4b5563; font-size: 16px;">
+            Because they're under 18, you need to confirm their account. Messaging coaches and
+            sharing their profile stay switched off until you do.
+          </p>
+          <a href="${sanitizeUrl(claimUrl)}" style="display: inline-block; background: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 600;">
+            Confirm ${escapeHtml(playerName)}'s account
+          </a>
+          <p style="margin-top: 24px; font-size: 13px; color: #9ca3af;">
+            If you don't recognize this, you can ignore this email — the account stays locked
+            and is removed if no one confirms it.
+          </p>
+        </div>
+        <p style="margin-top: 24px; font-size: 12px; color: #9ca3af; text-align: center;">
+          The Recruiting Compass
+        </p>
+      </body>
+    </html>
+  `;
+
+  return sendEmail({
+    to,
+    subject: `${playerName} started a recruiting profile — confirm you're their parent or guardian`,
+    html: htmlContent,
+    idempotencyKey: `guardian-claim-${token}`,
+    context,
+  });
+};
+
+export interface SendVerificationEmailOptions {
+  to: string;
+  token: string;
+  context?: EmailSendContext;
+}
+
+export const sendVerificationEmail = async (
+  options: SendVerificationEmailOptions,
+): Promise<{ success: boolean; messageId?: string; error?: string }> => {
+  const { to, token, context } = options;
+  const baseUrl =
+    process.env.PUBLIC_BASE_URL ?? "https://myrecruitingcompass.com";
+  const verifyUrl = `${baseUrl}/verify-email/${encodeURIComponent(token)}`;
+
+  const bodyHtml = `
+    <h1 style="margin:0 0 16px 0;font-size:24px;color:#111827;">Verify your email</h1>
+    <p style="margin:0 0 16px 0;color:#4b5563;font-size:16px;">
+      You're all set — your dashboard is ready. Confirming your email keeps
+      your account secure and makes sure we can reach you.
+    </p>
+    <a href="${sanitizeUrl(verifyUrl)}" style="display:inline-block;background:#2563eb;color:#ffffff;padding:12px 24px;text-decoration:none;border-radius:6px;font-weight:600;">
+      Verify my email
+    </a>
+    <p style="margin-top:24px;font-size:13px;color:#9ca3af;">
+      This link expires in 24 hours. If you didn't create this account, you
+      can ignore this email.
+    </p>
+  `;
+
+  return sendEmail({
+    to,
+    subject: "Verify your email — The Recruiting Compass",
+    html: wrapEmailLayout(bodyHtml, {
+      preheader: "Confirm your email to keep your account secure.",
+    }),
+    idempotencyKey: `verify-email-${token}`,
+    context,
+  });
+};
+
 export interface SendInviteEmailOptions {
   to: string;
   inviterName: string;
@@ -273,11 +378,6 @@ export interface SendInviteEmailOptions {
   role: "player" | "parent";
   token: string;
   context?: EmailSendContext;
-}
-
-function unsubscribeFooterLink(url?: string): string {
-  if (!url) return "";
-  return ` <a href="${sanitizeUrl(url)}" style="color:#888">Unsubscribe</a>.`;
 }
 
 export function renderWeeklyDigestEmail(
@@ -298,15 +398,18 @@ export function renderWeeklyDigestEmail(
         )
         .join("")
     : "<li>No upcoming deadlines</li>";
-  return `<!DOCTYPE html><html><body style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px">
-    <h2 style="color:#1a1a1a">Your Weekly Recruiting Recap</h2>
-    <ul style="padding-left:20px">${lineItems}</ul>
-    <h3 style="color:#1a1a1a">Upcoming Deadlines</h3>
-    <ul style="padding-left:20px">${deadlineItems}</ul>
-    <p style="color:#888;font-size:12px;margin-top:32px">
-      You're receiving this because you have a Recruiting Compass account.${unsubscribeFooterLink(unsubscribeUrl)}
-    </p>
-  </body></html>`;
+
+  const bodyHtml = `
+    <h2 style="color:#1e293b;font-size:18px;margin:0 0 12px 0;">Your Weekly Recruiting Recap</h2>
+    <ul style="padding-left:20px;margin:0 0 20px 0;color:#475569;">${lineItems}</ul>
+    <h3 style="color:#1e293b;font-size:15px;margin:0 0 8px 0;">Upcoming Deadlines</h3>
+    <ul style="padding-left:20px;margin:0;color:#475569;">${deadlineItems}</ul>
+  `;
+
+  return wrapEmailLayout(bodyHtml, {
+    preheader: "Your weekly recruiting recap is here",
+    unsubscribeUrl,
+  });
 }
 
 export function renderDeadlineAlertEmail(
@@ -321,13 +424,47 @@ export function renderDeadlineAlertEmail(
     data.daysUntil === 0
       ? "TODAY"
       : `in ${data.daysUntil} day${data.daysUntil !== 1 ? "s" : ""}`;
-  return `<!DOCTYPE html><html><body style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px">
-    <h2 style="color:#dc2626">Deadline ${urgency}</h2>
-    <p><strong>${escapeHtml(data.label)}</strong> is due ${urgency} (${escapeHtml(data.deadline_date)}).</p>
-    <p style="color:#888;font-size:12px;margin-top:32px">
-      You're receiving this because you have a Recruiting Compass account.${unsubscribeFooterLink(unsubscribeUrl)}
+
+  const bodyHtml = `
+    <h2 class="trc-urgent" style="color:#dc2626;font-size:18px;margin:0 0 12px 0;">Deadline ${urgency}</h2>
+    <p style="color:#475569;margin:0;">
+      <strong style="color:#1e293b;">${escapeHtml(data.label)}</strong> is due ${urgency} (${escapeHtml(data.deadline_date)}).
     </p>
-  </body></html>`;
+  `;
+
+  return wrapEmailLayout(bodyHtml, {
+    preheader: `Deadline ${urgency}: ${escapeHtml(data.label)}`,
+    unsubscribeUrl,
+  });
+}
+
+const ROLE_VALUE_PROPS: Record<"player" | "parent", string> = {
+  player:
+    "Track your recruiting progress, message coaches, and manage deadlines — all in one place.",
+  parent:
+    "Follow along on the recruiting journey, help manage deadlines, and stay in the loop with coaches.",
+};
+
+export function renderInviteBody(
+  inviterName: string,
+  familyName: string,
+  role: "player" | "parent",
+  joinUrl: string,
+): string {
+  return `
+    <h1 style="margin:0 0 12px 0;font-size:20px;color:#1e293b;">
+      ${escapeHtml(inviterName)} invited you to join ${escapeHtml(familyName)}'s recruiting journey
+    </h1>
+    <p style="margin:0 0 20px 0;color:#475569;">
+      ${ROLE_VALUE_PROPS[role]}
+    </p>
+    <a href="${sanitizeUrl(joinUrl)}" class="trc-email-btn" style="display:inline-block;background:#2563eb;color:#ffffff;padding:12px 24px;text-decoration:none;border-radius:6px;font-weight:600;">
+      Join ${escapeHtml(familyName)}
+    </a>
+    <p style="margin-top:20px;font-size:13px;color:#94a3b8;">
+      This invite link expires in 7 days.
+    </p>
+  `;
 }
 
 export const sendInviteEmail = async (
@@ -337,36 +474,12 @@ export const sendInviteEmail = async (
   const baseUrl =
     process.env.PUBLIC_BASE_URL ?? "https://myrecruitingcompass.com";
   const joinUrl = `${baseUrl}/join?token=${encodeURIComponent(token)}`;
-  const roleLabel = role === "player" ? "player" : "parent";
 
-  const htmlContent = `
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      </head>
-      <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-        <div style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 24px;">
-          <h1 style="margin: 0 0 16px 0; font-size: 24px; color: #111827;">
-            ${escapeHtml(familyName)}'s recruiting journey awaits — you're invited!
-          </h1>
-          <p style="margin: 0 0 24px 0; color: #4b5563; font-size: 16px;">
-            ${escapeHtml(inviterName)} has invited you to join ${escapeHtml(familyName)}'s recruiting profile as a ${escapeHtml(roleLabel)}.
-          </p>
-          <a href="${sanitizeUrl(joinUrl)}" style="display: inline-block; background: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 600;">
-            Join ${escapeHtml(familyName)}
-          </a>
-          <p style="margin-top: 24px; font-size: 13px; color: #9ca3af;">
-            This link expires in 7 days.
-          </p>
-        </div>
-        <p style="margin-top: 24px; font-size: 12px; color: #9ca3af; text-align: center;">
-          The Recruiting Compass
-        </p>
-      </body>
-    </html>
-  `;
+  const bodyHtml = renderInviteBody(inviterName, familyName, role, joinUrl);
+
+  const htmlContent = wrapEmailLayout(bodyHtml, {
+    preheader: `${escapeHtml(inviterName)} invited you to join ${escapeHtml(familyName)}'s recruiting profile`,
+  });
 
   return sendEmail({
     to,

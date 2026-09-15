@@ -92,6 +92,8 @@
             :primary-sport="primarySport"
             :gender="gender"
             :zip-code="zipCode"
+            :guardian-email="guardianEmail"
+            :requires-guardian="requiresGuardian"
             @update:first-name="firstName = $event"
             @update:last-name="lastName = $event"
             @update:email="email = $event"
@@ -103,17 +105,26 @@
             @update:primary-sport="primarySport = $event"
             @update:gender="gender = $event"
             @update:zip-code="zipCode = $event"
+            @update:guardian-email="guardianEmail = $event"
             @submit="handleSignup"
             @validate-email="validateEmail"
             @validate-password="validatePassword"
-          />
-
-          <!-- Cloudflare Turnstile (flag-gated, renders only when site key set) -->
-          <div
-            v-if="turnstileEnabled && userType"
-            ref="turnstileEl"
-            class="mt-4 flex justify-center"
-          />
+          >
+            <template #captcha>
+              <!-- Cloudflare Turnstile (flag-gated, renders only when site
+                   key set) — mounted above the submit button via a slot so
+                   a user who clicks Create Account without scrolling
+                   further doesn't miss an interactive challenge below it. -->
+              <div
+                v-if="turnstileEnabled && userType"
+                ref="turnstileEl"
+                class="flex justify-center"
+              />
+              <!-- Invisible widget dedicated to the post-signup sign-in
+                   token mint — see getFreshTurnstileToken. Renders nothing. -->
+              <div v-if="turnstileEnabled && userType" ref="turnstileSessionEl" />
+            </template>
+          </SignupForm>
         </div>
       </div>
     </div>
@@ -132,7 +143,7 @@ import { useUserStore } from "~/stores/user";
 import { useFormValidation } from "~/composables/useFormValidation";
 import { useFormErrorFocus } from "~/composables/useFormErrorFocus";
 import { signupSchema } from "~/utils/validation/schemas";
-import { isUnderMinimumAge } from "~/utils/age";
+import { isUnderMinimumAge, requiresGuardianInvite } from "~/utils/age";
 import {
   SIGNUP_EMAIL_SCHEMA,
   SIGNUP_PASSWORD_SCHEMA,
@@ -160,6 +171,13 @@ const primarySport = ref("");
 const gender = ref<string | undefined>(undefined);
 const zipCode = ref("");
 
+// Guardian-linked signup: a 13-17 player names a guardian rather than waiting to be
+// invited by one. See planning/2026-09-11-guardian-linked-signup-spec.md (iOS repo).
+const guardianEmail = ref("");
+const requiresGuardian = computed(
+  () => userType.value === "player" && requiresGuardianInvite(dateOfBirth.value),
+);
+
 // --- Turnstile (optional, flag-gated) ----------------------------------------
 const runtimeConfig = useRuntimeConfig();
 const turnstileSiteKey = computed(
@@ -179,11 +197,16 @@ type TurnstileGlobal = {
     options: {
       sitekey: string;
       action?: string;
+      size?: "normal" | "compact" | "flexible";
+      appearance?: "always" | "execute" | "interaction-only";
+      execution?: "render" | "execute";
       callback: (token: string) => void;
       "expired-callback"?: () => void;
+      "error-callback"?: () => void;
     },
   ) => string;
   reset: (widgetId?: string) => void;
+  execute: (widgetId?: string) => void;
 };
 
 // Turnstile tokens are single-use and expire (~5 min) — replaying a stale or
@@ -196,6 +219,63 @@ function resetTurnstile() {
   if (w.turnstile && turnstileWidgetId.value) {
     w.turnstile.reset(turnstileWidgetId.value);
   }
+}
+
+// A second, invisible widget dedicated to minting the post-signup sign-in
+// token. The visible checkbox widget's token is already consumed by
+// /api/auth/signup's verifyTurnstile call by the time we need a fresh one —
+// resetting and re-polling THAT widget was tried first, but reset() on a
+// managed/interactive widget re-arms its checkbox and waits for the user to
+// click it again, which nobody does; the poll just times out and
+// signInWithPassword fires with no token at all ("no captcha_token found").
+// An invisible, execute-mode widget solves itself without user interaction.
+const turnstileSessionEl = ref<HTMLDivElement | null>(null);
+const turnstileSessionWidgetId = ref<string | undefined>(undefined);
+const turnstileSessionToken = ref<string | undefined>(undefined);
+
+watch(
+  [turnstileEnabled, userType, turnstileSessionEl],
+  async ([enabled, type, el]) => {
+    if (!enabled || !type || !el || turnstileSessionWidgetId.value) return;
+    try {
+      await loadTurnstileScript();
+      const w = window as unknown as { turnstile?: TurnstileGlobal };
+      if (w.turnstile && el) {
+        turnstileSessionWidgetId.value = w.turnstile.render(el, {
+          sitekey: turnstileSiteKey.value,
+          action: "signup-session",
+          appearance: "execute",
+          execution: "execute",
+          callback: (token: string) => {
+            turnstileSessionToken.value = token;
+          },
+          "expired-callback": () => {
+            turnstileSessionToken.value = undefined;
+          },
+          "error-callback": () => {
+            turnstileSessionToken.value = undefined;
+          },
+        });
+      }
+    } catch {
+      // Non-fatal — see main widget's catch above.
+    }
+  },
+  { flush: "post" },
+);
+
+async function getFreshTurnstileToken(): Promise<string | undefined> {
+  if (!turnstileEnabled.value || !turnstileSessionWidgetId.value)
+    return undefined;
+  const w = window as unknown as { turnstile?: TurnstileGlobal };
+  if (!w.turnstile) return undefined;
+  turnstileSessionToken.value = undefined;
+  w.turnstile.execute(turnstileSessionWidgetId.value);
+  const start = Date.now();
+  while (!turnstileSessionToken.value && Date.now() - start < 8000) {
+    await new Promise((resolve) => setTimeout(resolve, 150));
+  }
+  return turnstileSessionToken.value;
 }
 
 function loadTurnstileScript(): Promise<void> {
@@ -263,6 +343,7 @@ const {
   validate,
   validateField,
   clearErrors,
+  clearFieldError,
   hasErrors,
   setErrors,
 } = useFormValidation();
@@ -284,6 +365,15 @@ const validatePassword = async () => {
     password.value,
     SIGNUP_PASSWORD_SCHEMA.shape.password,
   );
+
+  if (confirmPassword.value && password.value !== confirmPassword.value) {
+    setErrors([
+      ...errors.value.filter((e) => e.field !== "confirmPassword"),
+      { field: "confirmPassword", message: "Passwords don't match" },
+    ]);
+  } else {
+    clearFieldError("confirmPassword");
+  }
 };
 
 // Clear terms error when checkbox is checked
@@ -297,6 +387,66 @@ watch(agreeToTerms, (isChecked) => {
     }
   }
 });
+
+/**
+ * Signup for a 13-17 player. Naming a guardian is optional — see
+ * docs/superpowers/specs/2026-09-12-guardian-optional-signup-wizard-design.md.
+ *
+ * Goes through POST /api/auth/signup-minor rather than the browser-direct path below
+ * because guardian_claims is service-role-only — the browser cannot write it directly.
+ */
+const submitMinorSignup = async (guardian: string) => {
+  try {
+    await $fetch("/api/auth/signup-minor", {
+      method: "POST",
+      body: {
+        email: email.value.trim(),
+        password: password.value,
+        firstName: firstName.value.trim(),
+        lastName: lastName.value.trim(),
+        dateOfBirth: dateOfBirth.value,
+        guardianEmail: guardian,
+        graduationYear: graduationYear.value,
+        primarySport: primarySport.value || undefined,
+        gender: gender.value,
+        zipCode: zipCode.value || undefined,
+        captchaToken: turnstileToken.value,
+      },
+    });
+
+    // The endpoint creates the account server-side (auto-confirmed, same as
+    // the adult path) but doesn't sign in for us — the signup Turnstile
+    // token it just verified is already consumed, so mint a fresh one for
+    // this sign-in the same way the adult path does.
+    const signInCaptchaToken = await getFreshTurnstileToken();
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: email.value.trim(),
+      password: password.value,
+      ...(signInCaptchaToken && {
+        options: { captchaToken: signInCaptchaToken },
+      }),
+    });
+    if (signInError) throw signInError;
+
+    // Family unit + pending onboarding fields (primary_sport/gender, still
+    // only pending_* metadata at this point — see signup-minor.post.ts) also
+    // get flushed by plugins/auth.client.ts's SIGNED_IN listener, but
+    // awaiting these explicitly here keeps the redirect from racing it.
+    await $fetchAuth("/api/family/create", { method: "POST" });
+    await userStore.initializeUser();
+    loading.value = false;
+    await navigateTo("/dashboard");
+  } catch (err) {
+    const message =
+      (err as { data?: { statusMessage?: string } } | null)?.data
+        ?.statusMessage ??
+      (err instanceof Error ? err.message : "Signup failed");
+    setErrors([{ field: "form", message }]);
+    resetTurnstile();
+    await focusErrorSummary();
+    loading.value = false;
+  }
+};
 
 const handleSignup = async () => {
   // Guard against double-submit (double-click, Enter+click race) — a second
@@ -338,6 +488,27 @@ const handleSignup = async () => {
       ]);
       await focusErrorSummary();
       loading.value = false;
+      return;
+    }
+
+    // Minors (13-17) go through a server endpoint rather than the browser-direct
+    // signup below because guardian_claims is service-role-only and the browser can't
+    // write it directly — naming a guardian itself is optional.
+    if (requiresGuardianInvite(dateOfBirth.value)) {
+      const guardian = guardianEmail.value.trim().toLowerCase();
+      if (guardian && guardian === email.value.trim().toLowerCase()) {
+        setErrors([
+          {
+            field: "guardianEmail",
+            message:
+              "Your parent or guardian needs a different email address than yours.",
+          },
+        ]);
+        await focusErrorSummary();
+        loading.value = false;
+        return;
+      }
+      await submitMinorSignup(guardian);
       return;
     }
   }
@@ -395,6 +566,10 @@ const handleSignup = async () => {
       if (onboardingStep1) {
         signupArgs.push(undefined, onboardingStep1);
       }
+      // Pad to the getFreshCaptchaToken slot (7th–9th are pendingAdmin,
+      // onboardingStep1, inviteToken — none set here beyond the above).
+      while (signupArgs.length < 9) signupArgs.push(undefined);
+      signupArgs.push(getFreshTurnstileToken);
       const authData = await signup(...signupArgs);
 
       if (!authData?.data?.user?.id) {
@@ -402,30 +577,23 @@ const handleSignup = async () => {
       }
 
       userId = authData.data.user.id;
-
-      // Prod requires email confirmation, so Supabase withholds the session
-      // until the link is clicked. handle_new_user() already created the
-      // public.users row server-side (SECURITY DEFINER trigger); everything
-      // below this point needs an authenticated session for RLS, so there's
-      // nothing left to do client-side. Hand off to verify-email instead of
-      // failing — family creation happens on first login (pages/login.vue).
-      if (!authData.data.session) {
-        loading.value = false;
-        const params = new URLSearchParams({ email: validated.email });
-        if (onboardingStep1) {
-          params.set("sport", onboardingStep1.primarySport);
-          params.set("gradYear", String(onboardingStep1.graduationYear));
-        }
-        await navigateTo(`/verify-email?${params.toString()}`);
-        return;
-      }
     } catch (signupErr: unknown) {
-      // Handle "User already registered" error - the account may have been created
-      // in a previous request (race condition or double-submit)
-      const errMessage =
-        signupErr instanceof Error ? signupErr.message : String(signupErr);
+      // /api/auth/signup tags its own failures with a stable `data.code` —
+      // message text is not a contract and changed once already when account
+      // creation moved server-side.
+      // h3 nests `data` inside the serialized error body, so the client sees
+      // it one level deeper than the server set it; read both shapes so this
+      // holds whether the error was thrown locally or came over the wire.
+      const errData = (
+        signupErr as {
+          data?: { code?: string; data?: { code?: string } };
+        } | null
+      )?.data;
+      const errCode = errData?.code ?? errData?.data?.code;
 
-      if (errMessage.includes("already registered")) {
+      // The account may have been created in a previous request (race
+      // condition or double-submit).
+      if (errCode === "email_taken") {
         // Try to get the current session
         const {
           data: { session },
@@ -437,13 +605,11 @@ const handleSignup = async () => {
           // No active session - this is a real error
           throw signupErr;
         }
-      } else if (errMessage.includes("timeout-or-duplicate")) {
-        // Supabase's captcha layer rejected a replayed/expired Turnstile
-        // token — commonly the second half of a double-submit, where the
-        // first request already created the account (confirmation email
-        // sent). There's no session yet (unconfirmed email), so we can't
-        // silently recover a userId here; surface actionable guidance and
-        // reset the widget so a genuine retry gets a fresh token.
+      } else if (errCode === "captcha_failed") {
+        // The Turnstile check rejected a replayed/expired token — commonly
+        // the second half of a double-submit, where the first request already
+        // created the account (verification email sent). Surface actionable
+        // guidance; the widget reset below gets a genuine retry a fresh token.
         throw new Error(
           "We couldn't confirm you're not a robot in time. If you already received a confirmation email, check your inbox — otherwise, please try again.",
         );
@@ -484,7 +650,13 @@ const handleSignup = async () => {
 
     await navigateTo(redirectUrl);
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Signup failed";
+    // Postgrest/Supabase errors carry `.message` but aren't `Error`
+    // instances — fall back to it before the generic string so a rejected
+    // upsert (e.g. a DB trigger check_violation) surfaces its real reason.
+    const message =
+      err instanceof Error
+        ? err.message
+        : ((err as { message?: string } | null)?.message ?? "Signup failed");
     // Set form-level error
     setErrors([{ field: "form", message }]);
     resetTurnstile();

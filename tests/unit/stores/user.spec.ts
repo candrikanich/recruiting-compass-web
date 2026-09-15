@@ -619,15 +619,16 @@ describe("useUserStore", () => {
   });
 
   describe("Email Verification Status", () => {
-    it("should initialize isEmailVerified from session", async () => {
+    it("should initialize isEmailVerified from the profile's email_verified_at", async () => {
       const mockSession = {
         user: {
           id: "user-123",
           email: "test@example.com",
-          email_confirmed_at: "2024-01-02T00:00:00Z",
         },
       };
-      const mockUser = createMockUser();
+      const mockUser = createMockUser({
+        email_verified_at: "2024-01-02T00:00:00Z",
+      });
 
       const { mockSupabase, mockQuery } = getMockSupabase();
 
@@ -646,10 +647,9 @@ describe("useUserStore", () => {
         user: {
           id: "user-123",
           email: "test@example.com",
-          email_confirmed_at: null,
         },
       };
-      const mockUser = createMockUser();
+      const mockUser = createMockUser({ email_verified_at: null });
 
       const { mockSupabase, mockQuery } = getMockSupabase();
 
@@ -671,17 +671,14 @@ describe("useUserStore", () => {
       expect(store.emailVerified).toBe(false);
     });
 
-    it("should refresh verification status from auth", async () => {
-      const mockUser = {
-        id: "user-123",
-        email: "test@example.com",
-        email_confirmed_at: "2024-01-02T00:00:00Z",
-      };
+    it("should refresh verification status from the users table", async () => {
+      const { mockSupabase, mockQuery } = getMockSupabase();
 
-      const { mockSupabase } = getMockSupabase();
-
-      mockSupabase.auth.getUser.mockResolvedValue({
-        data: { user: mockUser },
+      mockSupabase.auth.getSession.mockResolvedValue({
+        data: { session: { user: { id: "user-123" } } },
+      });
+      mockQuery.single.mockResolvedValue({
+        data: { id: "user-123", email_verified_at: "2024-01-02T00:00:00Z" },
         error: null,
       });
 
@@ -689,20 +686,17 @@ describe("useUserStore", () => {
       await store.refreshVerificationStatus();
 
       expect(store.isEmailVerified).toBe(true);
-      expect(mockSupabase.auth.getUser).toHaveBeenCalled();
+      expect(mockSupabase.from).toHaveBeenCalledWith("users");
     });
 
     it("should handle unverified email in refreshVerificationStatus", async () => {
-      const mockUser = {
-        id: "user-123",
-        email: "test@example.com",
-        email_confirmed_at: null,
-      };
+      const { mockSupabase, mockQuery } = getMockSupabase();
 
-      const { mockSupabase } = getMockSupabase();
-
-      mockSupabase.auth.getUser.mockResolvedValue({
-        data: { user: mockUser },
+      mockSupabase.auth.getSession.mockResolvedValue({
+        data: { session: { user: { id: "user-123" } } },
+      });
+      mockQuery.single.mockResolvedValue({
+        data: { id: "user-123", email_verified_at: null },
         error: null,
       });
 
@@ -713,11 +707,14 @@ describe("useUserStore", () => {
     });
 
     it("should handle error in refreshVerificationStatus", async () => {
-      const { mockSupabase } = getMockSupabase();
+      const { mockSupabase, mockQuery } = getMockSupabase();
 
-      mockSupabase.auth.getUser.mockResolvedValue({
-        data: { user: null },
-        error: new Error("Auth error"),
+      mockSupabase.auth.getSession.mockResolvedValue({
+        data: { session: { user: { id: "user-123" } } },
+      });
+      mockQuery.single.mockResolvedValue({
+        data: null,
+        error: new Error("DB error"),
       });
 
       store.isEmailVerified = true;
@@ -740,15 +737,14 @@ describe("useUserStore", () => {
       expect(store.isAuthenticated).toBe(false);
     });
 
-    it("should handle undefined email_confirmed_at as unverified", async () => {
+    it("should handle undefined email_verified_at as unverified", async () => {
       const mockSession = {
         user: {
           id: "user-123",
           email: "test@example.com",
-          email_confirmed_at: undefined,
         },
       };
-      const mockUser = createMockUser();
+      const mockUser = createMockUser({ email_verified_at: undefined });
 
       const { mockSupabase, mockQuery } = getMockSupabase();
 

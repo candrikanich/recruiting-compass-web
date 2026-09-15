@@ -105,7 +105,7 @@ describe("pages/onboarding/index.vue", () => {
 
     expect(wrapper.text()).toContain("Tell us about you");
     expect(wrapper.text()).toContain("1/2");
-    const bar = wrapper.find(".bg-blue-500.h-2");
+    const bar = wrapper.find(".bg-white.h-2");
     expect(bar.attributes("style")).toContain("width: 50%");
   });
 
