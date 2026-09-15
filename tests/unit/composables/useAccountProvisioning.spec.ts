@@ -3,6 +3,7 @@ import type { User } from "@supabase/supabase-js";
 import {
   useAccountProvisioning,
   suppressAutoFamilyCreateOnNextSignIn,
+  resetSuppressAutoFamilyCreate,
 } from "~/composables/useAccountProvisioning";
 import { useAuthFetch } from "~/composables/useAuthFetch";
 import { useUserStore } from "~/stores/user";
@@ -37,6 +38,7 @@ const mockUseOnboarding = vi.mocked(useOnboarding);
 const buildUser = (overrides: Partial<User> = {}): User =>
   ({
     id: "user-123",
+    email: "guardian@example.com",
     user_metadata: {},
     ...overrides,
   }) as User;
@@ -54,6 +56,9 @@ describe("useAccountProvisioning", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    // suppressFamilyCreateForEmail is module-level state, so it can leak across
+    // tests (and across real unrelated sign-ins in the browser — see below).
+    resetSuppressAutoFamilyCreate();
     fetchAuthMock = vi.fn().mockResolvedValue({});
     mockUseAuthFetch.mockReturnValue({ $fetchAuth: fetchAuthMock } as any);
 
@@ -91,14 +96,14 @@ describe("useAccountProvisioning", () => {
     });
   });
 
-  it("skips /api/family/create once when suppressed, then resumes calling it normally", async () => {
+  it("skips /api/family/create once when suppressed for the matching email, then resumes calling it normally", async () => {
     // Found live on QA: the guardian-claim accept flow already handles family setup
     // itself. Without this suppression, this listener's own blind /api/family/create
     // call races it and splits the guardian across two family_units.
-    suppressAutoFamilyCreateOnNextSignIn();
+    suppressAutoFamilyCreateOnNextSignIn("guardian@example.com");
 
     const { ensureAccountProvisioned } = useAccountProvisioning();
-    await ensureAccountProvisioned(buildUser());
+    await ensureAccountProvisioned(buildUser({ email: "guardian@example.com" }));
 
     expect(fetchAuthMock).not.toHaveBeenCalledWith("/api/family/create", {
       method: "POST",
@@ -106,7 +111,57 @@ describe("useAccountProvisioning", () => {
 
     // One-shot: the very next sign-in (not suppressed) calls it as normal.
     fetchAuthMock.mockClear();
-    await ensureAccountProvisioned(buildUser());
+    await ensureAccountProvisioned(buildUser({ email: "guardian@example.com" }));
+
+    expect(fetchAuthMock).toHaveBeenCalledWith("/api/family/create", {
+      method: "POST",
+    });
+  });
+
+  it("email match is case-insensitive and trims whitespace", async () => {
+    suppressAutoFamilyCreateOnNextSignIn("  Guardian@Example.com  ");
+
+    const { ensureAccountProvisioned } = useAccountProvisioning();
+    await ensureAccountProvisioned(buildUser({ email: "guardian@example.com" }));
+
+    expect(fetchAuthMock).not.toHaveBeenCalledWith("/api/family/create", {
+      method: "POST",
+    });
+  });
+
+  it("never suppresses family creation for an unrelated user's sign-in", async () => {
+    // Regression: a bare module-level boolean suppressed family creation for
+    // ANY next sign-in, not just the expected one -- e.g. a second, unrelated
+    // browser tab signing in concurrently while a guardian-claim flow was mid-flight.
+    suppressAutoFamilyCreateOnNextSignIn("guardian@example.com");
+
+    const { ensureAccountProvisioned } = useAccountProvisioning();
+    await ensureAccountProvisioned(buildUser({ email: "someone-else@example.com" }));
+
+    expect(fetchAuthMock).toHaveBeenCalledWith("/api/family/create", {
+      method: "POST",
+    });
+
+    // The pending suppression for the original email is still intact for its
+    // own matching sign-in.
+    fetchAuthMock.mockClear();
+    await ensureAccountProvisioned(buildUser({ email: "guardian@example.com" }));
+
+    expect(fetchAuthMock).not.toHaveBeenCalledWith("/api/family/create", {
+      method: "POST",
+    });
+  });
+
+  it("resetSuppressAutoFamilyCreate clears a pending suppression left by a failed attempt", async () => {
+    // Regression: signup()/login() throwing after suppressAutoFamilyCreateOnNextSignIn()
+    // was called used to leave the flag set forever, silently skipping family
+    // creation for the NEXT sign-in in the same browser session -- even an
+    // unrelated one, since the flag carried no expected-user identity.
+    suppressAutoFamilyCreateOnNextSignIn("guardian@example.com");
+    resetSuppressAutoFamilyCreate();
+
+    const { ensureAccountProvisioned } = useAccountProvisioning();
+    await ensureAccountProvisioned(buildUser({ email: "guardian@example.com" }));
 
     expect(fetchAuthMock).toHaveBeenCalledWith("/api/family/create", {
       method: "POST",
