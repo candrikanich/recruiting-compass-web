@@ -3,19 +3,21 @@
 -- ILIKE + Fuse.js client-side fuzzy re-rank in useSearchConsolidated.ts.
 --
 -- Two signals, combined:
---   1. tsvector/ts_rank over name/address/city/state/conference — relevance
---      ranking, handles stemming ("Wildcats" ~ "Wildcat") but NOT typos.
+--   1. tsvector/ts_rank over name/location/city/state/conference —
+--      relevance ranking, handles stemming ("Wildcats" ~ "Wildcat") but
+--      NOT typos. `schools.location` is the street-address column — there
+--      is no `address` column on this table.
 --   2. pg_trgm similarity() on name — typo tolerance ("Michgan" ~ "Michigan").
 --      pg_trgm is already installed in the `extensions` schema (see
 --      claude/database.md 2026-08-01 entry), reused here, no new extension.
---      Address typo tolerance is NOT covered here (name-only trgm index) —
---      address matches still require FTS token overlap.
+--      location typo tolerance is NOT covered here (name-only trgm index) —
+--      location matches still require FTS token overlap.
 
 ALTER TABLE public.schools
   ADD COLUMN search_vector tsvector
   GENERATED ALWAYS AS (
     setweight(to_tsvector('english', coalesce(name, '')), 'A') ||
-    setweight(to_tsvector('english', coalesce(address, '')), 'B') ||
+    setweight(to_tsvector('english', coalesce(location, '')), 'B') ||
     setweight(to_tsvector('english', coalesce(city, '')), 'B') ||
     setweight(to_tsvector('english', coalesce(state, '')), 'C') ||
     setweight(to_tsvector('english', coalesce(conference, '')), 'C')

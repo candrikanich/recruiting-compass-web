@@ -340,7 +340,7 @@ describe("useSearchConsolidated (extended)", () => {
       expect(call?.[1].filters).not.toHaveProperty("user_id");
     });
 
-    it("school ILIKE fallback (<3 char) searches address alongside name/city/state", async () => {
+    it("school ILIKE fallback (<3 char) searches location alongside name/city/state", async () => {
       const c = useSearchConsolidated();
       c.searchType.value = "schools";
       querySelectMock.mockResolvedValue(ok([]));
@@ -352,7 +352,7 @@ describe("useSearchConsolidated (extended)", () => {
         (args) => args[0] === "schools",
       );
       expect(call?.[1].search?.columns).toEqual(
-        expect.arrayContaining(["name", "address", "city", "state"]),
+        expect.arrayContaining(["name", "location", "city", "state"]),
       );
     });
 
