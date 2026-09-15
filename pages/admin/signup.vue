@@ -318,7 +318,6 @@ definePageMeta({ layout: "public" });
 import { ref, watch } from "vue";
 import { useAuth } from "~/composables/useAuth";
 import { useAuthFetch } from "~/composables/useAuthFetch";
-import { useSupabase } from "~/composables/useSupabase";
 import { useUserStore } from "~/stores/user";
 import { useFormValidation } from "~/composables/useFormValidation";
 import { adminSignupSchema } from "~/utils/validation/schemas";
@@ -338,9 +337,8 @@ const adminToken = ref("");
 const agreeToTerms = ref(false);
 const loading = ref(false);
 
-const { signup } = useAuth();
+const { signup, login } = useAuth();
 const { $fetchAuth } = useAuthFetch();
-const supabase = useSupabase();
 const userStore = useUserStore();
 const {
   errors,
@@ -468,10 +466,12 @@ const handleSignup = async () => {
         "parent",
         undefined, // captchaToken — admin signup doesn't use Turnstile
         undefined, // dateOfBirth — not collected on this form
-        true, // pendingAdmin — carries validated adminToken intent past confirmation
         // NOT skipVerificationEmail: unlike the invite/guardian-claim paths
         // (spec §5), nothing stamps email_verified_at for an admin signup, so
         // the verification email is still the only thing that can verify them.
+        // No pendingAdmin flag either — admin promotion is never carried
+        // forward as metadata (see composables/useAccountProvisioning.ts);
+        // it only ever happens via the synchronous adminToken call below.
       );
 
       if (!authData?.data?.user?.id) {
@@ -483,29 +483,31 @@ const handleSignup = async () => {
 
       userId = authData.data.user.id;
     } catch (signupErr: unknown) {
-      // Handle "User already registered" error
-      const errMessage =
-        signupErr instanceof Error ? signupErr.message : String(signupErr);
-
-      if (errMessage.includes("already registered")) {
-        logger.debug("User already registered, checking current session...");
-
-        // Try to get the current session
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-
-        if (session?.user?.id) {
-          logger.debug(
-            "Session exists for user, proceeding with profile creation",
-          );
-          userId = session.user.id;
-        } else {
-          // No active session - this is a real error
+      // Account creation and admin promotion are separate operations: this
+      // signup() call can succeed while the admin-profile call below still
+      // fails (network blip, cold start, etc), and retrying lands back here.
+      // /api/auth/signup deliberately returns an indistinguishable generic
+      // error for a duplicate email (account-enumeration hardening — see
+      // server/utils/accountCreation.ts), so the error message can't tell us
+      // whether the account already exists.
+      //
+      // Recovery: authenticate with the credentials just submitted. If
+      // they're valid, the account already exists and this is a legitimate
+      // retry — resume with the freshly entered adminToken (still validated
+      // server-side by admin-profile below, never trusted from metadata or
+      // from this recovery path itself). If login also fails, this is a
+      // real signup failure (or a stranger guessing credentials), so the
+      // original error is surfaced unchanged.
+      try {
+        const { data } = await login(validated.email, validated.password);
+        if (!data.session?.user?.id) {
           throw signupErr;
         }
-      } else {
-        // Different error - rethrow it
+        logger.debug(
+          "Signup failed but submitted credentials authenticate an existing account — resuming admin promotion",
+        );
+        userId = data.session.user.id;
+      } catch {
         throw signupErr;
       }
     }
