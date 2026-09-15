@@ -135,4 +135,59 @@ describe("POST /api/auth/signup", () => {
     expect(mockSendVerification).not.toHaveBeenCalled();
     expect(result).toEqual({ userId: "user-1" });
   });
+
+  describe("metadata is never trusted from the request body", () => {
+    // An unauthenticated caller could previously POST metadata: { pending_admin:
+    // true } directly to this public endpoint and have it land in user_metadata
+    // unchanged — admin-profile.post.ts's since-removed pending_admin trust path
+    // then let that self-promote to admin on next sign-in with no adminToken at
+    // all. Only an explicit allowlist of harmless pending onboarding/invite
+    // fields may pass through; anything else, privileged or not, is dropped.
+    it("strips a privileged pending_admin flag from client-supplied metadata", async () => {
+      await call({ metadata: { pending_admin: true } });
+
+      expect(mockCreateUser).toHaveBeenCalledWith(
+        expect.objectContaining({
+          user_metadata: expect.not.objectContaining({ pending_admin: true }),
+        }),
+      );
+    });
+
+    it("strips arbitrary/unrecognized metadata keys, including other privileged-looking flags", async () => {
+      await call({
+        metadata: { is_admin: true, role: "admin", some_other_key: "value" },
+      });
+
+      const userMetadata = mockCreateUser.mock.calls[0][0].user_metadata;
+      expect(userMetadata).not.toHaveProperty("is_admin");
+      expect(userMetadata).not.toHaveProperty("some_other_key");
+      // `role` IS set, but only from the endpoint's own explicit `role` field
+      // (see call() default), never from the metadata blob.
+      expect(userMetadata.role).toBe("parent");
+    });
+
+    it("still allows the harmless allowlisted pending onboarding/invite fields through", async () => {
+      await call({
+        metadata: {
+          pending_primary_sport: "Baseball",
+          pending_graduation_year: "2027",
+          pending_gender: "male",
+          pending_zip_code: "90210",
+          pending_invite_token: "tok-abc",
+        },
+      });
+
+      expect(mockCreateUser).toHaveBeenCalledWith(
+        expect.objectContaining({
+          user_metadata: expect.objectContaining({
+            pending_primary_sport: "Baseball",
+            pending_graduation_year: "2027",
+            pending_gender: "male",
+            pending_zip_code: "90210",
+            pending_invite_token: "tok-abc",
+          }),
+        }),
+      );
+    });
+  });
 });

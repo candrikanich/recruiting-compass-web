@@ -118,16 +118,16 @@ describe("useAccountProvisioning", () => {
     await expect(ensureAccountProvisioned(buildUser())).resolves.toBeUndefined();
   });
 
-  it("applies the pending admin flag when metadata carries it and the user isn't already admin", async () => {
+  it("never calls admin-profile from a pending_admin metadata flag — admin promotion only happens via a synchronous, freshly-validated adminToken call from pages/admin/signup.vue", async () => {
     const { ensureAccountProvisioned } = useAccountProvisioning();
     await ensureAccountProvisioned(
       buildUser({ user_metadata: { pending_admin: true } }),
     );
 
-    expect(fetchAuthMock).toHaveBeenCalledWith("/api/auth/admin-profile", {
-      method: "POST",
-      body: { fullName: "Existing Name" },
-    });
+    expect(fetchAuthMock).not.toHaveBeenCalledWith(
+      "/api/auth/admin-profile",
+      expect.anything(),
+    );
   });
 
   it("does not call admin-profile when there is no pending admin intent", async () => {
