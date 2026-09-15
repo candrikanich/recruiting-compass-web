@@ -60,12 +60,18 @@ export async function createVerifiedAccount(
   }
 
   if (!skipVerificationEmail) {
-    const { token } = await issueVerificationToken(data.user.id);
-    const emailResult = await sendVerificationEmail({ to: email, token });
-    if (!emailResult.success) {
-      // Non-fatal — the account exists and is usable; the dashboard resend
-      // button covers this. Log for visibility only.
-      logger.error("Verification email failed to send", emailResult.error);
+    // Auth account creation above is already committed — token issuance and
+    // sending are non-fatal from here on. A failure here must not turn into
+    // a signup failure response (the account exists and is usable); the
+    // dashboard resend button covers both cases. Log for visibility only.
+    try {
+      const { token } = await issueVerificationToken(data.user.id);
+      const emailResult = await sendVerificationEmail({ to: email, token });
+      if (!emailResult.success) {
+        logger.error("Verification email failed to send", emailResult.error);
+      }
+    } catch (err) {
+      logger.error("Verification token issuance failed", err);
     }
   }
 
