@@ -352,6 +352,12 @@ async function signupAndConnect() {
     // spurious solo family, colliding with idx_player_one_family the same way
     // the guardian-claim flow did (see suppressAutoFamilyCreateOnNextSignIn).
     suppressAutoFamilyCreateOnNextSignIn();
+    // inviteToken intentionally omitted here (not token.value): this page
+    // performs its own explicit accept call below immediately after signup.
+    // Passing it would also set pending_invite_token metadata, which the
+    // SIGNED_IN listener's useAccountProvisioning consumes independently --
+    // both calls would then race /api/family/invite/[token]/accept over the
+    // same single-use invitation. This page is the sole owner of acceptance.
     const authData = await signup(
       signupEmail.value,
       signupPassword.value,
@@ -361,7 +367,7 @@ async function signupAndConnect() {
       invite.value.role === "player" ? signupDateOfBirth.value : undefined,
       undefined,
       undefined,
-      token.value,
+      undefined,
       getFreshTurnstileToken,
       true, // skipVerificationEmail — the invite accept stamps email_verified_at
     );
@@ -369,10 +375,10 @@ async function signupAndConnect() {
     if (!authData?.data?.user?.id) throw new Error("Signup failed");
 
     // signup() creates the account server-side and always returns a real
-    // session now (see composables/useAuth.ts) — the invite acceptance is
-    // still deferred to first sign-in (useAccountProvisioning,
-    // pending_invite_token metadata set above), but there's no more
-    // no-session branch to fall back to here.
+    // session now (see composables/useAuth.ts). Invite acceptance happens
+    // explicitly below, not via useAccountProvisioning's SIGNED_IN listener
+    // (see inviteToken omission above) — there's no more no-session branch
+    // to fall back to here.
 
     const userRecord: Record<string, unknown> = {
       id: authData.data.user.id,
