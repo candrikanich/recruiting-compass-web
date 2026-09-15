@@ -290,7 +290,9 @@ export default defineEventHandler(
                       "User row still exists after deletion (likely a foreign key constraint)"),
                 });
                 logger.error(
-                  `users row ${targetUserId} (${targetEmail}) still exists after bulk delete — reporting failure instead of a false success`,
+                  verifyError
+                    ? `Could not confirm deletion of users row ${targetUserId} (${targetEmail}) — verification read failed, state unknown`
+                    : `users row ${targetUserId} (${targetEmail}) still exists after bulk delete — reporting failure instead of a false success`,
                 );
                 return;
               }
