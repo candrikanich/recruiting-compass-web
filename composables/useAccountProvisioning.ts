@@ -1,6 +1,5 @@
 import type { User } from "@supabase/supabase-js";
 import { useAuthFetch } from "~/composables/useAuthFetch";
-import { useUserStore } from "~/stores/user";
 import { usePreferenceManager } from "~/composables/usePreferenceManager";
 import { useOnboarding } from "~/composables/useOnboarding";
 import type { PlayerDetails } from "~/types/models";
@@ -26,11 +25,17 @@ export const suppressAutoFamilyCreateOnNextSignIn = () => {
 /**
  * Backfills server-side state that a signup couldn't set up itself because
  * Supabase withheld the session until email confirmation (prod's
- * confirm-email setting) — the family unit, an admin signup's is_admin flag
- * (pending_admin metadata, see pages/admin/signup.vue), step-1 onboarding
- * fields drafted on the signup form itself (pending_* metadata, see
+ * confirm-email setting) — the family unit, step-1 onboarding fields
+ * drafted on the signup form itself (pending_* metadata, see
  * pages/signup.vue), and a pending family-invite acceptance (pending_invite_token
  * metadata, see pages/join.vue) so a new user doesn't re-answer them post-confirm.
+ *
+ * Admin promotion is deliberately NOT handled here. It never carries forward
+ * as trusted metadata off the client-settable signup contract — it is
+ * granted only via a synchronous, freshly-validated adminToken call to
+ * /api/auth/admin-profile from pages/admin/signup.vue itself. Accounts are
+ * always auto-confirmed with a session issued immediately, so that
+ * synchronous call is the only path, and there is nothing to backfill here.
  *
  * Call this on every SIGNED_IN event, not just an explicit /login form
  * submit — Supabase's own confirmation-link redirect establishes a session
@@ -43,7 +48,6 @@ export const suppressAutoFamilyCreateOnNextSignIn = () => {
  */
 export const useAccountProvisioning = () => {
   const { $fetchAuth } = useAuthFetch();
-  const userStore = useUserStore();
 
   const applyPendingOnboardingStep1 = async (user: User) => {
     const metadata = user.user_metadata ?? {};
@@ -125,24 +129,6 @@ export const useAccountProvisioning = () => {
         await $fetchAuth("/api/family/create", { method: "POST" });
       } catch (err) {
         logger.error("Failed to ensure family unit on sign-in", err);
-      }
-    }
-
-    if (
-      user.user_metadata?.pending_admin === true &&
-      !userStore.user?.is_admin
-    ) {
-      try {
-        await $fetchAuth("/api/auth/admin-profile", {
-          method: "POST",
-          body: {
-            fullName:
-              userStore.user?.full_name ?? user.user_metadata?.full_name ?? "",
-          },
-        });
-        await userStore.initializeUser();
-      } catch (err) {
-        logger.error("Failed to apply pending admin flag on sign-in", err);
       }
     }
 

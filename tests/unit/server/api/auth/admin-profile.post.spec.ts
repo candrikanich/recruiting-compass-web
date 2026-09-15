@@ -233,18 +233,23 @@ describe("POST /api/auth/admin-profile", () => {
     });
   });
 
-  describe("pending_admin trust path (lazy apply after email confirmation)", () => {
-    it("skips adminToken validation when the caller's own session has pending_admin: true", async () => {
+  describe("pending_admin metadata is never trusted", () => {
+    // A prior version trusted a `pending_admin` flag out of the caller's own
+    // JWT metadata as an alternative to the adminToken check. Since
+    // /api/auth/signup could be called directly with arbitrary metadata,
+    // that flag was attacker-settable — this asserted the escalation.
+    // adminToken validation must be the ONLY path now, unconditionally.
+    it("still requires a valid adminToken even when session metadata carries pending_admin: true", async () => {
       mockAuthState.userMetadata = { pending_admin: true };
       mockBodyState.adminToken = null;
 
-      const result = await handler({} as Parameters<typeof handler>[0]);
-
-      expect(result).toEqual({ success: true });
+      await expect(
+        handler({} as Parameters<typeof handler>[0]),
+      ).rejects.toMatchObject({ statusCode: 403 });
       expect(validateAdminToken).not.toHaveBeenCalled();
     });
 
-    it("still applies is_admin: true via the pending_admin path", async () => {
+    it("does not apply is_admin: true from pending_admin metadata alone", async () => {
       mockAuthState.userMetadata = { pending_admin: true };
       mockBodyState.adminToken = null;
       const mockEq = vi.fn(() => Promise.resolve({ data: null, error: null }));
@@ -252,32 +257,10 @@ describe("POST /api/auth/admin-profile", () => {
       const mockFrom = vi.fn(() => ({ update: mockUpdate }));
       vi.mocked(useSupabaseAdmin).mockReturnValue({ from: mockFrom } as any);
 
-      await handler({} as Parameters<typeof handler>[0]);
-
-      expect(mockUpdate).toHaveBeenCalledWith(
-        expect.objectContaining({ is_admin: true }),
-      );
-    });
-
-    it("still requires a valid adminToken when pending_admin is not set", async () => {
-      mockAuthState.userMetadata = undefined;
-      mockBodyState.adminToken = null;
-
       await expect(
         handler({} as Parameters<typeof handler>[0]),
       ).rejects.toMatchObject({ statusCode: 403 });
-    });
-
-    it("does not trust a client-supplied pending_admin — only the verified session's own metadata", async () => {
-      // requireAuth() is mocked here to represent the verified JWT's own
-      // metadata; a request body can't influence it, so this asserts the
-      // trust boundary is the session, not anything in readBody().
-      mockAuthState.userMetadata = { pending_admin: false };
-      mockBodyState.adminToken = null;
-
-      await expect(
-        handler({} as Parameters<typeof handler>[0]),
-      ).rejects.toMatchObject({ statusCode: 403 });
+      expect(mockUpdate).not.toHaveBeenCalled();
     });
   });
 

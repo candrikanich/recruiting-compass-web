@@ -2,9 +2,18 @@
  * POST /api/auth/admin-profile
  * Creates or updates an admin user profile during the admin signup flow.
  *
- * Security: requires a valid adminToken in the request body — the same token
- * validated by /api/auth/validate-admin-token earlier in the signup flow.
- * This prevents unauthenticated callers from escalating any account to admin.
+ * Security: requires a valid adminToken in the request body on every call —
+ * the same token validated by /api/auth/validate-admin-token earlier in the
+ * signup flow. Accounts are always auto-confirmed with a session issued
+ * immediately (see server/utils/accountCreation.ts), so the admin signup
+ * page calls this endpoint synchronously with the real token right after
+ * signup — there is no legitimate case where a session-less "carry the
+ * intent forward" path is needed. A prior version trusted a `pending_admin`
+ * flag out of the user's own JWT metadata as an alternative to the token
+ * check; since /api/auth/signup could be called directly with arbitrary
+ * metadata, that flag was attacker-settable and let any signup escalate
+ * itself to admin on next sign-in. Never resurrect that shortcut — always
+ * validate a freshly supplied adminToken here.
  */
 
 import { defineEventHandler, readBody, createError } from "h3";
@@ -33,35 +42,21 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    // Two ways to reach this endpoint, both requiring the adminToken to have
-    // been validated at some point — never trusted from the request body alone:
-    // 1. Straight after admin signup (session already present, e.g. QA/E2E
-    //    where confirm-email is off): adminToken is supplied fresh and
-    //    validated here, same as always.
-    // 2. Lazily on first login, once email confirmation is done (prod):
-    //    the adminToken was already validated at signup time and the intent
-    //    was carried forward as `pending_admin` in the user's own signUp()
-    //    metadata — pulled from the verified JWT via requireAuth(), not from
-    //    anything the client asserts in this request, so it can't be spoofed.
-    const hasPendingAdminIntent =
-      authUser.user_metadata?.pending_admin === true;
+    // Require a valid admin token — prevents unauthenticated privilege
+    // escalation. Never trusted from anything but a fresh, validated token.
+    if (!adminToken || typeof adminToken !== "string") {
+      logger.warn("Admin profile creation attempted without admin token", {
+        userId: authUser.id,
+      });
+      throw createError({ statusCode: 403, statusMessage: "Forbidden" });
+    }
 
-    if (!hasPendingAdminIntent) {
-      if (!adminToken || typeof adminToken !== "string") {
-        logger.warn("Admin profile creation attempted without admin token", {
-          userId: authUser.id,
-        });
-        throw createError({ statusCode: 403, statusMessage: "Forbidden" });
-      }
-
-      const config = useRuntimeConfig(event);
-      if (!validateAdminToken(adminToken, config.adminTokenSecret)) {
-        logger.warn(
-          "Admin profile creation attempted with invalid admin token",
-          { userId: authUser.id },
-        );
-        throw createError({ statusCode: 403, statusMessage: "Forbidden" });
-      }
+    const config = useRuntimeConfig(event);
+    if (!validateAdminToken(adminToken, config.adminTokenSecret)) {
+      logger.warn("Admin profile creation attempted with invalid admin token", {
+        userId: authUser.id,
+      });
+      throw createError({ statusCode: 403, statusMessage: "Forbidden" });
     }
 
     // Use admin client to bypass RLS
