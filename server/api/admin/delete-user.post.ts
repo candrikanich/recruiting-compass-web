@@ -180,7 +180,37 @@ export default defineEventHandler(
         }
       }
 
-      // 7. Delete user from auth system (if admin API is available)
+      // 7. Verify the primary user record is actually gone before proceeding.
+      // A failed read must NOT be treated as proof of deletion.
+      const { data: verifyRow, error: verifyError } = await supabaseAdmin
+        .from("users")
+        .select("id")
+        .eq("id", targetUserId)
+        .maybeSingle();
+
+      if (verifyError) {
+        logger.error(
+          `Deletion verification query failed for ${targetEmail} (${targetUserId}):`,
+          verifyError,
+        );
+        throw createError({
+          statusCode: 500,
+          statusMessage:
+            "Could not verify user deletion; auth record was not removed",
+        });
+      }
+
+      if (verifyRow) {
+        logger.error(
+          `User ${targetEmail} (${targetUserId}) still present in users table after delete attempt`,
+        );
+        throw createError({
+          statusCode: 500,
+          statusMessage: "User deletion did not complete; user record still exists",
+        });
+      }
+
+      // 8. Delete user from auth system (if admin API is available)
       let authDeleted = false;
       try {
         if (supabaseAdmin.auth.admin?.deleteUser) {
@@ -208,7 +238,7 @@ export default defineEventHandler(
         // This is non-fatal since we already deleted all user data above
       }
 
-      // 8. Log successful deletion
+      // 9. Log successful deletion
       logger.info(
         `User ${targetEmail} (${targetUserId}) and all associated data deleted from ${dbEnv} by admin ${user.id}. Auth record deleted: ${authDeleted}`,
       );
