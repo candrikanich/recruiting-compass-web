@@ -283,6 +283,13 @@
                 loading ? "Creating admin account..." : "Create Admin Account"
               }}
             </button>
+
+            <!-- Cloudflare Turnstile (flag-gated, renders only when site key set) -->
+            <div
+              v-if="turnstileEnabled"
+              ref="turnstileEl"
+              class="flex justify-center"
+            />
           </form>
 
           <!-- Divider -->
@@ -315,7 +322,8 @@
 <script setup lang="ts">
 definePageMeta({ layout: "public" });
 
-import { ref, watch } from "vue";
+import { ref, computed, watch } from "vue";
+import { useRuntimeConfig } from "#app";
 import { useAuth } from "~/composables/useAuth";
 import { useAuthFetch } from "~/composables/useAuthFetch";
 import { useSupabase } from "~/composables/useSupabase";
@@ -338,7 +346,113 @@ const adminToken = ref("");
 const agreeToTerms = ref(false);
 const loading = ref(false);
 
-const { signup } = useAuth();
+// --- Turnstile (optional, flag-gated) ----------------------------------------
+// Supabase Attack Protection requires a captcha token on EVERY auth call it
+// guards, including the recovery login below — not just the initial signup.
+// Tokens are single-use, so the recovery path needs its own freshly-minted
+// token rather than replaying the one already spent on signup().
+const runtimeConfig = useRuntimeConfig();
+const turnstileSiteKey = computed(
+  () => runtimeConfig.public?.turnstileSiteKey ?? "",
+);
+const turnstileEnabled = computed(() => turnstileSiteKey.value.length > 0);
+const turnstileToken = ref<string | undefined>(undefined);
+const turnstileEl = ref<HTMLDivElement | null>(null);
+const turnstileWidgetId = ref<string | undefined>(undefined);
+
+const TURNSTILE_SCRIPT_SRC =
+  "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+
+type TurnstileGlobal = {
+  render: (
+    el: HTMLElement,
+    options: {
+      sitekey: string;
+      action?: string;
+      callback: (token: string) => void;
+      "expired-callback"?: () => void;
+    },
+  ) => string;
+  reset: (widgetId?: string) => void;
+};
+
+function resetTurnstile() {
+  const w = window as unknown as { turnstile?: TurnstileGlobal };
+  turnstileToken.value = undefined;
+  if (w.turnstile && turnstileWidgetId.value) {
+    w.turnstile.reset(turnstileWidgetId.value);
+  }
+}
+
+function loadTurnstileScript(): Promise<void> {
+  return new Promise((resolve) => {
+    const w = window as unknown as { turnstile?: TurnstileGlobal };
+    if (w.turnstile) {
+      resolve();
+      return;
+    }
+    const existing = document.querySelector<HTMLScriptElement>(
+      `script[src="${TURNSTILE_SCRIPT_SRC}"]`,
+    );
+    const script = existing ?? document.createElement("script");
+    script.addEventListener("load", () => resolve());
+    script.addEventListener("error", () => resolve());
+    if (!existing) {
+      try {
+        script.src = TURNSTILE_SCRIPT_SRC;
+        script.async = true;
+        document.head.appendChild(script);
+      } catch {
+        resolve();
+      }
+    }
+  });
+}
+
+watch(
+  [turnstileEnabled, turnstileEl],
+  async ([enabled, el]) => {
+    if (!enabled || !el || turnstileWidgetId.value) return;
+    try {
+      await loadTurnstileScript();
+      const w = window as unknown as { turnstile?: TurnstileGlobal };
+      if (w.turnstile && el) {
+        turnstileWidgetId.value = w.turnstile.render(el, {
+          sitekey: turnstileSiteKey.value,
+          action: "admin_signup",
+          callback: (token: string) => {
+            turnstileToken.value = token;
+          },
+          "expired-callback": () => {
+            turnstileToken.value = undefined;
+          },
+        });
+      }
+    } catch {
+      // Widget failure is non-fatal — Supabase verifies server-side only
+      // when CAPTCHA is enabled in the dashboard; otherwise auth proceeds.
+    }
+  },
+  { flush: "post", immediate: true },
+);
+
+// Resets the widget and waits for its non-interactive re-verification to
+// mint a new token, since the signup() token above is already consumed by
+// the time we know a recovery login is needed.
+async function mintFreshTurnstileToken(
+  timeoutMs = 5000,
+): Promise<string | undefined> {
+  if (!turnstileEnabled.value) return undefined;
+  resetTurnstile();
+  const start = Date.now();
+  while (!turnstileToken.value && Date.now() - start < timeoutMs) {
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
+  return turnstileToken.value;
+}
+// ---------------------------------------------------------------------------
+
+const { signup, login } = useAuth();
 const { $fetchAuth } = useAuthFetch();
 const supabase = useSupabase();
 const userStore = useUserStore();
@@ -466,7 +580,7 @@ const handleSignup = async () => {
         validated.password,
         validated.fullName as string,
         "parent",
-        undefined, // captchaToken — admin signup doesn't use Turnstile
+        turnstileToken.value,
         undefined, // dateOfBirth — not collected on this form
         true, // pendingAdmin — carries validated adminToken intent past confirmation
         // NOT skipVerificationEmail: unlike the invite/guardian-claim paths
@@ -501,8 +615,27 @@ const handleSignup = async () => {
           );
           userId = session.user.id;
         } else {
-          // No active session - this is a real error
-          throw signupErr;
+          // No active session — the credentials just entered are still the
+          // account's real credentials, so recover by logging in rather than
+          // failing outright. The signup() token above is already consumed
+          // (Turnstile tokens are single-use), so mint a fresh one here.
+          logger.debug(
+            "No active session, attempting recovery login with a fresh Turnstile token...",
+          );
+
+          const recoveryCaptchaToken = await mintFreshTurnstileToken();
+          const loginResult = await login(
+            validated.email,
+            validated.password,
+            false,
+            recoveryCaptchaToken,
+          );
+
+          if (!loginResult?.data?.session?.user?.id) {
+            throw signupErr;
+          }
+
+          userId = loginResult.data.session.user.id;
         }
       } else {
         // Different error - rethrow it
