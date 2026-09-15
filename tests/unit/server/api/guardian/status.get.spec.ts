@@ -74,10 +74,19 @@ describe("GET /api/guardian/status", () => {
 
     expect(result).toEqual({
       locked: true,
+      pending: true,
       guardianEmailMasked: null,
       expiresAt: null,
       status: "none",
     });
+  });
+
+  it("mirrors `pending` to `locked` for the deployed iOS client's decode", async () => {
+    mockUserRow.value = { role: "player", date_of_birth: "2000-01-01", guardian_consent_at: null };
+
+    const result = await statusHandler(fakeEvent);
+
+    expect(result.pending).toBe(result.locked);
   });
 
   it("returns status 'pending' and locked:true for an outstanding claim", async () => {
