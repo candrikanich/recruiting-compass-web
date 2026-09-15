@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { sendEmail } from "~/server/utils/emailService";
 
 const mockState = {
   userId: "user-123",
@@ -123,5 +124,12 @@ describe("POST /api/feedback", () => {
     await expect(handler(makeEvent(validBody))).rejects.toMatchObject({
       statusCode: 500,
     });
+  });
+
+  it("wraps the feedback email body in the shared branded layout", async () => {
+    await handler(makeEvent(validBody));
+    const calls = vi.mocked(sendEmail).mock.calls;
+    const html = calls[calls.length - 1][0].html;
+    expect(html).toContain('alt="The Recruiting Compass"');
   });
 });

@@ -130,7 +130,18 @@ export default defineEventHandler(
       }
 
       // 6. Delete all user data from database tables in order of dependencies
-      // Only include tables that actually exist in the schema
+      // Only include tables that actually exist in the schema.
+      //
+      // "users" is deliberately NOT in this list — it's deleted as its own,
+      // non-swallowed step below (step 6b), because two FK columns are NO ACTION
+      // (RESTRICT, not CASCADE or SET NULL) and will silently block the users-row
+      // delete if left in place: guardian_claims.claimed_by, and users' own
+      // self-referencing guardian_consent_by. Neither table/column appeared in
+      // this list before, and this endpoint swallowed every per-table error and
+      // always reported success — so a guardian who had ever confirmed a claim
+      // could never actually be deleted through this endpoint, silently. Found
+      // live on QA: deleting a parent left the public.users + auth.users rows
+      // fully intact with no error surfaced anywhere.
       const tableDeleteAttempts = [
         { table: "parent_view_log", columns: ["parent_user_id", "athlete_id"] },
         { table: "user_preferences", columns: ["user_id"] },
@@ -150,7 +161,9 @@ export default defineEventHandler(
         { table: "family_invitations", columns: ["invited_by"] },
         { table: "family_members", columns: ["user_id"] },
         { table: "family_units", columns: ["created_by_user_id"] },
-        { table: "users", columns: ["id"] },
+        // NO ACTION FK to users.id -- must be cleared before the users delete,
+        // not just before it happens to matter for THIS user's own claim.
+        { table: "guardian_claims", columns: ["claimed_by"] },
       ];
 
       for (const { table, columns } of tableDeleteAttempts) {
@@ -178,6 +191,82 @@ export default defineEventHandler(
             error,
           );
         }
+      }
+
+      // 6a. Clear the self-referencing guardian_consent_by FK (also NO ACTION,
+      // not auto-nulled by the DB) on any OTHER user's row that names this user
+      // as the guardian who confirmed them.
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { error: consentClearError } = await (supabaseAdmin as any)
+          .from("users")
+          .update({
+            guardian_consent_by: null,
+            guardian_consent_at: null,
+            guardian_consent_terms_version: null,
+          })
+          .eq("guardian_consent_by", targetUserId);
+        if (consentClearError) {
+          logger.warn(
+            `Failed to clear guardian_consent_by referencing ${targetUserId}:`,
+            consentClearError,
+          );
+        }
+      } catch (error) {
+        logger.warn(
+          `Error clearing guardian_consent_by referencing ${targetUserId}:`,
+          error,
+        );
+      }
+
+      // 6b. Delete the users row itself as its own step, NOT swallowed like the
+      // tables above -- this is the row the whole endpoint exists to remove, and
+      // reporting success without it actually being gone is the exact ghost-data
+      // bug this fix closes. Verified by re-selecting afterward rather than
+      // trusting the delete call's own (sometimes silent) response.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error: usersDeleteError } = await (supabaseAdmin as any)
+        .from("users")
+        .delete()
+        .eq("id", targetUserId);
+
+      if (usersDeleteError) {
+        logger.error(
+          `Failed to delete users row ${targetUserId} (${targetEmail}):`,
+          usersDeleteError,
+        );
+      }
+
+      const { data: stillExists, error: verifyError } = await (
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        supabaseAdmin as any
+      )
+        .from("users")
+        .select("id")
+        .eq("id", targetUserId)
+        .maybeSingle();
+
+      if (verifyError) {
+        logger.error(
+          `Could not verify deletion of users row ${targetUserId} (${targetEmail}):`,
+          verifyError,
+        );
+        throw createError({
+          statusCode: 500,
+          statusMessage: `Could not confirm user deletion: verification read failed (${verifyError.message ?? "unknown database error"})`,
+        });
+      }
+
+      if (stillExists) {
+        logger.error(
+          `users row ${targetUserId} (${targetEmail}) still exists after delete -- reporting failure instead of a false success`,
+        );
+        throw createError({
+          statusCode: 500,
+          statusMessage: usersDeleteError
+            ? `Could not delete user: ${usersDeleteError.message ?? "unknown database error"}`
+            : "Could not delete user: the row still exists after deletion for an unknown reason",
+        });
       }
 
       // 7. Delete user from auth system (if admin API is available)

@@ -110,7 +110,12 @@ describe("/join page", () => {
     (global.navigateTo as ReturnType<typeof vi.fn>).mockResolvedValue(
       undefined,
     );
-    mockSignup.mockResolvedValue({ data: { user: { id: "new-u-1" } } });
+    mockSignup.mockResolvedValue({
+      data: {
+        user: { id: "new-u-1" },
+        session: { access_token: "tok", refresh_token: "tok" },
+      },
+    });
   });
 
   describe("loading state", () => {
@@ -323,7 +328,12 @@ describe("/join page", () => {
         })
         .mockResolvedValueOnce({ success: true }); // accept
 
-      mockSignup.mockResolvedValueOnce({ data: { user: { id: "u2" } } });
+      mockSignup.mockResolvedValueOnce({
+        data: {
+          user: { id: "u2" },
+          session: { access_token: "tok", refresh_token: "tok" },
+        },
+      });
       mockUserStore.isAuthenticated = false;
       mockUserStore.user.value = null;
 
@@ -366,6 +376,12 @@ describe("/join page", () => {
         expect.any(String),
         "player",
         undefined, // captchaToken (Turnstile disabled in test)
+        expect.any(String), // dateOfBirth
+        undefined, // pendingAdmin
+        undefined, // onboardingStep1
+        "valid-token-123", // inviteToken -- carried across the confirmation gap
+        expect.any(Function), // getFreshCaptchaToken -- mints a fresh token before sign-in
+        true, // skipVerificationEmail -- the accept endpoint stamps verification
       );
       expect(mockFetch).toHaveBeenCalledWith(
         "/api/family/invite/valid-token-123/accept",
@@ -434,5 +450,6 @@ describe("/join page", () => {
       expect(mockSignup).toHaveBeenCalled();
       expect(global.navigateTo).toHaveBeenCalledWith("/dashboard");
     });
+
   });
 });

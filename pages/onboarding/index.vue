@@ -1,42 +1,51 @@
 <template>
-  <div
-    class="min-h-screen bg-linear-to-br from-blue-50 to-indigo-100 px-4 py-12"
-  >
-    <div class="mx-auto max-w-2xl">
-      <!-- Header -->
-      <div class="mb-8 text-center">
-        <h1 class="mb-2 text-3xl font-bold text-slate-900">
-          Welcome to The Recruiting Compass
-        </h1>
-        <p class="mb-6 text-slate-600">
-          Let's get you set up in just two steps
-        </p>
+  <div class="relative min-h-screen overflow-hidden bg-emerald-600">
+    <!-- Multi-Sport Field Background -->
+    <MultiSportFieldBackground />
 
-        <!-- Progress Indicator -->
-        <div class="mb-8 flex items-center justify-between">
-          <div class="flex-1">
-            <div class="h-2 w-full rounded-full bg-slate-200">
-              <div
-                :style="{ width: `${progressPercentage}%` }"
-                class="h-2 rounded-full bg-blue-500 transition-all duration-300"
-              ></div>
+    <div
+      class="relative z-10 flex min-h-screen items-center justify-center px-6 py-12"
+    >
+      <div class="w-full max-w-2xl">
+        <!-- Header -->
+        <div class="mb-8 text-center">
+          <img
+            src="~/assets/logos/recruiting-compass-stacked.svg"
+            alt="The Recruiting Compass - Find your path, make your move"
+            class="mx-auto w-80"
+          />
+          <h1 class="mt-6 mb-2 text-2xl font-bold text-white">
+            Welcome to The Recruiting Compass
+          </h1>
+          <p class="mb-6 text-white/90">
+            Let's get you set up in just two steps
+          </p>
+
+          <!-- Progress Indicator -->
+          <div class="mb-8 flex items-center justify-between">
+            <div class="flex-1">
+              <div class="h-2 w-full rounded-full bg-white/30">
+                <div
+                  :style="{ width: `${progressPercentage}%` }"
+                  class="h-2 rounded-full bg-white transition-all duration-300"
+                ></div>
+              </div>
             </div>
+            <span class="ml-4 text-sm font-medium text-white"
+              >{{ currentStep }}/{{ totalSteps }}</span
+            >
           </div>
-          <span class="ml-4 text-sm font-medium text-slate-700"
-            >{{ currentStep }}/{{ totalSteps }}</span
-          >
         </div>
-      </div>
 
-      <!-- Screen Container -->
-      <div
-        ref="stepContainer"
-        role="region"
-        tabindex="-1"
-        :aria-label="`Step ${currentStep} of ${totalSteps}`"
-        :aria-busy="loading"
-        class="mb-8 rounded-lg bg-white p-8 shadow-lg focus:outline-none"
-      >
+        <!-- Screen Container -->
+        <div
+          ref="stepContainer"
+          role="region"
+          tabindex="-1"
+          :aria-label="`Step ${currentStep} of ${totalSteps}`"
+          :aria-busy="loading"
+          class="mb-8 rounded-2xl border border-white/20 bg-white/95 p-8 shadow-2xl backdrop-blur-xs focus:outline-none"
+        >
         <!-- Screen 1: Tell us about you -->
         <div v-if="currentStep === 1" class="space-y-6">
           <h2 class="mb-4 text-2xl font-bold text-slate-900">
@@ -211,6 +220,7 @@
           {{ currentStep === totalSteps ? "Go to your dashboard →" : "Next" }}
         </button>
       </div>
+      </div>
     </div>
   </div>
 </template>
@@ -225,13 +235,18 @@ import { useNuxProgress } from "~/composables/useNuxProgress";
 import { createClientLogger } from "~/utils/logger";
 import { getGraduationYearOptions } from "~/utils/graduationYears";
 import { recommendationToSchoolDraft } from "~/utils/schoolRecommendations";
+// The bare <MultiSportFieldBackground /> tag silently resolves to nothing
+// without this — Nuxt auto-imports components/Auth/*.vue under the
+// Auth-prefixed tag; pages/signup.vue and pages/login.vue only work because
+// they import it explicitly.
+import MultiSportFieldBackground from "~/components/Auth/MultiSportFieldBackground.vue";
 import type { PlayerDetails } from "~/types/models";
 import type { School } from "~/types";
 import type { SchoolRecommendation } from "~/types/schoolRecommendations";
 
 const logger = createClientLogger("Onboarding");
 
-definePageMeta({ layout: "default" });
+definePageMeta({ layout: "public" });
 
 const { saveOnboardingStep, completeOnboarding, getOnboardingProgress } =
   useOnboarding();

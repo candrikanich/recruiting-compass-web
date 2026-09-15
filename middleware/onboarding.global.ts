@@ -29,8 +29,16 @@ const SPORT_PICK_ROUTE = "/onboarding/select-sport";
 // exempt so the gate can't redirect-loop onto itself.
 const EXEMPT_EXACT_PATHS = new Set(getPublicRoutes());
 
+// /verify-email/<token> is a dynamic route, so the exact-match set can't cover
+// it. Without the prefix check an authenticated-but-not-onboarded user clicking
+// the link is bounced to /onboarding before the page's onMounted ever fires the
+// verification POST — the token is silently never consumed.
 function isExemptPath(path: string): boolean {
-  return path.startsWith(ONBOARDING_ROUTE) || EXEMPT_EXACT_PATHS.has(path);
+  return (
+    path.startsWith(ONBOARDING_ROUTE) ||
+    path.startsWith("/verify-email/") ||
+    EXEMPT_EXACT_PATHS.has(path)
+  );
 }
 
 export function shouldRedirectToOnboarding(input: {

@@ -20,6 +20,12 @@ const state = {
   usersUpdateSpy: vi.fn((_payload: unknown) => ({
     eq: () => Promise.resolve({ error: null }),
   })),
+  // Separate from usersUpdateSpy so the email-verification stamp (a distinct
+  // .update() call on the same table) doesn't get mixed into guardian-consent
+  // call assertions below.
+  verifyStampSpy: vi.fn((_payload: unknown) => ({
+    eq: () => ({ is: () => Promise.resolve({ error: null }) }),
+  })),
   existingMember: null as object | null,
   inviterProfile: { full_name: "Alice Smith" },
   family: { family_name: "Smith Family" } as {
@@ -126,7 +132,10 @@ vi.mock("~/server/utils/supabase", () => ({
               single: () =>
                 Promise.resolve({ data: state.inviterProfile, error: null }),
             }),
-          update: state.usersUpdateSpy,
+          update: (payload: Record<string, unknown>) =>
+            "email_verified_at" in payload
+              ? state.verifyStampSpy(payload)
+              : state.usersUpdateSpy(payload),
         };
       }
       if (table === "family_units") {
@@ -356,6 +365,19 @@ describe("POST /api/family/invite/[token]/accept", () => {
     state.usersUpdateSpy = vi.fn((_payload: unknown) => ({
       eq: () => Promise.resolve({ error: null }),
     }));
+    state.verifyStampSpy = vi.fn((_payload: unknown) => ({
+      eq: () => ({ is: () => Promise.resolve({ error: null }) }),
+    }));
+  });
+
+  it("stamps the accepting user's email as verified", async () => {
+    const { default: handler } =
+      await import("~/server/api/family/invite/[token]/accept.post");
+    await handler({} as Parameters<typeof handler>[0]);
+
+    expect(state.verifyStampSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ email_verified_at: expect.any(String) }),
+    );
   });
 
   it("creates family_member record and marks invitation accepted", async () => {

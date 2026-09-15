@@ -28,6 +28,24 @@ vi.mock("~/server/utils/logger", () => ({
 vi.mock("~/server/utils/supabase", () => ({
   useSupabaseAdmin: vi.fn(() => ({
     from: (table: string) => {
+      // The route now runs the guardian gate before inserting; that lookup queries
+      // users to check guardian_consent_at. These fixtures return an adult (20+ years
+      // old) who passes the gate, so the send proceeds as before.
+      if (table === "users") {
+        return {
+          select: () => ({
+            eq: () => ({
+              maybeSingle: async () => ({
+                data: {
+                  role: "player",
+                  date_of_birth: "2004-01-01", // 20+ years old
+                  guardian_consent_at: null,
+                },
+              }),
+            }),
+          }),
+        };
+      }
       expect(table).toBe("athlete_messages");
       return {
         insert: (row: Record<string, unknown>) => {

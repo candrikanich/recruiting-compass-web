@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { ref } from "vue";
 import { mount, flushPromises } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
@@ -31,12 +31,16 @@ vi.mock("~/composables/useFamilyInvitations", () => ({
     mockUseFamilyInvitations(...args),
 }));
 
+const mockParentFamilies = ref<
+  { familyId: string; familyCode: string; familyName: string }[]
+>([]);
+
 vi.mock("~/composables/useFamilyCode", () => ({
   useFamilyCode: () => ({
     myFamilyCode: ref("FAM-TEST"),
     myFamilyId: ref("fam-1"),
     myFamilyName: ref("Test Family"),
-    parentFamilies: ref([]),
+    parentFamilies: mockParentFamilies,
     loading: ref(false),
     error: ref(null),
     successMessage: ref(null),
@@ -164,6 +168,68 @@ describe("family-management invite form", () => {
     const wrapper = mountPage("player");
     const button = wrapper.find('[data-testid="send-invite-submit"]');
     expect((button.element as HTMLButtonElement).disabled).toBe(true);
+  });
+});
+
+describe("family-management parent family members", () => {
+  beforeEach(() => {
+    setActivePinia(createPinia());
+    vi.clearAllMocks();
+    mockUseFamilyInvitations.mockReturnValue(defaultInvitationsReturn());
+    mockParentFamilies.value = [
+      { familyId: "fam-1", familyCode: "FAM-G82CA2", familyName: "My Family" },
+    ];
+    mockFetchAuth.mockImplementation((url: string) => {
+      if (url === "/api/family/inbound-address") {
+        return Promise.resolve({ address: "family-abc123@inbound.example.com" });
+      }
+      if (url === "/api/family/members?familyId=fam-1") {
+        return Promise.resolve({
+          success: true,
+          members: [
+            {
+              id: "mem-athlete",
+              family_unit_id: "fam-1",
+              user_id: "u-athlete",
+              role: "player",
+              added_at: new Date().toISOString(),
+              users: {
+                id: "u-athlete",
+                email: "athlete@example.com",
+                full_name: "Alex Athlete",
+                role: "player",
+              },
+            },
+          ],
+        });
+      }
+      return Promise.resolve({ members: [] });
+    });
+  });
+
+  afterEach(() => {
+    mockParentFamilies.value = [];
+  });
+
+  it("fetches and renders family members for a parent's joined family", async () => {
+    mockUserStore.user = { id: "u2", role: "parent", email: "mom@example.com" };
+    const wrapper = mount(FamilyManagementPage, {
+      global: {
+        stubs: {
+          FamilyCodeDisplay: true,
+          FamilyCodeInput: true,
+          FamilyPendingInviteCard: true,
+          NuxtLink: true,
+          ArrowLeftIcon: true,
+        },
+      },
+    });
+    await flushPromises();
+
+    expect(mockFetchAuth).toHaveBeenCalledWith(
+      "/api/family/members?familyId=fam-1",
+    );
+    expect(wrapper.text()).toContain("Alex Athlete");
   });
 });
 

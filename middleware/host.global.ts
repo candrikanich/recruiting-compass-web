@@ -39,7 +39,13 @@ export function resolveHostRedirect(
   const isAdminPath = path === "/admin" || path.startsWith("/admin/");
 
   if (onAdminHost) {
-    const isAllowed = isAdminPath || ADMIN_HOST_PUBLIC_PATHS.includes(path);
+    // /verify-email/<token> is dynamic, so it can't live in the exact-match
+    // public-route list — an admin who signs up on this host still has to be
+    // able to open their verification link here.
+    const isAllowed =
+      isAdminPath ||
+      ADMIN_HOST_PUBLIC_PATHS.includes(path) ||
+      path.startsWith("/verify-email/");
     return isAllowed ? null : { type: "internal", to: "/admin" };
   }
   // main (non-admin) host

@@ -18,7 +18,6 @@ const PUBLIC_ROUTES: ProtectedRoute[] = [
   { path: "/signup", protection: "public" },
   { path: "/forgot-password", protection: "public" },
   { path: "/reset-password", protection: "public" },
-  { path: "/verify-email", protection: "public" },
 ];
 
 /**

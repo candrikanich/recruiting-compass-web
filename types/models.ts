@@ -49,6 +49,7 @@ export interface User {
   full_name?: string;
   profile_photo_url?: string | null;
   date_of_birth?: string | null;
+  email_verified_at?: string | null;
   is_admin?: boolean;
   // Timeline fields (from Phase 1)
   current_phase?: "freshman" | "sophomore" | "junior" | "senior" | "committed";

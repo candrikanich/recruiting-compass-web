@@ -156,6 +156,10 @@ vi.mock("~/assets/logos/recruiting-compass-stacked.svg", () => ({
   default: "test-svg-stub",
 }));
 
+// Backing store for the useState mock below. Cleared in beforeEach so state can't leak
+// across cases the way a module-level ref would.
+const _useStateStore = new Map<string, ReturnType<typeof ref>>();
+
 // Mock Nuxt composables
 vi.mock("#app", () => ({
   useRuntimeConfig: () => ({
@@ -172,6 +176,12 @@ vi.mock("#app", () => ({
   useCookie: () => ref(null),
   navigateTo: vi.fn(),
   useNuxtApp: _useNuxtAppMock,
+  // Keyed like the real useState so composables sharing a key share a ref within a test
+  // (e.g. useGuardianStatus, read by both the banner and the surfaces it unlocks).
+  useState: <T>(key: string, init?: () => T) => {
+    if (!_useStateStore.has(key)) _useStateStore.set(key, ref(init ? init() : undefined));
+    return _useStateStore.get(key);
+  },
 }));
 
 // Mock useAuthFetch so composables that use it don't require CSRF/session setup
@@ -290,6 +300,7 @@ config.global.components = {
 beforeEach(() => {
   const pinia = createPinia();
   setActivePinia(pinia);
+  _useStateStore.clear();
 });
 
 // Global test cleanup

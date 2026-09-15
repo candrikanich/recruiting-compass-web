@@ -5,9 +5,15 @@ import { useAuth } from "~/composables/useAuth";
 import { useUserStore } from "~/stores/user";
 import { useSupabase } from "~/composables/useSupabase";
 import { useAppToast } from "~/composables/useAppToast";
+import { suppressAutoFamilyCreateOnNextSignIn } from "~/composables/useAccountProvisioning";
 import type { UseActiveFamilyReturn } from "~/composables/useActiveFamily";
+// The bare <MultiSportFieldBackground /> tag silently resolves to nothing
+// without this — Nuxt auto-imports components/Auth/*.vue under the
+// Auth-prefixed tag; pages/signup.vue and pages/login.vue only work because
+// they import it explicitly.
+import MultiSportFieldBackground from "~/components/Auth/MultiSportFieldBackground.vue";
 
-definePageMeta({ auth: false });
+definePageMeta({ auth: false, layout: "public" });
 
 const route = useRoute();
 const token = computed(() => route.query.token as string);
@@ -97,11 +103,16 @@ type TurnstileGlobal = {
     options: {
       sitekey: string;
       action?: string;
+      size?: "normal" | "compact" | "flexible";
+      appearance?: "always" | "execute" | "interaction-only";
+      execution?: "render" | "execute";
       callback: (token: string) => void;
       "expired-callback"?: () => void;
+      "error-callback"?: () => void;
     },
   ) => string;
   reset: (widgetId?: string) => void;
+  execute: (widgetId?: string) => void;
 };
 
 // Turnstile tokens are single-use and expire (~5 min) — replaying a stale or
@@ -188,6 +199,63 @@ watch(
   },
   { flush: "post" },
 );
+
+// A second, invisible widget dedicated to minting the post-signup sign-in
+// token. signup() consumes the signup checkbox widget's token server-side
+// (verifyTurnstile, before creating the account) -- resetting and re-polling
+// THAT widget was tried first, but reset() on a managed/interactive widget
+// re-arms its checkbox and waits for a user click that never comes, so the
+// poll just times out and signInWithPassword fires with no token at all
+// ("no captcha_token found"). An invisible, execute-mode widget solves
+// itself without user interaction. Same bug class pages/signup.vue fixed.
+const turnstileSessionEl = ref<HTMLDivElement | null>(null);
+const turnstileSessionWidgetId = ref<string | undefined>(undefined);
+const turnstileSessionToken = ref<string | undefined>(undefined);
+
+watch(
+  [turnstileEnabled, turnstileSessionEl],
+  async ([enabled, el]) => {
+    if (!enabled || !el || turnstileSessionWidgetId.value) return;
+    try {
+      await loadTurnstileScript();
+      const w = window as unknown as { turnstile?: TurnstileGlobal };
+      if (w.turnstile) {
+        turnstileSessionWidgetId.value = w.turnstile.render(el, {
+          sitekey: turnstileSiteKey.value,
+          action: "join-session",
+          appearance: "execute",
+          execution: "execute",
+          callback: (token: string) => {
+            turnstileSessionToken.value = token;
+          },
+          "expired-callback": () => {
+            turnstileSessionToken.value = undefined;
+          },
+          "error-callback": () => {
+            turnstileSessionToken.value = undefined;
+          },
+        });
+      }
+    } catch {
+      // Non-fatal — see mountTurnstile's catch above.
+    }
+  },
+  { flush: "post" },
+);
+
+async function getFreshTurnstileToken(): Promise<string | undefined> {
+  if (!turnstileEnabled.value || !turnstileSessionWidgetId.value)
+    return undefined;
+  const w = window as unknown as { turnstile?: TurnstileGlobal };
+  if (!w.turnstile) return undefined;
+  turnstileSessionToken.value = undefined;
+  w.turnstile.execute(turnstileSessionWidgetId.value);
+  const start = Date.now();
+  while (!turnstileSessionToken.value && Date.now() - start < 8000) {
+    await new Promise((resolve) => setTimeout(resolve, 150));
+  }
+  return turnstileSessionToken.value;
+}
 // ---------------------------------------------------------------------------
 
 onMounted(async () => {
@@ -279,15 +347,33 @@ async function signupAndConnect() {
   loading.value = true;
   try {
     const fullName = `${signupFirstName.value} ${signupLastName.value}`.trim();
+    // The invite-accept endpoint handles all family membership itself (adds this
+    // user directly into invitation.family_unit_id) -- the SIGNED_IN listener's
+    // own blind /api/family/create call would otherwise race it and create a
+    // spurious solo family, colliding with idx_player_one_family the same way
+    // the guardian-claim flow did (see suppressAutoFamilyCreateOnNextSignIn).
+    suppressAutoFamilyCreateOnNextSignIn();
     const authData = await signup(
       signupEmail.value,
       signupPassword.value,
       fullName,
       invite.value.role,
       turnstileToken.value,
+      invite.value.role === "player" ? signupDateOfBirth.value : undefined,
+      undefined,
+      undefined,
+      token.value,
+      getFreshTurnstileToken,
+      true, // skipVerificationEmail — the invite accept stamps email_verified_at
     );
 
     if (!authData?.data?.user?.id) throw new Error("Signup failed");
+
+    // signup() creates the account server-side and always returns a real
+    // session now (see composables/useAuth.ts) — the invite acceptance is
+    // still deferred to first sign-in (useAccountProvisioning,
+    // pending_invite_token metadata set above), but there's no more
+    // no-session branch to fall back to here.
 
     const userRecord: Record<string, unknown> = {
       id: authData.data.user.id,
@@ -362,52 +448,105 @@ async function decline() {
 </script>
 
 <template>
-  <div class="mx-auto max-w-md px-4 py-16">
-    <!-- Loading -->
-    <div v-if="fetchStatus === 'pending'" data-testid="loading">
-      Loading invite...
-    </div>
+  <div class="relative min-h-screen overflow-hidden bg-emerald-600">
+    <!-- Multi-Sport Field Background -->
+    <MultiSportFieldBackground />
 
-    <!-- Declined -->
-    <div v-else-if="fetchStatus === 'declined'" data-testid="invite-declined">
-      <h1 class="mb-2 text-xl font-semibold">Invitation declined</h1>
-      <p class="text-gray-600">
-        You've declined this invitation. No action is needed.
-      </p>
-    </div>
-
-    <!-- Error: expired -->
-    <div v-else-if="fetchError?.statusCode === 410" data-testid="error-expired">
-      <h1 class="mb-2 text-xl font-semibold">This invite has expired</h1>
-      <p class="text-gray-600">Ask a family member to send a new invite.</p>
-    </div>
-
-    <!-- Error: already accepted -->
+    <!-- Content -->
     <div
-      v-else-if="fetchError?.statusCode === 409"
-      data-testid="error-accepted"
+      class="relative z-10 flex min-h-screen items-center justify-center px-6 py-12"
     >
-      <h1 class="mb-2 text-xl font-semibold">Already connected</h1>
-      <p class="text-gray-600">You're already a member of this family.</p>
-      <DesignSystemButton to="/dashboard" class="mt-4"
-        >Go to dashboard</DesignSystemButton
-      >
-    </div>
+      <div class="w-full max-w-lg">
+        <!-- Card -->
+        <div
+          class="rounded-2xl border border-white/20 bg-white/95 p-8 shadow-2xl backdrop-blur-xs"
+        >
+          <!-- Header -->
+          <div class="mb-8 text-center">
+            <img
+              src="~/assets/logos/recruiting-compass-stacked.svg"
+              alt="The Recruiting Compass - Find your path, make your move"
+              class="mx-auto w-80"
+            />
+          </div>
 
-    <!-- Error: not found or other -->
-    <div v-else-if="fetchStatus === 'error'" data-testid="error-not-found">
-      <h1 class="mb-2 text-xl font-semibold">Invite not found</h1>
-      <p class="text-gray-600">This link may be invalid or already used.</p>
-    </div>
+          <!-- Loading -->
+          <div
+            v-if="fetchStatus === 'pending'"
+            data-testid="loading"
+            class="text-center text-slate-600"
+          >
+            Loading invite…
+          </div>
 
-    <!-- Valid invite -->
-    <div v-else-if="invite">
-      <h1 class="mb-1 text-2xl font-semibold">
-        You're invited to join {{ invite.familyName }}'s recruiting journey
-      </h1>
-      <p class="mb-6 text-gray-600">
-        A family member has invited you as a {{ invite.role }}.
-      </p>
+          <!-- Declined -->
+          <div
+            v-else-if="fetchStatus === 'declined'"
+            data-testid="invite-declined"
+            class="text-center"
+          >
+            <h1 class="text-lg font-semibold text-slate-900">
+              Invitation declined
+            </h1>
+            <p class="mt-2 text-sm text-slate-600">
+              You've declined this invitation. No action is needed.
+            </p>
+          </div>
+
+          <!-- Error: expired -->
+          <div
+            v-else-if="fetchError?.statusCode === 410"
+            data-testid="error-expired"
+            class="rounded-lg border border-red-200 bg-red-50 p-6 text-center"
+          >
+            <h1 class="text-lg font-semibold text-red-900">
+              This invite has expired
+            </h1>
+            <p class="mt-2 text-sm text-red-800">
+              Ask a family member to send a new invite.
+            </p>
+          </div>
+
+          <!-- Error: already accepted -->
+          <div
+            v-else-if="fetchError?.statusCode === 409"
+            data-testid="error-accepted"
+            class="text-center"
+          >
+            <h1 class="text-lg font-semibold text-slate-900">
+              Already connected
+            </h1>
+            <p class="mt-2 text-sm text-slate-600">
+              You're already a member of this family.
+            </p>
+            <DesignSystemButton to="/dashboard" class="mt-4"
+              >Go to dashboard</DesignSystemButton
+            >
+          </div>
+
+          <!-- Error: not found or other -->
+          <div
+            v-else-if="fetchStatus === 'error'"
+            data-testid="error-not-found"
+            class="rounded-lg border border-red-200 bg-red-50 p-6 text-center"
+          >
+            <h1 class="text-lg font-semibold text-red-900">
+              Invite not found
+            </h1>
+            <p class="mt-2 text-sm text-red-800">
+              This link may be invalid or already used.
+            </p>
+          </div>
+
+          <!-- Valid invite -->
+          <div v-else-if="invite">
+            <h1 class="text-xl font-bold text-slate-900">
+              You're invited to join {{ invite.familyName }}'s recruiting
+              journey
+            </h1>
+            <p class="mt-2 text-sm text-slate-600">
+              A family member has invited you as a {{ invite.role }}.
+            </p>
 
       <!-- Already authenticated: just confirm -->
       <div v-if="userStore.isAuthenticated">
@@ -531,13 +670,20 @@ async function decline() {
             @update:confirm-password="signupConfirmPassword = $event"
             @update:agree-to-terms="signupAgreeToTerms = $event"
             @submit="signupAndConnect"
-          />
-          <!-- Cloudflare Turnstile (flag-gated, renders only when site key set) -->
-          <div
-            v-if="turnstileEnabled"
-            ref="turnstileSignupEl"
-            class="mt-4 flex justify-center"
-          />
+          >
+            <template #captcha>
+              <!-- Cloudflare Turnstile (flag-gated, renders only when site
+                   key set) -->
+              <div
+                v-if="turnstileEnabled"
+                ref="turnstileSignupEl"
+                class="flex justify-center"
+              />
+              <!-- Invisible widget dedicated to the post-signup sign-in
+                   token mint — see getFreshTurnstileToken. Renders nothing. -->
+              <div v-if="turnstileEnabled" ref="turnstileSessionEl" />
+            </template>
+          </AuthInviteSignupForm>
           <p class="mt-4 text-sm text-gray-500">
             Already have an account?
             <button
@@ -560,6 +706,9 @@ async function decline() {
               Decline invitation
             </DesignSystemButton>
           </div>
+        </div>
+      </div>
+    </div>
         </div>
       </div>
     </div>

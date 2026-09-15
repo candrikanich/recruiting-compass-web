@@ -1,6 +1,7 @@
 {
   "installCommand": "npm ci",
   "buildCommand": "npm run build",
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- . ':!*.md' ':!planning' ':!docs' ':!.claude'",
   "framework": "nuxtjs",
   "headers": [
     {
