@@ -54,11 +54,15 @@ export async function consumeVerificationToken(token: string): Promise<{
     // token is invalidated by a resend (issueVerificationToken above), which
     // is NOT the same as having verified — without this the old email's link
     // would report success while email_verified_at stayed null.
-    await supabase
+    const { error: backfillError } = await supabase
       .from("users")
       .update({ email_verified_at: new Date().toISOString() })
       .eq("id", row.user_id)
       .is("email_verified_at", null);
+
+    if (backfillError) {
+      throw new Error(`Failed to mark email verified: ${backfillError.message}`);
+    }
 
     return { status: "already_verified", userId: row.user_id };
   }
