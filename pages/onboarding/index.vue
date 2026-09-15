@@ -235,6 +235,11 @@ import { useNuxProgress } from "~/composables/useNuxProgress";
 import { createClientLogger } from "~/utils/logger";
 import { getGraduationYearOptions } from "~/utils/graduationYears";
 import { recommendationToSchoolDraft } from "~/utils/schoolRecommendations";
+// The bare <MultiSportFieldBackground /> tag silently resolves to nothing
+// without this — Nuxt auto-imports components/Auth/*.vue under the
+// Auth-prefixed tag; pages/signup.vue and pages/login.vue only work because
+// they import it explicitly.
+import MultiSportFieldBackground from "~/components/Auth/MultiSportFieldBackground.vue";
 import type { PlayerDetails } from "~/types/models";
 import type { School } from "~/types";
 import type { SchoolRecommendation } from "~/types/schoolRecommendations";

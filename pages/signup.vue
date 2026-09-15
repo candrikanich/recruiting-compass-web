@@ -109,14 +109,22 @@
             @submit="handleSignup"
             @validate-email="validateEmail"
             @validate-password="validatePassword"
-          />
-
-          <!-- Cloudflare Turnstile (flag-gated, renders only when site key set) -->
-          <div
-            v-if="turnstileEnabled && userType"
-            ref="turnstileEl"
-            class="mt-4 flex justify-center"
-          />
+          >
+            <template #captcha>
+              <!-- Cloudflare Turnstile (flag-gated, renders only when site
+                   key set) — mounted above the submit button via a slot so
+                   a user who clicks Create Account without scrolling
+                   further doesn't miss an interactive challenge below it. -->
+              <div
+                v-if="turnstileEnabled && userType"
+                ref="turnstileEl"
+                class="flex justify-center"
+              />
+              <!-- Invisible widget dedicated to the post-signup sign-in
+                   token mint — see getFreshTurnstileToken. Renders nothing. -->
+              <div v-if="turnstileEnabled && userType" ref="turnstileSessionEl" />
+            </template>
+          </SignupForm>
         </div>
       </div>
     </div>
@@ -189,11 +197,15 @@ type TurnstileGlobal = {
     options: {
       sitekey: string;
       action?: string;
+      size?: "normal" | "compact" | "invisible";
+      execution?: "render" | "execute";
       callback: (token: string) => void;
       "expired-callback"?: () => void;
+      "error-callback"?: () => void;
     },
   ) => string;
   reset: (widgetId?: string) => void;
+  execute: (widgetId?: string) => void;
 };
 
 // Turnstile tokens are single-use and expire (~5 min) — replaying a stale or
@@ -208,23 +220,61 @@ function resetTurnstile() {
   }
 }
 
-// After server-side account creation, the Turnstile token collected for
-// signup has already been consumed by /api/auth/signup's own verifyTurnstile
-// call — reusing it for the immediate post-signup sign-in would be rejected
-// as a replayed token by Supabase's native CAPTCHA check (if enabled). Reset
-// the widget and wait briefly for it to auto-resolve a fresh token via its
-// existing callback, the same mechanism already used for retry-after-failure.
+// A second, invisible widget dedicated to minting the post-signup sign-in
+// token. The visible checkbox widget's token is already consumed by
+// /api/auth/signup's verifyTurnstile call by the time we need a fresh one —
+// resetting and re-polling THAT widget was tried first, but reset() on a
+// managed/interactive widget re-arms its checkbox and waits for the user to
+// click it again, which nobody does; the poll just times out and
+// signInWithPassword fires with no token at all ("no captcha_token found").
+// An invisible, execute-mode widget solves itself without user interaction.
+const turnstileSessionEl = ref<HTMLDivElement | null>(null);
+const turnstileSessionWidgetId = ref<string | undefined>(undefined);
+const turnstileSessionToken = ref<string | undefined>(undefined);
+
+watch(
+  [turnstileEnabled, userType, turnstileSessionEl],
+  async ([enabled, type, el]) => {
+    if (!enabled || !type || !el || turnstileSessionWidgetId.value) return;
+    try {
+      await loadTurnstileScript();
+      const w = window as unknown as { turnstile?: TurnstileGlobal };
+      if (w.turnstile && el) {
+        turnstileSessionWidgetId.value = w.turnstile.render(el, {
+          sitekey: turnstileSiteKey.value,
+          action: "signup-session",
+          size: "invisible",
+          execution: "execute",
+          callback: (token: string) => {
+            turnstileSessionToken.value = token;
+          },
+          "expired-callback": () => {
+            turnstileSessionToken.value = undefined;
+          },
+          "error-callback": () => {
+            turnstileSessionToken.value = undefined;
+          },
+        });
+      }
+    } catch {
+      // Non-fatal — see main widget's catch above.
+    }
+  },
+  { flush: "post" },
+);
+
 async function getFreshTurnstileToken(): Promise<string | undefined> {
-  if (!turnstileEnabled.value || !turnstileWidgetId.value) return undefined;
+  if (!turnstileEnabled.value || !turnstileSessionWidgetId.value)
+    return undefined;
   const w = window as unknown as { turnstile?: TurnstileGlobal };
   if (!w.turnstile) return undefined;
-  turnstileToken.value = undefined;
-  w.turnstile.reset(turnstileWidgetId.value);
+  turnstileSessionToken.value = undefined;
+  w.turnstile.execute(turnstileSessionWidgetId.value);
   const start = Date.now();
-  while (!turnstileToken.value && Date.now() - start < 8000) {
+  while (!turnstileSessionToken.value && Date.now() - start < 8000) {
     await new Promise((resolve) => setTimeout(resolve, 150));
   }
-  return turnstileToken.value;
+  return turnstileSessionToken.value;
 }
 
 function loadTurnstileScript(): Promise<void> {

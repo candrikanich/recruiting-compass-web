@@ -144,6 +144,11 @@ const maxDateOfBirth = computed(() => new Date().toISOString().split("T")[0]);
       </label>
     </div>
 
+    <!-- Captcha widget mounts here, above the submit button — below it, a
+         user who clicks submit without scrolling further never sees it if
+         Cloudflare surfaces an interactive challenge. -->
+    <slot name="captcha" />
+
     <DesignSystemButton type="submit" :loading="loading" :full-width="true">
       {{ loading ? "Creating account..." : "Create account and connect" }}
     </DesignSystemButton>
