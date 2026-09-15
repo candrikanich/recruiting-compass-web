@@ -357,8 +357,18 @@ export const useAuth = () => {
         await supabase.auth.signInWithPassword(signInParams);
 
       if (signInError) {
+        // The account already exists at this point (the /api/auth/signup
+        // call above succeeded) — only this follow-up sign-in failed, most
+        // often because the invisible session-mint widget needed
+        // interaction nobody gave it and getFreshCaptchaToken() silently
+        // timed out. Tag the error so callers can route to a normal login
+        // instead of treating it as a failed signup and stranding the user.
         error.value = signInError;
-        throw signInError;
+        const recoverableError = new Error(signInError.message) as Error & {
+          accountCreatedButSignInFailed?: boolean;
+        };
+        recoverableError.accountCreatedButSignInFailed = true;
+        throw recoverableError;
       }
 
       return { data, error: null };
