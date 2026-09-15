@@ -9,6 +9,8 @@ const mockState = {
   // Set to simulate losing the create race: the insert below returns a 23505
   // conflict, and this is what the post-conflict re-select finds.
   raceWinnerFamily: null as object | null,
+  // Error returned by the post-race family_members upsert, if any.
+  raceMembershipUpsertError: null as { code?: string; message: string } | null,
 };
 
 vi.mock("~/server/utils/auth", () => ({
@@ -34,6 +36,7 @@ vi.mock("~/server/utils/familyInboundToken", () => ({
 }));
 
 const familyUnitsInsertSpy = vi.fn();
+const familyMembersUpsertSpy = vi.fn();
 // Module-level, not per-`.from()`-call scoped: real code calls
 // `.from("family_units")` separately for the initial existing-family check, the
 // insert, and (on a race) the post-conflict re-select — each is a fresh `from()`
@@ -95,6 +98,12 @@ vi.mock("~/server/utils/supabase", () => ({
             }),
           }),
           insert: () => Promise.resolve({ error: null }),
+          upsert: (payload: object, options: object) => {
+            familyMembersUpsertSpy(payload, options);
+            return Promise.resolve({
+              error: mockState.raceMembershipUpsertError,
+            });
+          },
         };
       }
       if (table === "family_code_usage_log") {
@@ -138,7 +147,9 @@ describe("POST /api/family/create — symmetric", () => {
     mockState.existingFamily = null;
     mockState.existingMembership = null;
     mockState.raceWinnerFamily = null;
+    mockState.raceMembershipUpsertError = null;
     familyUnitsInsertSpy.mockClear();
+    familyMembersUpsertSpy.mockClear();
     familyUnitsSelectCallCount = 0;
   });
 
@@ -222,5 +233,40 @@ describe("POST /api/family/create — symmetric", () => {
       familyCode: "FAM-WINNER",
       message: "Family already exists",
     });
+  });
+
+  it("durably upserts the caller's own creator membership before returning success on a race loss — the winner's own INSERT may not have committed yet", async () => {
+    mockState.raceWinnerFamily = {
+      id: "race-winner-family",
+      family_code: "FAM-WINNER",
+      family_name: "My Family",
+    };
+
+    await handler({} as Parameters<typeof handler>[0]);
+
+    expect(familyMembersUpsertSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        family_unit_id: "race-winner-family",
+        user_id: "player-user-id",
+        role: "player",
+      }),
+      expect.objectContaining({ onConflict: "family_unit_id,user_id" }),
+    );
+  });
+
+  it("500s rather than reporting success if the post-race membership upsert fails", async () => {
+    mockState.raceWinnerFamily = {
+      id: "race-winner-family",
+      family_code: "FAM-WINNER",
+      family_name: "My Family",
+    };
+    mockState.raceMembershipUpsertError = {
+      code: "23503",
+      message: "foreign key violation",
+    };
+
+    await expect(
+      handler({} as Parameters<typeof handler>[0]),
+    ).rejects.toMatchObject({ statusCode: 500 });
   });
 });

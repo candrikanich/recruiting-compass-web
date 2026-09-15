@@ -111,6 +111,33 @@ export default defineEventHandler(async (event) => {
         .maybeSingle();
 
       if (raceWinner) {
+        // The winning request's own family_members insert may not have
+        // committed yet when we read the row back — upsert our membership
+        // here so callers never observe a family without their own creator
+        // membership. onConflict matches the winner's own insert 1:1, so
+        // this is a no-op once that insert lands.
+        const { error: raceMembershipError } = await supabase
+          .from("family_members")
+          .upsert(
+            {
+              family_unit_id: raceWinner.id,
+              user_id: user.id,
+              role: userRole ?? "player",
+            } as Database["public"]["Tables"]["family_members"]["Insert"],
+            { onConflict: "family_unit_id,user_id", ignoreDuplicates: true },
+          );
+
+        if (raceMembershipError) {
+          logger.error(
+            "Failed to durable-ize creator membership after race",
+            raceMembershipError,
+          );
+          throw createError({
+            statusCode: 500,
+            message: "Failed to add user to family",
+          });
+        }
+
         logger.info("Lost family-creation race, reusing existing family", {
           familyId: raceWinner.id,
         });
