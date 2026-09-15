@@ -14,12 +14,24 @@ const logger = createClientLogger("account-provisioning");
 // call races that page's own explicit flow -- both independently check "does this user
 // have a family?" and, seeing none yet, both create one, leaving the guardian split
 // across two family_units (one real, one empty and orphaned). Found live on QA. A
-// module-level flag (not a ref) is deliberate: it must be set synchronously before the
+// module-level value (not a ref) is deliberate: it must be set synchronously before the
 // async signup()/login() call, well before the async SIGNED_IN listener that consumes
 // it ever runs, so there is no race on the flag itself.
-let suppressNextFamilyCreate = false;
-export const suppressAutoFamilyCreateOnNextSignIn = () => {
-  suppressNextFamilyCreate = true;
+//
+// Scoped to the expected email (not a blind boolean): a failed signup()/login() call
+// used to leave a bare flag set with nothing to clear it, so the NEXT SIGNED_IN event
+// in the same browser session -- for a completely unrelated sign-in -- silently
+// skipped family creation for that user. Matching against the email the caller is
+// actually attempting means a stale flag can only ever misfire for that same address,
+// and resetSuppressAutoFamilyCreate() below lets every failure path clear it outright.
+let suppressFamilyCreateForEmail: string | null = null;
+export const suppressAutoFamilyCreateOnNextSignIn = (email: string) => {
+  suppressFamilyCreateForEmail = email.trim().toLowerCase();
+};
+// Call from every account-creation/sign-in failure path (ideally in a `finally`) so a
+// failed attempt can never suppress family creation for a later, unrelated sign-in.
+export const resetSuppressAutoFamilyCreate = () => {
+  suppressFamilyCreateForEmail = null;
 };
 
 /**
@@ -125,8 +137,11 @@ export const useAccountProvisioning = () => {
   };
 
   const ensureAccountProvisioned = async (user: User) => {
-    if (suppressNextFamilyCreate) {
-      suppressNextFamilyCreate = false;
+    const suppressed =
+      !!suppressFamilyCreateForEmail &&
+      suppressFamilyCreateForEmail === user.email?.trim().toLowerCase();
+    if (suppressed) {
+      suppressFamilyCreateForEmail = null;
     } else {
       try {
         await $fetchAuth("/api/family/create", { method: "POST" });

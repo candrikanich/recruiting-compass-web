@@ -6,7 +6,10 @@ import { useUserStore } from "~/stores/user";
 import { useAuthFetch } from "~/composables/useAuthFetch";
 import { useAppToast } from "~/composables/useAppToast";
 import { useFamilyCtx } from "~/composables/useFamilyCtx";
-import { suppressAutoFamilyCreateOnNextSignIn } from "~/composables/useAccountProvisioning";
+import {
+  suppressAutoFamilyCreateOnNextSignIn,
+  resetSuppressAutoFamilyCreate,
+} from "~/composables/useAccountProvisioning";
 // The bare <MultiSportFieldBackground /> tag silently resolves to nothing
 // without this — Nuxt auto-imports components/Auth/*.vue under the
 // Auth-prefixed tag; pages/signup.vue and pages/login.vue only work because
@@ -259,7 +262,7 @@ const handleSubmit = async () => {
     if (mode.value === "login") {
       // See suppressAutoFamilyCreateOnNextSignIn's own comment: confirmClaim below
       // already handles family setup for this guardian.
-      suppressAutoFamilyCreateOnNextSignIn();
+      suppressAutoFamilyCreateOnNextSignIn(claim.value!.guardianEmail);
       await login(
         claim.value!.guardianEmail,
         password.value,
@@ -295,7 +298,7 @@ const handleSubmit = async () => {
     // already handles family setup for this guardian (joins the player's existing
     // family, or creates one) -- without this the SIGNED_IN listener's own blind
     // /api/family/create call races it and splits the guardian across two families.
-    suppressAutoFamilyCreateOnNextSignIn();
+    suppressAutoFamilyCreateOnNextSignIn(claim.value!.guardianEmail);
     await signup(
       claim.value!.guardianEmail,
       password.value,
@@ -311,6 +314,11 @@ const handleSubmit = async () => {
     );
     await confirmClaim();
   } catch (err) {
+    // A failed login/signup attempt must not leave suppression active for an
+    // unrelated later sign-in in this browser session (see
+    // resetSuppressAutoFamilyCreate). No-op if signup/login already succeeded
+    // and only confirmClaim failed, since the flag was already consumed by then.
+    resetSuppressAutoFamilyCreate();
     formError.value =
       (err as { data?: { statusMessage?: string } } | null)?.data
         ?.statusMessage ??

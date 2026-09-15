@@ -5,7 +5,10 @@ import { useAuth } from "~/composables/useAuth";
 import { useUserStore } from "~/stores/user";
 import { useSupabase } from "~/composables/useSupabase";
 import { useAppToast } from "~/composables/useAppToast";
-import { suppressAutoFamilyCreateOnNextSignIn } from "~/composables/useAccountProvisioning";
+import {
+  suppressAutoFamilyCreateOnNextSignIn,
+  resetSuppressAutoFamilyCreate,
+} from "~/composables/useAccountProvisioning";
 import type { UseActiveFamilyReturn } from "~/composables/useActiveFamily";
 // The bare <MultiSportFieldBackground /> tag silently resolves to nothing
 // without this — Nuxt auto-imports components/Auth/*.vue under the
@@ -352,7 +355,7 @@ async function signupAndConnect() {
     // own blind /api/family/create call would otherwise race it and create a
     // spurious solo family, colliding with idx_player_one_family the same way
     // the guardian-claim flow did (see suppressAutoFamilyCreateOnNextSignIn).
-    suppressAutoFamilyCreateOnNextSignIn();
+    suppressAutoFamilyCreateOnNextSignIn(signupEmail.value);
     // inviteToken intentionally omitted here (not token.value): this page
     // performs its own explicit accept call below immediately after signup.
     // Passing it would also set pending_invite_token metadata, which the
@@ -425,6 +428,9 @@ async function signupAndConnect() {
       );
     }
   } catch (err: unknown) {
+    // A failed signup/accept must not leave suppression active for an unrelated
+    // later sign-in in this browser session (see resetSuppressAutoFamilyCreate).
+    resetSuppressAutoFamilyCreate();
     const e = err as { statusMessage?: string };
     signupError.value =
       e?.statusMessage ??
