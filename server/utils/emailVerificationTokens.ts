@@ -38,56 +38,21 @@ export async function consumeVerificationToken(token: string): Promise<{
 }> {
   const supabase = useSupabaseAdmin();
 
-  const { data: row } = await supabase
-    .from("email_verification_tokens")
-    .select("user_id, expires_at, consumed_at")
-    .eq("token", token)
-    .maybeSingle();
+  // Token consumption and profile verification happen atomically in
+  // consume_email_verification_token() — a zero-row profile update raises
+  // and rolls back the whole call (including the token's consumed_at write)
+  // instead of silently reporting success. See migration
+  // 20260928000003_consume_email_verification_token_rpc.sql.
+  const { data, error } = await supabase
+    .rpc("consume_email_verification_token", { p_token: token })
+    .single();
 
-  if (!row) {
-    return { status: "not_found" };
+  if (error) {
+    throw new Error(`Failed to consume verification token: ${error.message}`);
   }
 
-  if (row.consumed_at) {
-    // Idempotent — a double-click or stale tab replaying the same link is
-    // a success, not an error (spec §4). But consumed_at is also set when a
-    // token is invalidated by a resend (issueVerificationToken above), which
-    // is NOT the same as having verified — without this the old email's link
-    // would report success while email_verified_at stayed null.
-    const { error: backfillError } = await supabase
-      .from("users")
-      .update({ email_verified_at: new Date().toISOString() })
-      .eq("id", row.user_id)
-      .is("email_verified_at", null);
-
-    if (backfillError) {
-      throw new Error(`Failed to mark email verified: ${backfillError.message}`);
-    }
-
-    return { status: "already_verified", userId: row.user_id };
-  }
-
-  if (new Date(row.expires_at) < new Date()) {
-    return { status: "expired" };
-  }
-
-  const { error: consumeError } = await supabase
-    .from("email_verification_tokens")
-    .update({ consumed_at: new Date().toISOString() })
-    .eq("token", token);
-
-  if (consumeError) {
-    throw new Error(`Failed to consume verification token: ${consumeError.message}`);
-  }
-
-  const { error: verifyError } = await supabase
-    .from("users")
-    .update({ email_verified_at: new Date().toISOString() })
-    .eq("id", row.user_id);
-
-  if (verifyError) {
-    throw new Error(`Failed to mark email verified: ${verifyError.message}`);
-  }
-
-  return { status: "verified", userId: row.user_id };
+  return {
+    status: data.status as "verified" | "already_verified" | "expired" | "not_found",
+    userId: data.user_id ?? undefined,
+  };
 }
