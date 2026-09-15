@@ -3755,6 +3755,15 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      accept_guardian_claim: {
+        Args: {
+          p_token: string;
+          p_guardian_id: string;
+          p_guardian_email: string;
+          p_terms_version: string;
+        };
+        Returns: string;
+      };
       can_access_family_player_prefs: {
         Args: { target_user: string };
         Returns: boolean;
