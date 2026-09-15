@@ -1406,9 +1406,8 @@ describe("Dashboard Page Logic", () => {
     });
 
     describe("Parent no-player gating (timeline + getting-started cards)", () => {
-      const hasConnectedPlayer = (
-        families: AccessibleFamily[],
-      ): boolean => families.some((f) => f.athleteId !== null);
+      const hasConnectedPlayer = (families: AccessibleFamily[]): boolean =>
+        families.some((f) => f.athleteId !== null);
 
       const showsEmptyState = (params: {
         isParent: boolean;

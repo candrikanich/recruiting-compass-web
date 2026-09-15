@@ -16,7 +16,8 @@ import { useLogger } from "~/server/utils/logger";
 import { resolveFamilyUnitId } from "~/server/utils/familyMembership";
 import { resolveAthleteId } from "~/server/utils/resolveAthleteId";
 
-const UUID_SHAPE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const UUID_SHAPE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const INTERACTION_TYPES = [
   "email",
   "text",
@@ -75,7 +76,10 @@ export default defineEventHandler(async (event) => {
       return { ok: true, interactionId: draft.confirmed_interaction_id };
     }
     if (draft.status === "discarded") {
-      throw createError({ statusCode: 422, statusMessage: "Cannot confirm a discarded draft" });
+      throw createError({
+        statusCode: 422,
+        statusMessage: "Cannot confirm a discarded draft",
+      });
     }
 
     let schoolId = draft.matched_school_id;
@@ -83,7 +87,8 @@ export default defineEventHandler(async (event) => {
       if (!parsed.data.schoolId) {
         throw createError({
           statusCode: 422,
-          statusMessage: "schoolId is required — this draft has no matched school",
+          statusMessage:
+            "schoolId is required — this draft has no matched school",
         });
       }
       // schools is family-scoped; the admin client bypasses RLS, so confirm
@@ -96,7 +101,10 @@ export default defineEventHandler(async (event) => {
         .eq("family_unit_id", draft.family_unit_id)
         .maybeSingle();
       if (!school) {
-        throw createError({ statusCode: 422, statusMessage: "Invalid schoolId" });
+        throw createError({
+          statusCode: 422,
+          statusMessage: "Invalid schoolId",
+        });
       }
       schoolId = school.id;
     }
@@ -106,11 +114,20 @@ export default defineEventHandler(async (event) => {
       .insert({
         family_unit_id: draft.family_unit_id,
         school_id: schoolId,
-        coach_id: parsed.data.coachId !== undefined ? parsed.data.coachId : draft.matched_coach_id,
+        coach_id:
+          parsed.data.coachId !== undefined
+            ? parsed.data.coachId
+            : draft.matched_coach_id,
         type: parsed.data.type ?? "email",
         direction: parsed.data.direction ?? "inbound",
-        subject: parsed.data.subject !== undefined ? parsed.data.subject : draft.subject,
-        content: parsed.data.content !== undefined ? parsed.data.content : draft.body_text,
+        subject:
+          parsed.data.subject !== undefined
+            ? parsed.data.subject
+            : draft.subject,
+        content:
+          parsed.data.content !== undefined
+            ? parsed.data.content
+            : draft.body_text,
         occurred_at: parsed.data.occurredAt ?? draft.occurred_at,
         logged_by: userId,
       })
@@ -118,19 +135,26 @@ export default defineEventHandler(async (event) => {
       .single();
     if (insertError || !interaction) {
       logger.error("Failed to create interaction from draft", insertError);
-      throw createError({ statusCode: 500, statusMessage: "Failed to confirm draft" });
+      throw createError({
+        statusCode: 500,
+        statusMessage: "Failed to confirm draft",
+      });
     }
 
     // Materialize any attachments staged with this draft (Phase 3 Task 3)
     // into real `documents` rows now that an `interactions` row exists to
     // hang them off of. No re-upload — same storage object the webhook
     // already wrote, just a new DB row referencing it.
-    const { data: stagedAttachments, error: stagedAttachmentsError } = await admin
-      .from("raw_inbound_attachments")
-      .select("filename, content_type, storage_path")
-      .eq("draft_id", draftId);
+    const { data: stagedAttachments, error: stagedAttachmentsError } =
+      await admin
+        .from("raw_inbound_attachments")
+        .select("filename, content_type, storage_path")
+        .eq("draft_id", draftId);
     if (stagedAttachmentsError) {
-      logger.error("Failed to load staged inbound attachments", stagedAttachmentsError);
+      logger.error(
+        "Failed to load staged inbound attachments",
+        stagedAttachmentsError,
+      );
     } else if (stagedAttachments && stagedAttachments.length > 0) {
       // Documents are athlete-owned regardless of who confirms the draft —
       // a parent confirming must not park the attachment on their own
@@ -147,16 +171,23 @@ export default defineEventHandler(async (event) => {
         school_id: schoolId,
         user_id: athleteUserId,
         uploaded_by: userId,
-        file_url: admin.storage.from("documents").getPublicUrl(attachment.storage_path).data.publicUrl,
+        file_url: admin.storage
+          .from("documents")
+          .getPublicUrl(attachment.storage_path).data.publicUrl,
         file_type: attachment.content_type,
         title: attachment.filename,
       }));
-      const { error: documentsError } = await admin.from("documents").insert(documentInserts);
+      const { error: documentsError } = await admin
+        .from("documents")
+        .insert(documentInserts);
       if (documentsError) {
         // Attachments stay staged and are picked up by the retention purge;
         // never fail confirm over a document-linking error — the
         // interaction itself already exists and confirm is idempotent.
-        logger.error("Failed to create documents from staged inbound attachments", documentsError);
+        logger.error(
+          "Failed to create documents from staged inbound attachments",
+          documentsError,
+        );
       }
     }
 
@@ -171,7 +202,10 @@ export default defineEventHandler(async (event) => {
       .select("id");
     if (updateError) {
       logger.error("Failed to mark draft confirmed", updateError);
-      throw createError({ statusCode: 500, statusMessage: "Failed to confirm draft" });
+      throw createError({
+        statusCode: 500,
+        statusMessage: "Failed to confirm draft",
+      });
     }
     if (!updatedRows || updatedRows.length === 0) {
       // Another request already confirmed this draft first. Our own
@@ -183,13 +217,19 @@ export default defineEventHandler(async (event) => {
         .select("confirmed_interaction_id")
         .eq("id", draftId)
         .maybeSingle();
-      return { ok: true, interactionId: current?.confirmed_interaction_id ?? interaction.id };
+      return {
+        ok: true,
+        interactionId: current?.confirmed_interaction_id ?? interaction.id,
+      };
     }
 
     return { ok: true, interactionId: interaction.id };
   } catch (err) {
     if (err instanceof Error && "statusCode" in err) throw err;
     logger.error("Failed to confirm inbound draft", err);
-    throw createError({ statusCode: 500, statusMessage: "Failed to confirm draft" });
+    throw createError({
+      statusCode: 500,
+      statusMessage: "Failed to confirm draft",
+    });
   }
 });

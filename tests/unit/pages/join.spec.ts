@@ -339,7 +339,7 @@ describe("/join page", () => {
 
       const wrapper = createWrapper();
       await flushPromises();
-      
+
       await wrapper
         .find('[data-testid="invite-signup-form"]')
         .trigger("submit");
@@ -365,7 +365,7 @@ describe("/join page", () => {
 
       const wrapper = createWrapper();
       await flushPromises();
-            await wrapper
+      await wrapper
         .find('[data-testid="invite-signup-form"]')
         .trigger("submit");
       await flushPromises();
@@ -417,7 +417,7 @@ describe("/join page", () => {
 
       const wrapper = createWrapper();
       await flushPromises();
-            await wrapper
+      await wrapper
         .find('[data-testid="invite-signup-form"]')
         .trigger("submit");
       await flushPromises();
@@ -444,7 +444,7 @@ describe("/join page", () => {
 
       const wrapper = createWrapper();
       await flushPromises();
-            await wrapper
+      await wrapper
         .find('[data-testid="invite-signup-form"]')
         .trigger("submit");
       await flushPromises();

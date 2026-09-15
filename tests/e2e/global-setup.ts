@@ -226,7 +226,9 @@ async function globalSetup(_config: FullConfig) {
       // Don't exit - tests can still run with existing data
     }
   } else if (process.env.E2E_SKIP_SEED === "true") {
-    console.log("⏭️  Skipping full database seed (E2E_SKIP_SEED=true — already seeded upstream)");
+    console.log(
+      "⏭️  Skipping full database seed (E2E_SKIP_SEED=true — already seeded upstream)",
+    );
   } else {
     console.log("⏭️  Skipping full database seed (set E2E_SEED=true to seed)");
   }

@@ -15,7 +15,8 @@ export const ON_WROTE_RE =
   /(?:On|El)\s+(.+)\s<([^<>\s]+@[^<>\s]+)>\s+(?:wrote|escribió):/i;
 
 // Outlook (desktop): separate "From:"/"Sent:" header lines rather than one "On ... wrote:" line.
-export const OUTLOOK_FROM_RE = /From:\s*(?:([^<>\n]+?)\s*)?<?([^<>\s\n]+@[^<>\s\n]+)>?/i;
+export const OUTLOOK_FROM_RE =
+  /From:\s*(?:([^<>\n]+?)\s*)?<?([^<>\s\n]+@[^<>\s\n]+)>?/i;
 const OUTLOOK_SENT_RE = /Sent:\s*(.+)/i;
 
 // Mobile Gmail/Outlook apps: "---------- Forwarded message ---------" banner above a
@@ -67,7 +68,7 @@ export function parseForwardedEmail(bodyText: string): ParsedForward | null {
     // The name (if present) typically follows a time pattern like "3:15 PM".
     // Look for a time pattern at the end of the date, then anything after that is the name.
     const timeMatch = /^(.+?\d{1,2}:\d{2}\s+(?:AM|PM)),?\s+(.+)$/i.exec(
-      dateAndName
+      dateAndName,
     );
     let date: string | null;
     let name: string | null;
@@ -78,7 +79,7 @@ export function parseForwardedEmail(bodyText: string): ParsedForward | null {
     } else {
       // No time-based split found, try to find name at the end (capital words)
       const nameMatch = /^(.+?)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s*$/.exec(
-        dateAndName
+        dateAndName,
       );
       if (nameMatch && !nameMatch[2].match(/\d/)) {
         date = nameMatch[1].trim();
@@ -116,7 +117,10 @@ export function parseForwardedEmail(bodyText: string): ParsedForward | null {
 // than re-typed as literals, so a future locale/verb addition to those
 // patterns is picked up here automatically.
 const ON_WROTE_RE_G = new RegExp(ON_WROTE_RE.source, "gi");
-const FORWARDED_MESSAGE_HEADER_RE_G = new RegExp(FORWARDED_MESSAGE_HEADER_RE.source, "gi");
+const FORWARDED_MESSAGE_HEADER_RE_G = new RegExp(
+  FORWARDED_MESSAGE_HEADER_RE.source,
+  "gi",
+);
 
 export interface ForwardedThreadSegment {
   parsed: ParsedForward | null;
@@ -143,14 +147,19 @@ export interface ForwardedThreadSegment {
  * `segmentText` match today's whole-body single-message behavior byte for
  * byte.
  */
-export function parseForwardedThread(bodyText: string): ForwardedThreadSegment[] {
+export function parseForwardedThread(
+  bodyText: string,
+): ForwardedThreadSegment[] {
   // Hard-wrap collapsing is length-preserving (newline -> single space), so
   // indices found on the collapsed copy still address the same offsets in
   // the original bodyText used for slicing below.
   const collapsed = collapseHardWraps(bodyText);
   const markerIndices = [
     ...Array.from(collapsed.matchAll(ON_WROTE_RE_G), (m) => m.index),
-    ...Array.from(collapsed.matchAll(FORWARDED_MESSAGE_HEADER_RE_G), (m) => m.index),
+    ...Array.from(
+      collapsed.matchAll(FORWARDED_MESSAGE_HEADER_RE_G),
+      (m) => m.index,
+    ),
   ].sort((a, b) => a - b);
 
   if (markerIndices.length <= 1) {

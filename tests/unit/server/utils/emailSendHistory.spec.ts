@@ -23,8 +23,16 @@ describe("mergeEmailSendStatus", () => {
   it("attaches the latest event for a matching message_id", () => {
     const sends = [baseSend()];
     const events: RawEmailEvent[] = [
-      { message_id: "msg-1", event_type: "sent", occurred_at: "2026-09-01T00:00:01Z" },
-      { message_id: "msg-1", event_type: "delivered", occurred_at: "2026-09-01T00:05:00Z" },
+      {
+        message_id: "msg-1",
+        event_type: "sent",
+        occurred_at: "2026-09-01T00:00:01Z",
+      },
+      {
+        message_id: "msg-1",
+        event_type: "delivered",
+        occurred_at: "2026-09-01T00:05:00Z",
+      },
     ];
 
     const [row] = mergeEmailSendStatus(sends, events);
@@ -41,9 +49,15 @@ describe("mergeEmailSendStatus", () => {
   });
 
   it("resolves nulls for a send whose Resend call failed (no message_id)", () => {
-    const sends = [baseSend({ message_id: null, success: false, error: "timeout" })];
+    const sends = [
+      baseSend({ message_id: null, success: false, error: "timeout" }),
+    ];
     const events: RawEmailEvent[] = [
-      { message_id: "msg-1", event_type: "delivered", occurred_at: "2026-09-01T00:05:00Z" },
+      {
+        message_id: "msg-1",
+        event_type: "delivered",
+        occurred_at: "2026-09-01T00:05:00Z",
+      },
     ];
 
     const [row] = mergeEmailSendStatus(sends, events);
@@ -56,7 +70,11 @@ describe("mergeEmailSendStatus", () => {
   it("does not cross-link events belonging to a different message_id", () => {
     const sends = [baseSend({ id: "send-2", message_id: "msg-2" })];
     const events: RawEmailEvent[] = [
-      { message_id: "msg-1", event_type: "bounced", occurred_at: "2026-09-01T00:05:00Z" },
+      {
+        message_id: "msg-1",
+        event_type: "bounced",
+        occurred_at: "2026-09-01T00:05:00Z",
+      },
     ];
 
     const [row] = mergeEmailSendStatus(sends, events);

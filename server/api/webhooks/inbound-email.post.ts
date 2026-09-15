@@ -26,9 +26,18 @@ import { defineEventHandler, readRawBody, getHeaders, createError } from "h3";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import { useLogger } from "~/server/utils/logger";
 import { verifyResendWebhook } from "~/server/utils/verifyResendWebhook";
-import { parseInboundToken, resolveFamilyByInboundToken } from "~/server/utils/familyInboundToken";
-import { parseForwardedThread, type ParsedForward } from "~/server/utils/parseForwardedEmail";
-import { matchCoachByEmail, autoCreateCoachByEmailDomain } from "~/server/utils/matchCoachByEmail";
+import {
+  parseInboundToken,
+  resolveFamilyByInboundToken,
+} from "~/server/utils/familyInboundToken";
+import {
+  parseForwardedThread,
+  type ParsedForward,
+} from "~/server/utils/parseForwardedEmail";
+import {
+  matchCoachByEmail,
+  autoCreateCoachByEmailDomain,
+} from "~/server/utils/matchCoachByEmail";
 import { FILE_VALIDATION_RULES } from "~/composables/useFormValidation";
 import type { Database, Json } from "~/types/database";
 
@@ -67,7 +76,10 @@ function getResend(): Resend {
  * how the single-message path already falls back to `created_at` when
  * nothing was parsed at all.
  */
-function resolveOccurredAt(originalDate: string | null | undefined, fallback: string): string {
+function resolveOccurredAt(
+  originalDate: string | null | undefined,
+  fallback: string,
+): string {
   if (!originalDate) return fallback;
   const parsed = new Date(originalDate);
   return Number.isNaN(parsed.getTime()) ? fallback : parsed.toISOString();
@@ -78,7 +90,9 @@ function resolveOccurredAt(originalDate: string | null | undefined, fallback: st
  * header value, lowercased for case-insensitive comparison. Never throws —
  * a header that doesn't parse just yields null.
  */
-function extractEmailAddress(headerValue: string | null | undefined): string | null {
+function extractEmailAddress(
+  headerValue: string | null | undefined,
+): string | null {
   if (!headerValue) return null;
   const angleMatch = /<([^<>\s]+@[^<>\s]+)>/.exec(headerValue);
   const raw = angleMatch ? angleMatch[1] : headerValue.trim();
@@ -111,9 +125,12 @@ function isResendInboundPayload(value: unknown): value is ResendInboundPayload {
   );
 }
 
-type RawEmailInsert = Database["public"]["Tables"]["raw_inbound_emails"]["Insert"];
-type DraftInsert = Database["public"]["Tables"]["inbound_email_drafts"]["Insert"];
-type AttachmentInsert = Database["public"]["Tables"]["raw_inbound_attachments"]["Insert"];
+type RawEmailInsert =
+  Database["public"]["Tables"]["raw_inbound_emails"]["Insert"];
+type DraftInsert =
+  Database["public"]["Tables"]["inbound_email_drafts"]["Insert"];
+type AttachmentInsert =
+  Database["public"]["Tables"]["raw_inbound_attachments"]["Insert"];
 
 /**
  * Attachment metadata embedded directly in `receiving.get()`'s response
@@ -157,7 +174,9 @@ async function stageAttachments(
   for (const attachment of params.attachments) {
     const filename = attachment.filename ?? `attachment-${attachment.id}`;
     const ext = `.${filename.split(".").pop()?.toLowerCase() ?? ""}`;
-    const allowedType = (rules.mimeTypes as readonly string[]).includes(attachment.content_type);
+    const allowedType = (rules.mimeTypes as readonly string[]).includes(
+      attachment.content_type,
+    );
     const allowedExt = (rules.extensions as readonly string[]).includes(ext);
     if (!allowedType || !allowedExt) {
       logger.warn("Skipping inbound attachment: disallowed type", {
@@ -167,16 +186,23 @@ async function stageAttachments(
       continue;
     }
     if (attachment.size > rules.maxSize) {
-      logger.warn("Skipping inbound attachment: too large", { filename, size: attachment.size });
+      logger.warn("Skipping inbound attachment: too large", {
+        filename,
+        size: attachment.size,
+      });
       continue;
     }
 
-    const { data: signed, error: signedError } = await resend.emails.receiving.attachments.get({
-      emailId: params.emailId,
-      id: attachment.id,
-    });
+    const { data: signed, error: signedError } =
+      await resend.emails.receiving.attachments.get({
+        emailId: params.emailId,
+        id: attachment.id,
+      });
     if (signedError || !signed?.download_url) {
-      logger.error("Failed to get inbound attachment download URL", signedError);
+      logger.error(
+        "Failed to get inbound attachment download URL",
+        signedError,
+      );
       continue;
     }
 
@@ -184,7 +210,9 @@ async function stageAttachments(
     try {
       const downloadResponse = await fetch(signed.download_url);
       if (!downloadResponse.ok) {
-        throw new Error(`Attachment download failed with status ${downloadResponse.status}`);
+        throw new Error(
+          `Attachment download failed with status ${downloadResponse.status}`,
+        );
       }
       fileBuffer = await downloadResponse.arrayBuffer();
     } catch (err) {
@@ -200,7 +228,10 @@ async function stageAttachments(
         upsert: false,
       });
     if (uploadError) {
-      logger.error("Failed to upload inbound attachment to storage", uploadError);
+      logger.error(
+        "Failed to upload inbound attachment to storage",
+        uploadError,
+      );
       continue;
     }
 
@@ -211,7 +242,9 @@ async function stageAttachments(
       content_type: attachment.content_type,
       storage_path: storagePath,
     };
-    const { error: insertError } = await admin.from("raw_inbound_attachments").insert(attachmentInsert);
+    const { error: insertError } = await admin
+      .from("raw_inbound_attachments")
+      .insert(attachmentInsert);
     if (insertError) {
       logger.error("Failed to stage raw_inbound_attachments row", insertError);
       continue;
@@ -233,7 +266,10 @@ export default defineEventHandler(async (event) => {
     payload = verifyResendWebhook(rawBody, headers);
   } catch (err) {
     logger.warn("Rejected inbound email webhook: bad signature", err);
-    throw createError({ statusCode: 401, statusMessage: "Invalid webhook signature" });
+    throw createError({
+      statusCode: 401,
+      statusMessage: "Invalid webhook signature",
+    });
   }
 
   if (!isResendInboundPayload(payload)) {
@@ -246,10 +282,14 @@ export default defineEventHandler(async (event) => {
   const admin = useSupabaseAdmin();
   const toAddress = payload.data.to[0] ?? "";
   const token = parseInboundToken(toAddress);
-  const familyUnitId = token ? await resolveFamilyByInboundToken(admin, token) : null;
+  const familyUnitId = token
+    ? await resolveFamilyByInboundToken(admin, token)
+    : null;
 
   if (!familyUnitId) {
-    logger.warn("Inbound email addressed to unknown/malformed token", { toAddress });
+    logger.warn("Inbound email addressed to unknown/malformed token", {
+      toAddress,
+    });
     return { ok: true, skipped: "unknown-family" };
   }
 
@@ -269,9 +309,8 @@ export default defineEventHandler(async (event) => {
   let bodyText: string | null = null;
   let inboundAttachments: InboundAttachmentMeta[] = [];
   try {
-    const { data: fullEmail, error: fetchError } = await getResend().emails.receiving.get(
-      payload.data.email_id,
-    );
+    const { data: fullEmail, error: fetchError } =
+      await getResend().emails.receiving.get(payload.data.email_id);
     if (fetchError) throw new Error(fetchError.message);
     bodyText = fullEmail?.text ?? null;
     inboundAttachments = fullEmail?.attachments ?? [];
@@ -284,7 +323,10 @@ export default defineEventHandler(async (event) => {
   // "On ... wrote:" block — and gets one draft per segment below. Today's
   // normal case (0 or 1 quote markers) always comes back as exactly one
   // segment covering the whole body, so that path is unchanged.
-  const allSegments: { parsed: ParsedForward | null; segmentText: string | null }[] = bodyText
+  const allSegments: {
+    parsed: ParsedForward | null;
+    segmentText: string | null;
+  }[] = bodyText
     ? parseForwardedThread(bodyText)
     : [{ parsed: null, segmentText: null }];
 
@@ -297,7 +339,9 @@ export default defineEventHandler(async (event) => {
   // extra query this handler doesn't otherwise need.
   const forwarderEmail = extractEmailAddress(payload.data.from);
   const segments = allSegments.filter((segment) => {
-    const senderEmail = extractEmailAddress(segment.parsed?.senderEmail ?? null);
+    const senderEmail = extractEmailAddress(
+      segment.parsed?.senderEmail ?? null,
+    );
     return !(forwarderEmail && senderEmail && senderEmail === forwarderEmail);
   });
 
@@ -353,7 +397,10 @@ export default defineEventHandler(async (event) => {
       // retry here would reprocess the whole body and duplicate every
       // segment already inserted above. One segment's insert failure isn't
       // a delivery failure worth losing the rest of the thread over.
-      logger.error("Failed to create inbound email draft for one segment", draftError);
+      logger.error(
+        "Failed to create inbound email draft for one segment",
+        draftError,
+      );
       failedCount++;
       continue;
     }
@@ -376,7 +423,10 @@ export default defineEventHandler(async (event) => {
       if (notifyError) {
         // Never fail the webhook over a notification — Resend already
         // delivered successfully and the draft already exists.
-        logger.error("Failed to notify family of new inbound draft", notifyError);
+        logger.error(
+          "Failed to notify family of new inbound draft",
+          notifyError,
+        );
       }
     }
 
@@ -389,7 +439,12 @@ export default defineEventHandler(async (event) => {
     stagedAttachmentCount = await stageAttachments(
       admin,
       getResend(),
-      { emailId: payload.data.email_id, familyUnitId, draftId: firstDraftId, attachments: inboundAttachments },
+      {
+        emailId: payload.data.email_id,
+        familyUnitId,
+        draftId: firstDraftId,
+        attachments: inboundAttachments,
+      },
       logger,
     );
   }

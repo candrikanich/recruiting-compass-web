@@ -70,9 +70,7 @@ export function funnelWithDropoff(
  * a family who forwarded something recently and hasn't reviewed it.
  * `null` (not NaN) when nothing has been decided yet.
  */
-export function confirmationRate(
-  drafts: { status: string }[],
-): number | null {
+export function confirmationRate(drafts: { status: string }[]): number | null {
   const decided = drafts.filter(
     (d) => d.status === "confirmed" || d.status === "discarded",
   );
@@ -108,7 +106,9 @@ export function familyAdoptionRate(
   totalFamilies: number,
 ): number | null {
   if (totalFamilies <= 0) return null;
-  const families = new Set(draftFamilyIds.filter((id): id is string => Boolean(id)));
+  const families = new Set(
+    draftFamilyIds.filter((id): id is string => Boolean(id)),
+  );
   return Math.round((families.size / totalFamilies) * 100);
 }
 

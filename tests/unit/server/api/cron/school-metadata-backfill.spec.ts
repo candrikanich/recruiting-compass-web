@@ -24,18 +24,36 @@ vi.mock("~/server/utils/schoolMetadataLookup", () => ({
         conferenceUrl: null,
       };
     }
-    return { mascot: null, athleticsUrl: null, colors: null, conferenceUrl: null };
+    return {
+      mascot: null,
+      athleticsUrl: null,
+      colors: null,
+      conferenceUrl: null,
+    };
   }),
 }));
 
 vi.mock("~/server/utils/logger", () => ({
-  useLogger: () => ({ info: vi.fn(), error: vi.fn(), warn: vi.fn(), debug: vi.fn() }),
-  createLogger: () => ({ info: vi.fn(), error: vi.fn(), warn: vi.fn(), debug: vi.fn() }),
+  useLogger: () => ({
+    info: vi.fn(),
+    error: vi.fn(),
+    warn: vi.fn(),
+    debug: vi.fn(),
+  }),
+  createLogger: () => ({
+    info: vi.fn(),
+    error: vi.fn(),
+    warn: vi.fn(),
+    debug: vi.fn(),
+  }),
 }));
 
 vi.mock("h3", async (importOriginal) => {
   const actual = await importOriginal<typeof import("h3")>();
-  return { ...actual, defineEventHandler: (fn: (event: H3Event) => unknown) => fn };
+  return {
+    ...actual,
+    defineEventHandler: (fn: (event: H3Event) => unknown) => fn,
+  };
 });
 
 (
@@ -79,7 +97,8 @@ function mockSchools(schools: School[]) {
 }
 
 async function loadHandler() {
-  return (await import("~/server/api/cron/school-metadata-backfill.get")).default;
+  return (await import("~/server/api/cron/school-metadata-backfill.get"))
+    .default;
 }
 
 describe("GET /api/cron/school-metadata-backfill", () => {
@@ -91,7 +110,9 @@ describe("GET /api/cron/school-metadata-backfill", () => {
   it("rejects a request with no cron secret (401)", async () => {
     mockSchools([]);
     const handler = await loadHandler();
-    await expect(handler(fakeEvent())).rejects.toMatchObject({ statusCode: 401 });
+    await expect(handler(fakeEvent())).rejects.toMatchObject({
+      statusCode: 401,
+    });
   });
 
   it("null-fills a school found in the seed", async () => {
@@ -162,9 +183,12 @@ describe("GET /api/cron/school-metadata-backfill", () => {
     const updateMock = vi
       .fn()
       .mockReturnValueOnce({
-        eq: () => Promise.resolve({ data: null, error: { message: "db error" } }),
+        eq: () =>
+          Promise.resolve({ data: null, error: { message: "db error" } }),
       })
-      .mockReturnValueOnce({ eq: () => Promise.resolve({ data: null, error: null }) });
+      .mockReturnValueOnce({
+        eq: () => Promise.resolve({ data: null, error: null }),
+      });
     mockSupabase.from.mockImplementation((table: string) => {
       if (table !== "schools") throw new Error(`unexpected table ${table}`);
       return {

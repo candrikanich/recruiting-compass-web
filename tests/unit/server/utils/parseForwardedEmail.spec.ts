@@ -1,5 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { parseForwardedEmail, parseForwardedThread } from "~/server/utils/parseForwardedEmail";
+import {
+  parseForwardedEmail,
+  parseForwardedThread,
+} from "~/server/utils/parseForwardedEmail";
 
 const SINGLE_MESSAGE_FIXTURES = [
   `Hey, saw this — let's talk soon.\n\nOn Mon, Sep 2, 2026 at 3:15 PM Coach Smith <smith@osu.edu> wrote:\n> Thanks for reaching out.`,
@@ -41,9 +44,18 @@ describe("parseForwardedThread", () => {
     const segments = parseForwardedThread(body);
 
     expect(segments).toHaveLength(3);
-    expect(segments[0].parsed).toMatchObject({ senderName: "Coach Alpha", senderEmail: "alpha@osu.edu" });
-    expect(segments[1].parsed).toMatchObject({ senderName: "Coach Beta", senderEmail: "beta@osu.edu" });
-    expect(segments[2].parsed).toMatchObject({ senderName: "Coach Gamma", senderEmail: "gamma@osu.edu" });
+    expect(segments[0].parsed).toMatchObject({
+      senderName: "Coach Alpha",
+      senderEmail: "alpha@osu.edu",
+    });
+    expect(segments[1].parsed).toMatchObject({
+      senderName: "Coach Beta",
+      senderEmail: "beta@osu.edu",
+    });
+    expect(segments[2].parsed).toMatchObject({
+      senderName: "Coach Gamma",
+      senderEmail: "gamma@osu.edu",
+    });
 
     // Each segment's own text carries only its own marker + quoted content —
     // no bleed-through from an earlier or later message's From:/Date: line.
@@ -61,7 +73,9 @@ describe("parseForwardedThread", () => {
 
   it("returns a single unparsed segment for a body with no quote markers", () => {
     const body = "Just a plain note, no forward here.";
-    expect(parseForwardedThread(body)).toEqual([{ parsed: null, segmentText: body }]);
+    expect(parseForwardedThread(body)).toEqual([
+      { parsed: null, segmentText: body },
+    ]);
   });
 });
 

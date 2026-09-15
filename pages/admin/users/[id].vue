@@ -17,10 +17,8 @@ const loadError = computed(() => error.value);
 // AdminDataTable expects a generic row shape; AdminEmailSendRow rows are
 // rendered via typed cell slots, so widen for the prop binding only.
 const emailHistoryRows = computed(
-  () => (detail.value?.emailHistory ?? []) as unknown as Record<
-    string,
-    unknown
-  >[],
+  () =>
+    (detail.value?.emailHistory ?? []) as unknown as Record<string, unknown>[],
 );
 
 const BOUNCE_EVENTS = new Set(["bounced", "complained", "failed"]);
@@ -151,7 +149,10 @@ onMounted(() => fetchDetail(String(route.params.id)));
           <span v-if="!row.success" class="text-brand-red-600"
             >send failed{{ row.error ? `: ${row.error}` : "" }}</span
           >
-          <span v-else-if="row.latestEventType" :class="statusClass(String(row.latestEventType))">
+          <span
+            v-else-if="row.latestEventType"
+            :class="statusClass(String(row.latestEventType))"
+          >
             {{ row.latestEventType }}
           </span>
           <span v-else class="text-brand-slate-400">sent (no events yet)</span>

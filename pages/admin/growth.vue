@@ -111,7 +111,9 @@ onMounted(() => fetchGrowth(30));
       <h2 class="mb-2 text-sm font-semibold text-brand-slate-700">
         Feature adoption ({{ growth.adoption.totalUsers }} users)
       </h2>
-      <div class="mb-6 h-64 rounded-lg border border-brand-slate-200 bg-white p-4">
+      <div
+        class="mb-6 h-64 rounded-lg border border-brand-slate-200 bg-white p-4"
+      >
         <AdminChart type="bar" :data="adoptionChartData" />
       </div>
 

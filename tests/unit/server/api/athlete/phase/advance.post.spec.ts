@@ -57,8 +57,7 @@ describe("/api/athlete/phase/advance.post", () => {
     it("redirects a parent's call to their linked athlete's row (family-shared profile, #555)", async () => {
       const { createServerSupabaseClient } =
         await import("~/server/utils/supabase");
-      const { requireAuth, getUserRole } =
-        await import("~/server/utils/auth");
+      const { requireAuth, getUserRole } = await import("~/server/utils/auth");
       const handler = (await import("~/server/api/athlete/phase/advance.post"))
         .default;
 
@@ -98,8 +97,7 @@ describe("/api/athlete/phase/advance.post", () => {
     it("throws 404 when a parent has no linked athlete to advance", async () => {
       const { createServerSupabaseClient } =
         await import("~/server/utils/supabase");
-      const { requireAuth, getUserRole } =
-        await import("~/server/utils/auth");
+      const { requireAuth, getUserRole } = await import("~/server/utils/auth");
       const handler = (await import("~/server/api/athlete/phase/advance.post"))
         .default;
 
@@ -120,8 +118,7 @@ describe("/api/athlete/phase/advance.post", () => {
     it("only ever targets the resolved athlete's own row — there is no athleteId param to advance someone else's phase", async () => {
       const { createServerSupabaseClient } =
         await import("~/server/utils/supabase");
-      const { requireAuth } =
-        await import("~/server/utils/auth");
+      const { requireAuth } = await import("~/server/utils/auth");
       const handler = (await import("~/server/api/athlete/phase/advance.post"))
         .default;
 
@@ -157,8 +154,7 @@ describe("/api/athlete/phase/advance.post", () => {
     it("rejects advancement when required milestone tasks are incomplete", async () => {
       const { createServerSupabaseClient } =
         await import("~/server/utils/supabase");
-      const { requireAuth } =
-        await import("~/server/utils/auth");
+      const { requireAuth } = await import("~/server/utils/auth");
       const handler = (await import("~/server/api/athlete/phase/advance.post"))
         .default;
 
@@ -192,8 +188,7 @@ describe("/api/athlete/phase/advance.post", () => {
     it("does not resolve raw milestone slugs as completed task ids (regression guard for the original bug)", async () => {
       const { createServerSupabaseClient } =
         await import("~/server/utils/supabase");
-      const { requireAuth } =
-        await import("~/server/utils/auth");
+      const { requireAuth } = await import("~/server/utils/auth");
       const handler = (await import("~/server/api/athlete/phase/advance.post"))
         .default;
 
@@ -227,8 +222,7 @@ describe("/api/athlete/phase/advance.post", () => {
     it("advances when all required milestone tasks are complete", async () => {
       const { createServerSupabaseClient } =
         await import("~/server/utils/supabase");
-      const { requireAuth } =
-        await import("~/server/utils/auth");
+      const { requireAuth } = await import("~/server/utils/auth");
       const handler = (await import("~/server/api/athlete/phase/advance.post"))
         .default;
 
@@ -263,8 +257,7 @@ describe("/api/athlete/phase/advance.post", () => {
     it("falls back to the grade-derived phase (matching GET) when current_phase has never been set", async () => {
       const { createServerSupabaseClient } =
         await import("~/server/utils/supabase");
-      const { requireAuth } =
-        await import("~/server/utils/auth");
+      const { requireAuth } = await import("~/server/utils/auth");
       const handler = (await import("~/server/api/athlete/phase/advance.post"))
         .default;
 
@@ -299,8 +292,7 @@ describe("/api/athlete/phase/advance.post", () => {
     it("returns a non-error, non-duplicate response when already at the final phase (committed)", async () => {
       const { createServerSupabaseClient } =
         await import("~/server/utils/supabase");
-      const { requireAuth } =
-        await import("~/server/utils/auth");
+      const { requireAuth } = await import("~/server/utils/auth");
       const handler = (await import("~/server/api/athlete/phase/advance.post"))
         .default;
 
@@ -330,8 +322,7 @@ describe("/api/athlete/phase/advance.post", () => {
     it("advancing twice in a row is safe: the second call re-evaluates gating against the new phase rather than duplicating the first advance", async () => {
       const { createServerSupabaseClient } =
         await import("~/server/utils/supabase");
-      const { requireAuth } =
-        await import("~/server/utils/auth");
+      const { requireAuth } = await import("~/server/utils/auth");
       const handler = (await import("~/server/api/athlete/phase/advance.post"))
         .default;
 
@@ -371,8 +362,7 @@ describe("/api/athlete/phase/advance.post", () => {
     it("throws 404 (not 500) when the users row is missing — deleted account must not fake-succeed or alert", async () => {
       const { createServerSupabaseClient } =
         await import("~/server/utils/supabase");
-      const { requireAuth } =
-        await import("~/server/utils/auth");
+      const { requireAuth } = await import("~/server/utils/auth");
       const handler = (await import("~/server/api/athlete/phase/advance.post"))
         .default;
 
@@ -395,8 +385,7 @@ describe("/api/athlete/phase/advance.post", () => {
     it("throws 500 when the users.current_phase query returns an error", async () => {
       const { createServerSupabaseClient } =
         await import("~/server/utils/supabase");
-      const { requireAuth } =
-        await import("~/server/utils/auth");
+      const { requireAuth } = await import("~/server/utils/auth");
       const handler = (await import("~/server/api/athlete/phase/advance.post"))
         .default;
 
@@ -424,8 +413,7 @@ describe("/api/athlete/phase/advance.post", () => {
     it("throws 500 when the users update fails", async () => {
       const { createServerSupabaseClient } =
         await import("~/server/utils/supabase");
-      const { requireAuth } =
-        await import("~/server/utils/auth");
+      const { requireAuth } = await import("~/server/utils/auth");
       const handler = (await import("~/server/api/athlete/phase/advance.post"))
         .default;
 

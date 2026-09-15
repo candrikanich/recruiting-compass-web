@@ -10,7 +10,8 @@ import { useSupabaseAdmin } from "~/server/utils/supabase";
 import { useLogger } from "~/server/utils/logger";
 import { resolveFamilyUnitId } from "~/server/utils/familyMembership";
 
-const UUID_SHAPE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const UUID_SHAPE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "inbound-drafts/discard");
@@ -43,13 +44,19 @@ export default defineEventHandler(async (event) => {
       .eq("id", draftId);
     if (updateError) {
       logger.error("Failed to discard draft", updateError);
-      throw createError({ statusCode: 500, statusMessage: "Failed to discard draft" });
+      throw createError({
+        statusCode: 500,
+        statusMessage: "Failed to discard draft",
+      });
     }
 
     return { ok: true };
   } catch (err) {
     if (err instanceof Error && "statusCode" in err) throw err;
     logger.error("Failed to discard inbound draft", err);
-    throw createError({ statusCode: 500, statusMessage: "Failed to discard draft" });
+    throw createError({
+      statusCode: 500,
+      statusMessage: "Failed to discard draft",
+    });
   }
 });

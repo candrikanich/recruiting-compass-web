@@ -28,7 +28,10 @@ import {
   type RawEmailSend,
   type RawEmailEvent,
 } from "~/server/utils/emailSendHistory";
-import type { AdminUserDetail, AdminEmailSendRow } from "~/types/adminUserDetail";
+import type {
+  AdminUserDetail,
+  AdminEmailSendRow,
+} from "~/types/adminUserDetail";
 
 const ACCOUNT_COLUMNS =
   "id, email, full_name, role, is_admin, created_at, graduation_year, current_phase, onboarding_completed, status_label, deletion_requested_at";
@@ -58,7 +61,9 @@ async function loadEmailHistory(
 
   const rawSends = (sends as RawEmailSend[] | null) ?? [];
   const messageIds = [
-    ...new Set(rawSends.map((s) => s.message_id).filter((id): id is string => !!id)),
+    ...new Set(
+      rawSends.map((s) => s.message_id).filter((id): id is string => !!id),
+    ),
   ];
   if (messageIds.length === 0) return mergeEmailSendStatus(rawSends, []);
 
@@ -72,7 +77,10 @@ async function loadEmailHistory(
     return mergeEmailSendStatus(rawSends, []);
   }
 
-  return mergeEmailSendStatus(rawSends, (events as RawEmailEvent[] | null) ?? []);
+  return mergeEmailSendStatus(
+    rawSends,
+    (events as RawEmailEvent[] | null) ?? [],
+  );
 }
 
 function emptyDetail(

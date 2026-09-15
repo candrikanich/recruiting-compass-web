@@ -43,6 +43,7 @@ function makeSupabaseMock({
   lookupData,
   lookupError,
   deleteUserError,
+  authUsers,
   // IDs that remain in `users` after the bulk delete — reproduces the NO
   // ACTION FK block (guardian_claims.claimed_by / users.guardian_consent_by)
   // the old code never cleared. Empty by default (clean delete).
@@ -55,6 +56,7 @@ function makeSupabaseMock({
   lookupData?: { id: string } | null;
   lookupError?: object | null;
   deleteUserError?: object | null;
+  authUsers?: Array<{ id: string; email: string }>;
   survivorIds?: string[];
   usersDeleteError?: object | null;
   verifyReadError?: { message: string } | null;
@@ -62,6 +64,9 @@ function makeSupabaseMock({
   const deleteUserMock = vi.fn().mockResolvedValue({
     error: deleteUserError ?? null,
   });
+  const listUsersMock = vi
+    .fn()
+    .mockResolvedValue({ data: { users: authUsers ?? [] }, error: null });
   const updateCalls: Array<{ table: string }> = [];
 
   return {
@@ -91,9 +96,10 @@ function makeSupabaseMock({
       }),
     })),
     auth: {
-      admin: { deleteUser: deleteUserMock },
+      admin: { deleteUser: deleteUserMock, listUsers: listUsersMock },
     },
     _deleteUserMock: deleteUserMock,
+    _listUsersMock: listUsersMock,
     _updateCalls: updateCalls,
   };
 }
@@ -212,6 +218,57 @@ describe("POST /api/admin/bulk-delete-users", () => {
     expect(result.failed).toBe(0);
     expect(result.deletedEmails).toContain("user@example.com");
     expect(supabaseMock._deleteUserMock).toHaveBeenCalledWith("target-uuid");
+  });
+
+  it("recovers an auth-only account left by a prior partial delete", async () => {
+    mockRequireAdmin.mockResolvedValue(makeAdminUser());
+    const supabaseMock = makeSupabaseMock({
+      lookupData: null,
+      lookupError: { code: "PGRST116" },
+      authUsers: [{ id: "orphan-auth-uuid", email: "orphan@example.com" }],
+    });
+    mockUseSupabaseAdmin.mockReturnValue(
+      supabaseMock as ReturnType<typeof useSupabaseAdmin>,
+    );
+    mockReadBody.mockResolvedValue({ emails: ["orphan@example.com"] });
+
+    const { default: handler } =
+      await import("~/server/api/admin/bulk-delete-users.post");
+
+    const result = await handler(mockEvent);
+
+    expect(result.success).toBe(1);
+    expect(result.failed).toBe(0);
+    expect(result.deletedEmails).toContain("orphan@example.com");
+    expect(supabaseMock._listUsersMock).toHaveBeenCalled();
+    expect(supabaseMock._deleteUserMock).toHaveBeenCalledWith(
+      "orphan-auth-uuid",
+    );
+  });
+
+  it("still reports not-found when absent from both public.users and auth", async () => {
+    mockRequireAdmin.mockResolvedValue(makeAdminUser());
+    const supabaseMock = makeSupabaseMock({
+      lookupData: null,
+      lookupError: { code: "PGRST116" },
+      authUsers: [],
+    });
+    mockUseSupabaseAdmin.mockReturnValue(
+      supabaseMock as ReturnType<typeof useSupabaseAdmin>,
+    );
+    mockReadBody.mockResolvedValue({ emails: ["ghost@example.com"] });
+
+    const { default: handler } =
+      await import("~/server/api/admin/bulk-delete-users.post");
+
+    const result = await handler(mockEvent);
+
+    expect(result.success).toBe(0);
+    expect(result.failed).toBe(1);
+    expect(result.errors[0]).toMatchObject({
+      email: "ghost@example.com",
+      reason: "User not found",
+    });
   });
 
   it("records partial failure when auth deletion fails", async () => {

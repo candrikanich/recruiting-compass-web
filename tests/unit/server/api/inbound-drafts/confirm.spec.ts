@@ -8,7 +8,9 @@ vi.mock("h3", async () => {
     getRouterParam: vi.fn(),
     readBody: vi.fn(),
     createError: (opts: { statusCode: number; statusMessage?: string }) =>
-      Object.assign(new Error(opts.statusMessage ?? "error"), { statusCode: opts.statusCode }),
+      Object.assign(new Error(opts.statusMessage ?? "error"), {
+        statusCode: opts.statusCode,
+      }),
   };
 });
 vi.mock("~/server/utils/auth", () => ({ requireAuth: vi.fn() }));
@@ -19,11 +21,18 @@ vi.mock("~/server/utils/resolveAthleteId", () => ({
   }),
 }));
 vi.mock("~/server/utils/logger", () => ({
-  useLogger: () => ({ debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() }),
+  useLogger: () => ({
+    debug: vi.fn(),
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+  }),
 }));
 
 const mockState = {
-  membership: { family_unit_id: "family-1" } as { family_unit_id: string } | null,
+  membership: { family_unit_id: "family-1" } as {
+    family_unit_id: string;
+  } | null,
   draft: undefined as Record<string, unknown> | null | undefined,
   school: undefined as Record<string, unknown> | null | undefined,
   insertedInteraction: undefined as Record<string, unknown> | undefined,
@@ -43,7 +52,12 @@ vi.mock("~/server/utils/supabase", () => ({
       if (table === "users") {
         return {
           select: () => ({
-            eq: () => ({ single: async () => ({ data: { role: mockState.callerRole }, error: null }) }),
+            eq: () => ({
+              single: async () => ({
+                data: { role: mockState.callerRole },
+                error: null,
+              }),
+            }),
           }),
         };
       }
@@ -55,11 +69,19 @@ vi.mock("~/server/utils/supabase", () => ({
               // resolveAthleteId: .eq("user_id", userId).eq("role", "parent").maybeSingle()
               //               or: .eq("family_unit_id", id).eq("role", "player").maybeSingle()
               return {
-                single: async () => ({ data: mockState.membership, error: null }),
+                single: async () => ({
+                  data: mockState.membership,
+                  error: null,
+                }),
                 eq: (col2: string, value2: string) => ({
                   maybeSingle: async () => {
                     if (col2 === "role" && value2 === "parent") {
-                      return { data: { family_unit_id: mockState.membership?.family_unit_id }, error: null };
+                      return {
+                        data: {
+                          family_unit_id: mockState.membership?.family_unit_id,
+                        },
+                        error: null,
+                      };
                     }
                     if (col2 === "role" && value2 === "player") {
                       return { data: mockState.playerMember, error: null };
@@ -75,7 +97,9 @@ vi.mock("~/server/utils/supabase", () => ({
       if (table === "inbound_email_drafts") {
         return {
           select: () => ({
-            eq: () => ({ maybeSingle: async () => ({ data: mockState.draft, error: null }) }),
+            eq: () => ({
+              maybeSingle: async () => ({ data: mockState.draft, error: null }),
+            }),
           }),
           update: (row: Record<string, unknown>) => {
             mockState.updatedDraft = row;
@@ -96,7 +120,12 @@ vi.mock("~/server/utils/supabase", () => ({
         return {
           select: () => ({
             eq: () => ({
-              eq: () => ({ maybeSingle: async () => ({ data: mockState.school, error: null }) }),
+              eq: () => ({
+                maybeSingle: async () => ({
+                  data: mockState.school,
+                  error: null,
+                }),
+              }),
             }),
           }),
         };
@@ -106,7 +135,12 @@ vi.mock("~/server/utils/supabase", () => ({
           insert: (row: Record<string, unknown>) => {
             mockState.insertedInteraction = row;
             return {
-              select: () => ({ single: async () => ({ data: { id: "interaction-1" }, error: null }) }),
+              select: () => ({
+                single: async () => ({
+                  data: { id: "interaction-1" },
+                  error: null,
+                }),
+              }),
             };
           },
         };
@@ -114,7 +148,10 @@ vi.mock("~/server/utils/supabase", () => ({
       if (table === "raw_inbound_attachments") {
         return {
           select: () => ({
-            eq: async () => ({ data: mockState.stagedAttachments, error: null }),
+            eq: async () => ({
+              data: mockState.stagedAttachments,
+              error: null,
+            }),
           }),
         };
       }
@@ -130,7 +167,9 @@ vi.mock("~/server/utils/supabase", () => ({
     },
     storage: {
       from: (bucket: string) => ({
-        getPublicUrl: (path: string) => ({ data: { publicUrl: `https://storage.example/${bucket}/${path}` } }),
+        getPublicUrl: (path: string) => ({
+          data: { publicUrl: `https://storage.example/${bucket}/${path}` },
+        }),
       }),
     },
   }),
@@ -142,7 +181,9 @@ import { requireAuth } from "~/server/utils/auth";
 describe("POST /api/inbound-drafts/:id/confirm", () => {
   beforeEach(() => {
     vi.mocked(requireAuth).mockResolvedValue({ id: "user-1" } as never);
-    vi.mocked(getRouterParam).mockReturnValue("550e8400-e29b-41d4-a716-446655440000");
+    vi.mocked(getRouterParam).mockReturnValue(
+      "550e8400-e29b-41d4-a716-446655440000",
+    );
     vi.mocked(readBody).mockResolvedValue({});
     mockState.membership = { family_unit_id: "family-1" };
     mockState.school = undefined;
@@ -157,8 +198,11 @@ describe("POST /api/inbound-drafts/:id/confirm", () => {
 
   it("404s when the draft isn't found or belongs to another family", async () => {
     mockState.draft = null;
-    const { default: handler } = await import("~/server/api/inbound-drafts/[id]/confirm.post");
-    await expect(handler({} as Parameters<typeof handler>[0])).rejects.toMatchObject({ statusCode: 404 });
+    const { default: handler } =
+      await import("~/server/api/inbound-drafts/[id]/confirm.post");
+    await expect(
+      handler({} as Parameters<typeof handler>[0]),
+    ).rejects.toMatchObject({ statusCode: 404 });
   });
 
   it("422s when unmatched and no schoolId is provided", async () => {
@@ -173,8 +217,11 @@ describe("POST /api/inbound-drafts/:id/confirm", () => {
       body_text: "hi",
       occurred_at: "2026-09-02T15:15:00.000Z",
     };
-    const { default: handler } = await import("~/server/api/inbound-drafts/[id]/confirm.post");
-    await expect(handler({} as Parameters<typeof handler>[0])).rejects.toMatchObject({ statusCode: 422 });
+    const { default: handler } =
+      await import("~/server/api/inbound-drafts/[id]/confirm.post");
+    await expect(
+      handler({} as Parameters<typeof handler>[0]),
+    ).rejects.toMatchObject({ statusCode: 422 });
   });
 
   it("422s when the caller-supplied schoolId belongs to a different family", async () => {
@@ -190,9 +237,14 @@ describe("POST /api/inbound-drafts/:id/confirm", () => {
       occurred_at: "2026-09-02T15:15:00.000Z",
     };
     mockState.school = null; // schools query scoped to family-1 finds nothing
-    vi.mocked(readBody).mockResolvedValue({ schoolId: "11111111-1111-1111-1111-111111111111" });
-    const { default: handler } = await import("~/server/api/inbound-drafts/[id]/confirm.post");
-    await expect(handler({} as Parameters<typeof handler>[0])).rejects.toMatchObject({ statusCode: 422 });
+    vi.mocked(readBody).mockResolvedValue({
+      schoolId: "11111111-1111-1111-1111-111111111111",
+    });
+    const { default: handler } =
+      await import("~/server/api/inbound-drafts/[id]/confirm.post");
+    await expect(
+      handler({} as Parameters<typeof handler>[0]),
+    ).rejects.toMatchObject({ statusCode: 422 });
     expect(mockState.insertedInteraction).toBeUndefined();
   });
 
@@ -208,7 +260,8 @@ describe("POST /api/inbound-drafts/:id/confirm", () => {
       occurred_at: "2026-09-02T15:15:00.000Z",
       confirmed_interaction_id: null,
     };
-    const { default: handler } = await import("~/server/api/inbound-drafts/[id]/confirm.post");
+    const { default: handler } =
+      await import("~/server/api/inbound-drafts/[id]/confirm.post");
     const result = await handler({} as Parameters<typeof handler>[0]);
 
     expect(mockState.insertedInteraction).toMatchObject({
@@ -242,11 +295,20 @@ describe("POST /api/inbound-drafts/:id/confirm", () => {
       confirmed_interaction_id: null,
     };
     mockState.stagedAttachments = [
-      { filename: "camp-invite.pdf", content_type: "application/pdf", storage_path: "family-1/inbound/draft-1-camp-invite.pdf" },
-      { filename: "roster.docx", content_type: "application/msword", storage_path: "family-1/inbound/draft-1-roster.docx" },
+      {
+        filename: "camp-invite.pdf",
+        content_type: "application/pdf",
+        storage_path: "family-1/inbound/draft-1-camp-invite.pdf",
+      },
+      {
+        filename: "roster.docx",
+        content_type: "application/msword",
+        storage_path: "family-1/inbound/draft-1-roster.docx",
+      },
     ];
 
-    const { default: handler } = await import("~/server/api/inbound-drafts/[id]/confirm.post");
+    const { default: handler } =
+      await import("~/server/api/inbound-drafts/[id]/confirm.post");
     const result = await handler({} as Parameters<typeof handler>[0]);
 
     expect(result).toEqual({ ok: true, interactionId: "interaction-1" });
@@ -259,7 +321,8 @@ describe("POST /api/inbound-drafts/:id/confirm", () => {
         // Athlete-owned regardless of who confirmed (a parent, here).
         user_id: "player-1",
         uploaded_by: "user-1",
-        file_url: "https://storage.example/documents/family-1/inbound/draft-1-camp-invite.pdf",
+        file_url:
+          "https://storage.example/documents/family-1/inbound/draft-1-camp-invite.pdf",
         file_type: "application/pdf",
         title: "camp-invite.pdf",
       },
@@ -270,7 +333,8 @@ describe("POST /api/inbound-drafts/:id/confirm", () => {
         school_id: "school-1",
         user_id: "player-1",
         uploaded_by: "user-1",
-        file_url: "https://storage.example/documents/family-1/inbound/draft-1-roster.docx",
+        file_url:
+          "https://storage.example/documents/family-1/inbound/draft-1-roster.docx",
         file_type: "application/msword",
         title: "roster.docx",
       },
@@ -292,28 +356,39 @@ describe("POST /api/inbound-drafts/:id/confirm", () => {
       confirmed_interaction_id: null,
     };
     mockState.stagedAttachments = [
-      { filename: "camp-invite.pdf", content_type: "application/pdf", storage_path: "family-1/inbound/draft-1-camp-invite.pdf" },
+      {
+        filename: "camp-invite.pdf",
+        content_type: "application/pdf",
+        storage_path: "family-1/inbound/draft-1-camp-invite.pdf",
+      },
     ];
     mockState.callerRole = "parent";
     mockState.playerMember = { user_id: "player-1" };
 
-    const { default: handler } = await import("~/server/api/inbound-drafts/[id]/confirm.post");
+    const { default: handler } =
+      await import("~/server/api/inbound-drafts/[id]/confirm.post");
     await handler({} as Parameters<typeof handler>[0]);
 
     expect(mockState.documentInsertRows).toHaveLength(1);
     expect(mockState.documentInsertRows![0]).toMatchObject({
       user_id: "player-1",
       uploaded_by: "user-1",
-      file_url: "https://storage.example/documents/family-1/inbound/draft-1-camp-invite.pdf",
+      file_url:
+        "https://storage.example/documents/family-1/inbound/draft-1-camp-invite.pdf",
     });
     // A bare storage path is never written as file_url — every viewer treats it as a URL.
-    expect(mockState.documentInsertRows![0].file_url).not.toBe("family-1/inbound/draft-1-camp-invite.pdf");
+    expect(mockState.documentInsertRows![0].file_url).not.toBe(
+      "family-1/inbound/draft-1-camp-invite.pdf",
+    );
   });
 
   it("400s for a malformed draft id", async () => {
     vi.mocked(getRouterParam).mockReturnValue("not-a-uuid");
-    const { default: handler } = await import("~/server/api/inbound-drafts/[id]/confirm.post");
-    await expect(handler({} as Parameters<typeof handler>[0])).rejects.toMatchObject({ statusCode: 400 });
+    const { default: handler } =
+      await import("~/server/api/inbound-drafts/[id]/confirm.post");
+    await expect(
+      handler({} as Parameters<typeof handler>[0]),
+    ).rejects.toMatchObject({ statusCode: 400 });
   });
 
   it("422s when confirming an already-discarded draft", async () => {
@@ -322,8 +397,11 @@ describe("POST /api/inbound-drafts/:id/confirm", () => {
       family_unit_id: "family-1",
       status: "discarded",
     };
-    const { default: handler } = await import("~/server/api/inbound-drafts/[id]/confirm.post");
-    await expect(handler({} as Parameters<typeof handler>[0])).rejects.toMatchObject({ statusCode: 422 });
+    const { default: handler } =
+      await import("~/server/api/inbound-drafts/[id]/confirm.post");
+    await expect(
+      handler({} as Parameters<typeof handler>[0]),
+    ).rejects.toMatchObject({ statusCode: 422 });
     expect(mockState.insertedInteraction).toBeUndefined();
   });
 
@@ -347,7 +425,8 @@ describe("POST /api/inbound-drafts/:id/confirm", () => {
       subject: "Edited subject",
       content: "Edited content",
     });
-    const { default: handler } = await import("~/server/api/inbound-drafts/[id]/confirm.post");
+    const { default: handler } =
+      await import("~/server/api/inbound-drafts/[id]/confirm.post");
     await handler({} as Parameters<typeof handler>[0]);
 
     expect(mockState.insertedInteraction).toMatchObject({
@@ -373,7 +452,8 @@ describe("POST /api/inbound-drafts/:id/confirm", () => {
       occurred_at: "2026-09-02T15:15:00.000Z",
       confirmed_interaction_id: null,
     };
-    const { default: handler } = await import("~/server/api/inbound-drafts/[id]/confirm.post");
+    const { default: handler } =
+      await import("~/server/api/inbound-drafts/[id]/confirm.post");
     await handler({} as Parameters<typeof handler>[0]);
 
     expect(mockState.insertedInteraction).toMatchObject({
@@ -400,7 +480,8 @@ describe("POST /api/inbound-drafts/:id/confirm", () => {
       confirmed_interaction_id: null,
     };
     vi.mocked(readBody).mockResolvedValue({ coachId: null });
-    const { default: handler } = await import("~/server/api/inbound-drafts/[id]/confirm.post");
+    const { default: handler } =
+      await import("~/server/api/inbound-drafts/[id]/confirm.post");
     await handler({} as Parameters<typeof handler>[0]);
 
     expect(mockState.insertedInteraction).toMatchObject({ coach_id: null });
@@ -419,7 +500,8 @@ describe("POST /api/inbound-drafts/:id/confirm", () => {
       confirmed_interaction_id: null,
     };
     mockState.updateAffectsRow = false;
-    const { default: handler } = await import("~/server/api/inbound-drafts/[id]/confirm.post");
+    const { default: handler } =
+      await import("~/server/api/inbound-drafts/[id]/confirm.post");
     const result = await handler({} as Parameters<typeof handler>[0]);
     expect(result).toMatchObject({ ok: true });
   });
@@ -431,7 +513,8 @@ describe("POST /api/inbound-drafts/:id/confirm", () => {
       status: "confirmed",
       confirmed_interaction_id: "interaction-existing",
     };
-    const { default: handler } = await import("~/server/api/inbound-drafts/[id]/confirm.post");
+    const { default: handler } =
+      await import("~/server/api/inbound-drafts/[id]/confirm.post");
     const result = await handler({} as Parameters<typeof handler>[0]);
     expect(result).toEqual({ ok: true, interactionId: "interaction-existing" });
     expect(mockState.insertedInteraction).toBeUndefined();
