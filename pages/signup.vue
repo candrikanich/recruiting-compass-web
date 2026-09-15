@@ -197,7 +197,8 @@ type TurnstileGlobal = {
     options: {
       sitekey: string;
       action?: string;
-      size?: "normal" | "compact" | "invisible";
+      size?: "normal" | "compact" | "flexible";
+      appearance?: "always" | "execute" | "interaction-only";
       execution?: "render" | "execute";
       callback: (token: string) => void;
       "expired-callback"?: () => void;
@@ -243,7 +244,7 @@ watch(
         turnstileSessionWidgetId.value = w.turnstile.render(el, {
           sitekey: turnstileSiteKey.value,
           action: "signup-session",
-          size: "invisible",
+          appearance: "execute",
           execution: "execute",
           callback: (token: string) => {
             turnstileSessionToken.value = token;
