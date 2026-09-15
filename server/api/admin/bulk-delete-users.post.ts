@@ -250,15 +250,30 @@ export default defineEventHandler(
         // a silently-no-op delete rather than a populated error, same as the
         // single-user endpoint. Anyone still present here is a real failure,
         // regardless of what the delete call above reported.
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { data: survivors } = await (supabaseAdmin as any)
+        const { data: survivors, error: verifyError } = await (
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          supabaseAdmin as any
+        )
           .from("users")
           .select("id")
           .in("id", targetUserIds);
-        const survivorIds = new Set(
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          ((survivors ?? []) as any[]).map((row) => row.id as string),
-        );
+
+        if (verifyError) {
+          logger.error(
+            "Could not verify bulk deletion — verification read failed:",
+            verifyError,
+          );
+        }
+
+        // A failed verification read is not proof anyone was deleted — treat
+        // every targeted user as unconfirmed rather than defaulting to an
+        // empty survivor set, which would report false successes.
+        const survivorIds = verifyError
+          ? new Set(targetUserIds)
+          : new Set(
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              ((survivors ?? []) as any[]).map((row) => row.id as string),
+            );
 
         // Delete each surviving-in-auth user from the auth system and record
         // results — but only for users whose users row is actually confirmed
@@ -269,9 +284,10 @@ export default defineEventHandler(
               if (survivorIds.has(targetUserId)) {
                 errors.push({
                   email: targetEmail,
-                  reason:
-                    usersDeleteError?.message ??
-                    "User row still exists after deletion (likely a foreign key constraint)",
+                  reason: verifyError
+                    ? `Could not confirm user deletion: verification read failed (${verifyError.message ?? "unknown database error"})`
+                    : (usersDeleteError?.message ??
+                      "User row still exists after deletion (likely a foreign key constraint)"),
                 });
                 logger.error(
                   `users row ${targetUserId} (${targetEmail}) still exists after bulk delete — reporting failure instead of a false success`,
