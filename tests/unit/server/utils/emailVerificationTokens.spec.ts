@@ -190,4 +190,17 @@ describe("emailVerificationTokens", () => {
       /no matching user row/,
     );
   });
+
+  it("does not report already_verified for a consumed token when the profile update matches zero rows", async () => {
+    mockTokenRow = {
+      user_id: "user-1",
+      expires_at: new Date(Date.now() + 1000).toISOString(),
+      consumed_at: new Date().toISOString(),
+    };
+    mockUsersUpdateRows = [];
+
+    await expect(consumeVerificationToken("used")).rejects.toThrow(
+      /no matching user row/,
+    );
+  });
 });

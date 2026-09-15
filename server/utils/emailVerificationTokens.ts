@@ -32,6 +32,27 @@ export async function issueVerificationToken(
   return { token, expiresAt };
 }
 
+async function markProfileEmailVerified(
+  supabase: ReturnType<typeof useSupabaseAdmin>,
+  userId: string,
+): Promise<void> {
+  const { data: rows, error } = await supabase
+    .from("users")
+    .update({ email_verified_at: new Date().toISOString() })
+    .eq("id", userId)
+    .select("id");
+
+  if (error) {
+    throw new Error(`Failed to mark email verified: ${error.message}`);
+  }
+
+  if (rows?.length !== 1) {
+    throw new Error(
+      `Failed to mark email verified: update matched no matching user row for user ${userId}`,
+    );
+  }
+}
+
 export async function consumeVerificationToken(token: string): Promise<{
   status: "verified" | "already_verified" | "expired" | "not_found";
   userId?: string;
@@ -53,12 +74,10 @@ export async function consumeVerificationToken(token: string): Promise<{
     // a success, not an error (spec §4). But consumed_at is also set when a
     // token is invalidated by a resend (issueVerificationToken above), which
     // is NOT the same as having verified — without this the old email's link
-    // would report success while email_verified_at stayed null.
-    await supabase
-      .from("users")
-      .update({ email_verified_at: new Date().toISOString() })
-      .eq("id", row.user_id)
-      .is("email_verified_at", null);
+    // would report success while email_verified_at stayed null. Validated the
+    // same way as the fresh-consume path below, so a missing/mismatched user
+    // row throws instead of silently reporting success.
+    await markProfileEmailVerified(supabase, row.user_id);
 
     return { status: "already_verified", userId: row.user_id };
   }
@@ -76,21 +95,7 @@ export async function consumeVerificationToken(token: string): Promise<{
     throw new Error(`Failed to consume verification token: ${consumeError.message}`);
   }
 
-  const { data: verifiedRows, error: verifyError } = await supabase
-    .from("users")
-    .update({ email_verified_at: new Date().toISOString() })
-    .eq("id", row.user_id)
-    .select("id");
-
-  if (verifyError) {
-    throw new Error(`Failed to mark email verified: ${verifyError.message}`);
-  }
-
-  if (verifiedRows?.length !== 1) {
-    throw new Error(
-      `Failed to mark email verified: update matched no matching user row for user ${row.user_id}`,
-    );
-  }
+  await markProfileEmailVerified(supabase, row.user_id);
 
   return { status: "verified", userId: row.user_id };
 }
