@@ -195,6 +195,13 @@ export default defineEventHandler(
         }
       }
 
+      // Populated only when resolvedUsers is non-empty (the users-row delete +
+      // survivor verification below only applies to them); authOnlyUsers have
+      // no users row to survive, so they never appear in survivorIds.
+      let usersDeleteError: { message?: string } | undefined;
+      let verifyError: { message?: string } | undefined;
+      const survivorIds = new Set<string>();
+
       if (resolvedUsers.length > 0) {
         const targetUserIds = resolvedUsers.map((u) => u.id);
 
@@ -285,10 +292,11 @@ export default defineEventHandler(
         // remove, and counting a user as deleted without it actually being gone
         // is the exact ghost-data bug this fix closes.
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { error: usersDeleteError } = await (supabaseAdmin as any)
+        const usersDeleteResult = await (supabaseAdmin as any)
           .from("users")
           .delete()
           .in("id", targetUserIds);
+        usersDeleteError = usersDeleteResult.error;
 
         if (usersDeleteError) {
           logger.error("Failed to delete users rows in bulk:", usersDeleteError);
@@ -298,13 +306,14 @@ export default defineEventHandler(
         // a silently-no-op delete rather than a populated error, same as the
         // single-user endpoint. Anyone still present here is a real failure,
         // regardless of what the delete call above reported.
-        const { data: survivors, error: verifyError } = await (
+        const { data: survivors, error: verifyReadError } = await (
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           supabaseAdmin as any
         )
           .from("users")
           .select("id")
           .in("id", targetUserIds);
+        verifyError = verifyReadError;
 
         if (verifyError) {
           logger.error(
@@ -316,20 +325,23 @@ export default defineEventHandler(
         // A failed verification read is not proof anyone was deleted — treat
         // every targeted user as unconfirmed rather than defaulting to an
         // empty survivor set, which would report false successes.
-        const survivorIds = verifyError
+        const confirmedSurvivorIds = verifyError
           ? new Set(targetUserIds)
           : new Set(
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               ((survivors ?? []) as any[]).map((row) => row.id as string),
             );
+        confirmedSurvivorIds.forEach((id) => survivorIds.add(id));
+      }
 
-        // Delete each surviving-in-auth user from the auth system and record
-        // results — but only for users whose users row is actually confirmed
-        // gone; a survivor is reported as a failure, not a success. Includes
-        // authOnlyUsers, whose public.users row is already gone — no table
-        // deletes or survivor check needed for them, just the auth cleanup a
-        // prior run missed.
-        const authTargets = [...resolvedUsers, ...authOnlyUsers];
+      // Delete each surviving-in-auth user from the auth system and record
+      // results — but only for users whose users row is actually confirmed
+      // gone; a survivor is reported as a failure, not a success. Includes
+      // authOnlyUsers, whose public.users row is already gone — no table
+      // deletes or survivor check needed for them, just the auth cleanup a
+      // prior run missed.
+      const authTargets = [...resolvedUsers, ...authOnlyUsers];
+      if (authTargets.length > 0) {
         await Promise.all(
           authTargets.map(
             async ({ email: targetEmail, id: targetUserId }) => {
