@@ -63,6 +63,9 @@ function buildSupabaseAdmin(opts: {
   // Controls the post-delete verification SELECT: true reproduces the exact
   // ghost-data bug (row still there despite no thrown error).
   usersRowStillExistsAfterDelete?: boolean;
+  // Makes the post-delete verification SELECT itself fail (RLS denial,
+  // network blip) — must not be treated as proof the row is gone.
+  verifyReadError?: { message: string } | null;
 }) {
   const deleteCalls: Array<{ table: string; column: string; value: string }> =
     [];
@@ -85,7 +88,7 @@ function buildSupabaseAdmin(opts: {
                 table === "users" && opts.usersRowStillExistsAfterDelete
                   ? { id: opts.existingUserId }
                   : null,
-              error: null,
+              error: table === "users" ? (opts.verifyReadError ?? null) : null,
             }),
         }),
       }),
@@ -262,6 +265,25 @@ describe("POST /api/admin/delete-user", () => {
     await expect(
       handler(fakeEvent({ email: "target@example.com" })),
     ).rejects.toMatchObject({ statusCode: 500 });
+  });
+
+  it("reports failure instead of a false success when the verification read itself errors", async () => {
+    // qodo finding: a failed verification SELECT (RLS denial, network blip)
+    // must not be treated as proof the row is gone. Old code destructured
+    // only `data` and ignored `error`, so an errored read (data: undefined)
+    // fell through the `if (stillExists)` check as a false success.
+    const { useSupabaseAdmin } = await import("~/server/utils/supabase");
+    const mockAdmin = buildSupabaseAdmin({
+      existingUserId: "target-1",
+      verifyReadError: { message: "permission denied for table users" },
+    });
+    vi.mocked(useSupabaseAdmin).mockReturnValue(mockAdmin as never);
+    const handler = await loadHandler();
+
+    await expect(
+      handler(fakeEvent({ email: "target@example.com" })),
+    ).rejects.toMatchObject({ statusCode: 500 });
+    expect(mockAdmin.auth.admin.deleteUser).not.toHaveBeenCalled();
   });
 
   it("falls back to the auth system when the user was already removed from public.users", async () => {
