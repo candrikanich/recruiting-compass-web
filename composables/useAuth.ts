@@ -383,6 +383,23 @@ export const useAuth = () => {
         throw recoverableError;
       }
 
+      // Without this, middleware/auth.ts's expiry check on the next
+      // navigation reads whatever stale (possibly already-expired)
+      // session_preferences entry a prior session left in localStorage and
+      // immediately logs this brand-new signup out with reason=timeout —
+      // login() below writes this same entry for the same reason.
+      if (typeof window !== "undefined") {
+        const preferences: SessionPreferences = {
+          rememberMe: false,
+          lastActivity: Date.now(),
+          expiresAt: Date.now() + 24 * 60 * 60 * 1000, // 1 day
+        };
+        localStorage.setItem(
+          "session_preferences",
+          JSON.stringify(preferences),
+        );
+      }
+
       return { data, error: null };
     } catch (err: unknown) {
       const authError = err instanceof Error ? err : new Error("Signup failed");

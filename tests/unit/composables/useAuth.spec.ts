@@ -452,6 +452,34 @@ describe("useAuth", () => {
       vi.unstubAllGlobals();
     });
 
+    it("stores session_preferences after minting the post-signup session, like login() does", async () => {
+      // Without this, middleware/auth.ts's expiry check reads whatever stale
+      // (possibly already-expired) session_preferences entry was left in
+      // localStorage from a prior session and immediately logs the brand-new
+      // signup out on the next navigation with reason=timeout.
+      localStorage.clear();
+      const { mockAuth } = getMockSupabase();
+      mockAuth.signInWithPassword.mockResolvedValue({
+        data: { user: mockUser, session: mockSession },
+        error: null,
+      });
+      const mockFetch = vi.fn(async () => ({ userId: mockUser.id }));
+      vi.stubGlobal("$fetch", mockFetch);
+
+      const auth = useAuth();
+      const beforeSignup = Date.now();
+      await auth.signup("new@example.com", "password123");
+
+      const storedPrefs = localStorage.getItem("session_preferences");
+      expect(storedPrefs).toBeTruthy();
+      const prefs = JSON.parse(storedPrefs!);
+      expect(prefs.lastActivity).toBeGreaterThanOrEqual(beforeSignup);
+      expect(prefs.expiresAt).toBeGreaterThan(Date.now());
+
+      vi.unstubAllGlobals();
+      localStorage.clear();
+    });
+
     it("should signup with full name and role", async () => {
       const { mockAuth } = getMockSupabase();
       mockAuth.signInWithPassword.mockResolvedValue({
