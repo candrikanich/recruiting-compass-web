@@ -362,6 +362,39 @@ export default defineEventHandler(
               }
 
               try {
+                // Verify the primary user record is actually gone before
+                // touching the auth record. A failed read must NOT be
+                // treated as proof of deletion.
+                const { data: verifyRow, error: verifyError } =
+                  await supabaseAdmin
+                    .from("users")
+                    .select("id")
+                    .eq("id", targetUserId)
+                    .maybeSingle();
+
+                if (verifyError) {
+                  logger.error(
+                    `Deletion verification query failed for ${targetEmail} (${targetUserId}):`,
+                    verifyError,
+                  );
+                  errors.push({
+                    email: targetEmail,
+                    reason: "Could not verify deletion",
+                  });
+                  return;
+                }
+
+                if (verifyRow) {
+                  logger.error(
+                    `User ${targetEmail} (${targetUserId}) still present in users table after delete attempt`,
+                  );
+                  errors.push({
+                    email: targetEmail,
+                    reason: "User deletion did not complete",
+                  });
+                  return;
+                }
+
                 if (supabaseAdmin.auth.admin?.deleteUser) {
                   const { error: deleteError } =
                     await supabaseAdmin.auth.admin.deleteUser(targetUserId);

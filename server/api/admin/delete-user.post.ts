@@ -297,7 +297,7 @@ export default defineEventHandler(
         // This is non-fatal since we already deleted all user data above
       }
 
-      // 8. Log successful deletion
+      // 9. Log successful deletion
       logger.info(
         `User ${targetEmail} (${targetUserId}) and all associated data deleted from ${dbEnv} by admin ${user.id}. Auth record deleted: ${authDeleted}`,
       );
