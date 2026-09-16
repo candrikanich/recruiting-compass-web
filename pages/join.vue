@@ -90,12 +90,12 @@ const turnstileSiteKey = computed(
 );
 const turnstileEnabled = computed(() => turnstileSiteKey.value.length > 0);
 const turnstileToken = ref<string | undefined>(undefined);
-// Login and signup are separate toggled views, each mounting/unmounting its
-// own widget instance as authMode switches — so each needs its own id.
+// Only the login branch renders an interactive widget — Supabase's native
+// signInWithPassword captcha is project-level and can't be skipped per
+// invite. The signup branch has no widget: a valid invite token is the bot
+// filter there (see server/api/auth/signup.post.ts).
 const turnstileLoginEl = ref<HTMLDivElement | null>(null);
-const turnstileSignupEl = ref<HTMLDivElement | null>(null);
 const turnstileLoginWidgetId = ref<string | undefined>(undefined);
-const turnstileSignupWidgetId = ref<string | undefined>(undefined);
 
 const TURNSTILE_SCRIPT_SRC =
   "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
@@ -129,8 +129,6 @@ function resetTurnstile() {
   if (!w.turnstile) return;
   if (turnstileLoginWidgetId.value)
     w.turnstile.reset(turnstileLoginWidgetId.value);
-  if (turnstileSignupWidgetId.value)
-    w.turnstile.reset(turnstileSignupWidgetId.value);
 }
 
 function loadTurnstileScript(): Promise<void> {
@@ -216,19 +214,6 @@ watch(
     }
     if (!enabled || turnstileLoginWidgetId.value) return;
     mountTurnstile(el, "join-login", turnstileLoginWidgetId);
-  },
-  { flush: "post" },
-);
-
-watch(
-  [turnstileEnabled, turnstileSignupEl],
-  ([enabled, el], [, prevEl]) => {
-    if (!el) {
-      if (prevEl) unmountTurnstile(turnstileSignupWidgetId, turnstileToken);
-      return;
-    }
-    if (!enabled || turnstileSignupWidgetId.value) return;
-    mountTurnstile(el, "join-signup", turnstileSignupWidgetId);
   },
   { flush: "post" },
 );
@@ -402,13 +387,14 @@ async function signupAndConnect() {
       signupPassword.value,
       fullName,
       invite.value.role,
-      turnstileToken.value,
+      undefined, // no signup captcha widget — invite token is the bot filter
       invite.value.role === "player" ? signupDateOfBirth.value : undefined,
       undefined,
       undefined,
       undefined,
       getFreshTurnstileToken,
       true, // skipVerificationEmail — the invite accept stamps email_verified_at
+      token.value, // captchaSkipInviteToken — lets the server skip Turnstile
     );
 
     if (!authData?.data?.user?.id) throw new Error("Signup failed");
@@ -719,13 +705,9 @@ async function decline() {
             @submit="signupAndConnect"
           >
             <template #captcha>
-              <!-- Cloudflare Turnstile (flag-gated, renders only when site
-                   key set) -->
-              <div
-                v-if="turnstileEnabled"
-                ref="turnstileSignupEl"
-                class="flex justify-center"
-              />
+              <!-- No visible checkbox here: a valid invite token is the bot
+                   filter for this form (server skips Turnstile when present
+                   and pending — see server/api/auth/signup.post.ts). -->
               <!-- Invisible widget dedicated to the post-signup sign-in
                    token mint — see getFreshTurnstileToken. Renders nothing. -->
               <div v-if="turnstileEnabled" ref="turnstileSessionEl" />

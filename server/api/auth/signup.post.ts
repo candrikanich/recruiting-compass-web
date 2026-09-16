@@ -3,6 +3,7 @@ import { useLogger } from "~/server/utils/logger";
 import { rateLimitByIp, throwIfRateLimited } from "~/server/utils/rateLimit";
 import { verifyTurnstile } from "~/server/utils/turnstile";
 import { createVerifiedAccount } from "~/server/utils/accountCreation";
+import { useSupabaseAdmin } from "~/server/utils/supabase";
 
 interface SignupBody {
   email: string;
@@ -18,6 +19,25 @@ interface SignupBody {
    * verify-email flow at all — including the email (spec §5).
    */
   skipVerificationEmail?: boolean;
+  /**
+   * Present only when this signup completes a family invite acceptance.
+   * A real, unexpired, pending invite row (not a client-asserted flag) is
+   * what lets us skip Turnstile here — the invite link itself is already
+   * the bot-filter for this path.
+   */
+  inviteToken?: string;
+}
+
+async function hasValidPendingInvite(inviteToken: string): Promise<boolean> {
+  const supabase = useSupabaseAdmin();
+  const { data: invitation } = await supabase
+    .from("family_invitations")
+    .select("status, expires_at")
+    .eq("token", inviteToken)
+    .single();
+
+  if (!invitation || invitation.status !== "pending") return false;
+  return new Date(invitation.expires_at) >= new Date();
 }
 
 /**
@@ -78,6 +98,7 @@ export default defineEventHandler(async (event) => {
       captchaToken,
       metadata,
       skipVerificationEmail,
+      inviteToken,
     } = body;
 
     if (!email || !password) {
@@ -87,21 +108,27 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    // No explicit `expectedAction` — the signup form's Turnstile widget
-    // renders with no action configured, so none is expected here either.
-    const turnstileResult = await verifyTurnstile(captchaToken, {
-      ip: getRequestIP(event, { xForwardedFor: true }),
-      expectedAction: undefined,
-    });
-    if (!turnstileResult.ok) {
-      logger.warn("Signup blocked: Turnstile verification failed", {
-        reason: turnstileResult.reason,
+    const skipCaptcha = inviteToken
+      ? await hasValidPendingInvite(inviteToken)
+      : false;
+
+    if (!skipCaptcha) {
+      // No explicit `expectedAction` — the signup form's Turnstile widget
+      // renders with no action configured, so none is expected here either.
+      const turnstileResult = await verifyTurnstile(captchaToken, {
+        ip: getRequestIP(event, { xForwardedFor: true }),
+        expectedAction: undefined,
       });
-      throw createError({
-        statusCode: 403,
-        statusMessage: "Verification failed. Please try again.",
-        data: { code: "captcha_failed" },
-      });
+      if (!turnstileResult.ok) {
+        logger.warn("Signup blocked: Turnstile verification failed", {
+          reason: turnstileResult.reason,
+        });
+        throw createError({
+          statusCode: 403,
+          statusMessage: "Verification failed. Please try again.",
+          data: { code: "captcha_failed" },
+        });
+      }
     }
 
     const userMetadata: Record<string, string | boolean> = {
