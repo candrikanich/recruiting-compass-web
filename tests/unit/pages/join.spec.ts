@@ -389,6 +389,7 @@ describe("/join page", () => {
         // SIGNED_IN listener over the same single-use invitation)
         expect.any(Function), // getFreshCaptchaToken -- mints a fresh token before sign-in
         true, // skipVerificationEmail -- the accept endpoint stamps verification
+        "valid-token-123", // captchaSkipInviteToken -- lets the server skip Turnstile
       );
       expect(mockFetch).toHaveBeenCalledWith(
         "/api/family/invite/valid-token-123/accept",

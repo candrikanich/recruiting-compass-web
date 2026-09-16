@@ -287,6 +287,15 @@ export const useAuth = () => {
     inviteToken?: string,
     getFreshCaptchaToken?: () => Promise<string | undefined>,
     skipVerificationEmail?: boolean,
+    /**
+     * Distinct from `inviteToken` above: that one seeds
+     * `metadata.pending_invite_token` for useAccountProvisioning's SIGNED_IN
+     * listener to consume, which callers doing their own explicit accept
+     * call (e.g. pages/join.vue) must NOT trigger — see join.vue's
+     * signupAndConnect for why. This one only tells the server which invite
+     * row to check before requiring Turnstile; it never touches metadata.
+     */
+    captchaSkipInviteToken?: string,
   ) => {
     loading.value = true;
     error.value = null;
@@ -328,6 +337,9 @@ export const useAuth = () => {
           captchaToken,
           metadata,
           ...(skipVerificationEmail ? { skipVerificationEmail: true } : {}),
+          ...(captchaSkipInviteToken
+            ? { inviteToken: captchaSkipInviteToken }
+            : {}),
         },
       });
 
