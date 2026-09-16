@@ -14,7 +14,12 @@ const mockIssueToken = vi.fn(async () => ({
 const mockSendVerification = vi.fn(async () => ({ success: true }));
 const mockVerifyTurnstile = vi.fn(async () => ({ ok: true }));
 const mockInvitationState: {
-  invitation: { status: string; expires_at: string } | null;
+  invitation: {
+    status: string;
+    expires_at: string;
+    invited_email: string;
+    role: string;
+  } | null;
 } = { invitation: null };
 
 vi.mock("~/server/utils/turnstile", () => ({
@@ -88,10 +93,12 @@ describe("POST /api/auth/signup", () => {
   });
 
   describe("captcha skip for invite-accept signups", () => {
-    it("skips Turnstile when a valid pending invite token is supplied", async () => {
+    it("skips Turnstile when a valid pending invite token is supplied and email/role match", async () => {
       mockInvitationState.invitation = {
         status: "pending",
         expires_at: "2099-01-01T00:00:00.000Z",
+        invited_email: "parent@example.com",
+        role: "parent",
       };
 
       const result = await call({
@@ -107,6 +114,8 @@ describe("POST /api/auth/signup", () => {
       mockInvitationState.invitation = {
         status: "pending",
         expires_at: "2000-01-01T00:00:00.000Z",
+        invited_email: "parent@example.com",
+        role: "parent",
       };
       mockVerifyTurnstile.mockResolvedValueOnce({
         ok: false,
@@ -127,6 +136,43 @@ describe("POST /api/auth/signup", () => {
 
       await expect(
         call({ captchaToken: undefined, inviteToken: "nonexistent" }),
+      ).rejects.toMatchObject({ statusCode: 403 });
+    });
+
+    it("still enforces Turnstile when the signup email doesn't match the invited email", async () => {
+      // Otherwise any caller who obtains someone else's (non-secret, URL-borne)
+      // invite token could ride it to create unrelated or repeated accounts
+      // without ever solving a captcha.
+      mockInvitationState.invitation = {
+        status: "pending",
+        expires_at: "2099-01-01T00:00:00.000Z",
+        invited_email: "someone-else@example.com",
+        role: "parent",
+      };
+      mockVerifyTurnstile.mockResolvedValueOnce({
+        ok: false,
+        reason: "missing_token",
+      });
+
+      await expect(
+        call({ captchaToken: undefined, inviteToken: "tok-abc" }),
+      ).rejects.toMatchObject({ statusCode: 403 });
+    });
+
+    it("still enforces Turnstile when the signup role doesn't match the invitation's role", async () => {
+      mockInvitationState.invitation = {
+        status: "pending",
+        expires_at: "2099-01-01T00:00:00.000Z",
+        invited_email: "parent@example.com",
+        role: "player",
+      };
+      mockVerifyTurnstile.mockResolvedValueOnce({
+        ok: false,
+        reason: "missing_token",
+      });
+
+      await expect(
+        call({ captchaToken: undefined, inviteToken: "tok-abc" }),
       ).rejects.toMatchObject({ statusCode: 403 });
     });
   });

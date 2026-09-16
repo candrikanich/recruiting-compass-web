@@ -96,6 +96,12 @@ const turnstileToken = ref<string | undefined>(undefined);
 // filter there (see server/api/auth/signup.post.ts).
 const turnstileLoginEl = ref<HTMLDivElement | null>(null);
 const turnstileLoginWidgetId = ref<string | undefined>(undefined);
+// mountTurnstile awaits the CF script load before setting widgetId, so
+// widgetId stays unset for that whole window — a second watcher fire in
+// that window (seen on Safari) passes the widgetId guard too and calls
+// render() a second time into the same div, stacking two widgets.
+const turnstileLoginMounting = ref(false);
+const turnstileSessionMounting = ref(false);
 
 const TURNSTILE_SCRIPT_SRC =
   "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
@@ -162,6 +168,7 @@ async function mountTurnstile(
   el: HTMLElement,
   action: string,
   widgetId: typeof turnstileLoginWidgetId,
+  mounting: typeof turnstileLoginMounting,
 ) {
   try {
     await loadTurnstileScript();
@@ -181,6 +188,8 @@ async function mountTurnstile(
   } catch {
     // Widget failure is non-fatal — Supabase verifies server-side only
     // when CAPTCHA is enabled in the dashboard; otherwise auth proceeds.
+  } finally {
+    mounting.value = false;
   }
 }
 
@@ -192,6 +201,7 @@ async function mountTurnstile(
 function unmountTurnstile(
   widgetId: typeof turnstileLoginWidgetId,
   tokenRef?: typeof turnstileToken,
+  mounting?: typeof turnstileLoginMounting,
 ) {
   const w = window as unknown as { turnstile?: TurnstileGlobal };
   if (widgetId.value && w.turnstile) {
@@ -203,17 +213,34 @@ function unmountTurnstile(
   }
   widgetId.value = undefined;
   if (tokenRef) tokenRef.value = undefined;
+  if (mounting) mounting.value = false;
 }
 
 watch(
   [turnstileEnabled, turnstileLoginEl],
   ([enabled, el], [, prevEl]) => {
     if (!el) {
-      if (prevEl) unmountTurnstile(turnstileLoginWidgetId, turnstileToken);
+      if (prevEl)
+        unmountTurnstile(
+          turnstileLoginWidgetId,
+          turnstileToken,
+          turnstileLoginMounting,
+        );
       return;
     }
-    if (!enabled || turnstileLoginWidgetId.value) return;
-    mountTurnstile(el, "join-login", turnstileLoginWidgetId);
+    if (
+      !enabled ||
+      turnstileLoginWidgetId.value ||
+      turnstileLoginMounting.value
+    )
+      return;
+    turnstileLoginMounting.value = true;
+    mountTurnstile(
+      el,
+      "join-login",
+      turnstileLoginWidgetId,
+      turnstileLoginMounting,
+    );
   },
   { flush: "post" },
 );
@@ -235,10 +262,20 @@ watch(
   async ([enabled, el], [, prevEl]) => {
     if (!el) {
       if (prevEl)
-        unmountTurnstile(turnstileSessionWidgetId, turnstileSessionToken);
+        unmountTurnstile(
+          turnstileSessionWidgetId,
+          turnstileSessionToken,
+          turnstileSessionMounting,
+        );
       return;
     }
-    if (!enabled || turnstileSessionWidgetId.value) return;
+    if (
+      !enabled ||
+      turnstileSessionWidgetId.value ||
+      turnstileSessionMounting.value
+    )
+      return;
+    turnstileSessionMounting.value = true;
     try {
       await loadTurnstileScript();
       const w = window as unknown as { turnstile?: TurnstileGlobal };
@@ -261,6 +298,8 @@ watch(
       }
     } catch {
       // Non-fatal — see mountTurnstile's catch above.
+    } finally {
+      turnstileSessionMounting.value = false;
     }
   },
   { flush: "post" },

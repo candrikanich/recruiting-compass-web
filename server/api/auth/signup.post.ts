@@ -28,16 +28,30 @@ interface SignupBody {
   inviteToken?: string;
 }
 
-async function hasValidPendingInvite(inviteToken: string): Promise<boolean> {
+/**
+ * A pending, unexpired invite token only proves *an* invite exists — without
+ * binding it to the account being created, any caller with the token (it's
+ * a URL query param, not a secret) could ride it to skip Turnstile on
+ * unrelated or repeated signups. Requiring the submitted email and role to
+ * match the invitation's own `invited_email`/`role` closes that gap.
+ */
+async function hasValidPendingInvite(
+  inviteToken: string,
+  email: string,
+  role: string | undefined,
+): Promise<boolean> {
   const supabase = useSupabaseAdmin();
   const { data: invitation } = await supabase
     .from("family_invitations")
-    .select("status, expires_at")
+    .select("status, expires_at, invited_email, role")
     .eq("token", inviteToken)
     .single();
 
   if (!invitation || invitation.status !== "pending") return false;
-  return new Date(invitation.expires_at) >= new Date();
+  if (new Date(invitation.expires_at) < new Date()) return false;
+  if (invitation.invited_email.trim().toLowerCase() !== email) return false;
+  if (!role || invitation.role !== role) return false;
+  return true;
 }
 
 /**
@@ -109,7 +123,7 @@ export default defineEventHandler(async (event) => {
     }
 
     const skipCaptcha = inviteToken
-      ? await hasValidPendingInvite(inviteToken)
+      ? await hasValidPendingInvite(inviteToken, email, role)
       : false;
 
     if (!skipCaptcha) {
