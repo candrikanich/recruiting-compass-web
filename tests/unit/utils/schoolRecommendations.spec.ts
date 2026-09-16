@@ -185,6 +185,17 @@ describe("resolveHomeState", () => {
       }),
     ).toBeNull();
   });
+
+  it("resolves American Samoa's zip to AS, not HI, despite sharing the 967-968 prefix range", () => {
+    expect(
+      resolveHomeState({
+        locationState: null,
+        schoolState: null,
+        hometownState: null,
+        locationZip: "96799",
+      }),
+    ).toBe("AS");
+  });
 });
 
 describe("isAdjacentState", () => {
