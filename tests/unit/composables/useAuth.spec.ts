@@ -768,6 +768,42 @@ describe("useAuth", () => {
       vi.unstubAllGlobals();
     });
 
+    it("tags a post-signup sign-in failure as recoverable (account already created)", async () => {
+      const { mockAuth } = getMockSupabase();
+      const signInError = Object.assign(
+        new Error(
+          "captcha protection: request disallowed (no captcha_token found)",
+        ),
+        { name: "AuthApiError" },
+      );
+      mockAuth.signInWithPassword.mockResolvedValue({
+        data: { user: null, session: null },
+        error: signInError,
+      });
+      vi.stubGlobal(
+        "$fetch",
+        vi.fn(async () => ({ userId: mockUser.id })),
+      );
+
+      const auth = useAuth();
+      await expect(
+        auth.signup(
+          "new@example.com",
+          "password123",
+          undefined,
+          undefined,
+          "consumed-token-abc",
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          async () => undefined,
+        ),
+      ).rejects.toMatchObject({ accountCreatedButSignInFailed: true });
+
+      vi.unstubAllGlobals();
+    });
+
     it("forwards skipVerificationEmail to the signup endpoint", async () => {
       const { mockAuth } = getMockSupabase();
       mockAuth.signInWithPassword.mockResolvedValue({

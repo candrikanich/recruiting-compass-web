@@ -121,8 +121,16 @@
                 class="flex justify-center"
               />
               <!-- Invisible widget dedicated to the post-signup sign-in
-                   token mint — see getFreshTurnstileToken. Renders nothing. -->
-              <div v-if="turnstileEnabled && userType" ref="turnstileSessionEl" />
+                   token mint — see getFreshTurnstileToken. Cloudflare's
+                   execute-mode widget can still paint an interactive
+                   checkbox here (ambiguous risk score, test site keys) that
+                   nobody solves, so it's force-hidden with CSS rather than
+                   trusted to stay invisible on its own. -->
+              <div
+                v-if="turnstileEnabled && userType"
+                ref="turnstileSessionEl"
+                class="hidden"
+              />
             </template>
           </SignupForm>
         </div>
@@ -578,6 +586,21 @@ const handleSignup = async () => {
 
       userId = authData.data.user.id;
     } catch (signupErr: unknown) {
+      // Account already exists — only the post-signup sign-in failed (see
+      // useAuth.signup). Retrying this form would just recreate the same
+      // captcha collision, so send them to a normal login instead of
+      // stranding them on a broken create-account form.
+      if (
+        (signupErr as { accountCreatedButSignInFailed?: boolean } | null)
+          ?.accountCreatedButSignInFailed
+      ) {
+        loading.value = false;
+        await navigateTo(
+          `/login?reason=account_created&email=${encodeURIComponent(validated.email)}`,
+        );
+        return;
+      }
+
       // /api/auth/signup tags its own failures with a stable `data.code` —
       // message text is not a contract and changed once already when account
       // creation moved server-side.

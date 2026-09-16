@@ -678,6 +678,36 @@ describe("signup.vue", () => {
 
       expect(global.navigateTo).toHaveBeenCalledWith("/onboarding");
     });
+
+    it("routes to login with reason=account_created when only the post-signup sign-in fails", async () => {
+      const recoverableError = Object.assign(new Error("signin failed"), {
+        accountCreatedButSignInFailed: true,
+      });
+      mockAuth.signup.mockRejectedValue(recoverableError);
+
+      const wrapper = createWrapper();
+
+      const playerRadio = wrapper.find('[data-testid="user-type-player"]');
+      await playerRadio.setValue(true);
+      await playerRadio.trigger("change");
+      await wrapper.vm.$nextTick();
+
+      await wrapper.find("#firstName").setValue("Test");
+      await wrapper.find("#lastName").setValue("User");
+      await wrapper.find("#email").setValue("test@example.com");
+      await wrapper.find("#password").setValue("Password123");
+      await wrapper.find("#confirmPassword").setValue("Password123");
+      await wrapper.find("#agreeToTerms").setValue(true);
+
+      await wrapper.find("form").trigger("submit.prevent");
+      await flushPromises();
+
+      expect(global.navigateTo).toHaveBeenCalledWith(
+        "/login?reason=account_created&email=test%40example.com",
+      );
+      // Account already exists — must not surface a blocking form error.
+      expect(wrapper.text()).not.toContain("signin failed");
+    });
   });
 
   describe("Age Gates", () => {
