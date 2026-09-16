@@ -26,6 +26,11 @@ const state = {
   verifyStampSpy: vi.fn((_payload: unknown) => ({
     eq: () => ({ is: () => Promise.resolve({ error: null }) }),
   })),
+  // Separate again for the onboarding-complete stamp so it doesn't get mixed
+  // into guardian-consent assertions either.
+  onboardingCompleteSpy: vi.fn((_payload: unknown) => ({
+    eq: () => Promise.resolve({ error: null }),
+  })),
   existingMember: null as object | null,
   inviterProfile: { full_name: "Alice Smith" },
   family: { family_name: "Smith Family" } as {
@@ -132,10 +137,13 @@ vi.mock("~/server/utils/supabase", () => ({
               single: () =>
                 Promise.resolve({ data: state.inviterProfile, error: null }),
             }),
-          update: (payload: Record<string, unknown>) =>
-            "email_verified_at" in payload
-              ? state.verifyStampSpy(payload)
-              : state.usersUpdateSpy(payload),
+          update: (payload: Record<string, unknown>) => {
+            if ("email_verified_at" in payload)
+              return state.verifyStampSpy(payload);
+            if ("phase_milestone_data" in payload)
+              return state.onboardingCompleteSpy(payload);
+            return state.usersUpdateSpy(payload);
+          },
         };
       }
       if (table === "family_units") {
@@ -368,6 +376,9 @@ describe("POST /api/family/invite/[token]/accept", () => {
     state.verifyStampSpy = vi.fn((_payload: unknown) => ({
       eq: () => ({ is: () => Promise.resolve({ error: null }) }),
     }));
+    state.onboardingCompleteSpy = vi.fn((_payload: unknown) => ({
+      eq: () => Promise.resolve({ error: null }),
+    }));
   });
 
   it("stamps the accepting user's email as verified", async () => {
@@ -494,5 +505,68 @@ describe("POST /api/family/invite/[token]/accept", () => {
     await handler({} as Parameters<typeof handler>[0]);
 
     expect(state.usersUpdateSpy).not.toHaveBeenCalled();
+  });
+
+  // A player skipping the onboarding wizard client-side (see pages/join.vue)
+  // must have onboarding_complete stamped here first, or the global onboarding
+  // middleware bounces them straight back out of /dashboard in a loop.
+  describe("onboarding-complete stamping", () => {
+    it("marks a parent-role acceptance onboarding-complete (nothing left for a second parent to enter)", async () => {
+      const { default: handler } =
+        await import("~/server/api/family/invite/[token]/accept.post");
+      const result = await handler({} as Parameters<typeof handler>[0]);
+
+      expect(result).toMatchObject({ onboardingComplete: true });
+      expect(state.onboardingCompleteSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          phase_milestone_data: expect.objectContaining({
+            onboarding_complete: true,
+          }),
+        }),
+      );
+    });
+
+    it("marks a player-role acceptance onboarding-complete when the parent staged both graduation year and sport", async () => {
+      state.invitation = { ...state.invitation!, role: "player" };
+      state.family = {
+        family_name: "Smith Family",
+        pending_player_details: {
+          playerName: "Alex Johnson",
+          graduationYear: 2027,
+          sport: "Soccer",
+        },
+      };
+      const { default: handler } =
+        await import("~/server/api/family/invite/[token]/accept.post");
+      const result = await handler({} as Parameters<typeof handler>[0]);
+
+      expect(result).toMatchObject({ onboardingComplete: true });
+      expect(state.onboardingCompleteSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it("does NOT mark a player-role acceptance onboarding-complete when grad year/sport are missing, so the client falls back to the wizard", async () => {
+      state.invitation = { ...state.invitation!, role: "player" };
+      state.family = {
+        family_name: "Smith Family",
+        pending_player_details: { playerName: "Alex Johnson" },
+      };
+      const { default: handler } =
+        await import("~/server/api/family/invite/[token]/accept.post");
+      const result = await handler({} as Parameters<typeof handler>[0]);
+
+      expect(result).toMatchObject({ onboardingComplete: false });
+      expect(state.onboardingCompleteSpy).not.toHaveBeenCalled();
+    });
+
+    it("does NOT mark a player-role acceptance onboarding-complete with no pending_player_details at all", async () => {
+      state.invitation = { ...state.invitation!, role: "player" };
+      // state.family.pending_player_details stays null from the outer beforeEach.
+      const { default: handler } =
+        await import("~/server/api/family/invite/[token]/accept.post");
+      const result = await handler({} as Parameters<typeof handler>[0]);
+
+      expect(result).toMatchObject({ onboardingComplete: false });
+      expect(state.onboardingCompleteSpy).not.toHaveBeenCalled();
+    });
   });
 });
