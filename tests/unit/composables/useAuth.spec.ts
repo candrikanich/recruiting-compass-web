@@ -480,6 +480,36 @@ describe("useAuth", () => {
       localStorage.clear();
     });
 
+    it("does not reject signup when writing session_preferences throws (e.g. storage quota/private mode)", async () => {
+      // The account and session are already created by this point — a
+      // localStorage failure here must be best-effort only, never surfaced
+      // as a signup failure.
+      localStorage.clear();
+      const { mockAuth } = getMockSupabase();
+      mockAuth.signInWithPassword.mockResolvedValue({
+        data: { user: mockUser, session: mockSession },
+        error: null,
+      });
+      const mockFetch = vi.fn(async () => ({ userId: mockUser.id }));
+      vi.stubGlobal("$fetch", mockFetch);
+      const setItemSpy = vi
+        .spyOn(Storage.prototype, "setItem")
+        .mockImplementation(() => {
+          throw new Error("QuotaExceededError");
+        });
+
+      const auth = useAuth();
+      const result = await auth.signup("new@example.com", "password123");
+
+      expect(result.data.session).toEqual(mockSession);
+      expect(result.error).toBeNull();
+      expect(auth.error.value).toBeNull();
+
+      setItemSpy.mockRestore();
+      vi.unstubAllGlobals();
+      localStorage.clear();
+    });
+
     it("should signup with full name and role", async () => {
       const { mockAuth } = getMockSupabase();
       mockAuth.signInWithPassword.mockResolvedValue({
