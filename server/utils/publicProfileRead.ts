@@ -271,6 +271,7 @@ export async function getPublicProfile(
     return { kind: "gone" };
   }
 
+  const startedAt = Date.now();
   const hit = await lookupCachedPayload(key, deps);
   if (hit) {
     return {
@@ -305,6 +306,7 @@ export async function getPublicProfile(
       l2TtlSeconds: PUBLIC_PROFILE_CACHE.l2TtlSeconds,
       redis: deps.redis,
       snapshot: deps.snapshot,
+      startedAt,
     });
     return { kind: "ok" as const, data, etag: envelope.etag, source: "origin" };
   });

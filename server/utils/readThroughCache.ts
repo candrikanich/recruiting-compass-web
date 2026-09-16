@@ -163,6 +163,54 @@ export async function l2Del<T>(
   }
 }
 
+/** TTL for generation fence keys — must outlive the longest cache tier TTL. */
+const GENERATION_TTL_SECONDS = 3600;
+
+function generationKey(key: string): string {
+  return `${key}:gen`;
+}
+
+/**
+ * Read the generation fence for a key: the timestamp of the most recent
+ * invalidation. A `fillCache` write that started before this timestamp is
+ * stale and must not overwrite what invalidation just cleared.
+ */
+async function getGeneration(
+  redis: KvCache | null,
+  key: string,
+): Promise<number> {
+  if (!redis) return 0;
+  try {
+    const value = await redis.get(generationKey(key));
+    const parsed = typeof value === "number" ? value : Number(value);
+    return Number.isFinite(parsed) ? parsed : 0;
+  } catch {
+    return 0;
+  }
+}
+
+async function setGeneration(
+  redis: KvCache | null,
+  key: string,
+  timestamp: number,
+): Promise<void> {
+  if (!redis) return;
+  try {
+    await redis.set(generationKey(key), timestamp, {
+      ex: GENERATION_TTL_SECONDS,
+    });
+  } catch {
+    // fail-open
+  }
+}
+
+/**
+ * Fan-out write behind `singleflight` can race with a concurrent
+ * `invalidateCache`: an origin fetch that started before an invalidation can
+ * still resolve and write after it, silently reviving stale data. Callers
+ * pass `startedAt` (captured before the origin fetch began) so a write that
+ * started before the most recent invalidation is dropped instead of applied.
+ */
 export async function fillCache<T>(opts: {
   keys: string[];
   namespace: string;
@@ -171,9 +219,14 @@ export async function fillCache<T>(opts: {
   l2TtlSeconds: number;
   redis: KvCache | null;
   snapshot: SnapshotStore<T> | null;
+  startedAt?: number;
 }): Promise<void> {
   await Promise.all(
     opts.keys.map(async (key) => {
+      if (opts.startedAt !== undefined) {
+        const generation = await getGeneration(opts.redis, key);
+        if (generation > opts.startedAt) return;
+      }
       await l1Set(opts.redis, key, opts.envelope, opts.l1TtlSeconds);
       await l2Set(
         opts.snapshot,
@@ -191,8 +244,10 @@ export async function invalidateCache<T>(opts: {
   redis: KvCache | null;
   snapshot: SnapshotStore<T> | null;
 }): Promise<void> {
+  const now = Date.now();
   await Promise.all([
     l1Del(opts.redis, opts.keys),
     l2Del(opts.snapshot, opts.keys),
+    ...opts.keys.map((key) => setGeneration(opts.redis, key, now)),
   ]);
 }

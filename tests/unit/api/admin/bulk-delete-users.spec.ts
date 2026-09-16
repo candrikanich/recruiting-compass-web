@@ -77,6 +77,13 @@ function makeSupabaseMock({
             data: lookupData ?? { id: "target-uuid" },
             error: lookupError ?? null,
           }),
+          // Post-delete-attempt verification for a single target user — the
+          // row is expected gone by the time this is called (survivors are
+          // already filtered out earlier via the .in() check below).
+          maybeSingle: vi.fn().mockResolvedValue({
+            data: null,
+            error: null,
+          }),
         }),
         // The post-delete survivors check: .from("users").select("id").in("id", ids)
         in: vi.fn().mockResolvedValue({
