@@ -3,6 +3,7 @@ import { issueVerificationToken } from "~/server/utils/emailVerificationTokens";
 import { sendVerificationEmail } from "~/server/utils/emailService";
 import { useLogger } from "~/server/utils/logger";
 import type { H3Event } from "h3";
+import { getSafeRequestOrigin } from "~/server/utils/requestOrigin";
 
 export interface CreateVerifiedAccountOptions {
   email: string;
@@ -66,7 +67,11 @@ export async function createVerifiedAccount(
     // dashboard resend button covers both cases. Log for visibility only.
     try {
       const { token } = await issueVerificationToken(data.user.id);
-      const emailResult = await sendVerificationEmail({ to: email, token });
+      const emailResult = await sendVerificationEmail({
+        to: email,
+        token,
+        requestOrigin: getSafeRequestOrigin(event),
+      });
       if (!emailResult.success) {
         logger.error("Verification email failed to send", emailResult.error);
       }

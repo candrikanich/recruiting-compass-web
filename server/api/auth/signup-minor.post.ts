@@ -1,11 +1,17 @@
 import { randomUUID } from "node:crypto";
-import { defineEventHandler, readBody, createError, getRequestIP } from "h3";
+import {
+  defineEventHandler,
+  readBody,
+  createError,
+  getRequestIP,
+} from "h3";
 import { useLogger } from "~/server/utils/logger";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import { rateLimitByIp, throwIfRateLimited } from "~/server/utils/rateLimit";
 import { verifyTurnstile } from "~/server/utils/turnstile";
 import { createVerifiedAccount } from "~/server/utils/accountCreation";
 import { sendGuardianClaimEmail } from "~/server/utils/emailService";
+import { getSafeRequestOrigin } from "~/server/utils/requestOrigin";
 import { isUnderMinimumAge, requiresGuardianInvite } from "~/utils/age";
 import type { Database } from "~/types/database";
 
@@ -216,6 +222,7 @@ export default defineEventHandler(async (event) => {
       to: guardianEmail,
       playerName: firstName,
       token,
+      requestOrigin: getSafeRequestOrigin(event),
       context: { purpose: "invite", userId },
     });
     if (!mail.success) {

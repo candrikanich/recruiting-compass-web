@@ -5,6 +5,7 @@ import { useLogger } from "~/server/utils/logger";
 import { requireAuth } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import { sendInviteEmail } from "~/server/utils/emailService";
+import { getSafeRequestOrigin } from "~/server/utils/requestOrigin";
 import { emailSchema } from "~/utils/validation/validators";
 import { rateLimitByUser, throwIfRateLimited } from "~/server/utils/rateLimit";
 
@@ -128,6 +129,7 @@ export default defineEventHandler(async (event) => {
         familyName: family?.family_name ?? "My Family",
         role: role as "player" | "parent",
         token,
+        requestOrigin: getSafeRequestOrigin(event),
         context: {
           purpose: "invite",
           familyUnitId,
