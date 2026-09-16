@@ -4,7 +4,6 @@ import { mount, flushPromises } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
 import ParentOnboarding from "~/pages/onboarding/parent.vue";
 import { useFamilyCode } from "~/composables/useFamilyCode";
-import type { SchoolRecommendation } from "~/types/schoolRecommendations";
 
 vi.mock("vue-router", () => ({
   useRouter: vi.fn(() => ({ push: vi.fn() })),
@@ -31,33 +30,14 @@ vi.mock("~/composables/useFamilyCode", () => ({
   useFamilyCode: vi.fn(defaultFamilyCode),
 }));
 
-const mockCreateSchool = vi.fn().mockResolvedValue(undefined);
-vi.mock("~/composables/useSchools", () => ({
-  useSchools: () => ({ createSchool: mockCreateSchool }),
+const mockCompleteOnboarding = vi.fn().mockResolvedValue(undefined);
+vi.mock("~/composables/useOnboarding", () => ({
+  useOnboarding: () => ({ completeOnboarding: mockCompleteOnboarding }),
 }));
 
-const school: SchoolRecommendation = {
-  catalogKey: "ohio-state",
-  name: "Ohio State University",
-  division: "D1",
-  conference: "Big Ten",
-  state: "OH",
-  website: null,
-  athleticsUrl: null,
-  score: 70,
-  reasons: ["In OH"],
-};
-
-const mockRecommendations = {
-  recommendations: ref<SchoolRecommendation[]>([]),
-  loading: ref(false),
-  error: ref<string | null>(null),
-  fetchRecommendations: vi.fn().mockResolvedValue(undefined),
-  dismissRecommendation: vi.fn().mockResolvedValue(undefined),
-  removeRecommendation: vi.fn(),
-};
-vi.mock("~/composables/useSchoolRecommendations", () => ({
-  useSchoolRecommendations: () => mockRecommendations,
+const mockCompleteItem = vi.fn().mockResolvedValue(undefined);
+vi.mock("~/composables/useNuxProgress", () => ({
+  useNuxProgress: () => ({ completeItem: mockCompleteItem }),
 }));
 
 vi.mock("~/stores/user", () => ({
@@ -74,14 +54,6 @@ const createWrapper = () =>
     global: {
       stubs: {
         NuxtLink: { template: "<a><slot /></a>", props: ["to"] },
-        RecommendedSchools: {
-          props: ["items", "loading", "error", "addingKey"],
-          template:
-            '<div data-testid="recommended-schools-stub">' +
-            '<button data-testid="add-first" @click="$emit(\'add\', items[0])">Add</button>' +
-            '<button data-testid="dismiss-first" @click="$emit(\'dismiss\', items[0])">Dismiss</button>' +
-            "</div>",
-        },
       },
     },
   });
@@ -102,237 +74,144 @@ describe("Parent Onboarding", () => {
     setActivePinia(createPinia());
     vi.clearAllMocks();
     mockFetchAuth.mockResolvedValue({});
-    mockRecommendations.recommendations.value = [];
-    mockRecommendations.error.value = null;
+    mockCompleteOnboarding.mockResolvedValue(undefined);
     (global.navigateTo as ReturnType<typeof vi.fn>).mockResolvedValue(
       undefined,
     );
   });
 
-  describe("Step 1: Player Details", () => {
-    it("renders step 1 with player detail fields", () => {
-      const wrapper = createWrapper();
-      expect(wrapper.find('[data-testid="step-1"]').exists()).toBe(true);
-      expect(wrapper.find('[data-testid="step-2"]').exists()).toBe(false);
+  it("renders player detail fields", () => {
+    const wrapper = createWrapper();
+    expect(wrapper.find('[data-testid="step-1"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="player-name"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="graduation-year"]').exists()).toBe(
+      true,
+    );
+    expect(wrapper.find('[data-testid="sport"]').exists()).toBe(true);
+  });
+
+  it("does not show a position field", async () => {
+    const wrapper = createWrapper();
+    await wrapper.find('[data-testid="sport"]').setValue("Baseball");
+    expect(wrapper.find('[data-testid="position"]').exists()).toBe(false);
+  });
+
+  it("go-to-dashboard button is disabled without a date of birth", () => {
+    const wrapper = createWrapper();
+    const btn = wrapper.find('[data-testid="go-to-dashboard"]');
+    expect(btn.attributes("disabled")).toBeDefined();
+  });
+
+  it("go-to-dashboard button is disabled without a primary sport", async () => {
+    const wrapper = createWrapper();
+    await setDob(wrapper);
+    const btn = wrapper.find('[data-testid="go-to-dashboard"]');
+    expect(btn.attributes("disabled")).toBeDefined();
+  });
+
+  it("go-to-dashboard button is disabled without a graduation year", async () => {
+    const wrapper = createWrapper();
+    await setDob(wrapper);
+    await wrapper.find('[data-testid="sport"]').setValue("Baseball");
+    const btn = wrapper.find('[data-testid="go-to-dashboard"]');
+    expect(btn.attributes("disabled")).toBeDefined();
+  });
+
+  it("does not call the API when the button is disabled", async () => {
+    const wrapper = createWrapper();
+    const btn = wrapper.find('[data-testid="go-to-dashboard"]');
+    expect(btn.attributes("disabled")).toBeDefined();
+    expect(mockFetchAuth).not.toHaveBeenCalled();
+  });
+
+  it("disables the button while family provisioning is still in flight (issue #782)", async () => {
+    let resolveCreateFamily!: (value: boolean) => void;
+    vi.mocked(useFamilyCode).mockReturnValueOnce({
+      ...defaultFamilyCode(),
+      myFamilyCode: ref(""),
+      createFamily: vi.fn(
+        () =>
+          new Promise<boolean>((resolve) => {
+            resolveCreateFamily = resolve;
+          }),
+      ),
     });
 
-    it("shows input for player name", () => {
-      const wrapper = createWrapper();
-      expect(wrapper.find('[data-testid="player-name"]').exists()).toBe(true);
-    });
+    const wrapper = createWrapper();
+    await setDob(wrapper);
+    await wrapper.find('[data-testid="sport"]').setValue("Baseball");
+    await wrapper.find('[data-testid="graduation-year"]').setValue("2027");
+    await flushPromises();
 
-    it("shows input for graduation year", () => {
-      const wrapper = createWrapper();
-      expect(wrapper.find('[data-testid="graduation-year"]').exists()).toBe(
-        true,
-      );
-    });
+    // All fields valid, but family creation hasn't resolved yet — the
+    // button must stay disabled so player-details can't fire before the
+    // family_members row exists (the exact race that 403'd silently).
+    expect(
+      wrapper.find('[data-testid="go-to-dashboard"]').attributes("disabled"),
+    ).toBeDefined();
+    expect(mockFetchAuth).not.toHaveBeenCalled();
 
-    it("shows input for sport", () => {
-      const wrapper = createWrapper();
-      expect(wrapper.find('[data-testid="sport"]').exists()).toBe(true);
-    });
+    resolveCreateFamily(true);
+    await flushPromises();
 
-    it("does not show a position field", async () => {
-      const wrapper = createWrapper();
-      await wrapper.find('[data-testid="sport"]').setValue("Baseball");
-      expect(wrapper.find('[data-testid="position"]').exists()).toBe(false);
-    });
+    expect(
+      wrapper.find('[data-testid="go-to-dashboard"]').attributes("disabled"),
+    ).toBeUndefined();
+  });
 
-    it("shows step indicator as step 1 of 2", () => {
-      const wrapper = createWrapper();
-      expect(wrapper.text()).toContain("1");
-      expect(wrapper.text()).toContain("2");
-    });
+  it("shows an error and does not navigate when saving player details fails", async () => {
+    mockFetchAuth.mockRejectedValueOnce(new Error("Not a family member"));
+    const wrapper = createWrapper();
 
-    it("Next button is disabled without a date of birth", () => {
-      const wrapper = createWrapper();
-      const btn = wrapper.find('[data-testid="next-button"]');
-      expect(btn.attributes("disabled")).toBeDefined();
-    });
+    await setDob(wrapper);
+    await wrapper.find('[data-testid="sport"]').setValue("Baseball");
+    await wrapper.find('[data-testid="graduation-year"]').setValue("2027");
+    await wrapper.find('[data-testid="go-to-dashboard"]').trigger("click");
+    await flushPromises();
 
-    it("Next button is disabled without a primary sport", async () => {
-      const wrapper = createWrapper();
-      await setDob(wrapper);
-      // DOB is valid but no sport selected — sport is required
-      const btn = wrapper.find('[data-testid="next-button"]');
-      expect(btn.attributes("disabled")).toBeDefined();
-    });
+    expect(
+      wrapper.find('[data-testid="save-player-details-error"]').text(),
+    ).toContain("Not a family member");
+    // Not permanently wedged — the button re-enables for a retry.
+    expect(
+      wrapper.find('[data-testid="go-to-dashboard"]').attributes("disabled"),
+    ).toBeUndefined();
+    expect(global.navigateTo).not.toHaveBeenCalled();
+  });
 
-    it("Next button is disabled without a graduation year", async () => {
-      const wrapper = createWrapper();
-      await setDob(wrapper);
-      await wrapper.find('[data-testid="sport"]').setValue("Baseball");
-      const btn = wrapper.find('[data-testid="next-button"]');
-      expect(btn.attributes("disabled")).toBeDefined();
-    });
+  it("calls POST /api/family/player-details (no position) when the button is clicked", async () => {
+    const wrapper = createWrapper();
 
-    it("proceeds to step 2 when Next is clicked", async () => {
-      const wrapper = createWrapper();
-      await setDob(wrapper);
-      await wrapper.find('[data-testid="sport"]').setValue("Baseball");
-      await wrapper.find('[data-testid="graduation-year"]').setValue("2027");
-      await wrapper.find('[data-testid="next-button"]').trigger("click");
-      await flushPromises();
-      await wrapper.vm.$nextTick();
-      expect(wrapper.find('[data-testid="step-2"]').exists()).toBe(true);
-      expect(wrapper.find('[data-testid="step-1"]').exists()).toBe(false);
-    });
+    await wrapper
+      .find('[data-testid="player-name"]')
+      .setValue("Alex Johnson");
+    await wrapper.find('[data-testid="graduation-year"]').setValue("2027");
+    await wrapper.find('[data-testid="sport"]').setValue("Baseball");
+    await setDob(wrapper);
+    await wrapper.find('[data-testid="go-to-dashboard"]').trigger("click");
+    await wrapper.vm.$nextTick();
 
-    it("does not call the API when the Next button is disabled", async () => {
-      const wrapper = createWrapper();
-      const btn = wrapper.find('[data-testid="next-button"]');
-      expect(btn.attributes("disabled")).toBeDefined();
-      expect(mockFetchAuth).not.toHaveBeenCalled();
-    });
-
-    it("disables Next while family provisioning is still in flight (issue #782)", async () => {
-      let resolveCreateFamily!: (value: boolean) => void;
-      vi.mocked(useFamilyCode).mockReturnValueOnce({
-        ...defaultFamilyCode(),
-        myFamilyCode: ref(""),
-        createFamily: vi.fn(
-          () =>
-            new Promise<boolean>((resolve) => {
-              resolveCreateFamily = resolve;
-            }),
-        ),
-      });
-
-      const wrapper = createWrapper();
-      await setDob(wrapper);
-      await wrapper.find('[data-testid="sport"]').setValue("Baseball");
-      await wrapper.find('[data-testid="graduation-year"]').setValue("2027");
-      await flushPromises();
-
-      // All fields valid, but family creation hasn't resolved yet — Next
-      // must stay disabled so player-details can't fire before the
-      // family_members row exists (the exact race that 403'd silently).
-      expect(
-        wrapper.find('[data-testid="next-button"]').attributes("disabled"),
-      ).toBeDefined();
-      expect(mockFetchAuth).not.toHaveBeenCalled();
-
-      resolveCreateFamily(true);
-      await flushPromises();
-
-      expect(
-        wrapper.find('[data-testid="next-button"]').attributes("disabled"),
-      ).toBeUndefined();
-    });
-
-    it("shows an error and stays on step 1 when saving player details fails", async () => {
-      mockFetchAuth.mockRejectedValueOnce(new Error("Not a family member"));
-      const wrapper = createWrapper();
-
-      await setDob(wrapper);
-      await wrapper.find('[data-testid="sport"]').setValue("Baseball");
-      await wrapper.find('[data-testid="graduation-year"]').setValue("2027");
-      await wrapper.find('[data-testid="next-button"]').trigger("click");
-      await flushPromises();
-
-      expect(wrapper.find('[data-testid="step-1"]').exists()).toBe(true);
-      expect(wrapper.find('[data-testid="step-2"]').exists()).toBe(false);
-      expect(
-        wrapper.find('[data-testid="save-player-details-error"]').text(),
-      ).toContain("Not a family member");
-      // Not permanently wedged — the button re-enables for a retry.
-      expect(
-        wrapper.find('[data-testid="next-button"]').attributes("disabled"),
-      ).toBeUndefined();
-    });
-
-    it("calls POST /api/family/player-details (no position) when Next is clicked", async () => {
-      const wrapper = createWrapper();
-
-      await wrapper
-        .find('[data-testid="player-name"]')
-        .setValue("Alex Johnson");
-      await wrapper.find('[data-testid="graduation-year"]').setValue("2027");
-      await wrapper.find('[data-testid="sport"]').setValue("Baseball");
-      await setDob(wrapper);
-      await wrapper.find('[data-testid="next-button"]').trigger("click");
-      await wrapper.vm.$nextTick();
-
-      expect(mockFetchAuth).toHaveBeenCalledWith("/api/family/player-details", {
-        method: "POST",
-        body: {
-          playerName: "Alex Johnson",
-          playerDob: "2005-06-15",
-          graduationYear: "2027",
-          sport: "Baseball",
-        },
-      });
+    expect(mockFetchAuth).toHaveBeenCalledWith("/api/family/player-details", {
+      method: "POST",
+      body: {
+        playerName: "Alex Johnson",
+        playerDob: "2005-06-15",
+        graduationYear: "2027",
+        sport: "Baseball",
+      },
     });
   });
 
-  describe("Step 2: Schools to explore", () => {
-    const goToStep2 = async (wrapper: ReturnType<typeof mount>) => {
-      await setDob(wrapper);
-      await wrapper.find('[data-testid="sport"]').setValue("Baseball");
-      await wrapper.find('[data-testid="graduation-year"]').setValue("2027");
-      await wrapper.find('[data-testid="next-button"]').trigger("click");
-      await flushPromises();
-      await wrapper.vm.$nextTick();
-    };
+  it("completes onboarding and navigates to dashboard when the button is clicked", async () => {
+    const wrapper = createWrapper();
 
-    it("shows recommended schools on step 2", async () => {
-      const wrapper = createWrapper();
-      await goToStep2(wrapper);
-      expect(
-        wrapper.find('[data-testid="recommended-schools-stub"]').exists(),
-      ).toBe(true);
-    });
+    await setDob(wrapper);
+    await wrapper.find('[data-testid="sport"]').setValue("Baseball");
+    await wrapper.find('[data-testid="graduation-year"]').setValue("2027");
+    await wrapper.find('[data-testid="go-to-dashboard"]').trigger("click");
+    await flushPromises();
 
-    it("does not show an invite form on step 2", async () => {
-      const wrapper = createWrapper();
-      await goToStep2(wrapper);
-      expect(wrapper.find('[data-testid="invite-email"]').exists()).toBe(false);
-    });
-
-    it("shows a go-to-dashboard CTA on step 2", async () => {
-      const wrapper = createWrapper();
-      await goToStep2(wrapper);
-      expect(wrapper.find('[data-testid="go-to-dashboard"]').exists()).toBe(
-        true,
-      );
-    });
-
-    it("adding a recommended school calls createSchool and removes it from the list", async () => {
-      mockRecommendations.recommendations.value = [school];
-      const wrapper = createWrapper();
-      await goToStep2(wrapper);
-
-      await wrapper.find('[data-testid="add-first"]').trigger("click");
-      await flushPromises();
-
-      expect(mockCreateSchool).toHaveBeenCalled();
-      expect(mockRecommendations.removeRecommendation).toHaveBeenCalledWith(
-        school.catalogKey,
-      );
-    });
-
-    it("dismissing a recommended school calls dismissRecommendation", async () => {
-      mockRecommendations.recommendations.value = [school];
-      const wrapper = createWrapper();
-      await goToStep2(wrapper);
-
-      await wrapper.find('[data-testid="dismiss-first"]').trigger("click");
-      await flushPromises();
-
-      expect(mockRecommendations.dismissRecommendation).toHaveBeenCalledWith(
-        school.catalogKey,
-      );
-    });
-
-    it("navigates to dashboard when go-to-dashboard is clicked", async () => {
-      const wrapper = createWrapper();
-      await goToStep2(wrapper);
-
-      await wrapper.find('[data-testid="go-to-dashboard"]').trigger("click");
-      await wrapper.vm.$nextTick();
-
-      expect(global.navigateTo).toHaveBeenCalledWith("/dashboard");
-    });
+    expect(mockCompleteOnboarding).toHaveBeenCalled();
+    expect(global.navigateTo).toHaveBeenCalledWith("/dashboard");
   });
 });

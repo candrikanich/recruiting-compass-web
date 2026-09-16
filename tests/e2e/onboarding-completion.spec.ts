@@ -119,26 +119,22 @@ test.describe("Onboarding v2 — Full Entry Journey", () => {
     ).toBeVisible();
   });
 
-  test("parent: signup → 2-step wizard → dashboard", async ({ page }) => {
+  test("parent: signup → single-step wizard → dashboard", async ({
+    page,
+  }) => {
     const email = `parent-onboard-${RUN}@example.com`;
     await signUp(page, "parent", email);
 
     // Parent signup lands on the dedicated parent onboarding wizard.
     await expect(page).toHaveURL(/\/onboarding\/parent/, { timeout: 15000 });
 
-    // Step 1 — Player details (name optional, DOB + grad year + sport required)
+    // Player details (name optional, DOB + grad year + sport required)
     await page.locator('[data-testid="player-name"]').fill("Kid E2E");
     await page.locator('[data-testid="player-dob"]').fill("2008-05-10");
     await page
       .locator('[data-testid="graduation-year"]')
       .selectOption({ index: 1 });
     await page.locator('[data-testid="sport"]').selectOption("Baseball");
-    await page.locator('[data-testid="next-button"]').click();
-
-    // Step 2 — Schools to explore
-    await expect(page.locator('[data-testid="step-2"]')).toBeVisible({
-      timeout: 10000,
-    });
 
     // Complete → dashboard
     await page.locator('[data-testid="go-to-dashboard"]').click();
@@ -161,7 +157,9 @@ test.describe("Onboarding v2 — Full Entry Journey", () => {
     // Age error should appear
     await expect(page.locator('[data-testid="age-error"]')).toBeVisible();
 
-    // Next button should be disabled
-    await expect(page.locator('[data-testid="next-button"]')).toBeDisabled();
+    // Go-to-dashboard button should be disabled
+    await expect(
+      page.locator('[data-testid="go-to-dashboard"]'),
+    ).toBeDisabled();
   });
 });
