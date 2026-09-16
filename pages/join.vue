@@ -438,7 +438,7 @@ async function signupAndConnect() {
 
     // Athlete PII (grad year, sport, position) is only released by the accept
     // endpoint, after this account has proven it's the invited email.
-    const acceptResult = await $fetchAuth<AcceptResponse>(
+    await $fetchAuth<AcceptResponse>(
       `/api/family/invite/${token.value}/accept`,
       { method: "POST" },
     );
@@ -446,22 +446,11 @@ async function signupAndConnect() {
     showToast("You're connected!", "success");
     const { $posthog: $posthogSignup } = useNuxtApp();
     $posthogSignup?.capture("family_invite_accepted");
-    if (invite.value.role === "parent") {
-      // Player already connected — parent onboarding is not needed
-      await navigateTo("/dashboard");
-    } else {
-      const query: Record<string, string> = {};
-      const prefill = acceptResult?.prefill;
-      if (prefill?.graduationYear)
-        query.graduationYear = String(prefill.graduationYear);
-      if (prefill?.sport) query.sport = prefill.sport;
-      if (prefill?.position) query.position = prefill.position;
-      await navigateTo(
-        Object.keys(query).length
-          ? { path: "/onboarding", query }
-          : "/onboarding",
-      );
-    }
+    // Both roles skip onboarding: a parent's own player is already connected,
+    // and an invited player's grad year/sport were already hydrated from
+    // pending_player_details by the accept endpoint above. Anything still
+    // missing (zip, gender) is picked up by the dashboard's profile checklist.
+    await navigateTo("/dashboard");
   } catch (err: unknown) {
     // A failed signup/accept must not leave suppression active for an unrelated
     // later sign-in in this browser session (see resetSuppressAutoFamilyCreate).

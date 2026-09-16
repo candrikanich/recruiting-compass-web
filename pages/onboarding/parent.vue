@@ -19,28 +19,13 @@
         <div
           class="rounded-2xl border border-white/20 bg-white/95 p-8 shadow-2xl backdrop-blur-xs"
         >
-          <!-- Step indicator -->
           <div class="mb-8 text-center">
             <h1 class="mb-2 text-2xl font-bold text-slate-900">
               Welcome to The Recruiting Compass
             </h1>
-            <div class="mt-4 flex items-center justify-center gap-2">
-              <div
-                v-for="n in totalSteps"
-                :key="n"
-                :class="[
-                  'h-3 w-3 rounded-full transition-colors',
-                  n <= step ? 'bg-blue-500' : 'bg-slate-200',
-                ]"
-              />
-              <span class="ml-3 text-sm font-medium text-slate-600">
-                {{ step }} of {{ totalSteps }}
-              </span>
-            </div>
           </div>
 
-          <!-- Step 1: Player Details -->
-          <div v-if="step === 1" data-testid="step-1" class="space-y-6">
+          <div data-testid="step-1" class="space-y-6">
             <div>
               <h2 class="mb-1 text-2xl font-bold text-slate-900">
                 Tell us about your athlete
@@ -169,39 +154,9 @@
                 class="w-full rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
                 @click="savePlayerDetails"
               >
-                Next
+                Go to your dashboard →
               </button>
             </div>
-          </div>
-
-          <!-- Step 2: Schools to explore -->
-          <div v-if="step === 2" data-testid="step-2" class="space-y-6">
-            <div>
-              <h2 class="mb-1 text-2xl font-bold text-slate-900">
-                Schools to explore
-              </h2>
-              <p class="text-sm text-slate-500">
-                Based on what you told us, here are a few schools to start with.
-              </p>
-            </div>
-
-            <RecommendedSchools
-              :items="recommendations"
-              :loading="recommendationsLoading"
-              :error="recommendationsError || recommendationActionError"
-              :adding-key="addingRecommendationKey"
-              @add="handleAddRecommendation"
-              @dismiss="handleDismissRecommendation"
-            />
-
-            <button
-              data-testid="go-to-dashboard"
-              type="button"
-              class="w-full rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700"
-              @click="goToDashboard"
-            >
-              Go to your dashboard →
-            </button>
           </div>
         </div>
       </div>
@@ -213,16 +168,11 @@
 import { ref, computed, onMounted, inject } from "vue";
 import { useAuthFetch } from "~/composables/useAuthFetch";
 import { useFamilyCode } from "~/composables/useFamilyCode";
-import { useSchools } from "~/composables/useSchools";
-import { useSchoolRecommendations } from "~/composables/useSchoolRecommendations";
 import type { UseActiveFamilyReturn } from "~/composables/useActiveFamily";
 import { getGraduationYearOptions } from "~/utils/graduationYears";
 import { useOnboarding } from "~/composables/useOnboarding";
 import { useNuxProgress } from "~/composables/useNuxProgress";
 import { createClientLogger } from "~/utils/logger";
-import { recommendationToSchoolDraft } from "~/utils/schoolRecommendations";
-import type { School } from "~/types";
-import type { SchoolRecommendation } from "~/types/schoolRecommendations";
 // The bare <MultiSportFieldBackground /> tag silently resolves to nothing
 // without this — Nuxt auto-imports components/Auth/*.vue under the
 // Auth-prefixed tag; pages/signup.vue and pages/login.vue only work because
@@ -233,10 +183,7 @@ const logger = createClientLogger("ParentOnboarding");
 
 definePageMeta({ layout: "public", middleware: "auth" });
 
-const step = ref(1);
-const totalSteps = 2;
-
-// Step 1 — Player details
+// Player details
 const playerName = ref("");
 const playerDob = ref("");
 const graduationYear = ref("");
@@ -279,23 +226,11 @@ const commonSports = [
 
 const graduationYears = computed(() => getGraduationYearOptions());
 
-// Step 2 — Schools to explore
 const { $fetchAuth } = useAuthFetch();
 const activeFamilyCtx = inject<UseActiveFamilyReturn>("activeFamily");
 const { fetchMyCode, myFamilyCode, createFamily } = useFamilyCode();
-const { createSchool } = useSchools();
-const {
-  recommendations,
-  loading: recommendationsLoading,
-  error: recommendationsError,
-  fetchRecommendations,
-  dismissRecommendation,
-  removeRecommendation,
-} = useSchoolRecommendations();
 const { completeOnboarding } = useOnboarding();
 const { completeItem } = useNuxProgress();
-const addingRecommendationKey = ref<string | null>(null);
-const recommendationActionError = ref<string | null>(null);
 const savePlayerDetailsError = ref<string | null>(null);
 
 // Family creation (below) runs async in the background — Next must stay
@@ -336,49 +271,15 @@ async function savePlayerDetails() {
       },
     });
     await completeItem("sport");
-    step.value = 2;
-    void fetchRecommendations();
   } catch (err) {
     logger.warn("Failed to save player details during onboarding", err);
     savePlayerDetailsError.value =
       err instanceof Error
         ? err.message
         : "Something went wrong saving your athlete's details. Please try again.";
+    return;
   }
-}
 
-async function handleAddRecommendation(school: SchoolRecommendation) {
-  addingRecommendationKey.value = school.catalogKey;
-  recommendationActionError.value = null;
-  try {
-    await createSchool(
-      recommendationToSchoolDraft(school) as Omit<
-        School,
-        "id" | "created_at" | "updated_at"
-      >,
-    );
-    removeRecommendation(school.catalogKey);
-
-    const { $posthog } = useNuxtApp();
-    $posthog?.capture("onboarding_v2_school_added");
-  } catch (err) {
-    logger.warn("Failed to add recommended school", err);
-    recommendationActionError.value =
-      err instanceof Error ? err.message : "Failed to add school";
-  } finally {
-    addingRecommendationKey.value = null;
-  }
-}
-
-async function handleDismissRecommendation(school: SchoolRecommendation) {
-  try {
-    await dismissRecommendation(school.catalogKey);
-  } catch {
-    // dismissRecommendation already restores state and sets its own error.
-  }
-}
-
-async function goToDashboard() {
   try {
     const assessment = {
       hasHighlightVideo: false,

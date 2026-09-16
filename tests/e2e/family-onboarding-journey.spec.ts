@@ -78,11 +78,6 @@ test.describe("Full family onboarding journey (signup → invite → accept → 
     await page.locator('[data-testid="graduation-year"]').selectOption({ index: 1 });
     await page.locator('[data-testid="sport"]').selectOption("Baseball");
     await page.locator('[data-testid="next-button"]').click();
-
-    await expect(page.locator('[data-testid="step-2"]')).toBeVisible({
-      timeout: 10000,
-    });
-    await page.locator('[data-testid="go-to-dashboard"]').click();
     await expect(page).toHaveURL(/\/dashboard/, { timeout: 15000 });
 
     // No real athlete is connected yet — the empty-state CTA should show.
@@ -142,18 +137,9 @@ test.describe("Full family onboarding journey (signup → invite → accept → 
     await page.check("#invite-terms");
     await page.getByRole("button", { name: /create account and connect/i }).click();
 
-    // Accept succeeds → player is routed into their own onboarding wizard.
-    await expect(page).toHaveURL(/\/onboarding(\/|$|\?)/, { timeout: 15000 });
-    await expect(page).not.toHaveURL(/\/onboarding\/parent/);
-
-    // ---- 5. Player completes their own onboarding ----
-    await page.locator("#onboarding-graduation-year").selectOption({ index: 1 });
-    await page.locator("#onboarding-primary-sport").selectOption("Baseball");
-    await page.getByRole("button", { name: "Next" }).click();
-    await expect(
-      page.getByRole("heading", { name: "Schools to explore" }),
-    ).toBeVisible({ timeout: 10000 });
-    await page.getByRole("button", { name: /go to your dashboard/i }).click();
+    // Accept succeeds → the player's grad year/sport were already hydrated
+    // from the parent's onboarding, so onboarding is skipped entirely and
+    // they land straight on the dashboard.
     await expect(page).toHaveURL(/\/dashboard/, { timeout: 15000 });
 
     // ---- 6. DB assertions: player is a real family member, invite accepted ----

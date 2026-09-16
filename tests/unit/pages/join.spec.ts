@@ -358,7 +358,7 @@ describe("/join page", () => {
   });
 
   describe("signup flow (unauthenticated)", () => {
-    it("calls signup then accept then navigates to player onboarding on signup submit", async () => {
+    it("calls signup then accept then navigates straight to the dashboard on signup submit", async () => {
       mockFetch
         .mockResolvedValueOnce({
           invitationId: "inv-123",
@@ -394,11 +394,12 @@ describe("/join page", () => {
         "/api/family/invite/valid-token-123/accept",
         { method: "POST" },
       );
-      // No prefill data — navigate with plain string path
-      expect(global.navigateTo).toHaveBeenCalledWith("/onboarding");
+      // Grad year/sport are already hydrated server-side by the accept
+      // endpoint from pending_player_details — onboarding is skipped entirely.
+      expect(global.navigateTo).toHaveBeenCalledWith("/dashboard");
     });
 
-    it("passes grad year, sport, and position as query params when the accept response has prefill", async () => {
+    it("navigates straight to the dashboard even when the accept response carries prefill", async () => {
       // Prefill (athlete PII) is only released by the accept endpoint, after
       // acceptance — the unauthenticated GET response never carries it.
       mockFetch
@@ -427,14 +428,7 @@ describe("/join page", () => {
         .trigger("submit");
       await flushPromises();
 
-      expect(global.navigateTo).toHaveBeenCalledWith({
-        path: "/onboarding",
-        query: {
-          graduationYear: "2027",
-          sport: "Soccer",
-          position: "Midfielder",
-        },
-      });
+      expect(global.navigateTo).toHaveBeenCalledWith("/dashboard");
     });
 
     it("navigates to dashboard when role is parent on signup submit", async () => {
