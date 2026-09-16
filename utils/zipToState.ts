@@ -11,7 +11,9 @@ interface ZipRange {
 }
 
 const ZIP_PREFIX_RANGES: ZipRange[] = [
-  { min: 6, max: 9, state: "PR" },
+  { min: 6, max: 7, state: "PR" },
+  { min: 8, max: 8, state: "VI" },
+  { min: 9, max: 9, state: "PR" },
   { min: 10, max: 27, state: "MA" },
   { min: 28, max: 29, state: "RI" },
   { min: 30, max: 38, state: "NH" },

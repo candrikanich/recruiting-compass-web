@@ -229,6 +229,32 @@ describe("resolveHomeState", () => {
       }),
     ).toBeNull();
   });
+
+  it("resolves 006xx/007xx/009xx zips to PR", () => {
+    for (const zip of ["00601", "00700", "00979", "00987"]) {
+      expect(
+        resolveHomeState({
+          locationState: null,
+          schoolState: null,
+          hometownState: null,
+          locationZip: zip,
+        }),
+      ).toBe("PR");
+    }
+  });
+
+  it("resolves 008xx zips to VI, not PR", () => {
+    for (const zip of ["00801", "00840", "00851"]) {
+      expect(
+        resolveHomeState({
+          locationState: null,
+          schoolState: null,
+          hometownState: null,
+          locationZip: zip,
+        }),
+      ).toBe("VI");
+    }
+  });
 });
 
 describe("isAdjacentState", () => {
