@@ -104,7 +104,7 @@ test.describe("Onboarding v2 — Full Entry Journey", () => {
     await page.locator('[data-testid="sport"]').selectOption("Baseball");
 
     // Completes onboarding → dashboard directly (no schools-to-explore step)
-    await page.locator('[data-testid="next-button"]').click();
+    await page.locator('[data-testid="go-to-dashboard"]').click();
 
     await expect(page).toHaveURL(/\/dashboard/, { timeout: 15000 });
   });
@@ -124,7 +124,9 @@ test.describe("Onboarding v2 — Full Entry Journey", () => {
     // Age error should appear
     await expect(page.locator('[data-testid="age-error"]')).toBeVisible();
 
-    // Next button should be disabled
-    await expect(page.locator('[data-testid="next-button"]')).toBeDisabled();
+    // Go-to-dashboard button should be disabled
+    await expect(
+      page.locator('[data-testid="go-to-dashboard"]'),
+    ).toBeDisabled();
   });
 });

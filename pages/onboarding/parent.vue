@@ -19,12 +19,14 @@
         <div
           class="rounded-2xl border border-white/20 bg-white/95 p-8 shadow-2xl backdrop-blur-xs"
         >
+          <!-- Header -->
           <div class="mb-8 text-center">
             <h1 class="mb-2 text-2xl font-bold text-slate-900">
               Welcome to The Recruiting Compass
             </h1>
           </div>
 
+          <!-- Player Details -->
           <div data-testid="step-1" class="space-y-6">
             <div>
               <h2 class="mb-1 text-2xl font-bold text-slate-900">
@@ -142,7 +144,7 @@
                 {{ savePlayerDetailsError }}
               </p>
               <button
-                data-testid="next-button"
+                data-testid="go-to-dashboard"
                 type="button"
                 :disabled="
                   !playerDob ||

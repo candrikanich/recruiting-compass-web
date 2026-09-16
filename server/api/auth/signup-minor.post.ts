@@ -1,11 +1,17 @@
 import { randomUUID } from "node:crypto";
-import { defineEventHandler, readBody, createError, getRequestIP } from "h3";
+import {
+  defineEventHandler,
+  readBody,
+  createError,
+  getRequestIP,
+} from "h3";
 import { useLogger } from "~/server/utils/logger";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import { rateLimitByIp, throwIfRateLimited } from "~/server/utils/rateLimit";
 import { verifyTurnstile } from "~/server/utils/turnstile";
 import { createVerifiedAccount } from "~/server/utils/accountCreation";
 import { sendGuardianClaimEmail } from "~/server/utils/emailService";
+import { getSafeRequestOrigin } from "~/server/utils/requestOrigin";
 import { isUnderMinimumAge, requiresGuardianInvite } from "~/utils/age";
 import type { Database } from "~/types/database";
 
@@ -187,9 +193,16 @@ export default defineEventHandler(async (event) => {
       });
     }
 
+    const tokenHash = accountResult.tokenHash;
+
     if (!guardianEmail) {
       logger.info("Minor signup created, no guardian named");
-      return { ok: true, guardianEmail: null, guardianEmailSent: false };
+      return {
+        ok: true,
+        guardianEmail: null,
+        guardianEmailSent: false,
+        tokenHash,
+      };
     }
 
     const token = randomUUID();
@@ -206,7 +219,7 @@ export default defineEventHandler(async (event) => {
       // The account itself is already created and valid (guardian-optional as of
       // this migration) — a failed claim write must not fail the whole signup. The
       // player can invite a guardian later from the dashboard.
-      return { ok: true, guardianEmail, guardianEmailSent: false };
+      return { ok: true, guardianEmail, guardianEmailSent: false, tokenHash };
     }
 
     // Non-fatal: the account exists, so a mail failure must not fail the signup.
@@ -216,6 +229,7 @@ export default defineEventHandler(async (event) => {
       to: guardianEmail,
       playerName: firstName,
       token,
+      requestOrigin: getSafeRequestOrigin(event),
       context: { purpose: "invite", userId },
     });
     if (!mail.success) {
@@ -223,7 +237,12 @@ export default defineEventHandler(async (event) => {
     }
 
     logger.info("Minor signup created, awaiting guardian confirmation");
-    return { ok: true, guardianEmail, guardianEmailSent: mail.success };
+    return {
+      ok: true,
+      guardianEmail,
+      guardianEmailSent: mail.success,
+      tokenHash,
+    };
   } catch (err) {
     if (err instanceof Error && "statusCode" in err) throw err;
     logger.error("Minor signup failed", err);

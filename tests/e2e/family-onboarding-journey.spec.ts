@@ -77,7 +77,7 @@ test.describe("Full family onboarding journey (signup → invite → accept → 
     await page.locator('[data-testid="player-dob"]').fill("2008-05-10");
     await page.locator('[data-testid="graduation-year"]').selectOption({ index: 1 });
     await page.locator('[data-testid="sport"]').selectOption("Baseball");
-    await page.locator('[data-testid="next-button"]').click();
+    await page.locator('[data-testid="go-to-dashboard"]').click();
     await expect(page).toHaveURL(/\/dashboard/, { timeout: 15000 });
 
     // No real athlete is connected yet — the empty-state CTA should show.

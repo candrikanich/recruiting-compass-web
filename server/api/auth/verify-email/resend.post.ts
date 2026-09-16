@@ -8,6 +8,7 @@ import {
   discardVerificationToken,
 } from "~/server/utils/emailVerificationTokens";
 import { sendVerificationEmail } from "~/server/utils/emailService";
+import { getSafeRequestOrigin } from "~/server/utils/requestOrigin";
 
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "auth/verify-email/resend");
@@ -24,7 +25,11 @@ export default defineEventHandler(async (event) => {
   const { token } = await issueVerificationToken(user.id, {
     invalidatePrior: false,
   });
-  const result = await sendVerificationEmail({ to: user.email ?? "", token });
+  const result = await sendVerificationEmail({
+    to: user.email ?? "",
+    token,
+    requestOrigin: getSafeRequestOrigin(event),
+  });
 
   if (!result.success) {
     logger.error("Resend verification email failed", result.error);

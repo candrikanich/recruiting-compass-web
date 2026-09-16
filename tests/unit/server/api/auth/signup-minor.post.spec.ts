@@ -111,6 +111,18 @@ describe("POST /api/auth/signup-minor", () => {
     expect(mockSendGuardianClaimEmail).toHaveBeenCalledOnce();
   });
 
+  it("passes through the tokenHash from createVerifiedAccount so the client can skip the captcha-gated sign-in", async () => {
+    mockCreateVerifiedAccount.mockResolvedValueOnce({
+      ok: true,
+      userId: "player-uuid",
+      tokenHash: "hash-1",
+    });
+
+    const result = await call();
+
+    expect(result).toMatchObject({ ok: true, tokenHash: "hash-1" });
+  });
+
   it("verifies Turnstile before creating the account", async () => {
     mockVerifyTurnstile.mockResolvedValueOnce({ ok: false, reason: "missing_token" });
 

@@ -31,8 +31,6 @@
           :athlete-name="activeAthleteName"
         />
 
-        <!-- Parent onboarding banner: shown until athlete connects (self-managed) -->
-        <ParentOnboardingBanner v-if="userStore.isParent" />
         <GuardianPendingBanner />
       </div>
 
@@ -75,11 +73,10 @@
       <div class="grid grid-cols-1 gap-6 lg:grid-cols-6">
         <!-- Left: main content (4 cols) -->
         <div class="space-y-6 lg:col-span-4">
-          <!-- Getting-started checklist — self-hides when dismissed -->
-          <ParentNoAthleteEmptyState
-            v-if="userStore.isParent && !hasConnectedPlayer"
-          />
-          <GettingStartedChecklist v-else />
+          <!-- Getting-started checklist — self-hides when dismissed. Skipped
+               entirely while unconnected: the timeline-section empty state
+               above already carries the invite CTA, so this doesn't repeat it. -->
+          <GettingStartedChecklist v-if="!userStore.isParent || hasConnectedPlayer" />
 
           <!-- Profile completeness card — shows progress + missing fields -->
           <ProfileCompletenessCard />
@@ -210,7 +207,6 @@ import {
 import { WIDGET_SIZES } from "~/types/models";
 import type { WidgetId, WidgetEntry } from "~/types/models";
 import ParentContextBanner from "~/components/Dashboard/ParentContextBanner.vue";
-import ParentOnboardingBanner from "~/components/Dashboard/ParentOnboardingBanner.vue";
 import GuardianPendingBanner from "~/components/Guardian/GuardianPendingBanner.vue";
 import ParentNoAthleteEmptyState from "~/components/Dashboard/ParentNoAthleteEmptyState.vue";
 import DashboardTimelineCard from "~/components/Dashboard/DashboardTimelineCard.vue";
@@ -413,7 +409,7 @@ const { isViewingAsParent, parentAccessibleFamilies } = activeFamily;
 
 // Parent has not yet linked a player to the family unit — data-bearing
 // cards (timeline, getting-started) would otherwise silently score/label
-// the parent's own blank profile. Same check as ParentOnboardingBanner.
+// the parent's own blank profile.
 const hasConnectedPlayer = computed(() =>
   parentAccessibleFamilies.value.some((f) => f.athleteId !== null),
 );
