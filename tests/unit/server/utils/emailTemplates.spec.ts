@@ -17,14 +17,14 @@ describe("wrapEmailLayout", () => {
     process.env.PUBLIC_BASE_URL = "https://staging.example.com";
     const html = wrapEmailLayout("<p>x</p>");
     expect(html).toContain(
-      "https://staging.example.com/assets/logos/recruiting-compass-horizontal.svg",
+      "https://staging.example.com/assets/logos/recruiting-compass-horizontal.png",
     );
   });
 
   it("falls back to the production domain for the logo when unset", () => {
     const html = wrapEmailLayout("<p>x</p>");
     expect(html).toContain(
-      "https://myrecruitingcompass.com/assets/logos/recruiting-compass-horizontal.svg",
+      "https://myrecruitingcompass.com/assets/logos/recruiting-compass-horizontal.png",
     );
   });
 
