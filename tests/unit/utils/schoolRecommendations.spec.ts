@@ -152,6 +152,39 @@ describe("resolveHomeState", () => {
       }),
     ).toBeNull();
   });
+
+  it("falls back to zip-derived state when no explicit state is present", () => {
+    expect(
+      resolveHomeState({
+        locationState: null,
+        schoolState: null,
+        hometownState: null,
+        locationZip: "43215", // Columbus, OH
+      }),
+    ).toBe("OH");
+  });
+
+  it("prefers an explicit state over a zip-derived one", () => {
+    expect(
+      resolveHomeState({
+        locationState: "NC",
+        schoolState: null,
+        hometownState: null,
+        locationZip: "43215",
+      }),
+    ).toBe("NC");
+  });
+
+  it("ignores an invalid zip", () => {
+    expect(
+      resolveHomeState({
+        locationState: null,
+        schoolState: null,
+        hometownState: null,
+        locationZip: "not-a-zip",
+      }),
+    ).toBeNull();
+  });
 });
 
 describe("isAdjacentState", () => {
