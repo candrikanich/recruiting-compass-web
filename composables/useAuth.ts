@@ -46,6 +46,9 @@ interface _AuthActions {
       gender?: string;
       zipCode?: string;
     },
+    inviteToken?: string,
+    getFreshCaptchaToken?: () => Promise<string | undefined>,
+    skipVerificationEmail?: boolean,
   ) => Promise<{
     data: { user: User | null; session: Session | null } | null;
     error: { message: string; status?: number } | null;
@@ -253,9 +256,19 @@ export const useAuth = () => {
 
   /**
    * Sign up new user with optional full name, role, and CAPTCHA token.
-   * When `captchaToken` is provided it is forwarded to Supabase Auth's
-   * built-in Turnstile verification (requires CAPTCHA enabled in the
-   * Supabase Dashboard → Authentication → Bot Protection).
+   *
+   * `captchaToken` is verified server-side by POST /api/auth/signup (this
+   * app's own `verifyTurnstile` check) — it is no longer Supabase Auth's
+   * built-in verification that owns the signup gate. Turnstile tokens are
+   * single-use, so that same token is already spent by the time the
+   * post-creation `signInWithPassword` runs: pass `getFreshCaptchaToken` to
+   * mint a new one for that call (Supabase's native CAPTCHA is still on for
+   * sign-in, which has no other bot defense). Omitting it reuses
+   * `captchaToken`, preserving the behavior of callers that don't opt in.
+   *
+   * `skipVerificationEmail` suppresses the verification token + email for
+   * signups whose accept/claim handler stamps `email_verified_at` moments
+   * later anyway (invite, guardian claim, admin) — spec §5.
    */
   const signup = async (
     email: string,
@@ -271,6 +284,9 @@ export const useAuth = () => {
       gender?: string;
       zipCode?: string;
     },
+    inviteToken?: string,
+    getFreshCaptchaToken?: () => Promise<string | undefined>,
+    skipVerificationEmail?: boolean,
   ) => {
     loading.value = true;
     error.value = null;
@@ -278,45 +294,13 @@ export const useAuth = () => {
     try {
       const trimmedEmail = email.trim().toLowerCase();
 
-      const signUpParams: {
-        email: string;
-        password: string;
-        options?: {
-          data: Record<string, string | boolean>;
-          captchaToken?: string;
-        };
-      } = {
-        email: trimmedEmail,
-        password,
-      };
-
-      // Build user metadata
+      // Carries pending intent across the account-creation call the same way
+      // the old options.data did — consumed lazily on first sign-in by
+      // useAccountProvisioning, not trusted again later.
       const metadata: Record<string, string | boolean> = {};
-
-      if (fullName) {
-        metadata.full_name = fullName;
-      }
-
-      if (role) {
-        metadata.role = role;
-      }
-
-      if (dateOfBirth) {
-        metadata.date_of_birth = dateOfBirth;
-      }
-
-      // Carries the already-validated admin-signup intent across the
-      // email-confirmation gap (no session exists yet to apply is_admin
-      // directly) — consumed lazily on first login, not trusted again later.
       if (pendingAdmin) {
         metadata.pending_admin = true;
       }
-
-      // Drafted onboarding step-1 answers (grad year/sport/gender/zip),
-      // entered on the signup form itself so a new user isn't idle while
-      // waiting on the confirmation email — carried the same way as
-      // pending_admin and flushed into real preferences on first sign-in by
-      // useAccountProvisioning.
       if (onboardingStep1) {
         metadata.pending_graduation_year = String(
           onboardingStep1.graduationYear,
@@ -329,24 +313,63 @@ export const useAuth = () => {
           metadata.pending_zip_code = onboardingStep1.zipCode;
         }
       }
+      if (inviteToken) {
+        metadata.pending_invite_token = inviteToken;
+      }
 
-      // Add metadata + captcha token if present
-      if (Object.keys(metadata).length > 0 || captchaToken) {
-        signUpParams.options = {
-          data: metadata,
-          ...(captchaToken && { captchaToken }),
+      await $fetch("/api/auth/signup", {
+        method: "POST",
+        body: {
+          email: trimmedEmail,
+          password,
+          fullName,
+          role,
+          dateOfBirth,
+          captchaToken,
+          metadata,
+          ...(skipVerificationEmail ? { skipVerificationEmail: true } : {}),
+        },
+      });
+
+      // Session issuance is a normal password sign-in now that the account
+      // is auto-confirmed server-side — no confirmation gap to wait out.
+      // The signup token was just consumed by the endpoint's own Turnstile
+      // check, so replaying it here would read as a duplicate to Supabase's
+      // native CAPTCHA — callers that can mint a fresh one do so.
+      const signInCaptchaToken = getFreshCaptchaToken
+        ? await getFreshCaptchaToken()
+        : captchaToken;
+
+      const signInParams: {
+        email: string;
+        password: string;
+        options?: { captchaToken: string };
+      } = {
+        email: trimmedEmail,
+        password,
+      };
+
+      if (signInCaptchaToken) {
+        signInParams.options = { captchaToken: signInCaptchaToken };
+      }
+
+      const { data, error: signInError } =
+        await supabase.auth.signInWithPassword(signInParams);
+
+      if (signInError) {
+        // The account already exists at this point (the /api/auth/signup
+        // call above succeeded) — only this follow-up sign-in failed, most
+        // often because the invisible session-mint widget needed
+        // interaction nobody gave it and getFreshCaptchaToken() silently
+        // timed out. Tag the error so callers can route to a normal login
+        // instead of treating it as a failed signup and stranding the user.
+        error.value = signInError;
+        const recoverableError = new Error(signInError.message) as Error & {
+          accountCreatedButSignInFailed?: boolean;
         };
+        recoverableError.accountCreatedButSignInFailed = true;
+        throw recoverableError;
       }
-
-      const { data, error: signUpError } =
-        await supabase.auth.signUp(signUpParams);
-
-      if (signUpError) {
-        error.value = signUpError;
-        throw signUpError;
-      }
-
-      // Store initialization is handled by caller
 
       return { data, error: null };
     } catch (err: unknown) {

@@ -337,13 +337,18 @@ describe("Login Flow Integration (useAuth + User Store)", () => {
     it("should integrate signup with user store initialization", async () => {
       const { mockSupabase, mockAuth, mockSingle } = getMockSupabase();
 
-      // Mock successful signup
-      mockAuth.signUp.mockResolvedValue({
-        data: { user: mockUser, session: null }, // Email confirmation required
+      // Account creation now happens server-side (POST /api/auth/signup,
+      // admin.createUser with email_confirm: true) — a session is issued
+      // immediately via the ordinary signInWithPassword call that follows,
+      // not withheld pending email confirmation.
+      const mockFetch = vi.fn().mockResolvedValue({ userId: mockUser.id });
+      vi.stubGlobal("$fetch", mockFetch);
+
+      mockAuth.signInWithPassword.mockResolvedValue({
+        data: { user: mockUser, session: mockSession },
         error: null,
       });
 
-      // Mock session after email confirmation (simulated)
       mockAuth.getSession.mockResolvedValue({
         data: { session: mockSession },
         error: null,
@@ -373,18 +378,27 @@ describe("Login Flow Integration (useAuth + User Store)", () => {
 
       // Verify signup
       expect(signupResult.data.user).toEqual(mockUser);
-      expect(mockAuth.signUp).toHaveBeenCalledWith({
+      expect(mockFetch).toHaveBeenCalledWith(
+        "/api/auth/signup",
+        expect.objectContaining({
+          method: "POST",
+          body: expect.objectContaining({
+            email: "new@example.com",
+            password: "password123",
+            fullName: "Test User",
+            role: "player",
+          }),
+        }),
+      );
+      expect(mockAuth.signInWithPassword).toHaveBeenCalledWith({
         email: "new@example.com",
         password: "password123",
-        options: {
-          data: {
-            full_name: "Test User",
-            role: "player",
-          },
-        },
       });
 
-      // Simulate session after email confirmation
+      vi.unstubAllGlobals();
+
+      // Session is already established by signup() itself now — no
+      // separate post-confirmation step to simulate.
       await auth.restoreSession();
       await userStore.initializeUser();
 

@@ -1,6 +1,5 @@
 import type { User } from "@supabase/supabase-js";
 import { useAuthFetch } from "~/composables/useAuthFetch";
-import { useUserStore } from "~/stores/user";
 import { usePreferenceManager } from "~/composables/usePreferenceManager";
 import { useOnboarding } from "~/composables/useOnboarding";
 import type { PlayerDetails } from "~/types/models";
@@ -8,13 +7,47 @@ import { createClientLogger } from "~/utils/logger";
 
 const logger = createClientLogger("account-provisioning");
 
+// A page that already handles its own family setup after sign-in (the guardian-claim
+// accept flow: /api/guardian/claim/[token]/accept both joins the guardian to the
+// player's family AND creates one if needed) sets this immediately before calling
+// signup()/login(). Without it, the SIGNED_IN listener's blind ensureAccountProvisioned
+// call races that page's own explicit flow -- both independently check "does this user
+// have a family?" and, seeing none yet, both create one, leaving the guardian split
+// across two family_units (one real, one empty and orphaned). Found live on QA. A
+// module-level value (not a ref) is deliberate: it must be set synchronously before the
+// async signup()/login() call, well before the async SIGNED_IN listener that consumes
+// it ever runs, so there is no race on the flag itself.
+//
+// Scoped to the expected email (not a blind boolean): a failed signup()/login() call
+// used to leave a bare flag set with nothing to clear it, so the NEXT SIGNED_IN event
+// in the same browser session -- for a completely unrelated sign-in -- silently
+// skipped family creation for that user. Matching against the email the caller is
+// actually attempting means a stale flag can only ever misfire for that same address,
+// and resetSuppressAutoFamilyCreate() below lets every failure path clear it outright.
+let suppressFamilyCreateForEmail: string | null = null;
+export const suppressAutoFamilyCreateOnNextSignIn = (email: string) => {
+  suppressFamilyCreateForEmail = email.trim().toLowerCase();
+};
+// Call from every account-creation/sign-in failure path (ideally in a `finally`) so a
+// failed attempt can never suppress family creation for a later, unrelated sign-in.
+export const resetSuppressAutoFamilyCreate = () => {
+  suppressFamilyCreateForEmail = null;
+};
+
 /**
  * Backfills server-side state that a signup couldn't set up itself because
  * Supabase withheld the session until email confirmation (prod's
- * confirm-email setting) — the family unit, an admin signup's is_admin flag
- * (pending_admin metadata, see pages/admin/signup.vue), and step-1 onboarding
- * fields drafted on the signup form itself (pending_* metadata, see
- * pages/signup.vue) so a new user doesn't re-answer them post-confirm.
+ * confirm-email setting) — the family unit, step-1 onboarding fields
+ * drafted on the signup form itself (pending_* metadata, see
+ * pages/signup.vue), and a pending family-invite acceptance (pending_invite_token
+ * metadata, see pages/join.vue) so a new user doesn't re-answer them post-confirm.
+ *
+ * Admin promotion is deliberately NOT handled here. It never carries forward
+ * as trusted metadata off the client-settable signup contract — it is
+ * granted only via a synchronous, freshly-validated adminToken call to
+ * /api/auth/admin-profile from pages/admin/signup.vue itself. Accounts are
+ * always auto-confirmed with a session issued immediately, so that
+ * synchronous call is the only path, and there is nothing to backfill here.
  *
  * Call this on every SIGNED_IN event, not just an explicit /login form
  * submit — Supabase's own confirmation-link redirect establishes a session
@@ -27,7 +60,6 @@ const logger = createClientLogger("account-provisioning");
  */
 export const useAccountProvisioning = () => {
   const { $fetchAuth } = useAuthFetch();
-  const userStore = useUserStore();
 
   const applyPendingOnboardingStep1 = async (user: User) => {
     const metadata = user.user_metadata ?? {};
@@ -76,32 +108,50 @@ export const useAccountProvisioning = () => {
     }
   };
 
-  const ensureAccountProvisioned = async (user: User) => {
-    try {
-      await $fetchAuth("/api/family/create", { method: "POST" });
-    } catch (err) {
-      logger.error("Failed to ensure family unit on sign-in", err);
-    }
+  /**
+   * Consumes a family-invite token drafted at signup (pages/join.vue,
+   * pending_invite_token metadata) once a real session exists. Deferred here
+   * for the same reason as the admin flag and onboarding step 1: the accept
+   * endpoint is auth-gated (RLS), and no session exists until the
+   * confirmation email is clicked. Errors are logged, not surfaced -- a
+   * SECOND accept call after a first successful one (e.g. a stale metadata
+   * value on a later sign-in) 409s harmlessly, since family_invitations.status
+   * flips to "accepted" on success and the endpoint rejects any non-pending
+   * status; membership itself was already established by the first call.
+   */
+  const applyPendingInviteToken = async (user: User) => {
+    const token = user.user_metadata?.pending_invite_token as
+      | string
+      | undefined;
+    if (!token) return;
 
-    if (
-      user.user_metadata?.pending_admin === true &&
-      !userStore.user?.is_admin
-    ) {
+    try {
+      await $fetchAuth(`/api/family/invite/${token}/accept`, {
+        method: "POST",
+      });
+      const activeFamily = await import("~/composables/useFamilyCtx");
+      await activeFamily.useFamilyCtx().refetchFamilies();
+    } catch (err) {
+      logger.error("Failed to apply pending invite token on sign-in", err);
+    }
+  };
+
+  const ensureAccountProvisioned = async (user: User) => {
+    const suppressed =
+      !!suppressFamilyCreateForEmail &&
+      suppressFamilyCreateForEmail === user.email?.trim().toLowerCase();
+    if (suppressed) {
+      suppressFamilyCreateForEmail = null;
+    } else {
       try {
-        await $fetchAuth("/api/auth/admin-profile", {
-          method: "POST",
-          body: {
-            fullName:
-              userStore.user?.full_name ?? user.user_metadata?.full_name ?? "",
-          },
-        });
-        await userStore.initializeUser();
+        await $fetchAuth("/api/family/create", { method: "POST" });
       } catch (err) {
-        logger.error("Failed to apply pending admin flag on sign-in", err);
+        logger.error("Failed to ensure family unit on sign-in", err);
       }
     }
 
     await applyPendingOnboardingStep1(user);
+    await applyPendingInviteToken(user);
   };
 
   return { ensureAccountProvisioned };

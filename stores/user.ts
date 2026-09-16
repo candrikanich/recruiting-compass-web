@@ -3,6 +3,7 @@ import { ref, computed } from "vue";
 import type { User } from "~/types/models";
 import { useSupabase } from "~/composables/useSupabase";
 import { clearAllFilterCaches } from "~/composables/usePageFilters";
+import { useGuardianStatus } from "~/composables/useGuardianStatus";
 import { createClientLogger } from "~/utils/logger";
 
 const logger = createClientLogger("stores/user");
@@ -46,9 +47,9 @@ export const useUserStore = defineStore("user", () => {
       if (session?.user) {
         isAuthenticated.value = true;
 
-        isEmailVerified.value =
-          session.user.email_confirmed_at !== null &&
-          session.user.email_confirmed_at !== undefined;
+        // Set from the profile fetch below, not Supabase's own confirmation
+        // state — email_verified_at is this app's own record, decoupled
+        // from Supabase's native (now-disabled) confirm-email gate.
 
         logger.debug(
           "[initializeUser] User authenticated:",
@@ -67,6 +68,7 @@ export const useUserStore = defineStore("user", () => {
 
         if (profile) {
           user.value = profile;
+          isEmailVerified.value = (profile as User).email_verified_at != null;
           logger.debug("[initializeUser] Existing profile loaded");
         } else {
           logger.debug(
@@ -200,6 +202,7 @@ export const useUserStore = defineStore("user", () => {
     isAuthenticated.value = false;
     isEmailVerified.value = false;
     clearAllFilterCaches();
+    useGuardianStatus().reset();
   }
 
   async function refreshVerificationStatus() {
@@ -207,18 +210,27 @@ export const useUserStore = defineStore("user", () => {
 
     try {
       const {
-        data: { user: authUser },
-        error,
-      } = await supabase.auth.getUser();
+        data: { session },
+      } = await supabase.auth.getSession();
 
-      if (error || !authUser) {
+      if (!session?.user) {
+        return;
+      }
+
+      const { data: profile, error } = await supabase
+        .from("users")
+        .select("email_verified_at")
+        .eq("id", session.user.id)
+        .maybeSingle();
+
+      if (error) {
         logger.error("Error fetching verification status:", error);
         return;
       }
 
       isEmailVerified.value =
-        authUser.email_confirmed_at !== null &&
-        authUser.email_confirmed_at !== undefined;
+        (profile as Pick<User, "email_verified_at"> | null)
+          ?.email_verified_at != null;
     } catch (err) {
       logger.error("Error refreshing verification status:", err);
     }

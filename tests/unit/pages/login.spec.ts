@@ -833,6 +833,29 @@ describe("login.vue", () => {
       expect(wrapper.find("#timeout-message").exists()).toBe(false);
     });
 
+    it("should display an account-created message when reason=account_created query param is present", () => {
+      // Currently unreached by any live caller (every signup path signs
+      // itself in immediately now) but kept as the generic "account
+      // created, please sign in" recovery message for any future flow that
+      // needs one — cheaper to keep tested than to reinvent.
+      mockRoute.query = { reason: "account_created" };
+      const wrapper = createWrapper();
+
+      expect(wrapper.find("#timeout-message").exists()).toBe(true);
+      expect(wrapper.text()).toContain("Account created! Sign in to continue.");
+    });
+
+    it("should display a success message when reason=email_verified query param is present", () => {
+      // pages/verify-email/[token].vue routes here when the token check
+      // succeeds but no browser session exists yet (email verified from a
+      // different device/browser than the one that will sign in).
+      mockRoute.query = { reason: "email_verified" };
+      const wrapper = createWrapper();
+
+      expect(wrapper.find("#timeout-message").exists()).toBe(true);
+      expect(wrapper.text()).toContain("Email verified");
+    });
+
     it("should display a not-admin message when reason=not_admin query param is present", () => {
       // middleware/admin.ts sends a non-admin here after the admin subdomain
       // redirect-loop fix — regression guard for that message actually
@@ -870,6 +893,26 @@ describe("login.vue", () => {
       // Message should still be there (doesn't auto-dismiss on input)
       // This is expected behavior - message stays until form is submitted or page is refreshed
       expect(wrapper.find("#timeout-message").exists()).toBe(true);
+    });
+  });
+
+  describe("Email Prefill", () => {
+    it("prefills the email field from the ?email= query param", () => {
+      mockRoute.query = { email: "player@example.com" };
+      const wrapper = createWrapper();
+
+      const emailInput = wrapper.find('input[type="email"]')
+        .element as HTMLInputElement;
+      expect(emailInput.value).toBe("player@example.com");
+    });
+
+    it("leaves the email field empty when no ?email= query param is present", () => {
+      mockRoute.query = {};
+      const wrapper = createWrapper();
+
+      const emailInput = wrapper.find('input[type="email"]')
+        .element as HTMLInputElement;
+      expect(emailInput.value).toBe("");
     });
   });
 

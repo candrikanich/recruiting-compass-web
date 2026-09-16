@@ -4,6 +4,8 @@
  * HTML-escapes its `message` field and would double-encode this markup.
  */
 
+import { wrapEmailLayout } from "~/server/utils/emailTemplates";
+
 interface OnboardingNudgeEmailItem {
   label: string;
   link: string;
@@ -32,28 +34,27 @@ export function renderOnboardingNudgeEmail(
   const itemsHtml = data.topIncompleteItems
     .map(
       (item) =>
-        `<li style="margin-bottom: 8px;"><a href="${escapeHtml(item.link)}" style="color: #2563eb; text-decoration: none;">${escapeHtml(item.label)}</a></li>`,
+        `<li style="margin-bottom:8px;"><a href="${escapeHtml(item.link)}" style="color:#2563eb;text-decoration:none;">${escapeHtml(item.label)}</a></li>`,
     )
     .join("");
 
-  return `<!DOCTYPE html><html><body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 560px; margin: 0 auto; padding: 24px;">
-      <h2 style="color: #1e293b; font-size: 20px; margin-bottom: 8px;">
-        Hey ${safeUserName}, your recruiting profile is waiting 👋
-      </h2>
-      <p style="color: #475569; font-size: 15px; line-height: 1.6;">
-        You've completed <strong>${data.completedCount} of ${data.totalCount}</strong> getting-started steps.
-        A few quick actions will unlock personalized school matches and coach outreach tools:
-      </p>
-      <ul style="color: #475569; font-size: 15px; line-height: 1.8; padding-left: 20px;">
-        ${itemsHtml}
-      </ul>
-      <div style="margin-top: 24px;">
-        <a href="${data.dashboardUrl}" style="display: inline-block; background: #2563eb; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: 500;">
-          Continue where you left off →
-        </a>
-      </div>
-      <p style="color: #94a3b8; font-size: 13px; margin-top: 32px;">
-        — The Recruiting Compass
-      </p>
-  </body></html>`;
+  const bodyHtml = `
+    <h2 style="color:#1e293b;font-size:18px;margin:0 0 8px 0;">
+      Hey ${safeUserName}, your recruiting profile is waiting 👋
+    </h2>
+    <p style="color:#475569;margin:0 0 16px 0;">
+      You've completed <strong>${data.completedCount} of ${data.totalCount}</strong> getting-started steps.
+      A few quick actions will unlock personalized school matches and coach outreach tools:
+    </p>
+    <ul style="color:#475569;line-height:1.8;padding-left:20px;margin:0 0 20px 0;">
+      ${itemsHtml}
+    </ul>
+    <a href="${data.dashboardUrl}" class="trc-email-btn" style="display:inline-block;background:#2563eb;color:#ffffff;padding:10px 20px;border-radius:6px;text-decoration:none;font-weight:600;">
+      Continue where you left off →
+    </a>
+  `;
+
+  return wrapEmailLayout(bodyHtml, {
+    preheader: `You've completed ${data.completedCount} of ${data.totalCount} steps`,
+  });
 }

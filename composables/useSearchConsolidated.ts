@@ -1,7 +1,7 @@
 import { ref, computed } from "vue";
 import { useDebounceFn } from "@vueuse/core";
 import Fuse from "fuse.js";
-import { querySelect } from "~/utils/supabaseQuery";
+import { querySelect, queryRpc } from "~/utils/supabaseQuery";
 import { useSupabase } from "./useSupabase";
 import { useUserStore } from "~/stores/user";
 import { useErrorHandler } from "./useErrorHandler";
@@ -148,24 +148,42 @@ export const useSearchConsolidated = () => {
 
   /**
    * Search schools
+   *
+   * Queries >= 3 chars go through the search_schools_fts RPC (tsvector
+   * relevance + pg_trgm typo tolerance, ranked DB-side — see migration
+   * 20260913000001_schools_fts_search.sql). Shorter queries fall back to the
+   * ILIKE path: to_tsquery/websearch_to_tsquery need real tokens and don't
+   * behave usefully on 1-2 char fragments.
    */
   const searchSchools = async (searchQuery: string) => {
     if (!userStore.user) return;
 
-    try {
-      const filterObj: Record<string, string | number | boolean | null> = {
-        user_id: userStore.user.id,
-      };
+    const trimmed = searchQuery.trim();
 
-      // Apply active filters
+    try {
+      if (trimmed.length >= 3) {
+        const { data, error } = await queryRpc<School>(
+          "search_schools_fts",
+          {
+            p_search_term: trimmed,
+            p_division: filters.value.schools.division || null,
+            p_state: filters.value.schools.state || null,
+            p_limit: 20,
+          },
+          { context: "searchSchools" },
+        );
+
+        if (error) throw error;
+        schoolResults.value = data || [];
+        return;
+      }
+
+      const filterObj: Record<string, string | number | boolean | null> = {};
       if (filters.value.schools.division) {
         filterObj.division = filters.value.schools.division;
       }
       if (filters.value.schools.state) {
         filterObj.state = filters.value.schools.state;
-      }
-      if (filters.value.schools.verified !== null) {
-        filterObj.verified = filters.value.schools.verified;
       }
 
       const { data, error } = await querySelect<School>(
@@ -173,12 +191,9 @@ export const useSearchConsolidated = () => {
         {
           select: "*",
           filters: filterObj,
-          // Push the term into the DB query BEFORE limiting — filtering
-          // client-side after limit(20) silently misses matches beyond
-          // the first 20 rows in arbitrary DB order.
           search: {
-            columns: ["name", "address", "city", "state"],
-            term: searchQuery,
+            columns: ["name", "location", "city", "state"],
+            term: trimmed,
           },
           limit: 20,
         },
@@ -186,14 +201,7 @@ export const useSearchConsolidated = () => {
       );
 
       if (error) throw error;
-
-      // Apply fuzzy search to results
-      schoolResults.value = applyFuzzySearch(data || [], searchQuery, [
-        "name",
-        "address",
-        "city",
-        "state",
-      ]);
+      schoolResults.value = data || [];
     } catch (err) {
       logError(err, { context: "searchSchools" });
       schoolResults.value = [];

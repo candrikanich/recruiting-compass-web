@@ -113,45 +113,109 @@ export default defineEventHandler(
               .eq("email", targetEmail)
               .single();
 
-          if (getUserError || !targetUserData?.id) {
-            return { resolved: false, email: targetEmail } as const;
+          // PGRST116 = zero rows matched: a confirmed absence, not a lookup
+          // failure. An earlier bulk-delete run can leave this state if the
+          // public.users delete succeeded but the auth deletion below it
+          // didn't (crash, transient error) — the row is gone but the auth
+          // account survives. Only treat a confirmed absence as a candidate
+          // for auth-only recovery; any other error must stay "failed" so a
+          // retry doesn't silently skip it again. Check the error before the
+          // data: a non-PGRST116 error means the data can't be trusted.
+          if (getUserError && getUserError.code !== "PGRST116") {
+            return { status: "lookup-error", email: targetEmail } as const;
           }
-          return {
-            resolved: true,
-            email: targetEmail,
-            id: targetUserData.id,
-          } as const;
+          if (!getUserError && targetUserData?.id) {
+            return {
+              status: "resolved",
+              email: targetEmail,
+              id: targetUserData.id,
+            } as const;
+          }
+          return { status: "absent", email: targetEmail } as const;
         }),
       );
 
       const resolvedUsers: Array<{ email: string; id: string }> = [];
+      const absentEmails: string[] = [];
 
       resolutionResults.forEach((result, index) => {
-        if (result.status === "fulfilled") {
-          if (result.value.resolved) {
-            resolvedUsers.push({
-              email: result.value.email,
-              id: result.value.id,
-            });
-          } else {
-            errors.push({
-              email: result.value.email,
-              reason: "User not found",
-            });
-          }
-        } else {
+        if (result.status !== "fulfilled") {
           errors.push({
             email: normalizedEmails[index],
             reason: "Resolution failed",
           });
+          return;
+        }
+
+        const value = result.value;
+        if (value.status === "resolved") {
+          resolvedUsers.push({ email: value.email, id: value.id });
+        } else if (value.status === "absent") {
+          absentEmails.push(value.email);
+        } else {
+          errors.push({ email: value.email, reason: "Resolution failed" });
         }
       });
+
+      // Recover auth-only accounts: confirmed absent from public.users, but
+      // may still exist in the auth system from a prior partial delete.
+      // One listUsers call covers every absent email in this batch.
+      const authOnlyUsers: Array<{ email: string; id: string }> = [];
+      if (absentEmails.length > 0) {
+        try {
+          const { data: authUserData, error: authListError } =
+            await supabaseAdmin.auth.admin.listUsers();
+
+          if (authListError) {
+            throw authListError;
+          }
+
+          const authUsersByEmail = new Map(
+            (authUserData?.users ?? [])
+              .filter((u) => u.email)
+              .map((u) => [u.email as string, u.id]),
+          );
+
+          for (const email of absentEmails) {
+            const authId = authUsersByEmail.get(email);
+            if (authId) {
+              authOnlyUsers.push({ email, id: authId });
+            } else {
+              errors.push({ email, reason: "User not found" });
+            }
+          }
+        } catch (authLookupError) {
+          logger.warn(
+            "Failed to resolve auth-only users for absent emails:",
+            authLookupError,
+          );
+          for (const email of absentEmails) {
+            errors.push({ email, reason: "User not found" });
+          }
+        }
+      }
+
+      // Populated only when resolvedUsers is non-empty (the users-row delete +
+      // survivor verification below only applies to them); authOnlyUsers have
+      // no users row to survive, so they never appear in survivorIds.
+      let usersDeleteError: { message?: string } | undefined;
+      let verifyError: { message?: string } | undefined;
+      const survivorIds = new Set<string>();
 
       if (resolvedUsers.length > 0) {
         const targetUserIds = resolvedUsers.map((u) => u.id);
 
         // Delete all user data from database tables in order of dependencies.
         // One query per table per column covers all target users at once.
+        //
+        // "users" is deliberately NOT in this list — see the dedicated step
+        // below. Two FK columns are NO ACTION (RESTRICT, not CASCADE/SET NULL)
+        // and silently block the users-row delete if left in place:
+        // guardian_claims.claimed_by, and users' own self-referencing
+        // guardian_consent_by. Same bug as the single-user delete-user.post.ts
+        // endpoint (fixed alongside this one) — a guardian who'd confirmed a
+        // claim could never actually be deleted, and this endpoint counted them
+        // as successfully deleted anyway, based only on the auth-record delete.
         const tableDeleteAttempts = [
           {
             table: "parent_view_log",
@@ -174,7 +238,8 @@ export default defineEventHandler(
           { table: "family_invitations", columns: ["invited_by"] },
           { table: "family_members", columns: ["user_id"] },
           { table: "family_units", columns: ["created_by_user_id"] },
-          { table: "users", columns: ["id"] },
+          // NO ACTION FK to users.id — must be cleared before the users delete.
+          { table: "guardian_claims", columns: ["claimed_by"] },
         ];
 
         for (const { table, columns } of tableDeleteAttempts) {
@@ -199,10 +264,103 @@ export default defineEventHandler(
           }
         }
 
-        // Delete each user from the auth system and record results
+        // Clear the self-referencing guardian_consent_by FK (also NO ACTION) on
+        // any other user's row naming one of these users as the confirming
+        // guardian.
+        try {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const { error: consentClearError } = await (supabaseAdmin as any)
+            .from("users")
+            .update({
+              guardian_consent_by: null,
+              guardian_consent_at: null,
+              guardian_consent_terms_version: null,
+            })
+            .in("guardian_consent_by", targetUserIds);
+          if (consentClearError) {
+            logger.warn(
+              "Failed to clear guardian_consent_by for bulk delete:",
+              consentClearError,
+            );
+          }
+        } catch (error) {
+          logger.warn("Error clearing guardian_consent_by:", error);
+        }
+
+        // Delete the users rows themselves as their own step, NOT swallowed
+        // like the tables above — this is what the whole endpoint exists to
+        // remove, and counting a user as deleted without it actually being gone
+        // is the exact ghost-data bug this fix closes.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const usersDeleteResult = await (supabaseAdmin as any)
+          .from("users")
+          .delete()
+          .in("id", targetUserIds);
+        usersDeleteError = usersDeleteResult.error;
+
+        if (usersDeleteError) {
+          logger.error("Failed to delete users rows in bulk:", usersDeleteError);
+        }
+
+        // Verify — a NO ACTION FK violation (or an RLS denial) can come back as
+        // a silently-no-op delete rather than a populated error, same as the
+        // single-user endpoint. Anyone still present here is a real failure,
+        // regardless of what the delete call above reported.
+        const { data: survivors, error: verifyReadError } = await (
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          supabaseAdmin as any
+        )
+          .from("users")
+          .select("id")
+          .in("id", targetUserIds);
+        verifyError = verifyReadError;
+
+        if (verifyError) {
+          logger.error(
+            "Could not verify bulk deletion — verification read failed:",
+            verifyError,
+          );
+        }
+
+        // A failed verification read is not proof anyone was deleted — treat
+        // every targeted user as unconfirmed rather than defaulting to an
+        // empty survivor set, which would report false successes.
+        const confirmedSurvivorIds = verifyError
+          ? new Set(targetUserIds)
+          : new Set(
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              ((survivors ?? []) as any[]).map((row) => row.id as string),
+            );
+        confirmedSurvivorIds.forEach((id) => survivorIds.add(id));
+      }
+
+      // Delete each surviving-in-auth user from the auth system and record
+      // results — but only for users whose users row is actually confirmed
+      // gone; a survivor is reported as a failure, not a success. Includes
+      // authOnlyUsers, whose public.users row is already gone — no table
+      // deletes or survivor check needed for them, just the auth cleanup a
+      // prior run missed.
+      const authTargets = [...resolvedUsers, ...authOnlyUsers];
+      if (authTargets.length > 0) {
         await Promise.all(
-          resolvedUsers.map(
+          authTargets.map(
             async ({ email: targetEmail, id: targetUserId }) => {
+              if (survivorIds.has(targetUserId)) {
+                errors.push({
+                  email: targetEmail,
+                  reason: verifyError
+                    ? `Could not confirm user deletion: verification read failed (${verifyError.message ?? "unknown database error"})`
+                    : (usersDeleteError?.message ??
+                      "User row still exists after deletion (likely a foreign key constraint)"),
+                });
+                logger.error(
+                  verifyError
+                    ? `Could not confirm deletion of users row ${targetUserId} (${targetEmail}) — verification read failed, state unknown`
+                    : `users row ${targetUserId} (${targetEmail}) still exists after bulk delete — reporting failure instead of a false success`,
+                );
+                return;
+              }
+
               try {
                 // Verify the primary user record is actually gone before
                 // touching the auth record. A failed read must NOT be

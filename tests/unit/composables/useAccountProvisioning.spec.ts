@@ -1,6 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { User } from "@supabase/supabase-js";
-import { useAccountProvisioning } from "~/composables/useAccountProvisioning";
+import {
+  useAccountProvisioning,
+  suppressAutoFamilyCreateOnNextSignIn,
+  resetSuppressAutoFamilyCreate,
+} from "~/composables/useAccountProvisioning";
 import { useAuthFetch } from "~/composables/useAuthFetch";
 import { useUserStore } from "~/stores/user";
 import { usePreferenceManager } from "~/composables/usePreferenceManager";
@@ -21,6 +25,10 @@ vi.mock("~/composables/useOnboarding", () => ({
 vi.mock("~/utils/logger", () => ({
   createClientLogger: () => ({ error: vi.fn(), debug: vi.fn(), info: vi.fn() }),
 }));
+const mockRefetchFamilies = vi.fn().mockResolvedValue(undefined);
+vi.mock("~/composables/useFamilyCtx", () => ({
+  useFamilyCtx: () => ({ refetchFamilies: mockRefetchFamilies }),
+}));
 
 const mockUseAuthFetch = vi.mocked(useAuthFetch);
 const mockUseUserStore = vi.mocked(useUserStore);
@@ -30,6 +38,7 @@ const mockUseOnboarding = vi.mocked(useOnboarding);
 const buildUser = (overrides: Partial<User> = {}): User =>
   ({
     id: "user-123",
+    email: "guardian@example.com",
     user_metadata: {},
     ...overrides,
   }) as User;
@@ -47,6 +56,9 @@ describe("useAccountProvisioning", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    // suppressFamilyCreateForEmail is module-level state, so it can leak across
+    // tests (and across real unrelated sign-ins in the browser — see below).
+    resetSuppressAutoFamilyCreate();
     fetchAuthMock = vi.fn().mockResolvedValue({});
     mockUseAuthFetch.mockReturnValue({ $fetchAuth: fetchAuthMock } as any);
 
@@ -84,6 +96,78 @@ describe("useAccountProvisioning", () => {
     });
   });
 
+  it("skips /api/family/create once when suppressed for the matching email, then resumes calling it normally", async () => {
+    // Found live on QA: the guardian-claim accept flow already handles family setup
+    // itself. Without this suppression, this listener's own blind /api/family/create
+    // call races it and splits the guardian across two family_units.
+    suppressAutoFamilyCreateOnNextSignIn("guardian@example.com");
+
+    const { ensureAccountProvisioned } = useAccountProvisioning();
+    await ensureAccountProvisioned(buildUser({ email: "guardian@example.com" }));
+
+    expect(fetchAuthMock).not.toHaveBeenCalledWith("/api/family/create", {
+      method: "POST",
+    });
+
+    // One-shot: the very next sign-in (not suppressed) calls it as normal.
+    fetchAuthMock.mockClear();
+    await ensureAccountProvisioned(buildUser({ email: "guardian@example.com" }));
+
+    expect(fetchAuthMock).toHaveBeenCalledWith("/api/family/create", {
+      method: "POST",
+    });
+  });
+
+  it("email match is case-insensitive and trims whitespace", async () => {
+    suppressAutoFamilyCreateOnNextSignIn("  Guardian@Example.com  ");
+
+    const { ensureAccountProvisioned } = useAccountProvisioning();
+    await ensureAccountProvisioned(buildUser({ email: "guardian@example.com" }));
+
+    expect(fetchAuthMock).not.toHaveBeenCalledWith("/api/family/create", {
+      method: "POST",
+    });
+  });
+
+  it("never suppresses family creation for an unrelated user's sign-in", async () => {
+    // Regression: a bare module-level boolean suppressed family creation for
+    // ANY next sign-in, not just the expected one -- e.g. a second, unrelated
+    // browser tab signing in concurrently while a guardian-claim flow was mid-flight.
+    suppressAutoFamilyCreateOnNextSignIn("guardian@example.com");
+
+    const { ensureAccountProvisioned } = useAccountProvisioning();
+    await ensureAccountProvisioned(buildUser({ email: "someone-else@example.com" }));
+
+    expect(fetchAuthMock).toHaveBeenCalledWith("/api/family/create", {
+      method: "POST",
+    });
+
+    // The pending suppression for the original email is still intact for its
+    // own matching sign-in.
+    fetchAuthMock.mockClear();
+    await ensureAccountProvisioned(buildUser({ email: "guardian@example.com" }));
+
+    expect(fetchAuthMock).not.toHaveBeenCalledWith("/api/family/create", {
+      method: "POST",
+    });
+  });
+
+  it("resetSuppressAutoFamilyCreate clears a pending suppression left by a failed attempt", async () => {
+    // Regression: signup()/login() throwing after suppressAutoFamilyCreateOnNextSignIn()
+    // was called used to leave the flag set forever, silently skipping family
+    // creation for the NEXT sign-in in the same browser session -- even an
+    // unrelated one, since the flag carried no expected-user identity.
+    suppressAutoFamilyCreateOnNextSignIn("guardian@example.com");
+    resetSuppressAutoFamilyCreate();
+
+    const { ensureAccountProvisioned } = useAccountProvisioning();
+    await ensureAccountProvisioned(buildUser({ email: "guardian@example.com" }));
+
+    expect(fetchAuthMock).toHaveBeenCalledWith("/api/family/create", {
+      method: "POST",
+    });
+  });
+
   it("does not throw when family creation fails — must never block sign-in", async () => {
     fetchAuthMock.mockRejectedValueOnce(new Error("network error"));
 
@@ -93,16 +177,16 @@ describe("useAccountProvisioning", () => {
     ).resolves.toBeUndefined();
   });
 
-  it("applies the pending admin flag when metadata carries it and the user isn't already admin", async () => {
+  it("never calls admin-profile from a pending_admin metadata flag — admin promotion only happens via a synchronous, freshly-validated adminToken call from pages/admin/signup.vue", async () => {
     const { ensureAccountProvisioned } = useAccountProvisioning();
     await ensureAccountProvisioned(
       buildUser({ user_metadata: { pending_admin: true } }),
     );
 
-    expect(fetchAuthMock).toHaveBeenCalledWith("/api/auth/admin-profile", {
-      method: "POST",
-      body: { fullName: "Existing Name" },
-    });
+    expect(fetchAuthMock).not.toHaveBeenCalledWith(
+      "/api/auth/admin-profile",
+      expect.anything(),
+    );
   });
 
   it("does not call admin-profile when there is no pending admin intent", async () => {
@@ -210,6 +294,49 @@ describe("useAccountProvisioning", () => {
               pending_primary_sport: "Baseball",
             },
           }),
+        ),
+      ).resolves.toBeUndefined();
+    });
+  });
+
+  describe("pending invite token (family-invite signup, pages/join.vue)", () => {
+    it("accepts the invite once a session exists and refetches families", async () => {
+      const { ensureAccountProvisioned } = useAccountProvisioning();
+      await ensureAccountProvisioned(
+        buildUser({ user_metadata: { pending_invite_token: "tok-123" } }),
+      );
+
+      expect(fetchAuthMock).toHaveBeenCalledWith(
+        "/api/family/invite/tok-123/accept",
+        { method: "POST" },
+      );
+      expect(mockRefetchFamilies).toHaveBeenCalled();
+    });
+
+    it("does nothing when there is no pending invite token", async () => {
+      const { ensureAccountProvisioned } = useAccountProvisioning();
+      await ensureAccountProvisioned(buildUser());
+
+      expect(fetchAuthMock).not.toHaveBeenCalledWith(
+        expect.stringContaining("/api/family/invite/"),
+        expect.anything(),
+      );
+    });
+
+    it("does not throw when the accept call fails — must never block sign-in", async () => {
+      // A second sign-in after the invite was already accepted 409s
+      // (family_invitations.status flips to "accepted" on success) -- harmless,
+      // since membership was already established by the first call.
+      fetchAuthMock.mockImplementation(async (url: string) =>
+        url.includes("/api/family/invite/")
+          ? Promise.reject(new Error("409: already accepted"))
+          : {},
+      );
+
+      const { ensureAccountProvisioned } = useAccountProvisioning();
+      await expect(
+        ensureAccountProvisioned(
+          buildUser({ user_metadata: { pending_invite_token: "tok-123" } }),
         ),
       ).resolves.toBeUndefined();
     });

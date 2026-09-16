@@ -237,8 +237,21 @@ const timeoutMessage = computed(() => {
   if (typeof reason === "string" && reason === "not_admin") {
     return "You don't have access to the admin area.";
   }
+  if (typeof reason === "string" && reason === "account_created") {
+    return "Account created! Sign in to continue.";
+  }
+  if (typeof reason === "string" && reason === "email_verified") {
+    return "Email verified — sign in to continue.";
+  }
   return null;
 });
+
+// Any flow that hands off to an explicit login with a known email (the
+// account_created reason above included) can prefill it here to save
+// retyping.
+if (typeof route.query.email === "string") {
+  email.value = route.query.email;
+}
 
 const validateEmail = async () => {
   validating.value = true;

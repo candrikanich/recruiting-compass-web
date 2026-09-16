@@ -115,6 +115,19 @@
                 ✓ Joined
               </span>
             </div>
+
+            <div
+              v-if="parentFamilyMembers[family.familyId]?.length"
+              class="mt-4 space-y-2 border-t border-green-200 pt-4"
+            >
+              <FamilyMemberCard
+                v-for="member in parentFamilyMembers[family.familyId]"
+                :key="member.id"
+                :member="member"
+                :is-player="false"
+                @remove="handleRemoveMember"
+              />
+            </div>
           </div>
         </div>
       </section>
@@ -390,6 +403,7 @@ async function handleResendInvitation(payload: {
 const codeGeneratedAt = ref<string | null>(null);
 const error = ref<string | null>(null);
 const familyMembers = ref<FamilyMember[]>([]);
+const parentFamilyMembers = ref<Record<string, FamilyMember[]>>({});
 const loadingMembers = ref(false);
 const inboundAddress = ref<string | null>(null);
 
@@ -424,6 +438,25 @@ const fetchFamilyMembers = async () => {
   }
 };
 
+const fetchParentFamilyMembers = async () => {
+  const { $fetchAuth } = useAuthFetch();
+  await Promise.all(
+    parentFamilies.value.map(async (family) => {
+      try {
+        const response = (await $fetchAuth(
+          `/api/family/members?familyId=${family.familyId}`,
+        )) as { success: boolean; members: FamilyMember[] };
+        parentFamilyMembers.value = {
+          ...parentFamilyMembers.value,
+          [family.familyId]: response.members || [],
+        };
+      } catch {
+        // Non-critical — a failed lookup just leaves that family's roster empty.
+      }
+    }),
+  );
+};
+
 onMounted(async () => {
   await fetchMyCode();
 
@@ -440,12 +473,19 @@ onMounted(async () => {
     await fetchFamilyMembers();
   }
 
+  if (isParent.value && parentFamilies.value.length > 0) {
+    await fetchParentFamilyMembers();
+  }
+
   fetchInvitations().catch(() => {});
   fetchInboundAddress();
 });
 
 const handleJoinFamily = async (code: string) => {
   await joinByCode(code);
+  if (isParent.value && parentFamilies.value.length > 0) {
+    await fetchParentFamilyMembers();
+  }
 };
 
 const handleCopyCode = async (code: string) => {

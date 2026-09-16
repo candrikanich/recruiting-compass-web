@@ -1,8 +1,13 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { ref } from "vue";
 import { mount, flushPromises } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
 import JoinPage from "~/pages/join.vue";
+
+let turnstileSiteKey = "";
+vi.mock("#app", () => ({
+  useRuntimeConfig: () => ({ public: { turnstileSiteKey } }),
+}));
 
 vi.mock("vue-router", () => ({
   useRouter: vi.fn(() => ({ push: vi.fn() })),
@@ -66,7 +71,7 @@ const createWrapper = () =>
         },
         AuthInviteSignupForm: {
           template:
-            '<form data-testid="invite-signup-form" @submit.prevent="$emit(\'submit\')"><slot /></form>',
+            '<form data-testid="invite-signup-form" @submit.prevent="$emit(\'submit\')"><slot /><slot name="captcha" /></form>',
           props: [
             "email",
             "firstName",
@@ -110,7 +115,12 @@ describe("/join page", () => {
     (global.navigateTo as ReturnType<typeof vi.fn>).mockResolvedValue(
       undefined,
     );
-    mockSignup.mockResolvedValue({ data: { user: { id: "new-u-1" } } });
+    mockSignup.mockResolvedValue({
+      data: {
+        user: { id: "new-u-1" },
+        session: { access_token: "tok", refresh_token: "tok" },
+      },
+    });
   });
 
   describe("loading state", () => {
@@ -323,7 +333,12 @@ describe("/join page", () => {
         })
         .mockResolvedValueOnce({ success: true }); // accept
 
-      mockSignup.mockResolvedValueOnce({ data: { user: { id: "u2" } } });
+      mockSignup.mockResolvedValueOnce({
+        data: {
+          user: { id: "u2" },
+          session: { access_token: "tok", refresh_token: "tok" },
+        },
+      });
       mockUserStore.isAuthenticated = false;
       mockUserStore.user.value = null;
 
@@ -366,6 +381,14 @@ describe("/join page", () => {
         expect.any(String),
         "player",
         undefined, // captchaToken (Turnstile disabled in test)
+        expect.any(String), // dateOfBirth
+        undefined, // pendingAdmin
+        undefined, // onboardingStep1
+        undefined, // inviteToken -- omitted; this page owns acceptance explicitly below,
+        // not via pending_invite_token metadata (would race useAccountProvisioning's
+        // SIGNED_IN listener over the same single-use invitation)
+        expect.any(Function), // getFreshCaptchaToken -- mints a fresh token before sign-in
+        true, // skipVerificationEmail -- the accept endpoint stamps verification
       );
       expect(mockFetch).toHaveBeenCalledWith(
         "/api/family/invite/valid-token-123/accept",
@@ -433,6 +456,59 @@ describe("/join page", () => {
 
       expect(mockSignup).toHaveBeenCalled();
       expect(global.navigateTo).toHaveBeenCalledWith("/dashboard");
+    });
+
+  });
+
+  describe("turnstile mode-switch lifecycle", () => {
+    const mockRender = vi.fn(() => "widget-id");
+    const mockRemove = vi.fn();
+    const mockReset = vi.fn();
+    const mockExecute = vi.fn();
+
+    beforeEach(() => {
+      turnstileSiteKey = "test-site-key";
+      mockFetch.mockResolvedValue(validInviteResponse);
+      mockRender.mockClear();
+      mockRemove.mockClear();
+      (window as unknown as { turnstile?: unknown }).turnstile = {
+        render: mockRender,
+        remove: mockRemove,
+        reset: mockReset,
+        execute: mockExecute,
+      };
+    });
+
+    afterEach(() => {
+      turnstileSiteKey = "";
+      delete (window as unknown as { turnstile?: unknown }).turnstile;
+    });
+
+    it("tears down stale widgets and mounts fresh ones when switching modes back and forth", async () => {
+      const wrapper = createWrapper();
+      await flushPromises();
+      await flushPromises();
+
+      const initialRenderCount = mockRender.mock.calls.length;
+      expect(initialRenderCount).toBeGreaterThan(0);
+
+      await wrapper.find('[data-testid="switch-to-login"]').trigger("click");
+      await flushPromises();
+      await flushPromises();
+
+      // Widgets belonging to the unmounted signup section must be removed,
+      // not left dangling on a detached element.
+      expect(mockRemove).toHaveBeenCalled();
+
+      await wrapper.find('[data-testid="switch-to-signup"]').trigger("click");
+      await flushPromises();
+      await flushPromises();
+
+      // Switching back must mount fresh widgets, not silently no-op because
+      // a stale widget id from the first mount is still set.
+      expect(mockRender.mock.calls.length).toBeGreaterThan(
+        initialRenderCount,
+      );
     });
   });
 });

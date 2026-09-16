@@ -56,11 +56,24 @@ function buildSupabaseAdmin(opts: {
   authUsers?: Array<{ id: string; email: string }>;
   deleteError?: { code?: string; message: string } | null;
   authDeleteError?: { message: string } | null;
+  // Controls step 6b's own users-row delete specifically, independent of
+  // `deleteError` (which only applies to the generic per-table loop, since
+  // "users" is no longer part of that loop).
+  usersDeleteError?: { message: string } | null;
+  // Controls the post-delete verification SELECT: true reproduces the exact
+  // ghost-data bug (row still there despite no thrown error).
+  usersRowStillExistsAfterDelete?: boolean;
+  // Makes the post-delete verification SELECT itself fail (RLS denial,
+  // network blip) — must not be treated as proof the row is gone.
+  verifyReadError?: { message: string } | null;
 }) {
   const deleteCalls: Array<{ table: string; column: string; value: string }> =
     [];
+  const updateCalls: Array<{ table: string; column: string; value: string }> =
+    [];
   return {
     _deleteCalls: deleteCalls,
+    _updateCalls: updateCalls,
     from: vi.fn((table: string) => ({
       select: () => ({
         eq: () => ({
@@ -69,14 +82,32 @@ function buildSupabaseAdmin(opts: {
               data: opts.existingUserId ? { id: opts.existingUserId } : null,
               error: opts.existingUserId ? null : { message: "not found" },
             }),
+          maybeSingle: () =>
+            Promise.resolve({
+              data:
+                table === "users" && opts.usersRowStillExistsAfterDelete
+                  ? { id: opts.existingUserId }
+                  : null,
+              error: table === "users" ? (opts.verifyReadError ?? null) : null,
+            }),
         }),
       }),
       delete: () => ({
         eq: (column: string, value: string) => {
+          if (table === "users") {
+            // Step 6b's own delete, not the generic per-table loop.
+            return Promise.resolve({ error: opts.usersDeleteError ?? null });
+          }
           deleteCalls.push({ table, column, value });
           return Promise.resolve({
             error: opts.deleteError ?? null,
           });
+        },
+      }),
+      update: (payload: unknown) => ({
+        eq: (column: string, value: string) => {
+          updateCalls.push({ table, column, value });
+          return Promise.resolve({ error: null, payload });
         },
       }),
     })),
@@ -184,15 +215,75 @@ describe("POST /api/admin/delete-user", () => {
     expect(result.success).toBe(true);
     expect(result.message).toContain("including auth records");
     expect(mockAdmin.auth.admin.deleteUser).toHaveBeenCalledWith("target-1");
-    // The users table row itself must be among the deletes, and it must be
-    // the LAST table deleted (no FK cascade on users — deleting it first
-    // would orphan the family_* tables' foreign keys).
+    // guardian_claims.claimed_by is a NO ACTION FK to users.id — must be
+    // cleared before the users row delete, or that delete is silently blocked.
     const tables = mockAdmin._deleteCalls.map((c) => c.table);
-    expect(tables).toContain("users");
-    expect(tables[tables.length - 1]).toBe("users");
+    expect(tables).toContain("guardian_claims");
     expect(mockAdmin._deleteCalls.every((c) => c.value === "target-1")).toBe(
       true,
     );
+    // users.guardian_consent_by is also NO ACTION and self-referencing — cleared
+    // via UPDATE (not DELETE) on any other row naming this user as the guardian.
+    expect(mockAdmin._updateCalls).toContainEqual({
+      table: "users",
+      column: "guardian_consent_by",
+      value: "target-1",
+    });
+  });
+
+  it("reports failure instead of a false success when the users row survives the delete", async () => {
+    // Reproduces the exact bug found live on QA: a guardian who had confirmed a
+    // claim couldn't actually be deleted (blocked by a NO ACTION FK the old code
+    // never cleared), but the endpoint swallowed the error and reported success
+    // anyway, leaving the row fully intact with nothing surfaced anywhere.
+    const { useSupabaseAdmin } = await import("~/server/utils/supabase");
+    const mockAdmin = buildSupabaseAdmin({
+      existingUserId: "target-1",
+      usersDeleteError: { message: "update or delete on table \"users\" violates foreign key constraint" },
+      usersRowStillExistsAfterDelete: true,
+    });
+    vi.mocked(useSupabaseAdmin).mockReturnValue(mockAdmin as never);
+    const handler = await loadHandler();
+
+    await expect(
+      handler(fakeEvent({ email: "target@example.com" })),
+    ).rejects.toMatchObject({ statusCode: 500 });
+  });
+
+  it("reports failure when the users row still exists after delete even without an explicit error", async () => {
+    // Belt-and-suspenders: some FK violations or RLS denials come back as a
+    // silently-no-op delete rather than a populated error object. The
+    // post-delete verification SELECT is what actually catches this class.
+    const { useSupabaseAdmin } = await import("~/server/utils/supabase");
+    const mockAdmin = buildSupabaseAdmin({
+      existingUserId: "target-1",
+      usersRowStillExistsAfterDelete: true,
+    });
+    vi.mocked(useSupabaseAdmin).mockReturnValue(mockAdmin as never);
+    const handler = await loadHandler();
+
+    await expect(
+      handler(fakeEvent({ email: "target@example.com" })),
+    ).rejects.toMatchObject({ statusCode: 500 });
+  });
+
+  it("reports failure instead of a false success when the verification read itself errors", async () => {
+    // qodo finding: a failed verification SELECT (RLS denial, network blip)
+    // must not be treated as proof the row is gone. Old code destructured
+    // only `data` and ignored `error`, so an errored read (data: undefined)
+    // fell through the `if (stillExists)` check as a false success.
+    const { useSupabaseAdmin } = await import("~/server/utils/supabase");
+    const mockAdmin = buildSupabaseAdmin({
+      existingUserId: "target-1",
+      verifyReadError: { message: "permission denied for table users" },
+    });
+    vi.mocked(useSupabaseAdmin).mockReturnValue(mockAdmin as never);
+    const handler = await loadHandler();
+
+    await expect(
+      handler(fakeEvent({ email: "target@example.com" })),
+    ).rejects.toMatchObject({ statusCode: 500 });
+    expect(mockAdmin.auth.admin.deleteUser).not.toHaveBeenCalled();
   });
 
   it("falls back to the auth system when the user was already removed from public.users", async () => {
