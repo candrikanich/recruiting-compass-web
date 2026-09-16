@@ -196,6 +196,39 @@ describe("resolveHomeState", () => {
       }),
     ).toBe("AS");
   });
+
+  it("resolves a ZIP+4 code by its first 5 digits", () => {
+    expect(
+      resolveHomeState({
+        locationState: null,
+        schoolState: null,
+        hometownState: null,
+        locationZip: "43215-1234",
+      }),
+    ).toBe("OH");
+  });
+
+  it("resolves a bare 9-digit zip by its first 5 digits", () => {
+    expect(
+      resolveHomeState({
+        locationState: null,
+        schoolState: null,
+        hometownState: null,
+        locationZip: "432151234",
+      }),
+    ).toBe("OH");
+  });
+
+  it("still rejects malformed extended zips", () => {
+    expect(
+      resolveHomeState({
+        locationState: null,
+        schoolState: null,
+        hometownState: null,
+        locationZip: "43215-123",
+      }),
+    ).toBeNull();
+  });
 });
 
 describe("isAdjacentState", () => {

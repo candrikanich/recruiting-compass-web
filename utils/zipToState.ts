@@ -80,16 +80,22 @@ const ZIP_FIVE_DIGIT_OVERRIDES: Record<string, string> = {
   "96799": "AS", // American Samoa — sits inside the 967-968 Hawaii prefix range
 };
 
-/** Resolves a 5-digit US zip code to a 2-letter state code, or null if unrecognized/invalid. */
+/**
+ * Resolves a US zip code to a 2-letter state code, or null if unrecognized/invalid.
+ * Accepts 5-digit, ZIP+4 ("12345-6789"), and bare 9-digit ("123456789") forms —
+ * the first 5 digits determine the state in all of these.
+ */
 export function zipToState(zip: string | null | undefined): string | null {
   if (!zip) return null;
   const trimmed = zip.trim();
-  if (!/^\d{5}$/.test(trimmed)) return null;
+  if (!/^\d{5}(-?\d{4})?$/.test(trimmed)) return null;
 
-  const override = ZIP_FIVE_DIGIT_OVERRIDES[trimmed];
+  const fiveDigit = trimmed.slice(0, 5);
+
+  const override = ZIP_FIVE_DIGIT_OVERRIDES[fiveDigit];
   if (override) return override;
 
-  const prefix = Number(trimmed.slice(0, 3));
+  const prefix = Number(fiveDigit.slice(0, 3));
   const range = ZIP_PREFIX_RANGES.find(
     (r) => prefix >= r.min && prefix <= r.max,
   );
