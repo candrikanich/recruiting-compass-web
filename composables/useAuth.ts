@@ -383,6 +383,41 @@ export const useAuth = () => {
         throw recoverableError;
       }
 
+      // Without this, middleware/auth.ts's expiry check on the next
+      // navigation reads whatever stale (possibly already-expired)
+      // session_preferences entry a prior session left in localStorage and
+      // immediately logs this brand-new signup out with reason=timeout —
+      // login() below writes this same entry for the same reason.
+      //
+      // Best-effort only: the account and session are already created by
+      // this point, so a storage failure here (quota, private mode) must
+      // never surface as a signup failure. Fall back to removing any stale
+      // entry so at worst the next nav treats the session as absent (normal
+      // auth flow), not falsely expired.
+      if (typeof window !== "undefined") {
+        try {
+          const preferences: SessionPreferences = {
+            rememberMe: false,
+            lastActivity: Date.now(),
+            expiresAt: Date.now() + 24 * 60 * 60 * 1000, // 1 day
+          };
+          localStorage.setItem(
+            "session_preferences",
+            JSON.stringify(preferences),
+          );
+        } catch (storageErr) {
+          logger.warn(
+            "[useAuth] Failed to write session_preferences after signup",
+            storageErr,
+          );
+          try {
+            localStorage.removeItem("session_preferences");
+          } catch {
+            // Storage is unusable either way — nothing more to do.
+          }
+        }
+      }
+
       return { data, error: null };
     } catch (err: unknown) {
       const authError = err instanceof Error ? err : new Error("Signup failed");

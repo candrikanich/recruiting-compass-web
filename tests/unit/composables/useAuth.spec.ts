@@ -452,6 +452,64 @@ describe("useAuth", () => {
       vi.unstubAllGlobals();
     });
 
+    it("stores session_preferences after minting the post-signup session, like login() does", async () => {
+      // Without this, middleware/auth.ts's expiry check reads whatever stale
+      // (possibly already-expired) session_preferences entry was left in
+      // localStorage from a prior session and immediately logs the brand-new
+      // signup out on the next navigation with reason=timeout.
+      localStorage.clear();
+      const { mockAuth } = getMockSupabase();
+      mockAuth.signInWithPassword.mockResolvedValue({
+        data: { user: mockUser, session: mockSession },
+        error: null,
+      });
+      const mockFetch = vi.fn(async () => ({ userId: mockUser.id }));
+      vi.stubGlobal("$fetch", mockFetch);
+
+      const auth = useAuth();
+      const beforeSignup = Date.now();
+      await auth.signup("new@example.com", "password123");
+
+      const storedPrefs = localStorage.getItem("session_preferences");
+      expect(storedPrefs).toBeTruthy();
+      const prefs = JSON.parse(storedPrefs!);
+      expect(prefs.lastActivity).toBeGreaterThanOrEqual(beforeSignup);
+      expect(prefs.expiresAt).toBeGreaterThan(Date.now());
+
+      vi.unstubAllGlobals();
+      localStorage.clear();
+    });
+
+    it("does not reject signup when writing session_preferences throws (e.g. storage quota/private mode)", async () => {
+      // The account and session are already created by this point — a
+      // localStorage failure here must be best-effort only, never surfaced
+      // as a signup failure.
+      localStorage.clear();
+      const { mockAuth } = getMockSupabase();
+      mockAuth.signInWithPassword.mockResolvedValue({
+        data: { user: mockUser, session: mockSession },
+        error: null,
+      });
+      const mockFetch = vi.fn(async () => ({ userId: mockUser.id }));
+      vi.stubGlobal("$fetch", mockFetch);
+      const setItemSpy = vi
+        .spyOn(Storage.prototype, "setItem")
+        .mockImplementation(() => {
+          throw new Error("QuotaExceededError");
+        });
+
+      const auth = useAuth();
+      const result = await auth.signup("new@example.com", "password123");
+
+      expect(result.data.session).toEqual(mockSession);
+      expect(result.error).toBeNull();
+      expect(auth.error.value).toBeNull();
+
+      setItemSpy.mockRestore();
+      vi.unstubAllGlobals();
+      localStorage.clear();
+    });
+
     it("should signup with full name and role", async () => {
       const { mockAuth } = getMockSupabase();
       mockAuth.signInWithPassword.mockResolvedValue({
