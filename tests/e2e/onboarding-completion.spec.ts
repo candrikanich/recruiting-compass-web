@@ -2,10 +2,9 @@ import { test, expect, type Page } from "@playwright/test";
 
 /**
  * Entry-flow coverage: a brand-new user signing up and driving the v2
- * onboarding wizard (2-step: sport+grad+zip → school recommendations)
- * all the way to the dashboard. The signup-flow spec stops at the
- * post-signup redirect URL; these tests carry the journey through to
- * completion for BOTH roles.
+ * onboarding wizard (single step: sport+grad+zip) all the way to the
+ * dashboard. The signup-flow spec stops at the post-signup redirect URL;
+ * these tests carry the journey through to completion for BOTH roles.
  *
  * Each test mints a per-run account (teardown reaps debris users by the
  * @example.com pattern in global-teardown), so no shared seeded state is
@@ -48,7 +47,9 @@ test.describe("Onboarding v2 — Full Entry Journey", () => {
   // These specs must run unauthenticated — they create their own accounts.
   test.use({ storageState: { cookies: [], origins: [] } });
 
-  test("player: signup → 2-step wizard → dashboard", async ({ page }) => {
+  test("player: signup → single-step wizard → dashboard", async ({
+    page,
+  }) => {
     const email = `player-onboard-${RUN}@example.com`;
     await signUp(page, "player", email);
 
@@ -56,27 +57,20 @@ test.describe("Onboarding v2 — Full Entry Journey", () => {
     await expect(page).toHaveURL(/\/onboarding(\/|$|\?)/, { timeout: 15000 });
     await expect(page).not.toHaveURL(/\/onboarding\/parent/);
 
-    // Step 1 — Tell us about you (grad year + sport required, zip optional)
+    // Tell us about you (grad year + sport required, zip optional)
     await page
       .locator("#onboarding-graduation-year")
       .selectOption({ index: 1 });
     await page.locator("#onboarding-primary-sport").selectOption("Baseball");
     await page.locator("#onboarding-zip-code").fill("44092");
 
-    await page.getByRole("button", { name: "Next" }).click();
-
-    // Step 2 — Schools to explore (recommendations widget)
-    await expect(
-      page.getByRole("heading", { name: "Schools to explore" }),
-    ).toBeVisible({ timeout: 10000 });
-
-    // Complete onboarding → dashboard
+    // Completes onboarding → dashboard directly (no schools-to-explore step)
     await page.getByRole("button", { name: /go to your dashboard/i }).click();
 
     await expect(page).toHaveURL(/\/dashboard/, { timeout: 15000 });
   });
 
-  test("player: step 1 validation blocks empty sport/grad year", async ({
+  test("player: validation blocks empty sport/grad year", async ({
     page,
   }) => {
     const email = `player-validate-${RUN}@example.com`;
@@ -84,39 +78,12 @@ test.describe("Onboarding v2 — Full Entry Journey", () => {
 
     await expect(page).toHaveURL(/\/onboarding(\/|$|\?)/, { timeout: 15000 });
 
-    // Click Next without filling required fields
-    await page.getByRole("button", { name: "Next" }).click();
+    // Click the completion button without filling required fields
+    await page.getByRole("button", { name: /go to your dashboard/i }).click();
 
-    // Should stay on step 1 with validation errors
+    // Should stay on the onboarding screen with validation errors
     await expect(page.getByText("Primary sport is required")).toBeVisible();
     await expect(page.getByText("Graduation year is required")).toBeVisible();
-  });
-
-  test("player: back button returns to step 1", async ({ page }) => {
-    const email = `player-back-${RUN}@example.com`;
-    await signUp(page, "player", email);
-
-    await expect(page).toHaveURL(/\/onboarding(\/|$|\?)/, { timeout: 15000 });
-
-    // Complete step 1
-    await page
-      .locator("#onboarding-graduation-year")
-      .selectOption({ index: 1 });
-    await page.locator("#onboarding-primary-sport").selectOption("Soccer");
-    await page.getByRole("button", { name: "Next" }).click();
-
-    // Wait for step 2
-    await expect(
-      page.getByRole("heading", { name: "Schools to explore" }),
-    ).toBeVisible({ timeout: 10000 });
-
-    // Go back
-    await page.getByRole("button", { name: "Back", exact: true }).click();
-
-    // Should see step 1 content again
-    await expect(
-      page.getByRole("heading", { name: "Tell us about you" }),
-    ).toBeVisible();
   });
 
   test("parent: signup → single-step wizard → dashboard", async ({
@@ -136,7 +103,7 @@ test.describe("Onboarding v2 — Full Entry Journey", () => {
       .selectOption({ index: 1 });
     await page.locator('[data-testid="sport"]').selectOption("Baseball");
 
-    // Complete → dashboard
+    // Completes onboarding → dashboard directly (no schools-to-explore step)
     await page.locator('[data-testid="go-to-dashboard"]').click();
 
     await expect(page).toHaveURL(/\/dashboard/, { timeout: 15000 });

@@ -358,7 +358,7 @@ describe("/join page", () => {
   });
 
   describe("signup flow (unauthenticated)", () => {
-    it("calls signup then accept then navigates to player onboarding on signup submit", async () => {
+    it("calls signup then accept then navigates straight to the dashboard when the accept endpoint reports onboarding complete", async () => {
       mockFetch
         .mockResolvedValueOnce({
           invitationId: "inv-123",
@@ -366,7 +366,11 @@ describe("/join page", () => {
           familyName: "The Smiths",
           invitedEmail: "player@example.com",
         })
-        .mockResolvedValueOnce({ success: true, familyUnitId: "fam-1" });
+        .mockResolvedValueOnce({
+          success: true,
+          familyUnitId: "fam-1",
+          onboardingComplete: true,
+        });
 
       const wrapper = createWrapper();
       await flushPromises();
@@ -395,11 +399,15 @@ describe("/join page", () => {
         "/api/family/invite/valid-token-123/accept",
         { method: "POST" },
       );
-      // No prefill data — navigate with plain string path
-      expect(global.navigateTo).toHaveBeenCalledWith("/onboarding");
+      // The accept endpoint only reports onboardingComplete once it has
+      // actually stamped it server-side (grad year + sport were already
+      // hydrated from pending_player_details) — only then is it safe to skip
+      // the wizard, or the global onboarding middleware bounces the user
+      // straight back out of /dashboard.
+      expect(global.navigateTo).toHaveBeenCalledWith("/dashboard");
     });
 
-    it("passes grad year, sport, and position as query params when the accept response has prefill", async () => {
+    it("falls back to the onboarding wizard with prefill query params when the accept endpoint could not mark onboarding complete", async () => {
       // Prefill (athlete PII) is only released by the accept endpoint, after
       // acceptance — the unauthenticated GET response never carries it.
       mockFetch
@@ -412,6 +420,7 @@ describe("/join page", () => {
         .mockResolvedValueOnce({
           success: true,
           familyUnitId: "fam-1",
+          onboardingComplete: false,
           prefill: {
             firstName: "Owen",
             lastName: "Smith",
@@ -438,7 +447,31 @@ describe("/join page", () => {
       });
     });
 
-    it("navigates to dashboard when role is parent on signup submit", async () => {
+    it("falls back to a bare /onboarding path when onboarding isn't complete and there's no prefill", async () => {
+      mockFetch
+        .mockResolvedValueOnce({
+          invitationId: "inv-123",
+          role: "player",
+          familyName: "The Smiths",
+          invitedEmail: "player@example.com",
+        })
+        .mockResolvedValueOnce({
+          success: true,
+          familyUnitId: "fam-1",
+          onboardingComplete: false,
+        });
+
+      const wrapper = createWrapper();
+      await flushPromises();
+      await wrapper
+        .find('[data-testid="invite-signup-form"]')
+        .trigger("submit");
+      await flushPromises();
+
+      expect(global.navigateTo).toHaveBeenCalledWith("/onboarding");
+    });
+
+    it("navigates to dashboard when role is parent on signup submit and onboarding is complete", async () => {
       mockFetch
         .mockResolvedValueOnce({
           invitationId: "inv-123",
@@ -446,7 +479,7 @@ describe("/join page", () => {
           familyName: "The Smiths",
           invitedEmail: "parent@example.com",
         })
-        .mockResolvedValueOnce({ success: true });
+        .mockResolvedValueOnce({ success: true, onboardingComplete: true });
 
       const wrapper = createWrapper();
       await flushPromises();
@@ -458,7 +491,6 @@ describe("/join page", () => {
       expect(mockSignup).toHaveBeenCalled();
       expect(global.navigateTo).toHaveBeenCalledWith("/dashboard");
     });
-
   });
 
   describe("turnstile mode-switch lifecycle", () => {

@@ -47,6 +47,7 @@ interface AcceptResponse {
   success: boolean;
   familyUnitId?: string;
   prefill?: AcceptPrefill;
+  onboardingComplete?: boolean;
 }
 
 const invite = ref<InviteDetails | null>(null);
@@ -462,7 +463,10 @@ async function signupAndConnect() {
     await userStore.initializeUser();
 
     // Athlete PII (grad year, sport, position) is only released by the accept
-    // endpoint, after this account has proven it's the invited email.
+    // endpoint, after this account has proven it's the invited email. The
+    // endpoint also stamps onboarding_complete when it can — never assume
+    // that here, since the global onboarding middleware bounces anyone
+    // without that flag straight back out of /dashboard.
     const acceptResult = await $fetchAuth<AcceptResponse>(
       `/api/family/invite/${token.value}/accept`,
       { method: "POST" },
@@ -471,8 +475,8 @@ async function signupAndConnect() {
     showToast("You're connected!", "success");
     const { $posthog: $posthogSignup } = useNuxtApp();
     $posthogSignup?.capture("family_invite_accepted");
-    if (invite.value.role === "parent") {
-      // Player already connected — parent onboarding is not needed
+
+    if (acceptResult?.onboardingComplete) {
       await navigateTo("/dashboard");
     } else {
       const query: Record<string, string> = {};
