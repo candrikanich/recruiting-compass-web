@@ -26,6 +26,12 @@ vi.mock("~/server/utils/logger", () => ({
     warn: vi.fn(),
     debug: vi.fn(),
   }),
+  createLogger: () => ({
+    info: vi.fn(),
+    error: vi.fn(),
+    warn: vi.fn(),
+    debug: vi.fn(),
+  }),
 }));
 
 vi.mock("h3", async (importOriginal) => {
@@ -64,6 +70,10 @@ function fakeEvent(
 }
 
 vi.mock("~/server/utils/supabase", () => ({ useSupabaseAdmin: vi.fn() }));
+
+vi.mock("~/server/utils/sharedCache", () => ({
+  deleteShared: vi.fn().mockResolvedValue(undefined),
+}));
 
 describe("GET /api/user/preferences/[category]", () => {
   beforeEach(async () => {
@@ -214,11 +224,12 @@ describe("POST /api/user/preferences/[category]", () => {
   beforeEach(async () => {
     vi.clearAllMocks();
     vi.resetModules();
-    const { requireAuth } = await import("~/server/utils/auth");
+    const { requireAuth, getUserRole } = await import("~/server/utils/auth");
     vi.mocked(requireAuth).mockResolvedValue({
       id: "user-1",
       email: "user@example.com",
     });
+    vi.mocked(getUserRole).mockResolvedValue("player");
   });
 
   async function loadHandler() {
@@ -277,6 +288,52 @@ describe("POST /api/user/preferences/[category]", () => {
     expect(upsertCalls).toEqual([
       expect.objectContaining({ user_id: "user-1", category: "dashboard" }),
     ]);
+  });
+
+  it("does not invalidate the school-recs cache for a category that doesn't affect recommendations", async () => {
+    const { useSupabaseAdmin } = await import("~/server/utils/supabase");
+    vi.mocked(useSupabaseAdmin).mockReturnValue({
+      from: () => ({
+        upsert: () => ({
+          select: () => ({
+            single: () =>
+              Promise.resolve({
+                data: { data: { theme: "dark" }, updated_at: "2026-01-01" },
+                error: null,
+              }),
+          }),
+        }),
+      }),
+    } as never);
+    const { deleteShared } = await import("~/server/utils/sharedCache");
+    const handler = await loadHandler();
+
+    await handler(fakeEvent("dashboard", { data: { theme: "dark" } }));
+
+    expect(deleteShared).not.toHaveBeenCalled();
+  });
+
+  it("invalidates the athlete's school-recs cache after a location preference save (e.g. a zip update)", async () => {
+    const { useSupabaseAdmin } = await import("~/server/utils/supabase");
+    vi.mocked(useSupabaseAdmin).mockReturnValue({
+      from: () => ({
+        upsert: () => ({
+          select: () => ({
+            single: () =>
+              Promise.resolve({
+                data: { data: { zip: "43215" }, updated_at: "2026-01-01" },
+                error: null,
+              }),
+          }),
+        }),
+      }),
+    } as never);
+    const { deleteShared } = await import("~/server/utils/sharedCache");
+    const handler = await loadHandler();
+
+    await handler(fakeEvent("location", { data: { zip: "43215" } }));
+
+    expect(deleteShared).toHaveBeenCalledWith("rec:v1:user-1");
   });
 
   it("redirects a parent's write of a PLAYER_OWNED category to the linked athlete's row", async () => {
@@ -344,6 +401,9 @@ describe("POST /api/user/preferences/[category]", () => {
     expect(upsertCalls).toEqual([
       expect.objectContaining({ user_id: "athlete-1", category: "player" }),
     ]);
+
+    const { deleteShared } = await import("~/server/utils/sharedCache");
+    expect(deleteShared).toHaveBeenCalledWith("rec:v1:athlete-1");
   });
 });
 
