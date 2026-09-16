@@ -120,6 +120,69 @@ describe("readThroughCache", () => {
     expect(await l2Get(snapshot, "a")).toBeNull();
   });
 
+  it("fillCache drops a stale write that started before a later invalidateCache", async () => {
+    const redis = memoryRedis();
+    const snapshot = memorySnapshot<{ n: number }>();
+
+    // Simulate a slow origin fetch that began before a fresher write+invalidate
+    // cycle completed (e.g. hide-then-reshow racing with a lingering reader).
+    const staleStartedAt = Date.now();
+    await new Promise((r) => setTimeout(r, 5));
+
+    const freshEnvelope = { data: { n: 2 }, etag: '"fresh"' };
+    await fillCache({
+      keys: ["k"],
+      namespace: "ns",
+      envelope: freshEnvelope,
+      l1TtlSeconds: 60,
+      l2TtlSeconds: 300,
+      redis,
+      snapshot,
+    });
+    await invalidateCache({ keys: ["k"], redis, snapshot });
+
+    // The stale fetch resolves after invalidation and tries to write its
+    // (now outdated) payload using the timestamp captured before it started.
+    const staleEnvelope = { data: { n: 1 }, etag: '"stale"' };
+    await fillCache({
+      keys: ["k"],
+      namespace: "ns",
+      envelope: staleEnvelope,
+      l1TtlSeconds: 60,
+      l2TtlSeconds: 300,
+      redis,
+      snapshot,
+      startedAt: staleStartedAt,
+    });
+
+    expect(await l1Get(redis, "k")).toBeNull();
+    expect(await l2Get(snapshot, "k")).toBeNull();
+  });
+
+  it("fillCache still writes when startedAt is after the last invalidation", async () => {
+    const redis = memoryRedis();
+    const snapshot = memorySnapshot<{ n: number }>();
+
+    await invalidateCache({ keys: ["k"], redis, snapshot });
+    const startedAt = Date.now();
+    await new Promise((r) => setTimeout(r, 5));
+
+    const envelope = { data: { n: 3 }, etag: '"e3"' };
+    await fillCache({
+      keys: ["k"],
+      namespace: "ns",
+      envelope,
+      l1TtlSeconds: 60,
+      l2TtlSeconds: 300,
+      redis,
+      snapshot,
+      startedAt,
+    });
+
+    expect(await l1Get(redis, "k")).toEqual(envelope);
+    expect(await l2Get(snapshot, "k")).toEqual(envelope);
+  });
+
   it("singleflight coalesces concurrent callers onto one execution", async () => {
     let calls = 0;
     const load = vi.fn(async () => {
