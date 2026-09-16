@@ -27,7 +27,9 @@ function baseUrl(): string {
 }
 
 function logoUrl(): string {
-  return `${baseUrl()}/assets/logos/recruiting-compass-horizontal.svg`;
+  // PNG, not SVG: Gmail/Outlook don't render <img src> SVGs reliably, so the
+  // header showed no logo (Gmail falls back to its own generic sender icon).
+  return `${baseUrl()}/assets/logos/recruiting-compass-horizontal.png`;
 }
 
 function legalAddress(): string {
