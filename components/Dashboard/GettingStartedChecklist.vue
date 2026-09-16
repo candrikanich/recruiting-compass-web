@@ -94,7 +94,7 @@
 import { computed, onMounted, ref } from "vue";
 import { useNuxProgress } from "~/composables/useNuxProgress";
 import { useUserStore } from "~/stores/user";
-import { useActiveFamily } from "~/composables/useActiveFamily";
+import { useFamilyCtx } from "~/composables/useFamilyCtx";
 import { useSchools } from "~/composables/useSchools";
 import { useCoaches } from "~/composables/useCoaches";
 import { useProfileCompleteness } from "~/composables/useProfileCompleteness";
@@ -175,7 +175,7 @@ const {
   updateProfileCompletion,
 } = useNuxProgress();
 const userStore = useUserStore();
-const { activeAthleteId, parentAccessibleFamilies } = useActiveFamily();
+const { activeAthleteId, parentAccessibleFamilies } = useFamilyCtx();
 const { schools } = useSchools();
 const { coaches } = useCoaches();
 const { completeness, updateCompleteness } = useProfileCompleteness();
