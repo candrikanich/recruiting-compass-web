@@ -167,7 +167,7 @@ export default defineEventHandler(async (event) => {
     }
 
     logger.info("Signup succeeded", { userId: result.userId });
-    return { userId: result.userId };
+    return { userId: result.userId, tokenHash: result.tokenHash };
   } catch (err) {
     if (err instanceof Error && "statusCode" in err) throw err;
     logger.error("Signup failed", err);

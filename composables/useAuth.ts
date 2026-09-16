@@ -258,13 +258,19 @@ export const useAuth = () => {
    * Sign up new user with optional full name, role, and CAPTCHA token.
    *
    * `captchaToken` is verified server-side by POST /api/auth/signup (this
-   * app's own `verifyTurnstile` check) — it is no longer Supabase Auth's
-   * built-in verification that owns the signup gate. Turnstile tokens are
-   * single-use, so that same token is already spent by the time the
-   * post-creation `signInWithPassword` runs: pass `getFreshCaptchaToken` to
-   * mint a new one for that call (Supabase's native CAPTCHA is still on for
-   * sign-in, which has no other bot defense). Omitting it reuses
-   * `captchaToken`, preserving the behavior of callers that don't opt in.
+   * app's own `verifyTurnstile` check). The endpoint also mints a
+   * service-role magiclink `tokenHash` for us in the same request —
+   * `supabase.auth.verifyOtp` consumes that to establish the session with no
+   * second captcha hop at all. This is what actually fixes Safari: ITP can
+   * block the invisible Turnstile widget from solving reliably there, which
+   * silently broke the old post-signup `signInWithPassword` call (that call
+   * is Supabase's own project-level captcha-gated password grant, not
+   * something app code could skip a token for).
+   *
+   * `getFreshCaptchaToken`/`captchaToken` are only reached now as a fallback,
+   * for the rare case the server couldn't mint a tokenHash (no captcha
+   * bypass exists for `signInWithPassword` itself — Supabase enforces that
+   * project-wide) — preserves the old behavior for callers that don't opt in.
    *
    * `skipVerificationEmail` suppresses the verification token + email for
    * signups whose accept/claim handler stamps `email_verified_at` moments
@@ -326,7 +332,10 @@ export const useAuth = () => {
         metadata.pending_invite_token = inviteToken;
       }
 
-      await $fetch("/api/auth/signup", {
+      const signupResponse = await $fetch<{
+        userId: string;
+        tokenHash?: string;
+      }>("/api/auth/signup", {
         method: "POST",
         body: {
           email: trimmedEmail,
@@ -343,39 +352,49 @@ export const useAuth = () => {
         },
       });
 
-      // Session issuance is a normal password sign-in now that the account
-      // is auto-confirmed server-side — no confirmation gap to wait out.
-      // The signup token was just consumed by the endpoint's own Turnstile
-      // check, so replaying it here would read as a duplicate to Supabase's
-      // native CAPTCHA — callers that can mint a fresh one do so.
-      const signInCaptchaToken = getFreshCaptchaToken
-        ? await getFreshCaptchaToken()
-        : captchaToken;
+      let data: { user: User | null; session: Session | null };
+      let signInError: { message: string } | null;
 
-      const signInParams: {
-        email: string;
-        password: string;
-        options?: { captchaToken: string };
-      } = {
-        email: trimmedEmail,
-        password,
-      };
+      if (signupResponse.tokenHash) {
+        const result = await supabase.auth.verifyOtp({
+          token_hash: signupResponse.tokenHash,
+          type: "magiclink",
+        });
+        data = result.data;
+        signInError = result.error;
+      } else {
+        // Fallback for the rare case the server couldn't mint a tokenHash.
+        // The signup token was just consumed by the endpoint's own
+        // Turnstile check, so replaying it here would read as a duplicate to
+        // Supabase's native CAPTCHA — callers that can mint a fresh one do so.
+        const signInCaptchaToken = getFreshCaptchaToken
+          ? await getFreshCaptchaToken()
+          : captchaToken;
 
-      if (signInCaptchaToken) {
-        signInParams.options = { captchaToken: signInCaptchaToken };
+        const signInParams: {
+          email: string;
+          password: string;
+          options?: { captchaToken: string };
+        } = {
+          email: trimmedEmail,
+          password,
+        };
+
+        if (signInCaptchaToken) {
+          signInParams.options = { captchaToken: signInCaptchaToken };
+        }
+
+        const result = await supabase.auth.signInWithPassword(signInParams);
+        data = result.data;
+        signInError = result.error;
       }
-
-      const { data, error: signInError } =
-        await supabase.auth.signInWithPassword(signInParams);
 
       if (signInError) {
         // The account already exists at this point (the /api/auth/signup
-        // call above succeeded) — only this follow-up sign-in failed, most
-        // often because the invisible session-mint widget needed
-        // interaction nobody gave it and getFreshCaptchaToken() silently
-        // timed out. Tag the error so callers can route to a normal login
-        // instead of treating it as a failed signup and stranding the user.
-        error.value = signInError;
+        // call above succeeded) — only this follow-up session mint failed.
+        // Tag the error so callers can route to a normal login instead of
+        // treating it as a failed signup and stranding the user.
+        error.value = signInError as Error;
         const recoverableError = new Error(signInError.message) as Error & {
           accountCreatedButSignInFailed?: boolean;
         };
