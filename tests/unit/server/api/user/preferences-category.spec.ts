@@ -26,6 +26,12 @@ vi.mock("~/server/utils/logger", () => ({
     warn: vi.fn(),
     debug: vi.fn(),
   }),
+  createLogger: () => ({
+    info: vi.fn(),
+    error: vi.fn(),
+    warn: vi.fn(),
+    debug: vi.fn(),
+  }),
 }));
 
 vi.mock("h3", async (importOriginal) => {
@@ -64,6 +70,7 @@ function fakeEvent(
 }
 
 vi.mock("~/server/utils/supabase", () => ({ useSupabaseAdmin: vi.fn() }));
+vi.mock("~/server/utils/sharedCache", () => ({ deleteShared: vi.fn() }));
 
 describe("GET /api/user/preferences/[category]", () => {
   beforeEach(async () => {
@@ -344,6 +351,54 @@ describe("POST /api/user/preferences/[category]", () => {
     expect(upsertCalls).toEqual([
       expect.objectContaining({ user_id: "athlete-1", category: "player" }),
     ]);
+  });
+
+  it("invalidates the athlete's school-recommendations cache after a location update", async () => {
+    const { getUserRole } = await import("~/server/utils/auth");
+    vi.mocked(getUserRole).mockResolvedValue("player");
+    const { useSupabaseAdmin } = await import("~/server/utils/supabase");
+    const { deleteShared } = await import("~/server/utils/sharedCache");
+    vi.mocked(useSupabaseAdmin).mockReturnValue({
+      from: () => ({
+        upsert: () => ({
+          select: () => ({
+            single: () =>
+              Promise.resolve({
+                data: { data: { zip: "90210" }, updated_at: "2026-01-01" },
+                error: null,
+              }),
+          }),
+        }),
+      }),
+    } as never);
+    const handler = await loadHandler();
+
+    await handler(fakeEvent("location", { data: { zip: "90210" } }));
+
+    expect(deleteShared).toHaveBeenCalledWith("rec:v1:user-1");
+  });
+
+  it("does not touch the recommendations cache for categories that don't affect ranking", async () => {
+    const { useSupabaseAdmin } = await import("~/server/utils/supabase");
+    const { deleteShared } = await import("~/server/utils/sharedCache");
+    vi.mocked(useSupabaseAdmin).mockReturnValue({
+      from: () => ({
+        upsert: () => ({
+          select: () => ({
+            single: () =>
+              Promise.resolve({
+                data: { data: { theme: "dark" }, updated_at: "2026-01-01" },
+                error: null,
+              }),
+          }),
+        }),
+      }),
+    } as never);
+    const handler = await loadHandler();
+
+    await handler(fakeEvent("dashboard", { data: { theme: "dark" } }));
+
+    expect(deleteShared).not.toHaveBeenCalled();
   });
 });
 
