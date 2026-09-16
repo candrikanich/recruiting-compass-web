@@ -7,6 +7,10 @@ const mockCreateUser = vi.fn(async () => ({
   data: { user: { id: "user-1", email: "parent@example.com" } },
   error: null as { message: string } | null,
 }));
+const mockGenerateLink = vi.fn(async () => ({
+  data: { properties: { hashed_token: "hash-1" } },
+  error: null as { message: string } | null,
+}));
 const mockIssueToken = vi.fn(async () => ({
   token: "tok-1",
   expiresAt: "2026-09-15T00:00:00.000Z",
@@ -27,7 +31,9 @@ vi.mock("~/server/utils/turnstile", () => ({
 }));
 vi.mock("~/server/utils/supabase", () => ({
   useSupabaseAdmin: vi.fn(() => ({
-    auth: { admin: { createUser: mockCreateUser } },
+    auth: {
+      admin: { createUser: mockCreateUser, generateLink: mockGenerateLink },
+    },
     from: () => ({
       select: () => ({
         eq: () => ({
@@ -81,12 +87,17 @@ const call = async (overrides: Record<string, unknown> = {}) => {
 describe("POST /api/auth/signup", () => {
   beforeEach(() => {
     mockCreateUser.mockClear();
+    mockGenerateLink.mockClear();
     mockIssueToken.mockClear();
     mockSendVerification.mockClear();
     mockVerifyTurnstile.mockClear();
     mockVerifyTurnstile.mockResolvedValue({ ok: true });
     mockCreateUser.mockResolvedValue({
       data: { user: { id: "user-1", email: "parent@example.com" } },
+      error: null,
+    });
+    mockGenerateLink.mockResolvedValue({
+      data: { properties: { hashed_token: "hash-1" } },
       error: null,
     });
     mockInvitationState.invitation = null;
@@ -107,7 +118,7 @@ describe("POST /api/auth/signup", () => {
       });
 
       expect(mockVerifyTurnstile).not.toHaveBeenCalled();
-      expect(result).toEqual({ userId: "user-1" });
+      expect(result).toEqual({ userId: "user-1", tokenHash: "hash-1" });
     });
 
     it("still enforces Turnstile when the invite token is expired", async () => {
@@ -193,7 +204,29 @@ describe("POST /api/auth/signup", () => {
     expect(mockSendVerification).toHaveBeenCalledWith(
       expect.objectContaining({ to: "parent@example.com", token: "tok-1" }),
     );
-    expect(result).toEqual({ userId: "user-1" });
+    expect(result).toEqual({ userId: "user-1", tokenHash: "hash-1" });
+  });
+
+  it("mints a magiclink tokenHash so the client can skip the captcha-gated sign-in", async () => {
+    await call();
+
+    expect(mockGenerateLink).toHaveBeenCalledWith(
+      expect.objectContaining({ type: "magiclink", email: "parent@example.com" }),
+    );
+  });
+
+  it("still returns a successful signup when the tokenHash mint fails (client falls back to captcha sign-in)", async () => {
+    // Safari's whole failure mode is the captcha-gated sign-in — this mint
+    // failing must never turn a working signup into a hard failure; it just
+    // loses the fix and lands back on the old fallback path.
+    mockGenerateLink.mockResolvedValueOnce({
+      data: { properties: null },
+      error: { message: "rate limited" },
+    });
+
+    const result = await call();
+
+    expect(result).toEqual({ userId: "user-1", tokenHash: undefined });
   });
 
   it("rejects when Turnstile verification fails", async () => {
@@ -234,7 +267,7 @@ describe("POST /api/auth/signup", () => {
 
     expect(mockIssueToken).not.toHaveBeenCalled();
     expect(mockSendVerification).not.toHaveBeenCalled();
-    expect(result).toEqual({ userId: "user-1" });
+    expect(result).toEqual({ userId: "user-1", tokenHash: "hash-1" });
   });
 
   describe("metadata is never trusted from the request body", () => {

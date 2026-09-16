@@ -187,9 +187,16 @@ export default defineEventHandler(async (event) => {
       });
     }
 
+    const tokenHash = accountResult.tokenHash;
+
     if (!guardianEmail) {
       logger.info("Minor signup created, no guardian named");
-      return { ok: true, guardianEmail: null, guardianEmailSent: false };
+      return {
+        ok: true,
+        guardianEmail: null,
+        guardianEmailSent: false,
+        tokenHash,
+      };
     }
 
     const token = randomUUID();
@@ -206,7 +213,7 @@ export default defineEventHandler(async (event) => {
       // The account itself is already created and valid (guardian-optional as of
       // this migration) — a failed claim write must not fail the whole signup. The
       // player can invite a guardian later from the dashboard.
-      return { ok: true, guardianEmail, guardianEmailSent: false };
+      return { ok: true, guardianEmail, guardianEmailSent: false, tokenHash };
     }
 
     // Non-fatal: the account exists, so a mail failure must not fail the signup.
@@ -223,7 +230,12 @@ export default defineEventHandler(async (event) => {
     }
 
     logger.info("Minor signup created, awaiting guardian confirmation");
-    return { ok: true, guardianEmail, guardianEmailSent: mail.success };
+    return {
+      ok: true,
+      guardianEmail,
+      guardianEmailSent: mail.success,
+      tokenHash,
+    };
   } catch (err) {
     if (err instanceof Error && "statusCode" in err) throw err;
     logger.error("Minor signup failed", err);
