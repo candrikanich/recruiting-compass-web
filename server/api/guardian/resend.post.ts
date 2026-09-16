@@ -5,6 +5,7 @@ import { requireAuth } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import { rateLimitByUser, throwIfRateLimited } from "~/server/utils/rateLimit";
 import { sendGuardianClaimEmail } from "~/server/utils/emailService";
+import { getSafeRequestOrigin } from "~/server/utils/requestOrigin";
 import { resolveGuardianLock } from "~/server/utils/guardianGate";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -113,6 +114,7 @@ export default defineEventHandler(async (event) => {
         to: requestedEmail,
         playerName,
         token,
+        requestOrigin: getSafeRequestOrigin(event),
         context: { purpose: "invite", userId: user.id },
       });
       if (!mail.success) {
@@ -185,6 +187,7 @@ export default defineEventHandler(async (event) => {
       to: guardianEmail,
       playerName,
       token,
+      requestOrigin: getSafeRequestOrigin(event),
       context: { purpose: "invite", userId: user.id },
     });
 
