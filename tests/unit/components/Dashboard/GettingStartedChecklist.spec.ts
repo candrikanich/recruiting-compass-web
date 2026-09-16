@@ -51,6 +51,18 @@ vi.mock("~/stores/user", () => ({
   }),
 }));
 
+const mockActiveAthleteId = ref<string | null>(null);
+const mockParentAccessibleFamilies = ref<
+  Array<{ athleteId: string | null; athleteName: string | null }>
+>([]);
+
+vi.mock("~/composables/useFamilyCtx", () => ({
+  useFamilyCtx: () => ({
+    activeAthleteId: mockActiveAthleteId,
+    parentAccessibleFamilies: mockParentAccessibleFamilies,
+  }),
+}));
+
 const mockSchools = ref([]);
 const mockCoaches = ref([]);
 const mockCompleteness = ref(0);
@@ -107,6 +119,8 @@ describe("GettingStartedChecklist", () => {
       dismissals: {},
     };
     mockUser.value = { id: "u1", role: "player", full_name: "Test Player" };
+    mockActiveAthleteId.value = null;
+    mockParentAccessibleFamilies.value = [];
     mockSchools.value = [];
     mockCoaches.value = [];
     mockCompleteness.value = 0;
@@ -161,6 +175,36 @@ describe("GettingStartedChecklist", () => {
     mockUser.value = { id: "u2", role: "parent", full_name: "Test Parent" };
     const wrapper = await mountChecklist();
     expect(wrapper.text()).not.toContain("Choose your sport");
+  });
+
+  it("uses the linked athlete's name, not the parent's own name", async () => {
+    mockUser.value = { id: "u2", role: "parent", full_name: "Test Parent" };
+    mockActiveAthleteId.value = "a1";
+    mockParentAccessibleFamilies.value = [
+      { athleteId: "a1", athleteName: "Conner Smith" },
+    ];
+    const wrapper = await mountChecklist();
+    expect(wrapper.text()).toContain("Set Conner's sport");
+    expect(wrapper.text()).not.toContain("Set Test's sport");
+  });
+
+  it("updates the label when the shared active athlete switches (e.g. dashboard switcher)", async () => {
+    mockUser.value = { id: "u2", role: "parent", full_name: "Test Parent" };
+    mockActiveAthleteId.value = "a1";
+    mockParentAccessibleFamilies.value = [
+      { athleteId: "a1", athleteName: "Conner Smith" },
+      { athleteId: "a2", athleteName: "Riley Jones" },
+    ];
+    const wrapper = await mountChecklist();
+    expect(wrapper.text()).toContain("Set Conner's sport");
+
+    // Simulates another consumer (e.g. the dashboard athlete switcher)
+    // mutating the shared useFamilyCtx() instance's activeAthleteId.
+    mockActiveAthleteId.value = "a2";
+    await flushPromises();
+
+    expect(wrapper.text()).toContain("Set Riley's sport");
+    expect(wrapper.text()).not.toContain("Set Conner's sport");
   });
 
   it("calls dismissChecklist when dismiss button is clicked", async () => {

@@ -94,6 +94,7 @@
 import { computed, onMounted, ref } from "vue";
 import { useNuxProgress } from "~/composables/useNuxProgress";
 import { useUserStore } from "~/stores/user";
+import { useFamilyCtx } from "~/composables/useFamilyCtx";
 import { useSchools } from "~/composables/useSchools";
 import { useCoaches } from "~/composables/useCoaches";
 import { useProfileCompleteness } from "~/composables/useProfileCompleteness";
@@ -174,6 +175,7 @@ const {
   updateProfileCompletion,
 } = useNuxProgress();
 const userStore = useUserStore();
+const { activeAthleteId, parentAccessibleFamilies } = useFamilyCtx();
 const { schools } = useSchools();
 const { coaches } = useCoaches();
 const { completeness, updateCompleteness } = useProfileCompleteness();
@@ -182,7 +184,13 @@ const isDismissed = ref(false);
 
 const items = computed(() => {
   const isParent = userStore.user?.role === "parent";
-  const name = userStore.user?.full_name?.split(" ")[0] ?? "your athlete";
+  const linkedAthleteName = parentAccessibleFamilies.value.find(
+    (f) => f.athleteId === activeAthleteId.value,
+  )?.athleteName;
+  const name =
+    linkedAthleteName?.split(" ")[0] ??
+    userStore.user?.full_name?.split(" ")[0] ??
+    "your athlete";
   return CHECKLIST_ITEMS.map((def) => ({
     def,
     label: isParent ? def.parentLabel(name) : def.playerLabel,
