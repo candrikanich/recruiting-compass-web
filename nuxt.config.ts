@@ -153,6 +153,11 @@ export default defineNuxtConfig({
 
   nitro: {
     preset: "vercel",
+    // Nitro's own watcher is separate from Vite's (vite.server.watch above)
+    // and recurses into .claude/worktrees/ on its own — same EMFILE risk.
+    watchOptions: {
+      ignored: ["**/.claude/worktrees/**"],
+    },
     // Nitro bundles all API routes into a single Vercel serverless function, so
     // maxDuration is necessarily global (no per-route rule in nitropack 2.13.x).
     // Default Vercel cap (10-15s) is too tight for the housekeeping crons that
