@@ -607,6 +607,36 @@
                       "player",
                       "parent"
                     ]
+                  },
+                  "pending_player_details": {
+                    "type": "object",
+                    "properties": {
+                      "first_name": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "last_name": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "sport": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "position": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "graduation_year": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "first_name",
+                      "last_name"
+                    ]
                   }
                 },
                 "required": [

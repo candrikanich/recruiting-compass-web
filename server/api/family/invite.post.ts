@@ -9,9 +9,26 @@ import { getSafeRequestOrigin } from "~/server/utils/requestOrigin";
 import { emailSchema } from "~/utils/validation/validators";
 import { rateLimitByUser, throwIfRateLimited } from "~/server/utils/rateLimit";
 
+// Wire shape iOS sends (Features/Family/Models/PendingPlayerDetails.swift) —
+// separate first/last name, snake_case keys. Transformed on persist to match
+// the canonical `family_units.pending_player_details` shape already written
+// by server/api/family/player-details.post.ts and read by accept.post.ts /
+// hydrateAthleteProfile.ts (a single combined `playerName` string).
+const pendingPlayerDetailsSchema = z.object({
+  first_name: z.string().trim().min(1),
+  last_name: z.string().trim().min(1),
+  sport: z.string().trim().min(1).optional(),
+  position: z.string().trim().min(1).optional(),
+  graduation_year: z.number().int().optional(),
+});
+
 export const inviteBodySchema = z.object({
   email: emailSchema,
   role: z.enum(["player", "parent"], "role must be player or parent"),
+  // Optional — only meaningful for a player-role invite. See issue #895: this
+  // field previously wasn't declared at all, so Zod silently stripped it and
+  // a parent's player details never persisted.
+  pending_player_details: pendingPlayerDetailsSchema.optional(),
 });
 
 export default defineEventHandler(async (event) => {
@@ -34,7 +51,8 @@ export default defineEventHandler(async (event) => {
           parseResult.error.issues[0]?.message ?? "Invalid request body",
       });
     }
-    const { email, role } = parseResult.data;
+    const { email, role, pending_player_details: pendingPlayerDetails } =
+      parseResult.data;
 
     const supabase = useSupabaseAdmin();
 
@@ -119,6 +137,39 @@ export default defineEventHandler(async (event) => {
         statusCode: 500,
         statusMessage: "Failed to create invitation",
       });
+    }
+
+    // Persist player details the inviting parent already has, so the player
+    // isn't re-asked for them on accept (hydrated in accept.post.ts /
+    // hydrateAthleteProfile.ts). Only meaningful for a player-role invite —
+    // non-blocking, same pattern as the invite email below: the invitation
+    // itself is the primary action and must not fail because this did.
+    if (pendingPlayerDetails && role === "player") {
+      const { error: playerDetailsError } = await supabase
+        .from("family_units")
+        .update({
+          pending_player_details: {
+            playerName:
+              `${pendingPlayerDetails.first_name} ${pendingPlayerDetails.last_name}`.trim(),
+            ...(pendingPlayerDetails.graduation_year
+              ? { graduationYear: pendingPlayerDetails.graduation_year }
+              : {}),
+            ...(pendingPlayerDetails.sport
+              ? { sport: pendingPlayerDetails.sport }
+              : {}),
+            ...(pendingPlayerDetails.position
+              ? { position: pendingPlayerDetails.position }
+              : {}),
+          },
+        })
+        .eq("id", familyUnitId);
+
+      if (playerDetailsError) {
+        logger.warn(
+          "Failed to persist pending player details — invitation created without them",
+          { error: playerDetailsError },
+        );
+      }
     }
 
     // Send invite email (non-blocking — don't fail if email fails)
