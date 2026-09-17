@@ -30,7 +30,7 @@ const ALLOWED_CATEGORIES = [
 const RECOMMENDATION_AFFECTING_CATEGORIES = new Set(["location", "player"]);
 
 // Validation schema for preference data
-const preferencesSchema = z.object({
+export const preferencesSchema = z.object({
   data: z.record(z.string(), z.unknown()),
 });
 

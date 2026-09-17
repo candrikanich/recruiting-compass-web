@@ -4,7 +4,7 @@ import { sendRecurringEmail } from "~/server/utils/recurringEmail";
 import { useLogger } from "~/server/utils/logger";
 import { requireAuth } from "~/server/utils/auth";
 
-const schema = z.object({
+export const schema = z.object({
   to: z.string().email(),
   subject: z.string().min(1),
   template: z.enum(["weekly-digest", "deadline-alert"]),

@@ -52,7 +52,7 @@ function toValidInetOrNull(ip: string | null | undefined): string | null {
   return null;
 }
 
-const interestSchema = z.object({
+export const interestSchema = z.object({
   program: z.string().trim().min(1).max(80),
   note: z.string().trim().min(1).max(1000).optional(),
   coachName: z.string().trim().min(1).max(120).optional(),

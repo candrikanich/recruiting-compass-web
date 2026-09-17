@@ -37,7 +37,7 @@ When the athlete's school list is empty, web now shows a "Schools to consider" g
 2. iOS calls `GET /api/schools/recommendations` (parent: `?athleteId=`)
 3. Grid of cards: name, state, conference, division badge, reason chips
 4. Add → existing create-school API/store; remove card locally
-5. Dismiss → `POST /api/schools/recommendations/dismiss` `{ catalogKey, athleteId? }`
+5. Dismiss → `POST /api/schools/recommendations/dismiss` — request-body contract generated from the endpoint's own Zod schema: `docs/api/openapi.json` → `paths["/api/schools/recommendations/dismiss"].post.requestBody` (regenerate via `npm run generate:openapi` if the endpoint's schema changes; do not hand-transcribe field names here — this is the proof-of-concept referenced in `planning/iOS_SPEC_web-ios-parity-pass-2026-09-17.md`'s OpenAPI deliverable)
 
 ### Empty / error
 

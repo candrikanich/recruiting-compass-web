@@ -16,7 +16,7 @@ import { CACHE_KEYS } from "~/server/utils/redis";
 import { catalogKeyFor } from "~/utils/schoolRecommendations";
 import type { DismissSchoolRecommendationResponse } from "~/types/schoolRecommendations";
 
-const bodySchema = z.object({
+export const bodySchema = z.object({
   catalogKey: z.string().trim().min(1).max(255),
   athleteId: z.string().uuid().optional(),
 });

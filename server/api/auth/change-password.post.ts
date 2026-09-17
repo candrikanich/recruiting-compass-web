@@ -5,7 +5,7 @@ import { useLogger } from "~/server/utils/logger";
 import { requireAuth } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 
-const changePasswordSchema = z.object({
+export const changePasswordSchema = z.object({
   currentPassword: z.string().min(1),
   newPassword: z.string().min(8, "Password must be at least 8 characters"),
 });

@@ -26,7 +26,7 @@ const RESERVED_SLUGS = new Set([
   "help",
 ]);
 
-const UpdateProfileSchema = z.object({
+export const UpdateProfileSchema = z.object({
   bio: z.string().max(300).nullable().optional(),
   is_published: z.boolean().optional(),
   show_academics: z.boolean().optional(),
