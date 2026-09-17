@@ -1,11 +1,18 @@
 import { randomUUID } from "node:crypto";
-import { defineEventHandler, readBody, createError, getRequestIP } from "h3";
+import {
+  defineEventHandler,
+  readBody,
+  createError,
+  getRequestIP,
+} from "h3";
 import { useLogger } from "~/server/utils/logger";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import { rateLimitByIp, throwIfRateLimited } from "~/server/utils/rateLimit";
 import { verifyTurnstile } from "~/server/utils/turnstile";
 import { createVerifiedAccount } from "~/server/utils/accountCreation";
 import { sendGuardianClaimEmail } from "~/server/utils/emailService";
+import { getSafeRequestOrigin } from "~/server/utils/requestOrigin";
+import { markOnboardingComplete } from "~/server/utils/onboardingComplete";
 import { isUnderMinimumAge, requiresGuardianInvite } from "~/utils/age";
 import type { Database } from "~/types/database";
 
@@ -187,9 +194,35 @@ export default defineEventHandler(async (event) => {
       });
     }
 
+    // A player who already supplied grad year + sport on this single-step form has
+    // answered everything /onboarding's step 1 would ask — stamp onboarding_complete
+    // now so the middleware doesn't redirect-loop them back to re-answer it on their
+    // first /dashboard visit (see planning/iOS_SPEC_web-ios-parity-pass-2026-09-17.md
+    // Item E; mirrors the same fix already shipped for the invite-accept path in
+    // server/api/family/invite/[token]/accept.post.ts). Incomplete data (either
+    // field missing) is left unstamped on purpose: /onboarding still has real work
+    // to do in that case.
+    if (body.graduationYear && body.primarySport) {
+      try {
+        await markOnboardingComplete(supabase, userId, body.graduationYear);
+      } catch (err) {
+        // Fail safe, not open: if the stamp didn't land, the player falls back to
+        // the wizard instead of being sent to a page the global middleware will
+        // immediately bounce them out of.
+        logger.error("Failed to mark onboarding complete for minor signup", err);
+      }
+    }
+
+    const tokenHash = accountResult.tokenHash;
+
     if (!guardianEmail) {
       logger.info("Minor signup created, no guardian named");
-      return { ok: true, guardianEmail: null, guardianEmailSent: false };
+      return {
+        ok: true,
+        guardianEmail: null,
+        guardianEmailSent: false,
+        tokenHash,
+      };
     }
 
     const token = randomUUID();
@@ -206,7 +239,7 @@ export default defineEventHandler(async (event) => {
       // The account itself is already created and valid (guardian-optional as of
       // this migration) — a failed claim write must not fail the whole signup. The
       // player can invite a guardian later from the dashboard.
-      return { ok: true, guardianEmail, guardianEmailSent: false };
+      return { ok: true, guardianEmail, guardianEmailSent: false, tokenHash };
     }
 
     // Non-fatal: the account exists, so a mail failure must not fail the signup.
@@ -216,6 +249,7 @@ export default defineEventHandler(async (event) => {
       to: guardianEmail,
       playerName: firstName,
       token,
+      requestOrigin: getSafeRequestOrigin(event),
       context: { purpose: "invite", userId },
     });
     if (!mail.success) {
@@ -223,7 +257,12 @@ export default defineEventHandler(async (event) => {
     }
 
     logger.info("Minor signup created, awaiting guardian confirmation");
-    return { ok: true, guardianEmail, guardianEmailSent: mail.success };
+    return {
+      ok: true,
+      guardianEmail,
+      guardianEmailSent: mail.success,
+      tokenHash,
+    };
   } catch (err) {
     if (err instanceof Error && "statusCode" in err) throw err;
     logger.error("Minor signup failed", err);

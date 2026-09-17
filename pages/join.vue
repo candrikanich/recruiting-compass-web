@@ -15,6 +15,7 @@ import type { UseActiveFamilyReturn } from "~/composables/useActiveFamily";
 // Auth-prefixed tag; pages/signup.vue and pages/login.vue only work because
 // they import it explicitly.
 import MultiSportFieldBackground from "~/components/Auth/MultiSportFieldBackground.vue";
+import { isUnderMinimumAge } from "~/utils/age";
 
 definePageMeta({ auth: false, layout: "public" });
 
@@ -47,6 +48,7 @@ interface AcceptResponse {
   success: boolean;
   familyUnitId?: string;
   prefill?: AcceptPrefill;
+  onboardingComplete?: boolean;
 }
 
 const invite = ref<InviteDetails | null>(null);
@@ -90,12 +92,18 @@ const turnstileSiteKey = computed(
 );
 const turnstileEnabled = computed(() => turnstileSiteKey.value.length > 0);
 const turnstileToken = ref<string | undefined>(undefined);
-// Login and signup are separate toggled views, each mounting/unmounting its
-// own widget instance as authMode switches — so each needs its own id.
+// Only the login branch renders an interactive widget — Supabase's native
+// signInWithPassword captcha is project-level and can't be skipped per
+// invite. The signup branch has no widget: a valid invite token is the bot
+// filter there (see server/api/auth/signup.post.ts).
 const turnstileLoginEl = ref<HTMLDivElement | null>(null);
-const turnstileSignupEl = ref<HTMLDivElement | null>(null);
 const turnstileLoginWidgetId = ref<string | undefined>(undefined);
-const turnstileSignupWidgetId = ref<string | undefined>(undefined);
+// mountTurnstile awaits the CF script load before setting widgetId, so
+// widgetId stays unset for that whole window — a second watcher fire in
+// that window (seen on Safari) passes the widgetId guard too and calls
+// render() a second time into the same div, stacking two widgets.
+const turnstileLoginMounting = ref(false);
+const turnstileSessionMounting = ref(false);
 
 const TURNSTILE_SCRIPT_SRC =
   "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
@@ -129,8 +137,6 @@ function resetTurnstile() {
   if (!w.turnstile) return;
   if (turnstileLoginWidgetId.value)
     w.turnstile.reset(turnstileLoginWidgetId.value);
-  if (turnstileSignupWidgetId.value)
-    w.turnstile.reset(turnstileSignupWidgetId.value);
 }
 
 function loadTurnstileScript(): Promise<void> {
@@ -164,6 +170,7 @@ async function mountTurnstile(
   el: HTMLElement,
   action: string,
   widgetId: typeof turnstileLoginWidgetId,
+  mounting: typeof turnstileLoginMounting,
 ) {
   try {
     await loadTurnstileScript();
@@ -183,6 +190,8 @@ async function mountTurnstile(
   } catch {
     // Widget failure is non-fatal — Supabase verifies server-side only
     // when CAPTCHA is enabled in the dashboard; otherwise auth proceeds.
+  } finally {
+    mounting.value = false;
   }
 }
 
@@ -194,6 +203,7 @@ async function mountTurnstile(
 function unmountTurnstile(
   widgetId: typeof turnstileLoginWidgetId,
   tokenRef?: typeof turnstileToken,
+  mounting?: typeof turnstileLoginMounting,
 ) {
   const w = window as unknown as { turnstile?: TurnstileGlobal };
   if (widgetId.value && w.turnstile) {
@@ -205,30 +215,34 @@ function unmountTurnstile(
   }
   widgetId.value = undefined;
   if (tokenRef) tokenRef.value = undefined;
+  if (mounting) mounting.value = false;
 }
 
 watch(
   [turnstileEnabled, turnstileLoginEl],
   ([enabled, el], [, prevEl]) => {
     if (!el) {
-      if (prevEl) unmountTurnstile(turnstileLoginWidgetId, turnstileToken);
+      if (prevEl)
+        unmountTurnstile(
+          turnstileLoginWidgetId,
+          turnstileToken,
+          turnstileLoginMounting,
+        );
       return;
     }
-    if (!enabled || turnstileLoginWidgetId.value) return;
-    mountTurnstile(el, "join-login", turnstileLoginWidgetId);
-  },
-  { flush: "post" },
-);
-
-watch(
-  [turnstileEnabled, turnstileSignupEl],
-  ([enabled, el], [, prevEl]) => {
-    if (!el) {
-      if (prevEl) unmountTurnstile(turnstileSignupWidgetId, turnstileToken);
+    if (
+      !enabled ||
+      turnstileLoginWidgetId.value ||
+      turnstileLoginMounting.value
+    )
       return;
-    }
-    if (!enabled || turnstileSignupWidgetId.value) return;
-    mountTurnstile(el, "join-signup", turnstileSignupWidgetId);
+    turnstileLoginMounting.value = true;
+    mountTurnstile(
+      el,
+      "join-login",
+      turnstileLoginWidgetId,
+      turnstileLoginMounting,
+    );
   },
   { flush: "post" },
 );
@@ -250,10 +264,20 @@ watch(
   async ([enabled, el], [, prevEl]) => {
     if (!el) {
       if (prevEl)
-        unmountTurnstile(turnstileSessionWidgetId, turnstileSessionToken);
+        unmountTurnstile(
+          turnstileSessionWidgetId,
+          turnstileSessionToken,
+          turnstileSessionMounting,
+        );
       return;
     }
-    if (!enabled || turnstileSessionWidgetId.value) return;
+    if (
+      !enabled ||
+      turnstileSessionWidgetId.value ||
+      turnstileSessionMounting.value
+    )
+      return;
+    turnstileSessionMounting.value = true;
     try {
       await loadTurnstileScript();
       const w = window as unknown as { turnstile?: TurnstileGlobal };
@@ -276,6 +300,8 @@ watch(
       }
     } catch {
       // Non-fatal — see mountTurnstile's catch above.
+    } finally {
+      turnstileSessionMounting.value = false;
     }
   },
   { flush: "post" },
@@ -366,20 +392,14 @@ async function signupAndConnect() {
   }
 
   // COPPA age gate: block users under 13 (mirrors signup.vue check)
-  if (invite.value.role === "player" && signupDateOfBirth.value) {
-    const dob = new Date(signupDateOfBirth.value);
-    const today = new Date();
-    const age =
-      today.getFullYear() -
-      dob.getFullYear() -
-      (today < new Date(today.getFullYear(), dob.getMonth(), dob.getDate())
-        ? 1
-        : 0);
-    if (age < 13) {
-      signupError.value =
-        "Recruiting Compass is not available for users under 13. If you're a parent, please register with your own information.";
-      return;
-    }
+  if (
+    invite.value.role === "player" &&
+    signupDateOfBirth.value &&
+    isUnderMinimumAge(signupDateOfBirth.value)
+  ) {
+    signupError.value =
+      "Recruiting Compass is not available for users under 13. If you're a parent, please register with your own information.";
+    return;
   }
 
   loading.value = true;
@@ -402,13 +422,14 @@ async function signupAndConnect() {
       signupPassword.value,
       fullName,
       invite.value.role,
-      turnstileToken.value,
+      undefined, // no signup captcha widget — invite token is the bot filter
       invite.value.role === "player" ? signupDateOfBirth.value : undefined,
       undefined,
       undefined,
       undefined,
       getFreshTurnstileToken,
       true, // skipVerificationEmail — the invite accept stamps email_verified_at
+      token.value, // captchaSkipInviteToken — lets the server skip Turnstile
     );
 
     if (!authData?.data?.user?.id) throw new Error("Signup failed");
@@ -437,7 +458,10 @@ async function signupAndConnect() {
     await userStore.initializeUser();
 
     // Athlete PII (grad year, sport, position) is only released by the accept
-    // endpoint, after this account has proven it's the invited email.
+    // endpoint, after this account has proven it's the invited email. The
+    // endpoint also stamps onboarding_complete when it can — never assume
+    // that here, since the global onboarding middleware bounces anyone
+    // without that flag straight back out of /dashboard.
     const acceptResult = await $fetchAuth<AcceptResponse>(
       `/api/family/invite/${token.value}/accept`,
       { method: "POST" },
@@ -446,8 +470,8 @@ async function signupAndConnect() {
     showToast("You're connected!", "success");
     const { $posthog: $posthogSignup } = useNuxtApp();
     $posthogSignup?.capture("family_invite_accepted");
-    if (invite.value.role === "parent") {
-      // Player already connected — parent onboarding is not needed
+
+    if (acceptResult?.onboardingComplete) {
       await navigateTo("/dashboard");
     } else {
       const query: Record<string, string> = {};
@@ -719,13 +743,9 @@ async function decline() {
             @submit="signupAndConnect"
           >
             <template #captcha>
-              <!-- Cloudflare Turnstile (flag-gated, renders only when site
-                   key set) -->
-              <div
-                v-if="turnstileEnabled"
-                ref="turnstileSignupEl"
-                class="flex justify-center"
-              />
+              <!-- No visible checkbox here: a valid invite token is the bot
+                   filter for this form (server skips Turnstile when present
+                   and pending — see server/api/auth/signup.post.ts). -->
               <!-- Invisible widget dedicated to the post-signup sign-in
                    token mint — see getFreshTurnstileToken. Renders nothing. -->
               <div v-if="turnstileEnabled" ref="turnstileSessionEl" />

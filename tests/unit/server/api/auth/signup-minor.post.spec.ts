@@ -26,6 +26,8 @@ const mockCreateVerifiedAccount = vi.fn(async () => ({
 const mockVerifyTurnstile = vi.fn(async () => ({ ok: true }));
 const mockClaimInsert = vi.fn(async () => ({ error: null }));
 const mockUserUpsert = vi.fn(async () => ({ error: null }));
+const mockUserUpdateEq = vi.fn(async () => ({ error: null }));
+const mockUserUpdate = vi.fn(() => ({ eq: mockUserUpdateEq }));
 const mockSendGuardianClaimEmail = vi.fn(async () => ({ success: true }));
 
 vi.mock("~/server/utils/accountCreation", () => ({
@@ -41,6 +43,7 @@ vi.mock("~/server/utils/supabase", () => ({
     from: (table: string) => ({
       insert: table === "guardian_claims" ? mockClaimInsert : vi.fn(),
       upsert: table === "users" ? mockUserUpsert : vi.fn(),
+      update: table === "users" ? mockUserUpdate : vi.fn(),
     }),
   })),
 }));
@@ -100,6 +103,7 @@ describe("POST /api/auth/signup-minor", () => {
     });
     mockClaimInsert.mockResolvedValue({ error: null });
     mockUserUpsert.mockResolvedValue({ error: null });
+    mockUserUpdateEq.mockResolvedValue({ error: null });
     mockSendGuardianClaimEmail.mockResolvedValue({ success: true });
   });
 
@@ -109,6 +113,18 @@ describe("POST /api/auth/signup-minor", () => {
     expect(result).toMatchObject({ ok: true, guardianEmail: "parent@example.com" });
     expect(mockClaimInsert).toHaveBeenCalledOnce();
     expect(mockSendGuardianClaimEmail).toHaveBeenCalledOnce();
+  });
+
+  it("passes through the tokenHash from createVerifiedAccount so the client can skip the captcha-gated sign-in", async () => {
+    mockCreateVerifiedAccount.mockResolvedValueOnce({
+      ok: true,
+      userId: "player-uuid",
+      tokenHash: "hash-1",
+    });
+
+    const result = await call();
+
+    expect(result).toMatchObject({ ok: true, tokenHash: "hash-1" });
   });
 
   it("verifies Turnstile before creating the account", async () => {
@@ -153,6 +169,32 @@ describe("POST /api/auth/signup-minor", () => {
       expect.objectContaining({ date_of_birth: dob }),
       expect.anything(),
     );
+  });
+
+  it("stamps onboarding_complete when grad year + sport were captured at signup", async () => {
+    // Regression for the redirect-loop bug: a minor who already supplied sport/grad
+    // year on this single-step signup form must not be bounced back to /onboarding
+    // and re-asked the same questions on their first /dashboard visit. Mirrors the
+    // markOnboardingComplete fix already shipped for the invite-accept path.
+    await call({ graduationYear: 2028, primarySport: "Baseball" });
+
+    expect(mockUserUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        phase_milestone_data: expect.objectContaining({
+          onboarding_complete: true,
+          onboarding_completed_at: expect.any(String),
+        }),
+      }),
+    );
+    expect(mockUserUpdateEq).toHaveBeenCalledWith("id", "player-uuid");
+  });
+
+  it("does not stamp onboarding_complete when grad year or sport is missing", async () => {
+    // Incomplete data means /onboarding still has real work to do — an unconditional
+    // stamp here would skip that step entirely instead of just closing the bug.
+    await call({ graduationYear: undefined, primarySport: undefined });
+
+    expect(mockUserUpdate).not.toHaveBeenCalled();
   });
 
   it("rejects a guardian email matching the player's own", async () => {
