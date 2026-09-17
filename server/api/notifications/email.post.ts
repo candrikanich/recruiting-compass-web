@@ -19,7 +19,7 @@ import { sendNotificationEmail } from "~/server/utils/emailService";
 
 const logger = createLogger("notifications/email");
 
-const schema = z.object({
+export const schema = z.object({
   to: z.string().email(),
   subject: z.string().min(1),
   title: z.string().min(1),

@@ -20,7 +20,7 @@ import { logAdminAction } from "~/server/utils/adminAudit";
 import { useLogger } from "~/server/utils/logger";
 import { TRIGGERABLE_JOBS, DRYRUN_ONLY_JOBS } from "~/utils/cronDashboard";
 
-const bodySchema = z.object({
+export const bodySchema = z.object({
   jobName: z.string(),
   dryRun: z.boolean().optional(),
 });

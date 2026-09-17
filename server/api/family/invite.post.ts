@@ -9,7 +9,7 @@ import { getSafeRequestOrigin } from "~/server/utils/requestOrigin";
 import { emailSchema } from "~/utils/validation/validators";
 import { rateLimitByUser, throwIfRateLimited } from "~/server/utils/rateLimit";
 
-const inviteBodySchema = z.object({
+export const inviteBodySchema = z.object({
   email: emailSchema,
   role: z.enum(["player", "parent"], "role must be player or parent"),
 });

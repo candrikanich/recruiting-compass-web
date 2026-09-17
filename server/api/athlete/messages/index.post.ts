@@ -20,7 +20,7 @@ import type { Database } from "~/types/database";
 type AthleteMessageInsert =
   Database["public"]["Tables"]["athlete_messages"]["Insert"];
 
-const bodySchema = z.object({
+export const bodySchema = z.object({
   athleteUserId: z.string().uuid(),
   schoolId: z.string().uuid().nullable().optional(),
   coachId: z.string().uuid().nullable().optional(),

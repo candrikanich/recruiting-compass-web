@@ -15,7 +15,7 @@ const homeLocationSchema = z.object({
   longitude: z.number().optional(),
 });
 
-const profileSchema = z.object({
+export const profileSchema = z.object({
   full_name: z.string().min(1).max(100).optional(),
   date_of_birth: z
     .string()

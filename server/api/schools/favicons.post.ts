@@ -13,7 +13,7 @@ import {
   normalizeDomain,
 } from "~/server/utils/faviconLookup";
 
-const batchFaviconSchema = z.object({
+export const batchFaviconSchema = z.object({
   schools: z
     .array(
       z.object({

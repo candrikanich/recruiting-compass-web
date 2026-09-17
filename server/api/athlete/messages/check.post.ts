@@ -19,7 +19,7 @@ import { requireAuth } from "~/server/utils/auth";
 import { resolveTargetAthleteId } from "~/server/utils/athleteAccess";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 
-const bodySchema = z.object({
+export const bodySchema = z.object({
   athleteUserId: z.string().uuid(),
   schoolId: z.string().uuid().nullable().optional(),
   programNote: z.string().nullable().optional(),
