@@ -40,6 +40,11 @@ const state = {
   insertedInvitation: { id: "invite-abc" } as object | null,
   insertError: null as object | null,
   familyMemberInsertSpy: vi.fn(() => Promise.resolve({ error: null })),
+  // Spy on family_units.update(...) so the invite-time pending_player_details
+  // write is observable, separately from the family_units.select() mock below.
+  familyUnitsUpdateSpy: vi.fn((_payload: unknown) => ({
+    eq: () => Promise.resolve({ error: null }),
+  })),
   // For token lookup
   invitation: null as Record<string, unknown> | null,
   // Overridable request body
@@ -153,6 +158,7 @@ vi.mock("~/server/utils/supabase", () => ({
               single: () =>
                 Promise.resolve({ data: state.family, error: null }),
             }),
+          update: state.familyUnitsUpdateSpy,
         };
       }
       if (table === "family_invitations") {
@@ -228,6 +234,10 @@ describe("POST /api/family/invite", () => {
     state.insertedInvitation = { id: "invite-abc" };
     state.insertError = null;
     state.requestBody = { email: "invited@example.com", role: "parent" };
+    state.family = { family_name: "Smith Family" };
+    state.familyUnitsUpdateSpy = vi.fn((_payload: unknown) => ({
+      eq: () => Promise.resolve({ error: null }),
+    }));
   });
 
   it("creates an invitation and returns token", async () => {
@@ -273,6 +283,194 @@ describe("POST /api/family/invite", () => {
     await expect(
       handler({} as Parameters<typeof handler>[0]),
     ).rejects.toMatchObject({ statusCode: 400 });
+  });
+
+  // Regression for issue #895: iOS's ParentOnboardingWizardViewModel sends
+  // pending_player_details on a player-role invite (first_name/last_name,
+  // sport, position, graduation_year) — the schema previously didn't declare
+  // the field at all, so Zod silently stripped it and nothing was persisted.
+  describe("pending_player_details (issue #895)", () => {
+    it("persists player details on a player-role invite, combining first/last name into the canonical playerName shape", async () => {
+      state.requestBody = {
+        email: "player@example.com",
+        role: "player",
+        pending_player_details: {
+          first_name: "Alex",
+          last_name: "Johnson",
+          sport: "Soccer",
+          position: "Midfielder",
+          graduation_year: 2027,
+        },
+      };
+      const { default: handler } =
+        await import("~/server/api/family/invite.post");
+      const result = await handler({} as Parameters<typeof handler>[0]);
+
+      expect(result).toMatchObject({ success: true });
+      expect(state.familyUnitsUpdateSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          pending_player_details: {
+            playerName: "Alex Johnson",
+            graduationYear: 2027,
+            sport: "Soccer",
+            position: "Midfielder",
+          },
+        }),
+      );
+    });
+
+    it("omits sport/position/graduationYear from the persisted shape when not provided", async () => {
+      state.requestBody = {
+        email: "player@example.com",
+        role: "player",
+        pending_player_details: {
+          first_name: "Alex",
+          last_name: "Johnson",
+        },
+      };
+      const { default: handler } =
+        await import("~/server/api/family/invite.post");
+      await handler({} as Parameters<typeof handler>[0]);
+
+      expect(state.familyUnitsUpdateSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          pending_player_details: { playerName: "Alex Johnson" },
+        }),
+      );
+    });
+
+    it("does not touch family_units when pending_player_details is omitted", async () => {
+      const { default: handler } =
+        await import("~/server/api/family/invite.post");
+      await handler({} as Parameters<typeof handler>[0]);
+
+      expect(state.familyUnitsUpdateSpy).not.toHaveBeenCalled();
+    });
+
+    it("ignores pending_player_details on a parent-role invite (no player to describe)", async () => {
+      state.requestBody = {
+        email: "parent@example.com",
+        role: "parent",
+        pending_player_details: {
+          first_name: "Alex",
+          last_name: "Johnson",
+        },
+      };
+      const { default: handler } =
+        await import("~/server/api/family/invite.post");
+      const result = await handler({} as Parameters<typeof handler>[0]);
+
+      expect(result).toMatchObject({ success: true });
+      expect(state.familyUnitsUpdateSpy).not.toHaveBeenCalled();
+    });
+
+    it("returns 400 when pending_player_details is provided but missing required names", async () => {
+      state.requestBody = {
+        email: "player@example.com",
+        role: "player",
+        pending_player_details: { sport: "Soccer" },
+      };
+      const { default: handler } =
+        await import("~/server/api/family/invite.post");
+      await expect(
+        handler({} as Parameters<typeof handler>[0]),
+      ).rejects.toMatchObject({ statusCode: 400 });
+      expect(state.familyUnitsUpdateSpy).not.toHaveBeenCalled();
+    });
+
+    it("does not fail the whole invite when the family_units write fails", async () => {
+      state.familyUnitsUpdateSpy = vi.fn(() => ({
+        eq: () => Promise.resolve({ error: { message: "boom" } }),
+      }));
+      state.requestBody = {
+        email: "player@example.com",
+        role: "player",
+        pending_player_details: { first_name: "Alex", last_name: "Johnson" },
+      };
+      const { default: handler } =
+        await import("~/server/api/family/invite.post");
+      const result = await handler({} as Parameters<typeof handler>[0]);
+
+      expect(result).toMatchObject({ success: true, invitationId: "invite-abc" });
+    });
+
+    // Review comment: the write is wrapped in try/catch too — a rejected
+    // promise (not just a returned {error}) must not surface as a 500 after
+    // the invitation row was already created.
+    it("does not fail the whole invite when the family_units write throws", async () => {
+      state.familyUnitsUpdateSpy = vi.fn(() => ({
+        eq: () => Promise.reject(new Error("network blip")),
+      }));
+      state.requestBody = {
+        email: "player@example.com",
+        role: "player",
+        pending_player_details: { first_name: "Alex", last_name: "Johnson" },
+      };
+      const { default: handler } =
+        await import("~/server/api/family/invite.post");
+      const result = await handler({} as Parameters<typeof handler>[0]);
+
+      expect(result).toMatchObject({ success: true, invitationId: "invite-abc" });
+    });
+
+    // iOS's onboarding invite step (ParentOnboardingWizardViewModel.sendInvite)
+    // validates only the email field and deliberately sends an empty last name.
+    it("accepts an empty last_name (iOS's invite step doesn't require one)", async () => {
+      state.requestBody = {
+        email: "player@example.com",
+        role: "player",
+        pending_player_details: { first_name: "Alex", last_name: "" },
+      };
+      const { default: handler } =
+        await import("~/server/api/family/invite.post");
+      const result = await handler({} as Parameters<typeof handler>[0]);
+
+      expect(result).toMatchObject({ success: true });
+      expect(state.familyUnitsUpdateSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          pending_player_details: expect.objectContaining({
+            playerName: "Alex",
+          }),
+        }),
+      );
+    });
+
+    // Review comment: a wholesale overwrite would silently drop playerDob/gender
+    // previously staged by server/api/family/player-details.post.ts, which
+    // this endpoint doesn't receive over the wire at all.
+    it("preserves playerDob/gender already staged on the family when merging in the invite's fields", async () => {
+      state.family = {
+        family_name: "Smith Family",
+        pending_player_details: {
+          playerName: "Old Name",
+          playerDob: "2010-05-01",
+          gender: "female",
+        },
+      };
+      state.requestBody = {
+        email: "player@example.com",
+        role: "player",
+        pending_player_details: {
+          first_name: "Alex",
+          last_name: "Johnson",
+          sport: "Soccer",
+        },
+      };
+      const { default: handler } =
+        await import("~/server/api/family/invite.post");
+      await handler({} as Parameters<typeof handler>[0]);
+
+      expect(state.familyUnitsUpdateSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          pending_player_details: {
+            playerDob: "2010-05-01",
+            gender: "female",
+            playerName: "Alex Johnson",
+            sport: "Soccer",
+          },
+        }),
+      );
+    });
   });
 });
 
