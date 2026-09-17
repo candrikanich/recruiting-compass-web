@@ -29,6 +29,7 @@
     "test:a11y:pa11y": "pa11y-ci --config tests/a11y/.pa11yci.json",
     "db:seed:test": "tsx tests/e2e/seed/seed.ts",
     "db:reset:test": "tsx tests/e2e/seed/reset.ts",
+    "pregenerate:openapi": "nuxi prepare",
     "generate:openapi": "tsx scripts/generate-openapi.ts",
     "analyze": "nuxi build --analyze",
     "build:check": "npm run build && npm run analyze",
