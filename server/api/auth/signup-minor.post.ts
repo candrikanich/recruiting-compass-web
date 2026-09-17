@@ -14,6 +14,7 @@ import { sendGuardianClaimEmail } from "~/server/utils/emailService";
 import { getSafeRequestOrigin } from "~/server/utils/requestOrigin";
 import { markOnboardingComplete } from "~/server/utils/onboardingComplete";
 import { isUnderMinimumAge, requiresGuardianInvite } from "~/utils/age";
+import { getGraduationYearOptions } from "~/utils/graduationYears";
 import type { Database } from "~/types/database";
 
 interface SignupMinorBody {
@@ -28,6 +29,12 @@ interface SignupMinorBody {
   gender?: string;
   zipCode?: string;
   captchaToken?: string;
+  // True only when the caller's own onboarding flow has nothing left to ask after
+  // this signup — web's single-step form sends this; iOS omits it (its onboarding
+  // still has a separate schools-carousel step, see planning/iOS_SPEC_web-ios-
+  // parity-pass-2026-09-17.md Item A). Without this flag, grad year + sport alone
+  // are NOT proof of full onboarding — iOS already sends both as step-1-only data.
+  wizardComplete?: boolean;
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -85,6 +92,30 @@ export default defineEventHandler(async (event) => {
       throw createError({
         statusCode: 400,
         statusMessage: "First and last name are required",
+      });
+    }
+    // Both fields are optional overall (a signup with neither still succeeds,
+    // just without the onboarding-step-1 draft) — but a SUPPLIED value must be
+    // well-formed, not just truthy. A malformed direct API request must not be
+    // able to smuggle bad data into phase_milestone_data or user_preferences.
+    if (
+      body.graduationYear !== undefined &&
+      (!Number.isInteger(body.graduationYear) ||
+        !getGraduationYearOptions().includes(body.graduationYear))
+    ) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: "Invalid graduation year",
+      });
+    }
+    const primarySport =
+      typeof body.primarySport === "string"
+        ? body.primarySport.trim()
+        : undefined;
+    if (body.primarySport !== undefined && !primarySport) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: "Invalid primary sport",
       });
     }
     if (guardianEmail) {
@@ -149,9 +180,7 @@ export default defineEventHandler(async (event) => {
         ...(body.graduationYear
           ? { pending_graduation_year: String(body.graduationYear) }
           : {}),
-        ...(body.primarySport
-          ? { pending_primary_sport: body.primarySport }
-          : {}),
+        ...(primarySport ? { pending_primary_sport: primarySport } : {}),
         ...(body.gender ? { pending_gender: body.gender } : {}),
         ...(body.zipCode ? { pending_zip_code: body.zipCode } : {}),
       },
@@ -194,22 +223,55 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    // A player who already supplied grad year + sport on this single-step form has
-    // answered everything /onboarding's step 1 would ask — stamp onboarding_complete
-    // now so the middleware doesn't redirect-loop them back to re-answer it on their
-    // first /dashboard visit (see planning/iOS_SPEC_web-ios-parity-pass-2026-09-17.md
-    // Item E; mirrors the same fix already shipped for the invite-accept path in
-    // server/api/family/invite/[token]/accept.post.ts). Incomplete data (either
-    // field missing) is left unstamped on purpose: /onboarding still has real work
-    // to do in that case.
-    if (body.graduationYear && body.primarySport) {
-      try {
-        await markOnboardingComplete(supabase, userId, body.graduationYear);
-      } catch (err) {
-        // Fail safe, not open: if the stamp didn't land, the player falls back to
-        // the wizard instead of being sent to a page the global middleware will
-        // immediately bounce them out of.
-        logger.error("Failed to mark onboarding complete for minor signup", err);
+    // A caller whose own onboarding flow is entirely done (wizardComplete) and who
+    // supplied both fields the wizard needs has answered everything /onboarding's
+    // step 1 would ask — stamp onboarding_complete so the middleware doesn't
+    // redirect-loop them back to re-answer it on their first /dashboard visit (see
+    // planning/iOS_SPEC_web-ios-parity-pass-2026-09-17.md Item E; mirrors the fix
+    // already shipped for the invite-accept path in accept.post.ts).
+    //
+    // wizardComplete is required, not inferred from grad year + sport alone: iOS's
+    // signup already sends both fields as onboarding-STEP-1 data only (its own
+    // wizard still has a schools-carousel step after this) — stamping on field
+    // presence would prematurely skip that step for every iOS minor signup.
+    //
+    // The stamp is also gated on user_preferences actually holding the sport the
+    // middleware's own sport-gate reads — stamping onboarding_complete before that
+    // write lands (or if it fails) would let middleware's onboarding check pass
+    // while its separate sport-gate check still has nothing to find.
+    if (body.graduationYear && primarySport && body.wizardComplete === true) {
+      const { error: prefsError } = await supabase.from("user_preferences").upsert(
+        {
+          user_id: userId,
+          category: "player",
+          data: {
+            graduation_year: body.graduationYear,
+            primary_sport: primarySport,
+            ...(body.gender ? { gender: body.gender } : {}),
+          },
+          updated_at: new Date().toISOString(),
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any,
+        { onConflict: "user_id,category" },
+      );
+
+      if (prefsError) {
+        // Fail safe, not open: if the canonical sport isn't queryable yet, the
+        // player must fall back to the wizard instead of being sent to a page
+        // the global middleware's sport-gate will immediately bounce them out of.
+        logger.error(
+          "Failed to persist player preferences for minor signup",
+          prefsError,
+        );
+      } else {
+        try {
+          await markOnboardingComplete(supabase, userId, body.graduationYear);
+        } catch (err) {
+          logger.error(
+            "Failed to mark onboarding complete for minor signup",
+            err,
+          );
+        }
       }
     }
 

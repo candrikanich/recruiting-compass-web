@@ -421,6 +421,11 @@ const submitMinorSignup = async (guardian: string) => {
           gender: gender.value,
           zipCode: zipCode.value || undefined,
           captchaToken: turnstileToken.value,
+          // This single-step form has nothing left to ask after signup (unlike
+          // iOS, which still has a separate schools-carousel step) — tells the
+          // endpoint it's safe to treat grad year + sport as onboarding-complete
+          // proof, not just step-1 data. See signup-minor.post.ts.
+          wizardComplete: true,
         },
       },
     );
