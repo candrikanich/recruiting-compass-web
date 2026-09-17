@@ -3,42 +3,10 @@ import { useLogger } from "~/server/utils/logger";
 import { requireAuth } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import { hydrateAthleteFromPendingDetails } from "~/server/utils/hydrateAthleteProfile";
+import { markOnboardingComplete } from "~/server/utils/onboardingComplete";
 import { requiresGuardianInvite } from "~/utils/age";
 import { CURRENT_TERMS_VERSION } from "~/utils/legal";
-import { calculateCurrentGrade, gradeToPhase } from "~/utils/gradeHelpers";
 import type { Database } from "~/types/database";
-
-/**
- * Stamp the same phase_milestone_data.onboarding_complete flag the onboarding
- * wizard itself sets (see useOnboarding.completeOnboarding) — the global
- * onboarding middleware gates every route on this flag, so skipping the
- * wizard client-side without setting it here strands the user in a redirect
- * loop back to /onboarding.
- */
-async function markOnboardingComplete(
-  supabase: ReturnType<typeof useSupabaseAdmin>,
-  userId: string,
-  graduationYear?: number,
-): Promise<void> {
-  const currentPhase = graduationYear
-    ? gradeToPhase(calculateCurrentGrade(graduationYear))
-    : "freshman";
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { error } = await (supabase.from("users") as any)
-    .update({
-      current_phase: currentPhase,
-      phase_milestone_data: {
-        onboarding_complete: true,
-        onboarding_completed_at: new Date().toISOString(),
-      },
-    })
-    .eq("id", userId);
-
-  if (error) {
-    throw error;
-  }
-}
 
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "family/invite/accept");

@@ -15,6 +15,7 @@ import type { UseActiveFamilyReturn } from "~/composables/useActiveFamily";
 // Auth-prefixed tag; pages/signup.vue and pages/login.vue only work because
 // they import it explicitly.
 import MultiSportFieldBackground from "~/components/Auth/MultiSportFieldBackground.vue";
+import { isUnderMinimumAge } from "~/utils/age";
 
 definePageMeta({ auth: false, layout: "public" });
 
@@ -391,20 +392,14 @@ async function signupAndConnect() {
   }
 
   // COPPA age gate: block users under 13 (mirrors signup.vue check)
-  if (invite.value.role === "player" && signupDateOfBirth.value) {
-    const dob = new Date(signupDateOfBirth.value);
-    const today = new Date();
-    const age =
-      today.getFullYear() -
-      dob.getFullYear() -
-      (today < new Date(today.getFullYear(), dob.getMonth(), dob.getDate())
-        ? 1
-        : 0);
-    if (age < 13) {
-      signupError.value =
-        "Recruiting Compass is not available for users under 13. If you're a parent, please register with your own information.";
-      return;
-    }
+  if (
+    invite.value.role === "player" &&
+    signupDateOfBirth.value &&
+    isUnderMinimumAge(signupDateOfBirth.value)
+  ) {
+    signupError.value =
+      "Recruiting Compass is not available for users under 13. If you're a parent, please register with your own information.";
+    return;
   }
 
   loading.value = true;
