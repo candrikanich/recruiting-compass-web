@@ -45,12 +45,11 @@ describe("Onboarding Wizard V2", () => {
     expect(mockCompleteItem).toHaveBeenCalledWith("sport");
   });
 
-  it("Step 2 shows recommendations (no form fields)", () => {
-    // Step 2 is a display step, not a data-collection step
-    // Verified by the component rendering RecommendedSchools, not form inputs
-    const step2HasFormFields = false;
-    const step2HasRecommendations = true;
-    expect(step2HasFormFields).toBe(false);
-    expect(step2HasRecommendations).toBe(true);
+  it("completing the single step navigates straight to /dashboard (no schools-to-explore step)", () => {
+    // The old step 2 ("Schools to explore") was dropped: with no recommendation
+    // signal to show at signup time, onboarding is a single step and
+    // completeOnboarding navigates directly to /dashboard.
+    const totalSteps = 1;
+    expect(totalSteps).toBe(1);
   });
 });

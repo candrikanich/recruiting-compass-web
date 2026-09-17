@@ -12,6 +12,8 @@ import { requireAuth } from "~/server/utils/auth";
 import { useLogger } from "~/server/utils/logger";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import { resolvePreferenceTargetUserId } from "~/server/utils/playerOwnedPreferences";
+import { deleteShared } from "~/server/utils/sharedCache";
+import { CACHE_KEYS } from "~/server/utils/redis";
 import type { Database } from "~/types/database";
 
 const ALLOWED_CATEGORIES = [
@@ -21,6 +23,11 @@ const ALLOWED_CATEGORIES = [
   "school",
   "dashboard",
 ] as const;
+
+// Categories whose fields feed assembleSchoolRecommendations (home state, gpa,
+// sport, gender) — saving one can change the ranked list, so the cached recs
+// must not outlive the write.
+const RECOMMENDATION_AFFECTING_CATEGORIES = new Set(["location", "player"]);
 
 // Validation schema for preference data
 const preferencesSchema = z.object({
@@ -92,6 +99,10 @@ export default defineEventHandler(async (event) => {
 
     if (result.error) {
       throw result.error;
+    }
+
+    if (RECOMMENDATION_AFFECTING_CATEGORIES.has(category)) {
+      await deleteShared(CACHE_KEYS.SCHOOL_RECS(targetUserId));
     }
 
     return {

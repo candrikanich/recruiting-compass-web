@@ -84,6 +84,16 @@ export default defineNuxtConfig({
     // Cache directory for faster builds
     cacheDir: ".vite",
 
+    // Claude Code worktrees under .claude/worktrees/ are full source copies
+    // (sometimes with a symlinked node_modules) sitting inside the project
+    // root — without this, dev's file watcher recurses into every one of
+    // them too, multiplying watched file descriptors and risking EMFILE.
+    server: {
+      watch: {
+        ignored: ["**/.claude/worktrees/**"],
+      },
+    },
+
     // Strip console.* and debugger statements from production bundles.
     // Server-side code uses useLogger(); client-side uses createClientLogger().
     // Direct console calls are dev-only and must not ship to users.
@@ -143,6 +153,11 @@ export default defineNuxtConfig({
 
   nitro: {
     preset: "vercel",
+    // Nitro's own watcher is separate from Vite's (vite.server.watch above)
+    // and recurses into .claude/worktrees/ on its own — same EMFILE risk.
+    watchOptions: {
+      ignored: ["**/.claude/worktrees/**"],
+    },
     // Nitro bundles all API routes into a single Vercel serverless function, so
     // maxDuration is necessarily global (no per-route rule in nitropack 2.13.x).
     // Default Vercel cap (10-15s) is too tight for the housekeeping crons that

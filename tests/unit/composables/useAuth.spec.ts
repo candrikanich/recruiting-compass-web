@@ -39,6 +39,7 @@ describe("useAuth", () => {
     mockAuth = {
       getSession: vi.fn(),
       signInWithPassword: vi.fn(),
+      verifyOtp: vi.fn(),
       signOut: vi.fn(),
       signUp: vi.fn(),
       onAuthStateChange: vi.fn(),
@@ -452,6 +453,64 @@ describe("useAuth", () => {
       vi.unstubAllGlobals();
     });
 
+    it("stores session_preferences after minting the post-signup session, like login() does", async () => {
+      // Without this, middleware/auth.ts's expiry check reads whatever stale
+      // (possibly already-expired) session_preferences entry was left in
+      // localStorage from a prior session and immediately logs the brand-new
+      // signup out on the next navigation with reason=timeout.
+      localStorage.clear();
+      const { mockAuth } = getMockSupabase();
+      mockAuth.signInWithPassword.mockResolvedValue({
+        data: { user: mockUser, session: mockSession },
+        error: null,
+      });
+      const mockFetch = vi.fn(async () => ({ userId: mockUser.id }));
+      vi.stubGlobal("$fetch", mockFetch);
+
+      const auth = useAuth();
+      const beforeSignup = Date.now();
+      await auth.signup("new@example.com", "password123");
+
+      const storedPrefs = localStorage.getItem("session_preferences");
+      expect(storedPrefs).toBeTruthy();
+      const prefs = JSON.parse(storedPrefs!);
+      expect(prefs.lastActivity).toBeGreaterThanOrEqual(beforeSignup);
+      expect(prefs.expiresAt).toBeGreaterThan(Date.now());
+
+      vi.unstubAllGlobals();
+      localStorage.clear();
+    });
+
+    it("does not reject signup when writing session_preferences throws (e.g. storage quota/private mode)", async () => {
+      // The account and session are already created by this point — a
+      // localStorage failure here must be best-effort only, never surfaced
+      // as a signup failure.
+      localStorage.clear();
+      const { mockAuth } = getMockSupabase();
+      mockAuth.signInWithPassword.mockResolvedValue({
+        data: { user: mockUser, session: mockSession },
+        error: null,
+      });
+      const mockFetch = vi.fn(async () => ({ userId: mockUser.id }));
+      vi.stubGlobal("$fetch", mockFetch);
+      const setItemSpy = vi
+        .spyOn(Storage.prototype, "setItem")
+        .mockImplementation(() => {
+          throw new Error("QuotaExceededError");
+        });
+
+      const auth = useAuth();
+      const result = await auth.signup("new@example.com", "password123");
+
+      expect(result.data.session).toEqual(mockSession);
+      expect(result.error).toBeNull();
+      expect(auth.error.value).toBeNull();
+
+      setItemSpy.mockRestore();
+      vi.unstubAllGlobals();
+      localStorage.clear();
+    });
+
     it("should signup with full name and role", async () => {
       const { mockAuth } = getMockSupabase();
       mockAuth.signInWithPassword.mockResolvedValue({
@@ -764,6 +823,59 @@ describe("useAuth", () => {
         email: "new@example.com",
         password: "password123",
       });
+
+      vi.unstubAllGlobals();
+    });
+
+    it("mints the session via verifyOtp when the endpoint returns a tokenHash, skipping the captcha-gated sign-in entirely", async () => {
+      // The captcha-gated signInWithPassword call is what breaks on Safari
+      // (ITP blocks the invisible Turnstile widget from solving reliably).
+      // When the server was able to mint a magiclink token_hash server-side
+      // (no captcha involved), the client must use it instead of ever
+      // touching signInWithPassword.
+      const { mockAuth } = getMockSupabase();
+      mockAuth.verifyOtp.mockResolvedValue({
+        data: { user: mockUser, session: mockSession },
+        error: null,
+      });
+      const mockFetch = vi.fn(async () => ({
+        userId: mockUser.id,
+        tokenHash: "hash-abc",
+      }));
+      vi.stubGlobal("$fetch", mockFetch);
+
+      const auth = useAuth();
+      const result = await auth.signup("new@example.com", "password123");
+
+      expect(mockAuth.verifyOtp).toHaveBeenCalledWith({
+        token_hash: "hash-abc",
+        type: "magiclink",
+      });
+      expect(mockAuth.signInWithPassword).not.toHaveBeenCalled();
+      expect(result.data.session).toEqual(mockSession);
+      expect(result.error).toBeNull();
+
+      vi.unstubAllGlobals();
+    });
+
+    it("tags a post-signup verifyOtp failure as recoverable too (account already created)", async () => {
+      const { mockAuth } = getMockSupabase();
+      const otpError = Object.assign(new Error("Token has expired or is invalid"), {
+        name: "AuthApiError",
+      });
+      mockAuth.verifyOtp.mockResolvedValue({
+        data: { user: null, session: null },
+        error: otpError,
+      });
+      vi.stubGlobal(
+        "$fetch",
+        vi.fn(async () => ({ userId: mockUser.id, tokenHash: "hash-abc" })),
+      );
+
+      const auth = useAuth();
+      await expect(
+        auth.signup("new@example.com", "password123"),
+      ).rejects.toMatchObject({ accountCreatedButSignInFailed: true });
 
       vi.unstubAllGlobals();
     });
