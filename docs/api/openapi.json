@@ -616,8 +616,7 @@
                         "minLength": 1
                       },
                       "last_name": {
-                        "type": "string",
-                        "minLength": 1
+                        "type": "string"
                       },
                       "sport": {
                         "type": "string",

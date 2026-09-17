@@ -234,6 +234,7 @@ describe("POST /api/family/invite", () => {
     state.insertedInvitation = { id: "invite-abc" };
     state.insertError = null;
     state.requestBody = { email: "invited@example.com", role: "parent" };
+    state.family = { family_name: "Smith Family" };
     state.familyUnitsUpdateSpy = vi.fn((_payload: unknown) => ({
       eq: () => Promise.resolve({ error: null }),
     }));
@@ -391,6 +392,84 @@ describe("POST /api/family/invite", () => {
       const result = await handler({} as Parameters<typeof handler>[0]);
 
       expect(result).toMatchObject({ success: true, invitationId: "invite-abc" });
+    });
+
+    // Review comment: the write is wrapped in try/catch too — a rejected
+    // promise (not just a returned {error}) must not surface as a 500 after
+    // the invitation row was already created.
+    it("does not fail the whole invite when the family_units write throws", async () => {
+      state.familyUnitsUpdateSpy = vi.fn(() => ({
+        eq: () => Promise.reject(new Error("network blip")),
+      }));
+      state.requestBody = {
+        email: "player@example.com",
+        role: "player",
+        pending_player_details: { first_name: "Alex", last_name: "Johnson" },
+      };
+      const { default: handler } =
+        await import("~/server/api/family/invite.post");
+      const result = await handler({} as Parameters<typeof handler>[0]);
+
+      expect(result).toMatchObject({ success: true, invitationId: "invite-abc" });
+    });
+
+    // iOS's onboarding invite step (ParentOnboardingWizardViewModel.sendInvite)
+    // validates only the email field and deliberately sends an empty last name.
+    it("accepts an empty last_name (iOS's invite step doesn't require one)", async () => {
+      state.requestBody = {
+        email: "player@example.com",
+        role: "player",
+        pending_player_details: { first_name: "Alex", last_name: "" },
+      };
+      const { default: handler } =
+        await import("~/server/api/family/invite.post");
+      const result = await handler({} as Parameters<typeof handler>[0]);
+
+      expect(result).toMatchObject({ success: true });
+      expect(state.familyUnitsUpdateSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          pending_player_details: expect.objectContaining({
+            playerName: "Alex",
+          }),
+        }),
+      );
+    });
+
+    // Review comment: a wholesale overwrite would silently drop playerDob/gender
+    // previously staged by server/api/family/player-details.post.ts, which
+    // this endpoint doesn't receive over the wire at all.
+    it("preserves playerDob/gender already staged on the family when merging in the invite's fields", async () => {
+      state.family = {
+        family_name: "Smith Family",
+        pending_player_details: {
+          playerName: "Old Name",
+          playerDob: "2010-05-01",
+          gender: "female",
+        },
+      };
+      state.requestBody = {
+        email: "player@example.com",
+        role: "player",
+        pending_player_details: {
+          first_name: "Alex",
+          last_name: "Johnson",
+          sport: "Soccer",
+        },
+      };
+      const { default: handler } =
+        await import("~/server/api/family/invite.post");
+      await handler({} as Parameters<typeof handler>[0]);
+
+      expect(state.familyUnitsUpdateSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          pending_player_details: {
+            playerDob: "2010-05-01",
+            gender: "female",
+            playerName: "Alex Johnson",
+            sport: "Soccer",
+          },
+        }),
+      );
     });
   });
 });
