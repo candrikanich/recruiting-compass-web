@@ -552,7 +552,7 @@ const handleSignup = async () => {
   // Validate admin token server-side
   const tokenValidation = await $fetch("/api/auth/validate-admin-token", {
     method: "POST",
-    body: { token: adminToken.value },
+    body: { token: adminToken.value, email: email.value },
   }).catch((err) => ({
     valid: false,
     message: err.data?.message || "Invalid token",

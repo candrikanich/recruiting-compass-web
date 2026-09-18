@@ -4,12 +4,25 @@ import { createError } from "h3";
 // State objects read at call-time to avoid vi.mock hoisting issues
 const mockState = {
   token: "valid-token" as string | number | undefined,
-  isValid: true as boolean,
-  adminTokenSecret: "test-secret",
+  email: "admin@example.com" as string | number | undefined,
+  invitation: {
+    invited_email: "admin@example.com",
+    expires_at: new Date(Date.now() + 60_000).toISOString(),
+    consumed_at: null as string | null,
+  } as Record<string, unknown> | null,
 };
 
-vi.mock("~/server/utils/adminToken", () => ({
-  validateAdminToken: vi.fn(() => mockState.isValid),
+const mockMaybeSingle = vi.fn(() =>
+  Promise.resolve({ data: mockState.invitation, error: null }),
+);
+const mockFrom = vi.fn(() => ({
+  select: vi.fn(() => ({
+    eq: vi.fn(() => ({ maybeSingle: mockMaybeSingle })),
+  })),
+}));
+
+vi.mock("~/server/utils/supabase", () => ({
+  useSupabaseAdmin: vi.fn(() => ({ from: mockFrom })),
 }));
 
 vi.mock("~/server/utils/logger", () => ({
@@ -32,22 +45,21 @@ vi.mock("h3", async (importOriginal) => {
   return {
     ...actual,
     defineEventHandler: (fn: Function) => fn,
-    readBody: vi.fn(async () => ({ token: mockState.token })),
+    readBody: vi.fn(async () => ({
+      token: mockState.token,
+      email: mockState.email,
+    })),
   };
 });
 
 vi.stubGlobal("defineEventHandler", (fn: Function) => fn);
 vi.stubGlobal(
   "readBody",
-  vi.fn(async () => ({ token: mockState.token })),
-);
-vi.stubGlobal(
-  "useRuntimeConfig",
-  vi.fn(() => ({ adminTokenSecret: mockState.adminTokenSecret })),
+  vi.fn(async () => ({ token: mockState.token, email: mockState.email })),
 );
 vi.stubGlobal("createError", createError);
 
-import { validateAdminToken } from "~/server/utils/adminToken";
+import { useSupabaseAdmin } from "~/server/utils/supabase";
 
 const { default: handler } =
   await import("~/server/api/auth/validate-admin-token.post");
@@ -56,38 +68,48 @@ describe("POST /api/auth/validate-admin-token", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockState.token = "valid-token";
-    mockState.isValid = true;
-    mockState.adminTokenSecret = "test-secret";
+    mockState.email = "admin@example.com";
+    mockState.invitation = {
+      invited_email: "admin@example.com",
+      expires_at: new Date(Date.now() + 60_000).toISOString(),
+      consumed_at: null,
+    };
     vi.stubGlobal("createError", createError);
-    vi.stubGlobal(
-      "useRuntimeConfig",
-      vi.fn(() => ({ adminTokenSecret: mockState.adminTokenSecret })),
+    mockMaybeSingle.mockImplementation(() =>
+      Promise.resolve({ data: mockState.invitation, error: null }),
     );
-    vi.mocked(validateAdminToken).mockImplementation(() => mockState.isValid);
+    mockFrom.mockImplementation(
+      () =>
+        ({
+          select: vi.fn(() => ({
+            eq: vi.fn(() => ({ maybeSingle: mockMaybeSingle })),
+          })),
+        }) as any,
+    );
+    vi.mocked(useSupabaseAdmin).mockImplementation(
+      () => ({ from: mockFrom }) as any,
+    );
   });
 
   describe("happy path", () => {
-    it("returns valid: true when token is correct", async () => {
+    it("returns valid: true when the invitation is unconsumed, unexpired, and the email matches", async () => {
       const result = await handler({} as Parameters<typeof handler>[0]);
 
       expect(result).toEqual({ valid: true });
     });
 
-    it("calls validateAdminToken with token and secret", async () => {
-      mockState.token = "my-token";
+    it("matches email case-insensitively", async () => {
+      mockState.email = "ADMIN@EXAMPLE.COM";
 
-      await handler({} as Parameters<typeof handler>[0]);
+      const result = await handler({} as Parameters<typeof handler>[0]);
 
-      expect(validateAdminToken).toHaveBeenCalledWith(
-        "my-token",
-        "test-secret",
-      );
+      expect(result).toEqual({ valid: true });
     });
   });
 
   describe("invalid token", () => {
-    it("returns valid: false with message when token is invalid", async () => {
-      mockState.isValid = false;
+    it("returns valid: false when no invitation row matches the token", async () => {
+      mockState.invitation = null;
 
       const result = await handler({} as Parameters<typeof handler>[0]);
 
@@ -96,9 +118,35 @@ describe("POST /api/auth/validate-admin-token", () => {
         message: "Invalid admin registration token",
       });
     });
+
+    it("returns valid: false when the invitation is already consumed", async () => {
+      mockState.invitation!.consumed_at = new Date().toISOString();
+
+      const result = await handler({} as Parameters<typeof handler>[0]);
+
+      expect(result.valid).toBe(false);
+    });
+
+    it("returns valid: false when the invitation has expired", async () => {
+      mockState.invitation!.expires_at = new Date(
+        Date.now() - 60_000,
+      ).toISOString();
+
+      const result = await handler({} as Parameters<typeof handler>[0]);
+
+      expect(result.valid).toBe(false);
+    });
+
+    it("returns valid: false when the email doesn't match the invited email", async () => {
+      mockState.email = "someone-else@example.com";
+
+      const result = await handler({} as Parameters<typeof handler>[0]);
+
+      expect(result.valid).toBe(false);
+    });
   });
 
-  describe("missing token", () => {
+  describe("missing input", () => {
     it("returns 400 when token is missing from body", async () => {
       mockState.token = undefined;
 
@@ -128,11 +176,21 @@ describe("POST /api/auth/validate-admin-token", () => {
         statusCode: 400,
       });
     });
+
+    it("returns 400 when email is missing from body", async () => {
+      mockState.email = undefined;
+
+      await expect(
+        handler({} as Parameters<typeof handler>[0]),
+      ).rejects.toMatchObject({
+        statusCode: 400,
+      });
+    });
   });
 
   describe("error handling", () => {
     it("returns 500 when an unexpected error occurs", async () => {
-      vi.mocked(validateAdminToken).mockImplementation(() => {
+      mockFrom.mockImplementation(() => {
         throw new Error("Unexpected DB error");
       });
 
@@ -148,7 +206,7 @@ describe("POST /api/auth/validate-admin-token", () => {
         statusCode: 403,
         statusMessage: "Forbidden",
       });
-      vi.mocked(validateAdminToken).mockImplementation(() => {
+      mockFrom.mockImplementation(() => {
         throw httpError;
       });
 

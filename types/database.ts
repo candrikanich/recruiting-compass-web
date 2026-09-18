@@ -117,6 +117,36 @@ export type Database = {
         };
         Relationships: [];
       };
+      admin_invitations: {
+        Row: {
+          consumed_at: string | null;
+          created_at: string;
+          expires_at: string;
+          id: string;
+          invited_by: string;
+          invited_email: string;
+          token: string;
+        };
+        Insert: {
+          consumed_at?: string | null;
+          created_at?: string;
+          expires_at: string;
+          id?: string;
+          invited_by: string;
+          invited_email: string;
+          token: string;
+        };
+        Update: {
+          consumed_at?: string | null;
+          created_at?: string;
+          expires_at?: string;
+          id?: string;
+          invited_by?: string;
+          invited_email?: string;
+          token?: string;
+        };
+        Relationships: [];
+      };
       app_config: {
         Row: {
           id: boolean;
@@ -3861,6 +3891,13 @@ export type Database = {
       can_access_family_player_prefs: {
         Args: { target_user: string };
         Returns: boolean;
+      };
+      consume_admin_invitation: {
+        Args: { p_token: string; p_email: string };
+        Returns: {
+          status: string;
+          invited_by: string;
+        }[];
       };
       consume_email_verification_token: {
         Args: { p_token: string };

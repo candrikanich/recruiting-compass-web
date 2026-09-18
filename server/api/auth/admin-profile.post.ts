@@ -2,9 +2,12 @@
  * POST /api/auth/admin-profile
  * Creates or updates an admin user profile during the admin signup flow.
  *
- * Security: requires a valid adminToken in the request body on every call —
+ * Security: requires a valid, unconsumed, unexpired, email-bound
+ * admin_invitations token (issue #854) in the request body on every call —
  * the same token validated by /api/auth/validate-admin-token earlier in the
- * signup flow. Accounts are always auto-confirmed with a session issued
+ * signup flow. Consuming it here (via the consume_admin_invitation RPC) is
+ * the actual grant and is single-use — a second call with the same token
+ * 403s. Accounts are always auto-confirmed with a session issued
  * immediately (see server/utils/accountCreation.ts), so the admin signup
  * page calls this endpoint synchronously with the real token right after
  * signup — there is no legitimate case where a session-less "carry the
@@ -13,11 +16,10 @@
  * check; since /api/auth/signup could be called directly with arbitrary
  * metadata, that flag was attacker-settable and let any signup escalate
  * itself to admin on next sign-in. Never resurrect that shortcut — always
- * validate a freshly supplied adminToken here.
+ * consume a freshly supplied admin_invitations token here.
  */
 
 import { defineEventHandler, readBody, createError } from "h3";
-import { validateAdminToken } from "~/server/utils/adminToken";
 import { useLogger } from "~/server/utils/logger";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import { requireAuth } from "~/server/utils/auth";
@@ -51,16 +53,27 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 403, statusMessage: "Forbidden" });
     }
 
-    const config = useRuntimeConfig(event);
-    if (!validateAdminToken(adminToken, config.adminTokenSecret)) {
+    // Use admin client to bypass RLS
+    const supabase = useSupabaseAdmin();
+
+    const { data: consumeResult, error: consumeError } = await supabase.rpc(
+      "consume_admin_invitation",
+      { p_token: adminToken, p_email: email },
+    );
+
+    if (consumeError) {
+      logger.error("Failed to consume admin invitation", consumeError);
+      throw createError({ statusCode: 500, statusMessage: "Forbidden" });
+    }
+
+    const status = consumeResult?.[0]?.status;
+    if (status !== "consumed") {
       logger.warn("Admin profile creation attempted with invalid admin token", {
         userId: authUser.id,
+        status,
       });
       throw createError({ statusCode: 403, statusMessage: "Forbidden" });
     }
-
-    // Use admin client to bypass RLS
-    const supabase = useSupabaseAdmin();
 
     // Update existing user record with admin flag and parent role
     const { data: _data, error } = await supabase
