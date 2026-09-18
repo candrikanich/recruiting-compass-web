@@ -40,9 +40,15 @@ const state = {
   insertedInvitation: { id: "invite-abc" } as object | null,
   insertError: null as object | null,
   familyMemberInsertSpy: vi.fn(() => Promise.resolve({ error: null })),
-  // Spy on family_units.update(...) so the invite-time pending_player_details
-  // write is observable, separately from the family_units.select() mock below.
+  // Spy on family_units.update(...) — the pre-invite staging write from
+  // player-details.post.ts, separate from the family_units.select() mock below.
   familyUnitsUpdateSpy: vi.fn((_payload: unknown) => ({
+    eq: () => Promise.resolve({ error: null }),
+  })),
+  // Spy on family_invitations.update(...) so the invite-time
+  // pending_player_details snapshot (issue #898: scoped to the invitation
+  // row, not the family) is observable.
+  familyInvitationsUpdateSpy: vi.fn((_payload: unknown) => ({
     eq: () => Promise.resolve({ error: null }),
   })),
   // For token lookup
@@ -182,9 +188,7 @@ vi.mock("~/server/utils/supabase", () => ({
               maybeSingle: () => Promise.resolve({ data: null, error: null }),
               order: () => Promise.resolve({ data: [], error: null }),
             }),
-          update: () => ({
-            eq: () => ({ eq: () => Promise.resolve({ error: null }) }),
-          }),
+          update: state.familyInvitationsUpdateSpy,
           delete: () => ({
             eq: () => ({ eq: () => Promise.resolve({ error: null }) }),
           }),
@@ -236,6 +240,9 @@ describe("POST /api/family/invite", () => {
     state.requestBody = { email: "invited@example.com", role: "parent" };
     state.family = { family_name: "Smith Family" };
     state.familyUnitsUpdateSpy = vi.fn((_payload: unknown) => ({
+      eq: () => Promise.resolve({ error: null }),
+    }));
+    state.familyInvitationsUpdateSpy = vi.fn((_payload: unknown) => ({
       eq: () => Promise.resolve({ error: null }),
     }));
   });
@@ -307,7 +314,7 @@ describe("POST /api/family/invite", () => {
       const result = await handler({} as Parameters<typeof handler>[0]);
 
       expect(result).toMatchObject({ success: true });
-      expect(state.familyUnitsUpdateSpy).toHaveBeenCalledWith(
+      expect(state.familyInvitationsUpdateSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           pending_player_details: {
             playerName: "Alex Johnson",
@@ -332,19 +339,19 @@ describe("POST /api/family/invite", () => {
         await import("~/server/api/family/invite.post");
       await handler({} as Parameters<typeof handler>[0]);
 
-      expect(state.familyUnitsUpdateSpy).toHaveBeenCalledWith(
+      expect(state.familyInvitationsUpdateSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           pending_player_details: { playerName: "Alex Johnson" },
         }),
       );
     });
 
-    it("does not touch family_units when pending_player_details is omitted", async () => {
+    it("does not touch family_invitations when pending_player_details is omitted", async () => {
       const { default: handler } =
         await import("~/server/api/family/invite.post");
       await handler({} as Parameters<typeof handler>[0]);
 
-      expect(state.familyUnitsUpdateSpy).not.toHaveBeenCalled();
+      expect(state.familyInvitationsUpdateSpy).not.toHaveBeenCalled();
     });
 
     it("ignores pending_player_details on a parent-role invite (no player to describe)", async () => {
@@ -361,7 +368,7 @@ describe("POST /api/family/invite", () => {
       const result = await handler({} as Parameters<typeof handler>[0]);
 
       expect(result).toMatchObject({ success: true });
-      expect(state.familyUnitsUpdateSpy).not.toHaveBeenCalled();
+      expect(state.familyInvitationsUpdateSpy).not.toHaveBeenCalled();
     });
 
     it("returns 400 when pending_player_details is provided but missing required names", async () => {
@@ -375,11 +382,11 @@ describe("POST /api/family/invite", () => {
       await expect(
         handler({} as Parameters<typeof handler>[0]),
       ).rejects.toMatchObject({ statusCode: 400 });
-      expect(state.familyUnitsUpdateSpy).not.toHaveBeenCalled();
+      expect(state.familyInvitationsUpdateSpy).not.toHaveBeenCalled();
     });
 
-    it("does not fail the whole invite when the family_units write fails", async () => {
-      state.familyUnitsUpdateSpy = vi.fn(() => ({
+    it("does not fail the whole invite when the family_invitations write fails", async () => {
+      state.familyInvitationsUpdateSpy = vi.fn(() => ({
         eq: () => Promise.resolve({ error: { message: "boom" } }),
       }));
       state.requestBody = {
@@ -397,8 +404,8 @@ describe("POST /api/family/invite", () => {
     // Review comment: the write is wrapped in try/catch too — a rejected
     // promise (not just a returned {error}) must not surface as a 500 after
     // the invitation row was already created.
-    it("does not fail the whole invite when the family_units write throws", async () => {
-      state.familyUnitsUpdateSpy = vi.fn(() => ({
+    it("does not fail the whole invite when the family_invitations write throws", async () => {
+      state.familyInvitationsUpdateSpy = vi.fn(() => ({
         eq: () => Promise.reject(new Error("network blip")),
       }));
       state.requestBody = {
@@ -426,7 +433,7 @@ describe("POST /api/family/invite", () => {
       const result = await handler({} as Parameters<typeof handler>[0]);
 
       expect(result).toMatchObject({ success: true });
-      expect(state.familyUnitsUpdateSpy).toHaveBeenCalledWith(
+      expect(state.familyInvitationsUpdateSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           pending_player_details: expect.objectContaining({
             playerName: "Alex",
@@ -460,7 +467,7 @@ describe("POST /api/family/invite", () => {
         await import("~/server/api/family/invite.post");
       await handler({} as Parameters<typeof handler>[0]);
 
-      expect(state.familyUnitsUpdateSpy).toHaveBeenCalledWith(
+      expect(state.familyInvitationsUpdateSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           pending_player_details: {
             playerDob: "2010-05-01",
@@ -641,9 +648,6 @@ describe("POST /api/family/invite/[token]/accept", () => {
     state.invitation = {
       ...state.invitation!,
       role: "player",
-    };
-    state.family = {
-      family_name: "Smith Family",
       pending_player_details: {
         playerName: "Alex Johnson",
         graduationYear: 2027,
@@ -662,6 +666,49 @@ describe("POST /api/family/invite/[token]/accept", () => {
         graduationYear: 2027,
         sport: "Soccer",
         position: "Midfielder",
+      },
+    });
+  });
+
+  // Regression for issue #898: pending_player_details used to live on
+  // family_units (keyed by family, not invitation) — a second pending player
+  // invite for the same family would clobber the first's staged details, and
+  // whichever invite got accepted second would hydrate with the wrong
+  // player's data. Now scoped to the invitation row: prove accept reads
+  // invitation.pending_player_details, ignoring stale/different data still
+  // sitting on the family-level blob (simulating a second pending invite
+  // whose write already overwrote the family-level staging area).
+  it("hydrates from this invitation's own pending_player_details, not the family's, when they differ (issue #898)", async () => {
+    state.invitation = {
+      ...state.invitation!,
+      role: "player",
+      pending_player_details: {
+        playerName: "First Child",
+        graduationYear: 2026,
+        sport: "Baseball",
+      },
+    };
+    // A second, later invite for the same family overwrote the family-level
+    // staging blob with a different child's details.
+    state.family = {
+      family_name: "Smith Family",
+      pending_player_details: {
+        playerName: "Second Child",
+        graduationYear: 2028,
+        sport: "Softball",
+      },
+    };
+    const { default: handler } =
+      await import("~/server/api/family/invite/[token]/accept.post");
+    const result = await handler({} as Parameters<typeof handler>[0]);
+
+    expect(result).toMatchObject({
+      success: true,
+      prefill: {
+        firstName: "First",
+        lastName: "Child",
+        graduationYear: 2026,
+        sport: "Baseball",
       },
     });
   });
@@ -725,9 +772,9 @@ describe("POST /api/family/invite/[token]/accept", () => {
     });
 
     it("marks a player-role acceptance onboarding-complete when the parent staged both graduation year and sport", async () => {
-      state.invitation = { ...state.invitation!, role: "player" };
-      state.family = {
-        family_name: "Smith Family",
+      state.invitation = {
+        ...state.invitation!,
+        role: "player",
         pending_player_details: {
           playerName: "Alex Johnson",
           graduationYear: 2027,
@@ -743,9 +790,9 @@ describe("POST /api/family/invite/[token]/accept", () => {
     });
 
     it("does NOT mark a player-role acceptance onboarding-complete when grad year/sport are missing, so the client falls back to the wizard", async () => {
-      state.invitation = { ...state.invitation!, role: "player" };
-      state.family = {
-        family_name: "Smith Family",
+      state.invitation = {
+        ...state.invitation!,
+        role: "player",
         pending_player_details: { playerName: "Alex Johnson" },
       };
       const { default: handler } =
@@ -758,7 +805,7 @@ describe("POST /api/family/invite/[token]/accept", () => {
 
     it("does NOT mark a player-role acceptance onboarding-complete with no pending_player_details at all", async () => {
       state.invitation = { ...state.invitation!, role: "player" };
-      // state.family.pending_player_details stays null from the outer beforeEach.
+      // pending_player_details stays undefined on the invitation from the outer beforeEach.
       const { default: handler } =
         await import("~/server/api/family/invite/[token]/accept.post");
       const result = await handler({} as Parameters<typeof handler>[0]);

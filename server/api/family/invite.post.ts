@@ -147,11 +147,11 @@ export default defineEventHandler(async (event) => {
     // non-blocking, same pattern as the invite email below: the invitation
     // itself is the primary action and must not fail because this did.
     //
-    // NOTE: pending_player_details is stored per-family, not per-invitation.
-    // If a family has more than one pending player invite at once, the later
-    // write here overwrites the earlier one — a pre-existing limitation of
-    // this storage shape (also true of server/api/family/player-details.post.ts).
-    // Tracked separately; not fixed in this endpoint.
+    // Snapshot onto THIS invitation row (not family_units) so a family with
+    // multiple pending player invites doesn't have the later one clobber the
+    // earlier — issue #898. The family-level blob (staged by
+    // player-details.post.ts before any invite exists) is still read here as
+    // the merge base for fields this invite payload doesn't carry.
     if (pendingPlayerDetails && role === "player") {
       try {
         const { data: existingFamily } = await supabase
@@ -161,7 +161,7 @@ export default defineEventHandler(async (event) => {
           .single();
 
         const { error: playerDetailsError } = await supabase
-          .from("family_units")
+          .from("family_invitations")
           .update({
             pending_player_details: {
               // Preserve fields staged by player-details.post.ts (e.g.
@@ -183,7 +183,7 @@ export default defineEventHandler(async (event) => {
                 : {}),
             },
           })
-          .eq("id", familyUnitId);
+          .eq("id", invitation.id);
 
         if (playerDetailsError) {
           logger.warn(

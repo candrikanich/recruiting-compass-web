@@ -26,7 +26,7 @@ export default defineEventHandler(async (event) => {
     const { data: invitation } = await supabase
       .from("family_invitations")
       .select(
-        "id, family_unit_id, invited_email, role, status, expires_at, invited_by",
+        "id, family_unit_id, invited_email, role, status, expires_at, invited_by, pending_player_details",
       )
       .eq("token", token)
       .single();
@@ -162,15 +162,12 @@ export default defineEventHandler(async (event) => {
         }
       }
 
-      const { data: familyUnit } = await supabase
-        .from("family_units")
-        .select("pending_player_details")
-        .eq("id", invitation.family_unit_id)
-        .single();
-
-      const pendingDetails = (
-        familyUnit as { pending_player_details?: Record<string, unknown> }
-      )?.pending_player_details;
+      // Issue #898: this invitation's own snapshot, not the family-level
+      // staging blob — so a second pending player invite for the same
+      // family can't leak details meant for this one.
+      const pendingDetails = invitation.pending_player_details as
+        | Record<string, unknown>
+        | undefined;
       if (pendingDetails?.playerName) {
         const parts = (pendingDetails.playerName as string).trim().split(/\s+/);
         prefill = {
