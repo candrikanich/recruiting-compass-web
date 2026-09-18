@@ -552,7 +552,7 @@ const handleSignup = async () => {
   // Validate admin token server-side
   const tokenValidation = await $fetch("/api/auth/validate-admin-token", {
     method: "POST",
-    body: { token: adminToken.value },
+    body: { token: adminToken.value, email: email.value },
   }).catch((err) => ({
     valid: false,
     message: err.data?.message || "Invalid token",
@@ -571,8 +571,6 @@ const handleSignup = async () => {
   loading.value = true;
 
   try {
-    let userId: string;
-
     try {
       // Sign up with Supabase Auth (register as parent, will set admin flag after)
       const authData = await signup(
@@ -594,8 +592,6 @@ const handleSignup = async () => {
 
       // Do not log authData directly — it contains the session/tokens.
       logger.debug("Signup response received");
-
-      userId = authData.data.user.id;
     } catch (signupErr: unknown) {
       // Handle "User already registered" error
       const errMessage =
@@ -613,7 +609,6 @@ const handleSignup = async () => {
           logger.debug(
             "Session exists for user, proceeding with profile creation",
           );
-          userId = session.user.id;
         } else {
           // No active session — the credentials just entered are still the
           // account's real credentials, so recover by logging in rather than
@@ -634,8 +629,6 @@ const handleSignup = async () => {
           if (!loginResult?.data?.session?.user?.id) {
             throw signupErr;
           }
-
-          userId = loginResult.data.session.user.id;
         }
       } else {
         // Different error - rethrow it
@@ -652,8 +645,6 @@ const handleSignup = async () => {
     await $fetchAuth("/api/auth/admin-profile", {
       method: "POST",
       body: {
-        userId,
-        email: validated.email,
         fullName: validated.fullName,
         adminToken: adminToken.value,
       },

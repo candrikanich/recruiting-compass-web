@@ -219,6 +219,10 @@ describe("POST /api/admin/delete-user", () => {
     // cleared before the users row delete, or that delete is silently blocked.
     const tables = mockAdmin._deleteCalls.map((c) => c.table);
     expect(tables).toContain("guardian_claims");
+    // admin_invitations.invited_by is also NO ACTION (issue #854 review
+    // finding) — an admin who minted any invitation would otherwise leave
+    // their own auth.users delete silently blocked by that FK.
+    expect(tables).toContain("admin_invitations");
     expect(mockAdmin._deleteCalls.every((c) => c.value === "target-1")).toBe(
       true,
     );
