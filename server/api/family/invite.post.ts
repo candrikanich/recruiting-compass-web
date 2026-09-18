@@ -141,18 +141,17 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    // Persist player details the inviting parent already has, so the player
-    // isn't re-asked for them on accept (hydrated in accept.post.ts /
-    // hydrateAthleteProfile.ts). Only meaningful for a player-role invite —
-    // non-blocking, same pattern as the invite email below: the invitation
-    // itself is the primary action and must not fail because this did.
-    //
-    // NOTE: pending_player_details is stored per-family, not per-invitation.
-    // If a family has more than one pending player invite at once, the later
-    // write here overwrites the earlier one — a pre-existing limitation of
-    // this storage shape (also true of server/api/family/player-details.post.ts).
-    // Tracked separately; not fixed in this endpoint.
-    if (pendingPlayerDetails && role === "player") {
+    // Snapshot player details onto THIS invitation (not the family row), so a
+    // family with more than one pending player invite at once doesn't have a
+    // later invite's snapshot clobber an earlier one's (issue #898).
+    // family_units.pending_player_details is the pre-invite staging draft the
+    // parent fills in during onboarding (server/api/family/player-details.post.ts,
+    // before any invitation exists to attach it to) — start from that draft
+    // and overlay whatever this specific invite's wire payload carries (iOS's
+    // ParentOnboardingWizardViewModel). Non-blocking, same pattern as the
+    // invite email below: the invitation itself is the primary action and
+    // must not fail because this did.
+    if (role === "player") {
       try {
         const { data: existingFamily } = await supabase
           .from("family_units")
@@ -160,36 +159,40 @@ export default defineEventHandler(async (event) => {
           .eq("id", familyUnitId)
           .single();
 
-        const { error: playerDetailsError } = await supabase
-          .from("family_units")
-          .update({
-            pending_player_details: {
-              // Preserve fields staged by player-details.post.ts (e.g.
-              // playerDob, gender) that this invite payload doesn't carry.
-              ...((existingFamily?.pending_player_details as Record<
-                string,
-                unknown
-              > | null) ?? {}),
-              playerName:
-                `${pendingPlayerDetails.first_name} ${pendingPlayerDetails.last_name}`.trim(),
-              ...(pendingPlayerDetails.graduation_year
-                ? { graduationYear: pendingPlayerDetails.graduation_year }
-                : {}),
-              ...(pendingPlayerDetails.sport
-                ? { sport: pendingPlayerDetails.sport }
-                : {}),
-              ...(pendingPlayerDetails.position
-                ? { position: pendingPlayerDetails.position }
-                : {}),
-            },
-          })
-          .eq("id", familyUnitId);
+        const familyDraft = (existingFamily?.pending_player_details ??
+          null) as Record<string, unknown> | null;
 
-        if (playerDetailsError) {
-          logger.warn(
-            "Failed to persist pending player details — invitation created without them",
-            { error: playerDetailsError },
-          );
+        if (familyDraft || pendingPlayerDetails) {
+          const snapshot = {
+            ...(familyDraft ?? {}),
+            ...(pendingPlayerDetails
+              ? {
+                  playerName:
+                    `${pendingPlayerDetails.first_name} ${pendingPlayerDetails.last_name}`.trim(),
+                  ...(pendingPlayerDetails.graduation_year
+                    ? { graduationYear: pendingPlayerDetails.graduation_year }
+                    : {}),
+                  ...(pendingPlayerDetails.sport
+                    ? { sport: pendingPlayerDetails.sport }
+                    : {}),
+                  ...(pendingPlayerDetails.position
+                    ? { position: pendingPlayerDetails.position }
+                    : {}),
+                }
+              : {}),
+          };
+
+          const { error: playerDetailsError } = await supabase
+            .from("family_invitations")
+            .update({ pending_player_details: snapshot })
+            .eq("id", invitation.id);
+
+          if (playerDetailsError) {
+            logger.warn(
+              "Failed to persist pending player details — invitation created without them",
+              { error: playerDetailsError },
+            );
+          }
         }
       } catch (playerDetailsErr) {
         logger.warn(
