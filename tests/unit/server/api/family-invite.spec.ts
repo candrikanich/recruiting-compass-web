@@ -40,16 +40,14 @@ const state = {
   insertedInvitation: { id: "invite-abc" } as object | null,
   insertError: null as object | null,
   familyMemberInsertSpy: vi.fn(() => Promise.resolve({ error: null })),
-  // Spy on family_invitations.update({ pending_player_details }) so the
-  // invite-time snapshot write is observable, separately from the
-  // status/accepted_at update accept.post.ts makes on the same table.
-  familyInvitationsPendingDetailsSpy: vi.fn((_payload: unknown) => ({
-    eq: () => Promise.resolve({ error: null }),
-  })),
-  // Captures the id passed to .eq("id", ...) on the pending_player_details
-  // write, so tests can prove it targets the specific invitation row rather
-  // than the shared family row (issue #898).
-  familyInvitationsPendingDetailsEqSpy: vi.fn(),
+  // Spy on family_invitations.insert({ ..., pending_player_details }) so the
+  // invite-time snapshot is observable as part of the single insert write
+  // (issue #898 follow-up: no longer a separate update after the insert).
+  familyInvitationsInsertSpy: vi.fn((_payload: unknown) => undefined),
+  // Set to make the family_units.pending_player_details read (used to build
+  // the snapshot) throw, so tests can prove a draft-read failure still lets
+  // the invitation get created (just without the snapshot).
+  familyUnitsSelectThrows: false as boolean,
   // For token lookup
   invitation: null as Record<string, unknown> | null,
   // Overridable request body
@@ -158,24 +156,37 @@ vi.mock("~/server/utils/supabase", () => ({
       }
       if (table === "family_units") {
         return {
-          select: () =>
-            chainableEq({
+          // invite.post.ts selects "family_name" for the invite email (must
+          // never throw here) and separately "pending_player_details" to
+          // build the snapshot — only the latter simulates a failure.
+          select: (columns: string) => {
+            if (
+              state.familyUnitsSelectThrows &&
+              columns === "pending_player_details"
+            ) {
+              throw new Error("family_units select blew up");
+            }
+            return chainableEq({
               single: () =>
                 Promise.resolve({ data: state.family, error: null }),
-            }),
+            });
+          },
         };
       }
       if (table === "family_invitations") {
         return {
-          insert: () => ({
-            select: () => ({
-              single: () =>
-                Promise.resolve({
-                  data: state.insertedInvitation,
-                  error: state.insertError,
-                }),
-            }),
-          }),
+          insert: (payload: Record<string, unknown>) => {
+            state.familyInvitationsInsertSpy(payload);
+            return {
+              select: () => ({
+                single: () =>
+                  Promise.resolve({
+                    data: state.insertedInvitation,
+                    error: state.insertError,
+                  }),
+              }),
+            };
+          },
           select: () =>
             chainableEq({
               single: () =>
@@ -186,22 +197,11 @@ vi.mock("~/server/utils/supabase", () => ({
               maybeSingle: () => Promise.resolve({ data: null, error: null }),
               order: () => Promise.resolve({ data: [], error: null }),
             }),
-          // invite.post.ts snapshots pending_player_details onto the invitation
-          // row it just created; accept.post.ts stamps status/accepted_at on the
-          // one it's accepting. Route by payload shape so each is independently
-          // observable without cross-contaminating the other's assertions.
-          update: (payload: Record<string, unknown>) => {
-            if ("pending_player_details" in payload) {
-              const result = state.familyInvitationsPendingDetailsSpy(payload);
-              return {
-                eq: (_col: string, id: string) => {
-                  state.familyInvitationsPendingDetailsEqSpy(id);
-                  return result.eq();
-                },
-              };
-            }
-            return { eq: () => ({ eq: () => Promise.resolve({ error: null }) }) };
-          },
+          // accept.post.ts stamps status/accepted_at on the invitation it's
+          // accepting.
+          update: () => ({
+            eq: () => ({ eq: () => Promise.resolve({ error: null }) }),
+          }),
           delete: () => ({
             eq: () => ({ eq: () => Promise.resolve({ error: null }) }),
           }),
@@ -252,10 +252,8 @@ describe("POST /api/family/invite", () => {
     state.insertError = null;
     state.requestBody = { email: "invited@example.com", role: "parent" };
     state.family = { family_name: "Smith Family" };
-    state.familyInvitationsPendingDetailsSpy = vi.fn((_payload: unknown) => ({
-      eq: () => Promise.resolve({ error: null }),
-    }));
-    state.familyInvitationsPendingDetailsEqSpy = vi.fn();
+    state.familyInvitationsInsertSpy = vi.fn((_payload: unknown) => undefined);
+    state.familyUnitsSelectThrows = false;
   });
 
   it("creates an invitation and returns token", async () => {
@@ -325,7 +323,7 @@ describe("POST /api/family/invite", () => {
       const result = await handler({} as Parameters<typeof handler>[0]);
 
       expect(result).toMatchObject({ success: true });
-      expect(state.familyInvitationsPendingDetailsSpy).toHaveBeenCalledWith(
+      expect(state.familyInvitationsInsertSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           pending_player_details: {
             playerName: "Alex Johnson",
@@ -350,19 +348,21 @@ describe("POST /api/family/invite", () => {
         await import("~/server/api/family/invite.post");
       await handler({} as Parameters<typeof handler>[0]);
 
-      expect(state.familyInvitationsPendingDetailsSpy).toHaveBeenCalledWith(
+      expect(state.familyInvitationsInsertSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           pending_player_details: { playerName: "Alex Johnson" },
         }),
       );
     });
 
-    it("does not touch the invitation's pending_player_details when omitted and the family has no staged draft", async () => {
+    it("does not include pending_player_details on the insert when omitted and the family has no staged draft", async () => {
       const { default: handler } =
         await import("~/server/api/family/invite.post");
       await handler({} as Parameters<typeof handler>[0]);
 
-      expect(state.familyInvitationsPendingDetailsSpy).not.toHaveBeenCalled();
+      expect(state.familyInvitationsInsertSpy).toHaveBeenCalledWith(
+        expect.not.objectContaining({ pending_player_details: expect.anything() }),
+      );
     });
 
     it("ignores pending_player_details on a parent-role invite (no player to describe)", async () => {
@@ -379,7 +379,9 @@ describe("POST /api/family/invite", () => {
       const result = await handler({} as Parameters<typeof handler>[0]);
 
       expect(result).toMatchObject({ success: true });
-      expect(state.familyInvitationsPendingDetailsSpy).not.toHaveBeenCalled();
+      expect(state.familyInvitationsInsertSpy).toHaveBeenCalledWith(
+        expect.not.objectContaining({ pending_player_details: expect.anything() }),
+      );
     });
 
     it("returns 400 when pending_player_details is provided but missing required names", async () => {
@@ -393,13 +395,15 @@ describe("POST /api/family/invite", () => {
       await expect(
         handler({} as Parameters<typeof handler>[0]),
       ).rejects.toMatchObject({ statusCode: 400 });
-      expect(state.familyInvitationsPendingDetailsSpy).not.toHaveBeenCalled();
+      expect(state.familyInvitationsInsertSpy).not.toHaveBeenCalled();
     });
 
-    it("does not fail the whole invite when the snapshot write fails", async () => {
-      state.familyInvitationsPendingDetailsSpy = vi.fn(() => ({
-        eq: () => Promise.resolve({ error: { message: "boom" } }),
-      }));
+    // Review comment (issue #898 follow-up): the snapshot is now built BEFORE
+    // the insert and included in the same write, so a failed snapshot read
+    // must still let the invitation get created (just without the snapshot),
+    // not surface as a 500.
+    it("does not fail the whole invite when building the snapshot throws", async () => {
+      state.familyUnitsSelectThrows = true;
       state.requestBody = {
         email: "player@example.com",
         role: "player",
@@ -410,25 +414,9 @@ describe("POST /api/family/invite", () => {
       const result = await handler({} as Parameters<typeof handler>[0]);
 
       expect(result).toMatchObject({ success: true, invitationId: "invite-abc" });
-    });
-
-    // Review comment: the write is wrapped in try/catch too — a rejected
-    // promise (not just a returned {error}) must not surface as a 500 after
-    // the invitation row was already created.
-    it("does not fail the whole invite when the snapshot write throws", async () => {
-      state.familyInvitationsPendingDetailsSpy = vi.fn(() => ({
-        eq: () => Promise.reject(new Error("network blip")),
-      }));
-      state.requestBody = {
-        email: "player@example.com",
-        role: "player",
-        pending_player_details: { first_name: "Alex", last_name: "Johnson" },
-      };
-      const { default: handler } =
-        await import("~/server/api/family/invite.post");
-      const result = await handler({} as Parameters<typeof handler>[0]);
-
-      expect(result).toMatchObject({ success: true, invitationId: "invite-abc" });
+      expect(state.familyInvitationsInsertSpy).toHaveBeenCalledWith(
+        expect.not.objectContaining({ pending_player_details: expect.anything() }),
+      );
     });
 
     // iOS's onboarding invite step (ParentOnboardingWizardViewModel.sendInvite)
@@ -444,7 +432,7 @@ describe("POST /api/family/invite", () => {
       const result = await handler({} as Parameters<typeof handler>[0]);
 
       expect(result).toMatchObject({ success: true });
-      expect(state.familyInvitationsPendingDetailsSpy).toHaveBeenCalledWith(
+      expect(state.familyInvitationsInsertSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           pending_player_details: expect.objectContaining({
             playerName: "Alex",
@@ -478,7 +466,7 @@ describe("POST /api/family/invite", () => {
         await import("~/server/api/family/invite.post");
       await handler({} as Parameters<typeof handler>[0]);
 
-      expect(state.familyInvitationsPendingDetailsSpy).toHaveBeenCalledWith(
+      expect(state.familyInvitationsInsertSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           pending_player_details: {
             playerDob: "2010-05-01",
@@ -495,7 +483,7 @@ describe("POST /api/family/invite", () => {
   // family with more than one pending player invite doesn't have a later
   // invite's snapshot clobber an earlier one's.
   describe("invitation-scoped pending_player_details (issue #898)", () => {
-    it("snapshots the invitation onto its OWN row, not the family row directly, even without a wire payload (web's flow: parent stages details via player-details.post.ts, then sends a bare invite)", async () => {
+    it("snapshots the invitation onto its OWN row at creation time, not the family row directly, even without a wire payload (web's flow: parent stages details via player-details.post.ts, then sends a bare invite)", async () => {
       state.family = {
         family_name: "Smith Family",
         pending_player_details: {
@@ -509,7 +497,7 @@ describe("POST /api/family/invite", () => {
         await import("~/server/api/family/invite.post");
       await handler({} as Parameters<typeof handler>[0]);
 
-      expect(state.familyInvitationsPendingDetailsSpy).toHaveBeenCalledWith(
+      expect(state.familyInvitationsInsertSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           pending_player_details: {
             playerName: "Staged Player",
@@ -520,7 +508,7 @@ describe("POST /api/family/invite", () => {
       );
     });
 
-    it("a second player invite's snapshot does not depend on or clobber the first invitation's row (each write targets its own invitation id)", async () => {
+    it("a second player invite's snapshot does not depend on or clobber the first invitation's row (each insert carries its own snapshot)", async () => {
       state.family = {
         family_name: "Smith Family",
         pending_player_details: { playerName: "Second Child", sport: "Soccer" },
@@ -533,19 +521,15 @@ describe("POST /api/family/invite", () => {
       };
       const { default: handler } =
         await import("~/server/api/family/invite.post");
-      await handler({} as Parameters<typeof handler>[0]);
+      const result = await handler({} as Parameters<typeof handler>[0]);
 
-      expect(state.familyInvitationsPendingDetailsSpy).toHaveBeenCalledWith(
+      expect(result).toMatchObject({ invitationId: "invite-second-child" });
+      expect(state.familyInvitationsInsertSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           pending_player_details: expect.objectContaining({
             playerName: "Second Child",
           }),
         }),
-      );
-      // The write targets THIS call's own freshly-created invitation id, not
-      // the shared family id — proving the snapshot is invitation-scoped.
-      expect(state.familyInvitationsPendingDetailsEqSpy).toHaveBeenCalledWith(
-        "invite-second-child",
       );
     });
   });

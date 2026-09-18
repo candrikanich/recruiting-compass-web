@@ -8,6 +8,7 @@ import { sendInviteEmail } from "~/server/utils/emailService";
 import { getSafeRequestOrigin } from "~/server/utils/requestOrigin";
 import { emailSchema } from "~/utils/validation/validators";
 import { rateLimitByUser, throwIfRateLimited } from "~/server/utils/rateLimit";
+import type { Json } from "~/types/database";
 
 // Wire shape iOS sends (Features/Family/Models/PendingPlayerDetails.swift) —
 // separate first/last name, snake_case keys. Transformed on persist to match
@@ -121,26 +122,6 @@ export default defineEventHandler(async (event) => {
 
     const token = randomUUID();
 
-    const { data: invitation, error } = await supabase
-      .from("family_invitations")
-      .insert({
-        family_unit_id: familyUnitId,
-        invited_by: user.id,
-        invited_email: email,
-        role: role as "player" | "parent",
-        token,
-      })
-      .select("id")
-      .single();
-
-    if (error) {
-      logger.error("Failed to create invitation", error);
-      throw createError({
-        statusCode: 500,
-        statusMessage: "Failed to create invitation",
-      });
-    }
-
     // Snapshot player details onto THIS invitation (not the family row), so a
     // family with more than one pending player invite at once doesn't have a
     // later invite's snapshot clobber an earlier one's (issue #898).
@@ -148,9 +129,12 @@ export default defineEventHandler(async (event) => {
     // parent fills in during onboarding (server/api/family/player-details.post.ts,
     // before any invitation exists to attach it to) — start from that draft
     // and overlay whatever this specific invite's wire payload carries (iOS's
-    // ParentOnboardingWizardViewModel). Non-blocking, same pattern as the
-    // invite email below: the invitation itself is the primary action and
-    // must not fail because this did.
+    // ParentOnboardingWizardViewModel). Built before the insert so it lands
+    // in the same write as the invitation row — a player invitation is never
+    // created without its snapshot attempt, instead of a follow-up update
+    // whose failure would silently leave an invitation acceptance can't
+    // hydrate (issue #898 follow-up).
+    let playerSnapshot: Record<string, unknown> | null = null;
     if (role === "player") {
       try {
         const { data: existingFamily } = await supabase
@@ -163,7 +147,7 @@ export default defineEventHandler(async (event) => {
           null) as Record<string, unknown> | null;
 
         if (familyDraft || pendingPlayerDetails) {
-          const snapshot = {
+          playerSnapshot = {
             ...(familyDraft ?? {}),
             ...(pendingPlayerDetails
               ? {
@@ -181,25 +165,36 @@ export default defineEventHandler(async (event) => {
                 }
               : {}),
           };
-
-          const { error: playerDetailsError } = await supabase
-            .from("family_invitations")
-            .update({ pending_player_details: snapshot })
-            .eq("id", invitation.id);
-
-          if (playerDetailsError) {
-            logger.warn(
-              "Failed to persist pending player details — invitation created without them",
-              { error: playerDetailsError },
-            );
-          }
         }
       } catch (playerDetailsErr) {
         logger.warn(
-          "Failed to persist pending player details — invitation created without them",
+          "Failed to build pending player details snapshot — invitation will be created without them",
           playerDetailsErr,
         );
       }
+    }
+
+    const { data: invitation, error } = await supabase
+      .from("family_invitations")
+      .insert({
+        family_unit_id: familyUnitId,
+        invited_by: user.id,
+        invited_email: email,
+        role: role as "player" | "parent",
+        token,
+        ...(playerSnapshot
+          ? { pending_player_details: playerSnapshot as Json }
+          : {}),
+      })
+      .select("id")
+      .single();
+
+    if (error) {
+      logger.error("Failed to create invitation", error);
+      throw createError({
+        statusCode: 500,
+        statusMessage: "Failed to create invitation",
+      });
     }
 
     // Send invite email (non-blocking — don't fail if email fails)
