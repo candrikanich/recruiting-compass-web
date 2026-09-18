@@ -53,11 +53,22 @@ export default defineEventHandler(
       }
 
       const supabase = useSupabaseAdmin();
-      const { data: invitation } = await supabase
+      const { data: invitation, error: lookupError } = await supabase
         .from("admin_invitations")
         .select("invited_email, expires_at, consumed_at")
         .eq("token", token)
         .maybeSingle();
+
+      // Supabase returns query failures as { error }, it doesn't throw — a
+      // swallowed error here would report a valid invitation as "invalid
+      // token" instead of the actual service failure (review finding).
+      if (lookupError) {
+        logger.error("Admin invitation lookup failed", lookupError);
+        throw createError({
+          statusCode: 500,
+          statusMessage: "Token validation failed",
+        });
+      }
 
       const isValid =
         !!invitation &&

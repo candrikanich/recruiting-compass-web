@@ -159,6 +159,10 @@ export default defineEventHandler(
         { table: "communication_templates", columns: ["user_id"] },
         // Family tables must be removed before users (no ON DELETE CASCADE on users FK)
         { table: "family_invitations", columns: ["invited_by"] },
+        // admin_invitations.invited_by is also NO ACTION — an admin who has
+        // minted any invitation would otherwise leave the auth.users delete
+        // blocked by that FK (issue #854 review finding).
+        { table: "admin_invitations", columns: ["invited_by"] },
         { table: "family_members", columns: ["user_id"] },
         { table: "family_units", columns: ["created_by_user_id"] },
         // NO ACTION FK to users.id -- must be cleared before the users delete,

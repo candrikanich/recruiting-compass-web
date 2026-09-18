@@ -3,12 +3,12 @@ import { createError } from "h3";
 
 // State objects read at call-time to avoid vi.mock hoisting issues
 const mockBodyState = {
-  email: "admin@example.com" as string,
   fullName: "Admin User",
   adminToken: "valid-token" as string | null,
 };
 const mockAuthState = {
   userId: "user-1",
+  email: "admin@example.com" as string | undefined,
   shouldFail: false,
   userMetadata: undefined as Record<string, unknown> | undefined,
 };
@@ -21,9 +21,6 @@ const mockRpcState = {
     | "email_mismatch",
   error: null as object | null,
 };
-const mockDbState = {
-  error: null as object | null,
-};
 
 vi.mock("~/server/utils/auth", () => ({
   requireAuth: vi.fn(async () => {
@@ -32,6 +29,7 @@ vi.mock("~/server/utils/auth", () => ({
     }
     return {
       id: mockAuthState.userId,
+      email: mockAuthState.email,
       role: "athlete",
       user_metadata: mockAuthState.userMetadata,
     };
@@ -40,21 +38,13 @@ vi.mock("~/server/utils/auth", () => ({
 
 const mockRpc = vi.fn(() =>
   Promise.resolve({
-    data: [{ status: mockRpcState.status, invited_by: "some-admin-id" }],
+    data: [{ status: mockRpcState.status }],
     error: mockRpcState.error,
   }),
 );
-const mockFrom = vi.fn(() => ({
-  update: vi.fn(() => ({
-    eq: vi.fn(() => Promise.resolve({ data: null, error: mockDbState.error })),
-  })),
-}));
 
 vi.mock("~/server/utils/supabase", () => ({
-  useSupabaseAdmin: vi.fn(() => ({
-    from: mockFrom,
-    rpc: mockRpc,
-  })),
+  useSupabaseAdmin: vi.fn(() => ({ rpc: mockRpc })),
 }));
 
 vi.mock("~/server/utils/logger", () => ({
@@ -78,7 +68,6 @@ vi.mock("h3", async (importOriginal) => {
     ...actual,
     defineEventHandler: (fn: Function) => fn,
     readBody: vi.fn(async () => ({
-      email: mockBodyState.email,
       fullName: mockBodyState.fullName,
       adminToken: mockBodyState.adminToken,
     })),
@@ -89,7 +78,6 @@ vi.stubGlobal("defineEventHandler", (fn: Function) => fn);
 vi.stubGlobal(
   "readBody",
   vi.fn(async () => ({
-    email: mockBodyState.email,
     fullName: mockBodyState.fullName,
     adminToken: mockBodyState.adminToken,
   })),
@@ -105,15 +93,14 @@ const { default: handler } =
 describe("POST /api/auth/admin-profile", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockBodyState.email = "admin@example.com";
     mockBodyState.fullName = "Admin User";
     mockBodyState.adminToken = "valid-token";
     mockAuthState.userId = "user-1";
+    mockAuthState.email = "admin@example.com";
     mockAuthState.shouldFail = false;
     mockAuthState.userMetadata = undefined;
     mockRpcState.status = "consumed";
     mockRpcState.error = null;
-    mockDbState.error = null;
     vi.stubGlobal("createError", createError);
     vi.mocked(requireAuth).mockImplementation(async () => {
       if (mockAuthState.shouldFail) {
@@ -121,25 +108,19 @@ describe("POST /api/auth/admin-profile", () => {
       }
       return {
         id: mockAuthState.userId,
+        email: mockAuthState.email,
         role: "athlete",
         user_metadata: mockAuthState.userMetadata,
       } as any;
     });
     mockRpc.mockImplementation(() =>
       Promise.resolve({
-        data: [{ status: mockRpcState.status, invited_by: "some-admin-id" }],
+        data: [{ status: mockRpcState.status }],
         error: mockRpcState.error,
       }),
     );
-    mockFrom.mockImplementation(() => ({
-      update: vi.fn(() => ({
-        eq: vi.fn(() =>
-          Promise.resolve({ data: null, error: mockDbState.error }),
-        ),
-      })),
-    }));
     vi.mocked(useSupabaseAdmin).mockImplementation(
-      () => ({ from: mockFrom, rpc: mockRpc }) as any,
+      () => ({ rpc: mockRpc }) as any,
     );
   });
 
@@ -150,30 +131,20 @@ describe("POST /api/auth/admin-profile", () => {
       expect(result).toEqual({ success: true });
     });
 
-    it("consumes the admin invitation via RPC with token + email", async () => {
+    // Regression for a review finding on the initial #854 fix: the RPC must
+    // be called with the CALLER'S OWN authenticated email (authUser.email),
+    // never a client-supplied one — trusting a request-body email let any
+    // token holder consume an invitation meant for a different address
+    // while granting admin to their own, different, authenticated account.
+    it("consumes the admin invitation via RPC keyed on the authenticated user's own id + email, not a client-supplied email", async () => {
       await handler({} as Parameters<typeof handler>[0]);
 
       expect(mockRpc).toHaveBeenCalledWith("consume_admin_invitation", {
         p_token: "valid-token",
+        p_user_id: "user-1",
         p_email: "admin@example.com",
+        p_full_name: "Admin User",
       });
-    });
-
-    it("calls supabase.update with is_admin: true and role: parent", async () => {
-      const mockEq = vi.fn(() => Promise.resolve({ data: null, error: null }));
-      const mockUpdate = vi.fn(() => ({ eq: mockEq }));
-      mockFrom.mockImplementation(() => ({ update: mockUpdate }) as any);
-
-      await handler({} as Parameters<typeof handler>[0]);
-
-      expect(mockFrom).toHaveBeenCalledWith("users");
-      expect(mockUpdate).toHaveBeenCalledWith(
-        expect.objectContaining({
-          full_name: "Admin User",
-          role: "parent",
-          is_admin: true,
-        }),
-      );
     });
   });
 
@@ -187,20 +158,18 @@ describe("POST /api/auth/admin-profile", () => {
         statusCode: 401,
       });
     });
-  });
 
-  describe("input validation", () => {
-    it("returns 400 when email is missing", async () => {
-      mockBodyState.email = "";
+    it("403s when the authenticated session has no email, and never calls the RPC", async () => {
+      mockAuthState.email = undefined;
 
       await expect(
         handler({} as Parameters<typeof handler>[0]),
-      ).rejects.toMatchObject({
-        statusCode: 400,
-        message: "email is required",
-      });
+      ).rejects.toMatchObject({ statusCode: 403 });
+      expect(mockRpc).not.toHaveBeenCalled();
     });
+  });
 
+  describe("input validation", () => {
     it("returns 403 when adminToken is an empty string", async () => {
       mockBodyState.adminToken = "";
 
@@ -238,17 +207,14 @@ describe("POST /api/auth/admin-profile", () => {
 
     // Regression for issue #854: the entire point of moving off the static
     // shared secret is that a token can't be reused. Simulates the exact
-    // reuse scenario the fix exists to close.
-    it("403s a second attempt to consume the same already-used token, and never applies is_admin on that attempt", async () => {
+    // reuse scenario the fix exists to close — the second call must 403,
+    // not silently succeed or partially grant.
+    it("403s a second attempt to consume the same already-used token", async () => {
       mockRpcState.status = "already_used";
-      const mockEq = vi.fn(() => Promise.resolve({ data: null, error: null }));
-      const mockUpdate = vi.fn(() => ({ eq: mockEq }));
-      mockFrom.mockImplementation(() => ({ update: mockUpdate }) as any);
 
       await expect(
         handler({} as Parameters<typeof handler>[0]),
       ).rejects.toMatchObject({ statusCode: 403 });
-      expect(mockUpdate).not.toHaveBeenCalled();
     });
   });
 
@@ -267,19 +233,6 @@ describe("POST /api/auth/admin-profile", () => {
       ).rejects.toMatchObject({ statusCode: 403 });
       expect(mockRpc).not.toHaveBeenCalled();
     });
-
-    it("does not apply is_admin: true from pending_admin metadata alone", async () => {
-      mockAuthState.userMetadata = { pending_admin: true };
-      mockBodyState.adminToken = null;
-      const mockEq = vi.fn(() => Promise.resolve({ data: null, error: null }));
-      const mockUpdate = vi.fn(() => ({ eq: mockEq }));
-      mockFrom.mockImplementation(() => ({ update: mockUpdate }) as any);
-
-      await expect(
-        handler({} as Parameters<typeof handler>[0]),
-      ).rejects.toMatchObject({ statusCode: 403 });
-      expect(mockUpdate).not.toHaveBeenCalled();
-    });
   });
 
   describe("DB errors", () => {
@@ -290,17 +243,6 @@ describe("POST /api/auth/admin-profile", () => {
         handler({} as Parameters<typeof handler>[0]),
       ).rejects.toMatchObject({
         statusCode: 500,
-      });
-    });
-
-    it("returns 500 when supabase update fails", async () => {
-      mockDbState.error = { message: "DB error" };
-
-      await expect(
-        handler({} as Parameters<typeof handler>[0]),
-      ).rejects.toMatchObject({
-        statusCode: 500,
-        message: "Failed to create admin profile",
       });
     });
 

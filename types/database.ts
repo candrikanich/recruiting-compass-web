@@ -3893,10 +3893,14 @@ export type Database = {
         Returns: boolean;
       };
       consume_admin_invitation: {
-        Args: { p_token: string; p_email: string };
+        Args: {
+          p_token: string;
+          p_user_id: string;
+          p_email: string;
+          p_full_name: string;
+        };
         Returns: {
           status: string;
-          invited_by: string;
         }[];
       };
       consume_email_verification_token: {

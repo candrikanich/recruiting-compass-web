@@ -201,6 +201,23 @@ describe("POST /api/auth/validate-admin-token", () => {
       });
     });
 
+    // Regression: Supabase returns query failures as { error }, it does not
+    // throw. Review caught that this endpoint discarded that error and fell
+    // through to the ordinary "invalid token" branch — a real DB/service
+    // failure must classify as 500, not silently tell a valid recipient
+    // their token is invalid.
+    it("returns 500 (not valid: false) when the invitation lookup itself errors", async () => {
+      mockMaybeSingle.mockImplementation(() =>
+        Promise.resolve({ data: null, error: { message: "DB error" } }),
+      );
+
+      await expect(
+        handler({} as Parameters<typeof handler>[0]),
+      ).rejects.toMatchObject({
+        statusCode: 500,
+      });
+    });
+
     it("re-throws HTTP errors as-is", async () => {
       const httpError = createError({
         statusCode: 403,
