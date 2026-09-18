@@ -39,7 +39,7 @@ const rawTerms: GlossaryTerm[] = [
     id: "official-visit",
     term: "Official Visit",
     definition:
-      "A campus visit paid for (in full or part) by the school, limited to 5 total across a recruit's official visits, one per school.",
+      "A campus visit paid for (in full or part) by the school — one per school (a second may be allowed in D1/D2 if the head coach changes). What's covered (travel, lodging, meals, entertainment) varies by division — see Schools & Coaches for the full breakdown.",
   },
   {
     id: "preferred-walk-on",
@@ -69,7 +69,7 @@ const rawTerms: GlossaryTerm[] = [
     id: "unofficial-visit",
     term: "Unofficial Visit",
     definition:
-      "A self-funded campus visit with no limit on how many a recruit can take.",
+      "A self-funded campus visit with no limit on how many a recruit can take. In D1/D2, each visit must occur after the first permissible date for your sport. What the school may still provide (like meals or event tickets) varies by division — see Schools & Coaches for the full breakdown.",
   },
   {
     id: "walk-on",

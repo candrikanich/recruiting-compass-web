@@ -32,6 +32,13 @@
           <option value="tweet">Tweet</option>
           <option value="dm">Direct Message</option>
         </select>
+        <p
+          v-if="visitRuleNote"
+          class="mt-2 rounded-md bg-slate-50 p-2 text-xs text-slate-600"
+        >
+          <strong>{{ props.schoolDivision }} visit rule:</strong>
+          {{ visitRuleNote }}
+        </p>
       </div>
 
       <!-- Direction -->
@@ -307,6 +314,7 @@
 import { ref, computed, useTemplateRef } from "vue";
 import type { Coach, Interaction } from "~/types/models";
 import { getRoleLabel } from "~/utils/coachLabels";
+import { getVisitDivisionRules } from "~/utils/officialVisitRules";
 
 const MAX_SUBJECT_LENGTH = 500;
 const MAX_CONTENT_LENGTH = 10000;
@@ -322,6 +330,7 @@ const formatLocalDatetimeInputValue = (date: Date): string => {
 const props = defineProps<{
   coaches: Coach[];
   loading: boolean;
+  schoolDivision?: "D1" | "D2" | "D3" | "NAIA" | "JUCO" | null;
 }>();
 
 type InteractionSubmitData = {
@@ -368,6 +377,17 @@ const isFormValid = computed(
     newInteraction.value.content &&
     newInteraction.value.occurred_at,
 );
+
+const visitRuleNote = computed(() => {
+  const type = newInteraction.value.type;
+  if (type !== "official_visit" && type !== "unofficial_visit") return null;
+
+  const rules = getVisitDivisionRules(props.schoolDivision);
+  if (!rules) return null;
+
+  const items = type === "official_visit" ? rules.official : rules.unofficial;
+  return `The school may pay for: ${items.join("; ")}.`;
+});
 
 const getTodayDate = (): string => {
   return new Date().toISOString().split("T")[0];

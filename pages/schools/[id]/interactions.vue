@@ -92,6 +92,7 @@
         v-if="showAddForm"
         :coaches="coaches"
         :loading="loading"
+        :school-division="schoolData?.division"
         @submit="handleAddInteraction"
         @cancel="showAddForm = false"
       />
