@@ -1392,6 +1392,7 @@ export type Database = {
           id: string;
           invited_by: string;
           invited_email: string;
+          pending_player_details: Json | null;
           role: string;
           status: string;
           token: string;
@@ -1405,6 +1406,7 @@ export type Database = {
           id?: string;
           invited_by: string;
           invited_email: string;
+          pending_player_details?: Json | null;
           role: string;
           status?: string;
           token: string;
@@ -1418,6 +1420,7 @@ export type Database = {
           id?: string;
           invited_by?: string;
           invited_email?: string;
+          pending_player_details?: Json | null;
           role?: string;
           status?: string;
           token?: string;

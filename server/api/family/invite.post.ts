@@ -8,6 +8,7 @@ import { sendInviteEmail } from "~/server/utils/emailService";
 import { getSafeRequestOrigin } from "~/server/utils/requestOrigin";
 import { emailSchema } from "~/utils/validation/validators";
 import { rateLimitByUser, throwIfRateLimited } from "~/server/utils/rateLimit";
+import type { Json } from "~/types/database";
 
 // Wire shape iOS sends (Features/Family/Models/PendingPlayerDetails.swift) —
 // separate first/last name, snake_case keys. Transformed on persist to match
@@ -121,6 +122,58 @@ export default defineEventHandler(async (event) => {
 
     const token = randomUUID();
 
+    // Snapshot player details onto THIS invitation (not the family row), so a
+    // family with more than one pending player invite at once doesn't have a
+    // later invite's snapshot clobber an earlier one's (issue #898).
+    // family_units.pending_player_details is the pre-invite staging draft the
+    // parent fills in during onboarding (server/api/family/player-details.post.ts,
+    // before any invitation exists to attach it to) — start from that draft
+    // and overlay whatever this specific invite's wire payload carries (iOS's
+    // ParentOnboardingWizardViewModel). Built before the insert so it lands
+    // in the same write as the invitation row — a player invitation is never
+    // created without its snapshot attempt, instead of a follow-up update
+    // whose failure would silently leave an invitation acceptance can't
+    // hydrate (issue #898 follow-up).
+    let playerSnapshot: Record<string, unknown> | null = null;
+    if (role === "player") {
+      try {
+        const { data: existingFamily } = await supabase
+          .from("family_units")
+          .select("pending_player_details")
+          .eq("id", familyUnitId)
+          .single();
+
+        const familyDraft = (existingFamily?.pending_player_details ??
+          null) as Record<string, unknown> | null;
+
+        if (familyDraft || pendingPlayerDetails) {
+          playerSnapshot = {
+            ...(familyDraft ?? {}),
+            ...(pendingPlayerDetails
+              ? {
+                  playerName:
+                    `${pendingPlayerDetails.first_name} ${pendingPlayerDetails.last_name}`.trim(),
+                  ...(pendingPlayerDetails.graduation_year
+                    ? { graduationYear: pendingPlayerDetails.graduation_year }
+                    : {}),
+                  ...(pendingPlayerDetails.sport
+                    ? { sport: pendingPlayerDetails.sport }
+                    : {}),
+                  ...(pendingPlayerDetails.position
+                    ? { position: pendingPlayerDetails.position }
+                    : {}),
+                }
+              : {}),
+          };
+        }
+      } catch (playerDetailsErr) {
+        logger.warn(
+          "Failed to build pending player details snapshot — invitation will be created without them",
+          playerDetailsErr,
+        );
+      }
+    }
+
     const { data: invitation, error } = await supabase
       .from("family_invitations")
       .insert({
@@ -129,6 +182,9 @@ export default defineEventHandler(async (event) => {
         invited_email: email,
         role: role as "player" | "parent",
         token,
+        ...(playerSnapshot
+          ? { pending_player_details: playerSnapshot as Json }
+          : {}),
       })
       .select("id")
       .single();
@@ -139,64 +195,6 @@ export default defineEventHandler(async (event) => {
         statusCode: 500,
         statusMessage: "Failed to create invitation",
       });
-    }
-
-    // Persist player details the inviting parent already has, so the player
-    // isn't re-asked for them on accept (hydrated in accept.post.ts /
-    // hydrateAthleteProfile.ts). Only meaningful for a player-role invite —
-    // non-blocking, same pattern as the invite email below: the invitation
-    // itself is the primary action and must not fail because this did.
-    //
-    // NOTE: pending_player_details is stored per-family, not per-invitation.
-    // If a family has more than one pending player invite at once, the later
-    // write here overwrites the earlier one — a pre-existing limitation of
-    // this storage shape (also true of server/api/family/player-details.post.ts).
-    // Tracked separately; not fixed in this endpoint.
-    if (pendingPlayerDetails && role === "player") {
-      try {
-        const { data: existingFamily } = await supabase
-          .from("family_units")
-          .select("pending_player_details")
-          .eq("id", familyUnitId)
-          .single();
-
-        const { error: playerDetailsError } = await supabase
-          .from("family_units")
-          .update({
-            pending_player_details: {
-              // Preserve fields staged by player-details.post.ts (e.g.
-              // playerDob, gender) that this invite payload doesn't carry.
-              ...((existingFamily?.pending_player_details as Record<
-                string,
-                unknown
-              > | null) ?? {}),
-              playerName:
-                `${pendingPlayerDetails.first_name} ${pendingPlayerDetails.last_name}`.trim(),
-              ...(pendingPlayerDetails.graduation_year
-                ? { graduationYear: pendingPlayerDetails.graduation_year }
-                : {}),
-              ...(pendingPlayerDetails.sport
-                ? { sport: pendingPlayerDetails.sport }
-                : {}),
-              ...(pendingPlayerDetails.position
-                ? { position: pendingPlayerDetails.position }
-                : {}),
-            },
-          })
-          .eq("id", familyUnitId);
-
-        if (playerDetailsError) {
-          logger.warn(
-            "Failed to persist pending player details — invitation created without them",
-            { error: playerDetailsError },
-          );
-        }
-      } catch (playerDetailsErr) {
-        logger.warn(
-          "Failed to persist pending player details — invitation created without them",
-          playerDetailsErr,
-        );
-      }
     }
 
     // Send invite email (non-blocking — don't fail if email fails)
