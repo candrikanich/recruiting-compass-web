@@ -8,7 +8,13 @@ export interface VisitDivisionRules {
   unofficial: string[];
 }
 
-/** NCAA official vs. unofficial visit payment rules, per division. */
+/**
+ * NCAA official vs. unofficial visit payment rules, per division.
+ * D1 figures verified against NCAA's "Official and Unofficial Visits 101"
+ * (Division I Educational Resource, Feb 2026) — the $60/person entertainment
+ * cap and the five complimentary game tickets are separate allowances, not
+ * one bundled into the other.
+ */
 export const OFFICIAL_VISIT_RULES: VisitDivisionRules[] = [
   {
     division: "D1",
@@ -16,11 +22,12 @@ export const OFFICIAL_VISIT_RULES: VisitDivisionRules[] = [
       "Transportation to and from the school for you and up to two family members",
       "Lodging",
       "Up to three meals per day for you and up to four family members",
-      "Up to $60 per person of reasonable entertainment expenses for you and up to four family members (including five tickets to a home sports event)",
+      "Up to $60 per person of reasonable entertainment expenses for you and up to four family members (this does not include meals or game tickets)",
+      "Up to five complimentary tickets to a home sports event, for you and those accompanying you",
     ],
     unofficial: [
       "No complimentary meals",
-      "Up to three tickets to a home sports event for you and those accompanying you",
+      "Complimentary tickets to a home sports event for you and up to three family members (a nontraditional family may receive two additional tickets)",
     ],
   },
   {
@@ -29,7 +36,8 @@ export const OFFICIAL_VISIT_RULES: VisitDivisionRules[] = [
       "Transportation to and from the school",
       "Lodging",
       "Meals for you and those accompanying you",
-      "Up to $50 per person of reasonable entertainment expenses for you and those accompanying you (including tickets to a home sports event)",
+      "Up to $50 per person of reasonable entertainment expenses for you and those accompanying you (this does not include meals or game tickets)",
+      "Complimentary tickets to a home sports event for you and those accompanying you",
     ],
     unofficial: [
       "One meal for you and those accompanying you",
@@ -42,7 +50,8 @@ export const OFFICIAL_VISIT_RULES: VisitDivisionRules[] = [
       "Transportation to and from the school",
       "Lodging",
       "Up to three meals per day for you and those accompanying you",
-      "Up to $40 per person of reasonable entertainment expenses for you and those accompanying you (including tickets to home sports events)",
+      "Up to $40 per person of reasonable entertainment expenses for you and those accompanying you (this does not include meals or game tickets)",
+      "Complimentary tickets to a home sports event for you and those accompanying you",
     ],
     unofficial: [
       "One meal for you and those accompanying you at the on-campus dining facility",
