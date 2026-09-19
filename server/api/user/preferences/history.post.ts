@@ -13,7 +13,7 @@ import { useLogger } from "~/server/utils/logger";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import type { Database } from "~/types/database";
 
-const historySchema = z.object({
+export const historySchema = z.object({
   category: z.string(),
   old_value: z.unknown().optional(),
   new_value: z.unknown().optional(),

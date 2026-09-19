@@ -405,35 +405,55 @@ watch(agreeToTerms, (isChecked) => {
  */
 const submitMinorSignup = async (guardian: string) => {
   try {
-    await $fetch("/api/auth/signup-minor", {
-      method: "POST",
-      body: {
-        email: email.value.trim(),
-        password: password.value,
-        firstName: firstName.value.trim(),
-        lastName: lastName.value.trim(),
-        dateOfBirth: dateOfBirth.value,
-        guardianEmail: guardian,
-        graduationYear: graduationYear.value,
-        primarySport: primarySport.value || undefined,
-        gender: gender.value,
-        zipCode: zipCode.value || undefined,
-        captchaToken: turnstileToken.value,
+    const minorSignupResponse = await $fetch<{ tokenHash?: string }>(
+      "/api/auth/signup-minor",
+      {
+        method: "POST",
+        body: {
+          email: email.value.trim(),
+          password: password.value,
+          firstName: firstName.value.trim(),
+          lastName: lastName.value.trim(),
+          dateOfBirth: dateOfBirth.value,
+          guardianEmail: guardian,
+          graduationYear: graduationYear.value,
+          primarySport: primarySport.value || undefined,
+          gender: gender.value,
+          zipCode: zipCode.value || undefined,
+          captchaToken: turnstileToken.value,
+          // This single-step form has nothing left to ask after signup (unlike
+          // iOS, which still has a separate schools-carousel step) — tells the
+          // endpoint it's safe to treat grad year + sport as onboarding-complete
+          // proof, not just step-1 data. See signup-minor.post.ts.
+          wizardComplete: true,
+        },
       },
-    });
+    );
 
     // The endpoint creates the account server-side (auto-confirmed, same as
-    // the adult path) but doesn't sign in for us — the signup Turnstile
-    // token it just verified is already consumed, so mint a fresh one for
-    // this sign-in the same way the adult path does.
-    const signInCaptchaToken = await getFreshTurnstileToken();
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email: email.value.trim(),
-      password: password.value,
-      ...(signInCaptchaToken && {
-        options: { captchaToken: signInCaptchaToken },
-      }),
-    });
+    // the adult path) and also mints a service-role magiclink tokenHash so
+    // this step doesn't need Supabase's own captcha-gated signInWithPassword
+    // at all — that second captcha hop is what silently breaks on Safari
+    // (ITP unreliably solves the invisible Turnstile widget). Falls back to
+    // the old captcha-gated sign-in only if the mint failed server-side.
+    let signInError: { message: string } | null;
+    if (minorSignupResponse.tokenHash) {
+      const result = await supabase.auth.verifyOtp({
+        token_hash: minorSignupResponse.tokenHash,
+        type: "magiclink",
+      });
+      signInError = result.error;
+    } else {
+      const signInCaptchaToken = await getFreshTurnstileToken();
+      const result = await supabase.auth.signInWithPassword({
+        email: email.value.trim(),
+        password: password.value,
+        ...(signInCaptchaToken && {
+          options: { captchaToken: signInCaptchaToken },
+        }),
+      });
+      signInError = result.error;
+    }
     if (signInError) throw signInError;
 
     // Family unit + pending onboarding fields (primary_sport/gender, still

@@ -152,6 +152,109 @@ describe("resolveHomeState", () => {
       }),
     ).toBeNull();
   });
+
+  it("falls back to zip-derived state when no explicit state is present", () => {
+    expect(
+      resolveHomeState({
+        locationState: null,
+        schoolState: null,
+        hometownState: null,
+        locationZip: "43215", // Columbus, OH
+      }),
+    ).toBe("OH");
+  });
+
+  it("prefers an explicit state over a zip-derived one", () => {
+    expect(
+      resolveHomeState({
+        locationState: "NC",
+        schoolState: null,
+        hometownState: null,
+        locationZip: "43215",
+      }),
+    ).toBe("NC");
+  });
+
+  it("ignores an invalid zip", () => {
+    expect(
+      resolveHomeState({
+        locationState: null,
+        schoolState: null,
+        hometownState: null,
+        locationZip: "not-a-zip",
+      }),
+    ).toBeNull();
+  });
+
+  it("resolves American Samoa's zip to AS, not HI, despite sharing the 967-968 prefix range", () => {
+    expect(
+      resolveHomeState({
+        locationState: null,
+        schoolState: null,
+        hometownState: null,
+        locationZip: "96799",
+      }),
+    ).toBe("AS");
+  });
+
+  it("resolves a ZIP+4 code by its first 5 digits", () => {
+    expect(
+      resolveHomeState({
+        locationState: null,
+        schoolState: null,
+        hometownState: null,
+        locationZip: "43215-1234",
+      }),
+    ).toBe("OH");
+  });
+
+  it("resolves a bare 9-digit zip by its first 5 digits", () => {
+    expect(
+      resolveHomeState({
+        locationState: null,
+        schoolState: null,
+        hometownState: null,
+        locationZip: "432151234",
+      }),
+    ).toBe("OH");
+  });
+
+  it("still rejects malformed extended zips", () => {
+    expect(
+      resolveHomeState({
+        locationState: null,
+        schoolState: null,
+        hometownState: null,
+        locationZip: "43215-123",
+      }),
+    ).toBeNull();
+  });
+
+  it("resolves 006xx/007xx/009xx zips to PR", () => {
+    for (const zip of ["00601", "00700", "00979", "00987"]) {
+      expect(
+        resolveHomeState({
+          locationState: null,
+          schoolState: null,
+          hometownState: null,
+          locationZip: zip,
+        }),
+      ).toBe("PR");
+    }
+  });
+
+  it("resolves 008xx zips to VI, not PR", () => {
+    for (const zip of ["00801", "00840", "00851"]) {
+      expect(
+        resolveHomeState({
+          locationState: null,
+          schoolState: null,
+          hometownState: null,
+          locationZip: zip,
+        }),
+      ).toBe("VI");
+    }
+  });
 });
 
 describe("isAdjacentState", () => {

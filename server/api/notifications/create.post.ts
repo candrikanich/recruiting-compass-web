@@ -9,7 +9,7 @@ import { createServerSupabaseClient } from "~/server/utils/supabase";
 import { requireAuth } from "~/server/utils/auth";
 import { useLogger } from "~/server/utils/logger";
 
-const createNotificationSchema = z.object({
+export const createNotificationSchema = z.object({
   type: z.enum([
     "follow_up_reminder",
     "deadline_alert",

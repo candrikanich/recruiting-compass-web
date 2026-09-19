@@ -3,6 +3,7 @@ import { useLogger } from "~/server/utils/logger";
 import { requireAuth } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import { hydrateAthleteFromPendingDetails } from "~/server/utils/hydrateAthleteProfile";
+import { markOnboardingComplete } from "~/server/utils/onboardingComplete";
 import { requiresGuardianInvite } from "~/utils/age";
 import { CURRENT_TERMS_VERSION } from "~/utils/legal";
 import type { Database } from "~/types/database";
@@ -25,7 +26,7 @@ export default defineEventHandler(async (event) => {
     const { data: invitation } = await supabase
       .from("family_invitations")
       .select(
-        "id, family_unit_id, invited_email, role, status, expires_at, invited_by",
+        "id, family_unit_id, invited_email, role, status, expires_at, invited_by, pending_player_details",
       )
       .eq("token", token)
       .single();
@@ -126,6 +127,13 @@ export default defineEventHandler(async (event) => {
         }
       | undefined;
 
+    // Whether the caller can skip the onboarding wizard entirely. A second
+    // parent joining an existing family has nothing left to enter. An invited
+    // player can skip only if the parent already staged BOTH fields the
+    // wizard itself requires (graduation year + sport) — anything less falls
+    // back to the wizard so the player is prompted for what's missing.
+    let onboardingComplete = invitation.role === "parent";
+
     if (invitation.role === "player") {
       // Record guardian consent for minor (13–17) players: the inviting parent or
       // guardian (invited_by) accepted the Terms on the minor's behalf. Compliance
@@ -154,15 +162,14 @@ export default defineEventHandler(async (event) => {
         }
       }
 
-      const { data: familyUnit } = await supabase
-        .from("family_units")
-        .select("pending_player_details")
-        .eq("id", invitation.family_unit_id)
-        .single();
-
-      const pendingDetails = (
-        familyUnit as { pending_player_details?: Record<string, unknown> }
-      )?.pending_player_details;
+      // Read from the invitation being accepted, not the family row — a
+      // family can have more than one pending player invite at once, and
+      // each invitation snapshots its own details at creation time (see
+      // server/api/family/invite.post.ts, issue #898).
+      const pendingDetails = invitation.pending_player_details as Record<
+        string,
+        unknown
+      > | null;
       if (pendingDetails?.playerName) {
         const parts = (pendingDetails.playerName as string).trim().split(/\s+/);
         prefill = {
@@ -188,15 +195,49 @@ export default defineEventHandler(async (event) => {
           logger,
         );
       }
+
+      const graduationYear =
+        typeof pendingDetails?.graduationYear === "number"
+          ? (pendingDetails.graduationYear as number)
+          : undefined;
+      const hasRequiredFields = Boolean(graduationYear && pendingDetails?.sport);
+
+      if (hasRequiredFields) {
+        try {
+          await markOnboardingComplete(supabase, user.id, graduationYear);
+          onboardingComplete = true;
+        } catch (err) {
+          // Fail safe, not open: if the stamp didn't land, onboardingComplete
+          // must stay false so the client falls back to the wizard instead of
+          // sending an unstamped user to a page the global middleware will
+          // immediately bounce them out of.
+          logger.error(
+            "Failed to mark onboarding complete for invited player",
+            err,
+          );
+        }
+      }
+    } else {
+      try {
+        await markOnboardingComplete(supabase, user.id);
+      } catch (err) {
+        onboardingComplete = false;
+        logger.error(
+          "Failed to mark onboarding complete for invited parent",
+          err,
+        );
+      }
     }
 
     logger.info("Invitation accepted", {
       invitationId: invitation.id,
       userId: user.id,
+      onboardingComplete,
     });
     return {
       success: true,
       familyUnitId: invitation.family_unit_id,
+      onboardingComplete,
       ...(prefill ? { prefill } : {}),
     };
   } catch (err) {

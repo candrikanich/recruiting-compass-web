@@ -34,7 +34,7 @@ const INTERACTION_TYPES = [
   "interest",
   "other",
 ] as const;
-const confirmBodySchema = z.object({
+export const confirmBodySchema = z.object({
   schoolId: z.string().regex(UUID_SHAPE, "Invalid UUID").optional(),
   coachId: z.string().regex(UUID_SHAPE, "Invalid UUID").nullable().optional(),
   type: z.enum(INTERACTION_TYPES).optional(),

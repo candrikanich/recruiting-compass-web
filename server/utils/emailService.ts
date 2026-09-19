@@ -16,6 +16,23 @@ const SEND_TIMEOUT_MS = 10_000;
 
 const fromAddress = (): string => process.env.RESEND_FROM_EMAIL ?? DEFAULT_FROM;
 
+const PROD_FALLBACK_URL = "https://myrecruitingcompass.com";
+
+// PUBLIC_BASE_URL is per-environment config and can go missing on a deploy
+// (e.g. a new Preview env) without anyone noticing until an emailed link
+// points at the wrong environment's database. Prefer it when set (it's the
+// intentional override), else fall back to the request's own origin — the
+// environment that's actually running this handler — and only reach for the
+// hardcoded prod URL, loudly, if neither is available.
+function resolveEmailBaseUrl(requestOrigin?: string): string {
+  if (process.env.PUBLIC_BASE_URL) return process.env.PUBLIC_BASE_URL;
+  if (requestOrigin) return requestOrigin;
+  logger.error(
+    "PUBLIC_BASE_URL unset and no request origin provided — falling back to hardcoded prod URL for an emailed link",
+  );
+  return PROD_FALLBACK_URL;
+}
+
 let client: Resend | null = null;
 let missingKeyCaptured = false;
 
@@ -272,6 +289,7 @@ export interface SendGuardianClaimEmailOptions {
   playerName: string;
   token: string;
   context?: EmailSendContext;
+  requestOrigin?: string;
 }
 
 /**
@@ -282,9 +300,8 @@ export interface SendGuardianClaimEmailOptions {
 export const sendGuardianClaimEmail = async (
   options: SendGuardianClaimEmailOptions,
 ): Promise<{ success: boolean; messageId?: string; error?: string }> => {
-  const { to, playerName, token, context } = options;
-  const baseUrl =
-    process.env.PUBLIC_BASE_URL ?? "https://myrecruitingcompass.com";
+  const { to, playerName, token, context, requestOrigin } = options;
+  const baseUrl = resolveEmailBaseUrl(requestOrigin);
   const claimUrl = `${baseUrl}/guardian/claim/${encodeURIComponent(token)}`;
 
   const htmlContent = `
@@ -335,14 +352,14 @@ export interface SendVerificationEmailOptions {
   to: string;
   token: string;
   context?: EmailSendContext;
+  requestOrigin?: string;
 }
 
 export const sendVerificationEmail = async (
   options: SendVerificationEmailOptions,
 ): Promise<{ success: boolean; messageId?: string; error?: string }> => {
-  const { to, token, context } = options;
-  const baseUrl =
-    process.env.PUBLIC_BASE_URL ?? "https://myrecruitingcompass.com";
+  const { to, token, context, requestOrigin } = options;
+  const baseUrl = resolveEmailBaseUrl(requestOrigin);
   const verifyUrl = `${baseUrl}/verify-email/${encodeURIComponent(token)}`;
 
   const bodyHtml = `
@@ -378,6 +395,7 @@ export interface SendInviteEmailOptions {
   role: "player" | "parent";
   token: string;
   context?: EmailSendContext;
+  requestOrigin?: string;
 }
 
 export function renderWeeklyDigestEmail(
@@ -470,9 +488,9 @@ export function renderInviteBody(
 export const sendInviteEmail = async (
   options: SendInviteEmailOptions,
 ): Promise<{ success: boolean; messageId?: string; error?: string }> => {
-  const { to, inviterName, familyName, role, token, context } = options;
-  const baseUrl =
-    process.env.PUBLIC_BASE_URL ?? "https://myrecruitingcompass.com";
+  const { to, inviterName, familyName, role, token, context, requestOrigin } =
+    options;
+  const baseUrl = resolveEmailBaseUrl(requestOrigin);
   const joinUrl = `${baseUrl}/join?token=${encodeURIComponent(token)}`;
 
   const bodyHtml = renderInviteBody(inviterName, familyName, role, joinUrl);

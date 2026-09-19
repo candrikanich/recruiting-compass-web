@@ -5,12 +5,33 @@ import { useLogger } from "~/server/utils/logger";
 import { requireAuth } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import { sendInviteEmail } from "~/server/utils/emailService";
+import { getSafeRequestOrigin } from "~/server/utils/requestOrigin";
 import { emailSchema } from "~/utils/validation/validators";
 import { rateLimitByUser, throwIfRateLimited } from "~/server/utils/rateLimit";
+import type { Json } from "~/types/database";
 
-const inviteBodySchema = z.object({
+// Wire shape iOS sends (Features/Family/Models/PendingPlayerDetails.swift) —
+// separate first/last name, snake_case keys. Transformed on persist to match
+// the canonical `family_units.pending_player_details` shape already written
+// by server/api/family/player-details.post.ts and read by accept.post.ts /
+// hydrateAthleteProfile.ts (a single combined `playerName` string).
+const pendingPlayerDetailsSchema = z.object({
+  first_name: z.string().trim().min(1),
+  // iOS's onboarding invite step validates only first name — last name can be
+  // sent as an empty string. Reject the request only if it's not a string.
+  last_name: z.string().trim(),
+  sport: z.string().trim().min(1).optional(),
+  position: z.string().trim().min(1).optional(),
+  graduation_year: z.number().int().optional(),
+});
+
+export const inviteBodySchema = z.object({
   email: emailSchema,
   role: z.enum(["player", "parent"], "role must be player or parent"),
+  // Optional — only meaningful for a player-role invite. See issue #895: this
+  // field previously wasn't declared at all, so Zod silently stripped it and
+  // a parent's player details never persisted.
+  pending_player_details: pendingPlayerDetailsSchema.optional(),
 });
 
 export default defineEventHandler(async (event) => {
@@ -33,7 +54,8 @@ export default defineEventHandler(async (event) => {
           parseResult.error.issues[0]?.message ?? "Invalid request body",
       });
     }
-    const { email, role } = parseResult.data;
+    const { email, role, pending_player_details: pendingPlayerDetails } =
+      parseResult.data;
 
     const supabase = useSupabaseAdmin();
 
@@ -100,6 +122,58 @@ export default defineEventHandler(async (event) => {
 
     const token = randomUUID();
 
+    // Snapshot player details onto THIS invitation (not the family row), so a
+    // family with more than one pending player invite at once doesn't have a
+    // later invite's snapshot clobber an earlier one's (issue #898).
+    // family_units.pending_player_details is the pre-invite staging draft the
+    // parent fills in during onboarding (server/api/family/player-details.post.ts,
+    // before any invitation exists to attach it to) — start from that draft
+    // and overlay whatever this specific invite's wire payload carries (iOS's
+    // ParentOnboardingWizardViewModel). Built before the insert so it lands
+    // in the same write as the invitation row — a player invitation is never
+    // created without its snapshot attempt, instead of a follow-up update
+    // whose failure would silently leave an invitation acceptance can't
+    // hydrate (issue #898 follow-up).
+    let playerSnapshot: Record<string, unknown> | null = null;
+    if (role === "player") {
+      try {
+        const { data: existingFamily } = await supabase
+          .from("family_units")
+          .select("pending_player_details")
+          .eq("id", familyUnitId)
+          .single();
+
+        const familyDraft = (existingFamily?.pending_player_details ??
+          null) as Record<string, unknown> | null;
+
+        if (familyDraft || pendingPlayerDetails) {
+          playerSnapshot = {
+            ...(familyDraft ?? {}),
+            ...(pendingPlayerDetails
+              ? {
+                  playerName:
+                    `${pendingPlayerDetails.first_name} ${pendingPlayerDetails.last_name}`.trim(),
+                  ...(pendingPlayerDetails.graduation_year
+                    ? { graduationYear: pendingPlayerDetails.graduation_year }
+                    : {}),
+                  ...(pendingPlayerDetails.sport
+                    ? { sport: pendingPlayerDetails.sport }
+                    : {}),
+                  ...(pendingPlayerDetails.position
+                    ? { position: pendingPlayerDetails.position }
+                    : {}),
+                }
+              : {}),
+          };
+        }
+      } catch (playerDetailsErr) {
+        logger.warn(
+          "Failed to build pending player details snapshot — invitation will be created without them",
+          playerDetailsErr,
+        );
+      }
+    }
+
     const { data: invitation, error } = await supabase
       .from("family_invitations")
       .insert({
@@ -108,6 +182,9 @@ export default defineEventHandler(async (event) => {
         invited_email: email,
         role: role as "player" | "parent",
         token,
+        ...(playerSnapshot
+          ? { pending_player_details: playerSnapshot as Json }
+          : {}),
       })
       .select("id")
       .single();
@@ -128,6 +205,7 @@ export default defineEventHandler(async (event) => {
         familyName: family?.family_name ?? "My Family",
         role: role as "player" | "parent",
         token,
+        requestOrigin: getSafeRequestOrigin(event),
         context: {
           purpose: "invite",
           familyUnitId,

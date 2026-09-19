@@ -23,7 +23,7 @@ import type { Database } from "~/types/database";
 
 type UsersUpdate = Database["public"]["Tables"]["users"]["Update"];
 
-const bodySchema = z.object({
+export const bodySchema = z.object({
   athleteUserId: z.string().uuid(),
   sourcePath: z.string().min(1),
   value: z.string().nullable(),

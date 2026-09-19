@@ -17,24 +17,7 @@
           <h1 class="mt-6 mb-2 text-2xl font-bold text-white">
             Welcome to The Recruiting Compass
           </h1>
-          <p class="mb-6 text-white/90">
-            Let's get you set up in just two steps
-          </p>
-
-          <!-- Progress Indicator -->
-          <div class="mb-8 flex items-center justify-between">
-            <div class="flex-1">
-              <div class="h-2 w-full rounded-full bg-white/30">
-                <div
-                  :style="{ width: `${progressPercentage}%` }"
-                  class="h-2 rounded-full bg-white transition-all duration-300"
-                ></div>
-              </div>
-            </div>
-            <span class="ml-4 text-sm font-medium text-white"
-              >{{ currentStep }}/{{ totalSteps }}</span
-            >
-          </div>
+          <p class="mb-6 text-white/90">Let's get you set up</p>
         </div>
 
         <!-- Screen Container -->
@@ -42,12 +25,11 @@
           ref="stepContainer"
           role="region"
           tabindex="-1"
-          :aria-label="`Step ${currentStep} of ${totalSteps}`"
+          aria-label="Tell us about you"
           :aria-busy="loading"
           class="mb-8 rounded-2xl border border-white/20 bg-white/95 p-8 shadow-2xl backdrop-blur-xs focus:outline-none"
         >
-        <!-- Screen 1: Tell us about you -->
-        <div v-if="currentStep === 1" class="space-y-6">
+        <div class="space-y-6">
           <h2 class="mb-4 text-2xl font-bold text-slate-900">
             Tell us about you
           </h2>
@@ -149,27 +131,6 @@
           </div>
         </div>
 
-        <!-- Screen 2: Schools to explore -->
-        <div v-if="currentStep === 2" class="space-y-6">
-          <div class="mb-2 text-center">
-            <h2 class="mb-2 text-2xl font-bold text-slate-900">
-              Schools to explore
-            </h2>
-            <p class="text-slate-600">
-              Based on what you told us, here are a few schools to start with.
-            </p>
-          </div>
-
-          <RecommendedSchools
-            :items="recommendations"
-            :loading="recommendationsLoading"
-            :error="recommendationsError || recommendationActionError"
-            :adding-key="addingRecommendationKey"
-            @add="handleAddRecommendation"
-            @dismiss="handleDismissRecommendation"
-          />
-        </div>
-
         <!-- Loading state -->
         <div
           v-if="loading"
@@ -202,22 +163,14 @@
         </div>
       </div>
 
-      <!-- Navigation Buttons -->
-      <div class="flex justify-between gap-4">
-        <button
-          @click="previousScreen"
-          :disabled="currentStep === 1 || loading"
-          class="rounded-lg bg-slate-200 px-6 py-3 font-medium text-slate-700 transition-colors hover:bg-slate-300 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          Back
-        </button>
-
+      <!-- Navigation -->
+      <div class="flex justify-end gap-4">
         <button
           @click="nextScreen"
           :disabled="loading"
           class="rounded-lg bg-blue-500 px-6 py-3 font-medium text-white transition-colors hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {{ currentStep === totalSteps ? "Go to your dashboard →" : "Next" }}
+          Go to your dashboard →
         </button>
       </div>
       </div>
@@ -226,30 +179,24 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch, nextTick } from "vue";
+import { ref, computed, onMounted, nextTick } from "vue";
 import { useOnboarding } from "~/composables/useOnboarding";
 import { usePreferenceManager } from "~/composables/usePreferenceManager";
-import { useSchools } from "~/composables/useSchools";
-import { useSchoolRecommendations } from "~/composables/useSchoolRecommendations";
 import { useNuxProgress } from "~/composables/useNuxProgress";
 import { createClientLogger } from "~/utils/logger";
 import { getGraduationYearOptions } from "~/utils/graduationYears";
-import { recommendationToSchoolDraft } from "~/utils/schoolRecommendations";
 // The bare <MultiSportFieldBackground /> tag silently resolves to nothing
 // without this — Nuxt auto-imports components/Auth/*.vue under the
 // Auth-prefixed tag; pages/signup.vue and pages/login.vue only work because
 // they import it explicitly.
 import MultiSportFieldBackground from "~/components/Auth/MultiSportFieldBackground.vue";
 import type { PlayerDetails } from "~/types/models";
-import type { School } from "~/types";
-import type { SchoolRecommendation } from "~/types/schoolRecommendations";
 
 const logger = createClientLogger("Onboarding");
 
 definePageMeta({ layout: "public" });
 
-const { saveOnboardingStep, completeOnboarding, getOnboardingProgress } =
-  useOnboarding();
+const { saveOnboardingStep, completeOnboarding } = useOnboarding();
 const {
   setHomeLocation,
   setPlayerDetails,
@@ -257,26 +204,9 @@ const {
   getPlayerDetails,
   getHomeLocation,
 } = usePreferenceManager();
-const { createSchool } = useSchools();
-const {
-  recommendations,
-  loading: recommendationsLoading,
-  error: recommendationsError,
-  fetchRecommendations,
-  dismissRecommendation,
-  removeRecommendation,
-} = useSchoolRecommendations();
 const { completeItem } = useNuxProgress();
 
-const currentStep = ref(1);
 const stepContainer = ref<HTMLElement | null>(null);
-
-// Move focus to the step region on advance so keyboard/screen-reader users
-// land on the new step and hear its "Step N of M" label announced.
-watch(currentStep, async () => {
-  await nextTick();
-  stepContainer.value?.focus();
-});
 
 const onboardingData = ref<Record<string, unknown>>({});
 const loading = ref(false);
@@ -284,10 +214,6 @@ const error = ref<string | null>(null);
 const zipCodeError = ref<string | null>(null);
 const sportError = ref<string | null>(null);
 const graduationYearError = ref<string | null>(null);
-const addingRecommendationKey = ref<string | null>(null);
-const recommendationActionError = ref<string | null>(null);
-
-const totalSteps = 2;
 
 // Common high school sports and their positions
 const commonSports = [
@@ -325,10 +251,6 @@ const genderIsAutoDerived = computed(() => {
 });
 
 const graduationYears = computed(() => getGraduationYearOptions());
-
-const progressPercentage = computed(() => {
-  return (currentStep.value / totalSteps) * 100;
-});
 
 const onSportChange = () => {
   const sport = (
@@ -408,27 +330,13 @@ const saveStep1 = async () => {
 };
 
 const nextScreen = async () => {
-  if (currentStep.value === 1) {
-    if (!validateStep1()) {
-      return;
-    }
-    loading.value = true;
-    try {
-      await saveStep1();
-      currentStep.value = 2;
-      void fetchRecommendations();
-    } catch (err) {
-      error.value =
-        err instanceof Error ? err.message : "Failed to save progress";
-    } finally {
-      loading.value = false;
-    }
+  if (!validateStep1()) {
     return;
   }
-
-  // Step 2: "Go to your dashboard"
   loading.value = true;
   try {
+    await saveStep1();
+
     const assessment = {
       hasHighlightVideo: false,
       hasContactedCoaches: false,
@@ -452,43 +360,6 @@ const nextScreen = async () => {
     loading.value = false;
   }
 };
-
-const previousScreen = async () => {
-  if (currentStep.value > 1) {
-    currentStep.value--;
-  }
-};
-
-async function handleAddRecommendation(school: SchoolRecommendation) {
-  addingRecommendationKey.value = school.catalogKey;
-  recommendationActionError.value = null;
-  try {
-    await createSchool(
-      recommendationToSchoolDraft(school) as Omit<
-        School,
-        "id" | "created_at" | "updated_at"
-      >,
-    );
-    removeRecommendation(school.catalogKey);
-
-    const { $posthog } = useNuxtApp();
-    $posthog?.capture("onboarding_v2_school_added");
-  } catch (err) {
-    logger.warn("Failed to add recommended school", err);
-    recommendationActionError.value =
-      err instanceof Error ? err.message : "Failed to add school";
-  } finally {
-    addingRecommendationKey.value = null;
-  }
-}
-
-async function handleDismissRecommendation(school: SchoolRecommendation) {
-  try {
-    await dismissRecommendation(school.catalogKey);
-  } catch {
-    // dismissRecommendation already restores state and sets its own error.
-  }
-}
 
 const route = useRoute();
 
@@ -539,17 +410,11 @@ onMounted(async () => {
     // Load preferences so a partial save from a previous session merges correctly
     await loadAllPreferences();
     prefillFromCanonical();
-    // getOnboardingProgress reflects the last-*saved* step, not the step the
-    // user should land on next — step 1 doesn't record a save until it's
-    // done, so resuming after it must move to step 2, not redisplay step 1.
-    const progress = await getOnboardingProgress();
-    const step = Math.floor((progress / 100) * totalSteps) + 1;
-    currentStep.value = Math.min(step, totalSteps);
-    if (currentStep.value === totalSteps) {
-      void fetchRecommendations();
-    }
   } catch (err) {
     logger.error("Failed to restore progress", err);
   }
+
+  await nextTick();
+  stepContainer.value?.focus();
 });
 </script>

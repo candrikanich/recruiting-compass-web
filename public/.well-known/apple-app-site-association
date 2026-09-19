@@ -4,7 +4,7 @@
     "details": [
       {
         "appID": "G374A783RH.com.chrisandrikanich.TheRecruitingCompass",
-        "paths": ["/invite/*", "/join"]
+        "paths": ["/invite/*", "/join", "/guardian/claim/*"]
       }
     ]
   }

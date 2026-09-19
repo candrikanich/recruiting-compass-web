@@ -84,6 +84,16 @@ export default defineNuxtConfig({
     // Cache directory for faster builds
     cacheDir: ".vite",
 
+    // Claude Code worktrees under .claude/worktrees/ are full source copies
+    // (sometimes with a symlinked node_modules) sitting inside the project
+    // root — without this, dev's file watcher recurses into every one of
+    // them too, multiplying watched file descriptors and risking EMFILE.
+    server: {
+      watch: {
+        ignored: ["**/.claude/worktrees/**"],
+      },
+    },
+
     // Strip console.* and debugger statements from production bundles.
     // Server-side code uses useLogger(); client-side uses createClientLogger().
     // Direct console calls are dev-only and must not ship to users.

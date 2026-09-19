@@ -1,6 +1,7 @@
 import type { SchoolRecommendation } from "~/types/schoolRecommendations";
 import type { NcaaCatalogSchool, NcaaDivision } from "~/utils/ncaaDatabase";
 import { isAdjacentState } from "~/utils/usStateAdjacency";
+import { zipToState } from "~/utils/zipToState";
 
 export const DEFAULT_RECOMMENDATION_LIMIT = 8;
 const MAX_PER_CONFERENCE = 2;
@@ -48,6 +49,7 @@ export function resolveHomeState(input: {
   locationState?: string | null;
   schoolState?: string | null;
   hometownState?: string | null;
+  locationZip?: string | null;
 }): string | null {
   const candidates = [
     input.locationState,
@@ -58,7 +60,7 @@ export function resolveHomeState(input: {
     const state = raw?.trim().toUpperCase() ?? "";
     if (state.length === 2) return state;
   }
-  return null;
+  return zipToState(input.locationZip);
 }
 
 export interface RankSchoolRecommendationsInput {

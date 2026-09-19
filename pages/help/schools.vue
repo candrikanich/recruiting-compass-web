@@ -1,7 +1,7 @@
 <template>
   <div class="max-w-2xl">
     <h1 class="mb-1 text-2xl font-bold text-gray-900">Schools & Coaches</h1>
-    <HelpReviewedDate reviewed-on="2026-09-06" />
+    <HelpReviewedDate reviewed-on="2026-09-18" />
 
     <!-- Adding a school -->
     <section class="mb-10">
@@ -156,6 +156,50 @@
       </HelpCallout>
     </section>
 
+    <!-- Official vs. Unofficial Visits -->
+    <section class="mb-10">
+      <HelpSectionHeader title="Official vs. Unofficial Visits" />
+      <p class="mb-4 text-sm text-gray-600">
+        An <strong>official visit</strong> is paid for by the school hosting
+        you — you get one per school (D1/D2 allow a second if the head coach
+        changes). An <strong>unofficial visit</strong> is paid for by you or
+        your family, and there's no limit on how many you can take. What the
+        school is allowed to pay for during each type of visit depends on its
+        division.
+      </p>
+      <div
+        v-for="rules in visitDivisionRules"
+        :key="rules.division"
+        class="mb-6 overflow-hidden rounded-lg border border-gray-200"
+      >
+        <p class="bg-gray-50 px-3 py-2 text-sm font-semibold text-gray-800">
+          {{ rules.division }}
+        </p>
+        <div class="grid grid-cols-1 gap-4 p-3 sm:grid-cols-2">
+          <div>
+            <p class="mb-1 text-xs font-semibold tracking-wide text-gray-500 uppercase">
+              Official visit — school may pay for
+            </p>
+            <ul class="list-disc space-y-1 pl-5 text-sm text-gray-700">
+              <li v-for="item in rules.official" :key="item">{{ item }}</li>
+            </ul>
+          </div>
+          <div>
+            <p class="mb-1 text-xs font-semibold tracking-wide text-gray-500 uppercase">
+              Unofficial visit — school may pay for
+            </p>
+            <ul class="list-disc space-y-1 pl-5 text-sm text-gray-700">
+              <li v-for="item in rules.unofficial" :key="item">{{ item }}</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <HelpCallout type="info">
+        These are NCAA rules and only apply to D1, D2, and D3 schools. NAIA and
+        JUCO schools set their own visit policies.
+      </HelpCallout>
+    </section>
+
     <!-- Coach Outreach -->
     <section class="mb-10">
       <HelpSectionHeader title="Coach Outreach" />
@@ -195,7 +239,11 @@
 </template>
 
 <script setup lang="ts">
+import { OFFICIAL_VISIT_RULES } from "~/utils/officialVisitRules";
+
 definePageMeta({
   layout: "help",
 });
+
+const visitDivisionRules = OFFICIAL_VISIT_RULES;
 </script>

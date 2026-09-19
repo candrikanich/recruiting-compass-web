@@ -3,6 +3,7 @@ import { issueVerificationToken } from "~/server/utils/emailVerificationTokens";
 import { sendVerificationEmail } from "~/server/utils/emailService";
 import { useLogger } from "~/server/utils/logger";
 import type { H3Event } from "h3";
+import { getSafeRequestOrigin } from "~/server/utils/requestOrigin";
 
 export interface CreateVerifiedAccountOptions {
   email: string;
@@ -17,7 +18,7 @@ export interface CreateVerifiedAccountOptions {
 }
 
 export type CreateVerifiedAccountResult =
-  | { ok: true; userId: string }
+  | { ok: true; userId: string; tokenHash?: string }
   | { ok: false; statusCode: number; statusMessage: string };
 
 /**
@@ -26,6 +27,13 @@ export type CreateVerifiedAccountResult =
  * never withholds a session — and verification is a separate, resendable
  * background step (issueVerificationToken + sendVerificationEmail) rather
  * than a login gate.
+ *
+ * Also mints a magiclink `tokenHash` via the service-role admin client so
+ * callers can establish the session with `verifyOtp` instead of a second,
+ * captcha-gated `signInWithPassword` call — that second call is what breaks
+ * on Safari (ITP unreliably solves the invisible Turnstile widget). Minting
+ * is non-fatal: a failure here just omits `tokenHash`, and callers fall back
+ * to the old captcha-gated sign-in.
  *
  * Duplicate-email and other creation failures are intentionally
  * indistinguishable to the caller (generic statusMessage, no `data.code`,
@@ -66,7 +74,11 @@ export async function createVerifiedAccount(
     // dashboard resend button covers both cases. Log for visibility only.
     try {
       const { token } = await issueVerificationToken(data.user.id);
-      const emailResult = await sendVerificationEmail({ to: email, token });
+      const emailResult = await sendVerificationEmail({
+        to: email,
+        token,
+        requestOrigin: getSafeRequestOrigin(event),
+      });
       if (!emailResult.success) {
         logger.error("Verification email failed to send", emailResult.error);
       }
@@ -75,5 +87,21 @@ export async function createVerifiedAccount(
     }
   }
 
-  return { ok: true, userId: data.user.id };
+  let tokenHash: string | undefined;
+  try {
+    const { data: linkData, error: linkError } =
+      await supabase.auth.admin.generateLink({
+        type: "magiclink",
+        email,
+      });
+    if (linkError) {
+      logger.error("Session token mint failed", linkError);
+    } else {
+      tokenHash = linkData.properties?.hashed_token;
+    }
+  } catch (err) {
+    logger.error("Session token mint failed", err);
+  }
+
+  return { ok: true, userId: data.user.id, tokenHash };
 }

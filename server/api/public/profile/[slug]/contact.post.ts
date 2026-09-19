@@ -55,7 +55,7 @@ function toValidInetOrNull(ip: string | null | undefined): string | null {
   return null;
 }
 
-const contactSchema = z.object({
+export const contactSchema = z.object({
   coachName: z.string().trim().min(1).max(120),
   coachEmail: z.string().trim().email().optional(),
   coachTitle: z.string().trim().max(80).optional(),

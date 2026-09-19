@@ -1,0 +1,2435 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Recruiting Compass API — request-body contracts",
+    "version": "1.0.0",
+    "description": "Auto-generated from server/api/** Zod schemas. Request bodies only (v1 scope) — see scripts/generate-openapi.ts. Do not hand-edit; run `npm run generate:openapi` after changing an endpoint's schema."
+  },
+  "paths": {
+    "/api/admin/cron/trigger": {
+      "post": {
+        "operationId": "post_api_admin_cron_trigger",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "jobName": {
+                    "type": "string"
+                  },
+                  "dryRun": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "jobName"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "Response shape not yet declared with Zod (out of scope for v1 — see file header). Consult the endpoint's own source for its actual status codes and response body."
+          }
+        }
+      }
+    },
+    "/api/admin/notifications/broadcast": {
+      "post": {
+        "operationId": "post_api_admin_notifications_broadcast",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "target": {
+                    "type": "string",
+                    "enum": [
+                      "all",
+                      "user"
+                    ]
+                  },
+                  "user_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "follow_up_reminder",
+                      "deadline_alert",
+                      "daily_digest",
+                      "inbound_interaction",
+                      "offer",
+                      "event"
+                    ]
+                  },
+                  "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "message": {
+                    "type": "string",
+                    "maxLength": 1000
+                  }
+                },
+                "required": [
+                  "target",
+                  "type",
+                  "title"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "Response shape not yet declared with Zod (out of scope for v1 — see file header). Consult the endpoint's own source for its actual status codes and response body."
+          }
+        }
+      }
+    },
+    "/api/athlete/messages": {
+      "post": {
+        "operationId": "post_api_athlete_messages",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "athleteUserId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "schoolId": {
+                    "nullable": true,
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "coachId": {
+                    "nullable": true,
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "templateSlug": {
+                    "nullable": true,
+                    "type": "string",
+                    "maxLength": 100
+                  },
+                  "channel": {
+                    "nullable": true,
+                    "type": "string",
+                    "maxLength": 20
+                  },
+                  "programNote": {
+                    "nullable": true,
+                    "type": "string",
+                    "maxLength": 2000
+                  },
+                  "updateHook": {
+                    "nullable": true,
+                    "type": "string",
+                    "maxLength": 2000
+                  },
+                  "subject": {
+                    "nullable": true,
+                    "type": "string",
+                    "maxLength": 500
+                  },
+                  "body": {
+                    "nullable": true,
+                    "type": "string",
+                    "maxLength": 20000
+                  }
+                },
+                "required": [
+                  "athleteUserId"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "Response shape not yet declared with Zod (out of scope for v1 — see file header). Consult the endpoint's own source for its actual status codes and response body."
+          }
+        }
+      }
+    },
+    "/api/athlete/messages/check": {
+      "post": {
+        "operationId": "post_api_athlete_messages_check",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "athleteUserId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "schoolId": {
+                    "nullable": true,
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "programNote": {
+                    "nullable": true,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "athleteUserId"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "Response shape not yet declared with Zod (out of scope for v1 — see file header). Consult the endpoint's own source for its actual status codes and response body."
+          }
+        }
+      }
+    },
+    "/api/athlete/profile-field": {
+      "patch": {
+        "operationId": "patch_api_athlete_profile_field",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "athleteUserId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "sourcePath": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "value": {
+                    "nullable": true,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "athleteUserId",
+                  "sourcePath",
+                  "value"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "Response shape not yet declared with Zod (out of scope for v1 — see file header). Consult the endpoint's own source for its actual status codes and response body."
+          }
+        }
+      }
+    },
+    "/api/auth/change-email": {
+      "post": {
+        "operationId": "post_api_auth_change_email",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "newEmail": {
+                    "type": "string",
+                    "minLength": 5,
+                    "maxLength": 255,
+                    "format": "email",
+                    "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                  },
+                  "currentPassword": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "newEmail",
+                  "currentPassword"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "Response shape not yet declared with Zod (out of scope for v1 — see file header). Consult the endpoint's own source for its actual status codes and response body."
+          }
+        }
+      }
+    },
+    "/api/auth/change-password": {
+      "post": {
+        "operationId": "post_api_auth_change_password",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "currentPassword": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "newPassword": {
+                    "type": "string",
+                    "minLength": 8
+                  }
+                },
+                "required": [
+                  "currentPassword",
+                  "newPassword"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "Response shape not yet declared with Zod (out of scope for v1 — see file header). Consult the endpoint's own source for its actual status codes and response body."
+          }
+        }
+      }
+    },
+    "/api/auth/confirm-password-reset": {
+      "post": {
+        "operationId": "post_api_auth_confirm_password_reset",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "password": {
+                    "type": "string",
+                    "minLength": 8,
+                    "maxLength": 128,
+                    "allOf": [
+                      {
+                        "type": "string",
+                        "pattern": "[A-Z]"
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "[a-z]"
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "[0-9]"
+                      }
+                    ]
+                  },
+                  "confirmPassword": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "password",
+                  "confirmPassword"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "Response shape not yet declared with Zod (out of scope for v1 — see file header). Consult the endpoint's own source for its actual status codes and response body."
+          }
+        }
+      }
+    },
+    "/api/auth/request-password-reset": {
+      "post": {
+        "operationId": "post_api_auth_request_password_reset",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "minLength": 5,
+                    "maxLength": 255,
+                    "format": "email",
+                    "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                  }
+                },
+                "required": [
+                  "email"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "Response shape not yet declared with Zod (out of scope for v1 — see file header). Consult the endpoint's own source for its actual status codes and response body."
+          }
+        }
+      }
+    },
+    "/api/deadlines": {
+      "post": {
+        "operationId": "post_api_deadlines",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "label": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "deadline_date": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                  },
+                  "category": {
+                    "type": "string",
+                    "enum": [
+                      "application",
+                      "decision",
+                      "financial_aid",
+                      "visit",
+                      "custom"
+                    ]
+                  },
+                  "school_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  }
+                },
+                "required": [
+                  "label",
+                  "deadline_date",
+                  "category"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "Response shape not yet declared with Zod (out of scope for v1 — see file header). Consult the endpoint's own source for its actual status codes and response body."
+          }
+        }
+      }
+    },
+    "/api/deadlines/{id}": {
+      "patch": {
+        "operationId": "patch_api_deadlines__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "label": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "deadline_date": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                  },
+                  "category": {
+                    "type": "string",
+                    "enum": [
+                      "application",
+                      "decision",
+                      "financial_aid",
+                      "visit",
+                      "custom"
+                    ]
+                  },
+                  "school_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "Response shape not yet declared with Zod (out of scope for v1 — see file header). Consult the endpoint's own source for its actual status codes and response body."
+          }
+        }
+      }
+    },
+    "/api/email/send": {
+      "post": {
+        "operationId": "post_api_email_send",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "to": {
+                    "type": "string",
+                    "format": "email",
+                    "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                  },
+                  "subject": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "template": {
+                    "type": "string",
+                    "enum": [
+                      "weekly-digest",
+                      "deadline-alert"
+                    ]
+                  },
+                  "data": {
+                    "type": "object",
+                    "additionalProperties": {}
+                  }
+                },
+                "required": [
+                  "to",
+                  "subject",
+                  "template",
+                  "data"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "Response shape not yet declared with Zod (out of scope for v1 — see file header). Consult the endpoint's own source for its actual status codes and response body."
+          }
+        }
+      }
+    },
+    "/api/family/code/regenerate": {
+      "post": {
+        "operationId": "post_api_family_code_regenerate",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "familyId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  }
+                },
+                "required": [
+                  "familyId"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "Response shape not yet declared with Zod (out of scope for v1 — see file header). Consult the endpoint's own source for its actual status codes and response body."
+          }
+        }
+      }
+    },
+    "/api/family/invite": {
+      "post": {
+        "operationId": "post_api_family_invite",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "minLength": 5,
+                    "maxLength": 255,
+                    "format": "email",
+                    "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                  },
+                  "role": {
+                    "type": "string",
+                    "enum": [
+                      "player",
+                      "parent"
+                    ]
+                  },
+                  "pending_player_details": {
+                    "type": "object",
+                    "properties": {
+                      "first_name": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "last_name": {
+                        "type": "string"
+                      },
+                      "sport": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "position": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "graduation_year": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "first_name",
+                      "last_name"
+                    ]
+                  }
+                },
+                "required": [
+                  "email",
+                  "role"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "Response shape not yet declared with Zod (out of scope for v1 — see file header). Consult the endpoint's own source for its actual status codes and response body."
+          }
+        }
+      }
+    },
+    "/api/feedback": {
+      "post": {
+        "operationId": "post_api_feedback",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "maxLength": 255
+                          },
+                          {
+                            "type": "string",
+                            "enum": [
+                              ""
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "nullable": true,
+                        "enum": [
+                          null
+                        ]
+                      }
+                    ]
+                  },
+                  "email": {
+                    "type": "string",
+                    "minLength": 5,
+                    "maxLength": 255,
+                    "format": "email",
+                    "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                  },
+                  "feedbackType": {
+                    "type": "string",
+                    "enum": [
+                      "bug",
+                      "feature",
+                      "other"
+                    ]
+                  },
+                  "page": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "maxLength": 255
+                          },
+                          {
+                            "type": "string",
+                            "enum": [
+                              ""
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "nullable": true,
+                        "enum": [
+                          null
+                        ]
+                      }
+                    ]
+                  },
+                  "message": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "maxLength": 5000
+                          },
+                          {
+                            "type": "string",
+                            "enum": [
+                              ""
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "nullable": true,
+                        "enum": [
+                          null
+                        ]
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "email",
+                  "feedbackType"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "Response shape not yet declared with Zod (out of scope for v1 — see file header). Consult the endpoint's own source for its actual status codes and response body."
+          }
+        }
+      }
+    },
+    "/api/help/feedback": {
+      "post": {
+        "operationId": "post_api_help_feedback",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "page": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200,
+                    "pattern": "^\\/.*"
+                  },
+                  "helpful": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "page",
+                  "helpful"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "Response shape not yet declared with Zod (out of scope for v1 — see file header). Consult the endpoint's own source for its actual status codes and response body."
+          }
+        }
+      }
+    },
+    "/api/inbound-drafts/{id}/confirm": {
+      "post": {
+        "operationId": "post_api_inbound_drafts__id__confirm",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "schoolId": {
+                    "type": "string",
+                    "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+                  },
+                  "coachId": {
+                    "nullable": true,
+                    "type": "string",
+                    "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "email",
+                      "text",
+                      "phone_call",
+                      "in_person_visit",
+                      "virtual_meeting",
+                      "camp",
+                      "showcase",
+                      "tweet",
+                      "dm",
+                      "game",
+                      "unofficial_visit",
+                      "official_visit",
+                      "interest",
+                      "other"
+                    ]
+                  },
+                  "direction": {
+                    "type": "string",
+                    "enum": [
+                      "inbound",
+                      "outbound"
+                    ]
+                  },
+                  "occurredAt": {
+                    "type": "string"
+                  },
+                  "subject": {
+                    "nullable": true,
+                    "type": "string"
+                  },
+                  "content": {
+                    "nullable": true,
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "Response shape not yet declared with Zod (out of scope for v1 — see file header). Consult the endpoint's own source for its actual status codes and response body."
+          }
+        }
+      }
+    },
+    "/api/notifications/create": {
+      "post": {
+        "operationId": "post_api_notifications_create",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "follow_up_reminder",
+                      "deadline_alert",
+                      "daily_digest",
+                      "inbound_interaction",
+                      "offer",
+                      "event"
+                    ]
+                  },
+                  "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "message": {
+                    "type": "string",
+                    "maxLength": 1000
+                  },
+                  "priority": {
+                    "default": "low",
+                    "type": "string",
+                    "enum": [
+                      "low",
+                      "normal",
+                      "high"
+                    ]
+                  },
+                  "action_url": {
+                    "type": "string",
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "type",
+                  "title"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "Response shape not yet declared with Zod (out of scope for v1 — see file header). Consult the endpoint's own source for its actual status codes and response body."
+          }
+        }
+      }
+    },
+    "/api/notifications/email": {
+      "post": {
+        "operationId": "post_api_notifications_email",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "to": {
+                    "type": "string",
+                    "format": "email",
+                    "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                  },
+                  "subject": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "title": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "message": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "priority": {
+                    "default": "normal",
+                    "type": "string",
+                    "enum": [
+                      "high",
+                      "normal",
+                      "low"
+                    ]
+                  },
+                  "actionUrl": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "idempotencyKey": {
+                    "type": "string"
+                  },
+                  "userId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "notificationId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  }
+                },
+                "required": [
+                  "to",
+                  "subject",
+                  "title",
+                  "message"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "Response shape not yet declared with Zod (out of scope for v1 — see file header). Consult the endpoint's own source for its actual status codes and response body."
+          }
+        }
+      }
+    },
+    "/api/player/profile": {
+      "put": {
+        "operationId": "put_api_player_profile",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "bio": {
+                    "nullable": true,
+                    "type": "string",
+                    "maxLength": 300
+                  },
+                  "is_published": {
+                    "type": "boolean"
+                  },
+                  "show_academics": {
+                    "type": "boolean"
+                  },
+                  "show_athletic": {
+                    "type": "boolean"
+                  },
+                  "show_film": {
+                    "type": "boolean"
+                  },
+                  "show_schools": {
+                    "type": "boolean"
+                  },
+                  "header_color": {
+                    "type": "string",
+                    "enum": [
+                      "slate",
+                      "blue",
+                      "emerald",
+                      "violet",
+                      "rose",
+                      "amber",
+                      "teal",
+                      "indigo"
+                    ]
+                  },
+                  "vanity_slug": {
+                    "nullable": true,
+                    "type": "string",
+                    "pattern": "^[a-z0-9][a-z0-9-]{0,28}[a-z0-9]$"
+                  },
+                  "banner_url": {
+                    "nullable": true,
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "looking_for": {
+                    "nullable": true,
+                    "type": "string",
+                    "maxLength": 600
+                  },
+                  "commitment_status": {
+                    "type": "string",
+                    "enum": [
+                      "uncommitted",
+                      "committed"
+                    ]
+                  },
+                  "committed_school_id": {
+                    "nullable": true,
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "awards": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "title": {
+                          "type": "string",
+                          "maxLength": 120
+                        },
+                        "year": {
+                          "nullable": true,
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        }
+                      },
+                      "required": [
+                        "title",
+                        "year"
+                      ]
+                    }
+                  },
+                  "values_tags": {
+                    "maxItems": 12,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "maxLength": 60
+                    }
+                  },
+                  "section_config": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "key": {
+                          "type": "string",
+                          "enum": [
+                            "metrics",
+                            "film",
+                            "academics",
+                            "values",
+                            "team_history",
+                            "awards"
+                          ]
+                        },
+                        "visible": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "key",
+                        "visible"
+                      ]
+                    }
+                  },
+                  "show_metrics": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "Response shape not yet declared with Zod (out of scope for v1 — see file header). Consult the endpoint's own source for its actual status codes and response body."
+          }
+        }
+      }
+    },
+    "/api/player/profile/contacts/{id}/resolve": {
+      "post": {
+        "operationId": "post_api_player_profile_contacts__id__resolve",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "resolved",
+                      "dismissed"
+                    ]
+                  },
+                  "interactionId": {
+                    "type": "string",
+                    "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+                  }
+                },
+                "required": [
+                  "status"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "Response shape not yet declared with Zod (out of scope for v1 — see file header). Consult the endpoint's own source for its actual status codes and response body."
+          }
+        }
+      }
+    },
+    "/api/public/profile/{slug}/contact": {
+      "post": {
+        "operationId": "post_api_public_profile__slug__contact",
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "coachName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "coachEmail": {
+                    "type": "string",
+                    "format": "email",
+                    "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                  },
+                  "coachTitle": {
+                    "type": "string",
+                    "maxLength": 80
+                  },
+                  "schoolId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "schoolName": {
+                    "type": "string",
+                    "maxLength": 120
+                  },
+                  "note": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  },
+                  "turnstileToken": {
+                    "type": "string"
+                  },
+                  "hp": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "coachName",
+                  "note"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "Response shape not yet declared with Zod (out of scope for v1 — see file header). Consult the endpoint's own source for its actual status codes and response body."
+          }
+        }
+      }
+    },
+    "/api/public/profile/{slug}/interest": {
+      "post": {
+        "operationId": "post_api_public_profile__slug__interest",
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "program": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 80
+                  },
+                  "note": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 1000
+                  },
+                  "coachName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "coachEmail": {
+                    "type": "string",
+                    "format": "email",
+                    "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                  },
+                  "turnstileToken": {
+                    "type": "string"
+                  },
+                  "hp": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "program"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "Response shape not yet declared with Zod (out of scope for v1 — see file header). Consult the endpoint's own source for its actual status codes and response body."
+          }
+        }
+      }
+    },
+    "/api/schools/favicons": {
+      "post": {
+        "operationId": "post_api_schools_favicons",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "schools": {
+                    "minItems": 1,
+                    "maxItems": 50,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "schoolId": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "schoolDomain": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "required": [
+                        "schoolId",
+                        "schoolDomain"
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "schools"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "Response shape not yet declared with Zod (out of scope for v1 — see file header). Consult the endpoint's own source for its actual status codes and response body."
+          }
+        }
+      }
+    },
+    "/api/schools/recommendations/dismiss": {
+      "post": {
+        "operationId": "post_api_schools_recommendations_dismiss",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "catalogKey": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 255
+                  },
+                  "athleteId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  }
+                },
+                "required": [
+                  "catalogKey"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "Response shape not yet declared with Zod (out of scope for v1 — see file header). Consult the endpoint's own source for its actual status codes and response body."
+          }
+        }
+      }
+    },
+    "/api/user/preferences/{category}": {
+      "post": {
+        "operationId": "post_api_user_preferences__category_",
+        "parameters": [
+          {
+            "name": "category",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "data": {
+                    "type": "object",
+                    "additionalProperties": {}
+                  }
+                },
+                "required": [
+                  "data"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "Response shape not yet declared with Zod (out of scope for v1 — see file header). Consult the endpoint's own source for its actual status codes and response body."
+          }
+        }
+      }
+    },
+    "/api/user/preferences/history": {
+      "post": {
+        "operationId": "post_api_user_preferences_history",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "category": {
+                    "type": "string"
+                  },
+                  "old_value": {},
+                  "new_value": {},
+                  "changed_fields": {
+                    "default": [],
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "required": [
+                  "category"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "Response shape not yet declared with Zod (out of scope for v1 — see file header). Consult the endpoint's own source for its actual status codes and response body."
+          }
+        }
+      }
+    },
+    "/api/user/preferences/player-details": {
+      "patch": {
+        "operationId": "patch_api_user_preferences_player_details",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "graduation_year": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 2026,
+                        "maximum": 2036
+                      },
+                      {
+                        "type": "string",
+                        "nullable": true,
+                        "enum": [
+                          null
+                        ]
+                      }
+                    ]
+                  },
+                  "positions": {
+                    "default": [],
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "gender": {
+                    "nullable": true,
+                    "type": "string",
+                    "enum": [
+                      "male",
+                      "female",
+                      "other",
+                      "prefer_not_to_say"
+                    ]
+                  },
+                  "bats": {
+                    "nullable": true,
+                    "type": "string",
+                    "enum": [
+                      "L",
+                      "R",
+                      "S"
+                    ]
+                  },
+                  "throws": {
+                    "nullable": true,
+                    "type": "string",
+                    "enum": [
+                      "L",
+                      "R"
+                    ]
+                  },
+                  "shooting_hand": {
+                    "nullable": true,
+                    "type": "string",
+                    "enum": [
+                      "L",
+                      "R"
+                    ]
+                  },
+                  "dominant_foot": {
+                    "nullable": true,
+                    "type": "string",
+                    "enum": [
+                      "L",
+                      "R",
+                      "Both"
+                    ]
+                  },
+                  "hitting_hand": {
+                    "nullable": true,
+                    "type": "string",
+                    "enum": [
+                      "L",
+                      "R"
+                    ]
+                  },
+                  "racket_hand": {
+                    "nullable": true,
+                    "type": "string",
+                    "enum": [
+                      "L",
+                      "R"
+                    ]
+                  },
+                  "backhand_style": {
+                    "nullable": true,
+                    "type": "string",
+                    "enum": [
+                      "one",
+                      "two"
+                    ]
+                  },
+                  "golf_handedness": {
+                    "nullable": true,
+                    "type": "string",
+                    "enum": [
+                      "L",
+                      "R"
+                    ]
+                  },
+                  "dominant_hand": {
+                    "nullable": true,
+                    "type": "string",
+                    "enum": [
+                      "L",
+                      "R"
+                    ]
+                  },
+                  "shoots": {
+                    "nullable": true,
+                    "type": "string",
+                    "enum": [
+                      "L",
+                      "R"
+                    ]
+                  },
+                  "catches": {
+                    "nullable": true,
+                    "type": "string",
+                    "enum": [
+                      "L",
+                      "R"
+                    ]
+                  },
+                  "wp_dominant_hand": {
+                    "nullable": true,
+                    "type": "string",
+                    "enum": [
+                      "L",
+                      "R"
+                    ]
+                  },
+                  "rowing_side": {
+                    "nullable": true,
+                    "type": "string",
+                    "enum": [
+                      "port",
+                      "starboard",
+                      "both",
+                      "cox"
+                    ]
+                  },
+                  "rowing_discipline": {
+                    "nullable": true,
+                    "type": "string",
+                    "enum": [
+                      "sweep",
+                      "scull",
+                      "both"
+                    ]
+                  },
+                  "throwing_hand": {
+                    "nullable": true,
+                    "type": "string",
+                    "enum": [
+                      "L",
+                      "R"
+                    ]
+                  },
+                  "kicking_foot": {
+                    "nullable": true,
+                    "type": "string",
+                    "enum": [
+                      "L",
+                      "R"
+                    ]
+                  },
+                  "height_inches": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "minimum": 48,
+                        "maximum": 96
+                      },
+                      {
+                        "type": "string",
+                        "nullable": true,
+                        "enum": [
+                          null
+                        ]
+                      }
+                    ]
+                  },
+                  "weight_lbs": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "minimum": 100,
+                        "maximum": 400
+                      },
+                      {
+                        "type": "string",
+                        "nullable": true,
+                        "enum": [
+                          null
+                        ]
+                      }
+                    ]
+                  },
+                  "gpa": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 5
+                      },
+                      {
+                        "type": "string",
+                        "nullable": true,
+                        "enum": [
+                          null
+                        ]
+                      }
+                    ]
+                  },
+                  "sat_score": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "minimum": 400,
+                        "maximum": 1600
+                      },
+                      {
+                        "type": "string",
+                        "nullable": true,
+                        "enum": [
+                          null
+                        ]
+                      }
+                    ]
+                  },
+                  "act_score": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "minimum": 1,
+                        "maximum": 36
+                      },
+                      {
+                        "type": "string",
+                        "nullable": true,
+                        "enum": [
+                          null
+                        ]
+                      }
+                    ]
+                  },
+                  "high_school": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "maxLength": 255
+                          },
+                          {
+                            "type": "string",
+                            "enum": [
+                              ""
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "nullable": true,
+                        "enum": [
+                          null
+                        ]
+                      }
+                    ]
+                  },
+                  "club_team": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "maxLength": 255
+                          },
+                          {
+                            "type": "string",
+                            "enum": [
+                              ""
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "nullable": true,
+                        "enum": [
+                          null
+                        ]
+                      }
+                    ]
+                  },
+                  "email": {
+                    "nullable": true,
+                    "type": "string",
+                    "minLength": 5,
+                    "maxLength": 255,
+                    "format": "email",
+                    "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                  },
+                  "phone": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "pattern": "^\\+1\\d{10}$"
+                          },
+                          {
+                            "type": "string",
+                            "enum": [
+                              ""
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "nullable": true,
+                        "enum": [
+                          null
+                        ]
+                      }
+                    ]
+                  },
+                  "twitter_handle": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "pattern": "^@?[A-Za-z0-9_]{1,15}$"
+                          },
+                          {
+                            "type": "string",
+                            "enum": [
+                              ""
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "nullable": true,
+                        "enum": [
+                          null
+                        ]
+                      }
+                    ]
+                  },
+                  "instagram_handle": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "pattern": "^@?[A-Za-z0-9_.]{1,30}$"
+                          },
+                          {
+                            "type": "string",
+                            "enum": [
+                              ""
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "nullable": true,
+                        "enum": [
+                          null
+                        ]
+                      }
+                    ]
+                  },
+                  "tiktok_handle": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "pattern": "^@?[A-Za-z0-9_.]{1,30}$"
+                          },
+                          {
+                            "type": "string",
+                            "enum": [
+                              ""
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "nullable": true,
+                        "enum": [
+                          null
+                        ]
+                      }
+                    ]
+                  },
+                  "facebook_handle": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 50
+                          },
+                          {
+                            "type": "string",
+                            "enum": [
+                              ""
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "nullable": true,
+                        "enum": [
+                          null
+                        ]
+                      }
+                    ]
+                  },
+                  "share_contact_with_coaches": {
+                    "default": false,
+                    "type": "boolean"
+                  },
+                  "ncaa_id": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "maxLength": 50
+                          },
+                          {
+                            "type": "string",
+                            "enum": [
+                              ""
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "nullable": true,
+                        "enum": [
+                          null
+                        ]
+                      }
+                    ]
+                  },
+                  "showcase_id": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "maxLength": 50
+                          },
+                          {
+                            "type": "string",
+                            "enum": [
+                              ""
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "nullable": true,
+                        "enum": [
+                          null
+                        ]
+                      }
+                    ]
+                  },
+                  "ncsa_id": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "maxLength": 50
+                          },
+                          {
+                            "type": "string",
+                            "enum": [
+                              ""
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "nullable": true,
+                        "enum": [
+                          null
+                        ]
+                      }
+                    ]
+                  },
+                  "hudl_url": {
+                    "nullable": true,
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "perfect_game_id": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "maxLength": 50
+                          },
+                          {
+                            "type": "string",
+                            "enum": [
+                              ""
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "nullable": true,
+                        "enum": [
+                          null
+                        ]
+                      }
+                    ]
+                  },
+                  "prep_baseball_id": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "maxLength": 100
+                          },
+                          {
+                            "type": "string",
+                            "enum": [
+                              ""
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "nullable": true,
+                        "enum": [
+                          null
+                        ]
+                      }
+                    ]
+                  },
+                  "athletic_net_id": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "maxLength": 50
+                          },
+                          {
+                            "type": "string",
+                            "enum": [
+                              ""
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "nullable": true,
+                        "enum": [
+                          null
+                        ]
+                      }
+                    ]
+                  },
+                  "milesplit_url": {
+                    "nullable": true,
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "swimcloud_id": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "maxLength": 50
+                          },
+                          {
+                            "type": "string",
+                            "enum": [
+                              ""
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "nullable": true,
+                        "enum": [
+                          null
+                        ]
+                      }
+                    ]
+                  },
+                  "utr_id": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "maxLength": 50
+                          },
+                          {
+                            "type": "string",
+                            "enum": [
+                              ""
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "nullable": true,
+                        "enum": [
+                          null
+                        ]
+                      }
+                    ]
+                  },
+                  "tennis_recruiting_id": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "maxLength": 50
+                          },
+                          {
+                            "type": "string",
+                            "enum": [
+                              ""
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "nullable": true,
+                        "enum": [
+                          null
+                        ]
+                      }
+                    ]
+                  },
+                  "elite_prospects_id": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "maxLength": 50
+                          },
+                          {
+                            "type": "string",
+                            "enum": [
+                              ""
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "nullable": true,
+                        "enum": [
+                          null
+                        ]
+                      }
+                    ]
+                  },
+                  "sportsrecruits_id": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "maxLength": 50
+                          },
+                          {
+                            "type": "string",
+                            "enum": [
+                              ""
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "nullable": true,
+                        "enum": [
+                          null
+                        ]
+                      }
+                    ]
+                  },
+                  "concept2_id": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "maxLength": 50
+                          },
+                          {
+                            "type": "string",
+                            "enum": [
+                              ""
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "nullable": true,
+                        "enum": [
+                          null
+                        ]
+                      }
+                    ]
+                  },
+                  "on3_url": {
+                    "nullable": true,
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "sports247_url": {
+                    "nullable": true,
+                    "type": "string",
+                    "format": "uri"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "Response shape not yet declared with Zod (out of scope for v1 — see file header). Consult the endpoint's own source for its actual status codes and response body."
+          }
+        }
+      }
+    },
+    "/api/user/profile": {
+      "patch": {
+        "operationId": "patch_api_user_profile",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "full_name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                  },
+                  "date_of_birth": {
+                    "nullable": true,
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                  },
+                  "home_location": {
+                    "nullable": true,
+                    "type": "object",
+                    "properties": {
+                      "address": {
+                        "type": "string",
+                        "maxLength": 200
+                      },
+                      "city": {
+                        "type": "string",
+                        "maxLength": 100
+                      },
+                      "state": {
+                        "type": "string",
+                        "minLength": 2,
+                        "maxLength": 2
+                      },
+                      "zip": {
+                        "type": "string",
+                        "maxLength": 10
+                      },
+                      "latitude": {
+                        "type": "number"
+                      },
+                      "longitude": {
+                        "type": "number"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "Response shape not yet declared with Zod (out of scope for v1 — see file header). Consult the endpoint's own source for its actual status codes and response body."
+          }
+        }
+      }
+    },
+    "/api/video-links": {
+      "post": {
+        "operationId": "post_api_video_links",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "platform": {
+                    "type": "string",
+                    "enum": [
+                      "hudl",
+                      "youtube",
+                      "vimeo",
+                      "other"
+                    ]
+                  },
+                  "url": {
+                    "type": "string",
+                    "maxLength": 2048,
+                    "format": "uri"
+                  },
+                  "title": {
+                    "type": "string",
+                    "maxLength": 200
+                  },
+                  "position": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4
+                  }
+                },
+                "required": [
+                  "platform",
+                  "url"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "Response shape not yet declared with Zod (out of scope for v1 — see file header). Consult the endpoint's own source for its actual status codes and response body."
+          }
+        }
+      }
+    },
+    "/api/video-links/{id}": {
+      "patch": {
+        "operationId": "patch_api_video_links__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "platform": {
+                    "type": "string",
+                    "enum": [
+                      "hudl",
+                      "youtube",
+                      "vimeo",
+                      "other"
+                    ]
+                  },
+                  "url": {
+                    "type": "string",
+                    "maxLength": 2048,
+                    "format": "uri"
+                  },
+                  "title": {
+                    "nullable": true,
+                    "type": "string",
+                    "maxLength": 200
+                  },
+                  "position": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "Response shape not yet declared with Zod (out of scope for v1 — see file header). Consult the endpoint's own source for its actual status codes and response body."
+          }
+        }
+      }
+    }
+  }
+}

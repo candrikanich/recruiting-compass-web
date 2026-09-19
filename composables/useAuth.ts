@@ -258,13 +258,19 @@ export const useAuth = () => {
    * Sign up new user with optional full name, role, and CAPTCHA token.
    *
    * `captchaToken` is verified server-side by POST /api/auth/signup (this
-   * app's own `verifyTurnstile` check) — it is no longer Supabase Auth's
-   * built-in verification that owns the signup gate. Turnstile tokens are
-   * single-use, so that same token is already spent by the time the
-   * post-creation `signInWithPassword` runs: pass `getFreshCaptchaToken` to
-   * mint a new one for that call (Supabase's native CAPTCHA is still on for
-   * sign-in, which has no other bot defense). Omitting it reuses
-   * `captchaToken`, preserving the behavior of callers that don't opt in.
+   * app's own `verifyTurnstile` check). The endpoint also mints a
+   * service-role magiclink `tokenHash` for us in the same request —
+   * `supabase.auth.verifyOtp` consumes that to establish the session with no
+   * second captcha hop at all. This is what actually fixes Safari: ITP can
+   * block the invisible Turnstile widget from solving reliably there, which
+   * silently broke the old post-signup `signInWithPassword` call (that call
+   * is Supabase's own project-level captcha-gated password grant, not
+   * something app code could skip a token for).
+   *
+   * `getFreshCaptchaToken`/`captchaToken` are only reached now as a fallback,
+   * for the rare case the server couldn't mint a tokenHash (no captcha
+   * bypass exists for `signInWithPassword` itself — Supabase enforces that
+   * project-wide) — preserves the old behavior for callers that don't opt in.
    *
    * `skipVerificationEmail` suppresses the verification token + email for
    * signups whose accept/claim handler stamps `email_verified_at` moments
@@ -287,6 +293,15 @@ export const useAuth = () => {
     inviteToken?: string,
     getFreshCaptchaToken?: () => Promise<string | undefined>,
     skipVerificationEmail?: boolean,
+    /**
+     * Distinct from `inviteToken` above: that one seeds
+     * `metadata.pending_invite_token` for useAccountProvisioning's SIGNED_IN
+     * listener to consume, which callers doing their own explicit accept
+     * call (e.g. pages/join.vue) must NOT trigger — see join.vue's
+     * signupAndConnect for why. This one only tells the server which invite
+     * row to check before requiring Turnstile; it never touches metadata.
+     */
+    captchaSkipInviteToken?: string,
   ) => {
     loading.value = true;
     error.value = null;
@@ -317,7 +332,10 @@ export const useAuth = () => {
         metadata.pending_invite_token = inviteToken;
       }
 
-      await $fetch("/api/auth/signup", {
+      const signupResponse = await $fetch<{
+        userId: string;
+        tokenHash?: string;
+      }>("/api/auth/signup", {
         method: "POST",
         body: {
           email: trimmedEmail,
@@ -328,47 +346,95 @@ export const useAuth = () => {
           captchaToken,
           metadata,
           ...(skipVerificationEmail ? { skipVerificationEmail: true } : {}),
+          ...(captchaSkipInviteToken
+            ? { inviteToken: captchaSkipInviteToken }
+            : {}),
         },
       });
 
-      // Session issuance is a normal password sign-in now that the account
-      // is auto-confirmed server-side — no confirmation gap to wait out.
-      // The signup token was just consumed by the endpoint's own Turnstile
-      // check, so replaying it here would read as a duplicate to Supabase's
-      // native CAPTCHA — callers that can mint a fresh one do so.
-      const signInCaptchaToken = getFreshCaptchaToken
-        ? await getFreshCaptchaToken()
-        : captchaToken;
+      let data: { user: User | null; session: Session | null };
+      let signInError: { message: string } | null;
 
-      const signInParams: {
-        email: string;
-        password: string;
-        options?: { captchaToken: string };
-      } = {
-        email: trimmedEmail,
-        password,
-      };
+      if (signupResponse.tokenHash) {
+        const result = await supabase.auth.verifyOtp({
+          token_hash: signupResponse.tokenHash,
+          type: "magiclink",
+        });
+        data = result.data;
+        signInError = result.error;
+      } else {
+        // Fallback for the rare case the server couldn't mint a tokenHash.
+        // The signup token was just consumed by the endpoint's own
+        // Turnstile check, so replaying it here would read as a duplicate to
+        // Supabase's native CAPTCHA — callers that can mint a fresh one do so.
+        const signInCaptchaToken = getFreshCaptchaToken
+          ? await getFreshCaptchaToken()
+          : captchaToken;
 
-      if (signInCaptchaToken) {
-        signInParams.options = { captchaToken: signInCaptchaToken };
+        const signInParams: {
+          email: string;
+          password: string;
+          options?: { captchaToken: string };
+        } = {
+          email: trimmedEmail,
+          password,
+        };
+
+        if (signInCaptchaToken) {
+          signInParams.options = { captchaToken: signInCaptchaToken };
+        }
+
+        const result = await supabase.auth.signInWithPassword(signInParams);
+        data = result.data;
+        signInError = result.error;
       }
-
-      const { data, error: signInError } =
-        await supabase.auth.signInWithPassword(signInParams);
 
       if (signInError) {
         // The account already exists at this point (the /api/auth/signup
-        // call above succeeded) — only this follow-up sign-in failed, most
-        // often because the invisible session-mint widget needed
-        // interaction nobody gave it and getFreshCaptchaToken() silently
-        // timed out. Tag the error so callers can route to a normal login
-        // instead of treating it as a failed signup and stranding the user.
-        error.value = signInError;
+        // call above succeeded) — only this follow-up session mint failed.
+        // Tag the error so callers can route to a normal login instead of
+        // treating it as a failed signup and stranding the user.
+        error.value = signInError as Error;
         const recoverableError = new Error(signInError.message) as Error & {
           accountCreatedButSignInFailed?: boolean;
         };
         recoverableError.accountCreatedButSignInFailed = true;
         throw recoverableError;
+      }
+
+      // Without this, middleware/auth.ts's expiry check on the next
+      // navigation reads whatever stale (possibly already-expired)
+      // session_preferences entry a prior session left in localStorage and
+      // immediately logs this brand-new signup out with reason=timeout —
+      // login() below writes this same entry for the same reason.
+      //
+      // Best-effort only: the account and session are already created by
+      // this point, so a storage failure here (quota, private mode) must
+      // never surface as a signup failure. Fall back to removing any stale
+      // entry so at worst the next nav treats the session as absent (normal
+      // auth flow), not falsely expired.
+      if (typeof window !== "undefined") {
+        try {
+          const preferences: SessionPreferences = {
+            rememberMe: false,
+            lastActivity: Date.now(),
+            expiresAt: Date.now() + 24 * 60 * 60 * 1000, // 1 day
+          };
+          localStorage.setItem(
+            "session_preferences",
+            JSON.stringify(preferences),
+          );
+        } catch (storageErr) {
+          logger.warn(
+            "[useAuth] Failed to write session_preferences after signup",
+            storageErr,
+          );
+          try {
+            localStorage.removeItem("session_preferences");
+          } catch {
+            // Storage is unusable either way — nothing more to do.
+          }
+        }
       }
 
       return { data, error: null };

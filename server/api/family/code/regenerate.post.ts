@@ -7,7 +7,7 @@ import { useLogger } from "~/server/utils/logger";
 import { validateBody } from "~/server/utils/validation";
 import type { Database } from "~/types/database";
 
-const regenerateCodeSchema = z.object({
+export const regenerateCodeSchema = z.object({
   familyId: z.string().uuid(),
 });
 

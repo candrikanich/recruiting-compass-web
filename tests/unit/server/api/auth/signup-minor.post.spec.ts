@@ -26,6 +26,9 @@ const mockCreateVerifiedAccount = vi.fn(async () => ({
 const mockVerifyTurnstile = vi.fn(async () => ({ ok: true }));
 const mockClaimInsert = vi.fn(async () => ({ error: null }));
 const mockUserUpsert = vi.fn(async () => ({ error: null }));
+const mockUserUpdateEq = vi.fn(async () => ({ error: null }));
+const mockUserUpdate = vi.fn(() => ({ eq: mockUserUpdateEq }));
+const mockPreferencesUpsert = vi.fn(async () => ({ error: null }));
 const mockSendGuardianClaimEmail = vi.fn(async () => ({ success: true }));
 
 vi.mock("~/server/utils/accountCreation", () => ({
@@ -40,7 +43,13 @@ vi.mock("~/server/utils/supabase", () => ({
   useSupabaseAdmin: vi.fn(() => ({
     from: (table: string) => ({
       insert: table === "guardian_claims" ? mockClaimInsert : vi.fn(),
-      upsert: table === "users" ? mockUserUpsert : vi.fn(),
+      upsert:
+        table === "users"
+          ? mockUserUpsert
+          : table === "user_preferences"
+            ? mockPreferencesUpsert
+            : vi.fn(),
+      update: table === "users" ? mockUserUpdate : vi.fn(),
     }),
   })),
 }));
@@ -100,6 +109,8 @@ describe("POST /api/auth/signup-minor", () => {
     });
     mockClaimInsert.mockResolvedValue({ error: null });
     mockUserUpsert.mockResolvedValue({ error: null });
+    mockUserUpdateEq.mockResolvedValue({ error: null });
+    mockPreferencesUpsert.mockResolvedValue({ error: null });
     mockSendGuardianClaimEmail.mockResolvedValue({ success: true });
   });
 
@@ -109,6 +120,18 @@ describe("POST /api/auth/signup-minor", () => {
     expect(result).toMatchObject({ ok: true, guardianEmail: "parent@example.com" });
     expect(mockClaimInsert).toHaveBeenCalledOnce();
     expect(mockSendGuardianClaimEmail).toHaveBeenCalledOnce();
+  });
+
+  it("passes through the tokenHash from createVerifiedAccount so the client can skip the captcha-gated sign-in", async () => {
+    mockCreateVerifiedAccount.mockResolvedValueOnce({
+      ok: true,
+      userId: "player-uuid",
+      tokenHash: "hash-1",
+    });
+
+    const result = await call();
+
+    expect(result).toMatchObject({ ok: true, tokenHash: "hash-1" });
   });
 
   it("verifies Turnstile before creating the account", async () => {
@@ -151,6 +174,99 @@ describe("POST /api/auth/signup-minor", () => {
     expect(options.userMetadata).toMatchObject({ date_of_birth: dob });
     expect(mockUserUpsert).toHaveBeenCalledWith(
       expect.objectContaining({ date_of_birth: dob }),
+      expect.anything(),
+    );
+  });
+
+  it("stamps onboarding_complete when the caller's wizard is fully done and both fields are present", async () => {
+    // Regression for the redirect-loop bug: a minor who already supplied sport/grad
+    // year on this single-step signup form must not be bounced back to /onboarding
+    // and re-asked the same questions on their first /dashboard visit. Mirrors the
+    // markOnboardingComplete fix already shipped for the invite-accept path.
+    await call({ graduationYear: 2028, primarySport: "Baseball", wizardComplete: true });
+
+    expect(mockPreferencesUpsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        user_id: "player-uuid",
+        category: "player",
+        data: expect.objectContaining({
+          graduation_year: 2028,
+          primary_sport: "Baseball",
+        }),
+      }),
+      expect.anything(),
+    );
+    expect(mockUserUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        phase_milestone_data: expect.objectContaining({
+          onboarding_complete: true,
+          onboarding_completed_at: expect.any(String),
+        }),
+      }),
+    );
+    expect(mockUserUpdateEq).toHaveBeenCalledWith("id", "player-uuid");
+  });
+
+  it("does not stamp onboarding_complete when grad year or sport is missing", async () => {
+    // Incomplete data means /onboarding still has real work to do — an unconditional
+    // stamp here would skip that step entirely instead of just closing the bug.
+    await call({ graduationYear: undefined, primarySport: undefined, wizardComplete: true });
+
+    expect(mockUserUpdate).not.toHaveBeenCalled();
+  });
+
+  it("does not stamp onboarding_complete when wizardComplete is not sent, even with both fields present", async () => {
+    // iOS already sends graduationYear + primarySport as onboarding-STEP-1 data
+    // only — its own wizard still has a schools-carousel step after this. Without
+    // an explicit wizardComplete: true, field presence alone must never trigger
+    // the stamp, or every iOS minor signup would wrongly skip that step.
+    await call({ graduationYear: 2028, primarySport: "Baseball" });
+
+    expect(mockPreferencesUpsert).not.toHaveBeenCalled();
+    expect(mockUserUpdate).not.toHaveBeenCalled();
+  });
+
+  it("does not stamp onboarding_complete when the player-preferences write fails", async () => {
+    // Fail closed: middleware's sport-gate reads user_preferences directly, not
+    // phase_milestone_data — stamping complete before (or despite) a failed prefs
+    // write would pass the onboarding check while the sport-gate still finds
+    // nothing, or would leave the flag permanently wrong with no further trigger
+    // to fix it.
+    mockPreferencesUpsert.mockResolvedValueOnce({ error: { message: "boom" } });
+
+    await call({ graduationYear: 2028, primarySport: "Baseball", wizardComplete: true });
+
+    expect(mockUserUpdate).not.toHaveBeenCalled();
+  });
+
+  it("rejects a graduation year outside the canonical options", async () => {
+    await expect(
+      call({ graduationYear: 1999, primarySport: "Baseball", wizardComplete: true }),
+    ).rejects.toMatchObject({ statusCode: 400 });
+    expect(mockCreateVerifiedAccount).not.toHaveBeenCalled();
+  });
+
+  it("rejects a non-integer graduation year", async () => {
+    await expect(
+      call({ graduationYear: 2028.5, primarySport: "Baseball", wizardComplete: true }),
+    ).rejects.toMatchObject({ statusCode: 400 });
+    expect(mockCreateVerifiedAccount).not.toHaveBeenCalled();
+  });
+
+  it("rejects a whitespace-only primary sport", async () => {
+    await expect(
+      call({ graduationYear: 2028, primarySport: "   ", wizardComplete: true }),
+    ).rejects.toMatchObject({ statusCode: 400 });
+    expect(mockCreateVerifiedAccount).not.toHaveBeenCalled();
+  });
+
+  it("trims the primary sport before persisting and stamping", async () => {
+    await call({ graduationYear: 2028, primarySport: "  Baseball  ", wizardComplete: true });
+
+    expect(mockPreferencesUpsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ primary_sport: "Baseball" }),
+      }),
       expect.anything(),
     );
   });

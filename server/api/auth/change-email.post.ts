@@ -6,7 +6,7 @@ import { requireAuth } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import { emailSchema } from "~/utils/validation/validators";
 
-const changeEmailSchema = z.object({
+export const changeEmailSchema = z.object({
   newEmail: emailSchema,
   currentPassword: z.string().min(1),
 });

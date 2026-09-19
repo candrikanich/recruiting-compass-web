@@ -150,6 +150,7 @@ export async function assembleSchoolRecommendations(
     locationState: asString(location.state),
     schoolState: asString(player.school_state),
     hometownState: userResult.data?.hometown_state,
+    locationZip: asString(location.zip),
   });
   const gpa = asNumber(player.gpa);
   const sport = asString(player.primary_sport);
