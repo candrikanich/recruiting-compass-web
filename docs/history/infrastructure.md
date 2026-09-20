@@ -1,5 +1,11 @@
 # History: Infrastructure
 
+## 2026-09-20 — Resend Email Delivery Log (Spec B2)
+Ingested Resend's outbound email lifecycle webhook (sent/delivered/bounced/complained/opened/clicked) into a new email_events table via a Svix-verified Nitro endpoint, with a weekly retention cron and a read-only admin dashboard page mirroring the existing audit-log pattern.
+
+## 2026-09-20 — Prod/Staging Supabase Separation + Gated Migration CI
+Split the shared Supabase project into a dedicated prod project and a staging project, added a gated CI migration-promotion pipeline, and migrated all family/user data. Migration surfaced real gotchas: a COPY-format all-or-nothing dump failure, an auth.users FK gap that broke 17 users' migration, and a per-environment task.id UUID mismatch requiring a slug-based remap.
+
 ## 2026-08-18 — Vercel Single-Project Migration
 Consolidated 3 Vercel projects → 1 (`recruiting-compass-web-production`): main=prod, develop=preview QA. Two legacy projects deleted, local .vercel relinked.
 
