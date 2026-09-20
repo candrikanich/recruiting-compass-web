@@ -1,5 +1,17 @@
 # History: iOS
 
+## 2026-09-20 — Timeline Shared-Endpoint Sync
+Fixed a scoring/task divergence between web and iOS dashboards by having iOS consume shared web API endpoints (/api/athlete/phase, /status, /what-matters-now) instead of recomputing status locally, eliminating a duplicated/buggy scoring implementation.
+
+## 2026-09-20 — Player Details Tab Reorg & Multi Travel Teams
+Confirmed the Basics/Academics tab reorg was already done on iOS, then specified the one real remaining gap: multiple travel teams (a repeatable array replacing scalar fields), plus minor video-platform and ID-helper-link follow-ups.
+
+## 2026-09-20 — Gymnastics & Beach Volleyball Sport Parity
+Extended the canonical sport vocabulary from 17 to 19 sports (added Gymnastics, Beach Volleyball) across iOS positions/metrics/calendar registries to match a shipped web change.
+
+## 2026-09-20 — Coach Tile & Detail Consolidation (iOS)
+Unified two divergent iOS coach-tile components into one variant-driven CoachCardView (compact/full), removed tile-level delete, fixed the action-row icon order/colors, and wired compact tiles to push to coach detail, matching a shipped web consolidation.
+
 ## 2026-08-15 — iOS Positions Ordered Specificity
 iOS delta spec for ordered positions + recruiting specificity parity: remove Utility from baseball/softball, treat positions[] as ordered (index 0=primary), add sport-scoped abbreviation helper.
 

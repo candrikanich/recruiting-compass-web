@@ -1,5 +1,11 @@
 # History: Onboarding
 
+## 2026-09-20 — Onboarding Funnel Reshape (2-Step Wizard + Dashboard Checklist)
+Reshaped onboarding from a 5-step wizard to a 2-step value-first flow with inline school recommendations, a dashboard "Getting Started" checklist, a ProfileCompleteness card, upgraded empty states, and contextual profile prompts.
+
+## 2026-09-20 — Age-Gate & Onboarding Parity
+Added COPPA-compliant DOB attestation copy, confirmed a 13+ minimum age, widened the grad-year picker to +5 years, and added an age gate on profile-DOB edits, backed by a live DB trigger enforcing the 13+ floor.
+
 ## 2026-08-16 — Bidirectional Onboarding Pre-fill
 Web Phases 1-3 built: persist playerDob, hydrateAthleteProfile on invite-accept, onboarding reads canonical prefs. Player-authoritative conflict resolution rule. iOS Phase 4 deferred to separate handoff.
 
