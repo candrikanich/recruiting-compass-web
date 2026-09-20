@@ -27,7 +27,10 @@ function baseUrl(): string {
 }
 
 function logoUrl(): string {
-  return `${baseUrl()}/assets/logos/recruiting-compass-horizontal.svg`;
+  // .png, not .svg — Gmail and Outlook don't render inline SVG <img> sources
+  // (broken-image icon instead), unlike the other cross-client concerns this
+  // file's inline-style layout already accounts for.
+  return `${baseUrl()}/assets/logos/recruiting-compass-horizontal.png`;
 }
 
 function legalAddress(): string {
