@@ -3965,6 +3965,10 @@ export type Database = {
           family_unit_id: string;
         }[];
       };
+      get_athlete_completed_task_ids: {
+        Args: { p_athlete_id: string };
+        Returns: string[];
+      };
       get_athlete_status: {
         Args: { p_user_id: string };
         Returns: {
@@ -4068,6 +4072,10 @@ export type Database = {
       };
       set_athlete_profile_photo: {
         Args: { athlete_id: string; photo_url: string };
+        Returns: undefined;
+      };
+      set_athlete_status_score: {
+        Args: { p_athlete_id: string; p_score: number; p_label: string };
         Returns: undefined;
       };
       set_primary_metric: { Args: { p_metric_id: string }; Returns: undefined };
