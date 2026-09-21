@@ -1,6 +1,7 @@
 import { defineEventHandler, createError } from "h3";
 import { requireAuth } from "~/server/utils/auth";
-import { useSupabaseAdmin } from "~/server/utils/supabase";
+import { createServerSupabaseUserClient } from "~/server/utils/supabase";
+import { extractRequestToken } from "~/server/utils/requestToken";
 import { useLogger } from "~/server/utils/logger";
 import { requireUuidParam } from "~/server/utils/validation";
 
@@ -8,7 +9,8 @@ export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "family/members/delete");
   const user = await requireAuth(event);
   const memberId = requireUuidParam(event, "memberId");
-  const supabase = useSupabaseAdmin();
+  const token = extractRequestToken(event);
+  const supabase = createServerSupabaseUserClient(token);
 
   // Fetch member with family details
   const memberResponse = await supabase
