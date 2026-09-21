@@ -45,25 +45,32 @@ function makeChain<T>(data: T) {
   return chain;
 }
 
+const fakeClientFactory = () => ({
+  from: (table: string) => {
+    if (table === "family_members") {
+      return {
+        select: (cols: string) => {
+          const isPlayerJoin = cols.includes("users!inner");
+          return isPlayerJoin
+            ? makeChain(mockState.playerMembers)
+            : makeChain(mockState.familyMembers);
+        },
+      };
+    }
+    if (table === "family_units") {
+      return { select: () => makeChain(mockState.familyUnits) };
+    }
+    return {};
+  },
+});
+
 vi.mock("~/server/utils/supabase", () => ({
-  useSupabaseAdmin: vi.fn(() => ({
-    from: (table: string) => {
-      if (table === "family_members") {
-        return {
-          select: (cols: string) => {
-            const isPlayerJoin = cols.includes("users!inner");
-            return isPlayerJoin
-              ? makeChain(mockState.playerMembers)
-              : makeChain(mockState.familyMembers);
-          },
-        };
-      }
-      if (table === "family_units") {
-        return { select: () => makeChain(mockState.familyUnits) };
-      }
-      return {};
-    },
-  })),
+  useSupabaseAdmin: vi.fn(fakeClientFactory),
+  createServerSupabaseUserClient: vi.fn(fakeClientFactory),
+}));
+
+vi.mock("~/server/utils/requestToken", () => ({
+  extractRequestToken: vi.fn(() => "fake-token"),
 }));
 
 vi.mock("h3", async (importOriginal) => {

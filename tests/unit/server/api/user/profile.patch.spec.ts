@@ -20,14 +20,21 @@ vi.mock("~/server/utils/auth", () => ({
   requireAuth: vi.fn(async () => ({ id: mockState.userId })),
 }));
 
-vi.mock("~/server/utils/supabase", () => ({
-  useSupabaseAdmin: vi.fn(() => ({
-    from: vi.fn(() => ({
-      update: vi.fn(() => ({
-        eq: mockEq,
-      })),
+const fakeClient = {
+  from: vi.fn(() => ({
+    update: vi.fn(() => ({
+      eq: mockEq,
     })),
   })),
+};
+
+vi.mock("~/server/utils/supabase", () => ({
+  useSupabaseAdmin: vi.fn(() => fakeClient),
+  createServerSupabaseUserClient: vi.fn(() => fakeClient),
+}));
+
+vi.mock("~/server/utils/requestToken", () => ({
+  extractRequestToken: vi.fn(() => "fake-token"),
 }));
 
 vi.mock("h3", async () => {

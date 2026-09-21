@@ -29,9 +29,8 @@ vi.mock("~/server/utils/logger", () => ({
   }),
 }));
 
-vi.mock("~/server/utils/supabase", () => ({
-  useSupabaseAdmin: vi.fn(() => ({
-    from: (table: string) => {
+const fakeClientFactory = () => ({
+  from: (table: string) => {
       // Publishing now runs the guardian gate first; these fixtures return an adult
       // player who passes the gate, so the update proceeds as before.
       if (table === "users") {
@@ -95,7 +94,15 @@ vi.mock("~/server/utils/supabase", () => ({
       }
       return {};
     },
-  })),
+});
+
+vi.mock("~/server/utils/supabase", () => ({
+  useSupabaseAdmin: vi.fn(fakeClientFactory),
+  createServerSupabaseUserClient: vi.fn(fakeClientFactory),
+}));
+
+vi.mock("~/server/utils/requestToken", () => ({
+  extractRequestToken: vi.fn(() => "fake-token"),
 }));
 
 vi.mock("h3", async (importOriginal) => {

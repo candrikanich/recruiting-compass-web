@@ -25,9 +25,8 @@ vi.mock("~/server/utils/logger", () => ({
   })),
 }));
 
-vi.mock("~/server/utils/supabase", () => ({
-  useSupabaseAdmin: vi.fn(() => ({
-    from: (table: string) => {
+const fakeClientFactory = () => ({
+  from: (table: string) => {
       // The route now runs the guardian gate before inserting; that lookup queries
       // users to check guardian_consent_at. These fixtures return an adult (20+ years
       // old) who passes the gate, so the send proceeds as before.
@@ -63,7 +62,15 @@ vi.mock("~/server/utils/supabase", () => ({
         },
       };
     },
-  })),
+});
+
+vi.mock("~/server/utils/supabase", () => ({
+  useSupabaseAdmin: vi.fn(fakeClientFactory),
+  createServerSupabaseUserClient: vi.fn(fakeClientFactory),
+}));
+
+vi.mock("~/server/utils/requestToken", () => ({
+  extractRequestToken: vi.fn(() => "fake-token"),
 }));
 
 vi.mock("h3", async () => {
