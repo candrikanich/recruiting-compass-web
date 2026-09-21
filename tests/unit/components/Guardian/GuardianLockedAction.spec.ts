@@ -34,21 +34,33 @@ describe("GuardianLockedAction", () => {
   it("offers 'Remind them' when a guardian was already named", async () => {
     mockHasNoGuardianYet.value = false;
     mockGuardianEmailMasked.value = "p****@example.com";
-    const wrapper = mount(GuardianLockedAction, { props: { action: "message coaches" } });
+    const wrapper = mount(GuardianLockedAction, {
+      props: { action: "message coaches" },
+    });
 
-    expect(wrapper.find('[data-testid="guardian-locked-invite-email"]').exists()).toBe(false);
+    expect(
+      wrapper.find('[data-testid="guardian-locked-invite-email"]').exists(),
+    ).toBe(false);
     await wrapper.find("button").trigger("click");
     expect(mockResend).toHaveBeenCalledWith();
   });
 
   it("offers an email input + 'Invite' — not a dead-end resend — when no guardian was ever named", async () => {
     mockHasNoGuardianYet.value = true;
-    const wrapper = mount(GuardianLockedAction, { props: { action: "message coaches" } });
+    const wrapper = mount(GuardianLockedAction, {
+      props: { action: "message coaches" },
+    });
 
-    expect(wrapper.find('[data-testid="guardian-locked-invite-email"]').exists()).toBe(true);
+    expect(
+      wrapper.find('[data-testid="guardian-locked-invite-email"]').exists(),
+    ).toBe(true);
 
-    await wrapper.find('[data-testid="guardian-locked-invite-email"]').setValue("mom@example.com");
-    await wrapper.find('[data-testid="guardian-locked-invite-submit"]').trigger("click");
+    await wrapper
+      .find('[data-testid="guardian-locked-invite-email"]')
+      .setValue("mom@example.com");
+    await wrapper
+      .find('[data-testid="guardian-locked-invite-submit"]')
+      .trigger("click");
 
     expect(mockResend).toHaveBeenCalledWith("mom@example.com");
   });
@@ -57,7 +69,9 @@ describe("GuardianLockedAction", () => {
     mockHasNoGuardianYet.value = true;
     const wrapper = mount(GuardianLockedAction, { props: {} });
 
-    const submit = wrapper.find('[data-testid="guardian-locked-invite-submit"]');
+    const submit = wrapper.find(
+      '[data-testid="guardian-locked-invite-submit"]',
+    );
     expect(submit.attributes("disabled")).toBeDefined();
   });
 });

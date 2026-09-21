@@ -179,7 +179,8 @@ vi.mock("#app", () => ({
   // Keyed like the real useState so composables sharing a key share a ref within a test
   // (e.g. useGuardianStatus, read by both the banner and the surfaces it unlocks).
   useState: <T>(key: string, init?: () => T) => {
-    if (!_useStateStore.has(key)) _useStateStore.set(key, ref(init ? init() : undefined));
+    if (!_useStateStore.has(key))
+      _useStateStore.set(key, ref(init ? init() : undefined));
     return _useStateStore.get(key);
   },
 }));

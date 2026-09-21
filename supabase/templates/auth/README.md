@@ -19,11 +19,11 @@ in sync if the shared layout changes.
 for project identity. Each template has a separate Subject field and Body
 field in the editor.
 
-| File | Dashboard template | Subject |
-|---|---|---|
-| `confirm-signup.html` | Confirm signup | `Confirm your Recruiting Compass email` |
-| `reset-password.html` | Reset password | `Reset your Recruiting Compass password` |
-| `change-email.html` | Change Email Address | `Confirm your new Recruiting Compass email` |
+| File                  | Dashboard template   | Subject                                     |
+| --------------------- | -------------------- | ------------------------------------------- |
+| `confirm-signup.html` | Confirm signup       | `Confirm your Recruiting Compass email`     |
+| `reset-password.html` | Reset password       | `Reset your Recruiting Compass password`    |
+| `change-email.html`   | Change Email Address | `Confirm your new Recruiting Compass email` |
 
 "Confirm signup" covers both the initial signup email and a user-triggered
 resend — Supabase has no separate "resend verification" template.

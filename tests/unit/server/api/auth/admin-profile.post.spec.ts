@@ -14,11 +14,7 @@ const mockAuthState = {
 };
 const mockRpcState = {
   status: "consumed" as
-    | "consumed"
-    | "not_found"
-    | "already_used"
-    | "expired"
-    | "email_mismatch",
+    "consumed" | "not_found" | "already_used" | "expired" | "email_mismatch",
   error: null as object | null,
 };
 
@@ -195,15 +191,18 @@ describe("POST /api/auth/admin-profile", () => {
       ["already_used (reuse of a consumed token)", "already_used"],
       ["expired", "expired"],
       ["email_mismatch", "email_mismatch"],
-    ])("returns 403 when the invitation RPC reports %s", async (_desc, status) => {
-      mockRpcState.status = status as typeof mockRpcState.status;
+    ])(
+      "returns 403 when the invitation RPC reports %s",
+      async (_desc, status) => {
+        mockRpcState.status = status as typeof mockRpcState.status;
 
-      await expect(
-        handler({} as Parameters<typeof handler>[0]),
-      ).rejects.toMatchObject({
-        statusCode: 403,
-      });
-    });
+        await expect(
+          handler({} as Parameters<typeof handler>[0]),
+        ).rejects.toMatchObject({
+          statusCode: 403,
+        });
+      },
+    );
 
     // Regression for issue #854: the entire point of moving off the static
     // shared secret is that a token can't be reused. Simulates the exact

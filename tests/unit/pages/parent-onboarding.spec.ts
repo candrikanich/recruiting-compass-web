@@ -84,9 +84,7 @@ describe("Parent Onboarding", () => {
     const wrapper = createWrapper();
     expect(wrapper.find('[data-testid="step-1"]').exists()).toBe(true);
     expect(wrapper.find('[data-testid="player-name"]').exists()).toBe(true);
-    expect(wrapper.find('[data-testid="graduation-year"]').exists()).toBe(
-      true,
-    );
+    expect(wrapper.find('[data-testid="graduation-year"]').exists()).toBe(true);
     expect(wrapper.find('[data-testid="sport"]').exists()).toBe(true);
   });
 
@@ -182,9 +180,7 @@ describe("Parent Onboarding", () => {
   it("calls POST /api/family/player-details (no position) when the button is clicked", async () => {
     const wrapper = createWrapper();
 
-    await wrapper
-      .find('[data-testid="player-name"]')
-      .setValue("Alex Johnson");
+    await wrapper.find('[data-testid="player-name"]').setValue("Alex Johnson");
     await wrapper.find('[data-testid="graduation-year"]').setValue("2027");
     await wrapper.find('[data-testid="sport"]').setValue("Baseball");
     await setDob(wrapper);

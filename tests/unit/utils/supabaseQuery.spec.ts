@@ -520,7 +520,9 @@ describe("supabaseQuery utilities", () => {
 
   describe("queryRpc", () => {
     it("calls supabase.rpc with the function name and params, returns data", async () => {
-      mockSupabase.rpc = vi.fn().mockResolvedValue({ data: [{ id: "s1" }], error: null });
+      mockSupabase.rpc = vi
+        .fn()
+        .mockResolvedValue({ data: [{ id: "s1" }], error: null });
 
       const result = await queryRpc<{ id: string }>(
         "search_schools_fts",
@@ -537,9 +539,13 @@ describe("supabaseQuery utilities", () => {
     });
 
     it("wraps an RPC error into QueryResult.error", async () => {
-      mockSupabase.rpc = vi.fn().mockResolvedValue({ data: null, error: { message: "boom" } });
+      mockSupabase.rpc = vi
+        .fn()
+        .mockResolvedValue({ data: null, error: { message: "boom" } });
 
-      const result = await queryRpc("search_schools_fts", { p_search_term: "x" });
+      const result = await queryRpc("search_schools_fts", {
+        p_search_term: "x",
+      });
 
       expect(result.data).toBeNull();
       expect(result.error?.message).toContain("boom");

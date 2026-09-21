@@ -860,9 +860,12 @@ describe("useAuth", () => {
 
     it("tags a post-signup verifyOtp failure as recoverable too (account already created)", async () => {
       const { mockAuth } = getMockSupabase();
-      const otpError = Object.assign(new Error("Token has expired or is invalid"), {
-        name: "AuthApiError",
-      });
+      const otpError = Object.assign(
+        new Error("Token has expired or is invalid"),
+        {
+          name: "AuthApiError",
+        },
+      );
       mockAuth.verifyOtp.mockResolvedValue({
         data: { user: null, session: null },
         error: otpError,
@@ -962,7 +965,12 @@ describe("useAuth", () => {
       const auth = useAuth();
       await auth.signup("new@example.com", "password123");
 
-      const body = (mockFetch.mock.calls[0] as unknown as [string, { body: Record<string, unknown> }])[1].body;
+      const body = (
+        mockFetch.mock.calls[0] as unknown as [
+          string,
+          { body: Record<string, unknown> },
+        ]
+      )[1].body;
       expect(body).not.toHaveProperty("skipVerificationEmail");
 
       vi.unstubAllGlobals();

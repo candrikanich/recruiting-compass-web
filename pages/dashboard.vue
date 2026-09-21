@@ -76,7 +76,9 @@
           <!-- Getting-started checklist — self-hides when dismissed. Skipped
                entirely while unconnected: the timeline-section empty state
                above already carries the invite CTA, so this doesn't repeat it. -->
-          <GettingStartedChecklist v-if="!userStore.isParent || hasConnectedPlayer" />
+          <GettingStartedChecklist
+            v-if="!userStore.isParent || hasConnectedPlayer"
+          />
 
           <!-- Profile completeness card — shows progress + missing fields -->
           <ProfileCompletenessCard />

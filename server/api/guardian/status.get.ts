@@ -26,8 +26,14 @@ export interface GuardianStatus {
 }
 
 /** A stored "pending" claim whose expires_at has elapsed is effectively expired, even if no cron has flipped the row yet. */
-const effectiveStatus = (claim: { status: string; expires_at: string }): GuardianStatus["status"] => {
-  if (claim.status === "pending" && new Date(claim.expires_at).getTime() <= Date.now()) {
+const effectiveStatus = (claim: {
+  status: string;
+  expires_at: string;
+}): GuardianStatus["status"] => {
+  if (
+    claim.status === "pending" &&
+    new Date(claim.expires_at).getTime() <= Date.now()
+  ) {
     return "expired";
   }
   return claim.status as GuardianStatus["status"];
@@ -78,7 +84,14 @@ export default defineEventHandler(async (event): Promise<GuardianStatus> => {
       .maybeSingle();
 
     if (!claim) {
-      return { locked, pending: locked, claimOutstanding: false, guardianEmailMasked: null, expiresAt: null, status: "none" };
+      return {
+        locked,
+        pending: locked,
+        claimOutstanding: false,
+        guardianEmailMasked: null,
+        expiresAt: null,
+        status: "none",
+      };
     }
 
     const status = effectiveStatus(claim);

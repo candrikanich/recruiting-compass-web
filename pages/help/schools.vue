@@ -160,8 +160,8 @@
     <section class="mb-10">
       <HelpSectionHeader title="Official vs. Unofficial Visits" />
       <p class="mb-4 text-sm text-gray-600">
-        An <strong>official visit</strong> is paid for by the school hosting
-        you — you get one per school (D1/D2 allow a second if the head coach
+        An <strong>official visit</strong> is paid for by the school hosting you
+        — you get one per school (D1/D2 allow a second if the head coach
         changes). An <strong>unofficial visit</strong> is paid for by you or
         your family, and there's no limit on how many you can take. What the
         school is allowed to pay for during each type of visit depends on its
@@ -177,7 +177,9 @@
         </p>
         <div class="grid grid-cols-1 gap-4 p-3 sm:grid-cols-2">
           <div>
-            <p class="mb-1 text-xs font-semibold tracking-wide text-gray-500 uppercase">
+            <p
+              class="mb-1 text-xs font-semibold tracking-wide text-gray-500 uppercase"
+            >
               Official visit — school may pay for
             </p>
             <ul class="list-disc space-y-1 pl-5 text-sm text-gray-700">
@@ -185,7 +187,9 @@
             </ul>
           </div>
           <div>
-            <p class="mb-1 text-xs font-semibold tracking-wide text-gray-500 uppercase">
+            <p
+              class="mb-1 text-xs font-semibold tracking-wide text-gray-500 uppercase"
+            >
               Unofficial visit — school may pay for
             </p>
             <ul class="list-disc space-y-1 pl-5 text-sm text-gray-700">

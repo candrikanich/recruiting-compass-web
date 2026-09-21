@@ -15,7 +15,9 @@ let mockUserRow: { value: unknown } = {
   },
 };
 
-let mockFamilyMembership: { value: { family_unit_id: string } | null } = { value: null };
+let mockFamilyMembership: { value: { family_unit_id: string } | null } = {
+  value: null,
+};
 let mockFamilyHasParent: { value: boolean } = { value: false };
 
 const mockInsert = vi.fn(async () => ({ error: mockInsertError }));
@@ -23,11 +25,19 @@ const mockUpdate = vi.fn(() => ({ eq: async () => ({ error: null }) }));
 
 // All vi.mock calls first
 vi.mock("~/server/utils/auth", () => ({
-  requireAuth: vi.fn(async () => ({ id: "player-1", email: "player@example.com" })),
+  requireAuth: vi.fn(async () => ({
+    id: "player-1",
+    email: "player@example.com",
+  })),
 }));
 
 vi.mock("~/server/utils/logger", () => ({
-  useLogger: () => ({ info: vi.fn(), error: vi.fn(), warn: vi.fn(), debug: vi.fn() }),
+  useLogger: () => ({
+    info: vi.fn(),
+    error: vi.fn(),
+    warn: vi.fn(),
+    debug: vi.fn(),
+  }),
 }));
 
 vi.mock("~/server/utils/rateLimit", () => ({
@@ -61,7 +71,9 @@ vi.mock("~/server/utils/supabase", () => ({
               eq: () => ({
                 limit: () => ({
                   maybeSingle: async () => ({
-                    data: mockFamilyHasParent.value ? { user_id: "some-parent" } : null,
+                    data: mockFamilyHasParent.value
+                      ? { user_id: "some-parent" }
+                      : null,
                   }),
                 }),
               }),
@@ -148,7 +160,8 @@ describe("POST /api/guardian/resend — no existing claim", () => {
 
     await handler(fakeEvent);
 
-    const { sendGuardianClaimEmail } = await import("~/server/utils/emailService");
+    const { sendGuardianClaimEmail } =
+      await import("~/server/utils/emailService");
     expect(sendGuardianClaimEmail).toHaveBeenCalledWith(
       expect.objectContaining({ playerName: "Player One" }),
     );
@@ -156,7 +169,12 @@ describe("POST /api/guardian/resend — no existing claim", () => {
 
   it("rejects an adult with no pending claim, even with an email provided", async () => {
     mockUserRow = {
-      value: { role: "player", date_of_birth: "2000-01-01", guardian_consent_at: null, full_name: "Adult Player" },
+      value: {
+        role: "player",
+        date_of_birth: "2000-01-01",
+        guardian_consent_at: null,
+        full_name: "Adult Player",
+      },
     };
     mockBody = { guardianEmail: "newparent@example.com" };
 
@@ -166,7 +184,12 @@ describe("POST /api/guardian/resend — no existing claim", () => {
 
   it("rejects a parent caller with no pending claim", async () => {
     mockUserRow = {
-      value: { role: "parent", date_of_birth: null, guardian_consent_at: null, full_name: "A Parent" },
+      value: {
+        role: "parent",
+        date_of_birth: null,
+        guardian_consent_at: null,
+        full_name: "A Parent",
+      },
     };
     mockBody = { guardianEmail: "newparent@example.com" };
 

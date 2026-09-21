@@ -124,8 +124,8 @@ describe("EmailVerificationBanner", () => {
 
     const remounted = createWrapper();
     await flushPromises();
-    expect(
-      remounted.find('[data-testid="verify-email-banner"]').exists(),
-    ).toBe(false);
+    expect(remounted.find('[data-testid="verify-email-banner"]').exists()).toBe(
+      false,
+    );
   });
 });

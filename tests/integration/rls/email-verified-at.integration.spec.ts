@@ -15,7 +15,10 @@ import { describe, it, expect, vi } from "vitest";
 
 vi.unmock("@supabase/supabase-js");
 
-import { createClient, type RealtimeClientOptions } from "@supabase/supabase-js";
+import {
+  createClient,
+  type RealtimeClientOptions,
+} from "@supabase/supabase-js";
 import ws from "ws";
 import type { Database } from "~/types/database";
 

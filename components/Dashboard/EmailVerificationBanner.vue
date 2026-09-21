@@ -20,9 +20,7 @@
         :disabled="emailVerification.loading.value"
         @click="handleResend"
       >
-        {{
-          emailVerification.loading.value ? "Sending…" : "Resend email"
-        }}
+        {{ emailVerification.loading.value ? "Sending…" : "Resend email" }}
       </button>
       <span v-if="sent" class="text-sm">Sent!</span>
       <span v-else-if="emailVerification.error.value" class="text-sm">

@@ -178,9 +178,9 @@ describe("Auth Form Accessibility", () => {
       const form = wrapper.find("form#signup-form");
       expect(form.exists()).toBe(true);
       expect(form.attributes("aria-label")).toBe("Create player account");
-      expect(
-        wrapper.find('[data-testid="signup-form-player"]').exists(),
-      ).toBe(true);
+      expect(wrapper.find('[data-testid="signup-form-player"]').exists()).toBe(
+        true,
+      );
     });
 
     it("should link the player wizard's account step to the error summary when errors exist", () => {

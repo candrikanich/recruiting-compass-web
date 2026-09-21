@@ -1,10 +1,13 @@
 <template>
   <div>
-    <div class="mb-3 rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-900">
+    <div
+      class="mb-3 rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-900"
+    >
       <p class="font-medium">Bring a parent or guardian along</p>
       <p class="mt-1 text-blue-800">
-        They'll see what you're working on and can help — messaging coaches unlocks
-        once they confirm. You can add this later if you'd rather do that now.
+        They'll see what you're working on and can help — messaging coaches
+        unlocks once they confirm. You can add this later if you'd rather do
+        that now.
       </p>
     </div>
     <LoginInputField
@@ -60,5 +63,7 @@ defineEmits<{
 // Continue is always available once an email is *typed* — full format validation
 // stays server-side (same EMAIL_RE the endpoint applies), matching this form's
 // existing pattern of not duplicating regex validation client-side for guardianEmail.
-const canContinue = computed(() => (props.guardianEmail ?? "").trim().length > 0);
+const canContinue = computed(
+  () => (props.guardianEmail ?? "").trim().length > 0,
+);
 </script>

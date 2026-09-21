@@ -87,8 +87,7 @@ function makeSupabaseMock({
         }),
         // The post-delete survivors check: .from("users").select("id").in("id", ids)
         in: vi.fn().mockResolvedValue({
-          data:
-            table === "users" ? survivorIds.map((id) => ({ id })) : [],
+          data: table === "users" ? survivorIds.map((id) => ({ id })) : [],
           error: table === "users" ? (verifyReadError ?? null) : null,
         }),
       }),
@@ -356,7 +355,9 @@ describe("POST /api/admin/bulk-delete-users", () => {
 
   it("clears guardian_consent_by via UPDATE before the users delete", async () => {
     mockRequireAdmin.mockResolvedValue(makeAdminUser());
-    const supabaseMock = makeSupabaseMock({ lookupData: { id: "target-uuid" } });
+    const supabaseMock = makeSupabaseMock({
+      lookupData: { id: "target-uuid" },
+    });
     mockUseSupabaseAdmin.mockReturnValue(
       supabaseMock as ReturnType<typeof useSupabaseAdmin>,
     );

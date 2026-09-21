@@ -243,7 +243,10 @@ describe("POST /api/admin/delete-user", () => {
     const { useSupabaseAdmin } = await import("~/server/utils/supabase");
     const mockAdmin = buildSupabaseAdmin({
       existingUserId: "target-1",
-      usersDeleteError: { message: "update or delete on table \"users\" violates foreign key constraint" },
+      usersDeleteError: {
+        message:
+          'update or delete on table "users" violates foreign key constraint',
+      },
       usersRowStillExistsAfterDelete: true,
     });
     vi.mocked(useSupabaseAdmin).mockReturnValue(mockAdmin as never);

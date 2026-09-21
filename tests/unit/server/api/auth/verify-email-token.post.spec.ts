@@ -6,7 +6,12 @@ vi.mock("~/server/utils/emailVerificationTokens", () => ({
   consumeVerificationToken: mockConsume,
 }));
 vi.mock("~/server/utils/logger", () => ({
-  useLogger: () => ({ info: vi.fn(), error: vi.fn(), warn: vi.fn(), debug: vi.fn() }),
+  useLogger: () => ({
+    info: vi.fn(),
+    error: vi.fn(),
+    warn: vi.fn(),
+    debug: vi.fn(),
+  }),
 }));
 const mockRateLimitByIp = vi.fn(async () => ({ success: true }));
 vi.mock("~/server/utils/rateLimit", () => ({
@@ -20,10 +25,7 @@ vi.mock("h3", async (importOriginal) => {
     ...actual,
     defineEventHandler: (fn: Function) => fn,
     getRouterParam: vi.fn(() => "tok-1"),
-    createError: (config: {
-      statusCode: number;
-      statusMessage?: string;
-    }) => {
+    createError: (config: { statusCode: number; statusMessage?: string }) => {
       const err = new Error(config.statusMessage) as Error & {
         statusCode: number;
       };
@@ -43,9 +45,8 @@ vi.stubGlobal(
   },
 );
 
-const { default: handler } = await import(
-  "~/server/api/auth/verify-email/[token].post"
-);
+const { default: handler } =
+  await import("~/server/api/auth/verify-email/[token].post");
 
 describe("POST /api/auth/verify-email/:token", () => {
   it("returns verified for a valid token", async () => {
@@ -53,14 +54,17 @@ describe("POST /api/auth/verify-email/:token", () => {
     const result = await handler({} as Parameters<typeof handler>[0]);
 
     expect(result).toEqual({ status: "verified" });
-    expect(mockRateLimitByIp).toHaveBeenCalledWith(
-      expect.anything(),
-      { requests: 10, window: "1 h" },
-    );
+    expect(mockRateLimitByIp).toHaveBeenCalledWith(expect.anything(), {
+      requests: 10,
+      window: "1 h",
+    });
   });
 
   it("returns already_verified status when email was already verified", async () => {
-    mockConsume.mockResolvedValue({ status: "already_verified", userId: "user-1" });
+    mockConsume.mockResolvedValue({
+      status: "already_verified",
+      userId: "user-1",
+    });
     const result = await handler({} as Parameters<typeof handler>[0]);
 
     expect(result).toEqual({ status: "already_verified" });

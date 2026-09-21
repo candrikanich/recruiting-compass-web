@@ -6,13 +6,19 @@ import { CURRENT_TERMS_VERSION } from "~/utils/legal";
 
 // Maps the accept_guardian_claim() SQL function's raised error messages to the
 // HTTP responses this endpoint previously returned for the same conditions.
-const CLAIM_ERROR_RESPONSES: Record<string, { statusCode: number; statusMessage: string }> = {
+const CLAIM_ERROR_RESPONSES: Record<
+  string,
+  { statusCode: number; statusMessage: string }
+> = {
   CLAIM_NOT_FOUND: { statusCode: 404, statusMessage: "Link not found" },
   CLAIM_ALREADY_CLAIMED: {
     statusCode: 409,
     statusMessage: "This account has already been confirmed",
   },
-  CLAIM_INVALID: { statusCode: 410, statusMessage: "This link is no longer valid" },
+  CLAIM_INVALID: {
+    statusCode: 410,
+    statusMessage: "This link is no longer valid",
+  },
   CLAIM_EXPIRED: { statusCode: 410, statusMessage: "This link has expired" },
 };
 
@@ -40,19 +46,28 @@ export default defineEventHandler(async (event) => {
     const guardian = await requireAuth(event);
     const token = getRouterParam(event, "token");
     if (!token) {
-      throw createError({ statusCode: 400, statusMessage: "Token is required" });
+      throw createError({
+        statusCode: 400,
+        statusMessage: "Token is required",
+      });
     }
     if (!guardian.email) {
-      throw createError({ statusCode: 400, statusMessage: "Account has no email on file" });
+      throw createError({
+        statusCode: 400,
+        statusMessage: "Account has no email on file",
+      });
     }
 
     const supabase = useSupabaseAdmin();
-    const { data: familyUnitId, error } = await supabase.rpc("accept_guardian_claim", {
-      p_token: token,
-      p_guardian_id: guardian.id,
-      p_guardian_email: guardian.email,
-      p_terms_version: CURRENT_TERMS_VERSION,
-    });
+    const { data: familyUnitId, error } = await supabase.rpc(
+      "accept_guardian_claim",
+      {
+        p_token: token,
+        p_guardian_id: guardian.id,
+        p_guardian_email: guardian.email,
+        p_terms_version: CURRENT_TERMS_VERSION,
+      },
+    );
 
     if (error) {
       const mapped = CLAIM_ERROR_RESPONSES[error.message];
@@ -62,7 +77,8 @@ export default defineEventHandler(async (event) => {
         logger.warn("Guardian claim attempted by a non-matching account");
         throw createError({
           statusCode: 403,
-          statusMessage: "This link was sent to a different email. Sign in with that email to confirm.",
+          statusMessage:
+            "This link was sent to a different email. Sign in with that email to confirm.",
         });
       }
 

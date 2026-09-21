@@ -8,9 +8,7 @@ vi.mock("~/composables/useAuthFetch", () => ({
   useAuthFetch: () => ({ $fetchAuth: mockFetchAuth }),
 }));
 
-const statusOf = (
-  overrides: Partial<GuardianStatus>,
-): GuardianStatus => ({
+const statusOf = (overrides: Partial<GuardianStatus>): GuardianStatus => ({
   locked: true,
   guardianEmailMasked: null,
   expiresAt: null,

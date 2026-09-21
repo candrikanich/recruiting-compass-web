@@ -539,9 +539,7 @@ describe("/join page", () => {
 
       // Switching back must mount fresh widgets, not silently no-op because
       // a stale widget id from the first mount is still set.
-      expect(mockRender.mock.calls.length).toBeGreaterThan(
-        initialRenderCount,
-      );
+      expect(mockRender.mock.calls.length).toBeGreaterThan(initialRenderCount);
     });
   });
 });

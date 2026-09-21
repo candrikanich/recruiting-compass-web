@@ -132,12 +132,8 @@ describe("pages/guardian/claim/[token].vue", () => {
     const wrapper = createWrapper();
     await flushPromises();
 
-    await wrapper
-      .findAll("button[type=button]")[1]!
-      .trigger("click"); // "I already have an account"
-    await wrapper
-      .find("input[type=password]")
-      .setValue("StrongPass123");
+    await wrapper.findAll("button[type=button]")[1]!.trigger("click"); // "I already have an account"
+    await wrapper.find("input[type=password]").setValue("StrongPass123");
 
     await wrapper.find("form").trigger("submit.prevent");
     await flushPromises();

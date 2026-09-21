@@ -35,7 +35,9 @@ const PASSWORD = "SecurePass123";
 async function signUpParent(page: Page, email: string): Promise<void> {
   await page.goto("/signup");
   await page.click('[data-testid="user-type-parent"]');
-  await expect(page.locator('[data-testid="signup-form-parent"]')).toBeVisible();
+  await expect(
+    page.locator('[data-testid="signup-form-parent"]'),
+  ).toBeVisible();
 
   await page.fill("#firstName", "Parent");
   await page.fill("#lastName", "Journey");
@@ -43,7 +45,9 @@ async function signUpParent(page: Page, email: string): Promise<void> {
   await page.fill("#password", PASSWORD);
   await page.fill("#confirmPassword", PASSWORD);
   await page.check("#agreeToTerms");
-  await expect(page.locator('[data-testid="signup-button"]')).not.toBeDisabled();
+  await expect(
+    page.locator('[data-testid="signup-button"]'),
+  ).not.toBeDisabled();
   await page.click('[data-testid="signup-button"]');
 }
 
@@ -55,8 +59,14 @@ test.describe("Full family onboarding journey (signup → invite → accept → 
 
   test.afterAll(async () => {
     if (!familyUnitId) return;
-    await supabase.from("family_invitations").delete().eq("family_unit_id", familyUnitId);
-    await supabase.from("family_members").delete().eq("family_unit_id", familyUnitId);
+    await supabase
+      .from("family_invitations")
+      .delete()
+      .eq("family_unit_id", familyUnitId);
+    await supabase
+      .from("family_members")
+      .delete()
+      .eq("family_unit_id", familyUnitId);
     await supabase.from("family_units").delete().eq("id", familyUnitId);
   });
 
@@ -75,7 +85,9 @@ test.describe("Full family onboarding journey (signup → invite → accept → 
     // ---- 2. Parent completes their own onboarding (placeholder player profile) ----
     await page.locator('[data-testid="player-name"]').fill("Placeholder Kid");
     await page.locator('[data-testid="player-dob"]').fill("2008-05-10");
-    await page.locator('[data-testid="graduation-year"]').selectOption({ index: 1 });
+    await page
+      .locator('[data-testid="graduation-year"]')
+      .selectOption({ index: 1 });
     await page.locator('[data-testid="sport"]').selectOption("Baseball");
     await page.locator('[data-testid="go-to-dashboard"]').click();
     await expect(page).toHaveURL(/\/dashboard/, { timeout: 15000 });
@@ -103,12 +115,20 @@ test.describe("Full family onboarding journey (signup → invite → accept → 
 
     // ---- 3. Parent invites a player through the real UI ----
     await page.goto("/settings/family-management");
-    await expect(page.locator('[data-testid="invite-member-form"]')).toBeVisible();
+    await expect(
+      page.locator('[data-testid="invite-member-form"]'),
+    ).toBeVisible();
     await page.locator('[data-testid="invite-email-input"]').fill(playerEmail);
-    await page.locator('[data-testid="invite-role-select"]').selectOption("player");
-    await expect(page.locator('[data-testid="send-invite-submit"]')).not.toBeDisabled();
+    await page
+      .locator('[data-testid="invite-role-select"]')
+      .selectOption("player");
+    await expect(
+      page.locator('[data-testid="send-invite-submit"]'),
+    ).not.toBeDisabled();
     await page.locator('[data-testid="send-invite-submit"]').click();
-    await expect(page.getByText(/Invite sent/i)).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText(/Invite sent/i)).toBeVisible({
+      timeout: 15000,
+    });
 
     const { data: invite } = await supabase
       .from("family_invitations")
@@ -135,7 +155,9 @@ test.describe("Full family onboarding journey (signup → invite → accept → 
     await page.fill("#password", PASSWORD);
     await page.fill("#confirmPassword", PASSWORD);
     await page.check("#invite-terms");
-    await page.getByRole("button", { name: /create account and connect/i }).click();
+    await page
+      .getByRole("button", { name: /create account and connect/i })
+      .click();
 
     // Accept succeeds → the player's grad year/sport were already hydrated
     // from the parent's onboarding, so onboarding is skipped entirely and

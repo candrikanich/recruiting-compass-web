@@ -880,9 +880,12 @@ describe("signup.vue", () => {
       expect(mockSupabase.auth.signInWithPassword).toHaveBeenCalledWith(
         expect.objectContaining({ email: "test@example.com" }),
       );
-      expect(mockAuthFetch.$fetchAuth).toHaveBeenCalledWith("/api/family/create", {
-        method: "POST",
-      });
+      expect(mockAuthFetch.$fetchAuth).toHaveBeenCalledWith(
+        "/api/family/create",
+        {
+          method: "POST",
+        },
+      );
       expect(mockUserStore.initializeUser).toHaveBeenCalled();
       expect(global.navigateTo).toHaveBeenCalledWith("/dashboard");
       expect(global.navigateTo).not.toHaveBeenCalledWith(
@@ -1102,7 +1105,9 @@ describe("signup.vue", () => {
       expect(mockValidation.setErrors).toHaveBeenCalledWith([
         {
           field: "form",
-          message: expect.stringContaining("couldn't confirm you're not a robot"),
+          message: expect.stringContaining(
+            "couldn't confirm you're not a robot",
+          ),
         },
       ]);
     });

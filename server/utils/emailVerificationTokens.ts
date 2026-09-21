@@ -69,7 +69,8 @@ export async function discardVerificationToken(token: string): Promise<void> {
 }
 
 export async function consumeVerificationToken(token: string): Promise<{
-  status: "verified" | "already_verified" | "expired" | "invalidated" | "not_found";
+  status:
+    "verified" | "already_verified" | "expired" | "invalidated" | "not_found";
   userId?: string;
 }> {
   const supabase = useSupabaseAdmin();
@@ -90,11 +91,7 @@ export async function consumeVerificationToken(token: string): Promise<{
 
   return {
     status: data.status as
-      | "verified"
-      | "already_verified"
-      | "expired"
-      | "invalidated"
-      | "not_found",
+      "verified" | "already_verified" | "expired" | "invalidated" | "not_found",
     userId: data.user_id ?? undefined,
   };
 }

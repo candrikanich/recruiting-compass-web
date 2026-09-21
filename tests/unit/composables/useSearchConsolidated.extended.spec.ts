@@ -292,7 +292,11 @@ describe("useSearchConsolidated (extended)", () => {
       // querySelect — the other three entities are unaffected.
       const tables = querySelectMock.mock.calls.map((args) => args[0]);
       expect(tables).toEqual(
-        expect.arrayContaining(["coaches", "interactions", "performance_metrics"]),
+        expect.arrayContaining([
+          "coaches",
+          "interactions",
+          "performance_metrics",
+        ]),
       );
       expect(queryRpcMock).toHaveBeenCalledWith(
         "search_schools_fts",

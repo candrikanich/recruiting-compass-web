@@ -38,7 +38,12 @@ vi.mock("~/server/utils/rateLimit", () => ({
   }),
 }));
 vi.mock("~/server/utils/logger", () => ({
-  useLogger: () => ({ info: vi.fn(), error: vi.fn(), warn: vi.fn(), debug: vi.fn() }),
+  useLogger: () => ({
+    info: vi.fn(),
+    error: vi.fn(),
+    warn: vi.fn(),
+    debug: vi.fn(),
+  }),
 }));
 
 vi.mock("h3", async () => {
@@ -52,9 +57,8 @@ vi.mock("h3", async () => {
 import { requireAuth } from "~/server/utils/auth";
 import { rateLimitByUser, throwIfRateLimited } from "~/server/utils/rateLimit";
 
-const { default: handler } = await import(
-  "~/server/api/auth/verify-email/resend.post"
-);
+const { default: handler } =
+  await import("~/server/api/auth/verify-email/resend.post");
 
 describe("POST /api/auth/verify-email/resend", () => {
   beforeEach(() => {
@@ -127,20 +131,19 @@ describe("POST /api/auth/verify-email/resend", () => {
   it("rate-limits by the authenticated user id", async () => {
     await handler({} as Parameters<typeof handler>[0]);
 
-    expect(rateLimitByUser).toHaveBeenCalledWith(
-      expect.anything(),
-      "user-1",
-      { requests: 5, window: "1 h" },
-    );
+    expect(rateLimitByUser).toHaveBeenCalledWith(expect.anything(), "user-1", {
+      requests: 5,
+      window: "1 h",
+    });
   });
 
   it("throws when the user is rate-limited", async () => {
     mockRateLimitState.success = false;
     vi.mocked(rateLimitByUser).mockResolvedValue({ ...mockRateLimitState });
 
-    await expect(
-      handler({} as Parameters<typeof handler>[0]),
-    ).rejects.toThrow("Too many requests");
+    await expect(handler({} as Parameters<typeof handler>[0])).rejects.toThrow(
+      "Too many requests",
+    );
 
     expect(mockIssueToken).not.toHaveBeenCalled();
   });

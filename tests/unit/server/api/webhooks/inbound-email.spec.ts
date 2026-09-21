@@ -179,12 +179,10 @@ describe("POST /api/webhooks/inbound-email", () => {
     attachmentsGetMock.mockReset();
     vi.stubGlobal(
       "fetch",
-      vi
-        .fn()
-        .mockResolvedValue({
-          ok: true,
-          arrayBuffer: async () => new ArrayBuffer(4),
-        }),
+      vi.fn().mockResolvedValue({
+        ok: true,
+        arrayBuffer: async () => new ArrayBuffer(4),
+      }),
     );
     vi.mocked(parseForwardedThread).mockReset();
     vi.mocked(autoCreateCoachByEmailDomain).mockReset().mockResolvedValue({

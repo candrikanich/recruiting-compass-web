@@ -54,8 +54,11 @@ export default defineEventHandler(async (event) => {
           parseResult.error.issues[0]?.message ?? "Invalid request body",
       });
     }
-    const { email, role, pending_player_details: pendingPlayerDetails } =
-      parseResult.data;
+    const {
+      email,
+      role,
+      pending_player_details: pendingPlayerDetails,
+    } = parseResult.data;
 
     const supabase = useSupabaseAdmin();
 

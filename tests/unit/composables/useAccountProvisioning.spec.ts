@@ -103,7 +103,9 @@ describe("useAccountProvisioning", () => {
     suppressAutoFamilyCreateOnNextSignIn("guardian@example.com");
 
     const { ensureAccountProvisioned } = useAccountProvisioning();
-    await ensureAccountProvisioned(buildUser({ email: "guardian@example.com" }));
+    await ensureAccountProvisioned(
+      buildUser({ email: "guardian@example.com" }),
+    );
 
     expect(fetchAuthMock).not.toHaveBeenCalledWith("/api/family/create", {
       method: "POST",
@@ -111,7 +113,9 @@ describe("useAccountProvisioning", () => {
 
     // One-shot: the very next sign-in (not suppressed) calls it as normal.
     fetchAuthMock.mockClear();
-    await ensureAccountProvisioned(buildUser({ email: "guardian@example.com" }));
+    await ensureAccountProvisioned(
+      buildUser({ email: "guardian@example.com" }),
+    );
 
     expect(fetchAuthMock).toHaveBeenCalledWith("/api/family/create", {
       method: "POST",
@@ -122,7 +126,9 @@ describe("useAccountProvisioning", () => {
     suppressAutoFamilyCreateOnNextSignIn("  Guardian@Example.com  ");
 
     const { ensureAccountProvisioned } = useAccountProvisioning();
-    await ensureAccountProvisioned(buildUser({ email: "guardian@example.com" }));
+    await ensureAccountProvisioned(
+      buildUser({ email: "guardian@example.com" }),
+    );
 
     expect(fetchAuthMock).not.toHaveBeenCalledWith("/api/family/create", {
       method: "POST",
@@ -136,7 +142,9 @@ describe("useAccountProvisioning", () => {
     suppressAutoFamilyCreateOnNextSignIn("guardian@example.com");
 
     const { ensureAccountProvisioned } = useAccountProvisioning();
-    await ensureAccountProvisioned(buildUser({ email: "someone-else@example.com" }));
+    await ensureAccountProvisioned(
+      buildUser({ email: "someone-else@example.com" }),
+    );
 
     expect(fetchAuthMock).toHaveBeenCalledWith("/api/family/create", {
       method: "POST",
@@ -145,7 +153,9 @@ describe("useAccountProvisioning", () => {
     // The pending suppression for the original email is still intact for its
     // own matching sign-in.
     fetchAuthMock.mockClear();
-    await ensureAccountProvisioned(buildUser({ email: "guardian@example.com" }));
+    await ensureAccountProvisioned(
+      buildUser({ email: "guardian@example.com" }),
+    );
 
     expect(fetchAuthMock).not.toHaveBeenCalledWith("/api/family/create", {
       method: "POST",
@@ -161,7 +171,9 @@ describe("useAccountProvisioning", () => {
     resetSuppressAutoFamilyCreate();
 
     const { ensureAccountProvisioned } = useAccountProvisioning();
-    await ensureAccountProvisioned(buildUser({ email: "guardian@example.com" }));
+    await ensureAccountProvisioned(
+      buildUser({ email: "guardian@example.com" }),
+    );
 
     expect(fetchAuthMock).toHaveBeenCalledWith("/api/family/create", {
       method: "POST",

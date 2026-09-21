@@ -361,7 +361,9 @@ describe("POST /api/family/invite", () => {
       await handler({} as Parameters<typeof handler>[0]);
 
       expect(state.familyInvitationsInsertSpy).toHaveBeenCalledWith(
-        expect.not.objectContaining({ pending_player_details: expect.anything() }),
+        expect.not.objectContaining({
+          pending_player_details: expect.anything(),
+        }),
       );
     });
 
@@ -380,7 +382,9 @@ describe("POST /api/family/invite", () => {
 
       expect(result).toMatchObject({ success: true });
       expect(state.familyInvitationsInsertSpy).toHaveBeenCalledWith(
-        expect.not.objectContaining({ pending_player_details: expect.anything() }),
+        expect.not.objectContaining({
+          pending_player_details: expect.anything(),
+        }),
       );
     });
 
@@ -413,9 +417,14 @@ describe("POST /api/family/invite", () => {
         await import("~/server/api/family/invite.post");
       const result = await handler({} as Parameters<typeof handler>[0]);
 
-      expect(result).toMatchObject({ success: true, invitationId: "invite-abc" });
+      expect(result).toMatchObject({
+        success: true,
+        invitationId: "invite-abc",
+      });
       expect(state.familyInvitationsInsertSpy).toHaveBeenCalledWith(
-        expect.not.objectContaining({ pending_player_details: expect.anything() }),
+        expect.not.objectContaining({
+          pending_player_details: expect.anything(),
+        }),
       );
     });
 

@@ -241,14 +241,13 @@ export default defineEventHandler(
         );
       }
 
-      const { data: stillExists, error: verifyError } = await (
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        supabaseAdmin as any
-      )
-        .from("users")
-        .select("id")
-        .eq("id", targetUserId)
-        .maybeSingle();
+      const { data: stillExists, error: verifyError } =
+        await // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (supabaseAdmin as any)
+          .from("users")
+          .select("id")
+          .eq("id", targetUserId)
+          .maybeSingle();
 
       if (verifyError) {
         logger.error(

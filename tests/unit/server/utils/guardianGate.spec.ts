@@ -1,5 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { assertGuardianConfirmed, hasParentInFamily } from "~/server/utils/guardianGate";
+import {
+  assertGuardianConfirmed,
+  hasParentInFamily,
+} from "~/server/utils/guardianGate";
 
 const makeSupabase = (
   user: {
@@ -25,7 +28,9 @@ const makeSupabase = (
   const familyMembersSelect = vi.fn(() => ({
     eq: vi.fn(() => ({
       maybeSingle: membershipMaybeSingle,
-      eq: vi.fn(() => ({ limit: vi.fn(() => ({ maybeSingle: parentMaybeSingle })) })),
+      eq: vi.fn(() => ({
+        limit: vi.fn(() => ({ maybeSingle: parentMaybeSingle })),
+      })),
     })),
   }));
 
@@ -163,7 +168,11 @@ describe("assertGuardianConfirmed", () => {
     // real parent already sits in the same family. Without the override this player
     // is permanently locked despite a real guardian being present.
     const { client } = makeSupabase(
-      { role: "player", date_of_birth: yearsAgo(15), guardian_consent_at: null },
+      {
+        role: "player",
+        date_of_birth: yearsAgo(15),
+        guardian_consent_at: null,
+      },
       { family_unit_id: "family-1" },
       true,
     );
@@ -179,7 +188,11 @@ describe("assertGuardianConfirmed", () => {
     // self-created family has a family_members row but no parent role in it. Family
     // membership alone isn't the signal; a parent within that family is.
     const { client } = makeSupabase(
-      { role: "player", date_of_birth: yearsAgo(15), guardian_consent_at: null },
+      {
+        role: "player",
+        date_of_birth: yearsAgo(15),
+        guardian_consent_at: null,
+      },
       { family_unit_id: "family-2" },
       false,
     );
@@ -198,20 +211,30 @@ describe("hasParentInFamily", () => {
     const { client } = makeSupabase(null, null, false);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await expect(hasParentInFamily(client as any, "solo-player")).resolves.toBe(false);
+    await expect(hasParentInFamily(client as any, "solo-player")).resolves.toBe(
+      false,
+    );
   });
 
   it("returns true when a sibling family_members row has role 'parent'", async () => {
     const { client } = makeSupabase(null, { family_unit_id: "family-1" }, true);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await expect(hasParentInFamily(client as any, "player-1")).resolves.toBe(true);
+    await expect(hasParentInFamily(client as any, "player-1")).resolves.toBe(
+      true,
+    );
   });
 
   it("returns false when the family unit has membership but no parent role", async () => {
-    const { client } = makeSupabase(null, { family_unit_id: "family-2" }, false);
+    const { client } = makeSupabase(
+      null,
+      { family_unit_id: "family-2" },
+      false,
+    );
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await expect(hasParentInFamily(client as any, "player-2")).resolves.toBe(false);
+    await expect(hasParentInFamily(client as any, "player-2")).resolves.toBe(
+      false,
+    );
   });
 });

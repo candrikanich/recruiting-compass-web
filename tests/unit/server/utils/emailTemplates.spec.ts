@@ -86,6 +86,8 @@ describe("wrapEmailLayout", () => {
   it("keeps CTA-button anchors readable in dark mode by excluding them from the plain-link color override", () => {
     const html = wrapEmailLayout("<p>x</p>");
     expect(html).toContain(".trc-email-text a:not(.trc-email-btn)");
-    expect(html).toContain(".trc-email-text a.trc-email-btn { color:#ffffff !important; }");
+    expect(html).toContain(
+      ".trc-email-text a.trc-email-btn { color:#ffffff !important; }",
+    );
   });
 });
