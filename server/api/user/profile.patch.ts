@@ -2,7 +2,8 @@ import { defineEventHandler, createError, readBody } from "h3";
 import { z } from "zod";
 import { useLogger } from "~/server/utils/logger";
 import { requireAuth } from "~/server/utils/auth";
-import { useSupabaseAdmin } from "~/server/utils/supabase";
+import { createServerSupabaseUserClient } from "~/server/utils/supabase";
+import { extractRequestToken } from "~/server/utils/requestToken";
 import { deriveTimezone } from "~/server/utils/timezone";
 import { isUnderMinimumAge, MINIMUM_AGE } from "~/utils/age";
 
@@ -62,7 +63,8 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    const supabase = useSupabaseAdmin();
+    const token = extractRequestToken(event);
+    const supabase = createServerSupabaseUserClient(token);
     const updatePayload = { ...parsed.data } as Record<string, unknown>;
     if (parsed.data.home_location?.state) {
       updatePayload.timezone = deriveTimezone(parsed.data.home_location.state);

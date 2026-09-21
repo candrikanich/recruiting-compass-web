@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 const mockState = {
   userId: "user-abc",
@@ -29,9 +29,8 @@ vi.mock("~/server/utils/logger", () => ({
   }),
 }));
 
-vi.mock("~/server/utils/supabase", () => ({
-  useSupabaseAdmin: vi.fn(() => ({
-    from: (table: string) => {
+const fakeClientFactory = () => ({
+  from: (table: string) => {
       // Publishing now runs the guardian gate first; these fixtures return an adult
       // player who passes the gate, so the update proceeds as before.
       if (table === "users") {
@@ -95,7 +94,15 @@ vi.mock("~/server/utils/supabase", () => ({
       }
       return {};
     },
-  })),
+});
+
+vi.mock("~/server/utils/supabase", () => ({
+  useSupabaseAdmin: vi.fn(fakeClientFactory),
+  createServerSupabaseUserClient: vi.fn(fakeClientFactory),
+}));
+
+vi.mock("~/server/utils/requestToken", () => ({
+  extractRequestToken: vi.fn(() => "fake-token"),
 }));
 
 vi.mock("h3", async (importOriginal) => {
@@ -116,12 +123,22 @@ vi.mock("h3", async (importOriginal) => {
 
 const { default: getHandler } = await import("~/server/api/player/profile.get");
 const { default: putHandler } = await import("~/server/api/player/profile.put");
+const { useSupabaseAdmin, createServerSupabaseUserClient } = await import(
+  "~/server/utils/supabase"
+);
 
 describe("GET /api/player/profile", () => {
   beforeEach(() => {
     mockState.userId = "user-abc";
     mockState.membership = { family_unit_id: "family-123" };
     mockState.profileRow = null;
+  });
+
+  afterEach(() => {
+    // Regression guard: fakeClientFactory returns the same shape for both
+    // clients, so a handler reverting to the privileged one would otherwise
+    // pass every assertion below undetected.
+    expect(useSupabaseAdmin).not.toHaveBeenCalled();
   });
 
   it("returns 403 when user is not a family member", async () => {
@@ -136,6 +153,7 @@ describe("GET /api/player/profile", () => {
     const result = await getHandler({} as any);
     expect(result.hash_slug).toBeDefined();
     expect(result.is_published).toBe(false);
+    expect(createServerSupabaseUserClient).toHaveBeenCalledWith("fake-token");
   });
 
   it("returns existing profile when one exists", async () => {
@@ -165,6 +183,10 @@ describe("PUT /api/player/profile", () => {
     mockState.profileRow = { id: "p1", user_id: "user-abc" };
     mockState.updateError = null;
     mockState.requestBody = { bio: "Hello world", is_published: true };
+  });
+
+  afterEach(() => {
+    expect(useSupabaseAdmin).not.toHaveBeenCalled();
   });
 
   it("returns 403 when user is not a family member", async () => {
@@ -199,6 +221,7 @@ describe("PUT /api/player/profile", () => {
     mockState.requestBody = { bio: "Future D1 pitcher", is_published: true };
     const result = await putHandler({} as any);
     expect(result.success).toBe(true);
+    expect(createServerSupabaseUserClient).toHaveBeenCalledWith("fake-token");
   });
 
   it("returns 409 when vanity slug is already taken", async () => {
