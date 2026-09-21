@@ -147,22 +147,44 @@ export default defineEventHandler(async (event) => {
           null) as Record<string, unknown> | null;
 
         if (familyDraft || pendingPlayerDetails) {
+          // iOS's savePlayerDetails() writes the family draft directly via the Supabase
+          // client SDK using PendingPlayerDetails' own wire shape (first_name/last_name/
+          // graduation_year, snake_case) rather than the canonical playerName/graduationYear
+          // shape player-details.post.ts (web) writes — so a draft staged from iOS onboarding
+          // and then invited via the dashboard's invite-only flow (no pendingPlayerDetails on
+          // THIS request) needs its name/grad-year normalized here, or accept.post.ts's
+          // `pendingDetails.playerName` gate never fires and the player never sees a prefill.
+          const draftLastName =
+            typeof familyDraft?.last_name === "string"
+              ? familyDraft.last_name
+              : "";
+          const normalizedPlayerName = pendingPlayerDetails
+            ? `${pendingPlayerDetails.first_name} ${pendingPlayerDetails.last_name}`.trim()
+            : typeof familyDraft?.playerName === "string"
+              ? familyDraft.playerName
+              : typeof familyDraft?.first_name === "string"
+                ? `${familyDraft.first_name} ${draftLastName}`.trim()
+                : undefined;
+
+          const normalizedGraduationYear =
+            pendingPlayerDetails?.graduation_year ??
+            (typeof familyDraft?.graduationYear === "number"
+              ? familyDraft.graduationYear
+              : typeof familyDraft?.graduation_year === "number"
+                ? familyDraft.graduation_year
+                : undefined);
+
           playerSnapshot = {
             ...(familyDraft ?? {}),
-            ...(pendingPlayerDetails
-              ? {
-                  playerName:
-                    `${pendingPlayerDetails.first_name} ${pendingPlayerDetails.last_name}`.trim(),
-                  ...(pendingPlayerDetails.graduation_year
-                    ? { graduationYear: pendingPlayerDetails.graduation_year }
-                    : {}),
-                  ...(pendingPlayerDetails.sport
-                    ? { sport: pendingPlayerDetails.sport }
-                    : {}),
-                  ...(pendingPlayerDetails.position
-                    ? { position: pendingPlayerDetails.position }
-                    : {}),
-                }
+            ...(normalizedPlayerName ? { playerName: normalizedPlayerName } : {}),
+            ...(normalizedGraduationYear !== undefined
+              ? { graduationYear: normalizedGraduationYear }
+              : {}),
+            ...(pendingPlayerDetails?.sport
+              ? { sport: pendingPlayerDetails.sport }
+              : {}),
+            ...(pendingPlayerDetails?.position
+              ? { position: pendingPlayerDetails.position }
               : {}),
           };
         }
