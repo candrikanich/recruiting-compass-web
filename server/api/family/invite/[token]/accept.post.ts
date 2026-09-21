@@ -114,6 +114,7 @@ export default defineEventHandler(async (event) => {
           graduationYear?: number;
           sport?: string;
           position?: string;
+          dateOfBirth?: string;
         }
       | undefined;
 
@@ -173,6 +174,12 @@ export default defineEventHandler(async (event) => {
             : {}),
           ...(pendingDetails.position
             ? { position: pendingDetails.position as string }
+            : {}),
+          // Read independent of hydrateAthleteFromPendingDetails' fill-if-empty write to
+          // users.date_of_birth below — the player should see the parent's original entry,
+          // not whatever value the account ends up with.
+          ...(typeof pendingDetails.playerDob === "string"
+            ? { dateOfBirth: pendingDetails.playerDob }
             : {}),
         };
       }
