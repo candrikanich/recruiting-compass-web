@@ -31,63 +31,79 @@ export const bodySchema = z.object({
 
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "athlete/profile-field");
-  const user = await requireAuth(event);
 
-  const parsed = bodySchema.safeParse(await readBody(event));
-  if (!parsed.success) {
+  try {
+    const user = await requireAuth(event);
+
+    const parsed = bodySchema.safeParse(await readBody(event));
+    if (!parsed.success) {
+      throw createError({
+        statusCode: 400,
+        statusMessage:
+          parsed.error.issues[0]?.message ?? "Invalid request body",
+      });
+    }
+    const { athleteUserId, sourcePath, value } = parsed.data;
+
+    const supabase = useSupabaseAdmin();
+
+    // Authz: athlete may write only their own data; parents are read-only.
+    if (!(await canMutateAthleteData(user.id, athleteUserId, supabase))) {
+      logger.warn("Profile-field write denied", {
+        callerId: user.id,
+        athleteUserId,
+      });
+      throw createError({
+        statusCode: 403,
+        statusMessage: "Not authorized to edit this profile",
+      });
+    }
+
+    const column = editableColumnFor(sourcePath);
+    if (!column) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: "Field is not editable",
+      });
+    }
+
+    const coercion = coerceProfileValue(value, EDITABLE_USERS_COLUMNS[column]);
+    if (!coercion.ok) {
+      throw createError({ statusCode: 400, statusMessage: coercion.error });
+    }
+    const coerced = coercion.value;
+
+    const { error } = await supabase
+      .from("users")
+      .update({ [column]: coerced } as UsersUpdate)
+      .eq("id", athleteUserId);
+
+    if (error) {
+      logger.error("Failed to write profile field", {
+        error,
+        column,
+        athleteUserId,
+      });
+      throw createError({ statusCode: 500, statusMessage: "Failed to save" });
+    }
+
+    logger.info("Profile field updated", { athleteUserId, column });
+    return {
+      success: true,
+      sourcePath,
+      value: coerced === null ? null : String(coerced),
+    };
+  } catch (err) {
+    // Re-throw H3 errors as-is (already logged at their source above, and
+    // already carry a generic, non-leaking statusMessage). Anything else is
+    // unexpected -- log it server-side, but never let its message/stack
+    // reach the client. #914: this route previously had no top-level
+    // try/catch at all, relying entirely on Nitro's default error handler.
+    if (err instanceof Error && "statusCode" in err) throw err;
+    logger.error("Unexpected error in PATCH /api/athlete/profile-field", err);
     throw createError({
-      statusCode: 400,
-      statusMessage: parsed.error.issues[0]?.message ?? "Invalid request body",
+      statusCode: 500,
+      statusMessage: "Failed to save",
     });
   }
-  const { athleteUserId, sourcePath, value } = parsed.data;
-
-  const supabase = useSupabaseAdmin();
-
-  // Authz: athlete may write only their own data; parents are read-only.
-  if (!(await canMutateAthleteData(user.id, athleteUserId, supabase))) {
-    logger.warn("Profile-field write denied", {
-      callerId: user.id,
-      athleteUserId,
-    });
-    throw createError({
-      statusCode: 403,
-      statusMessage: "Not authorized to edit this profile",
-    });
-  }
-
-  const column = editableColumnFor(sourcePath);
-  if (!column) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: "Field is not editable",
-    });
-  }
-
-  const coercion = coerceProfileValue(value, EDITABLE_USERS_COLUMNS[column]);
-  if (!coercion.ok) {
-    throw createError({ statusCode: 400, statusMessage: coercion.error });
-  }
-  const coerced = coercion.value;
-
-  const { error } = await supabase
-    .from("users")
-    .update({ [column]: coerced } as UsersUpdate)
-    .eq("id", athleteUserId);
-
-  if (error) {
-    logger.error("Failed to write profile field", {
-      error,
-      column,
-      athleteUserId,
-    });
-    throw createError({ statusCode: 500, statusMessage: "Failed to save" });
-  }
-
-  logger.info("Profile field updated", { athleteUserId, column });
-  return {
-    success: true,
-    sourcePath,
-    value: coerced === null ? null : String(coerced),
-  };
 });
