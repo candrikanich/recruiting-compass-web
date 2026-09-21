@@ -5,7 +5,8 @@
  */
 import { defineEventHandler, getQuery, createError } from "h3";
 import { requireAuth } from "~/server/utils/auth";
-import { useSupabaseAdmin } from "~/server/utils/supabase";
+import { createServerSupabaseUserClient } from "~/server/utils/supabase";
+import { extractRequestToken } from "~/server/utils/requestToken";
 import { useLogger } from "~/server/utils/logger";
 import { resolveFamilyUnitId } from "~/server/utils/familyMembership";
 
@@ -16,7 +17,8 @@ export default defineEventHandler(async (event) => {
   try {
     const { id: userId } = await requireAuth(event);
     const familyUnitId = await resolveFamilyUnitId(event, userId);
-    const admin = useSupabaseAdmin();
+    const token = extractRequestToken(event);
+    const supabase = createServerSupabaseUserClient(token);
 
     const rawStatus = getQuery(event).status;
     if (
@@ -27,7 +29,7 @@ export default defineEventHandler(async (event) => {
     }
     const status = rawStatus as (typeof VALID_STATUSES)[number] | undefined;
 
-    let query = admin
+    let query = supabase
       .from("inbound_email_drafts")
       .select("*")
       .eq("family_unit_id", familyUnitId);

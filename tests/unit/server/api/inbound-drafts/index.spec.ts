@@ -23,48 +23,55 @@ const mockState = {
   queryCalled: false as boolean,
 };
 
-vi.mock("~/server/utils/supabase", () => ({
-  useSupabaseAdmin: () => ({
-    from: (table: string) => {
-      if (table === "family_members") {
-        return {
-          select: () => ({
-            eq: () => ({
-              single: async () => ({
-                data: mockState.membership,
-                error: mockState.membership ? null : { code: "PGRST116" },
-              }),
+const fakeClient = () => ({
+  from: (table: string) => {
+    if (table === "family_members") {
+      return {
+        select: () => ({
+          eq: () => ({
+            single: async () => ({
+              data: mockState.membership,
+              error: mockState.membership ? null : { code: "PGRST116" },
             }),
           }),
-        };
-      }
-      if (table === "inbound_email_drafts") {
-        return {
-          select: () => ({
+        }),
+      };
+    }
+    if (table === "inbound_email_drafts") {
+      return {
+        select: () => ({
+          eq: () => ({
             eq: () => ({
-              eq: () => ({
-                order: async () => {
-                  mockState.queryCalled = true;
-                  return {
-                    data: [{ id: "draft-1", status: "pending" }],
-                    error: null,
-                  };
-                },
-              }),
               order: async () => {
-                mockState.queryCalled = false;
+                mockState.queryCalled = true;
                 return {
-                  data: [{ id: "draft-1", status: "all-statuses" }],
+                  data: [{ id: "draft-1", status: "pending" }],
                   error: null,
                 };
               },
             }),
+            order: async () => {
+              mockState.queryCalled = false;
+              return {
+                data: [{ id: "draft-1", status: "all-statuses" }],
+                error: null,
+              };
+            },
           }),
-        };
-      }
-      throw new Error(`unexpected table ${table}`);
-    },
-  }),
+        }),
+      };
+    }
+    throw new Error(`unexpected table ${table}`);
+  },
+});
+
+vi.mock("~/server/utils/supabase", () => ({
+  useSupabaseAdmin: fakeClient,
+  createServerSupabaseUserClient: fakeClient,
+}));
+
+vi.mock("~/server/utils/requestToken", () => ({
+  extractRequestToken: vi.fn(() => "fake-token"),
 }));
 
 import { getQuery } from "h3";

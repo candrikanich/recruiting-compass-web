@@ -6,7 +6,8 @@
  */
 import { defineEventHandler, getRouterParam, createError } from "h3";
 import { requireAuth } from "~/server/utils/auth";
-import { useSupabaseAdmin } from "~/server/utils/supabase";
+import { createServerSupabaseUserClient } from "~/server/utils/supabase";
+import { extractRequestToken } from "~/server/utils/requestToken";
 import { useLogger } from "~/server/utils/logger";
 import { resolveFamilyUnitId } from "~/server/utils/familyMembership";
 
@@ -23,9 +24,10 @@ export default defineEventHandler(async (event) => {
     }
 
     const familyUnitId = await resolveFamilyUnitId(event, userId);
-    const admin = useSupabaseAdmin();
+    const token = extractRequestToken(event);
+    const supabase = createServerSupabaseUserClient(token);
 
-    const { data: draft } = await admin
+    const { data: draft } = await supabase
       .from("inbound_email_drafts")
       .select("id, family_unit_id, status")
       .eq("id", draftId)
@@ -38,7 +40,7 @@ export default defineEventHandler(async (event) => {
       return { ok: true };
     }
 
-    const { error: updateError } = await admin
+    const { error: updateError } = await supabase
       .from("inbound_email_drafts")
       .update({ status: "discarded" })
       .eq("id", draftId);

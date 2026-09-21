@@ -30,34 +30,41 @@ const mockState = {
   updatedDraft: undefined as Record<string, unknown> | undefined,
 };
 
+const fakeClient = () => ({
+  from: (table: string) => {
+    if (table === "family_members") {
+      return {
+        select: () => ({
+          eq: () => ({
+            single: async () => ({ data: mockState.membership, error: null }),
+          }),
+        }),
+      };
+    }
+    if (table === "inbound_email_drafts") {
+      return {
+        select: () => ({
+          eq: () => ({
+            maybeSingle: async () => ({ data: mockState.draft, error: null }),
+          }),
+        }),
+        update: (row: Record<string, unknown>) => {
+          mockState.updatedDraft = row;
+          return { eq: async () => ({ error: null }) };
+        },
+      };
+    }
+    throw new Error(`unexpected table ${table}`);
+  },
+});
+
 vi.mock("~/server/utils/supabase", () => ({
-  useSupabaseAdmin: () => ({
-    from: (table: string) => {
-      if (table === "family_members") {
-        return {
-          select: () => ({
-            eq: () => ({
-              single: async () => ({ data: mockState.membership, error: null }),
-            }),
-          }),
-        };
-      }
-      if (table === "inbound_email_drafts") {
-        return {
-          select: () => ({
-            eq: () => ({
-              maybeSingle: async () => ({ data: mockState.draft, error: null }),
-            }),
-          }),
-          update: (row: Record<string, unknown>) => {
-            mockState.updatedDraft = row;
-            return { eq: async () => ({ error: null }) };
-          },
-        };
-      }
-      throw new Error(`unexpected table ${table}`);
-    },
-  }),
+  useSupabaseAdmin: fakeClient,
+  createServerSupabaseUserClient: fakeClient,
+}));
+
+vi.mock("~/server/utils/requestToken", () => ({
+  extractRequestToken: vi.fn(() => "fake-token"),
 }));
 
 import { getRouterParam } from "h3";

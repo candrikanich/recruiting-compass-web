@@ -46,9 +46,8 @@ const mockState = {
   playerMember: { user_id: "player-1" } as { user_id: string } | null,
 };
 
-vi.mock("~/server/utils/supabase", () => ({
-  useSupabaseAdmin: () => ({
-    from: (table: string) => {
+const fakeClient = () => ({
+  from: (table: string) => {
       if (table === "users") {
         return {
           select: () => ({
@@ -165,14 +164,22 @@ vi.mock("~/server/utils/supabase", () => ({
       }
       throw new Error(`unexpected table ${table}`);
     },
-    storage: {
-      from: (bucket: string) => ({
-        getPublicUrl: (path: string) => ({
-          data: { publicUrl: `https://storage.example/${bucket}/${path}` },
-        }),
+  storage: {
+    from: (bucket: string) => ({
+      getPublicUrl: (path: string) => ({
+        data: { publicUrl: `https://storage.example/${bucket}/${path}` },
       }),
-    },
-  }),
+    }),
+  },
+});
+
+vi.mock("~/server/utils/supabase", () => ({
+  useSupabaseAdmin: fakeClient,
+  createServerSupabaseUserClient: fakeClient,
+}));
+
+vi.mock("~/server/utils/requestToken", () => ({
+  extractRequestToken: vi.fn(() => "fake-token"),
 }));
 
 import { getRouterParam, readBody } from "h3";

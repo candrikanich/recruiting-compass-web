@@ -11,7 +11,8 @@
 import { defineEventHandler, getRouterParam, readBody, createError } from "h3";
 import { z } from "zod";
 import { requireAuth } from "~/server/utils/auth";
-import { useSupabaseAdmin } from "~/server/utils/supabase";
+import { createServerSupabaseUserClient } from "~/server/utils/supabase";
+import { extractRequestToken } from "~/server/utils/requestToken";
 import { useLogger } from "~/server/utils/logger";
 import { resolveFamilyUnitId } from "~/server/utils/familyMembership";
 import { resolveAthleteId } from "~/server/utils/resolveAthleteId";
@@ -61,7 +62,8 @@ export default defineEventHandler(async (event) => {
     }
 
     const familyUnitId = await resolveFamilyUnitId(event, userId);
-    const admin = useSupabaseAdmin();
+    const token = extractRequestToken(event);
+    const admin = createServerSupabaseUserClient(token);
 
     const { data: draft } = await admin
       .from("inbound_email_drafts")
@@ -91,9 +93,11 @@ export default defineEventHandler(async (event) => {
             "schoolId is required — this draft has no matched school",
         });
       }
-      // schools is family-scoped; the admin client bypasses RLS, so confirm
-      // the caller-supplied schoolId actually belongs to their own family
-      // before letting it into the interaction insert.
+      // Explicit check stays even under RLS: the interactions INSERT policy
+      // only validates family_unit_id + logged_by, not that school_id itself
+      // belongs to the same family -- confirm the caller-supplied schoolId
+      // actually belongs to their own family before letting it into the
+      // interaction insert.
       const { data: school } = await admin
         .from("schools")
         .select("id")
