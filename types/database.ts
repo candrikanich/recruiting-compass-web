@@ -3882,6 +3882,14 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      accept_family_invitation: {
+        Args: { p_invitation_id: string };
+        Returns: {
+          family_unit_id: string;
+          role: string;
+          pending_player_details: Json;
+        }[];
+      };
       accept_guardian_claim: {
         Args: {
           p_token: string;
