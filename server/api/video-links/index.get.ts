@@ -4,7 +4,8 @@
  */
 
 import { defineEventHandler, createError } from "h3";
-import { createServerSupabaseClient } from "~/server/utils/supabase";
+import { createServerSupabaseUserClient } from "~/server/utils/supabase";
+import { extractRequestToken } from "~/server/utils/requestToken";
 import { requireAuth } from "~/server/utils/auth";
 import { useLogger } from "~/server/utils/logger";
 import type { VideoLinkRow } from "~/types/models";
@@ -13,10 +14,11 @@ export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "video-links/list");
   try {
     const user = await requireAuth(event);
-    const supabase = createServerSupabaseClient();
+    const token = extractRequestToken(event);
+    const supabase = createServerSupabaseUserClient(token);
 
-    // Service-role client bypasses RLS — explicit ownership/family filter
-    // is the only guard here.
+    // RLS (video_links_select_own_or_family) is now a real backstop; this
+    // explicit filter still matches it exactly.
     const { data: fams } = await supabase
       .from("family_members")
       .select("family_unit_id")

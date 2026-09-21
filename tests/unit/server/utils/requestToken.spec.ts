@@ -55,6 +55,15 @@ describe("extractRequestToken", () => {
     );
   });
 
+  // Regression: requireAuth falls back to the cookie when the Bearer header
+  // is present but empty (`Bearer ` with nothing after it); this must match,
+  // not 401 a request that requireAuth already authenticated via cookie.
+  it("falls back to the cookie when the Bearer header is present but empty", () => {
+    mockState.header = "Bearer ";
+    mockState.cookie = "cookie-token";
+    expect(extractRequestToken(event)).toBe("cookie-token");
+  });
+
   it("throws 401 with a non-bearer header and no cookie", () => {
     mockState.header = "Basic xyz";
     try {
