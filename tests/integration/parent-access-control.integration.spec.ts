@@ -353,12 +353,12 @@ describe.skipIf(!hasLiveSupabase)(
     async function loadPhaseHandler() {
       vi.resetModules();
       const { requireAuth } = await import("~/server/utils/auth");
-      const { createServerSupabaseClient } =
+      const { createServerSupabaseUserClient } =
         await import("~/server/utils/supabase");
       vi.mocked(requireAuth).mockImplementation(async () => ({
         id: "unused",
       }));
-      vi.mocked(createServerSupabaseClient).mockReturnValue(admin);
+      vi.mocked(createServerSupabaseUserClient).mockReturnValue(admin);
       return (await import("~/server/api/athlete/phase.get")).default;
     }
 

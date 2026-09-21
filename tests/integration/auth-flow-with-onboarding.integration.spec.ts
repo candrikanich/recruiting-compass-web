@@ -75,7 +75,12 @@ vi.mock("~/server/utils/logger", () => ({
 
 vi.mock("~/server/utils/supabase", () => ({
   createServerSupabaseClient: vi.fn(),
+  createServerSupabaseUserClient: vi.fn(),
   useSupabaseAdmin: vi.fn(),
+}));
+
+vi.mock("~/server/utils/requestToken", () => ({
+  extractRequestToken: vi.fn(() => "fake-token"),
 }));
 
 vi.mock("h3", async (importOriginal) => {
@@ -248,9 +253,9 @@ describe.skipIf(!hasLiveSupabase)(
       // real GET /api/athlete/phase handler — proving the full chain
       // (signup role -> family join -> onboarding write -> parent read)
       // holds together against real rows, not isolated mocks.
-      const { createServerSupabaseClient } =
+      const { createServerSupabaseUserClient } =
         await import("~/server/utils/supabase");
-      vi.mocked(createServerSupabaseClient).mockReturnValue(admin);
+      vi.mocked(createServerSupabaseUserClient).mockReturnValue(admin);
       vi.mocked(requireAuth).mockResolvedValue({
         id: parentId,
         email: "parent@example.com",
