@@ -75,7 +75,7 @@ const { default: handler } = await import("~/server/api/auth/signup.post");
 const call = async (overrides: Record<string, unknown> = {}) => {
   mockBodyState.body = {
     email: "Parent@Example.com",
-    password: "correct-horse-1",
+    password: "Correct-Horse-1",
     fullName: "Pat Parent",
     role: "parent",
     captchaToken: "cf-token",
@@ -101,6 +101,43 @@ describe("POST /api/auth/signup", () => {
       error: null,
     });
     mockInvitationState.invitation = null;
+  });
+
+  describe("request body validation (Zod)", () => {
+    it("rejects a missing email with 400", async () => {
+      await expect(call({ email: undefined })).rejects.toMatchObject({
+        statusCode: 400,
+      });
+    });
+
+    it("rejects a malformed email with 400", async () => {
+      await expect(
+        call({ email: "not-an-email" }),
+      ).rejects.toMatchObject({ statusCode: 400 });
+    });
+
+    it("rejects a password missing an uppercase letter with 400", async () => {
+      await expect(
+        call({ password: "correct-horse-1" }),
+      ).rejects.toMatchObject({ statusCode: 400 });
+    });
+
+    it("rejects a password shorter than 8 characters with 400", async () => {
+      await expect(call({ password: "Ab1" })).rejects.toMatchObject({
+        statusCode: 400,
+      });
+    });
+
+    it("rejects an unrecognized role value with 400", async () => {
+      await expect(
+        call({ role: "admin" }),
+      ).rejects.toMatchObject({ statusCode: 400 });
+    });
+
+    it("accepts a well-formed body with no role or dateOfBirth (both optional)", async () => {
+      const result = await call({ role: undefined, dateOfBirth: undefined });
+      expect(result).toMatchObject({ userId: "user-1" });
+    });
   });
 
   describe("captcha skip for invite-accept signups", () => {
