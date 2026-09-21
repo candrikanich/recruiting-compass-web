@@ -71,25 +71,53 @@ function queueResponse(table: string, response: TableResponse) {
   tableQueues[table].push(response);
 }
 
+// athlete_task's SELECT policy doesn't yet recognize family_members-linked
+// parents (#926) -- the route reads completed task ids through the
+// get_athlete_completed_task_ids RPC instead of a raw .from() query. Queue
+// entries the same way as before (queueResponse("athlete_task", {data: [{
+// task_id }], error})); the mock RPC unwraps them to a plain id array to
+// match the real function's uuid[] return shape.
+const rpcQueues: Record<string, TableResponse[]> = {
+  set_athlete_status_score: [],
+};
+
 const mockSupabase = {
   from: vi.fn((table: string) => {
     const queue = tableQueues[table];
     const response =
       queue && queue.length ? queue.shift()! : { data: null, error: null };
-    const builder = makeQueryBuilder(response);
-    if (table === "users") {
-      const originalUpdate = builder.update as (...args: unknown[]) => unknown;
-      builder.update = vi.fn((...args: unknown[]) => {
-        updateSpy(...args);
-        return originalUpdate(...args);
+    return makeQueryBuilder(response);
+  }),
+  rpc: vi.fn((fnName: string, args: unknown) => {
+    if (fnName === "get_athlete_completed_task_ids") {
+      const queue = tableQueues.athlete_task;
+      const response =
+        queue && queue.length ? queue.shift()! : { data: [], error: null };
+      const ids = (
+        (response.data as Array<{ task_id: string }> | null) ?? []
+      ).map((row) => row.task_id);
+      return Promise.resolve({
+        data: response.error ? null : ids,
+        error: response.error,
       });
     }
-    return builder;
+    if (fnName === "set_athlete_status_score") {
+      updateSpy(args);
+      const queue = rpcQueues.set_athlete_status_score;
+      const response =
+        queue && queue.length ? queue.shift()! : { data: null, error: null };
+      return Promise.resolve(response);
+    }
+    return Promise.resolve({ data: null, error: null });
   }),
 };
 
 vi.mock("~/server/utils/supabase", () => ({
-  createServerSupabaseClient: () => mockSupabase,
+  createServerSupabaseUserClient: () => mockSupabase,
+}));
+
+vi.mock("~/server/utils/requestToken", () => ({
+  extractRequestToken: vi.fn(() => "fake-token"),
 }));
 
 vi.mock("h3", async (importOriginal) => {
@@ -118,14 +146,13 @@ function seedHappyPath() {
     data: { gpa: 3.5, sat_score: 1200, act_score: null },
     error: null,
   });
-  // 4th users call: the persisting update
-  queueResponse("users", { data: null, error: null });
 }
 
 describe("POST /api/athlete/status/recalculate — error propagation", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     for (const key of Object.keys(tableQueues)) delete tableQueues[key];
+    for (const key of Object.keys(rpcQueues)) rpcQueues[key] = [];
   });
 
   it("regression: persists the computed score on the happy path", async () => {
