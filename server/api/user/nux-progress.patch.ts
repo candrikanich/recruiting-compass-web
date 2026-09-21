@@ -5,37 +5,77 @@ import { requireAuth } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import { NUX_CHECKLIST_KEYS } from "~/types/nux";
 
-// Mirrors types/nux.ts's NuxProgress shape (composables/useNuxProgress.ts's
-// persistProgress() is the only caller, always sending the full object it
-// read via parseNuxProgress() back out -- every field is always present,
-// none are client-omittable).
+// Mirrors types/nux.ts's NuxProgress shape. Two real callers:
+// composables/useNuxProgress.ts's persistProgress() (web) and
+// NuxProgressServiceImpl.saveNuxProgress() (iOS, NuxProgressService.swift).
+// iOS's JSONEncoder uses default synthesized encoding for `Date?` fields --
+// nil optionals are OMITTED from the JSON entirely, not sent as `null` --
+// so every timestamp must tolerate being absent, not just nullable.
+//
+// Rather than reject a payload outright over one malformed/legacy nested
+// timestamp or an unrecognized checklist key (pre-#913 rows could have
+// either, since nothing validated them before), normalize: an omitted or
+// unparseable timestamp becomes null, an unrecognized checklist key or
+// malformed item is dropped. The top-level shape (nux_progress must be an
+// object with these fields) still 400s outright -- that can't happen from
+// any real caller and signals a genuinely broken request.
+const isoDatetime = z.iso.datetime();
+
+// null/undefined/malformed -> null; a real ISO datetime string passes through.
+const timestampSchema = z.preprocess((val) => {
+  if (typeof val === "string" && isoDatetime.safeParse(val).success) {
+    return val;
+  }
+  return null;
+}, z.string().nullable());
+
+// Drops entries whose value isn't a valid ISO datetime string, instead of
+// rejecting the whole map (firstVisits/dismissals keys are arbitrary page/
+// prompt identifiers, not a closed set, so keys themselves aren't checked).
+const timestampMapSchema = z.preprocess((val) => {
+  if (!val || typeof val !== "object") return {};
+  const out: Record<string, string> = {};
+  for (const [key, value] of Object.entries(val as Record<string, unknown>)) {
+    if (typeof value === "string" && isoDatetime.safeParse(value).success) {
+      out[key] = value;
+    }
+  }
+  return out;
+}, z.record(z.string(), z.string()));
+
 const nuxChecklistItemSchema = z.object({
   completed: z.boolean(),
-  completedAt: z.string().nullable(),
+  completedAt: timestampSchema,
 });
 
-// z.record(z.enum(...), ...) in Zod v4 requires every enum key to be
-// present (exhaustive); items is a Partial<Record<...>>, so key membership
-// is checked separately via refine.
 const nuxChecklistKeySet: ReadonlySet<string> = new Set(NUX_CHECKLIST_KEYS);
-const nuxChecklistItemsSchema = z
-  .record(z.string(), nuxChecklistItemSchema)
-  .refine((items) => Object.keys(items).every((k) => nuxChecklistKeySet.has(k)), {
-    message: "Invalid checklist item key",
-  });
+
+// Drops unrecognized keys and malformed items instead of rejecting the
+// whole checklist -- items is a Partial<Record<NuxChecklistKey, ...>>, so
+// z.record(z.enum(...), ...) (which is exhaustive in Zod v4) doesn't fit.
+const nuxChecklistItemsSchema = z.preprocess((val) => {
+  if (!val || typeof val !== "object") return {};
+  const out: Record<string, z.infer<typeof nuxChecklistItemSchema>> = {};
+  for (const [key, value] of Object.entries(val as Record<string, unknown>)) {
+    if (!nuxChecklistKeySet.has(key)) continue;
+    const parsed = nuxChecklistItemSchema.safeParse(value);
+    if (parsed.success) out[key] = parsed.data;
+  }
+  return out;
+}, z.record(z.string(), nuxChecklistItemSchema));
 
 const nuxProgressSchema = z.object({
   version: z.number(),
   checklist: z.object({
     items: nuxChecklistItemsSchema,
-    dismissedAt: z.string().nullable(),
-    allCompleteAt: z.string().nullable(),
+    dismissedAt: timestampSchema,
+    allCompleteAt: timestampSchema,
   }),
   profileCompletion: z.object({
-    completedAt: z.string().nullable(),
+    completedAt: timestampSchema,
   }),
-  firstVisits: z.record(z.string(), z.string()),
-  dismissals: z.record(z.string(), z.string()),
+  firstVisits: timestampMapSchema,
+  dismissals: timestampMapSchema,
 });
 
 const nuxProgressBodySchema = z.object({

@@ -93,22 +93,6 @@ describe("PATCH /api/user/nux-progress", () => {
     });
   });
 
-  it("400s when a checklist item key isn't a real NuxChecklistKey", async () => {
-    mockState.body = {
-      nux_progress: {
-        ...VALID_NUX_PROGRESS,
-        checklist: {
-          ...VALID_NUX_PROGRESS.checklist,
-          items: { not_a_real_key: { completed: true, completedAt: null } },
-        },
-      },
-    };
-
-    await expect(handler(mockEvent)).rejects.toMatchObject({
-      statusCode: 400,
-    });
-  });
-
   it("400s when version is missing", async () => {
     const { version: _version, ...rest } = VALID_NUX_PROGRESS;
     mockState.body = { nux_progress: rest };
@@ -124,6 +108,148 @@ describe("PATCH /api/user/nux-progress", () => {
 
     await expect(handler(mockEvent)).rejects.toMatchObject({
       statusCode: 500,
+    });
+  });
+
+  describe("legacy/malformed nested data is normalized, not rejected (qodo review, #913)", () => {
+    it("drops a checklist item under an unrecognized key instead of rejecting the whole save", async () => {
+      mockState.body = {
+        nux_progress: {
+          ...VALID_NUX_PROGRESS,
+          checklist: {
+            ...VALID_NUX_PROGRESS.checklist,
+            items: {
+              sport: { completed: true, completedAt: null },
+              not_a_real_key: { completed: true, completedAt: null },
+            },
+          },
+        },
+      };
+
+      const result = await handler(mockEvent);
+
+      expect(result).toEqual({ success: true });
+      const saved = mockUpdate.mock.calls[0][0].nux_progress;
+      expect(Object.keys(saved.checklist.items)).toEqual(["sport"]);
+    });
+
+    it("drops a malformed checklist item instead of rejecting the whole save", async () => {
+      mockState.body = {
+        nux_progress: {
+          ...VALID_NUX_PROGRESS,
+          checklist: {
+            ...VALID_NUX_PROGRESS.checklist,
+            items: { sport: { completed: "not-a-boolean" } },
+          },
+        },
+      };
+
+      const result = await handler(mockEvent);
+
+      expect(result).toEqual({ success: true });
+      const saved = mockUpdate.mock.calls[0][0].nux_progress;
+      expect(saved.checklist.items).toEqual({});
+    });
+
+    it("normalizes an invalid allCompleteAt string to null instead of rejecting (prevents NaN in hasNuxCompletionExpired)", async () => {
+      mockState.body = {
+        nux_progress: {
+          ...VALID_NUX_PROGRESS,
+          checklist: {
+            ...VALID_NUX_PROGRESS.checklist,
+            allCompleteAt: "not-a-real-date",
+          },
+        },
+      };
+
+      const result = await handler(mockEvent);
+
+      expect(result).toEqual({ success: true });
+      const saved = mockUpdate.mock.calls[0][0].nux_progress;
+      expect(saved.checklist.allCompleteAt).toBeNull();
+    });
+
+    it("drops a firstVisits entry with an invalid timestamp instead of rejecting the whole save", async () => {
+      mockState.body = {
+        nux_progress: {
+          ...VALID_NUX_PROGRESS,
+          firstVisits: { dashboard: "not-a-real-date" },
+        },
+      };
+
+      const result = await handler(mockEvent);
+
+      expect(result).toEqual({ success: true });
+      const saved = mockUpdate.mock.calls[0][0].nux_progress;
+      expect(saved.firstVisits).toEqual({});
+    });
+
+    // Regression: iOS's JSONEncoder uses default synthesized encoding for
+    // Date? fields -- nil optionals are OMITTED from the JSON body, not
+    // sent as null. Every timestamp key here is entirely absent, matching
+    // NuxProgressServiceImpl.saveNuxProgress()'s real wire shape for an
+    // athlete who hasn't completed anything yet.
+    it("accepts an iOS-shaped payload with all timestamp keys omitted", async () => {
+      mockState.body = {
+        nux_progress: {
+          version: 1,
+          checklist: { items: {} },
+          profileCompletion: {},
+          firstVisits: {},
+          dismissals: {},
+        },
+      };
+
+      const result = await handler(mockEvent);
+
+      expect(result).toEqual({ success: true });
+      const saved = mockUpdate.mock.calls[0][0].nux_progress;
+      expect(saved.checklist.dismissedAt).toBeNull();
+      expect(saved.checklist.allCompleteAt).toBeNull();
+      expect(saved.profileCompletion.completedAt).toBeNull();
+    });
+
+    it("accepts a checklist item with completedAt omitted (iOS shape)", async () => {
+      mockState.body = {
+        nux_progress: {
+          ...VALID_NUX_PROGRESS,
+          checklist: {
+            ...VALID_NUX_PROGRESS.checklist,
+            items: { sport: { completed: true } },
+          },
+        },
+      };
+
+      const result = await handler(mockEvent);
+
+      expect(result).toEqual({ success: true });
+      const saved = mockUpdate.mock.calls[0][0].nux_progress;
+      expect(saved.checklist.items.sport).toEqual({
+        completed: true,
+        completedAt: null,
+      });
+    });
+
+    it("accepts iOS's non-fractional-second ISO datetime format", async () => {
+      mockState.body = {
+        nux_progress: {
+          ...VALID_NUX_PROGRESS,
+          checklist: {
+            ...VALID_NUX_PROGRESS.checklist,
+            items: {
+              sport: { completed: true, completedAt: "2026-09-21T16:51:00Z" },
+            },
+          },
+        },
+      };
+
+      const result = await handler(mockEvent);
+
+      expect(result).toEqual({ success: true });
+      const saved = mockUpdate.mock.calls[0][0].nux_progress;
+      expect(saved.checklist.items.sport.completedAt).toBe(
+        "2026-09-21T16:51:00Z",
+      );
     });
   });
 });
