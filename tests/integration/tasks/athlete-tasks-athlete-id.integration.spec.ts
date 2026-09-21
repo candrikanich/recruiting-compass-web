@@ -79,8 +79,12 @@ vi.mock("~/server/utils/logger", () => ({
 }));
 
 vi.mock("~/server/utils/supabase", () => ({
-  createServerSupabaseClient: vi.fn(),
+  createServerSupabaseUserClient: vi.fn(),
   useSupabaseAdmin: vi.fn(),
+}));
+
+vi.mock("~/server/utils/requestToken", () => ({
+  extractRequestToken: vi.fn(() => "fake-token"),
 }));
 
 vi.mock("h3", async (importOriginal) => {
@@ -281,13 +285,13 @@ describe.skipIf(!hasLiveSupabase)(
 
     it("AC1: parent viewing their linked athlete sees the athlete's real completion rows, not the parent's own empty ones", async () => {
       const { requireAuth } = await import("~/server/utils/auth");
-      const { createServerSupabaseClient, useSupabaseAdmin } =
+      const { createServerSupabaseUserClient, useSupabaseAdmin } =
         await import("~/server/utils/supabase");
       vi.mocked(requireAuth).mockResolvedValue({
         id: familyAParentId,
         email: "parent@example.com",
       });
-      vi.mocked(createServerSupabaseClient).mockReturnValue(admin);
+      vi.mocked(createServerSupabaseUserClient).mockReturnValue(admin);
       vi.mocked(useSupabaseAdmin).mockReturnValue(admin);
 
       const handler = (await import("~/server/api/athlete-tasks/index.get"))
@@ -305,13 +309,13 @@ describe.skipIf(!hasLiveSupabase)(
 
     it("regression: athlete calling without athleteId still sees their own rows", async () => {
       const { requireAuth } = await import("~/server/utils/auth");
-      const { createServerSupabaseClient } =
+      const { createServerSupabaseUserClient } =
         await import("~/server/utils/supabase");
       vi.mocked(requireAuth).mockResolvedValue({
         id: familyAAthleteId,
         email: "athlete@example.com",
       });
-      vi.mocked(createServerSupabaseClient).mockReturnValue(admin);
+      vi.mocked(createServerSupabaseUserClient).mockReturnValue(admin);
 
       const handler = (await import("~/server/api/athlete-tasks/index.get"))
         .default;
@@ -325,13 +329,13 @@ describe.skipIf(!hasLiveSupabase)(
 
     it("AC5: a parent from an unrelated family cannot fetch the athlete's tasks (403)", async () => {
       const { requireAuth } = await import("~/server/utils/auth");
-      const { createServerSupabaseClient, useSupabaseAdmin } =
+      const { createServerSupabaseUserClient, useSupabaseAdmin } =
         await import("~/server/utils/supabase");
       vi.mocked(requireAuth).mockResolvedValue({
         id: familyBParentId,
         email: "other-parent@example.com",
       });
-      vi.mocked(createServerSupabaseClient).mockReturnValue(admin);
+      vi.mocked(createServerSupabaseUserClient).mockReturnValue(admin);
       vi.mocked(useSupabaseAdmin).mockReturnValue(admin);
 
       const handler = (await import("~/server/api/athlete-tasks/index.get"))
