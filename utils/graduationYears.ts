@@ -1,10 +1,15 @@
 /**
  * Canonical graduation-year options for onboarding (web + iOS parity).
  *
- * Range = current calendar year through current year + 5, inclusive (6 options).
- * The upper bound (+5) is what lets rising 8th graders — the youngest athletes we
- * accept, who graduate roughly five years out — pick their class. The lower bound
- * (current year) covers this year's graduating seniors.
+ * Floor uses the same July 1 roll pivot as `calculateCurrentGrade` in
+ * gradeHelpers.ts: through June the just-graduated class is still a valid pick,
+ * but from July 1 it rolls off so the current freshman class isn't pushed past
+ * the front of the range. The ceiling stays pinned to the raw calendar year + 5
+ * (not floor + 5) — this endpoint is the canonical range the shared
+ * `/api/auth/signup-minor` validation and iOS both check against, so a sliding
+ * ceiling would let the window drift; instead the window shrinks to 5 years
+ * (not 6) from July through December. Matches iOS
+ * `GradeLevelHelper.allowedGraduationYears(referenceDate:)`.
  *
  * Age eligibility itself is enforced separately by the 13+ COPPA gate
  * (see utils/age.ts and the users table trigger); grad year is a UX affordance,
@@ -14,8 +19,11 @@ export const GRAD_YEARS_AHEAD = 5;
 
 export function getGraduationYearOptions(now: Date = new Date()): number[] {
   const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth() + 1;
+  const floor = currentMonth >= 7 ? currentYear + 1 : currentYear;
+  const ceiling = currentYear + GRAD_YEARS_AHEAD;
   return Array.from(
-    { length: GRAD_YEARS_AHEAD + 1 },
-    (_, i) => currentYear + i,
+    { length: ceiling - floor + 1 },
+    (_, i) => floor + i,
   );
 }
