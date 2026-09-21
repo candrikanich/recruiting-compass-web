@@ -179,12 +179,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, nextTick } from "vue";
+import { ref, computed, watch, onMounted, nextTick } from "vue";
 import { useOnboarding } from "~/composables/useOnboarding";
 import { usePreferenceManager } from "~/composables/usePreferenceManager";
 import { useNuxProgress } from "~/composables/useNuxProgress";
+import { useGraduationYearOptions } from "~/composables/useGraduationYearOptions";
 import { createClientLogger } from "~/utils/logger";
-import { getGraduationYearOptions } from "~/utils/graduationYears";
 // The bare <MultiSportFieldBackground /> tag silently resolves to nothing
 // without this — Nuxt auto-imports components/Auth/*.vue under the
 // Auth-prefixed tag; pages/signup.vue and pages/login.vue only work because
@@ -250,7 +250,17 @@ const genderIsAutoDerived = computed(() => {
   return sport.toLowerCase() in SPORT_GENDER_MAP;
 });
 
-const graduationYears = computed(() => getGraduationYearOptions());
+const { graduationYears } = useGraduationYearOptions();
+
+// The July 1 pivot can roll the just-graduated class out from under a form
+// that's been open since before midnight — clear a now-invalid selection
+// rather than let a stale value reach the (freshly re-validated) server.
+watch(graduationYears, (years) => {
+  const selected = onboardingData.value.graduation_year;
+  if (selected !== undefined && !years.includes(selected as number)) {
+    onboardingData.value.graduation_year = undefined;
+  }
+});
 
 const onSportChange = () => {
   const sport = (
