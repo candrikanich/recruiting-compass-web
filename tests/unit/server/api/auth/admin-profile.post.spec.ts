@@ -4,7 +4,7 @@ import { createError } from "h3";
 // State objects read at call-time to avoid vi.mock hoisting issues
 const mockBodyState = {
   fullName: "Admin User",
-  adminToken: "valid-token" as string | null,
+  adminToken: "11111111-1111-4111-8111-111111111111" as string | null,
 };
 const mockAuthState = {
   userId: "user-1",
@@ -94,7 +94,7 @@ describe("POST /api/auth/admin-profile", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockBodyState.fullName = "Admin User";
-    mockBodyState.adminToken = "valid-token";
+    mockBodyState.adminToken = "11111111-1111-4111-8111-111111111111";
     mockAuthState.userId = "user-1";
     mockAuthState.email = "admin@example.com";
     mockAuthState.shouldFail = false;
@@ -140,7 +140,7 @@ describe("POST /api/auth/admin-profile", () => {
       await handler({} as Parameters<typeof handler>[0]);
 
       expect(mockRpc).toHaveBeenCalledWith("consume_admin_invitation", {
-        p_token: "valid-token",
+        p_token: "11111111-1111-4111-8111-111111111111",
         p_user_id: "user-1",
         p_email: "admin@example.com",
         p_full_name: "Admin User",
@@ -188,6 +188,38 @@ describe("POST /api/auth/admin-profile", () => {
       ).rejects.toMatchObject({
         statusCode: 403,
       });
+    });
+
+    // Regression: adminToken now requires the real randomUUID() shape
+    // (server/api/admin/invitations.post.ts mints it that way), not just
+    // any non-empty string. Stays 403 (not 400) -- this token gates
+    // privilege escalation, so a malformed value must be exactly as
+    // uninformative as a wrong or expired one.
+    it("returns 403 (not 400) when adminToken is a non-UUID string", async () => {
+      mockBodyState.adminToken = "not-a-real-uuid";
+
+      await expect(
+        handler({} as Parameters<typeof handler>[0]),
+      ).rejects.toMatchObject({ statusCode: 403 });
+      expect(mockRpc).not.toHaveBeenCalled();
+    });
+
+    it("returns 400 when fullName is an empty string", async () => {
+      mockBodyState.fullName = "";
+
+      await expect(
+        handler({} as Parameters<typeof handler>[0]),
+      ).rejects.toMatchObject({ statusCode: 400 });
+      expect(mockRpc).not.toHaveBeenCalled();
+    });
+
+    it("returns 400 when fullName exceeds 255 characters", async () => {
+      mockBodyState.fullName = "A".repeat(256);
+
+      await expect(
+        handler({} as Parameters<typeof handler>[0]),
+      ).rejects.toMatchObject({ statusCode: 400 });
+      expect(mockRpc).not.toHaveBeenCalled();
     });
 
     it.each([

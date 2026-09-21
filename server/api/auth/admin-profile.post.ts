@@ -27,14 +27,26 @@
  */
 
 import { defineEventHandler, readBody, createError } from "h3";
+import { z } from "zod";
 import { useLogger } from "~/server/utils/logger";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import { requireAuth } from "~/server/utils/auth";
 
-interface AdminProfileRequest {
-  fullName: string;
-  adminToken?: string;
-}
+// fullName: matches pages/admin/signup.vue's own validated `${firstName}
+// ${lastName}`.trim() (that page's adminSignupSchema requires both
+// non-empty), enforced again here since a direct API call bypasses the
+// client form entirely.
+const fullNameSchema = z.object({
+  fullName: z.string().trim().min(1, "Full name is required").max(255),
+});
+
+// adminToken deliberately does NOT go through the same 400-with-message
+// path as fullName above -- this token gates a privilege escalation (see
+// file header), so failures here stay a uniform 403 "Forbidden" whether
+// the token is missing, malformed, expired, already used, or simply wrong.
+// Only tightened to require the real shape (randomUUID(), same as
+// validate-admin-token.post.ts) rather than "any non-empty string".
+const adminTokenSchema = z.string().trim().uuid();
 
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "auth/admin-profile");
@@ -48,17 +60,30 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 403, statusMessage: "Forbidden" });
     }
 
-    const body = await readBody<AdminProfileRequest>(event);
-    const { fullName, adminToken } = body;
+    const body = await readBody(event);
+
+    const parsedName = fullNameSchema.safeParse(body);
+    if (!parsedName.success) {
+      throw createError({
+        statusCode: 400,
+        statusMessage:
+          parsedName.error.issues[0]?.message ?? "Invalid request body",
+      });
+    }
+    const { fullName } = parsedName.data;
 
     // Require a valid admin token — prevents unauthenticated privilege
     // escalation. Never trusted from anything but a fresh, validated token.
-    if (!adminToken || typeof adminToken !== "string") {
+    const parsedToken = adminTokenSchema.safeParse(
+      (body as { adminToken?: unknown })?.adminToken,
+    );
+    if (!parsedToken.success) {
       logger.warn("Admin profile creation attempted without admin token", {
         userId: authUser.id,
       });
       throw createError({ statusCode: 403, statusMessage: "Forbidden" });
     }
+    const adminToken = parsedToken.data;
 
     // Use admin client to bypass RLS
     const supabase = useSupabaseAdmin();
