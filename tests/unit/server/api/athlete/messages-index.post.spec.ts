@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 const mockState = {
   userId: "user-123",
@@ -84,6 +84,9 @@ vi.mock("h3", async () => {
 
 const { default: handler } =
   await import("~/server/api/athlete/messages/index.post");
+const { useSupabaseAdmin, createServerSupabaseUserClient } = await import(
+  "~/server/utils/supabase"
+);
 
 const ATHLETE_ID = "11111111-1111-4111-8111-111111111111";
 const SCHOOL_ID = "22222222-2222-4222-8222-222222222222";
@@ -98,6 +101,13 @@ describe("POST /api/athlete/messages", () => {
     mockState.insertedRow = null;
     mockState.insertError = null;
     mockState.returnedId = "msg-1";
+  });
+
+  afterEach(() => {
+    // Regression guard: fakeClientFactory returns the same shape for both
+    // clients, so a handler reverting to the privileged one would otherwise
+    // pass every assertion below undetected.
+    expect(useSupabaseAdmin).not.toHaveBeenCalled();
   });
 
   it("logs a message against the resolved target athlete and returns its id", async () => {
@@ -120,6 +130,7 @@ describe("POST /api/athlete/messages", () => {
       program_note: "Team won state", // trimmed
       created_by: "user-123",
     });
+    expect(createServerSupabaseUserClient).toHaveBeenCalledWith("fake-token");
   });
 
   it("nulls out an empty program note rather than storing whitespace", async () => {

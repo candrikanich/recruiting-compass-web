@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 const mockState = {
   userId: "parent-user-id",
@@ -90,6 +90,9 @@ vi.mock("h3", async (importOriginal) => {
 });
 
 const { default: handler } = await import("~/server/api/family/accessible.get");
+const { useSupabaseAdmin, createServerSupabaseUserClient } = await import(
+  "~/server/utils/supabase"
+);
 
 describe("GET /api/family/accessible", () => {
   beforeEach(() => {
@@ -110,6 +113,13 @@ describe("GET /api/family/accessible", () => {
     ];
   });
 
+  afterEach(() => {
+    // Regression guard: fakeClientFactory returns the same shape for both
+    // clients, so a handler reverting to the privileged one would otherwise
+    // pass every assertion below undetected.
+    expect(useSupabaseAdmin).not.toHaveBeenCalled();
+  });
+
   it("populates graduationYear from the athlete's users row instead of hardcoding null", async () => {
     const result = (await handler({} as never)) as {
       families: Array<{
@@ -121,6 +131,7 @@ describe("GET /api/family/accessible", () => {
     expect(result.families).toHaveLength(1);
     expect(result.families[0].athleteId).toBe("athlete-1");
     expect(result.families[0].graduationYear).toBe(2027);
+    expect(createServerSupabaseUserClient).toHaveBeenCalledWith("fake-token");
   });
 
   it("returns null graduationYear when the athlete has none set (not a hardcoded stub)", async () => {
