@@ -5,7 +5,7 @@
  * matches falls straight through to /dashboard, same as before this step
  * existed (that's what got the original attempt scrapped — an empty shell).
  */
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { mount, flushPromises } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
 import { ref } from "vue";
@@ -52,6 +52,7 @@ const rec: SchoolRecommendation = {
 };
 
 const mockRecs = ref<SchoolRecommendation[]>([]);
+const mockRecsError = ref<string | null>(null);
 const mockFetchRecommendations = vi.fn();
 const mockDismissRecommendation = vi.fn().mockResolvedValue(undefined);
 const mockRemoveRecommendation = vi.fn();
@@ -60,7 +61,7 @@ vi.mock("~/composables/useSchoolRecommendations", () => ({
     recommendations: mockRecs,
     signals: ref({ homeState: "OH", gpa: null, excludedCount: 0 }),
     loading: ref(false),
-    error: ref(null),
+    error: mockRecsError,
     fetchRecommendations: mockFetchRecommendations,
     dismissRecommendation: mockDismissRecommendation,
     removeRecommendation: mockRemoveRecommendation,
@@ -78,6 +79,7 @@ vi.stubGlobal("definePageMeta", vi.fn());
 
 const mountPage = () =>
   mount(OnboardingIndex, {
+    attachTo: document.body,
     global: {
       stubs: { transition: false },
     },
@@ -96,7 +98,12 @@ describe("pages/onboarding/index.vue", () => {
     vi.clearAllMocks();
     mockRoute.query = {};
     mockRecs.value = [];
+    mockRecsError.value = null;
     mockFetchRecommendations.mockImplementation(async () => {});
+  });
+
+  afterEach(() => {
+    document.body.innerHTML = "";
   });
 
   it("shows the 'Tell us about you' step with no step indicator", async () => {
@@ -183,6 +190,24 @@ describe("pages/onboarding/index.vue", () => {
     });
   });
 
+  describe("when the recommendation fetch fails", () => {
+    it("stays on step 1, shows the error, and does not complete onboarding", async () => {
+      mockFetchRecommendations.mockImplementation(async () => {
+        mockRecs.value = [];
+        mockRecsError.value = "Could not load recommended schools.";
+      });
+      const wrapper = mountPage();
+      await flushPromises();
+
+      await completeStep1(wrapper);
+
+      expect(wrapper.text()).toContain("Could not load recommended schools.");
+      expect(wrapper.text()).not.toContain("Step 2 of 2");
+      expect(mockOnboarding.completeOnboarding).not.toHaveBeenCalled();
+      expect(navigateToMock).not.toHaveBeenCalled();
+    });
+  });
+
   describe("when school recommendations match", () => {
     beforeEach(() => {
       mockFetchRecommendations.mockImplementation(async () => {
@@ -245,6 +270,36 @@ describe("pages/onboarding/index.vue", () => {
         2028,
       );
       expect(navigateToMock).toHaveBeenCalledWith("/dashboard");
+    });
+
+    it("shows a visible error on step 2 when completing onboarding fails", async () => {
+      mockOnboarding.completeOnboarding.mockRejectedValueOnce(
+        new Error("Network error"),
+      );
+      const wrapper = mountPage();
+      await flushPromises();
+      await completeStep1(wrapper);
+
+      const finishButton = wrapper
+        .findAll("button")
+        .find((b) => b.text().includes("Go to Dashboard"));
+      await finishButton!.trigger("click");
+      await flushPromises();
+
+      expect(wrapper.text()).toContain("Network error");
+      expect(navigateToMock).not.toHaveBeenCalled();
+    });
+
+    it("moves focus to the step 2 region so keyboard/screen-reader users land there", async () => {
+      const wrapper = mountPage();
+      await flushPromises();
+      await completeStep1(wrapper);
+
+      expect(document.activeElement?.getAttribute("aria-label")).toBe(
+        "Schools to explore",
+      );
+
+      wrapper.unmount();
     });
   });
 

@@ -184,7 +184,11 @@
       <!-- Step 2: Schools to Explore -->
       <div
         v-else
-        class="mb-8 rounded-2xl border border-white/20 bg-white/95 p-8 shadow-2xl backdrop-blur-xs"
+        ref="stepTwoContainer"
+        role="region"
+        tabindex="-1"
+        aria-label="Schools to explore"
+        class="mb-8 rounded-2xl border border-white/20 bg-white/95 p-8 shadow-2xl backdrop-blur-xs focus:outline-none"
       >
         <RecommendedSchools
           :items="recommendations"
@@ -203,6 +207,20 @@
         >
           {{ actionError }}
         </p>
+
+        <div
+          v-if="error"
+          role="alert"
+          class="mt-4 rounded-lg border border-red-200 bg-red-50 p-4"
+        >
+          <p class="text-red-800">{{ error }}</p>
+          <button
+            @click="clearError"
+            class="mt-2 text-sm text-red-600 hover:text-red-700"
+          >
+            Dismiss
+          </button>
+        </div>
 
         <div class="mt-6 flex justify-end">
           <button
@@ -264,6 +282,7 @@ const {
 const { createSchool } = useSchools();
 
 const stepContainer = ref<HTMLElement | null>(null);
+const stepTwoContainer = ref<HTMLElement | null>(null);
 
 const currentStep = ref<1 | 2>(1);
 const onboardingData = ref<Record<string, unknown>>({});
@@ -435,12 +454,23 @@ const nextScreen = async () => {
     return;
   }
   loading.value = true;
+  error.value = null;
   try {
     await saveStep1();
     await fetchRecommendations();
 
+    if (recsError.value) {
+      // A failed fetch, not a genuine no-match — stay on step 1 so the
+      // player can see the error and retry rather than silently skipping
+      // school discovery.
+      error.value = recsError.value;
+      return;
+    }
+
     if (recommendations.value.length > 0) {
       currentStep.value = 2;
+      await nextTick();
+      stepTwoContainer.value?.focus();
       return;
     }
 
