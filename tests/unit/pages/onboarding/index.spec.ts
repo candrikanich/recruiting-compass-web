@@ -1,12 +1,16 @@
 /**
- * pages/onboarding/index.vue — real component tests for the single-step
- * "Tell us about you" onboarding screen (sport + graduation year required,
- * zip optional). Completing it saves details and navigates to /dashboard.
+ * pages/onboarding/index.vue — real component tests for the "Tell us about
+ * you" onboarding step, followed by a conditional "Schools to explore" step
+ * shown only when the sport+location match returns recommendations. No
+ * matches falls straight through to /dashboard, same as before this step
+ * existed (that's what got the original attempt scrapped — an empty shell).
  */
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { mount, flushPromises } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
+import { ref } from "vue";
 import OnboardingIndex from "~/pages/onboarding/index.vue";
+import type { SchoolRecommendation } from "~/types/schoolRecommendations";
 
 const mockRoute = { query: {} as Record<string, string> };
 vi.stubGlobal("useRoute", () => mockRoute);
@@ -35,6 +39,39 @@ vi.mock("~/composables/useNuxProgress", () => ({
   useNuxProgress: () => ({ completeItem: mockCompleteItem }),
 }));
 
+const rec: SchoolRecommendation = {
+  catalogKey: "bowling-green",
+  name: "Bowling Green State University",
+  division: "D1",
+  conference: "MAC",
+  state: "OH",
+  website: null,
+  athleticsUrl: null,
+  score: 70,
+  reasons: ["In OH"],
+};
+
+const mockRecs = ref<SchoolRecommendation[]>([]);
+const mockFetchRecommendations = vi.fn();
+const mockDismissRecommendation = vi.fn().mockResolvedValue(undefined);
+const mockRemoveRecommendation = vi.fn();
+vi.mock("~/composables/useSchoolRecommendations", () => ({
+  useSchoolRecommendations: () => ({
+    recommendations: mockRecs,
+    signals: ref({ homeState: "OH", gpa: null, excludedCount: 0 }),
+    loading: ref(false),
+    error: ref(null),
+    fetchRecommendations: mockFetchRecommendations,
+    dismissRecommendation: mockDismissRecommendation,
+    removeRecommendation: mockRemoveRecommendation,
+  }),
+}));
+
+const mockCreateSchool = vi.fn().mockResolvedValue(undefined);
+vi.mock("~/composables/useSchools", () => ({
+  useSchools: () => ({ createSchool: mockCreateSchool }),
+}));
+
 const navigateToMock = vi.fn();
 vi.stubGlobal("navigateTo", navigateToMock);
 vi.stubGlobal("definePageMeta", vi.fn());
@@ -46,19 +83,28 @@ const mountPage = () =>
     },
   });
 
+async function completeStep1(wrapper: ReturnType<typeof mountPage>) {
+  await wrapper.find("#onboarding-graduation-year").setValue("2028");
+  await wrapper.find("#onboarding-primary-sport").setValue("Baseball");
+  await wrapper.find("button").trigger("click");
+  await flushPromises();
+}
+
 describe("pages/onboarding/index.vue", () => {
   beforeEach(() => {
     setActivePinia(createPinia());
     vi.clearAllMocks();
     mockRoute.query = {};
+    mockRecs.value = [];
+    mockFetchRecommendations.mockImplementation(async () => {});
   });
 
-  it("shows the single 'Tell us about you' step with no step indicator", async () => {
+  it("shows the 'Tell us about you' step with no step indicator", async () => {
     const wrapper = mountPage();
     await flushPromises();
 
     expect(wrapper.text()).toContain("Tell us about you");
-    expect(wrapper.text()).not.toContain("1/2");
+    expect(wrapper.text()).not.toContain("Step 2 of 2");
     expect(wrapper.text()).not.toContain("Schools to explore");
     expect(
       wrapper.findAll("button").find((b) => b.text() === "Back"),
@@ -89,20 +135,6 @@ describe("pages/onboarding/index.vue", () => {
     expect(wrapper.text()).toContain("Graduation year is required");
   });
 
-  it("does not require zip code to complete", async () => {
-    const wrapper = mountPage();
-    await flushPromises();
-    await wrapper.find("#onboarding-graduation-year").setValue("2028");
-    await wrapper.find("#onboarding-primary-sport").setValue("Baseball");
-
-    await wrapper.find("button").trigger("click");
-    await flushPromises();
-
-    expect(mockOnboarding.saveOnboardingStep).toHaveBeenCalled();
-    expect(mockOnboarding.completeOnboarding).toHaveBeenCalled();
-    expect(navigateToMock).toHaveBeenCalledWith("/dashboard");
-  });
-
   it("rejects an invalid zip code", async () => {
     const wrapper = mountPage();
     await flushPromises();
@@ -117,35 +149,103 @@ describe("pages/onboarding/index.vue", () => {
     expect(wrapper.text()).toContain("valid 5-digit zip code");
   });
 
-  it("saves player details, sets home location, marks the sport checklist item complete, and navigates to /dashboard", async () => {
-    const wrapper = mountPage();
-    await flushPromises();
-    await wrapper.find("#onboarding-graduation-year").setValue("2028");
-    await wrapper.find("#onboarding-primary-sport").setValue("Baseball");
-    await wrapper.find("#onboarding-zip-code").setValue("43210");
+  describe("when no school recommendations match", () => {
+    it("skips step 2 and goes straight to /dashboard", async () => {
+      mockRecs.value = [];
+      const wrapper = mountPage();
+      await flushPromises();
 
-    await wrapper.find("button").trigger("click");
-    await flushPromises();
+      await completeStep1(wrapper);
 
-    expect(mockPreferences.setPlayerDetails).toHaveBeenCalledWith(
-      expect.objectContaining({
-        graduation_year: 2028,
-        primary_sport: "Baseball",
-        gender: "male",
-      }),
-    );
-    expect(mockPreferences.setHomeLocation).toHaveBeenCalledWith({
-      zip: "43210",
+      expect(mockFetchRecommendations).toHaveBeenCalledTimes(1);
+      expect(wrapper.text()).not.toContain("Schools to explore");
+      expect(mockOnboarding.completeOnboarding).toHaveBeenCalled();
+      expect(navigateToMock).toHaveBeenCalledWith("/dashboard");
     });
-    expect(mockCompleteItem).toHaveBeenCalledWith("sport");
-    expect(mockOnboarding.completeOnboarding).toHaveBeenCalledWith(
-      expect.objectContaining({
-        hasHighlightVideo: false,
-        hasContactedCoaches: false,
-      }),
-      2028,
-    );
-    expect(navigateToMock).toHaveBeenCalledWith("/dashboard");
+
+    it("saves player details, sets home location, and marks the sport checklist item complete", async () => {
+      const wrapper = mountPage();
+      await flushPromises();
+      await wrapper.find("#onboarding-zip-code").setValue("43210");
+      await completeStep1(wrapper);
+
+      expect(mockPreferences.setPlayerDetails).toHaveBeenCalledWith(
+        expect.objectContaining({
+          graduation_year: 2028,
+          primary_sport: "Baseball",
+          gender: "male",
+        }),
+      );
+      expect(mockPreferences.setHomeLocation).toHaveBeenCalledWith({
+        zip: "43210",
+      });
+      expect(mockCompleteItem).toHaveBeenCalledWith("sport");
+    });
+  });
+
+  describe("when school recommendations match", () => {
+    beforeEach(() => {
+      mockFetchRecommendations.mockImplementation(async () => {
+        mockRecs.value = [rec];
+      });
+    });
+
+    it("shows step 2 instead of navigating immediately", async () => {
+      const wrapper = mountPage();
+      await flushPromises();
+      await completeStep1(wrapper);
+
+      expect(wrapper.text()).toContain("Step 2 of 2");
+      expect(wrapper.text()).toContain("Bowling Green State University");
+      expect(mockOnboarding.completeOnboarding).not.toHaveBeenCalled();
+      expect(navigateToMock).not.toHaveBeenCalled();
+    });
+
+    it("adds a school via createSchool and removes it from the list on 'Add to list'", async () => {
+      const wrapper = mountPage();
+      await flushPromises();
+      await completeStep1(wrapper);
+
+      await wrapper.find('[aria-label^="Add "]').trigger("click");
+      await flushPromises();
+
+      expect(mockCreateSchool).toHaveBeenCalledTimes(1);
+      expect(mockRemoveRecommendation).toHaveBeenCalledWith("bowling-green");
+      expect(mockCompleteItem).toHaveBeenCalledWith("first_school");
+    });
+
+    it("dismisses a school on 'Not a fit'", async () => {
+      const wrapper = mountPage();
+      await flushPromises();
+      await completeStep1(wrapper);
+
+      await wrapper.find('[aria-label^="Dismiss "]').trigger("click");
+      await flushPromises();
+
+      expect(mockDismissRecommendation).toHaveBeenCalledWith("bowling-green");
+    });
+
+    it("completes onboarding and navigates to /dashboard from step 2", async () => {
+      const wrapper = mountPage();
+      await flushPromises();
+      await completeStep1(wrapper);
+
+      const finishButton = wrapper
+        .findAll("button")
+        .find((b) => b.text().includes("Go to Dashboard"));
+      expect(finishButton).toBeDefined();
+      await finishButton!.trigger("click");
+      await flushPromises();
+
+      expect(mockOnboarding.completeOnboarding).toHaveBeenCalledWith(
+        expect.objectContaining({
+          hasHighlightVideo: false,
+          hasContactedCoaches: false,
+        }),
+        2028,
+      );
+      expect(navigateToMock).toHaveBeenCalledWith("/dashboard");
+    });
   });
 
   it("does not show a gender field for a sport with an unambiguous gender", async () => {

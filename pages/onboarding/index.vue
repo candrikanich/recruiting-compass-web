@@ -18,10 +18,17 @@
             Welcome to The Recruiting Compass
           </h1>
           <p class="mb-6 text-white/90">Let's get you set up</p>
+          <p
+            v-if="currentStep === 2"
+            class="text-sm font-medium text-white/80"
+          >
+            Step 2 of 2
+          </p>
         </div>
 
         <!-- Screen Container -->
         <div
+          v-if="currentStep === 1"
           ref="stepContainer"
           role="region"
           tabindex="-1"
@@ -164,7 +171,7 @@
       </div>
 
       <!-- Navigation -->
-      <div class="flex justify-end gap-4">
+      <div v-if="currentStep === 1" class="flex justify-end gap-4">
         <button
           @click="nextScreen"
           :disabled="loading"
@@ -172,6 +179,40 @@
         >
           Go to your dashboard →
         </button>
+      </div>
+
+      <!-- Step 2: Schools to Explore -->
+      <div
+        v-else
+        class="mb-8 rounded-2xl border border-white/20 bg-white/95 p-8 shadow-2xl backdrop-blur-xs"
+      >
+        <RecommendedSchools
+          :items="recommendations"
+          :loading="recsLoading"
+          :error="recsError"
+          :adding-key="addingKey"
+          :home-state="homeState"
+          @add="handleAddSchool"
+          @dismiss="handleDismissSchool"
+        />
+
+        <p
+          v-if="actionError"
+          role="alert"
+          class="mt-4 text-sm text-red-600"
+        >
+          {{ actionError }}
+        </p>
+
+        <div class="mt-6 flex justify-end">
+          <button
+            @click="finishOnboarding"
+            :disabled="finishing"
+            class="rounded-lg bg-blue-500 px-6 py-3 font-medium text-white transition-colors hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Go to Dashboard
+          </button>
+        </div>
       </div>
       </div>
     </div>
@@ -184,13 +225,19 @@ import { useOnboarding } from "~/composables/useOnboarding";
 import { usePreferenceManager } from "~/composables/usePreferenceManager";
 import { useNuxProgress } from "~/composables/useNuxProgress";
 import { useGraduationYearOptions } from "~/composables/useGraduationYearOptions";
+import { useSchoolRecommendations } from "~/composables/useSchoolRecommendations";
+import { useSchools } from "~/composables/useSchools";
+import { recommendationToSchoolDraft } from "~/utils/schoolRecommendations";
 import { createClientLogger } from "~/utils/logger";
 // The bare <MultiSportFieldBackground /> tag silently resolves to nothing
 // without this — Nuxt auto-imports components/Auth/*.vue under the
 // Auth-prefixed tag; pages/signup.vue and pages/login.vue only work because
 // they import it explicitly.
 import MultiSportFieldBackground from "~/components/Auth/MultiSportFieldBackground.vue";
+import RecommendedSchools from "~/components/School/RecommendedSchools.vue";
 import type { PlayerDetails } from "~/types/models";
+import type { SchoolRecommendation } from "~/types/schoolRecommendations";
+import type { School } from "~/types/models";
 
 const logger = createClientLogger("Onboarding");
 
@@ -205,15 +252,31 @@ const {
   getHomeLocation,
 } = usePreferenceManager();
 const { completeItem } = useNuxProgress();
+const {
+  recommendations,
+  signals,
+  loading: recsLoading,
+  error: recsError,
+  fetchRecommendations,
+  dismissRecommendation,
+  removeRecommendation,
+} = useSchoolRecommendations();
+const { createSchool } = useSchools();
 
 const stepContainer = ref<HTMLElement | null>(null);
 
+const currentStep = ref<1 | 2>(1);
 const onboardingData = ref<Record<string, unknown>>({});
 const loading = ref(false);
 const error = ref<string | null>(null);
 const zipCodeError = ref<string | null>(null);
 const sportError = ref<string | null>(null);
 const graduationYearError = ref<string | null>(null);
+const addingKey = ref<string | null>(null);
+const actionError = ref<string | null>(null);
+const finishing = ref(false);
+
+const homeState = computed(() => signals.value?.homeState ?? null);
 
 // Common high school sports and their positions
 const commonSports = [
@@ -339,23 +402,19 @@ const saveStep1 = async () => {
   $posthog?.capture("onboarding_v2_step1_complete");
 };
 
-const nextScreen = async () => {
-  if (!validateStep1()) {
-    return;
-  }
-  loading.value = true;
-  try {
-    await saveStep1();
+const completionAssessment = {
+  hasHighlightVideo: false,
+  hasContactedCoaches: false,
+  hasTargetSchools: false,
+  hasRegisteredEligibility: false,
+  hasTakenTestScores: false,
+};
 
-    const assessment = {
-      hasHighlightVideo: false,
-      hasContactedCoaches: false,
-      hasTargetSchools: false,
-      hasRegisteredEligibility: false,
-      hasTakenTestScores: false,
-    };
+const finishOnboarding = async () => {
+  finishing.value = true;
+  try {
     await completeOnboarding(
-      assessment,
+      completionAssessment,
       onboardingData.value.graduation_year as number | undefined,
     );
 
@@ -367,7 +426,60 @@ const nextScreen = async () => {
     error.value =
       err instanceof Error ? err.message : "Failed to complete onboarding";
   } finally {
+    finishing.value = false;
+  }
+};
+
+const nextScreen = async () => {
+  if (!validateStep1()) {
+    return;
+  }
+  loading.value = true;
+  try {
+    await saveStep1();
+    await fetchRecommendations();
+
+    if (recommendations.value.length > 0) {
+      currentStep.value = 2;
+      return;
+    }
+
+    await finishOnboarding();
+  } catch (err) {
+    error.value =
+      err instanceof Error ? err.message : "Failed to complete onboarding";
+  } finally {
     loading.value = false;
+  }
+};
+
+const handleAddSchool = async (school: SchoolRecommendation) => {
+  addingKey.value = school.catalogKey;
+  actionError.value = null;
+  try {
+    await createSchool(
+      recommendationToSchoolDraft(school) as Omit<
+        School,
+        "id" | "created_at" | "updated_at"
+      >,
+    );
+    removeRecommendation(school.catalogKey);
+    await completeItem("first_school");
+  } catch (err) {
+    logger.warn("Failed to add recommended school", err);
+    actionError.value = "Could not add that school.";
+  } finally {
+    addingKey.value = null;
+  }
+};
+
+const handleDismissSchool = async (school: SchoolRecommendation) => {
+  actionError.value = null;
+  try {
+    await dismissRecommendation(school.catalogKey);
+  } catch (err) {
+    logger.warn("Failed to dismiss school recommendation", err);
+    actionError.value = "Could not dismiss that school.";
   }
 };
 
