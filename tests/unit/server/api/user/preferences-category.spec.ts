@@ -69,7 +69,14 @@ function fakeEvent(
   } as unknown as H3Event;
 }
 
-vi.mock("~/server/utils/supabase", () => ({ useSupabaseAdmin: vi.fn() }));
+vi.mock("~/server/utils/supabase", () => {
+  const client = vi.fn();
+  return { useSupabaseAdmin: client, createServerSupabaseUserClient: client };
+});
+
+vi.mock("~/server/utils/requestToken", () => ({
+  extractRequestToken: vi.fn(() => "fake-token"),
+}));
 
 vi.mock("~/server/utils/sharedCache", () => ({
   deleteShared: vi.fn().mockResolvedValue(undefined),

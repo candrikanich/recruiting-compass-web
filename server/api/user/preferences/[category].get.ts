@@ -9,7 +9,8 @@
 import { defineEventHandler, createError } from "h3";
 import { requireAuth } from "~/server/utils/auth";
 import { useLogger } from "~/server/utils/logger";
-import { useSupabaseAdmin } from "~/server/utils/supabase";
+import { createServerSupabaseUserClient } from "~/server/utils/supabase";
+import { extractRequestToken } from "~/server/utils/requestToken";
 import { resolvePreferenceTargetUserId } from "~/server/utils/playerOwnedPreferences";
 
 const ALLOWED_CATEGORIES = [
@@ -45,7 +46,8 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    const supabase = useSupabaseAdmin();
+    const token = extractRequestToken(event);
+    const supabase = createServerSupabaseUserClient(token);
 
     // For player-owned categories, parents read the linked athlete's row.
     const targetUserId = await resolvePreferenceTargetUserId(
