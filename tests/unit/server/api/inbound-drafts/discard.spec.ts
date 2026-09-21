@@ -27,7 +27,8 @@ const mockState = {
     family_unit_id: string;
   } | null,
   draft: undefined as Record<string, unknown> | null | undefined,
-  updatedDraft: undefined as Record<string, unknown> | undefined,
+  rpcCalledWith: undefined as Record<string, unknown> | undefined,
+  rpcError: null as object | null,
 };
 
 const fakeClient = () => ({
@@ -48,13 +49,16 @@ const fakeClient = () => ({
             maybeSingle: async () => ({ data: mockState.draft, error: null }),
           }),
         }),
-        update: (row: Record<string, unknown>) => {
-          mockState.updatedDraft = row;
-          return { eq: async () => ({ error: null }) };
-        },
       };
     }
     throw new Error(`unexpected table ${table}`);
+  },
+  rpc: (fn: string, args: Record<string, unknown>) => {
+    if (fn !== "discard_inbound_draft") {
+      throw new Error(`unexpected rpc ${fn}`);
+    }
+    mockState.rpcCalledWith = args;
+    return Promise.resolve({ data: null, error: mockState.rpcError });
   },
 });
 
@@ -77,7 +81,8 @@ describe("POST /api/inbound-drafts/:id/discard", () => {
       "550e8400-e29b-41d4-a716-446655440000",
     );
     mockState.membership = { family_unit_id: "family-1" };
-    mockState.updatedDraft = undefined;
+    mockState.rpcCalledWith = undefined;
+    mockState.rpcError = null;
   });
 
   it("404s for a draft belonging to another family", async () => {
@@ -102,7 +107,9 @@ describe("POST /api/inbound-drafts/:id/discard", () => {
     const { default: handler } =
       await import("~/server/api/inbound-drafts/[id]/discard.post");
     const result = await handler({} as Parameters<typeof handler>[0]);
-    expect(mockState.updatedDraft).toMatchObject({ status: "discarded" });
+    expect(mockState.rpcCalledWith).toEqual({
+      p_draft_id: "550e8400-e29b-41d4-a716-446655440000",
+    });
     expect(result).toEqual({ ok: true });
   });
 
@@ -115,16 +122,17 @@ describe("POST /api/inbound-drafts/:id/discard", () => {
     const { default: handler } =
       await import("~/server/api/inbound-drafts/[id]/discard.post");
     const result = await handler({} as Parameters<typeof handler>[0]);
-    expect(mockState.updatedDraft).toBeUndefined();
+    expect(mockState.rpcCalledWith).toBeUndefined();
     expect(result).toEqual({ ok: true });
   });
 
   // Any attachments staged with this draft (issue #586 Phase 3 Task 3) stay
   // in `raw_inbound_attachments`, untouched — discard is not the purge job's
   // responsibility. Proven here by the mock's `from()` throwing on any table
-  // other than `family_members`/`inbound_email_drafts`: if discard ever
-  // queried `raw_inbound_attachments` or `documents`, this test would fail
-  // with "unexpected table", not a normal assertion failure.
+  // other than `family_members`/`inbound_email_drafts`, and `rpc()` throwing
+  // on any function other than `discard_inbound_draft`: if discard ever
+  // touched `raw_inbound_attachments` or `documents`, this test would fail
+  // with "unexpected table"/"unexpected rpc", not a normal assertion failure.
   it("never touches raw_inbound_attachments or documents when discarding", async () => {
     mockState.draft = {
       id: "550e8400-e29b-41d4-a716-446655440000",
@@ -135,6 +143,22 @@ describe("POST /api/inbound-drafts/:id/discard", () => {
       await import("~/server/api/inbound-drafts/[id]/discard.post");
     const result = await handler({} as Parameters<typeof handler>[0]);
     expect(result).toEqual({ ok: true });
-    expect(mockState.updatedDraft).toMatchObject({ status: "discarded" });
+    expect(mockState.rpcCalledWith).toEqual({
+      p_draft_id: "550e8400-e29b-41d4-a716-446655440000",
+    });
+  });
+
+  it("returns 500 when the discard RPC errors", async () => {
+    mockState.draft = {
+      id: "550e8400-e29b-41d4-a716-446655440000",
+      family_unit_id: "family-1",
+      status: "pending",
+    };
+    mockState.rpcError = { message: "db error" };
+    const { default: handler } =
+      await import("~/server/api/inbound-drafts/[id]/discard.post");
+    await expect(
+      handler({} as Parameters<typeof handler>[0]),
+    ).rejects.toMatchObject({ statusCode: 500 });
   });
 });

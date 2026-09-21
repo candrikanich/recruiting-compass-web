@@ -195,39 +195,34 @@ export default defineEventHandler(async (event) => {
       }
     }
 
-    // Only flip status when it's still "pending" — closes the observable race
-    // where two concurrent confirms both pass the status check above and each
-    // try to claim this draft.
-    const { data: updatedRows, error: updateError } = await admin
-      .from("inbound_email_drafts")
-      .update({ status: "confirmed", confirmed_interaction_id: interaction.id })
-      .eq("id", draftId)
-      .eq("status", "pending")
-      .select("id");
-    if (updateError) {
-      logger.error("Failed to mark draft confirmed", updateError);
+    // Mutation goes through a SECURITY DEFINER RPC, not a raw UPDATE -- a
+    // family-scoped RLS UPDATE policy can't restrict which columns change or
+    // enforce the pending-only transition, so a raw grant would let any
+    // family member rewrite any field (including confirmed_interaction_id)
+    // via a direct Supabase call. The RPC also closes the observable race
+    // where two concurrent confirms both pass the status check above and
+    // each try to claim this draft -- its own UPDATE is WHERE status =
+    // 'pending', same guard as before, just server-side now.
+    const { data: confirmedDraft, error: rpcError } = await admin.rpc(
+      "confirm_inbound_draft",
+      { p_draft_id: draftId, p_interaction_id: interaction.id },
+    );
+    if (rpcError) {
+      logger.error("Failed to mark draft confirmed", rpcError);
       throw createError({
         statusCode: 500,
         statusMessage: "Failed to confirm draft",
       });
     }
-    if (!updatedRows || updatedRows.length === 0) {
-      // Another request already confirmed this draft first. Our own
-      // interaction insert above already landed — that's a residual
-      // duplicate-interaction risk on true concurrent confirms, not fully
-      // closed by this guard alone (see M2 in the final review).
-      const { data: current } = await admin
-        .from("inbound_email_drafts")
-        .select("confirmed_interaction_id")
-        .eq("id", draftId)
-        .maybeSingle();
-      return {
-        ok: true,
-        interactionId: current?.confirmed_interaction_id ?? interaction.id,
-      };
-    }
 
-    return { ok: true, interactionId: interaction.id };
+    // Another request already confirmed this draft first. Our own
+    // interaction insert above already landed — that's a residual
+    // duplicate-interaction risk on true concurrent confirms, not fully
+    // closed by this guard alone (see M2 in the final review).
+    return {
+      ok: true,
+      interactionId: confirmedDraft?.confirmed_interaction_id ?? interaction.id,
+    };
   } catch (err) {
     if (err instanceof Error && "statusCode" in err) throw err;
     logger.error("Failed to confirm inbound draft", err);

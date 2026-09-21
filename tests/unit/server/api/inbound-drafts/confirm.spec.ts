@@ -36,8 +36,12 @@ const mockState = {
   draft: undefined as Record<string, unknown> | null | undefined,
   school: undefined as Record<string, unknown> | null | undefined,
   insertedInteraction: undefined as Record<string, unknown> | undefined,
-  updatedDraft: undefined as Record<string, unknown> | undefined,
-  updateAffectsRow: true,
+  rpcCalledWith: undefined as Record<string, unknown> | undefined,
+  rpcError: null as object | null,
+  // Simulates the RPC's pending-only race guard: a concurrent confirm won
+  // first, so the RPC returns the row confirmed against a DIFFERENT
+  // interaction id than the one this request's own insert just created.
+  rpcWinningInteractionId: undefined as string | undefined,
   stagedAttachments: [] as Record<string, unknown>[],
   documentInsertRows: undefined as Record<string, unknown>[] | undefined,
   // resolveAthleteId's dependencies: the confirming user's role, and (when
@@ -100,19 +104,6 @@ const fakeClient = () => ({
               maybeSingle: async () => ({ data: mockState.draft, error: null }),
             }),
           }),
-          update: (row: Record<string, unknown>) => {
-            mockState.updatedDraft = row;
-            return {
-              eq: () => ({
-                eq: () => ({
-                  select: async () => ({
-                    data: mockState.updateAffectsRow ? [{ id: "draft-1" }] : [],
-                    error: null,
-                  }),
-                }),
-              }),
-            };
-          },
         };
       }
       if (table === "schools") {
@@ -171,6 +162,24 @@ const fakeClient = () => ({
       }),
     }),
   },
+  rpc: (fn: string, args: Record<string, unknown>) => {
+    if (fn !== "confirm_inbound_draft") {
+      throw new Error(`unexpected rpc ${fn}`);
+    }
+    mockState.rpcCalledWith = args;
+    if (mockState.rpcError) {
+      return Promise.resolve({ data: null, error: mockState.rpcError });
+    }
+    // Mirrors the RPC's real return shape: the confirmed row, whichever
+    // request actually won the pending-only race.
+    return Promise.resolve({
+      data: {
+        confirmed_interaction_id:
+          mockState.rpcWinningInteractionId ?? args.p_interaction_id,
+      },
+      error: null,
+    });
+  },
 });
 
 vi.mock("~/server/utils/supabase", () => ({
@@ -195,8 +204,9 @@ describe("POST /api/inbound-drafts/:id/confirm", () => {
     mockState.membership = { family_unit_id: "family-1" };
     mockState.school = undefined;
     mockState.insertedInteraction = undefined;
-    mockState.updatedDraft = undefined;
-    mockState.updateAffectsRow = true;
+    mockState.rpcCalledWith = undefined;
+    mockState.rpcError = null;
+    mockState.rpcWinningInteractionId = undefined;
     mockState.stagedAttachments = [];
     mockState.documentInsertRows = undefined;
     mockState.callerRole = "parent";
@@ -279,9 +289,9 @@ describe("POST /api/inbound-drafts/:id/confirm", () => {
       type: "email",
       logged_by: "user-1",
     });
-    expect(mockState.updatedDraft).toMatchObject({
-      status: "confirmed",
-      confirmed_interaction_id: "interaction-1",
+    expect(mockState.rpcCalledWith).toEqual({
+      p_draft_id: "550e8400-e29b-41d4-a716-446655440000",
+      p_interaction_id: "interaction-1",
     });
     expect(result).toEqual({ ok: true, interactionId: "interaction-1" });
     // No staged attachments on this draft — confirming must not write an
@@ -347,7 +357,7 @@ describe("POST /api/inbound-drafts/:id/confirm", () => {
       },
     ]);
     // The draft still gets confirmed even though it carried attachments.
-    expect(mockState.updatedDraft).toMatchObject({ status: "confirmed" });
+    expect(mockState.rpcCalledWith).toMatchObject({ p_draft_id: "550e8400-e29b-41d4-a716-446655440000" });
   });
 
   it("owns the created documents by the athlete's user id, not the confirming parent's, and resolves a public file_url", async () => {
@@ -506,11 +516,34 @@ describe("POST /api/inbound-drafts/:id/confirm", () => {
       occurred_at: "2026-09-02T15:15:00.000Z",
       confirmed_interaction_id: null,
     };
-    mockState.updateAffectsRow = false;
+    mockState.rpcWinningInteractionId = "interaction-that-won-the-race";
     const { default: handler } =
       await import("~/server/api/inbound-drafts/[id]/confirm.post");
     const result = await handler({} as Parameters<typeof handler>[0]);
-    expect(result).toMatchObject({ ok: true });
+    expect(result).toEqual({
+      ok: true,
+      interactionId: "interaction-that-won-the-race",
+    });
+  });
+
+  it("returns 500 when the confirm RPC errors", async () => {
+    mockState.draft = {
+      id: "draft-1",
+      family_unit_id: "family-1",
+      status: "pending",
+      matched_school_id: "school-1",
+      matched_coach_id: "coach-1",
+      subject: "Fwd: Camp",
+      body_text: "hi",
+      occurred_at: "2026-09-02T15:15:00.000Z",
+      confirmed_interaction_id: null,
+    };
+    mockState.rpcError = { message: "db error" };
+    const { default: handler } =
+      await import("~/server/api/inbound-drafts/[id]/confirm.post");
+    await expect(
+      handler({} as Parameters<typeof handler>[0]),
+    ).rejects.toMatchObject({ statusCode: 500 });
   });
 
   it("is idempotent: re-confirming returns the existing interactionId without a new insert", async () => {

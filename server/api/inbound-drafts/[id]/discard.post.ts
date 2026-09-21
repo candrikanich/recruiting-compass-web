@@ -40,12 +40,15 @@ export default defineEventHandler(async (event) => {
       return { ok: true };
     }
 
-    const { error: updateError } = await supabase
-      .from("inbound_email_drafts")
-      .update({ status: "discarded" })
-      .eq("id", draftId);
-    if (updateError) {
-      logger.error("Failed to discard draft", updateError);
+    // Mutation goes through a SECURITY DEFINER RPC, not a raw UPDATE -- a
+    // family-scoped RLS UPDATE policy can't restrict which columns change,
+    // so a raw grant would let any family member rewrite any field via a
+    // direct Supabase call, not just the status transition this route makes.
+    const { error: rpcError } = await supabase.rpc("discard_inbound_draft", {
+      p_draft_id: draftId,
+    });
+    if (rpcError) {
+      logger.error("Failed to discard draft", rpcError);
       throw createError({
         statusCode: 500,
         statusMessage: "Failed to discard draft",
