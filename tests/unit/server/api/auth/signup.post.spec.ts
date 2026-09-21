@@ -138,6 +138,22 @@ describe("POST /api/auth/signup", () => {
       const result = await call({ role: undefined, dateOfBirth: undefined });
       expect(result).toMatchObject({ userId: "user-1" });
     });
+
+    // Regression: pages/signup.vue's dateOfBirth ref defaults to "" and is
+    // sent unconditionally for a role=parent signup (never becomes
+    // undefined) -- an earlier revision of this schema only allowed
+    // undefined or a real YYYY-MM-DD date, 400ing every real parent signup
+    // through the actual UI (caught by the e2e smoke suite, not this file).
+    it("accepts dateOfBirth as an empty string (parent signup's default)", async () => {
+      const result = await call({ dateOfBirth: "" });
+      expect(result).toMatchObject({ userId: "user-1" });
+    });
+
+    it("still rejects a malformed non-empty dateOfBirth", async () => {
+      await expect(
+        call({ dateOfBirth: "not-a-date" }),
+      ).rejects.toMatchObject({ statusCode: 400 });
+    });
   });
 
   describe("captcha skip for invite-accept signups", () => {

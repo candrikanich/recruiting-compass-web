@@ -31,7 +31,11 @@ const signupBodySchema = z.object({
   password: strongPasswordSchema,
   fullName: sanitizedTextSchema(255),
   role: z.enum(["parent", "player"]).optional(),
-  dateOfBirth: dateSchema.optional(),
+  // pages/signup.vue sends dateOfBirth as "" by default for role=parent
+  // (its ref never becomes undefined) -- allow empty string through
+  // alongside a real YYYY-MM-DD date, matching sanitizedTextSchema's
+  // pattern above. Downstream code already treats "" as falsy/absent.
+  dateOfBirth: dateSchema.or(z.literal("")).optional(),
   captchaToken: z.string().max(4096).optional(),
   metadata: z.record(z.string(), z.union([z.string(), z.boolean()])).optional(),
   skipVerificationEmail: z.boolean().optional(),
