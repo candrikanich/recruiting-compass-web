@@ -10,9 +10,13 @@ import { createError, getCookie, getHeader, type H3Event } from "h3";
  */
 export function extractRequestToken(event: H3Event): string {
   const authHeader = getHeader(event, "authorization");
-  const token: string | null = authHeader?.startsWith("Bearer ")
+  // An empty "Bearer " header must still fall through to the cookie --
+  // matching requireAuth's fallback semantics -- not be treated as present.
+  const headerToken = authHeader?.startsWith("Bearer ")
     ? authHeader.slice(7)
-    : getCookie(event, "sb-access-token") || null;
+    : "";
+  const token: string | null =
+    headerToken || getCookie(event, "sb-access-token") || null;
   if (!token) {
     throw createError({
       statusCode: 401,
