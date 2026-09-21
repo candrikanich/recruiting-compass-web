@@ -1,0 +1,22 @@
+-- #916: "Enable insert for users based on user_id" (baseline.sql) allows any
+-- authenticated user to INSERT themselves into ANY family_unit_id -- it only
+-- checks auth.uid() = user_id, with no family_unit_id scoping at all.
+-- Postgres RLS policies OR together, so this loose policy governs regardless
+-- of its properly-scoped sibling ("Users can add themselves to families they
+-- own").
+--
+-- Confirmed no legitimate flow depends on it before dropping:
+-- - server/api/family/create.post.ts and server/api/family/code/join.post.ts
+--   (the only two app-level family_members INSERT call sites besides the
+--   invitation-accept RPC) both use useSupabaseAdmin() (service-role),
+--   entirely bypassing RLS -- neither has ever gone through this policy.
+-- - No client-side composable/store inserts into family_members at all
+--   (grep across composables/, stores/, pages/, components/ -- SELECT-only).
+-- - The invitation-accept path uses accept_family_invitation() (SECURITY
+--   DEFINER, added in 20260928000014), which also bypasses RLS and doesn't
+--   depend on this policy either.
+--
+-- "Users can add themselves to families they own" (self-join into a family
+-- the caller created) stays untouched -- correctly scoped, not part of this
+-- gap.
+DROP POLICY IF EXISTS "Enable insert for users based on user_id" ON "public"."family_members";
