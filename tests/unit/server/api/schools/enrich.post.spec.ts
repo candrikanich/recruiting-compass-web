@@ -213,3 +213,60 @@ describe("POST /api/schools/[id]/enrich (confirm step)", () => {
     expect(metadataLookup.lookupSchoolMetadata).not.toHaveBeenCalled();
   });
 });
+
+describe("POST /api/schools/[id]/enrich (request body validation, #913)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockFamilyMembersSingle.mockResolvedValue({
+      data: { family_unit_id: "family-1" },
+      error: null,
+    });
+  });
+
+  it("400s a non-integer scorecardId on the confirm step", async () => {
+    vi.mocked(readBody).mockResolvedValue({
+      scorecardId: "42",
+      confirmed: true,
+    });
+
+    await expect(handler(mockEvent)).rejects.toMatchObject({
+      statusCode: 400,
+    });
+  });
+
+  it("400s a confirm step missing scorecardId entirely", async () => {
+    vi.mocked(readBody).mockResolvedValue({ confirmed: true });
+
+    await expect(handler(mockEvent)).rejects.toMatchObject({
+      statusCode: 400,
+    });
+  });
+
+  it("accepts a search step with no confirmed key at all (handleEnrich()'s actual shape)", async () => {
+    vi.mocked(readBody).mockResolvedValue({ schoolName: "Test University" });
+    scorecard.searchCollegeScorecard.mockResolvedValue({
+      results: [scorecardMatch],
+      total: 1,
+    });
+
+    const result = await handler(mockEvent);
+
+    expect(result.success).toBe(true);
+  });
+
+  it("400s a search step with a schoolName over the length cap", async () => {
+    vi.mocked(readBody).mockResolvedValue({ schoolName: "A".repeat(256) });
+
+    await expect(handler(mockEvent)).rejects.toMatchObject({
+      statusCode: 400,
+    });
+  });
+
+  it("400s a malformed body that matches neither branch", async () => {
+    vi.mocked(readBody).mockResolvedValue({ confirmed: "yes" });
+
+    await expect(handler(mockEvent)).rejects.toMatchObject({
+      statusCode: 400,
+    });
+  });
+});
