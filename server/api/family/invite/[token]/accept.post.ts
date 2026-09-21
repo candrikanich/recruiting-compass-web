@@ -1,12 +1,12 @@
 import { defineEventHandler, getRouterParam, createError } from "h3";
 import { useLogger } from "~/server/utils/logger";
 import { requireAuth } from "~/server/utils/auth";
-import { useSupabaseAdmin } from "~/server/utils/supabase";
+import { createServerSupabaseUserClient } from "~/server/utils/supabase";
+import { extractRequestToken } from "~/server/utils/requestToken";
 import { hydrateAthleteFromPendingDetails } from "~/server/utils/hydrateAthleteProfile";
 import { markOnboardingComplete } from "~/server/utils/onboardingComplete";
 import { requiresGuardianInvite } from "~/utils/age";
 import { CURRENT_TERMS_VERSION } from "~/utils/legal";
-import type { Database } from "~/types/database";
 
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "family/invite/accept");
@@ -21,7 +21,8 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    const supabase = useSupabaseAdmin();
+    const supabaseToken = extractRequestToken(event);
+    const supabase = createServerSupabaseUserClient(supabaseToken);
 
     const { data: invitation } = await supabase
       .from("family_invitations")
@@ -71,30 +72,24 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    // Check if already a member (idempotent)
-    const { data: existing } = await supabase
-      .from("family_members")
-      .select("id")
-      .eq("family_unit_id", invitation.family_unit_id)
-      .eq("user_id", user.id)
-      .maybeSingle();
+    // The family_members insert and family_invitations status update both
+    // happen atomically inside accept_family_invitation (SECURITY DEFINER),
+    // idempotent if the caller is already a member. This uses the
+    // invitation's own `role` column rather than trusting client input — a
+    // raw UPDATE/INSERT grant here would let an invitee rewrite the issued
+    // role (e.g. player -> parent) before accepting, since RLS USING/WITH
+    // CHECK clauses can't compare old vs. new row values to keep it pinned.
+    const { error: acceptError } = await supabase.rpc(
+      "accept_family_invitation",
+      { p_invitation_id: invitation.id },
+    );
 
-    if (!existing) {
-      const { error: memberError } = await supabase
-        .from("family_members")
-        .insert({
-          family_unit_id: invitation.family_unit_id,
-          user_id: user.id,
-          role: invitation.role,
-        } as Database["public"]["Tables"]["family_members"]["Insert"]);
-
-      if (memberError) {
-        logger.error("Failed to add family member", memberError);
-        throw createError({
-          statusCode: 500,
-          statusMessage: "Failed to join family",
-        });
-      }
+    if (acceptError) {
+      logger.error("Failed to accept invitation", acceptError);
+      throw createError({
+        statusCode: 500,
+        statusMessage: "Failed to join family",
+      });
     }
 
     // The invite link was emailed to invitation.invited_email and the
@@ -109,11 +104,6 @@ export default defineEventHandler(async (event) => {
     if (verifyStampError) {
       logger.error("Failed to stamp email as verified", verifyStampError);
     }
-
-    await supabase
-      .from("family_invitations")
-      .update({ status: "accepted", accepted_at: new Date().toISOString() })
-      .eq("id", invitation.id);
 
     // Athlete PII (name, grad year, sport, position) is only released here —
     // after the authenticated caller has proven they are the invitee.
