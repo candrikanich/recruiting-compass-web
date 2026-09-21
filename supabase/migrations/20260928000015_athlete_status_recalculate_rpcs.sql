@@ -14,6 +14,16 @@
 -- Two narrow SECURITY DEFINER RPCs, both reusing can_access_family_player_prefs
 -- (added in 20260821000010 for the same self-or-linked-player shape) rather
 -- than reinventing the authorization check.
+--
+-- Known dependency: can_access_family_player_prefs trusts family_members
+-- membership, and #916 tracks a loose family_members INSERT policy that lets
+-- any authenticated user join any family today. Until #916 is fixed, someone
+-- who forges membership into a target family could call set_athlete_status_score
+-- for that family's player with a fabricated (but range-valid) score/label --
+-- the same trust dependency already shipped in set_athlete_profile_photo
+-- (20260821000200) and the user_preferences family-sharing policies
+-- (20260821000010), not something new to this migration. Fixing it requires
+-- #916, not a change here.
 
 CREATE OR REPLACE FUNCTION "public"."get_athlete_completed_task_ids"("p_athlete_id" "uuid")
 RETURNS "uuid"[]
@@ -49,6 +59,14 @@ AS $$
 BEGIN
   IF NOT (p_athlete_id = auth.uid() OR public.can_access_family_player_prefs(p_athlete_id)) THEN
     RAISE EXCEPTION 'not authorized to set status score for %', p_athlete_id USING ERRCODE = '42501';
+  END IF;
+
+  -- Bounds guard: calculateStatusScoreResult (utils/statusScoreCalculation.ts)
+  -- always clamps to 0-100, so a value outside that range can only come from
+  -- a caller bypassing the route and calling this RPC directly. status_label
+  -- is already constrained by users_status_label_check at the column level.
+  IF p_score < 0 OR p_score > 100 THEN
+    RAISE EXCEPTION 'status score % out of range [0, 100]', p_score USING ERRCODE = '22003';
   END IF;
 
   UPDATE public.users
