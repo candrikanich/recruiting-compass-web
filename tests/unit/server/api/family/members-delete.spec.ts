@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 const OWNER_ID = "owner-player-id";
 const PARENT_MEMBER_ID = "00000000-0000-0000-0000-000000000001";
@@ -29,35 +29,42 @@ vi.mock("~/server/utils/validation", () => ({
   requireUuidParam: vi.fn(() => mockState.memberId),
 }));
 
+const fakeClientFactory = () => ({
+  from: (table: string) => {
+    if (table === "family_members") {
+      return {
+        select: () => ({
+          eq: () => ({
+            single: () =>
+              Promise.resolve({
+                data: mockState.member,
+                error: mockState.memberFetchError,
+              }),
+          }),
+        }),
+        delete: () => ({
+          eq: () => Promise.resolve({ error: mockState.deleteError }),
+        }),
+      };
+    }
+    if (table === "family_code_usage_log") {
+      const p = Object.assign(Promise.resolve({ data: null, error: null }), {
+        then: vi.fn(() => ({ catch: vi.fn() })),
+        catch: vi.fn(),
+      });
+      return { insert: vi.fn().mockReturnValue(p) };
+    }
+    return {};
+  },
+});
+
 vi.mock("~/server/utils/supabase", () => ({
-  useSupabaseAdmin: vi.fn(() => ({
-    from: (table: string) => {
-      if (table === "family_members") {
-        return {
-          select: () => ({
-            eq: () => ({
-              single: () =>
-                Promise.resolve({
-                  data: mockState.member,
-                  error: mockState.memberFetchError,
-                }),
-            }),
-          }),
-          delete: () => ({
-            eq: () => Promise.resolve({ error: mockState.deleteError }),
-          }),
-        };
-      }
-      if (table === "family_code_usage_log") {
-        const p = Object.assign(Promise.resolve({ data: null, error: null }), {
-          then: vi.fn(() => ({ catch: vi.fn() })),
-          catch: vi.fn(),
-        });
-        return { insert: vi.fn().mockReturnValue(p) };
-      }
-      return {};
-    },
-  })),
+  useSupabaseAdmin: vi.fn(),
+  createServerSupabaseUserClient: vi.fn(),
+}));
+
+vi.mock("~/server/utils/requestToken", () => ({
+  extractRequestToken: vi.fn(() => "fake-token"),
 }));
 
 vi.mock("h3", async (importOriginal) => {
@@ -81,6 +88,9 @@ vi.mock("h3", async (importOriginal) => {
 
 const { default: handler } =
   await import("~/server/api/family/members/[memberId].delete");
+const { useSupabaseAdmin, createServerSupabaseUserClient } = await import(
+  "~/server/utils/supabase"
+);
 
 describe("DELETE /api/family/members/[memberId]", () => {
   beforeEach(() => {
@@ -100,11 +110,21 @@ describe("DELETE /api/family/members/[memberId]", () => {
     };
     mockState.memberFetchError = null;
     mockState.deleteError = null;
+    vi.mocked(createServerSupabaseUserClient).mockReturnValue(
+      fakeClientFactory() as never,
+    );
+  });
+
+  afterEach(() => {
+    // Regression guard: a handler reverting to the privileged client would
+    // otherwise pass every assertion below undetected.
+    expect(useSupabaseAdmin).not.toHaveBeenCalled();
   });
 
   it("allows the family owner to remove a parent member", async () => {
     const result = await handler({} as Parameters<typeof handler>[0]);
     expect(result).toMatchObject({ success: true });
+    expect(createServerSupabaseUserClient).toHaveBeenCalledWith("fake-token");
   });
 
   it("returns 404 when member is not found", async () => {
