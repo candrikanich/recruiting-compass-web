@@ -31,7 +31,13 @@ vi.mock("h3", async (importOriginal) => {
   };
 });
 
-vi.mock("~/server/utils/supabase", () => ({ useSupabaseAdmin: vi.fn() }));
+vi.mock("~/server/utils/supabase", () => ({
+  createServerSupabaseUserClient: vi.fn(),
+}));
+
+vi.mock("~/server/utils/requestToken", () => ({
+  extractRequestToken: vi.fn(() => "fake-token"),
+}));
 
 function fakeEvent(body: unknown): H3Event {
   return { context: {}, _body: body } as unknown as H3Event;
@@ -53,8 +59,12 @@ describe("POST /api/user/preferences/history", () => {
   }
 
   it("rejects a body that fails Zod validation with 400 and the first issue message (zod v4 .issues)", async () => {
-    const { useSupabaseAdmin } = await import("~/server/utils/supabase");
-    vi.mocked(useSupabaseAdmin).mockReturnValue({ from: vi.fn() } as never);
+    const { createServerSupabaseUserClient } = await import(
+      "~/server/utils/supabase"
+    );
+    vi.mocked(createServerSupabaseUserClient).mockReturnValue({
+      from: vi.fn(),
+    } as never);
     const handler = await loadHandler();
 
     await expect(handler(fakeEvent({ category: 123 }))).rejects.toMatchObject({
@@ -64,9 +74,11 @@ describe("POST /api/user/preferences/history", () => {
   });
 
   it("inserts the history row and returns its id", async () => {
-    const { useSupabaseAdmin } = await import("~/server/utils/supabase");
+    const { createServerSupabaseUserClient } = await import(
+      "~/server/utils/supabase"
+    );
     const insertCalls: unknown[] = [];
-    vi.mocked(useSupabaseAdmin).mockReturnValue({
+    vi.mocked(createServerSupabaseUserClient).mockReturnValue({
       from: () => ({
         insert: (row: unknown) => {
           insertCalls.push(row);
