@@ -23,7 +23,9 @@ BASE_URL=https://<qa-deploy-host>
 TEST_EMAIL=k6-load-test@example.com
 ```
 
-**No password needed.** QA's Supabase project has Turnstile captcha on the public password-grant login endpoint (correct — it protects real signup/login there, not disabled just for this script). `setup()` instead uses `SUPABASE_SERVICE_ROLE_KEY` to admin-generate a magic link for the test account and redeems it via `/auth/v1/verify`, which isn't captcha-gated.
+**No password needed.** QA's Supabase project has Turnstile captcha on the public password-grant login endpoint (correct — it protects real signup/login there, not disabled just for this script). `setup()` instead uses `SUPABASE_SERVICE_ROLE_KEY` to admin-generate a magic link for each pool account and redeems it via `/auth/v1/verify`, which isn't captcha-gated.
+
+**Account pool (#970):** `TEST_EMAIL` is account 0 of a pool; siblings are auto-derived as `k6-load-test-1@example.com`, `-2@`, etc. (index inserted before the `@`). Pool size defaults to 5 and is configurable via `TEST_EMAIL_POOL_SIZE`. Each VU picks an account by `__VU % poolSize`, spreading load across distinct `server/middleware/rate-limit.ts` keys — runs 2 and 3 (2026-09-22) both hit that 60/min ceiling using a single shared token regardless of which endpoint was under test; this is why. The 5 accounts already exist on QA (created via the Supabase Admin API, `email_confirm: true`, no password) — if you change `TEST_EMAIL` to a different base or raise the pool size, create the matching sibling accounts the same way first.
 
 **`SUPABASE_SERVICE_ROLE_KEY` grants full database access bypassing RLS** — it's already treated as a secret in the root `.env` (gitignored); nothing new to handle here, just don't paste its value into chat/logs/PRs.
 
