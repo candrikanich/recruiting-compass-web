@@ -43,7 +43,9 @@ Ramp profile: 5 → 20 → 50 VUs over 5 minutes, 1s sleep per iteration (see `s
 ## Endpoints covered
 
 Currently implemented in `api-load.js`:
-- `GET /api/schools/:id/fit-score` — the test account's own school id is resolved once in `setup()` via a direct, RLS-scoped Supabase REST read (no `GET /api/schools` collection route exists server-side; school lists are fetched client-side straight from Supabase)
+- `GET /api/schools/recommendations` — real query weight (`assembleSchoolRecommendations`), no side effects, currently wired into the schools-page empty state. **Redis-cached per athlete for 2 minutes** — repeated calls from the same test account within that window hit cache, not real DB work; keep this in mind reading results.
+
+Originally targeted `GET /api/schools/:id/fit-score` — discovered 2026-09-22 to be dead/orphaned code (hardcodes `fitScore: null`, no remaining frontend caller). See `k6/findings.md` and the linked dead-code cleanup issue.
 
 **Not yet implemented** — planned, do not assume these are exercised by running `k6 run`:
 - `POST /api/athlete/phase/advance` — mutates account state, needs disposable per-user test data or a safe reset strategy before it's safe to load-test
