@@ -8,7 +8,8 @@
 import { defineEventHandler, getRouterParam, readBody, createError } from "h3";
 import { z } from "zod";
 import { requireAuth } from "~/server/utils/auth";
-import { useSupabaseAdmin } from "~/server/utils/supabase";
+import { createServerSupabaseUserClient } from "~/server/utils/supabase";
+import { extractRequestToken } from "~/server/utils/requestToken";
 import { useLogger } from "~/server/utils/logger";
 
 // A permissive UUID-shape check rather than Zod's strict `.uuid()`, which
@@ -44,7 +45,8 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    const admin = useSupabaseAdmin();
+    const token = extractRequestToken(event);
+    const admin = createServerSupabaseUserClient(token);
 
     const { data: membership, error: membershipError } = await admin
       .from("family_members")
@@ -90,25 +92,35 @@ export default defineEventHandler(async (event) => {
       };
     }
 
-    const { error: updErr } = await admin
-      .from("profile_contacts")
-      .update({
-        status: parsed.data.status,
-        interaction_id: parsed.data.interactionId ?? null,
-      })
-      .eq("id", leadId);
-    if (updErr) {
-      logger.error("Failed to update lead status", updErr);
+    // Mutation goes through a SECURITY DEFINER RPC, not a raw UPDATE -- a
+    // family-scoped RLS UPDATE policy can't restrict which columns change,
+    // so a raw grant would let any family member rewrite any field
+    // (coach_name, coach_email, matched_coach_id, ...) via a direct
+    // Supabase call, not just the resolve/dismiss transition this route makes.
+    const { data: resolvedLead, error: rpcErr } = await admin.rpc(
+      "resolve_profile_contact_lead",
+      {
+        p_lead_id: leadId,
+        p_status: parsed.data.status,
+        p_interaction_id: parsed.data.interactionId ?? null,
+      },
+    );
+    if (rpcErr) {
+      logger.error("Failed to update lead status", rpcErr);
       throw createError({
         statusCode: 500,
         statusMessage: "Failed to resolve lead",
       });
     }
 
+    // Report the row the RPC actually stored, not the requested values --
+    // a concurrent request could have resolved this lead between our read
+    // above and the RPC's lock, in which case the RPC's own idempotency
+    // guard preserved that earlier resolution instead of applying ours.
     return {
       ok: true,
-      status: parsed.data.status,
-      interactionId: parsed.data.interactionId ?? null,
+      status: resolvedLead?.status ?? parsed.data.status,
+      interactionId: resolvedLead?.interaction_id ?? null,
     };
   } catch (err) {
     if (err instanceof Error && "statusCode" in err) throw err;

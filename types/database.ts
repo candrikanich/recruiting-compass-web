@@ -4048,6 +4048,32 @@ export type Database = {
         Args: { p_actor: string; p_school_id: string };
         Returns: Database["public"]["Enums"]["school_status"];
       };
+      resolve_profile_contact_lead: {
+        Args: {
+          p_lead_id: string;
+          p_status: string;
+          p_interaction_id: string | null;
+        };
+        Returns: {
+          id: string;
+          family_unit_id: string;
+          player_user_id: string | null;
+          type: string;
+          coach_name: string;
+          coach_email: string | null;
+          coach_title: string | null;
+          matched_coach_id: string | null;
+          school_id: string | null;
+          school_name: string | null;
+          note: string | null;
+          program: string | null;
+          ip: unknown;
+          user_agent: string | null;
+          created_at: string;
+          status: string;
+          interaction_id: string | null;
+        };
+      };
       safe_jsonb_extract: { Args: { key: string; obj: Json }; Returns: Json };
       search_schools_fts: {
         Args: {
