@@ -601,9 +601,7 @@ async function decline() {
             data-testid="error-not-found"
             class="rounded-lg border border-red-200 bg-red-50 p-6 text-center"
           >
-            <h1 class="text-lg font-semibold text-red-900">
-              Invite not found
-            </h1>
+            <h1 class="text-lg font-semibold text-red-900">Invite not found</h1>
             <p class="mt-2 text-sm text-red-800">
               This link may be invalid or already used.
             </p>
@@ -619,163 +617,171 @@ async function decline() {
               A family member has invited you as a {{ invite.role }}.
             </p>
 
-      <!-- Already authenticated: just confirm -->
-      <div v-if="userStore.isAuthenticated">
-        <p class="mb-4 text-sm text-gray-500">
-          Connecting as {{ userStore.user?.email }}
-        </p>
-        <p
-          v-if="loginError"
-          data-testid="accept-error"
-          class="mb-3 text-sm text-red-600"
-          role="alert"
-        >
-          {{ loginError }}
-        </p>
-        <div class="flex gap-3">
-          <DesignSystemButton
-            data-testid="connect-button"
-            :loading="loading"
-            @click="accept"
-          >
-            Connect to {{ invite.familyName }}
-          </DesignSystemButton>
-          <DesignSystemButton
-            data-testid="decline-button"
-            variant="outline"
-            color="red"
-            :loading="declining"
-            @click="decline"
-          >
-            Decline
-          </DesignSystemButton>
-        </div>
-      </div>
+            <!-- Already authenticated: just confirm -->
+            <div v-if="userStore.isAuthenticated">
+              <p class="mb-4 text-sm text-gray-500">
+                Connecting as {{ userStore.user?.email }}
+              </p>
+              <p
+                v-if="loginError"
+                data-testid="accept-error"
+                class="mb-3 text-sm text-red-600"
+                role="alert"
+              >
+                {{ loginError }}
+              </p>
+              <div class="flex gap-3">
+                <DesignSystemButton
+                  data-testid="connect-button"
+                  :loading="loading"
+                  @click="accept"
+                >
+                  Connect to {{ invite.familyName }}
+                </DesignSystemButton>
+                <DesignSystemButton
+                  data-testid="decline-button"
+                  variant="outline"
+                  color="red"
+                  :loading="declining"
+                  @click="decline"
+                >
+                  Decline
+                </DesignSystemButton>
+              </div>
+            </div>
 
-      <!-- Not authenticated -->
-      <div v-else>
-        <!-- Login form -->
-        <div v-if="authMode === 'login'" data-testid="login-section">
-          <p class="mb-4 text-sm text-gray-500">
-            Log in to connect your account.
-          </p>
-          <p v-if="loginError" class="mb-3 text-sm text-red-600" role="alert">
-            {{ loginError }}
-          </p>
-          <DesignSystemInput
-            v-model="loginEmail"
-            data-testid="email-input"
-            label="Email"
-            type="email"
-            disabled
-            hint="This invite was sent to this address"
-            class="mb-3"
-          />
-          <DesignSystemInput
-            v-model="loginPassword"
-            data-testid="password-input"
-            label="Password"
-            type="password"
-            class="mb-4"
-          />
-          <!-- Cloudflare Turnstile (flag-gated, renders only when site key set) -->
-          <div
-            v-if="turnstileEnabled"
-            ref="turnstileLoginEl"
-            class="mb-4 flex justify-center"
-          />
-          <div class="flex gap-3">
-            <DesignSystemButton
-              data-testid="login-connect-button"
-              :loading="loading"
-              @click="accept"
-            >
-              Log in and connect
-            </DesignSystemButton>
-            <DesignSystemButton
-              data-testid="decline-button"
-              variant="outline"
-              color="red"
-              :loading="declining"
-              @click="decline"
-            >
-              Decline
-            </DesignSystemButton>
-          </div>
-          <p class="mt-4 text-sm text-gray-500">
-            Don't have an account?
-            <button
-              type="button"
-              data-testid="switch-to-signup"
-              class="text-blue-600 hover:underline"
-              @click="authMode = 'signup'"
-            >
-              Create one instead
-            </button>
-          </p>
-        </div>
+            <!-- Not authenticated -->
+            <div v-else>
+              <!-- Login form -->
+              <div v-if="authMode === 'login'" data-testid="login-section">
+                <p class="mb-4 text-sm text-gray-500">
+                  Log in to connect your account.
+                </p>
+                <p
+                  v-if="loginError"
+                  class="mb-3 text-sm text-red-600"
+                  role="alert"
+                >
+                  {{ loginError }}
+                </p>
+                <DesignSystemInput
+                  v-model="loginEmail"
+                  data-testid="email-input"
+                  label="Email"
+                  type="email"
+                  disabled
+                  hint="This invite was sent to this address"
+                  class="mb-3"
+                />
+                <DesignSystemInput
+                  v-model="loginPassword"
+                  data-testid="password-input"
+                  label="Password"
+                  type="password"
+                  class="mb-4"
+                />
+                <!-- Cloudflare Turnstile (flag-gated, renders only when site key set) -->
+                <div
+                  v-if="turnstileEnabled"
+                  ref="turnstileLoginEl"
+                  class="mb-4 flex justify-center"
+                />
+                <div class="flex gap-3">
+                  <DesignSystemButton
+                    data-testid="login-connect-button"
+                    :loading="loading"
+                    @click="accept"
+                  >
+                    Log in and connect
+                  </DesignSystemButton>
+                  <DesignSystemButton
+                    data-testid="decline-button"
+                    variant="outline"
+                    color="red"
+                    :loading="declining"
+                    @click="decline"
+                  >
+                    Decline
+                  </DesignSystemButton>
+                </div>
+                <p class="mt-4 text-sm text-gray-500">
+                  Don't have an account?
+                  <button
+                    type="button"
+                    data-testid="switch-to-signup"
+                    class="text-blue-600 hover:underline"
+                    @click="authMode = 'signup'"
+                  >
+                    Create one instead
+                  </button>
+                </p>
+              </div>
 
-        <!-- Signup form -->
-        <div v-else data-testid="signup-section">
-          <p class="mb-4 text-sm text-gray-500">
-            Create an account to connect.
-          </p>
-          <p v-if="signupError" class="mb-3 text-sm text-red-600" role="alert">
-            {{ signupError }}
-          </p>
-          <AuthInviteSignupForm
-            :email="signupEmail"
-            :role="invite.role"
-            :first-name="signupFirstName"
-            :last-name="signupLastName"
-            :date-of-birth="signupDateOfBirth"
-            :password="signupPassword"
-            :confirm-password="signupConfirmPassword"
-            :agree-to-terms="signupAgreeToTerms"
-            :loading="loading"
-            @update:email="signupEmail = $event"
-            @update:first-name="signupFirstName = $event"
-            @update:last-name="signupLastName = $event"
-            @update:date-of-birth="signupDateOfBirth = $event"
-            @update:password="signupPassword = $event"
-            @update:confirm-password="signupConfirmPassword = $event"
-            @update:agree-to-terms="signupAgreeToTerms = $event"
-            @submit="signupAndConnect"
-          >
-            <template #captcha>
-              <!-- No visible checkbox here: a valid invite token is the bot
+              <!-- Signup form -->
+              <div v-else data-testid="signup-section">
+                <p class="mb-4 text-sm text-gray-500">
+                  Create an account to connect.
+                </p>
+                <p
+                  v-if="signupError"
+                  class="mb-3 text-sm text-red-600"
+                  role="alert"
+                >
+                  {{ signupError }}
+                </p>
+                <AuthInviteSignupForm
+                  :email="signupEmail"
+                  :role="invite.role"
+                  :first-name="signupFirstName"
+                  :last-name="signupLastName"
+                  :date-of-birth="signupDateOfBirth"
+                  :password="signupPassword"
+                  :confirm-password="signupConfirmPassword"
+                  :agree-to-terms="signupAgreeToTerms"
+                  :loading="loading"
+                  @update:email="signupEmail = $event"
+                  @update:first-name="signupFirstName = $event"
+                  @update:last-name="signupLastName = $event"
+                  @update:date-of-birth="signupDateOfBirth = $event"
+                  @update:password="signupPassword = $event"
+                  @update:confirm-password="signupConfirmPassword = $event"
+                  @update:agree-to-terms="signupAgreeToTerms = $event"
+                  @submit="signupAndConnect"
+                >
+                  <template #captcha>
+                    <!-- No visible checkbox here: a valid invite token is the bot
                    filter for this form (server skips Turnstile when present
                    and pending — see server/api/auth/signup.post.ts). -->
-              <!-- Invisible widget dedicated to the post-signup sign-in
+                    <!-- Invisible widget dedicated to the post-signup sign-in
                    token mint — see getFreshTurnstileToken. Renders nothing. -->
-              <div v-if="turnstileEnabled" ref="turnstileSessionEl" />
-            </template>
-          </AuthInviteSignupForm>
-          <p class="mt-4 text-sm text-gray-500">
-            Already have an account?
-            <button
-              type="button"
-              data-testid="switch-to-login"
-              class="text-blue-600 hover:underline"
-              @click="authMode = 'login'"
-            >
-              Log in instead
-            </button>
-          </p>
-          <div class="mt-4">
-            <DesignSystemButton
-              data-testid="decline-button"
-              variant="outline"
-              color="red"
-              :loading="declining"
-              @click="decline"
-            >
-              Decline invitation
-            </DesignSystemButton>
+                    <div v-if="turnstileEnabled" ref="turnstileSessionEl" />
+                  </template>
+                </AuthInviteSignupForm>
+                <p class="mt-4 text-sm text-gray-500">
+                  Already have an account?
+                  <button
+                    type="button"
+                    data-testid="switch-to-login"
+                    class="text-blue-600 hover:underline"
+                    @click="authMode = 'login'"
+                  >
+                    Log in instead
+                  </button>
+                </p>
+                <div class="mt-4">
+                  <DesignSystemButton
+                    data-testid="decline-button"
+                    variant="outline"
+                    color="red"
+                    :loading="declining"
+                    @click="decline"
+                  >
+                    Decline invitation
+                  </DesignSystemButton>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
-    </div>
         </div>
       </div>
     </div>

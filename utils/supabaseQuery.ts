@@ -423,7 +423,7 @@ export async function queryRpc<T>(
     const supabase = useSupabase();
     // Type cast: useSupabase() returns an untyped client (no Database generic).
     // Cast to the expected RPC signature to match Record<string, unknown> params.
-    const rpcCall = (supabase.rpc as unknown) as (
+    const rpcCall = supabase.rpc as unknown as (
       fn: string,
       params: Record<string, unknown>,
     ) => Promise<{ data: unknown; error: { message: string } | null }>;

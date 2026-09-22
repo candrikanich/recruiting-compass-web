@@ -90,16 +90,19 @@ export default defineEventHandler(async (event) => {
       if (requestedEmail === user.email?.trim().toLowerCase()) {
         throw createError({
           statusCode: 400,
-          statusMessage: "Your parent or guardian needs a different email address than yours",
+          statusMessage:
+            "Your parent or guardian needs a different email address than yours",
         });
       }
 
       const token = randomUUID();
-      const { error: insertError } = await supabase.from("guardian_claims").insert({
-        player_user_id: user.id,
-        guardian_email: requestedEmail,
-        token,
-      });
+      const { error: insertError } = await supabase
+        .from("guardian_claims")
+        .insert({
+          player_user_id: user.id,
+          guardian_email: requestedEmail,
+          token,
+        });
 
       if (insertError) {
         logger.error("Failed to create guardian claim", insertError);
@@ -109,7 +112,8 @@ export default defineEventHandler(async (event) => {
         });
       }
 
-      const playerName = userRow?.full_name ?? (user.email ?? "Your athlete").split("@")[0];
+      const playerName =
+        userRow?.full_name ?? (user.email ?? "Your athlete").split("@")[0];
       const mail = await sendGuardianClaimEmail({
         to: requestedEmail,
         playerName,
@@ -121,7 +125,8 @@ export default defineEventHandler(async (event) => {
         logger.warn("Guardian invite email failed to send", mail.error);
         throw createError({
           statusCode: 502,
-          statusMessage: "We couldn't send that email. Please try again shortly.",
+          statusMessage:
+            "We couldn't send that email. Please try again shortly.",
         });
       }
 
@@ -182,7 +187,8 @@ export default defineEventHandler(async (event) => {
         .eq("id", claim.id);
     }
 
-    const playerName = userRow?.full_name ?? (user.email ?? "Your athlete").split("@")[0];
+    const playerName =
+      userRow?.full_name ?? (user.email ?? "Your athlete").split("@")[0];
     const mail = await sendGuardianClaimEmail({
       to: guardianEmail,
       playerName,

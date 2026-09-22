@@ -26,7 +26,12 @@ vi.mock("~/server/utils/emailService", () => ({
   sendVerificationEmail: mockSendVerification,
 }));
 vi.mock("~/server/utils/logger", () => ({
-  useLogger: () => ({ info: vi.fn(), error: vi.fn(), warn: vi.fn(), debug: vi.fn() }),
+  useLogger: () => ({
+    info: vi.fn(),
+    error: vi.fn(),
+    warn: vi.fn(),
+    debug: vi.fn(),
+  }),
 }));
 
 import { createVerifiedAccount } from "~/server/utils/accountCreation";
@@ -81,7 +86,9 @@ describe("createVerifiedAccount", () => {
     // avoids.
     mockCreateUser.mockResolvedValueOnce({
       data: { user: null },
-      error: { message: "A user with this email address has already been registered" },
+      error: {
+        message: "A user with this email address has already been registered",
+      },
     } as never);
 
     const result = await createVerifiedAccount({} as never, {

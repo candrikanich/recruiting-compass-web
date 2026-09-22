@@ -95,7 +95,10 @@ test.describe("Minor accepts a family invite (join.vue signup path)", () => {
         .from("family_invitations")
         .delete()
         .eq("family_unit_id", unitId);
-      await supabase.from("family_members").delete().eq("family_unit_id", unitId);
+      await supabase
+        .from("family_members")
+        .delete()
+        .eq("family_unit_id", unitId);
       await supabase.from("family_units").delete().eq("id", unitId);
     }
     for (const email of createdUserEmails) {
@@ -122,7 +125,9 @@ test.describe("Minor accepts a family invite (join.vue signup path)", () => {
         role: "player",
         token,
         status: "pending",
-        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+        expires_at: new Date(
+          Date.now() + 7 * 24 * 60 * 60 * 1000,
+        ).toISOString(),
       });
     expect(inviteError).toBeNull();
 
@@ -145,7 +150,9 @@ test.describe("Minor accepts a family invite (join.vue signup path)", () => {
     await page.fill("#confirmPassword", MINOR_PASSWORD);
     await page.check("#invite-terms");
 
-    await page.getByRole("button", { name: /create account and connect/i }).click();
+    await page
+      .getByRole("button", { name: /create account and connect/i })
+      .click();
 
     // Pre-fix: the trigger raised on the `users` upsert and signupError
     // rendered "Players under 18 must join through a parent or guardian

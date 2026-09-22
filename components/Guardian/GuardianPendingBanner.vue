@@ -35,7 +35,11 @@ const submit = async (email?: string) => {
   try {
     await resend(email);
     showToast(
-      email ? (wasUninvited ? "Invitation sent." : "Sent to the new address.") : "Reminder sent.",
+      email
+        ? wasUninvited
+          ? "Invitation sent."
+          : "Sent to the new address."
+        : "Reminder sent.",
       "success",
     );
     editing.value = false;
@@ -72,8 +76,8 @@ const submit = async (email?: string) => {
         Invite a parent or guardian
       </h2>
       <p class="mt-1 text-sm text-amber-800">
-        Bring them along to see what you're working on — messaging coaches
-        and sharing your profile unlock once they confirm.
+        Bring them along to see what you're working on — messaging coaches and
+        sharing your profile unlock once they confirm.
       </p>
       <div class="mt-3 flex flex-col gap-2 sm:flex-row">
         <label for="guardian-invite-email" class="sr-only">
@@ -104,20 +108,18 @@ const submit = async (email?: string) => {
         id="guardian-pending-title"
         class="flex items-center gap-2 font-semibold text-amber-900"
       >
-        <UIcon
-          name="i-heroicons-clock"
-          class="h-5 w-5"
-          aria-hidden="true"
-        />
+        <UIcon name="i-heroicons-clock" class="h-5 w-5" aria-hidden="true" />
         Waiting on your parent or guardian
       </h2>
       <p class="mt-1 text-sm text-amber-800">
         <template v-if="maskedEmail">
           We emailed {{ maskedEmail }} a link to confirm your account.
         </template>
-        <template v-else> We emailed your guardian a confirmation link. </template>
-        You can build your school list and track deadlines now — messaging coaches
-        and sharing your profile unlock once they confirm.
+        <template v-else>
+          We emailed your guardian a confirmation link.
+        </template>
+        You can build your school list and track deadlines now — messaging
+        coaches and sharing your profile unlock once they confirm.
       </p>
 
       <div v-if="!editing" class="mt-3 flex flex-wrap gap-2">
@@ -138,7 +140,11 @@ const submit = async (email?: string) => {
         </button>
       </div>
 
-      <form v-else class="mt-3 flex flex-wrap gap-2" @submit.prevent="submit(newEmail)">
+      <form
+        v-else
+        class="mt-3 flex flex-wrap gap-2"
+        @submit.prevent="submit(newEmail)"
+      >
         <label for="guardian-new-email" class="sr-only">
           Parent or guardian email
         </label>

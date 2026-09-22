@@ -128,7 +128,9 @@
         <div class="w-full border-t border-slate-200"></div>
       </div>
       <div class="relative flex justify-center text-sm">
-        <span class="bg-white px-4 text-slate-500">Already have an account?</span>
+        <span class="bg-white px-4 text-slate-500"
+          >Already have an account?</span
+        >
       </div>
     </div>
 

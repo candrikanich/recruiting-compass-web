@@ -181,7 +181,9 @@ describe("family-management parent family members", () => {
     ];
     mockFetchAuth.mockImplementation((url: string) => {
       if (url === "/api/family/inbound-address") {
-        return Promise.resolve({ address: "family-abc123@inbound.example.com" });
+        return Promise.resolve({
+          address: "family-abc123@inbound.example.com",
+        });
       }
       if (url === "/api/family/members?familyId=fam-1") {
         return Promise.resolve({

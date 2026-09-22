@@ -17,8 +17,7 @@
             One quick thing
           </h1>
           <p class="text-white/90">
-            Pick your primary sport so we can tailor Recruiting Compass to
-            you.
+            Pick your primary sport so we can tailor Recruiting Compass to you.
           </p>
         </div>
 

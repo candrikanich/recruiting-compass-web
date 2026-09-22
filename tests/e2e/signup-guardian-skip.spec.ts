@@ -1,5 +1,8 @@
 import { test, expect } from "@playwright/test";
-import { getSupabaseAdmin, deleteOneOffTestUser } from "./seed/helpers/supabase-admin";
+import {
+  getSupabaseAdmin,
+  deleteOneOffTestUser,
+} from "./seed/helpers/supabase-admin";
 
 /**
  * Full journey for a 13-17 player who skips naming a guardian at signup: account
@@ -71,7 +74,10 @@ test.describe("signup: skip the guardian step", () => {
           .eq("created_by_user_id", player.id)
           .maybeSingle();
         if (unit?.id) {
-          await supabase.from("family_members").delete().eq("family_unit_id", unit.id);
+          await supabase
+            .from("family_members")
+            .delete()
+            .eq("family_unit_id", unit.id);
           await supabase.from("family_units").delete().eq("id", unit.id);
         }
       }
@@ -133,14 +139,16 @@ test.describe("signup: skip the guardian step", () => {
       .eq("id", playerId);
     expect(onboardingError).toBeNull();
 
-    const { error: prefsError } = await supabase.from("user_preferences").upsert(
-      {
-        user_id: playerId,
-        category: "player",
-        data: { primary_sport: "Basketball", graduation_year: 2029 },
-      },
-      { onConflict: "user_id,category" },
-    );
+    const { error: prefsError } = await supabase
+      .from("user_preferences")
+      .upsert(
+        {
+          user_id: playerId,
+          category: "player",
+          data: { primary_sport: "Basketball", graduation_year: 2029 },
+        },
+        { onConflict: "user_id,category" },
+      );
     expect(prefsError).toBeNull();
 
     // The browser session from signup is already real (see file header) —
@@ -201,7 +209,9 @@ test.describe("signup: skip the guardian step", () => {
     // see file header note 3 — to confirm the *server's* locked/pending state
     // (not just a client-local flag) renders the right banner.
     await page.reload();
-    await expect(page.getByText(/waiting on your parent or guardian/i)).toBeVisible();
+    await expect(
+      page.getByText(/waiting on your parent or guardian/i),
+    ).toBeVisible();
 
     // Simulate the guardian confirming, via the same DB effects
     // claim/[token]/accept.post.ts writes (stamp guardian_consent_at on the player,

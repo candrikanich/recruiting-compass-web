@@ -100,9 +100,7 @@ const route = useRoute();
 const token = route.params.token as string;
 const { resendVerificationEmail } = useEmailVerification();
 
-const state = ref<"checking" | "verified" | "expired" | "invalid">(
-  "checking",
-);
+const state = ref<"checking" | "verified" | "expired" | "invalid">("checking");
 const resending = ref(false);
 const resent = ref(false);
 // The link can land on a device that was never signed in — resend is only

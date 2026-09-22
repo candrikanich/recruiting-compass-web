@@ -183,7 +183,8 @@ const zipCode = ref("");
 // invited by one. See planning/2026-09-11-guardian-linked-signup-spec.md (iOS repo).
 const guardianEmail = ref("");
 const requiresGuardian = computed(
-  () => userType.value === "player" && requiresGuardianInvite(dateOfBirth.value),
+  () =>
+    userType.value === "player" && requiresGuardianInvite(dateOfBirth.value),
 );
 
 // --- Turnstile (optional, flag-gated) ----------------------------------------

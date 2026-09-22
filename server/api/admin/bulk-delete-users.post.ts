@@ -299,20 +299,22 @@ export default defineEventHandler(
         usersDeleteError = usersDeleteResult.error;
 
         if (usersDeleteError) {
-          logger.error("Failed to delete users rows in bulk:", usersDeleteError);
+          logger.error(
+            "Failed to delete users rows in bulk:",
+            usersDeleteError,
+          );
         }
 
         // Verify — a NO ACTION FK violation (or an RLS denial) can come back as
         // a silently-no-op delete rather than a populated error, same as the
         // single-user endpoint. Anyone still present here is a real failure,
         // regardless of what the delete call above reported.
-        const { data: survivors, error: verifyReadError } = await (
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          supabaseAdmin as any
-        )
-          .from("users")
-          .select("id")
-          .in("id", targetUserIds);
+        const { data: survivors, error: verifyReadError } =
+          await // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (supabaseAdmin as any)
+            .from("users")
+            .select("id")
+            .in("id", targetUserIds);
         verifyError = verifyReadError;
 
         if (verifyError) {
@@ -343,94 +345,92 @@ export default defineEventHandler(
       const authTargets = [...resolvedUsers, ...authOnlyUsers];
       if (authTargets.length > 0) {
         await Promise.all(
-          authTargets.map(
-            async ({ email: targetEmail, id: targetUserId }) => {
-              if (survivorIds.has(targetUserId)) {
+          authTargets.map(async ({ email: targetEmail, id: targetUserId }) => {
+            if (survivorIds.has(targetUserId)) {
+              errors.push({
+                email: targetEmail,
+                reason: verifyError
+                  ? `Could not confirm user deletion: verification read failed (${verifyError.message ?? "unknown database error"})`
+                  : (usersDeleteError?.message ??
+                    "User row still exists after deletion (likely a foreign key constraint)"),
+              });
+              logger.error(
+                verifyError
+                  ? `Could not confirm deletion of users row ${targetUserId} (${targetEmail}) — verification read failed, state unknown`
+                  : `users row ${targetUserId} (${targetEmail}) still exists after bulk delete — reporting failure instead of a false success`,
+              );
+              return;
+            }
+
+            try {
+              // Verify the primary user record is actually gone before
+              // touching the auth record. A failed read must NOT be
+              // treated as proof of deletion.
+              const { data: verifyRow, error: verifyError } =
+                await supabaseAdmin
+                  .from("users")
+                  .select("id")
+                  .eq("id", targetUserId)
+                  .maybeSingle();
+
+              if (verifyError) {
+                logger.error(
+                  `Deletion verification query failed for ${targetEmail} (${targetUserId}):`,
+                  verifyError,
+                );
                 errors.push({
                   email: targetEmail,
-                  reason: verifyError
-                    ? `Could not confirm user deletion: verification read failed (${verifyError.message ?? "unknown database error"})`
-                    : (usersDeleteError?.message ??
-                      "User row still exists after deletion (likely a foreign key constraint)"),
+                  reason: "Could not verify deletion",
                 });
-                logger.error(
-                  verifyError
-                    ? `Could not confirm deletion of users row ${targetUserId} (${targetEmail}) — verification read failed, state unknown`
-                    : `users row ${targetUserId} (${targetEmail}) still exists after bulk delete — reporting failure instead of a false success`,
-                );
                 return;
               }
 
-              try {
-                // Verify the primary user record is actually gone before
-                // touching the auth record. A failed read must NOT be
-                // treated as proof of deletion.
-                const { data: verifyRow, error: verifyError } =
-                  await supabaseAdmin
-                    .from("users")
-                    .select("id")
-                    .eq("id", targetUserId)
-                    .maybeSingle();
-
-                if (verifyError) {
-                  logger.error(
-                    `Deletion verification query failed for ${targetEmail} (${targetUserId}):`,
-                    verifyError,
-                  );
-                  errors.push({
-                    email: targetEmail,
-                    reason: "Could not verify deletion",
-                  });
-                  return;
-                }
-
-                if (verifyRow) {
-                  logger.error(
-                    `User ${targetEmail} (${targetUserId}) still present in users table after delete attempt`,
-                  );
-                  errors.push({
-                    email: targetEmail,
-                    reason: "User deletion did not complete",
-                  });
-                  return;
-                }
-
-                if (supabaseAdmin.auth.admin?.deleteUser) {
-                  const { error: deleteError } =
-                    await supabaseAdmin.auth.admin.deleteUser(targetUserId);
-
-                  if (deleteError) {
-                    logger.warn(
-                      `Failed to delete auth user ${targetUserId} (${targetEmail}):`,
-                      deleteError,
-                    );
-                    errors.push({
-                      email: targetEmail,
-                      reason: deleteError.message || "Auth deletion failed",
-                    });
-                    return;
-                  }
-                }
-
-                deletedEmails.push(targetEmail);
-                logger.info(
-                  `User ${targetEmail} (${targetUserId}) and all associated data deleted by admin ${user.id}`,
+              if (verifyRow) {
+                logger.error(
+                  `User ${targetEmail} (${targetUserId}) still present in users table after delete attempt`,
                 );
-              } catch (authError) {
                 errors.push({
                   email: targetEmail,
-                  reason:
-                    authError instanceof Error
-                      ? authError.message
-                      : "Unknown error",
+                  reason: "User deletion did not complete",
                 });
-                logger.error(
-                  `Could not delete from auth system for ${targetEmail}:`,
-                  authError,
-                );
+                return;
               }
-            },
-          ),
+
+              if (supabaseAdmin.auth.admin?.deleteUser) {
+                const { error: deleteError } =
+                  await supabaseAdmin.auth.admin.deleteUser(targetUserId);
+
+                if (deleteError) {
+                  logger.warn(
+                    `Failed to delete auth user ${targetUserId} (${targetEmail}):`,
+                    deleteError,
+                  );
+                  errors.push({
+                    email: targetEmail,
+                    reason: deleteError.message || "Auth deletion failed",
+                  });
+                  return;
+                }
+              }
+
+              deletedEmails.push(targetEmail);
+              logger.info(
+                `User ${targetEmail} (${targetUserId}) and all associated data deleted by admin ${user.id}`,
+              );
+            } catch (authError) {
+              errors.push({
+                email: targetEmail,
+                reason:
+                  authError instanceof Error
+                    ? authError.message
+                    : "Unknown error",
+              });
+              logger.error(
+                `Could not delete from auth system for ${targetEmail}:`,
+                authError,
+              );
+            }
+          }),
         );
       }
 

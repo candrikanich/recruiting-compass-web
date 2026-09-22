@@ -107,7 +107,9 @@ describe("SignupForm wizard steps (13-17 player)", () => {
       props: { ...baseProps, userType: "parent", requiresGuardian: false },
     });
 
-    expect(wrapper.find('[data-testid="signup-step-continue"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="signup-step-continue"]').exists()).toBe(
+      false,
+    );
     expect(wrapper.find("[data-testid='signup-button']").exists()).toBe(true);
   });
 
@@ -115,7 +117,14 @@ describe("SignupForm wizard steps (13-17 player)", () => {
     const wrapper = mount(SignupForm, { props: baseProps });
 
     const allFocusable = wrapper.findAll("input, button");
-    const ids = ["firstName", "lastName", "dateOfBirth", "email", "password", "confirmPassword"];
+    const ids = [
+      "firstName",
+      "lastName",
+      "dateOfBirth",
+      "email",
+      "password",
+      "confirmPassword",
+    ];
     const indices = ids.map((id) =>
       allFocusable.findIndex((el) => el.attributes("id") === id),
     );

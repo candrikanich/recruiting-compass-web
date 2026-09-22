@@ -384,9 +384,8 @@ describe("useUserStore", () => {
     });
 
     it("should reset guardian status so the next signed-in user doesn't see a stale cached status", async () => {
-      const { useGuardianStatus } = await import(
-        "~/composables/useGuardianStatus"
-      );
+      const { useGuardianStatus } =
+        await import("~/composables/useGuardianStatus");
       const { status, loaded } = useGuardianStatus();
       status.value = {
         locked: true,

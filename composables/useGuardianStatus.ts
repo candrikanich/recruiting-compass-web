@@ -74,7 +74,9 @@ export const useGuardianStatus = () => {
     isPending,
     isLocked,
     hasNoGuardianYet,
-    guardianEmailMasked: computed(() => status.value?.guardianEmailMasked ?? null),
+    guardianEmailMasked: computed(
+      () => status.value?.guardianEmailMasked ?? null,
+    ),
     load,
     resend,
     reset,

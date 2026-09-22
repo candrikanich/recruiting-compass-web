@@ -1,10 +1,5 @@
 import { randomUUID } from "node:crypto";
-import {
-  defineEventHandler,
-  readBody,
-  createError,
-  getRequestIP,
-} from "h3";
+import { defineEventHandler, readBody, createError, getRequestIP } from "h3";
 import { useLogger } from "~/server/utils/logger";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import { rateLimitByIp, throwIfRateLimited } from "~/server/utils/rateLimit";
@@ -240,20 +235,22 @@ export default defineEventHandler(async (event) => {
     // write lands (or if it fails) would let middleware's onboarding check pass
     // while its separate sport-gate check still has nothing to find.
     if (body.graduationYear && primarySport && body.wizardComplete === true) {
-      const { error: prefsError } = await supabase.from("user_preferences").upsert(
-        {
-          user_id: userId,
-          category: "player",
-          data: {
-            graduation_year: body.graduationYear,
-            primary_sport: primarySport,
-            ...(body.gender ? { gender: body.gender } : {}),
-          },
-          updated_at: new Date().toISOString(),
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as any,
-        { onConflict: "user_id,category" },
-      );
+      const { error: prefsError } = await supabase
+        .from("user_preferences")
+        .upsert(
+          {
+            user_id: userId,
+            category: "player",
+            data: {
+              graduation_year: body.graduationYear,
+              primary_sport: primarySport,
+              ...(body.gender ? { gender: body.gender } : {}),
+            },
+            updated_at: new Date().toISOString(),
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          } as any,
+          { onConflict: "user_id,category" },
+        );
 
       if (prefsError) {
         // Fail safe, not open: if the canonical sport isn't queryable yet, the

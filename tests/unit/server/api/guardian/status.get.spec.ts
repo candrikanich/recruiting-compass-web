@@ -1,12 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 const mockUserRow: {
-  value: { role: string; date_of_birth: string | null; guardian_consent_at: string | null } | null;
+  value: {
+    role: string;
+    date_of_birth: string | null;
+    guardian_consent_at: string | null;
+  } | null;
 } = { value: null };
 const mockClaimRow: {
   value: { guardian_email: string; status: string; expires_at: string } | null;
 } = { value: null };
-const mockFamilyMembership: { value: { family_unit_id: string } | null } = { value: null };
+const mockFamilyMembership: { value: { family_unit_id: string } | null } = {
+  value: null,
+};
 const mockFamilyHasParent: { value: boolean } = { value: false };
 
 vi.mock("~/server/utils/auth", () => ({
@@ -14,14 +20,25 @@ vi.mock("~/server/utils/auth", () => ({
 }));
 
 vi.mock("~/server/utils/logger", () => ({
-  useLogger: () => ({ info: vi.fn(), error: vi.fn(), warn: vi.fn(), debug: vi.fn() }),
+  useLogger: () => ({
+    info: vi.fn(),
+    error: vi.fn(),
+    warn: vi.fn(),
+    debug: vi.fn(),
+  }),
 }));
 
 vi.mock("~/server/utils/supabase", () => ({
   useSupabaseAdmin: vi.fn(() => ({
     from: (table: string) => {
       if (table === "users") {
-        return { select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: mockUserRow.value }) }) }) };
+        return {
+          select: () => ({
+            eq: () => ({
+              maybeSingle: async () => ({ data: mockUserRow.value }),
+            }),
+          }),
+        };
       }
       if (table === "family_members") {
         return {
@@ -31,7 +48,9 @@ vi.mock("~/server/utils/supabase", () => ({
               eq: () => ({
                 limit: () => ({
                   maybeSingle: async () => ({
-                    data: mockFamilyHasParent.value ? { user_id: "some-parent" } : null,
+                    data: mockFamilyHasParent.value
+                      ? { user_id: "some-parent" }
+                      : null,
                   }),
                 }),
               }),
@@ -44,7 +63,9 @@ vi.mock("~/server/utils/supabase", () => ({
         select: () => ({
           eq: () => ({
             order: () => ({
-              limit: () => ({ maybeSingle: async () => ({ data: mockClaimRow.value }) }),
+              limit: () => ({
+                maybeSingle: async () => ({ data: mockClaimRow.value }),
+              }),
             }),
           }),
         }),
@@ -67,7 +88,11 @@ describe("GET /api/guardian/status", () => {
   });
 
   it("returns status 'none', locked:true, pending:true (mirrors locked) for a 13-17 player who never named a guardian", async () => {
-    mockUserRow.value = { role: "player", date_of_birth: "2012-01-01", guardian_consent_at: null };
+    mockUserRow.value = {
+      role: "player",
+      date_of_birth: "2012-01-01",
+      guardian_consent_at: null,
+    };
     mockClaimRow.value = null;
 
     const result = await statusHandler(fakeEvent);
@@ -83,7 +108,11 @@ describe("GET /api/guardian/status", () => {
   });
 
   it("returns status 'pending', locked:true, pending:true, claimOutstanding:true for an outstanding unexpired claim", async () => {
-    mockUserRow.value = { role: "player", date_of_birth: "2012-01-01", guardian_consent_at: null };
+    mockUserRow.value = {
+      role: "player",
+      date_of_birth: "2012-01-01",
+      guardian_consent_at: null,
+    };
     mockClaimRow.value = {
       guardian_email: "parent@example.com",
       status: "pending",
@@ -100,7 +129,11 @@ describe("GET /api/guardian/status", () => {
   });
 
   it("keeps pending mirroring locked for an already-expired claim — nothing outstanding to wait on", async () => {
-    mockUserRow.value = { role: "player", date_of_birth: "2012-01-01", guardian_consent_at: null };
+    mockUserRow.value = {
+      role: "player",
+      date_of_birth: "2012-01-01",
+      guardian_consent_at: null,
+    };
     mockClaimRow.value = {
       guardian_email: "parent@example.com",
       status: "expired",
@@ -116,7 +149,11 @@ describe("GET /api/guardian/status", () => {
   });
 
   it("treats a stored 'pending' claim with an elapsed expires_at as effectively expired", async () => {
-    mockUserRow.value = { role: "player", date_of_birth: "2012-01-01", guardian_consent_at: null };
+    mockUserRow.value = {
+      role: "player",
+      date_of_birth: "2012-01-01",
+      guardian_consent_at: null,
+    };
     mockClaimRow.value = {
       guardian_email: "parent@example.com",
       status: "pending",
@@ -132,7 +169,11 @@ describe("GET /api/guardian/status", () => {
   });
 
   it("keeps pending mirroring locked for a family-membership override with a still-outstanding claim", async () => {
-    mockUserRow.value = { role: "player", date_of_birth: "2012-01-01", guardian_consent_at: null };
+    mockUserRow.value = {
+      role: "player",
+      date_of_birth: "2012-01-01",
+      guardian_consent_at: null,
+    };
     mockClaimRow.value = {
       guardian_email: "parent@example.com",
       status: "pending",
@@ -169,7 +210,11 @@ describe("GET /api/guardian/status", () => {
   });
 
   it("returns locked:false for an adult player with no claim", async () => {
-    mockUserRow.value = { role: "player", date_of_birth: "2000-01-01", guardian_consent_at: null };
+    mockUserRow.value = {
+      role: "player",
+      date_of_birth: "2000-01-01",
+      guardian_consent_at: null,
+    };
 
     const result = await statusHandler(fakeEvent);
 
@@ -178,7 +223,11 @@ describe("GET /api/guardian/status", () => {
   });
 
   it("returns locked:false for a minor already in a family with a parent, even with no consent stamped", async () => {
-    mockUserRow.value = { role: "player", date_of_birth: "2012-01-01", guardian_consent_at: null };
+    mockUserRow.value = {
+      role: "player",
+      date_of_birth: "2012-01-01",
+      guardian_consent_at: null,
+    };
     mockFamilyMembership.value = { family_unit_id: "family-1" };
     mockFamilyHasParent.value = true;
 

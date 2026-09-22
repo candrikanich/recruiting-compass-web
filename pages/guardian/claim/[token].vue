@@ -231,9 +231,12 @@ onMounted(async () => {
 });
 
 const confirmClaim = async () => {
-  await $fetchAuth(`/api/guardian/claim/${encodeURIComponent(token.value)}/accept`, {
-    method: "POST",
-  });
+  await $fetchAuth(
+    `/api/guardian/claim/${encodeURIComponent(token.value)}/accept`,
+    {
+      method: "POST",
+    },
+  );
   // The app-wide family-context singleton (provided once at app.vue mount) already
   // fetched /api/family/accessible the moment signup() flipped the guardian's role to
   // "parent" -- before this accept call ran -- and caches that result until something
@@ -375,10 +378,9 @@ const handleSubmit = async () => {
               {{ claim.playerName }} started a recruiting profile
             </h1>
             <p class="mt-2 text-sm text-slate-600">
-              They listed you as their parent or guardian. Because they're
-              under 18, their account stays limited until you confirm it —
-              they can't message coaches or share their profile in the
-              meantime.
+              They listed you as their parent or guardian. Because they're under
+              18, their account stays limited until you confirm it — they can't
+              message coaches or share their profile in the meantime.
             </p>
 
             <dl class="mt-4 rounded-lg bg-slate-50 p-4 text-sm">

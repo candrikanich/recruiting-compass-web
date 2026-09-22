@@ -76,10 +76,7 @@
           :disabled="loading"
           class="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
           @change="
-            $emit(
-              'update:gender',
-              ($event.target as HTMLSelectElement).value,
-            )
+            $emit('update:gender', ($event.target as HTMLSelectElement).value)
           "
         >
           <option :value="undefined">Select gender</option>
@@ -107,10 +104,7 @@
           :disabled="loading"
           class="w-full rounded-lg border border-slate-300 px-4 py-2 focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-blue-500"
           @input="
-            $emit(
-              'update:zipCode',
-              ($event.target as HTMLInputElement).value,
-            )
+            $emit('update:zipCode', ($event.target as HTMLInputElement).value)
           "
         />
         <p class="mt-1 text-xs text-slate-500">
@@ -173,8 +167,8 @@ const SPORT_GENDER_MAP: Record<string, "male" | "female"> = {
   wrestling: "male",
 };
 
-const genderIsAutoDerived = computed(() =>
-  (props.primarySport ?? "").toLowerCase() in SPORT_GENDER_MAP,
+const genderIsAutoDerived = computed(
+  () => (props.primarySport ?? "").toLowerCase() in SPORT_GENDER_MAP,
 );
 
 const canSubmit = computed(

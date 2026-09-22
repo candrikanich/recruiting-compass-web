@@ -3,7 +3,10 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 let mockTokenUpdateCalls: Record<string, unknown>[] = [];
 let mockInsertCalls: Record<string, unknown>[] = [];
 let mockRpcCalls: { name: string; params: Record<string, unknown> }[] = [];
-let mockRpcResult: { data: { status: string; user_id: string | null } | null; error: { message: string } | null } = {
+let mockRpcResult: {
+  data: { status: string; user_id: string | null } | null;
+  error: { message: string } | null;
+} = {
   data: null,
   error: null,
 };
@@ -61,12 +64,17 @@ describe("emailVerificationTokens", () => {
     const expiresMs = new Date(expiresAt).getTime() - Date.now();
     expect(expiresMs).toBeGreaterThan(23.9 * 60 * 60 * 1000);
     expect(expiresMs).toBeLessThan(24.1 * 60 * 60 * 1000);
-    expect(mockTokenUpdateCalls).toEqual([{ invalidated_at: expect.any(String) }]);
+    expect(mockTokenUpdateCalls).toEqual([
+      { invalidated_at: expect.any(String) },
+    ]);
     expect(mockInsertCalls[0]).toMatchObject({ user_id: "user-1", token });
   });
 
   it("delegates consumption to the atomic consume_email_verification_token RPC", async () => {
-    mockRpcResult = { data: { status: "verified", user_id: "user-1" }, error: null };
+    mockRpcResult = {
+      data: { status: "verified", user_id: "user-1" },
+      error: null,
+    };
 
     const result = await consumeVerificationToken("good");
 
@@ -77,7 +85,10 @@ describe("emailVerificationTokens", () => {
   });
 
   it("returns not_found for an unknown token", async () => {
-    mockRpcResult = { data: { status: "not_found", user_id: null }, error: null };
+    mockRpcResult = {
+      data: { status: "not_found", user_id: null },
+      error: null,
+    };
     const result = await consumeVerificationToken("missing");
     expect(result).toEqual({ status: "not_found", userId: undefined });
   });
@@ -89,13 +100,19 @@ describe("emailVerificationTokens", () => {
   });
 
   it("returns already_verified for a consumed token, idempotently", async () => {
-    mockRpcResult = { data: { status: "already_verified", user_id: "user-1" }, error: null };
+    mockRpcResult = {
+      data: { status: "already_verified", user_id: "user-1" },
+      error: null,
+    };
     const result = await consumeVerificationToken("used");
     expect(result).toEqual({ status: "already_verified", userId: "user-1" });
   });
 
   it("returns invalidated for a token superseded by a resend, without touching email_verified_at", async () => {
-    mockRpcResult = { data: { status: "invalidated", user_id: "user-1" }, error: null };
+    mockRpcResult = {
+      data: { status: "invalidated", user_id: "user-1" },
+      error: null,
+    };
     const result = await consumeVerificationToken("invalidated-by-resend");
     expect(result).toEqual({ status: "invalidated", userId: "user-1" });
   });
@@ -111,7 +128,9 @@ describe("emailVerificationTokens", () => {
   it("propagates a DB error instead of reporting success when the profile row is missing", async () => {
     mockRpcResult = {
       data: null,
-      error: { message: "consume_email_verification_token: no users row for user-1" },
+      error: {
+        message: "consume_email_verification_token: no users row for user-1",
+      },
     };
 
     await expect(consumeVerificationToken("good")).rejects.toThrow(
@@ -126,7 +145,9 @@ describe("emailVerificationTokens", () => {
     // consume path).
     mockRpcResult = {
       data: null,
-      error: { message: "consume_email_verification_token: no users row for user-1" },
+      error: {
+        message: "consume_email_verification_token: no users row for user-1",
+      },
     };
 
     await expect(consumeVerificationToken("used")).rejects.toThrow(

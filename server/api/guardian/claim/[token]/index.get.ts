@@ -16,7 +16,10 @@ export default defineEventHandler(async (event) => {
   try {
     const token = getRouterParam(event, "token");
     if (!token) {
-      throw createError({ statusCode: 400, statusMessage: "Token is required" });
+      throw createError({
+        statusCode: 400,
+        statusMessage: "Token is required",
+      });
     }
 
     const supabase = useSupabaseAdmin();

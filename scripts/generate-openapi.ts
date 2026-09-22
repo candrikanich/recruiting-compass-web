@@ -25,7 +25,13 @@
  * caller may omit them and get the default; only *output* structurally has
  * every field present).
  */
-import { readdirSync, statSync, mkdirSync, writeFileSync, readFileSync } from "node:fs";
+import {
+  readdirSync,
+  statSync,
+  mkdirSync,
+  writeFileSync,
+  readFileSync,
+} from "node:fs";
 import { join, relative, resolve, dirname } from "node:path";
 import { z } from "zod";
 import * as h3 from "h3";
@@ -45,7 +51,10 @@ const OUTPUT_PATH = join(REPO_ROOT, "docs/api/openapi.json");
 // The one shared validation module this codebase's endpoints import Zod
 // schemas from, alongside declaring their own inline. Extend this list if a
 // second shared module is introduced.
-const KNOWN_SCHEMA_SOURCES = ['from "zod"', 'from "~/utils/validation/schemas"'];
+const KNOWN_SCHEMA_SOURCES = [
+  'from "zod"',
+  'from "~/utils/validation/schemas"',
+];
 
 function walk(dir: string): string[] {
   return readdirSync(dir).flatMap((entry) => {
@@ -61,9 +70,11 @@ function walk(dir: string): string[] {
  * segment. Returns the dynamic segment names (without brackets) alongside
  * the route, so the caller can emit matching OpenAPI path parameters.
  */
-function routeFromFilePath(
-  filePath: string,
-): { method: string; path: string; params: string[] } {
+function routeFromFilePath(filePath: string): {
+  method: string;
+  path: string;
+  params: string[];
+} {
   const rel = relative(API_DIR, filePath).replace(/\\/g, "/");
   const match = rel.match(/^(.*?)\.(get|post|put|patch|delete)\.ts$/);
   if (!match) {
@@ -80,7 +91,11 @@ function routeFromFilePath(
       params.push(dynamic[2]);
       return `{${dynamic[2]}}`;
     });
-  return { method: method.toUpperCase(), path: `/api/${segments.join("/")}`, params };
+  return {
+    method: method.toUpperCase(),
+    path: `/api/${segments.join("/")}`,
+    params,
+  };
 }
 
 /**
@@ -121,10 +136,7 @@ function resolveSchemaLocation(
   }
 
   const importMatch = source.match(
-    new RegExp(
-      `import\\s*\\{([^}]*)\\}\\s*from\\s*"([^"]+)"`,
-      "g",
-    ),
+    new RegExp(`import\\s*\\{([^}]*)\\}\\s*from\\s*"([^"]+)"`, "g"),
   );
   if (importMatch) {
     for (const stmt of importMatch) {
@@ -180,7 +192,8 @@ async function collectOperations(): Promise<OperationEntry[]> {
     if (!location) continue;
 
     const cached = moduleCache.get(location.modulePath);
-    const mod: Record<string, unknown> = cached ?? (await import(location.modulePath));
+    const mod: Record<string, unknown> =
+      cached ?? (await import(location.modulePath));
     if (!cached) moduleCache.set(location.modulePath, mod);
     const schema = mod[location.exportName];
     if (!(schema instanceof z.ZodType)) continue;
@@ -191,12 +204,17 @@ async function collectOperations(): Promise<OperationEntry[]> {
       path,
       params,
       schemaName: location.exportName,
-      jsonSchema: z.toJSONSchema(schema, { target: "openapi-3.0", io: "input" }),
+      jsonSchema: z.toJSONSchema(schema, {
+        target: "openapi-3.0",
+        io: "input",
+      }),
     });
   }
 
   return operations.sort((a, b) =>
-    a.path === b.path ? a.method.localeCompare(b.method) : a.path.localeCompare(b.path),
+    a.path === b.path
+      ? a.method.localeCompare(b.method)
+      : a.path.localeCompare(b.path),
   );
 }
 

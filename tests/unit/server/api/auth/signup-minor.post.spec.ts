@@ -90,9 +90,8 @@ vi.mock("h3", async (importOriginal) => {
 vi.stubGlobal("defineEventHandler", (fn: Function) => fn);
 vi.stubGlobal("createError", createError);
 
-const { default: handler } = await import(
-  "~/server/api/auth/signup-minor.post"
-);
+const { default: handler } =
+  await import("~/server/api/auth/signup-minor.post");
 
 const call = async (overrides: Record<string, unknown> = {}) => {
   mockBodyState.body = { ...validBody(), ...overrides };
@@ -117,7 +116,10 @@ describe("POST /api/auth/signup-minor", () => {
   it("creates the account and a guardian claim for a 13-17 player", async () => {
     const result = await call();
 
-    expect(result).toMatchObject({ ok: true, guardianEmail: "parent@example.com" });
+    expect(result).toMatchObject({
+      ok: true,
+      guardianEmail: "parent@example.com",
+    });
     expect(mockClaimInsert).toHaveBeenCalledOnce();
     expect(mockSendGuardianClaimEmail).toHaveBeenCalledOnce();
   });
@@ -135,7 +137,10 @@ describe("POST /api/auth/signup-minor", () => {
   });
 
   it("verifies Turnstile before creating the account", async () => {
-    mockVerifyTurnstile.mockResolvedValueOnce({ ok: false, reason: "missing_token" });
+    mockVerifyTurnstile.mockResolvedValueOnce({
+      ok: false,
+      reason: "missing_token",
+    });
 
     await expect(call()).rejects.toMatchObject({
       statusCode: 403,
@@ -183,7 +188,11 @@ describe("POST /api/auth/signup-minor", () => {
     // year on this single-step signup form must not be bounced back to /onboarding
     // and re-asked the same questions on their first /dashboard visit. Mirrors the
     // markOnboardingComplete fix already shipped for the invite-accept path.
-    await call({ graduationYear: 2028, primarySport: "Baseball", wizardComplete: true });
+    await call({
+      graduationYear: 2028,
+      primarySport: "Baseball",
+      wizardComplete: true,
+    });
 
     expect(mockPreferencesUpsert).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -210,7 +219,11 @@ describe("POST /api/auth/signup-minor", () => {
   it("does not stamp onboarding_complete when grad year or sport is missing", async () => {
     // Incomplete data means /onboarding still has real work to do — an unconditional
     // stamp here would skip that step entirely instead of just closing the bug.
-    await call({ graduationYear: undefined, primarySport: undefined, wizardComplete: true });
+    await call({
+      graduationYear: undefined,
+      primarySport: undefined,
+      wizardComplete: true,
+    });
 
     expect(mockUserUpdate).not.toHaveBeenCalled();
   });
@@ -234,21 +247,33 @@ describe("POST /api/auth/signup-minor", () => {
     // to fix it.
     mockPreferencesUpsert.mockResolvedValueOnce({ error: { message: "boom" } });
 
-    await call({ graduationYear: 2028, primarySport: "Baseball", wizardComplete: true });
+    await call({
+      graduationYear: 2028,
+      primarySport: "Baseball",
+      wizardComplete: true,
+    });
 
     expect(mockUserUpdate).not.toHaveBeenCalled();
   });
 
   it("rejects a graduation year outside the canonical options", async () => {
     await expect(
-      call({ graduationYear: 1999, primarySport: "Baseball", wizardComplete: true }),
+      call({
+        graduationYear: 1999,
+        primarySport: "Baseball",
+        wizardComplete: true,
+      }),
     ).rejects.toMatchObject({ statusCode: 400 });
     expect(mockCreateVerifiedAccount).not.toHaveBeenCalled();
   });
 
   it("rejects a non-integer graduation year", async () => {
     await expect(
-      call({ graduationYear: 2028.5, primarySport: "Baseball", wizardComplete: true }),
+      call({
+        graduationYear: 2028.5,
+        primarySport: "Baseball",
+        wizardComplete: true,
+      }),
     ).rejects.toMatchObject({ statusCode: 400 });
     expect(mockCreateVerifiedAccount).not.toHaveBeenCalled();
   });
@@ -261,7 +286,11 @@ describe("POST /api/auth/signup-minor", () => {
   });
 
   it("trims the primary sport before persisting and stamping", async () => {
-    await call({ graduationYear: 2028, primarySport: "  Baseball  ", wizardComplete: true });
+    await call({
+      graduationYear: 2028,
+      primarySport: "  Baseball  ",
+      wizardComplete: true,
+    });
 
     expect(mockPreferencesUpsert).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -273,9 +302,9 @@ describe("POST /api/auth/signup-minor", () => {
 
   it("rejects a guardian email matching the player's own", async () => {
     // Otherwise the minor receives their own consent link and self-consents.
-    await expect(call({ guardianEmail: "player@example.com" })).rejects.toMatchObject(
-      { statusCode: 400 },
-    );
+    await expect(
+      call({ guardianEmail: "player@example.com" }),
+    ).rejects.toMatchObject({ statusCode: 400 });
     expect(mockCreateVerifiedAccount).not.toHaveBeenCalled();
   });
 

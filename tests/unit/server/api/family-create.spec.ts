@@ -70,7 +70,10 @@ vi.mock("~/server/utils/supabase", () => ({
                   mockState.raceWinnerFamily
                     ? Promise.resolve({
                         data: null,
-                        error: { code: "23505", message: "duplicate key value" },
+                        error: {
+                          code: "23505",
+                          message: "duplicate key value",
+                        },
                       })
                     : Promise.resolve({
                         data: {

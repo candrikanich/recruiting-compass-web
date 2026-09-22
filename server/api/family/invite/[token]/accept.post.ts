@@ -200,7 +200,9 @@ export default defineEventHandler(async (event) => {
         typeof pendingDetails?.graduationYear === "number"
           ? (pendingDetails.graduationYear as number)
           : undefined;
-      const hasRequiredFields = Boolean(graduationYear && pendingDetails?.sport);
+      const hasRequiredFields = Boolean(
+        graduationYear && pendingDetails?.sport,
+      );
 
       if (hasRequiredFields) {
         try {

@@ -30,9 +30,9 @@ describe("canonicalizeOrigin", () => {
   });
 
   it("leaves a preview/loopback host untouched", () => {
-    expect(
-      canonicalizeOrigin("http://localhost:3003", "localhost:3003"),
-    ).toBe("http://localhost:3003");
+    expect(canonicalizeOrigin("http://localhost:3003", "localhost:3003")).toBe(
+      "http://localhost:3003",
+    );
     expect(
       canonicalizeOrigin(
         "https://recruiting-compass-web-git-feature.vercel.app",

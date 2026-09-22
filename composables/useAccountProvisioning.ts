@@ -121,8 +121,7 @@ export const useAccountProvisioning = () => {
    */
   const applyPendingInviteToken = async (user: User) => {
     const token = user.user_metadata?.pending_invite_token as
-      | string
-      | undefined;
+      string | undefined;
     if (!token) return;
 
     try {

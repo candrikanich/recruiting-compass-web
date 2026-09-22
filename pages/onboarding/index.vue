@@ -29,150 +29,158 @@
           :aria-busy="loading"
           class="mb-8 rounded-2xl border border-white/20 bg-white/95 p-8 shadow-2xl backdrop-blur-xs focus:outline-none"
         >
-        <div class="space-y-6">
-          <h2 class="mb-4 text-2xl font-bold text-slate-900">
-            Tell us about you
-          </h2>
+          <div class="space-y-6">
+            <h2 class="mb-4 text-2xl font-bold text-slate-900">
+              Tell us about you
+            </h2>
 
-          <!-- Graduation Year -->
-          <div>
-            <label
-              for="onboarding-graduation-year"
-              class="mb-2 block text-sm font-medium text-slate-700"
-            >
-              Expected Graduation Year *
-            </label>
-            <select
-              id="onboarding-graduation-year"
-              v-model="onboardingData.graduation_year"
-              class="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
-              required
-            >
-              <option value="">Select graduation year</option>
-              <option v-for="year in graduationYears" :key="year" :value="year">
-                {{ year }}
-              </option>
-            </select>
-            <p v-if="graduationYearError" class="mt-1 text-sm text-red-600">
-              {{ graduationYearError }}
-            </p>
+            <!-- Graduation Year -->
+            <div>
+              <label
+                for="onboarding-graduation-year"
+                class="mb-2 block text-sm font-medium text-slate-700"
+              >
+                Expected Graduation Year *
+              </label>
+              <select
+                id="onboarding-graduation-year"
+                v-model="onboardingData.graduation_year"
+                class="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
+                required
+              >
+                <option value="">Select graduation year</option>
+                <option
+                  v-for="year in graduationYears"
+                  :key="year"
+                  :value="year"
+                >
+                  {{ year }}
+                </option>
+              </select>
+              <p v-if="graduationYearError" class="mt-1 text-sm text-red-600">
+                {{ graduationYearError }}
+              </p>
+            </div>
+
+            <!-- Primary Sport -->
+            <div>
+              <label
+                for="onboarding-primary-sport"
+                class="mb-2 block text-sm font-medium text-slate-700"
+              >
+                Primary Sport *
+              </label>
+              <select
+                id="onboarding-primary-sport"
+                v-model="onboardingData.primary_sport"
+                @change="onSportChange"
+                class="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
+                required
+              >
+                <option value="">Select your sport</option>
+                <option
+                  v-for="sport in commonSports"
+                  :key="sport"
+                  :value="sport"
+                >
+                  {{ sport }}
+                </option>
+              </select>
+              <p v-if="sportError" class="mt-1 text-sm text-red-600">
+                {{ sportError }}
+              </p>
+            </div>
+
+            <!-- Gender — only asked when it can't be derived from sport -->
+            <div v-if="!genderIsAutoDerived">
+              <label
+                for="onboarding-gender"
+                class="mb-2 block text-sm font-medium text-slate-700"
+              >
+                Gender (Optional)
+              </label>
+              <select
+                id="onboarding-gender"
+                v-model="onboardingData.gender"
+                class="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
+              >
+                <option :value="undefined">Select gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+                <option value="prefer_not_to_say">Prefer not to say</option>
+              </select>
+            </div>
+
+            <!-- Zip Code -->
+            <div>
+              <label
+                for="onboarding-zip-code"
+                class="mb-2 block text-sm font-medium text-slate-700"
+              >
+                Zip Code (Optional)
+              </label>
+              <input
+                id="onboarding-zip-code"
+                v-model="onboardingData.zip_code"
+                type="text"
+                autocomplete="postal-code"
+                placeholder="Enter your 5-digit zip code"
+                maxlength="5"
+                class="w-full rounded-lg border border-slate-300 px-4 py-2 focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-blue-500"
+                @keypress="restrictToNumbers"
+              />
+              <p class="mt-1 text-xs text-slate-500">
+                Helps us recommend schools near you.
+              </p>
+              <p v-if="zipCodeError" class="mt-1 text-sm text-red-600">
+                {{ zipCodeError }}
+              </p>
+            </div>
           </div>
 
-          <!-- Primary Sport -->
-          <div>
-            <label
-              for="onboarding-primary-sport"
-              class="mb-2 block text-sm font-medium text-slate-700"
-            >
-              Primary Sport *
-            </label>
-            <select
-              id="onboarding-primary-sport"
-              v-model="onboardingData.primary_sport"
-              @change="onSportChange"
-              class="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
-              required
-            >
-              <option value="">Select your sport</option>
-              <option v-for="sport in commonSports" :key="sport" :value="sport">
-                {{ sport }}
-              </option>
-            </select>
-            <p v-if="sportError" class="mt-1 text-sm text-red-600">
-              {{ sportError }}
-            </p>
-          </div>
-
-          <!-- Gender — only asked when it can't be derived from sport -->
-          <div v-if="!genderIsAutoDerived">
-            <label
-              for="onboarding-gender"
-              class="mb-2 block text-sm font-medium text-slate-700"
-            >
-              Gender (Optional)
-            </label>
-            <select
-              id="onboarding-gender"
-              v-model="onboardingData.gender"
-              class="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
-            >
-              <option :value="undefined">Select gender</option>
-              <option value="male">Male</option>
-              <option value="female">Female</option>
-              <option value="other">Other</option>
-              <option value="prefer_not_to_say">Prefer not to say</option>
-            </select>
-          </div>
-
-          <!-- Zip Code -->
-          <div>
-            <label
-              for="onboarding-zip-code"
-              class="mb-2 block text-sm font-medium text-slate-700"
-            >
-              Zip Code (Optional)
-            </label>
-            <input
-              id="onboarding-zip-code"
-              v-model="onboardingData.zip_code"
-              type="text"
-              autocomplete="postal-code"
-              placeholder="Enter your 5-digit zip code"
-              maxlength="5"
-              class="w-full rounded-lg border border-slate-300 px-4 py-2 focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-blue-500"
-              @keypress="restrictToNumbers"
-            />
-            <p class="mt-1 text-xs text-slate-500">
-              Helps us recommend schools near you.
-            </p>
-            <p v-if="zipCodeError" class="mt-1 text-sm text-red-600">
-              {{ zipCodeError }}
-            </p>
-          </div>
-        </div>
-
-        <!-- Loading state -->
-        <div
-          v-if="loading"
-          role="status"
-          aria-live="polite"
-          class="py-8 text-center"
-        >
-          <div class="inline-block">
-            <div
-              aria-hidden="true"
-              class="h-8 w-8 animate-spin rounded-full border-b-2 border-blue-500"
-            ></div>
-          </div>
-          <p class="mt-4 text-slate-600">Saving your progress...</p>
-        </div>
-
-        <!-- Error message -->
-        <div
-          v-if="error"
-          role="alert"
-          class="mb-4 rounded-lg border border-red-200 bg-red-50 p-4"
-        >
-          <p class="text-red-800">{{ error }}</p>
-          <button
-            @click="clearError"
-            class="mt-2 text-sm text-red-600 hover:text-red-700"
+          <!-- Loading state -->
+          <div
+            v-if="loading"
+            role="status"
+            aria-live="polite"
+            class="py-8 text-center"
           >
-            Dismiss
+            <div class="inline-block">
+              <div
+                aria-hidden="true"
+                class="h-8 w-8 animate-spin rounded-full border-b-2 border-blue-500"
+              ></div>
+            </div>
+            <p class="mt-4 text-slate-600">Saving your progress...</p>
+          </div>
+
+          <!-- Error message -->
+          <div
+            v-if="error"
+            role="alert"
+            class="mb-4 rounded-lg border border-red-200 bg-red-50 p-4"
+          >
+            <p class="text-red-800">{{ error }}</p>
+            <button
+              @click="clearError"
+              class="mt-2 text-sm text-red-600 hover:text-red-700"
+            >
+              Dismiss
+            </button>
+          </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="flex justify-end gap-4">
+          <button
+            @click="nextScreen"
+            :disabled="loading"
+            class="rounded-lg bg-blue-500 px-6 py-3 font-medium text-white transition-colors hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Go to your dashboard →
           </button>
         </div>
-      </div>
-
-      <!-- Navigation -->
-      <div class="flex justify-end gap-4">
-        <button
-          @click="nextScreen"
-          :disabled="loading"
-          class="rounded-lg bg-blue-500 px-6 py-3 font-medium text-white transition-colors hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          Go to your dashboard →
-        </button>
-      </div>
       </div>
     </div>
   </div>

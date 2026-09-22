@@ -47,9 +47,7 @@ test.describe("Onboarding v2 — Full Entry Journey", () => {
   // These specs must run unauthenticated — they create their own accounts.
   test.use({ storageState: { cookies: [], origins: [] } });
 
-  test("player: signup → single-step wizard → dashboard", async ({
-    page,
-  }) => {
+  test("player: signup → single-step wizard → dashboard", async ({ page }) => {
     const email = `player-onboard-${RUN}@example.com`;
     await signUp(page, "player", email);
 
@@ -70,9 +68,7 @@ test.describe("Onboarding v2 — Full Entry Journey", () => {
     await expect(page).toHaveURL(/\/dashboard/, { timeout: 15000 });
   });
 
-  test("player: validation blocks empty sport/grad year", async ({
-    page,
-  }) => {
+  test("player: validation blocks empty sport/grad year", async ({ page }) => {
     const email = `player-validate-${RUN}@example.com`;
     await signUp(page, "player", email);
 
@@ -86,9 +82,7 @@ test.describe("Onboarding v2 — Full Entry Journey", () => {
     await expect(page.getByText("Graduation year is required")).toBeVisible();
   });
 
-  test("parent: signup → single-step wizard → dashboard", async ({
-    page,
-  }) => {
+  test("parent: signup → single-step wizard → dashboard", async ({ page }) => {
     const email = `parent-onboard-${RUN}@example.com`;
     await signUp(page, "parent", email);
 

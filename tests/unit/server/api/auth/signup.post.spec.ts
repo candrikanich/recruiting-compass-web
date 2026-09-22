@@ -54,7 +54,12 @@ vi.mock("~/server/utils/rateLimit", () => ({
   throwIfRateLimited: vi.fn(),
 }));
 vi.mock("~/server/utils/logger", () => ({
-  useLogger: () => ({ info: vi.fn(), error: vi.fn(), warn: vi.fn(), debug: vi.fn() }),
+  useLogger: () => ({
+    info: vi.fn(),
+    error: vi.fn(),
+    warn: vi.fn(),
+    debug: vi.fn(),
+  }),
 }));
 
 vi.mock("h3", async (importOriginal) => {
@@ -211,7 +216,10 @@ describe("POST /api/auth/signup", () => {
     await call();
 
     expect(mockGenerateLink).toHaveBeenCalledWith(
-      expect.objectContaining({ type: "magiclink", email: "parent@example.com" }),
+      expect.objectContaining({
+        type: "magiclink",
+        email: "parent@example.com",
+      }),
     );
   });
 
@@ -230,7 +238,10 @@ describe("POST /api/auth/signup", () => {
   });
 
   it("rejects when Turnstile verification fails", async () => {
-    mockVerifyTurnstile.mockResolvedValueOnce({ ok: false, reason: "missing_token" });
+    mockVerifyTurnstile.mockResolvedValueOnce({
+      ok: false,
+      reason: "missing_token",
+    });
 
     await expect(
       call({ fullName: undefined, role: undefined }),
@@ -248,7 +259,9 @@ describe("POST /api/auth/signup", () => {
     // distinguishes a duplicate email from any other creation failure.
     mockCreateUser.mockResolvedValueOnce({
       data: { user: null },
-      error: { message: "A user with this email address has already been registered" },
+      error: {
+        message: "A user with this email address has already been registered",
+      },
     } as never);
 
     const rejection = await call().catch((e) => e);

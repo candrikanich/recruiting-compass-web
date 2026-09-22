@@ -15,10 +15,13 @@ const state = {
   guardian: { id: "guardian-1", email: "parent@example.com" },
 };
 
-const mockRpc = vi.fn(async () => ({ data: "fam-1", error: null }) as {
-  data: string | null;
-  error: { message: string } | null;
-});
+const mockRpc = vi.fn(
+  async () =>
+    ({ data: "fam-1", error: null }) as {
+      data: string | null;
+      error: { message: string } | null;
+    },
+);
 
 vi.mock("~/server/utils/supabase", () => ({
   useSupabaseAdmin: vi.fn(() => ({ rpc: mockRpc })),
@@ -45,9 +48,8 @@ vi.mock("h3", async (importOriginal) => {
 vi.stubGlobal("defineEventHandler", (fn: Function) => fn);
 vi.stubGlobal("createError", createError);
 
-const { default: handler } = await import(
-  "~/server/api/guardian/claim/[token]/accept.post"
-);
+const { default: handler } =
+  await import("~/server/api/guardian/claim/[token]/accept.post");
 
 describe("POST /api/guardian/claim/[token]/accept", () => {
   beforeEach(() => {
@@ -76,44 +78,73 @@ describe("POST /api/guardian/claim/[token]/accept", () => {
   it("requires the caller to have an email on file", async () => {
     state.guardian = { id: "guardian-1", email: null as unknown as string };
 
-    await expect(handler({} as never)).rejects.toMatchObject({ statusCode: 400 });
+    await expect(handler({} as never)).rejects.toMatchObject({
+      statusCode: 400,
+    });
     expect(mockRpc).not.toHaveBeenCalled();
   });
 
   it("maps CLAIM_NOT_FOUND to 404", async () => {
-    mockRpc.mockResolvedValue({ data: null, error: { message: "CLAIM_NOT_FOUND" } });
+    mockRpc.mockResolvedValue({
+      data: null,
+      error: { message: "CLAIM_NOT_FOUND" },
+    });
 
-    await expect(handler({} as never)).rejects.toMatchObject({ statusCode: 404 });
+    await expect(handler({} as never)).rejects.toMatchObject({
+      statusCode: 404,
+    });
   });
 
   it("maps CLAIM_ALREADY_CLAIMED to 409", async () => {
-    mockRpc.mockResolvedValue({ data: null, error: { message: "CLAIM_ALREADY_CLAIMED" } });
+    mockRpc.mockResolvedValue({
+      data: null,
+      error: { message: "CLAIM_ALREADY_CLAIMED" },
+    });
 
-    await expect(handler({} as never)).rejects.toMatchObject({ statusCode: 409 });
+    await expect(handler({} as never)).rejects.toMatchObject({
+      statusCode: 409,
+    });
   });
 
   it("maps CLAIM_INVALID to 410", async () => {
-    mockRpc.mockResolvedValue({ data: null, error: { message: "CLAIM_INVALID" } });
+    mockRpc.mockResolvedValue({
+      data: null,
+      error: { message: "CLAIM_INVALID" },
+    });
 
-    await expect(handler({} as never)).rejects.toMatchObject({ statusCode: 410 });
+    await expect(handler({} as never)).rejects.toMatchObject({
+      statusCode: 410,
+    });
   });
 
   it("maps CLAIM_EXPIRED to 410", async () => {
-    mockRpc.mockResolvedValue({ data: null, error: { message: "CLAIM_EXPIRED" } });
+    mockRpc.mockResolvedValue({
+      data: null,
+      error: { message: "CLAIM_EXPIRED" },
+    });
 
-    await expect(handler({} as never)).rejects.toMatchObject({ statusCode: 410 });
+    await expect(handler({} as never)).rejects.toMatchObject({
+      statusCode: 410,
+    });
   });
 
   it("maps CLAIM_EMAIL_MISMATCH to 403 without leaking the claim's guardian_email", async () => {
     // Otherwise a forwarded link lets any account consent on a minor's behalf.
-    mockRpc.mockResolvedValue({ data: null, error: { message: "CLAIM_EMAIL_MISMATCH" } });
+    mockRpc.mockResolvedValue({
+      data: null,
+      error: { message: "CLAIM_EMAIL_MISMATCH" },
+    });
 
-    await expect(handler({} as never)).rejects.toMatchObject({ statusCode: 403 });
+    await expect(handler({} as never)).rejects.toMatchObject({
+      statusCode: 403,
+    });
   });
 
   it("maps any other RPC error to 500", async () => {
     mockRpc.mockResolvedValue({ data: null, error: { message: "boom" } });
 
-    await expect(handler({} as never)).rejects.toMatchObject({ statusCode: 500 });
+    await expect(handler({} as never)).rejects.toMatchObject({
+      statusCode: 500,
+    });
   });
 });
