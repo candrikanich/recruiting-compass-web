@@ -1,26 +1,30 @@
 import { defineEventHandler, readBody, getRequestIP, createError } from "h3";
-import { requireAuth, getUserRole } from "~/server/utils/auth";
-import { useSupabaseAdmin } from "~/server/utils/supabase";
+import { requireAuth } from "~/server/utils/auth";
+import { createServerSupabaseUserClient } from "~/server/utils/supabase";
+import { extractRequestToken } from "~/server/utils/requestToken";
 import {
   isValidFamilyCodeFormat,
   checkRateLimit,
 } from "~/server/utils/familyCode";
 import { useLogger } from "~/server/utils/logger";
-import type { Database } from "~/types/database";
 
 interface JoinByCodeBody {
   familyCode: string;
 }
 
+// Finding a family by code (and the own-family/already-member checks, the
+// membership insert, and the usage log) go through join_family_by_code(), a
+// SECURITY DEFINER RPC, not sequential RLS-scoped queries -- family_units'
+// RLS only authorizes reading a family the caller already belongs to or
+// created, so a session-scoped client gets zero rows looking up an
+// arbitrary family by code, which is the entire point of this route.
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "family/code/join");
   const user = await requireAuth(event);
   const body = await readBody<JoinByCodeBody>(event);
   const { familyCode } = body;
-  const supabase = useSupabaseAdmin();
-
-  // Both players and parents can join families via code
-  const userRole = await getUserRole(user.id, supabase);
+  const token = extractRequestToken(event);
+  const supabase = createServerSupabaseUserClient(token);
 
   // Rate limiting
   const ip = getRequestIP(event) || "unknown";
@@ -39,100 +43,54 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  // Find family by code
-  const familyResponse = await supabase
-    .from("family_units")
-    .select("id, family_name, created_by_user_id")
-    .eq("family_code", familyCode)
+  const { data, error } = await supabase
+    .rpc("join_family_by_code", { p_family_code: familyCode })
     .single();
 
-  const { data: family, error: familyError } = familyResponse as {
-    data: Database["public"]["Tables"]["family_units"]["Row"] | null;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    error: any;
-  };
-
-  if (familyError || !family) {
-    throw createError({
-      statusCode: 404,
-      message: "Family code not found. Please check and try again.",
-    });
-  }
-
-  // Prevent joining own family
-  if (family.created_by_user_id === user.id) {
-    throw createError({
-      statusCode: 400,
-      message: "You cannot join your own family",
-    });
-  }
-
-  // Check if already a member
-  const existingResponse = await supabase
-    .from("family_members")
-    .select("id")
-    .eq("family_unit_id", family.id)
-    .eq("user_id", user.id)
-    .maybeSingle();
-
-  const { data: existingMember } = existingResponse as {
-    data: Database["public"]["Tables"]["family_members"]["Row"] | null;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    error: any;
-  };
-
-  if (existingMember) {
-    return {
-      success: true,
-      message: "You are already a member of this family",
-      familyId: family.id,
-    };
-  }
-
-  // Add user to family_members with their actual role
-  const memberResponse = await supabase.from("family_members").insert({
-    family_unit_id: family.id,
-    user_id: user.id,
-    role: userRole ?? "player",
-  } as Database["public"]["Tables"]["family_members"]["Insert"]);
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { error: memberError } = memberResponse as { error: any };
-
-  if (memberError) {
+  if (error) {
+    if (error.message === "CODE_NOT_FOUND") {
+      throw createError({
+        statusCode: 404,
+        message: "Family code not found. Please check and try again.",
+      });
+    }
+    if (error.message === "CANNOT_JOIN_OWN_FAMILY") {
+      throw createError({
+        statusCode: 400,
+        message: "You cannot join your own family",
+      });
+    }
+    logger.error("Failed to join family via code", error);
     throw createError({
       statusCode: 500,
       message: "Failed to join family",
     });
   }
 
+  if (!data) {
+    throw createError({
+      statusCode: 500,
+      message: "Failed to join family",
+    });
+  }
+
+  if (data.already_member) {
+    return {
+      success: true,
+      message: "You are already a member of this family",
+      familyId: data.family_id,
+    };
+  }
+
   logger.info("Joined family via code", {
-    familyId: family.id,
+    familyId: data.family_id,
     userId: user.id,
   });
-  // Return success immediately - other operations run in background
-  const successResponse = {
+
+  return {
     success: true,
-    familyId: family.id,
-    familyName: family.family_name,
-    message: `Successfully joined ${family.family_name}`,
+    familyId: data.family_id,
+    familyName: data.family_name,
+    message: `Successfully joined ${data.family_name}`,
   };
-
-  // Log usage (non-blocking, fire-and-forget)
-  const logPromise = supabase.from("family_code_usage_log").insert({
-    family_unit_id: family.id,
-    user_id: user.id,
-    code_used: familyCode,
-    action: "joined",
-  } as Database["public"]["Tables"]["family_code_usage_log"]["Insert"]);
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (logPromise as any)
-    .then(() => {
-      // Success - do nothing
-    })
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .catch((err: any) => logger.warn("Failed to log join action", err));
-
-  return successResponse;
 });

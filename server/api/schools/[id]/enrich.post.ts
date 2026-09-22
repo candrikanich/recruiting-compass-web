@@ -14,7 +14,8 @@
 
 import { defineEventHandler, createError, readBody } from "h3";
 import { z } from "zod";
-import { createServerSupabaseClient } from "~/server/utils/supabase";
+import { createServerSupabaseUserClient } from "~/server/utils/supabase";
+import { extractRequestToken } from "~/server/utils/requestToken";
 import { requireAuth } from "~/server/utils/auth";
 import { useLogger } from "~/server/utils/logger";
 import { requireUuidParam } from "~/server/utils/validation";
@@ -47,7 +48,8 @@ const enrichBodySchema = z.union([enrichConfirmSchema, enrichSearchSchema]);
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "schools/enrich");
   const user = await requireAuth(event);
-  const supabase = createServerSupabaseClient();
+  const token = extractRequestToken(event);
+  const supabase = createServerSupabaseUserClient(token);
 
   const schoolId = requireUuidParam(event, "id");
   const rawBody = await readBody(event);

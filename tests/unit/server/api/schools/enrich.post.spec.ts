@@ -53,7 +53,11 @@ const mockClientFrom = vi.fn((table: string) => {
 const mockClient = { from: mockClientFrom };
 
 vi.mock("~/server/utils/supabase", () => ({
-  createServerSupabaseClient: vi.fn(() => mockClient),
+  createServerSupabaseUserClient: vi.fn(() => mockClient),
+}));
+
+vi.mock("~/server/utils/requestToken", () => ({
+  extractRequestToken: vi.fn(() => "fake-token"),
 }));
 
 vi.mock("~/server/utils/auth", () => ({

@@ -23,6 +23,7 @@
  */
 import { Resend } from "resend";
 import { defineEventHandler, readRawBody, getHeaders, createError } from "h3";
+import { z } from "zod";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import { useLogger } from "~/server/utils/logger";
 import { verifyResendWebhook } from "~/server/utils/verifyResendWebhook";
@@ -47,16 +48,20 @@ import type { Database, Json } from "~/types/database";
  * limits). The full text/html has to be fetched separately via
  * `resend.emails.receiving.get(email_id)` once the webhook lands.
  */
-interface ResendInboundPayload {
-  type: string;
-  data: {
-    email_id: string;
-    to: string[];
-    from: string;
-    subject: string;
-    created_at: string;
-  };
-}
+// subject/created_at are typed optional here (though named required above in
+// the historical interface) because downstream code (payload.data.subject ??
+// null / payload.data.created_at ?? new Date()...) already treats their
+// absence as normal -- Resend's own webhook payloads don't always carry them.
+const resendInboundPayloadSchema = z.object({
+  type: z.string(),
+  data: z.object({
+    email_id: z.string(),
+    to: z.array(z.string()),
+    from: z.string(),
+    subject: z.string().optional(),
+    created_at: z.string().optional(),
+  }),
+});
 
 let resendClient: Resend | null = null;
 function getResend(): Resend {
@@ -112,17 +117,6 @@ function sanitizeFilenameForStorage(filename: string): string {
     .replace(/\.{2,}/g, ".")
     .replace(/^\.+/, "");
   return (safe || "attachment").slice(0, 200);
-}
-
-function isResendInboundPayload(value: unknown): value is ResendInboundPayload {
-  if (!value || typeof value !== "object") return false;
-  const data = (value as { data?: unknown }).data;
-  return (
-    !!data &&
-    typeof data === "object" &&
-    Array.isArray((data as { to?: unknown }).to) &&
-    typeof (data as { from?: unknown }).from === "string"
-  );
 }
 
 type RawEmailInsert =
@@ -259,11 +253,11 @@ async function stageAttachments(
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "webhooks/inbound-email");
 
-  let payload: unknown;
+  let rawPayload: unknown;
   try {
     const rawBody = (await readRawBody(event)) ?? "";
     const headers = getHeaders(event);
-    payload = verifyResendWebhook(rawBody, headers);
+    rawPayload = verifyResendWebhook(rawBody, headers);
   } catch (err) {
     logger.warn("Rejected inbound email webhook: bad signature", err);
     throw createError({
@@ -272,12 +266,15 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  if (!isResendInboundPayload(payload)) {
+  const parsed = resendInboundPayloadSchema.safeParse(rawPayload);
+  if (!parsed.success) {
     logger.warn("Ignoring inbound webhook with unrecognized shape", {
-      type: (payload as { type?: unknown } | null)?.type,
+      type: (rawPayload as { type?: unknown } | null)?.type,
+      issue: parsed.error.issues[0]?.message,
     });
     return { ok: true, skipped: "unrecognized-payload" };
   }
+  const payload = parsed.data;
 
   const admin = useSupabaseAdmin();
   const toAddress = payload.data.to[0] ?? "";
@@ -293,9 +290,13 @@ export default defineEventHandler(async (event) => {
     return { ok: true, skipped: "unknown-family" };
   }
 
+  // Store the full verified payload, not the Zod-stripped `payload` used for
+  // typed access above — the retained raw record (7-day retention) should
+  // keep whatever Resend actually sent (attachments, message id, cc/bcc,
+  // etc.), not just the subset this schema narrows down to.
   const rawInsert: RawEmailInsert = {
     family_unit_id: familyUnitId,
-    payload: payload as unknown as Json,
+    payload: rawPayload as unknown as Json,
   };
   const { data: rawRow, error: rawError } = await admin
     .from("raw_inbound_emails")
