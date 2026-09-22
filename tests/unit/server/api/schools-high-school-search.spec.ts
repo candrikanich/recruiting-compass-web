@@ -51,7 +51,7 @@ const mockLimit = vi.fn();
 const mockFrom = vi.fn();
 
 vi.mock("~/server/utils/supabase", () => ({
-  useSupabaseAdmin: vi.fn(() => ({ from: mockFrom })),
+  createServerSupabaseAnonClient: vi.fn(() => ({ from: mockFrom })),
 }));
 
 vi.mock("~/server/utils/redis", () => ({

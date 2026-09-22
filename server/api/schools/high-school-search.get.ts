@@ -1,6 +1,6 @@
 import { defineEventHandler, getQuery, createError } from "h3";
 import { useLogger } from "~/server/utils/logger";
-import { useSupabaseAdmin } from "~/server/utils/supabase";
+import { createServerSupabaseAnonClient } from "~/server/utils/supabase";
 import { redis, CACHE_KEYS, TTL } from "~/server/utils/redis";
 
 export default defineEventHandler(async (event) => {
@@ -31,7 +31,7 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  const supabase = useSupabaseAdmin();
+  const supabase = createServerSupabaseAnonClient();
   // Escape SQL wildcards to prevent injection
   const escapedQuery = query
     .replace(/\\/g, "\\\\") // Escape backslashes first

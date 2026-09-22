@@ -78,6 +78,26 @@ export function createServerSupabaseUserClient(
 }
 
 /**
+ * Create a server-side Supabase client with no user session -- anon key,
+ * no Authorization override. For routes with no requireAuth() at all
+ * (public/unauthenticated reads), where RLS's `anon` role grants exactly
+ * what the route needs. Never use this for a route that has a caller
+ * identity to scope to -- use createServerSupabaseUserClient instead, so
+ * RLS enforces per-user access rather than relying on every such route
+ * remembering to filter correctly by hand.
+ */
+export function createServerSupabaseAnonClient(): SupabaseClient<Database> {
+  const supabaseUrl = process.env.NUXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NUXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error("Missing Supabase configuration (URL or anon key)");
+  }
+
+  return createClient<Database>(supabaseUrl, supabaseAnonKey);
+}
+
+/**
  * Alias for createServerSupabaseClient for convenient access
  * Returns an admin client with full privileges using service role key
  */
