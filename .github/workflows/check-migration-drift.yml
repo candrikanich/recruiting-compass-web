@@ -35,4 +35,7 @@ jobs:
         run: supabase link --project-ref ${{ secrets.E2E_PROJECT_REF }}
 
       - name: Check for pending migrations
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.E2E_DB_PASSWORD }}
         run: bash scripts/check-migration-drift.sh
