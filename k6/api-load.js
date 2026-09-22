@@ -68,7 +68,18 @@ const TEST_EMAIL = __ENV.TEST_EMAIL;
 // the endpoint itself, just not for real load numbers). Default 5 matches
 // the accounts seeded for #970 (k6-load-test@example.com plus
 // k6-load-test-1..4@example.com).
-const POOL_SIZE = parseInt(__ENV.TEST_EMAIL_POOL_SIZE || "5", 10);
+//
+// Number() (not parseInt) so "5abc" is rejected rather than silently
+// truncated to 5 -- and validated below so 0/negative/fractional/NaN
+// throws in setup() instead of producing an empty accessTokens array that
+// default() would then index with undefined, sending `Authorization:
+// Bearer undefined` and miscounting an auth failure as an endpoint failure.
+const POOL_SIZE = Number(__ENV.TEST_EMAIL_POOL_SIZE || "5");
+if (!Number.isInteger(POOL_SIZE) || POOL_SIZE < 1) {
+  throw new Error(
+    `k6 setup: TEST_EMAIL_POOL_SIZE must be a positive integer, got "${__ENV.TEST_EMAIL_POOL_SIZE}"`,
+  );
+}
 
 function poolEmail(index) {
   if (index === 0) return TEST_EMAIL;
