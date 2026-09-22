@@ -121,6 +121,16 @@ function buildChain(opts: {
 const fakeClientFactory = () => ({
   rpc: (fnName: string, args: unknown) => {
     if (fnName === "accept_family_invitation") return state.acceptRpcSpy(args);
+    // invite.post.ts's duplicate-member check -- the raw family_members
+    // maybeSingle() query this used to be still populates state.existingMember,
+    // so route the RPC through the same test knob.
+    if (fnName === "find_family_member_by_email") {
+      const existingMemberId =
+        state.existingMember && typeof state.existingMember === "object"
+          ? ((state.existingMember as { id?: string }).id ?? null)
+          : null;
+      return Promise.resolve({ data: existingMemberId, error: null });
+    }
     return Promise.resolve({ data: null, error: null });
   },
   from: (table: string) => {
@@ -218,10 +228,11 @@ const fakeClientFactory = () => ({
     },
 });
 
-// invite.post.ts and [token].get.ts still use the privileged client
-// (unmigrated). accept.post.ts uses the session-scoped one -- kept as a
-// separate mock function (not aliased) so the accept describe block below
-// can assert useSupabaseAdmin is never called during its tests.
+// [token].get.ts still uses the privileged client (deliberately -- it's
+// pre-auth, no session to scope to). invite.post.ts and accept.post.ts use
+// the session-scoped one -- both mock functions alias the same factory, but
+// stay separate exports so the accept describe block below can assert
+// useSupabaseAdmin is never called during its own tests.
 vi.mock("~/server/utils/supabase", () => ({
   useSupabaseAdmin: vi.fn(fakeClientFactory),
   createServerSupabaseUserClient: vi.fn(fakeClientFactory),

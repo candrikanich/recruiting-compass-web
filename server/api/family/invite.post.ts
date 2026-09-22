@@ -3,7 +3,8 @@ import { randomUUID } from "crypto";
 import { z } from "zod";
 import { useLogger } from "~/server/utils/logger";
 import { requireAuth } from "~/server/utils/auth";
-import { useSupabaseAdmin } from "~/server/utils/supabase";
+import { createServerSupabaseUserClient } from "~/server/utils/supabase";
+import { extractRequestToken } from "~/server/utils/requestToken";
 import { sendInviteEmail } from "~/server/utils/emailService";
 import { getSafeRequestOrigin } from "~/server/utils/requestOrigin";
 import { emailSchema } from "~/utils/validation/validators";
@@ -57,7 +58,8 @@ export default defineEventHandler(async (event) => {
     const { email, role, pending_player_details: pendingPlayerDetails } =
       parseResult.data;
 
-    const supabase = useSupabaseAdmin();
+    const requestToken = extractRequestToken(event);
+    const supabase = createServerSupabaseUserClient(requestToken);
 
     // Find the inviter's family. A parent can belong to multiple families
     // (the one they own plus any joined via a family code), so `.single()`
@@ -87,27 +89,33 @@ export default defineEventHandler(async (event) => {
     );
     const familyUnitId = (ownedMembership ?? memberships[0]).family_unit_id;
 
-    // Check if the invited email is already a member
-    const { data: existingUser } = await supabase
-      .from("users")
-      .select("id")
-      .eq("email", email)
-      .maybeSingle();
+    // Check if the invited email is already a member. A plain `users`
+    // lookup by an arbitrary email is blocked under RLS (self-or-family-
+    // co-member-only), and the whole point here is someone who ISN'T yet a
+    // co-member -- find_family_member_by_email() does the narrow existence
+    // check server-side instead.
+    const { data: existingMemberId, error: existingMemberError } =
+      await supabase.rpc("find_family_member_by_email", {
+        p_email: email,
+        p_family_unit_id: familyUnitId,
+      });
 
-    if (existingUser) {
-      const { data: existingMember } = await supabase
-        .from("family_members")
-        .select("id")
-        .eq("family_unit_id", familyUnitId)
-        .eq("user_id", existingUser.id)
-        .maybeSingle();
+    if (existingMemberError) {
+      logger.error(
+        "Failed to check for existing family member",
+        existingMemberError,
+      );
+      throw createError({
+        statusCode: 500,
+        statusMessage: "Failed to create invitation",
+      });
+    }
 
-      if (existingMember) {
-        throw createError({
-          statusCode: 409,
-          statusMessage: "This person is already a member of your family",
-        });
-      }
+    if (existingMemberId) {
+      throw createError({
+        statusCode: 409,
+        statusMessage: "This person is already a member of your family",
+      });
     }
 
     // Get inviter name and family name for the email (parallel)

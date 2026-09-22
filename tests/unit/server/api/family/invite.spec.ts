@@ -57,93 +57,82 @@ vi.mock("~/server/utils/logger", () => ({
 }));
 
 vi.mock("~/server/utils/supabase", () => ({
-  useSupabaseAdmin: vi.fn(() => {
-    let familyMembersCallCount = 0;
-    return {
-      from: (table: string) => {
-        if (table === "family_members") {
-          familyMembersCallCount++;
-          const callNum = familyMembersCallCount;
-          return {
-            select: () => ({
-              eq: (_col: string, _val: unknown) => {
-                if (callNum === 1) {
-                  // First call: membership lookup — .eq("user_id", ...) awaited
-                  // directly, resolving to the full list of memberships.
-                  return Promise.resolve({
-                    data: mockState.memberships,
-                    error: null,
-                  });
-                }
-                // Second call: existing member check — .eq("family_unit_id", ...).eq("user_id", ...).maybeSingle()
-                return {
-                  eq: () => ({
-                    maybeSingle: () =>
-                      Promise.resolve({
-                        data: mockState.existingMember,
-                        error: null,
-                      }),
-                  }),
-                };
-              },
-            }),
-          };
-        }
-        if (table === "users") {
-          return {
-            select: () => ({
-              eq: () => ({
-                maybeSingle: () =>
-                  Promise.resolve({
-                    data: mockState.existingUser,
-                    error: null,
-                  }),
-                single: () =>
-                  Promise.resolve({
-                    data: mockState.inviterProfile,
-                    error: null,
-                  }),
-              }),
-            }),
-          };
-        }
-        if (table === "family_units") {
-          return {
-            select: () => ({
-              eq: () => ({
-                single: () =>
-                  Promise.resolve({ data: mockState.family, error: null }),
-              }),
-            }),
-          };
-        }
-        if (table === "family_invitations") {
-          return {
-            insert: (payload: {
-              family_unit_id?: string;
-              pending_player_details?: Record<string, unknown>;
-            }) => {
-              mockState.insertedFamilyUnitId = payload?.family_unit_id ?? null;
-              mockState.insertedPendingPlayerDetails =
-                payload?.pending_player_details ?? null;
-              return {
-                select: () => ({
-                  single: () =>
-                    Promise.resolve({
-                      data: mockState.invitationError
-                        ? null
-                        : { id: mockState.invitationId },
-                      error: mockState.invitationError,
-                    }),
+  createServerSupabaseUserClient: vi.fn(() => ({
+    from: (table: string) => {
+      if (table === "family_members") {
+        // Only the membership lookup — .eq("user_id", ...) awaited
+        // directly, resolving to the full list of memberships. The
+        // existing-member check now goes through the
+        // find_family_member_by_email RPC instead.
+        return {
+          select: () => ({
+            eq: () =>
+              Promise.resolve({ data: mockState.memberships, error: null }),
+          }),
+        };
+      }
+      if (table === "users") {
+        return {
+          select: () => ({
+            eq: () => ({
+              single: () =>
+                Promise.resolve({
+                  data: mockState.inviterProfile,
+                  error: null,
                 }),
-              };
-            },
-          };
-        }
-        return {};
-      },
-    };
-  }),
+            }),
+          }),
+        };
+      }
+      if (table === "family_units") {
+        return {
+          select: () => ({
+            eq: () => ({
+              single: () =>
+                Promise.resolve({ data: mockState.family, error: null }),
+            }),
+          }),
+        };
+      }
+      if (table === "family_invitations") {
+        return {
+          insert: (payload: {
+            family_unit_id?: string;
+            pending_player_details?: Record<string, unknown>;
+          }) => {
+            mockState.insertedFamilyUnitId = payload?.family_unit_id ?? null;
+            mockState.insertedPendingPlayerDetails =
+              payload?.pending_player_details ?? null;
+            return {
+              select: () => ({
+                single: () =>
+                  Promise.resolve({
+                    data: mockState.invitationError
+                      ? null
+                      : { id: mockState.invitationId },
+                    error: mockState.invitationError,
+                  }),
+              }),
+            };
+          },
+        };
+      }
+      return {};
+    },
+    rpc: (fn: string) => {
+      if (fn !== "find_family_member_by_email") {
+        throw new Error(`unexpected rpc ${fn}`);
+      }
+      return Promise.resolve({
+        data: mockState.existingMember,
+        error: null,
+      });
+    },
+  })),
+}));
+
+vi.mock("~/server/utils/requestToken", () => ({
+  extractRequestToken: vi.fn(() => "fake-token"),
 }));
 
 vi.mock("~/server/utils/emailService", () => ({
