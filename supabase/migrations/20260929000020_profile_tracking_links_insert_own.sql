@@ -9,9 +9,26 @@
 -- for a tracking link), so a straight self-scoped WITH CHECK is safe here
 -- -- no RPC needed, unlike the family-scoped/token-bearing tables
 -- elsewhere in #912.
+--
+-- Review fix (PR #967): this table was created with the default broad
+-- table-level grant (ALL on ALL columns to anon/authenticated), not the
+-- REVOKE-then-column-GRANT hardening used elsewhere in #912. The RLS
+-- policy alone only checks profile_id -- with the row-level check now
+-- passing for the caller's own profile, the still-open column grant would
+-- let a direct API call also set view_count/last_viewed_at/created_at
+-- (all server-managed: view_count defaults 0 and is only ever incremented
+-- elsewhere, created_at defaults now()), forging tracking-link analytics.
+-- REVOKE the existing INSERT grant and GRANT it back column-scoped to
+-- exactly what the route sets.
+
+REVOKE INSERT ON "public"."profile_tracking_links" FROM "anon", "authenticated";
+
+GRANT INSERT ("profile_id", "coach_id", "ref_token")
+  ON "public"."profile_tracking_links" TO "authenticated";
 
 CREATE POLICY "profile_tracking_links_insert_own" ON "public"."profile_tracking_links"
   FOR INSERT
+  TO "authenticated"
   WITH CHECK (
     "profile_id" IN (
       SELECT "id" FROM "public"."player_profiles" WHERE "user_id" = "auth"."uid"()
