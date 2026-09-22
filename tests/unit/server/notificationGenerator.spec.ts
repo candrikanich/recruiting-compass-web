@@ -1,8 +1,19 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-// Mock Supabase
-const mockInsert = vi.fn().mockResolvedValue({ data: [], error: null });
+// Mock Supabase. Notification dedupe-check + insert now route through
+// family_notification_exists / insert_family_notification RPCs (#912),
+// not raw table access.
 const mockFrom = vi.fn();
+const mockExisting = { value: false };
+const mockRpc = vi.fn((fn: string) => {
+  if (fn === "family_notification_exists") {
+    return Promise.resolve({ data: mockExisting.value, error: null });
+  }
+  if (fn === "insert_family_notification") {
+    return Promise.resolve({ data: "notif-id", error: null });
+  }
+  throw new Error(`unexpected rpc ${fn}`);
+});
 
 vi.mock("@supabase/supabase-js", () => ({
   createClient: vi.fn(() => ({ from: mockFrom })),
@@ -27,6 +38,7 @@ describe("generateCoachFollowupNotifications — per-coach threshold", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.resetModules();
+    mockExisting.value = false;
   });
 
   it("fires notification when days since contact exceeds per-coach threshold of 14", async () => {
@@ -53,18 +65,6 @@ describe("generateCoachFollowupNotifications — per-coach threshold", () => {
             }),
         };
       }
-      if (table === "notifications") {
-        return {
-          select: vi.fn().mockReturnThis(),
-          eq: vi.fn().mockReturnThis(),
-          is: vi.fn().mockReturnThis(),
-          single: vi
-            .fn()
-            .mockResolvedValue({ data: null, error: { code: "PGRST116" } }),
-          maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
-          insert: mockInsert,
-        };
-      }
       return makeChain([]);
     });
 
@@ -72,10 +72,14 @@ describe("generateCoachFollowupNotifications — per-coach threshold", () => {
       await import("~/server/utils/notificationGenerator");
     const result = await generateCoachFollowupNotifications("user-1", {
       from: mockFrom,
+      rpc: mockRpc,
     } as never);
 
     expect(result.count).toBe(1);
-    expect(mockInsert).toHaveBeenCalled();
+    expect(mockRpc).toHaveBeenCalledWith(
+      "insert_family_notification",
+      expect.objectContaining({ p_related_entity_id: "coach-1" }),
+    );
   });
 
   it("does NOT fire when days since contact is within threshold", async () => {
@@ -109,10 +113,11 @@ describe("generateCoachFollowupNotifications — per-coach threshold", () => {
       await import("~/server/utils/notificationGenerator");
     const result = await generateCoachFollowupNotifications("user-1", {
       from: mockFrom,
+      rpc: mockRpc,
     } as never);
 
     expect(result.count).toBe(0);
-    expect(mockInsert).not.toHaveBeenCalled();
+    expect(mockRpc).not.toHaveBeenCalled();
   });
 
   it("does NOT fire when days since contact is within a custom per-coach threshold", async () => {
@@ -140,17 +145,6 @@ describe("generateCoachFollowupNotifications — per-coach threshold", () => {
             }),
         };
       }
-      if (table === "notifications") {
-        return {
-          select: vi.fn().mockReturnThis(),
-          eq: vi.fn().mockReturnThis(),
-          is: vi.fn().mockReturnThis(),
-          single: vi
-            .fn()
-            .mockResolvedValue({ data: null, error: { code: "PGRST116" } }),
-          insert: mockInsert,
-        };
-      }
       return makeChain([]);
     });
 
@@ -158,10 +152,11 @@ describe("generateCoachFollowupNotifications — per-coach threshold", () => {
       await import("~/server/utils/notificationGenerator");
     const result = await generateCoachFollowupNotifications("user-1", {
       from: mockFrom,
+      rpc: mockRpc,
     } as never);
 
     expect(result.count).toBe(0);
-    expect(mockInsert).not.toHaveBeenCalled();
+    expect(mockRpc).not.toHaveBeenCalled();
   });
 
   it("uses default 21 days when follow_up_threshold_days is null", async () => {
@@ -188,18 +183,6 @@ describe("generateCoachFollowupNotifications — per-coach threshold", () => {
             }),
         };
       }
-      if (table === "notifications") {
-        return {
-          select: vi.fn().mockReturnThis(),
-          eq: vi.fn().mockReturnThis(),
-          is: vi.fn().mockReturnThis(),
-          single: vi
-            .fn()
-            .mockResolvedValue({ data: null, error: { code: "PGRST116" } }),
-          maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
-          insert: mockInsert,
-        };
-      }
       return makeChain([]);
     });
 
@@ -207,6 +190,7 @@ describe("generateCoachFollowupNotifications — per-coach threshold", () => {
       await import("~/server/utils/notificationGenerator");
     const result = await generateCoachFollowupNotifications("user-1", {
       from: mockFrom,
+      rpc: mockRpc,
     } as never);
 
     expect(result.count).toBe(1);

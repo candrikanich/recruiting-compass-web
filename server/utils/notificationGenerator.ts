@@ -82,6 +82,60 @@ const TEMPLATES: Record<string, NotificationTemplate> = {
 };
 
 /**
+ * Dedupe-check + insert for the four generators generate.post.ts calls
+ * (offer/recommendation/event/coach), routed through SECURITY DEFINER RPCs
+ * rather than raw notifications table access (#912) -- generate.post.ts
+ * now runs on a session-scoped client, and a parent-triggered call is for
+ * a linked athlete, not the caller. The RPCs enforce self-or-linked-player
+ * authorization and expose only what the caller needs: an existence
+ * boolean (no notification content) and a controlled insert (no
+ * caller-supplied arbitrary fields beyond what's passed here).
+ */
+async function createNotificationIfAbsent(
+  supabase: SupabaseClient,
+  params: {
+    userId: string;
+    type: string;
+    title: string;
+    message: string;
+    priority: "low" | "normal" | "high";
+    relatedEntityType: string;
+    relatedEntityId: string;
+    scheduledFor: string;
+  },
+): Promise<boolean> {
+  const { data: exists, error: checkError } = await supabase.rpc(
+    "family_notification_exists",
+    {
+      p_user_id: params.userId,
+      p_related_entity_id: params.relatedEntityId,
+      p_related_entity_type: params.relatedEntityType,
+      p_type: params.type,
+      p_scheduled_for: params.scheduledFor,
+    },
+  );
+  if (checkError) throw checkError;
+  if (exists) return false;
+
+  const { error: insertError } = await supabase.rpc(
+    "insert_family_notification",
+    {
+      p_user_id: params.userId,
+      p_type: params.type,
+      p_title: params.title,
+      p_message: params.message,
+      p_priority: params.priority,
+      p_related_entity_type: params.relatedEntityType,
+      p_related_entity_id: params.relatedEntityId,
+      p_scheduled_for: params.scheduledFor,
+    },
+  );
+  if (insertError) throw insertError;
+
+  return true;
+}
+
+/**
  * Generate notifications for upcoming offer deadlines
  */
 export async function generateOfferNotifications(
@@ -125,37 +179,21 @@ export async function generateOfferNotifications(
 
       for (const days of leadTimes) {
         if (daysUntil <= days && daysUntil > 0) {
-          // Check if notification already exists
-          const { data: existing, error: checkError } = await supabase
-            .from("notifications")
-            .select("id")
-            .eq("user_id", userId)
-            .eq("related_entity_id", offer.id)
-            .eq("related_entity_type", "offer")
-            .eq("type", "deadline_alert")
+          const template =
+            TEMPLATES[`offer_deadline_${days}` as keyof typeof TEMPLATES];
+          const created = await createNotificationIfAbsent(supabase, {
+            userId,
+            type: "deadline_alert",
+            title: template.title(schoolName),
+            message: template.message(schoolName, days),
+            priority: days <= 3 ? "high" : "normal",
+            relatedEntityType: "offer",
+            relatedEntityId: offer.id,
             // eslint-disable-next-line local/no-date-only-string-constructor -- pre-existing pattern outside Phase 7's assigned sweep (planning/audit-2026-07-27-findings.md cluster); flagged for a follow-up pass, not fixed here to keep this phase scoped.
-            .eq("scheduled_for", new Date().toISOString().split("T")[0])
-            .maybeSingle();
+            scheduledFor: new Date().toISOString().split("T")[0],
+          });
 
-          if (checkError) throw checkError;
-
-          // Only create if doesn't exist
-          if (!existing) {
-            const template =
-              TEMPLATES[`offer_deadline_${days}` as keyof typeof TEMPLATES];
-            await supabase.from("notifications").insert([
-              {
-                user_id: userId,
-                type: "deadline_alert",
-                title: template.title(schoolName),
-                message: template.message(schoolName, days),
-                related_entity_type: "offer",
-                related_entity_id: offer.id,
-                scheduled_for: new Date().toISOString(),
-                priority: days <= 3 ? "high" : "normal",
-              },
-            ]);
-
+          if (created) {
             createdCount++;
           }
         }
@@ -204,37 +242,21 @@ export async function generateRecommendationNotifications(
 
       for (const days of leadTimes) {
         if (daysUntil <= days && daysUntil > 0) {
-          // Check if notification already exists
-          const { data: existing, error: checkError } = await supabase
-            .from("notifications")
-            .select("id")
-            .eq("user_id", userId)
-            .eq("related_entity_id", rec.id)
-            .eq("related_entity_type", "recommendation")
-            .eq("type", "deadline_alert")
+          const templateKey = `rec_deadline_${days}` as keyof typeof TEMPLATES;
+          const template = TEMPLATES[templateKey];
+          const created = await createNotificationIfAbsent(supabase, {
+            userId,
+            type: "deadline_alert",
+            title: template.title(personName),
+            message: template.message(personName),
+            priority: "normal",
+            relatedEntityType: "recommendation",
+            relatedEntityId: rec.id,
             // eslint-disable-next-line local/no-date-only-string-constructor -- pre-existing pattern outside Phase 7's assigned sweep (planning/audit-2026-07-27-findings.md cluster); flagged for a follow-up pass, not fixed here to keep this phase scoped.
-            .eq("scheduled_for", new Date().toISOString().split("T")[0])
-            .maybeSingle();
+            scheduledFor: new Date().toISOString().split("T")[0],
+          });
 
-          if (checkError) throw checkError;
-
-          if (!existing) {
-            const templateKey =
-              `rec_deadline_${days}` as keyof typeof TEMPLATES;
-            const template = TEMPLATES[templateKey];
-            await supabase.from("notifications").insert([
-              {
-                user_id: userId,
-                type: "deadline_alert",
-                title: template.title(personName),
-                message: template.message(personName),
-                related_entity_type: "recommendation",
-                related_entity_id: rec.id,
-                scheduled_for: new Date().toISOString(),
-                priority: "normal",
-              },
-            ]);
-
+          if (created) {
             createdCount++;
           }
         }
@@ -279,37 +301,22 @@ export async function generateEventNotifications(
 
       for (const days of leadTimes) {
         if (daysUntil <= days && daysUntil > 0) {
-          // Check if notification already exists
-          const { data: existing, error: checkError } = await supabase
-            .from("notifications")
-            .select("id")
-            .eq("user_id", userId)
-            .eq("related_entity_id", event.id)
-            .eq("related_entity_type", "event")
-            .eq("type", "event")
+          const templateKey =
+            `event_upcoming_${days}` as keyof typeof TEMPLATES;
+          const template = TEMPLATES[templateKey];
+          const created = await createNotificationIfAbsent(supabase, {
+            userId,
+            type: "event",
+            title: template.title(event.name),
+            message: template.message(event.name),
+            priority: days === 1 ? "high" : "normal",
+            relatedEntityType: "event",
+            relatedEntityId: event.id,
             // eslint-disable-next-line local/no-date-only-string-constructor -- pre-existing pattern outside Phase 7's assigned sweep (planning/audit-2026-07-27-findings.md cluster); flagged for a follow-up pass, not fixed here to keep this phase scoped.
-            .eq("scheduled_for", new Date().toISOString().split("T")[0])
-            .maybeSingle();
+            scheduledFor: new Date().toISOString().split("T")[0],
+          });
 
-          if (checkError) throw checkError;
-
-          if (!existing) {
-            const templateKey =
-              `event_upcoming_${days}` as keyof typeof TEMPLATES;
-            const template = TEMPLATES[templateKey];
-            await supabase.from("notifications").insert([
-              {
-                user_id: userId,
-                type: "event",
-                title: template.title(event.name),
-                message: template.message(event.name),
-                related_entity_type: "event",
-                related_entity_id: event.id,
-                scheduled_for: new Date().toISOString(),
-                priority: days === 1 ? "high" : "normal",
-              },
-            ]);
-
+          if (created) {
             createdCount++;
           }
         }
@@ -354,36 +361,21 @@ export async function generateCoachFollowupNotifications(
       const threshold = coach.follow_up_threshold_days ?? 21;
 
       if (daysSince >= threshold) {
-        // Check if notification already exists for this coach
-        const { data: existing, error: checkError } = await supabase
-          .from("notifications")
-          .select("id")
-          .eq("user_id", userId)
-          .eq("related_entity_id", coach.id)
-          .eq("related_entity_type", "coach")
-          .eq("type", "follow_up_reminder")
+        const coachName = `${coach.first_name} ${coach.last_name}`.trim();
+        const template = TEMPLATES.coach_followup;
+        const created = await createNotificationIfAbsent(supabase, {
+          userId,
+          type: "follow_up_reminder",
+          title: template.title(coachName),
+          message: template.message(coachName, daysSince),
+          priority: "normal",
+          relatedEntityType: "coach",
+          relatedEntityId: coach.id,
           // eslint-disable-next-line local/no-date-only-string-constructor -- pre-existing pattern outside Phase 7's assigned sweep (planning/audit-2026-07-27-findings.md cluster); flagged for a follow-up pass, not fixed here to keep this phase scoped.
-          .eq("scheduled_for", new Date().toISOString().split("T")[0])
-          .maybeSingle();
+          scheduledFor: new Date().toISOString().split("T")[0],
+        });
 
-        if (checkError) throw checkError;
-
-        if (!existing) {
-          const coachName = `${coach.first_name} ${coach.last_name}`.trim();
-          const template = TEMPLATES.coach_followup;
-          await supabase.from("notifications").insert([
-            {
-              user_id: userId,
-              type: "follow_up_reminder",
-              title: template.title(coachName),
-              message: template.message(coachName, daysSince),
-              related_entity_type: "coach",
-              related_entity_id: coach.id,
-              scheduled_for: new Date().toISOString(),
-              priority: "normal",
-            },
-          ]);
-
+        if (created) {
           createdCount++;
         }
       }
