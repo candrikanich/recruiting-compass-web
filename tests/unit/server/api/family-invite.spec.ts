@@ -131,6 +131,68 @@ const fakeClientFactory = () => ({
           : null;
       return Promise.resolve({ data: existingMemberId, error: null });
     }
+    // [token].get.ts's get_family_invitation_by_token RPC (#979) -- mirrors
+    // the real function's error_code branching over the same state.invitation
+    // knob the old raw-query fake used, so the describe block below didn't
+    // need rewriting when the route moved off raw .from() queries.
+    if (fnName === "get_family_invitation_by_token") {
+      const invitation = state.invitation as {
+        id: string;
+        role: string;
+        invited_email: string;
+        status: string;
+        expires_at: string;
+      } | null;
+      const single = () => {
+        if (!invitation) {
+          return Promise.resolve({
+            data: {
+              invitation_id: null,
+              role: null,
+              family_name: null,
+              invited_email: null,
+              error_code: "NOT_FOUND",
+            },
+            error: null,
+          });
+        }
+        if (invitation.status !== "pending") {
+          return Promise.resolve({
+            data: {
+              invitation_id: null,
+              role: null,
+              family_name: null,
+              invited_email: null,
+              error_code: "INVALID_STATUS",
+            },
+            error: null,
+          });
+        }
+        if (new Date(invitation.expires_at) < new Date()) {
+          return Promise.resolve({
+            data: {
+              invitation_id: null,
+              role: null,
+              family_name: null,
+              invited_email: null,
+              error_code: "EXPIRED",
+            },
+            error: null,
+          });
+        }
+        return Promise.resolve({
+          data: {
+            invitation_id: invitation.id,
+            role: invitation.role,
+            family_name: state.family?.family_name ?? "My Family",
+            invited_email: invitation.invited_email,
+            error_code: null,
+          },
+          error: null,
+        });
+      };
+      return { single };
+    }
     return Promise.resolve({ data: null, error: null });
   },
   from: (table: string) => {
@@ -228,14 +290,16 @@ const fakeClientFactory = () => ({
     },
 });
 
-// [token].get.ts still uses the privileged client (deliberately -- it's
-// pre-auth, no session to scope to). invite.post.ts and accept.post.ts use
-// the session-scoped one -- both mock functions alias the same factory, but
-// stay separate exports so the accept describe block below can assert
-// useSupabaseAdmin is never called during its own tests.
+// [token].get.ts is pre-auth (no session to scope to) and went through the
+// RPC-based createServerSupabaseAnonClient() migration in #979.
+// invite.post.ts and accept.post.ts use the session-scoped one -- all three
+// mock functions alias the same factory, but stay separate exports so the
+// accept describe block below can assert useSupabaseAdmin is never called
+// during its own tests.
 vi.mock("~/server/utils/supabase", () => ({
   useSupabaseAdmin: vi.fn(fakeClientFactory),
   createServerSupabaseUserClient: vi.fn(fakeClientFactory),
+  createServerSupabaseAnonClient: vi.fn(fakeClientFactory),
 }));
 
 vi.mock("~/server/utils/requestToken", () => ({
