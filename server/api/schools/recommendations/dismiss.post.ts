@@ -10,7 +10,8 @@ import { z } from "zod";
 import { requireAuth } from "~/server/utils/auth";
 import { resolveTargetAthleteId } from "~/server/utils/athleteAccess";
 import { useLogger } from "~/server/utils/logger";
-import { useSupabaseAdmin } from "~/server/utils/supabase";
+import { createServerSupabaseUserClient } from "~/server/utils/supabase";
+import { extractRequestToken } from "~/server/utils/requestToken";
 import { deleteShared } from "~/server/utils/sharedCache";
 import { CACHE_KEYS } from "~/server/utils/redis";
 import { catalogKeyFor } from "~/utils/schoolRecommendations";
@@ -47,7 +48,8 @@ export default defineEventHandler(
       });
     }
 
-    const supabase = useSupabaseAdmin();
+    const token = extractRequestToken(event);
+    const supabase = createServerSupabaseUserClient(token);
     const { data: membership, error: membershipError } = await supabase
       .from("family_members")
       .select("family_unit_id")
