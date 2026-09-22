@@ -4137,7 +4137,7 @@ export type Database = {
       resend_guardian_claim: {
         Args: { p_requested_email: string | null };
         Returns: {
-          token: string | null;
+          claim_id: string | null;
           guardian_email: string | null;
           player_name: string | null;
           error_code: string | null;

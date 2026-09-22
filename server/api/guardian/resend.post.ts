@@ -2,7 +2,7 @@ import { defineEventHandler, readBody, createError } from "h3";
 import { z } from "zod";
 import { useLogger } from "~/server/utils/logger";
 import { requireAuth } from "~/server/utils/auth";
-import { createServerSupabaseUserClient } from "~/server/utils/supabase";
+import { createServerSupabaseUserClient, useSupabaseAdmin } from "~/server/utils/supabase";
 import { extractRequestToken } from "~/server/utils/requestToken";
 import { sendGuardianClaimEmail } from "~/server/utils/emailService";
 import { getSafeRequestOrigin } from "~/server/utils/requestOrigin";
@@ -35,6 +35,10 @@ const ERROR_RESPONSES: Record<string, { statusCode: number; statusMessage: strin
     statusCode: 429,
     statusMessage: "Too many attempts. Please try again later.",
   },
+  INVALID_EMAIL: {
+    statusCode: 400,
+    statusMessage: "Enter a valid parent or guardian email",
+  },
 };
 
 /**
@@ -48,6 +52,14 @@ const ERROR_RESPONSES: Record<string, { statusCode: number; statusMessage: strin
  * rate limit and eligibility gate (see that migration's header) rather than trusting this
  * route's checks alone, since it's also reachable directly via PostgREST once EXECUTE is
  * granted to authenticated.
+ *
+ * The RPC deliberately never returns the claim token -- returning it would let any
+ * signed-in caller read it directly via the RPC, bypassing the email-delivery boundary
+ * the token-column REVOKE exists to enforce. After the RPC succeeds, this route fetches
+ * the token for the returned claim_id with a narrow useSupabaseAdmin() call (service-role,
+ * scoped to a single column/row) -- the one piece of this route that genuinely can't move
+ * off the privileged client, since the whole point is that only the trusted server, not a
+ * direct RPC caller, may read it.
  */
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "guardian/resend");
@@ -98,10 +110,28 @@ export default defineEventHandler(async (event) => {
       });
     }
 
+    // Only the service-role client may read guardian_claims.token (see the
+    // doc comment above) -- fetch it narrowly, scoped to the single row the
+    // RPC just created/reissued/reminded.
+    const admin = useSupabaseAdmin();
+    const { data: claimRow, error: claimError } = await admin
+      .from("guardian_claims")
+      .select("token")
+      .eq("id", data.claim_id!)
+      .single();
+
+    if (claimError || !claimRow) {
+      logger.error("Failed to fetch claim token after resend", claimError);
+      throw createError({
+        statusCode: 500,
+        statusMessage: "Could not resend the confirmation email",
+      });
+    }
+
     const mail = await sendGuardianClaimEmail({
       to: data.guardian_email!,
       playerName: data.player_name!,
-      token: data.token!,
+      token: claimRow.token,
       requestOrigin: getSafeRequestOrigin(event),
       context: { purpose: "invite", userId: user.id },
     });

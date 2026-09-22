@@ -4,6 +4,8 @@ const mockState = {
   rpcData: null as Record<string, unknown> | null,
   rpcError: null as object | null,
   rpcCalledWith: undefined as Record<string, unknown> | undefined,
+  claimToken: "tok-abc" as string | null,
+  claimTokenError: null as object | null,
   mailSuccess: true,
 };
 
@@ -34,6 +36,24 @@ vi.mock("~/server/utils/supabase", () => ({
       return {
         single: () =>
           Promise.resolve({ data: mockState.rpcData, error: mockState.rpcError }),
+      };
+    },
+  })),
+  // The route fetches guardian_claims.token separately via the admin
+  // client (never returned by the RPC itself -- review finding on #983).
+  useSupabaseAdmin: vi.fn(() => ({
+    from: (table: string) => {
+      if (table !== "guardian_claims") throw new Error(`unexpected table ${table}`);
+      return {
+        select: () => ({
+          eq: () => ({
+            single: () =>
+              Promise.resolve({
+                data: mockState.claimToken ? { token: mockState.claimToken } : null,
+                error: mockState.claimTokenError,
+              }),
+          }),
+        }),
       };
     },
   })),
@@ -72,17 +92,19 @@ const { default: handler } = await import("~/server/api/guardian/resend.post");
 describe("POST /api/guardian/resend", () => {
   beforeEach(() => {
     mockState.rpcData = {
-      token: "tok-abc",
+      claim_id: "claim-1",
       guardian_email: "parent@example.com",
       player_name: "Alex",
       error_code: null,
     };
     mockState.rpcError = null;
     mockState.rpcCalledWith = undefined;
+    mockState.claimToken = "tok-abc";
+    mockState.claimTokenError = null;
     mockState.mailSuccess = true;
   });
 
-  it("resends via the session-scoped RPC and sends the email", async () => {
+  it("resends via the session-scoped RPC, fetches the token via the admin client, and sends the email", async () => {
     const result = await handler({} as Parameters<typeof handler>[0]);
     expect(mockState.rpcCalledWith).toEqual({
       p_requested_email: "parent@example.com",
@@ -92,7 +114,7 @@ describe("POST /api/guardian/resend", () => {
 
   it("403s when the RPC reports the caller isn't eligible", async () => {
     mockState.rpcData = {
-      token: null,
+      claim_id: null,
       guardian_email: null,
       player_name: null,
       error_code: "NOT_ELIGIBLE",
@@ -104,7 +126,7 @@ describe("POST /api/guardian/resend", () => {
 
   it("400s when no email was provided and none is on file", async () => {
     mockState.rpcData = {
-      token: null,
+      claim_id: null,
       guardian_email: null,
       player_name: null,
       error_code: "EMAIL_REQUIRED",
@@ -116,7 +138,7 @@ describe("POST /api/guardian/resend", () => {
 
   it("400s when the requested email matches the caller's own", async () => {
     mockState.rpcData = {
-      token: null,
+      claim_id: null,
       guardian_email: null,
       player_name: null,
       error_code: "SAME_EMAIL",
@@ -126,9 +148,21 @@ describe("POST /api/guardian/resend", () => {
     ).rejects.toMatchObject({ statusCode: 400 });
   });
 
+  it("400s when the RPC rejects a malformed email", async () => {
+    mockState.rpcData = {
+      claim_id: null,
+      guardian_email: null,
+      player_name: null,
+      error_code: "INVALID_EMAIL",
+    };
+    await expect(
+      handler({} as Parameters<typeof handler>[0]),
+    ).rejects.toMatchObject({ statusCode: 400 });
+  });
+
   it("429s when the RPC's durable rate limit trips", async () => {
     mockState.rpcData = {
-      token: null,
+      claim_id: null,
       guardian_email: null,
       player_name: null,
       error_code: "RATE_LIMITED",
@@ -140,7 +174,7 @@ describe("POST /api/guardian/resend", () => {
 
   it("500s on an unrecognized error_code", async () => {
     mockState.rpcData = {
-      token: null,
+      claim_id: null,
       guardian_email: null,
       player_name: null,
       error_code: "SOMETHING_UNEXPECTED",
@@ -152,6 +186,14 @@ describe("POST /api/guardian/resend", () => {
 
   it("500s when the RPC call itself errors", async () => {
     mockState.rpcError = { message: "db error" };
+    await expect(
+      handler({} as Parameters<typeof handler>[0]),
+    ).rejects.toMatchObject({ statusCode: 500 });
+  });
+
+  it("500s when the post-RPC token fetch fails", async () => {
+    mockState.claimToken = null;
+    mockState.claimTokenError = { message: "not found" };
     await expect(
       handler({} as Parameters<typeof handler>[0]),
     ).rejects.toMatchObject({ statusCode: 500 });
