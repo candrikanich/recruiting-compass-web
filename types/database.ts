@@ -3894,7 +3894,6 @@ export type Database = {
         Args: {
           p_token: string;
           p_guardian_id: string;
-          p_guardian_email: string;
           p_terms_version: string;
         };
         Returns: string;

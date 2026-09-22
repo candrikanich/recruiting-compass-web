@@ -139,10 +139,23 @@ GRANT EXECUTE ON FUNCTION "public"."get_guardian_claim_by_token"("text") TO "ano
 -- itself must enforce p_guardian_id = auth.uid() rather than trusting the
 -- route to have done so -- the same fix already applied to
 -- reactivate_school for the identical trust gap.
+--
+-- Review fix (PR #979): p_guardian_email had the identical trust gap --
+-- it was compared against the claim's stored guardian_email, but never
+-- checked against the caller's OWN authenticated email. Since
+-- get_guardian_claim_by_token (this same migration) makes that email
+-- readable to any token holder, and p_guardian_id = auth.uid() alone only
+-- proves the caller is signed in as themselves, any signed-in token
+-- holder could pass the claim's real guardian_email as p_guardian_email
+-- and pass the check despite it not being their own account's email --
+-- becoming the player's guardian of record. Dropped the parameter
+-- entirely and compare against auth.email() (the verified JWT claim)
+-- instead of anything client-supplied.
+DROP FUNCTION IF EXISTS "public"."accept_guardian_claim"("text", "uuid", "text", "text");
+
 CREATE OR REPLACE FUNCTION "public"."accept_guardian_claim"(
   "p_token" "text",
   "p_guardian_id" "uuid",
-  "p_guardian_email" "text",
   "p_terms_version" "text"
 )
 RETURNS "uuid"
@@ -190,7 +203,7 @@ begin
     raise exception 'CLAIM_EXPIRED' using errcode = 'P0001';
   end if;
 
-  if lower(trim(p_guardian_email)) != lower(trim(v_claim.guardian_email)) then
+  if lower(trim(auth.email())) is distinct from lower(trim(v_claim.guardian_email)) then
     raise exception 'CLAIM_EMAIL_MISMATCH' using errcode = 'P0001';
   end if;
 
@@ -296,7 +309,7 @@ end;
 $function$;
 
 comment on function public.accept_guardian_claim is
-  'Atomic guardian-claim acceptance: locks the pending claim, validates it, establishes family membership, and records guardian_consent_* in one transaction. See accept.post.ts. p_guardian_id must equal auth.uid() (#912/#978 review).';
+  'Atomic guardian-claim acceptance: locks the pending claim, validates it, establishes family membership, and records guardian_consent_* in one transaction. See accept.post.ts. p_guardian_id must equal auth.uid(); guardian email match is checked against auth.email(), never a client-supplied value (#912/#979 review).';
 
-revoke all on function public.accept_guardian_claim(text, uuid, text, text) from public, anon;
-grant execute on function public.accept_guardian_claim(text, uuid, text, text) to authenticated, service_role;
+revoke all on function public.accept_guardian_claim(text, uuid, text) from public, anon;
+grant execute on function public.accept_guardian_claim(text, uuid, text) to authenticated, service_role;

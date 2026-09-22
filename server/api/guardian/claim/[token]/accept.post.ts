@@ -37,7 +37,11 @@ const CLAIM_ERROR_RESPONSES: Record<string, { statusCode: number; statusMessage:
  * #912: session-scoped client, not service-role — accept_guardian_claim() itself now
  * verifies p_guardian_id = auth.uid() internally (20260929000040), so a direct RPC call
  * can no longer forge a different guardian id even though EXECUTE is granted to
- * authenticated.
+ * authenticated. The email match is checked inside the function against auth.email()
+ * (the verified JWT claim), not a client-supplied p_guardian_email — a prior version of
+ * this migration took that as a parameter, which let any signed-in token holder pass the
+ * claim's real guardian_email (readable via the token-preview RPC) instead of their own
+ * account's email (review finding on PR #979).
  */
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "guardian/claim/accept");
@@ -57,7 +61,6 @@ export default defineEventHandler(async (event) => {
     const { data: familyUnitId, error } = await supabase.rpc("accept_guardian_claim", {
       p_token: token,
       p_guardian_id: guardian.id,
-      p_guardian_email: guardian.email,
       p_terms_version: CURRENT_TERMS_VERSION,
     });
 
