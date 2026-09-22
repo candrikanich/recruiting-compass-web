@@ -2,7 +2,8 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 const mockState = {
   userId: "user-1",
-  updateError: null as object | null,
+  deletionRequestedAt: null as string | null,
+  selectError: null as object | null,
 };
 
 vi.mock("~/server/utils/auth", () => ({
@@ -21,8 +22,14 @@ vi.mock("~/server/utils/logger", () => ({
 vi.mock("~/server/utils/supabase", () => ({
   createServerSupabaseUserClient: vi.fn(() => ({
     from: () => ({
-      update: () => ({
-        eq: () => Promise.resolve({ error: mockState.updateError }),
+      select: () => ({
+        eq: () => ({
+          single: () =>
+            Promise.resolve({
+              data: { deletion_requested_at: mockState.deletionRequestedAt },
+              error: mockState.selectError,
+            }),
+        }),
       }),
     }),
   })),
@@ -44,9 +51,7 @@ vi.mock("h3", async (importOriginal) => {
     }) => {
       const err = new Error(
         config.statusMessage ?? config.message ?? "error",
-      ) as Error & {
-        statusCode: number;
-      };
+      ) as Error & { statusCode: number };
       err.statusCode = config.statusCode;
       return err;
     },
@@ -54,26 +59,35 @@ vi.mock("h3", async (importOriginal) => {
 });
 
 const { default: handler } =
-  await import("~/server/api/account/request-deletion.post");
+  await import("~/server/api/account/deletion-status.get");
 
 const mockEvent = { context: {}, node: { req: {}, res: {} } } as Parameters<
   typeof handler
 >[0];
 
-describe("POST /api/account/request-deletion", () => {
+describe("GET /api/account/deletion-status", () => {
   beforeEach(() => {
     mockState.userId = "user-1";
-    mockState.updateError = null;
+    mockState.deletionRequestedAt = null;
+    mockState.selectError = null;
   });
 
-  it("returns success:true on happy path", async () => {
+  it("returns null when no deletion is pending", async () => {
     const result = await handler(mockEvent);
-    expect(result).toEqual({ success: true });
+    expect(result).toEqual({ deletion_requested_at: null });
   });
 
-  it("throws 500 when DB update returns an error", async () => {
-    mockState.updateError = { message: "DB error" };
-    await expect(handler(mockEvent)).rejects.toMatchObject({ statusCode: 500 });
+  it("returns the timestamp when deletion is pending", async () => {
+    mockState.deletionRequestedAt = "2026-02-01T00:00:00Z";
+    const result = await handler(mockEvent);
+    expect(result).toEqual({ deletion_requested_at: "2026-02-01T00:00:00Z" });
+  });
+
+  it("throws 500 when the query fails", async () => {
+    mockState.selectError = { message: "db error" };
+    await expect(handler(mockEvent)).rejects.toMatchObject({
+      statusCode: 500,
+    });
   });
 
   it("propagates H3 error from requireAuth without wrapping", async () => {
@@ -82,12 +96,5 @@ describe("POST /api/account/request-deletion", () => {
     vi.mocked(requireAuth).mockRejectedValueOnce(h3Err);
 
     await expect(handler(mockEvent)).rejects.toMatchObject({ statusCode: 401 });
-  });
-
-  it("wraps unexpected non-H3 errors in a 500", async () => {
-    const { requireAuth } = await import("~/server/utils/auth");
-    vi.mocked(requireAuth).mockRejectedValueOnce(new Error("unexpected"));
-
-    await expect(handler(mockEvent)).rejects.toMatchObject({ statusCode: 500 });
   });
 });

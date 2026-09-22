@@ -24,6 +24,7 @@ const mockState = {
 };
 
 vi.mock("~/server/utils/supabase", () => ({
+  // resolveFamilyUnitIds queries family_members via the admin client.
   useSupabaseAdmin: () => ({
     from: (table: string) => {
       if (table === "family_members") {
@@ -33,6 +34,12 @@ vi.mock("~/server/utils/supabase", () => ({
           }),
         };
       }
+      throw new Error(`unexpected table ${table}`);
+    },
+  }),
+  // The handler itself queries family_units via the session-scoped client.
+  createServerSupabaseUserClient: () => ({
+    from: (table: string) => {
       if (table === "family_units") {
         return {
           select: () => ({
@@ -43,6 +50,10 @@ vi.mock("~/server/utils/supabase", () => ({
       throw new Error(`unexpected table ${table}`);
     },
   }),
+}));
+
+vi.mock("~/server/utils/requestToken", () => ({
+  extractRequestToken: vi.fn(() => "fake-token"),
 }));
 
 vi.mock("#imports", () => ({

@@ -6,7 +6,8 @@
 import { defineEventHandler, createError } from "h3";
 import { useRuntimeConfig } from "#imports";
 import { requireAuth } from "~/server/utils/auth";
-import { useSupabaseAdmin } from "~/server/utils/supabase";
+import { createServerSupabaseUserClient } from "~/server/utils/supabase";
+import { extractRequestToken } from "~/server/utils/requestToken";
 import { useLogger } from "~/server/utils/logger";
 import { resolveFamilyUnitIds } from "~/server/utils/familyMembership";
 
@@ -15,9 +16,10 @@ export default defineEventHandler(async (event) => {
   try {
     const { id: userId } = await requireAuth(event);
     const familyUnitIds = await resolveFamilyUnitIds(event, userId);
-    const admin = useSupabaseAdmin();
+    const token = extractRequestToken(event);
+    const supabase = createServerSupabaseUserClient(token);
 
-    const { data: families, error: familiesError } = await admin
+    const { data: families, error: familiesError } = await supabase
       .from("family_units")
       .select("id, inbound_token, family_name")
       .in("id", familyUnitIds);
