@@ -83,6 +83,7 @@ describe("POST /api/family/code/join", () => {
       family_id: "family-123",
       family_name: "Test Family",
       already_member: false,
+      error_code: null,
     };
     mockState.rpcError = null;
     mockState.rpcCalledWith = undefined;
@@ -100,17 +101,42 @@ describe("POST /api/family/code/join", () => {
   });
 
   it("prevents a user from joining their own family", async () => {
-    mockState.rpcError = { message: "CANNOT_JOIN_OWN_FAMILY" };
+    mockState.rpcData = {
+      family_id: null,
+      family_name: null,
+      already_member: false,
+      error_code: "CANNOT_JOIN_OWN_FAMILY",
+    };
     await expect(
       handler({} as Parameters<typeof handler>[0]),
     ).rejects.toMatchObject({ statusCode: 400 });
   });
 
   it("404s when the code doesn't match any family", async () => {
-    mockState.rpcError = { message: "CODE_NOT_FOUND" };
+    mockState.rpcData = {
+      family_id: null,
+      family_name: null,
+      already_member: false,
+      error_code: "CODE_NOT_FOUND",
+    };
     await expect(
       handler({} as Parameters<typeof handler>[0]),
     ).rejects.toMatchObject({ statusCode: 404 });
+  });
+
+  it("429s when the RPC's durable rate limit trips", async () => {
+    // The RPC enforces its own 5-per-5-minutes limit independently of the
+    // route's in-memory IP limiter, since it's also reachable directly via
+    // PostgREST (#957).
+    mockState.rpcData = {
+      family_id: null,
+      family_name: null,
+      already_member: false,
+      error_code: "RATE_LIMITED",
+    };
+    await expect(
+      handler({} as Parameters<typeof handler>[0]),
+    ).rejects.toMatchObject({ statusCode: 429 });
   });
 
   it("returns idempotent success if already a member", async () => {
@@ -118,6 +144,7 @@ describe("POST /api/family/code/join", () => {
       family_id: "family-123",
       family_name: "Test Family",
       already_member: true,
+      error_code: null,
     };
 
     const result = await handler({} as Parameters<typeof handler>[0]);
@@ -128,7 +155,19 @@ describe("POST /api/family/code/join", () => {
     });
   });
 
-  it("returns 500 on an unrecognized RPC error", async () => {
+  it("returns 500 on an unrecognized error_code", async () => {
+    mockState.rpcData = {
+      family_id: null,
+      family_name: null,
+      already_member: false,
+      error_code: "SOMETHING_UNEXPECTED",
+    };
+    await expect(
+      handler({} as Parameters<typeof handler>[0]),
+    ).rejects.toMatchObject({ statusCode: 500 });
+  });
+
+  it("returns 500 when the RPC call itself errors", async () => {
     mockState.rpcError = { message: "db error" };
     await expect(
       handler({} as Parameters<typeof handler>[0]),
