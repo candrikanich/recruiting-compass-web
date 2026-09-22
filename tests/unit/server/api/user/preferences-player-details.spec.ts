@@ -32,7 +32,12 @@ vi.mock("~/server/utils/triggerSuggestionUpdate", () => ({
 }));
 
 vi.mock("~/server/utils/supabase", () => ({
-  createServerSupabaseClient: vi.fn(),
+  createServerSupabaseUserClient: vi.fn(),
+  useSupabaseAdmin: vi.fn(),
+}));
+
+vi.mock("~/server/utils/requestToken", () => ({
+  extractRequestToken: vi.fn(() => "fake-token"),
 }));
 
 vi.mock("h3", async (importOriginal) => {
@@ -58,9 +63,9 @@ describe("PATCH /api/user/preferences/player-details", () => {
       id: "user-1",
       email: "user@example.com",
     });
-    const { createServerSupabaseClient } =
+    const { createServerSupabaseUserClient } =
       await import("~/server/utils/supabase");
-    vi.mocked(createServerSupabaseClient).mockReturnValue({
+    vi.mocked(createServerSupabaseUserClient).mockReturnValue({
       from: vi.fn(),
     } as never);
   });

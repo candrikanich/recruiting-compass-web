@@ -5,7 +5,11 @@
  */
 
 import { defineEventHandler, readBody, createError } from "h3";
-import { createServerSupabaseClient } from "~/server/utils/supabase";
+import {
+  createServerSupabaseUserClient,
+  useSupabaseAdmin,
+} from "~/server/utils/supabase";
+import { extractRequestToken } from "~/server/utils/requestToken";
 import { requireAuth } from "~/server/utils/auth";
 import { useLogger } from "~/server/utils/logger";
 import { logCRUD, logError } from "~/server/utils/auditLog";
@@ -47,7 +51,8 @@ function compareFields(
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "user/preferences/player-details");
   const user = await requireAuth(event);
-  const supabase = createServerSupabaseClient();
+  const token = extractRequestToken(event);
+  const supabase = createServerSupabaseUserClient(token);
 
   try {
     const body = await readBody<PlayerDetails>(event);
@@ -179,7 +184,14 @@ export default defineEventHandler(async (event) => {
     // Trigger suggestion re-evaluation if profile data changed
     if (changes.length > 0) {
       try {
-        await triggerSuggestionUpdate(supabase, user.id, "profile_change");
+        // suggestion INSERT is service-role-only (#912, cluster 9) -- a
+        // narrow admin client just for this non-critical trigger, not the
+        // route's primary self-scoped read/write above.
+        await triggerSuggestionUpdate(
+          useSupabaseAdmin(),
+          user.id,
+          "profile_change",
+        );
       } catch (triggerError) {
         // Log error but don't fail the request - suggestions are non-critical
         logger.error(

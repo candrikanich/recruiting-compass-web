@@ -4,7 +4,8 @@
  */
 
 import { defineEventHandler, createError } from "h3";
-import { createServerSupabaseClient } from "~/server/utils/supabase";
+import { createServerSupabaseUserClient } from "~/server/utils/supabase";
+import { extractRequestToken } from "~/server/utils/requestToken";
 import { requireAuth } from "~/server/utils/auth";
 import { useLogger } from "~/server/utils/logger";
 import { requireUuidParam } from "~/server/utils/validation";
@@ -42,7 +43,8 @@ function isAthleteTaskCompleted(at: unknown): boolean {
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "tasks/dependencies");
   const user = await requireAuth(event);
-  const supabase = createServerSupabaseClient();
+  const token = extractRequestToken(event);
+  const supabase = createServerSupabaseUserClient(token);
   const taskId = requireUuidParam(event, "taskId");
 
   try {
