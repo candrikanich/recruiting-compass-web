@@ -3966,6 +3966,23 @@ export type Database = {
           already_existed: boolean;
         }[];
       };
+      decline_family_invitation: {
+        Args: { p_invitation_id: string };
+        Returns: {
+          id: string;
+          family_unit_id: string;
+          invited_by: string;
+          invited_email: string;
+          role: string;
+          token: string;
+          status: string;
+          pending_player_details: Json | null;
+          created_at: string;
+          expires_at: string;
+          accepted_at: string | null;
+          declined_at: string | null;
+        };
+      };
       delete_expired_audit_logs: {
         Args: never;
         Returns: {
@@ -4002,6 +4019,10 @@ export type Database = {
       family_unit_created_by: {
         Args: { p_family_unit_id: string };
         Returns: string;
+      };
+      find_family_member_by_email: {
+        Args: { p_email: string; p_family_unit_id: string };
+        Returns: string | null;
       };
       get_accessible_athletes: {
         Args: never;

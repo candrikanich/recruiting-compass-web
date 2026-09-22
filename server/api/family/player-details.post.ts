@@ -2,7 +2,8 @@ import { defineEventHandler, readBody, createError } from "h3";
 import { z } from "zod";
 import { useLogger } from "~/server/utils/logger";
 import { requireAuth } from "~/server/utils/auth";
-import { useSupabaseAdmin } from "~/server/utils/supabase";
+import { createServerSupabaseUserClient } from "~/server/utils/supabase";
+import { extractRequestToken } from "~/server/utils/requestToken";
 import { dateSchema, sanitizedTextSchema } from "~/utils/validation/validators";
 import { getGraduationYearOptions } from "~/utils/graduationYears";
 
@@ -52,7 +53,8 @@ export default defineEventHandler(async (event) => {
   const { playerName, playerDob, graduationYear, sport, position, gender } =
     parsed.data;
 
-  const supabase = useSupabaseAdmin();
+  const token = extractRequestToken(event);
+  const supabase = createServerSupabaseUserClient(token);
 
   const { data: membership } = await supabase
     .from("family_members")

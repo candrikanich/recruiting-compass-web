@@ -1,9 +1,19 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
+/**
+ * POST /api/family/invite/[token]/decline — route wrapper tests.
+ *
+ * The status transition now goes through decline_family_invitation(), a
+ * SECURITY DEFINER RPC (#912 -- family_invitations_update's RLS only ever
+ * authorized the inviter, never the invitee). This covers the route's own
+ * responsibility: the token lookup and mapping the RPC's result/error to a
+ * response.
+ */
+
 const mockState = {
   token: "valid-token" as string,
-  invitation: null as Record<string, unknown> | null,
-  updateError: null as object | null,
+  invitationId: "invite-abc" as string | null,
+  rpcError: null as object | null,
   authUserId: "auth-user-id" as string | null,
 };
 
@@ -28,23 +38,35 @@ vi.mock("~/server/utils/logger", () => ({
 }));
 
 vi.mock("~/server/utils/supabase", () => ({
-  useSupabaseAdmin: vi.fn(() => ({
+  createServerSupabaseUserClient: vi.fn(() => ({
     from: (table: string) => {
       if (table === "family_invitations") {
         return {
           select: () => ({
             eq: () => ({
-              single: () => Promise.resolve({ data: mockState.invitation }),
+              single: () =>
+                Promise.resolve({
+                  data: mockState.invitationId
+                    ? { id: mockState.invitationId }
+                    : null,
+                }),
             }),
-          }),
-          update: () => ({
-            eq: () => Promise.resolve({ error: mockState.updateError }),
           }),
         };
       }
       return {};
     },
+    rpc: (fn: string) => {
+      if (fn !== "decline_family_invitation") {
+        throw new Error(`unexpected rpc ${fn}`);
+      }
+      return Promise.resolve({ data: null, error: mockState.rpcError });
+    },
   })),
+}));
+
+vi.mock("~/server/utils/requestToken", () => ({
+  extractRequestToken: vi.fn(() => "fake-token"),
 }));
 
 vi.mock("h3", async (importOriginal) => {
@@ -71,19 +93,10 @@ const { default: handler } =
   await import("~/server/api/family/invite/[token]/decline.post");
 
 describe("POST /api/family/invite/[token]/decline", () => {
-  const futureDate = new Date(
-    Date.now() + 7 * 24 * 60 * 60 * 1000,
-  ).toISOString();
-  const pastDate = new Date(Date.now() - 1000).toISOString();
-
   beforeEach(() => {
     mockState.token = "valid-token";
-    mockState.invitation = {
-      id: "invite-abc",
-      status: "pending",
-      expires_at: futureDate,
-    };
-    mockState.updateError = null;
+    mockState.invitationId = "invite-abc";
+    mockState.rpcError = null;
     mockState.authUserId = "auth-user-id";
   });
 
@@ -100,28 +113,28 @@ describe("POST /api/family/invite/[token]/decline", () => {
   });
 
   it("returns 404 for unknown token", async () => {
-    mockState.invitation = null;
+    mockState.invitationId = null;
     await expect(
       handler({} as Parameters<typeof handler>[0]),
     ).rejects.toMatchObject({ statusCode: 404 });
   });
 
-  it("returns 409 for already-accepted invitation", async () => {
-    mockState.invitation = { ...mockState.invitation!, status: "accepted" };
+  it("returns 404 when the RPC reports the invitation wasn't found", async () => {
+    mockState.rpcError = { message: "INVITATION_NOT_FOUND" };
+    await expect(
+      handler({} as Parameters<typeof handler>[0]),
+    ).rejects.toMatchObject({ statusCode: 404 });
+  });
+
+  it("returns 409 for an already-accepted/declined invitation", async () => {
+    mockState.rpcError = { message: "INVITATION_NOT_PENDING" };
     await expect(
       handler({} as Parameters<typeof handler>[0]),
     ).rejects.toMatchObject({ statusCode: 409 });
   });
 
-  it("returns 409 for already-declined invitation", async () => {
-    mockState.invitation = { ...mockState.invitation!, status: "declined" };
-    await expect(
-      handler({} as Parameters<typeof handler>[0]),
-    ).rejects.toMatchObject({ statusCode: 409 });
-  });
-
-  it("returns 410 for expired invitation", async () => {
-    mockState.invitation = { ...mockState.invitation!, expires_at: pastDate };
+  it("returns 410 for an expired invitation", async () => {
+    mockState.rpcError = { message: "INVITATION_EXPIRED" };
     await expect(
       handler({} as Parameters<typeof handler>[0]),
     ).rejects.toMatchObject({ statusCode: 410 });
@@ -134,8 +147,8 @@ describe("POST /api/family/invite/[token]/decline", () => {
     ).rejects.toMatchObject({ statusCode: 400 });
   });
 
-  it("returns 500 when DB update fails", async () => {
-    mockState.updateError = { message: "db error" };
+  it("returns 500 on an unrecognized RPC error", async () => {
+    mockState.rpcError = { message: "db error" };
     await expect(
       handler({} as Parameters<typeof handler>[0]),
     ).rejects.toMatchObject({ statusCode: 500 });
