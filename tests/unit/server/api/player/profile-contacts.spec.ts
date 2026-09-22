@@ -23,7 +23,11 @@ vi.mock("~/server/utils/logger", () => ({
   }),
 }));
 
-vi.mock("~/server/utils/supabase", () => ({ useSupabaseAdmin: vi.fn() }));
+vi.mock("~/server/utils/supabase", () => ({ createServerSupabaseUserClient: vi.fn() }));
+
+vi.mock("~/server/utils/requestToken", () => ({
+  extractRequestToken: vi.fn(() => "fake-token"),
+}));
 
 function fakeEvent(): H3Event {
   return { context: {} } as unknown as H3Event;
@@ -173,8 +177,8 @@ describe("GET /api/player/profile/contacts", () => {
 
   it("returns family-scoped leads newest-first with monthly counts split by type", async () => {
     await mockAuth({ id: "user-1", email: "user@example.com" });
-    const { useSupabaseAdmin } = await import("~/server/utils/supabase");
-    vi.mocked(useSupabaseAdmin).mockReturnValue(
+    const { createServerSupabaseUserClient } = await import("~/server/utils/supabase");
+    vi.mocked(createServerSupabaseUserClient).mockReturnValue(
       buildAdminMock({
         membership: { family_unit_id: "family-1" },
         leads: LEAD_ROWS,
@@ -201,10 +205,10 @@ describe("GET /api/player/profile/contacts", () => {
 
   it("never exposes ip, user_agent, or family_unit_id in the payload", async () => {
     await mockAuth({ id: "user-1", email: "user@example.com" });
-    const { useSupabaseAdmin } = await import("~/server/utils/supabase");
+    const { createServerSupabaseUserClient } = await import("~/server/utils/supabase");
     // The mock rows carry ip/user_agent/family_unit_id, and the mock projects
     // by the SELECT column list — so these leak iff the endpoint asked for them.
-    vi.mocked(useSupabaseAdmin).mockReturnValue(
+    vi.mocked(createServerSupabaseUserClient).mockReturnValue(
       buildAdminMock({
         membership: { family_unit_id: "family-1" },
         leads: LEAD_ROWS,
@@ -228,9 +232,9 @@ describe("GET /api/player/profile/contacts", () => {
 
   it("does not request the sensitive columns in the leads SELECT", async () => {
     await mockAuth({ id: "user-1", email: "user@example.com" });
-    const { useSupabaseAdmin } = await import("~/server/utils/supabase");
+    const { createServerSupabaseUserClient } = await import("~/server/utils/supabase");
     const capture: { leadsSelect?: string } = {};
-    vi.mocked(useSupabaseAdmin).mockReturnValue(
+    vi.mocked(createServerSupabaseUserClient).mockReturnValue(
       buildAdminMock({
         membership: { family_unit_id: "family-1" },
         leads: LEAD_ROWS,
@@ -255,8 +259,8 @@ describe("GET /api/player/profile/contacts", () => {
 
   it("returns 500 when the family membership lookup fails (not a 403)", async () => {
     await mockAuth({ id: "user-1", email: "user@example.com" });
-    const { useSupabaseAdmin } = await import("~/server/utils/supabase");
-    vi.mocked(useSupabaseAdmin).mockReturnValue(
+    const { createServerSupabaseUserClient } = await import("~/server/utils/supabase");
+    vi.mocked(createServerSupabaseUserClient).mockReturnValue(
       buildAdminMock({
         membership: null,
         membershipError: { code: "57014", message: "statement timeout" },
@@ -274,8 +278,8 @@ describe("GET /api/player/profile/contacts", () => {
 
   it("returns 500 when the leads query fails", async () => {
     await mockAuth({ id: "user-1", email: "user@example.com" });
-    const { useSupabaseAdmin } = await import("~/server/utils/supabase");
-    vi.mocked(useSupabaseAdmin).mockReturnValue(
+    const { createServerSupabaseUserClient } = await import("~/server/utils/supabase");
+    vi.mocked(createServerSupabaseUserClient).mockReturnValue(
       buildAdminMock({
         membership: { family_unit_id: "family-1" },
         leads: [],
@@ -293,8 +297,8 @@ describe("GET /api/player/profile/contacts", () => {
 
   it("propagates an unauthenticated request's rejection", async () => {
     await mockAuth(null);
-    const { useSupabaseAdmin } = await import("~/server/utils/supabase");
-    vi.mocked(useSupabaseAdmin).mockReturnValue({ from: vi.fn() } as never);
+    const { createServerSupabaseUserClient } = await import("~/server/utils/supabase");
+    vi.mocked(createServerSupabaseUserClient).mockReturnValue({ from: vi.fn() } as never);
     const handler = await loadHandler();
 
     await expect(handler(fakeEvent())).rejects.toMatchObject({
@@ -304,8 +308,8 @@ describe("GET /api/player/profile/contacts", () => {
 
   it("returns 403 when the user has no family membership", async () => {
     await mockAuth({ id: "user-1", email: "user@example.com" });
-    const { useSupabaseAdmin } = await import("~/server/utils/supabase");
-    vi.mocked(useSupabaseAdmin).mockReturnValue(
+    const { createServerSupabaseUserClient } = await import("~/server/utils/supabase");
+    vi.mocked(createServerSupabaseUserClient).mockReturnValue(
       buildAdminMock({
         membership: null,
         leads: [],

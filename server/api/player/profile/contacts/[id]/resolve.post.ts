@@ -8,7 +8,8 @@
 import { defineEventHandler, getRouterParam, readBody, createError } from "h3";
 import { z } from "zod";
 import { requireAuth } from "~/server/utils/auth";
-import { useSupabaseAdmin } from "~/server/utils/supabase";
+import { createServerSupabaseUserClient } from "~/server/utils/supabase";
+import { extractRequestToken } from "~/server/utils/requestToken";
 import { useLogger } from "~/server/utils/logger";
 
 // A permissive UUID-shape check rather than Zod's strict `.uuid()`, which
@@ -44,7 +45,8 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    const admin = useSupabaseAdmin();
+    const token = extractRequestToken(event);
+    const admin = createServerSupabaseUserClient(token);
 
     const { data: membership, error: membershipError } = await admin
       .from("family_members")
@@ -90,15 +92,18 @@ export default defineEventHandler(async (event) => {
       };
     }
 
-    const { error: updErr } = await admin
-      .from("profile_contacts")
-      .update({
-        status: parsed.data.status,
-        interaction_id: parsed.data.interactionId ?? null,
-      })
-      .eq("id", leadId);
-    if (updErr) {
-      logger.error("Failed to update lead status", updErr);
+    // Mutation goes through a SECURITY DEFINER RPC, not a raw UPDATE -- a
+    // family-scoped RLS UPDATE policy can't restrict which columns change,
+    // so a raw grant would let any family member rewrite any field
+    // (coach_name, coach_email, matched_coach_id, ...) via a direct
+    // Supabase call, not just the resolve/dismiss transition this route makes.
+    const { error: rpcErr } = await admin.rpc("resolve_profile_contact_lead", {
+      p_lead_id: leadId,
+      p_status: parsed.data.status,
+      p_interaction_id: parsed.data.interactionId ?? null,
+    });
+    if (rpcErr) {
+      logger.error("Failed to update lead status", rpcErr);
       throw createError({
         statusCode: 500,
         statusMessage: "Failed to resolve lead",
