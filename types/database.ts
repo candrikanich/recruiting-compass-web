@@ -4134,6 +4134,15 @@ export type Database = {
         Args: { p_family_id: string };
         Returns: string;
       };
+      resend_guardian_claim: {
+        Args: { p_requested_email: string | null };
+        Returns: {
+          token: string | null;
+          guardian_email: string | null;
+          player_name: string | null;
+          error_code: string | null;
+        }[];
+      };
       resolve_profile_contact_lead: {
         Args: {
           p_lead_id: string;
