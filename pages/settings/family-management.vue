@@ -499,6 +499,7 @@ const handleJoinFamily = async (code: string) => {
   if (isParent.value && parentFamilies.value.length > 0) {
     await fetchParentFamilyMembers();
   }
+  await fetchInboundAddress();
 };
 
 const handleCopyCode = async (code: string) => {
