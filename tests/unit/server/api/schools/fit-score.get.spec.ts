@@ -37,8 +37,12 @@ function makeChain(getResult: () => { data: unknown; error?: unknown }) {
   return chain;
 }
 
+vi.mock("~/server/utils/requestToken", () => ({
+  extractRequestToken: vi.fn(() => "fake-token"),
+}));
+
 vi.mock("~/server/utils/supabase", () => ({
-  createServerSupabaseClient: vi.fn(() => ({
+  createServerSupabaseUserClient: vi.fn(() => ({
     from: vi.fn((table: string) => {
       if (table === "schools") {
         return makeChain(() => ({ data: mockState.school }));
