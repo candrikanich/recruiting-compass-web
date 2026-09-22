@@ -35,6 +35,19 @@ one under the `production` environment secret of the same name — a
 project-scoped PAT copied into the repo-level secret will 403 against
 QA/e2e). All set 2026-09-09.
 
+**Local CLI safety (2026-09-22):** local `supabase` CLI must stay linked
+to QA (`xpxzhqghxecsjhvklsqg`) — prod (`lrzsenidegcqhwzwncve`) is reached
+**only** through `migrate-prod.yml`'s gated `main`-branch workflow. Never
+run `supabase db push` or `supabase link --project-ref lrzsenidegcqhwzwncve`
+locally. If a local link to prod is ever needed for a one-off read-only
+inspection, unlink immediately after. Trigger for this rule: this session
+found the local CLI linked to prod, and `#912`'s migrations had all been
+pushed straight to prod via local `supabase db push` as a result —
+bypassing the approval gate entirely, undetected because it "worked."
+Relinked to QA 2026-09-22. Same rule applies to Supabase MCP
+`apply_migration`/`execute_sql` against QA or E2E project refs — see the
+"E2E migration reconciliation" section below for why.
+
 ### QA migration history reconciliation — 2026-09-09
 
 Validating `migrate-qa-e2e.yml` against QA (`xpxzhqghxecsjhvklsqg`)
@@ -231,6 +244,56 @@ orphans either direction (the sole intentional gap: `20260907211105`
 e2e project (`ahpethltxopkjxxzwmmb`) still fails in the same workflow run
 — expected, its own separate, un-diffed drift, explicitly out of scope
 for this reconciliation. Needs its own future plan.
+
+### E2E migration reconciliation — CLOSED (2026-09-22)
+
+The deferred "needs its own future plan" above is resolved. E2E
+(`ahpethltxopkjxxzwmmb`) was found 14 migrations behind `develop`
+(stuck at `20260928000009`) because `migrate-qa-e2e.yml` only fires on
+push to `develop`, so a PR branch's own CI ran against a stale E2E DB
+until after merge — PR #951 (`create_family_for_user()`, called on every
+login/signup) turned that silent gap into failing auth smoke tests.
+Compounding: E2E's `schema_migrations` history had also diverged from
+the repo's migration files — two rows recorded at exactly
+`20260928000008`/`20260928000009` under different names/content than
+anything in `supabase/migrations/`, blocking a normal `supabase db push`
+with `LegacyDbPushMissingLocalError`. Fixed via
+`supabase migration repair --status reverted 20260928000008 20260928000009`
+(metadata-only, E2E project only), then a normal `migrate-qa-e2e.yml` run
+applied `20260928000010`–`20260928000023` cleanly.
+
+**Root cause, confirmed 2026-09-22:** `execute_sql` against both QA and
+E2E's `supabase_migrations.schema_migrations` for the `202609280000*`
+range returns byte-identical rows on both projects, including the same
+cosmetic `name`-column mismatches already explained by the 2026-09-09 QA
+reconciliation above (e.g. version `20260928000000`'s recorded `name` is
+`family_units_one_per_creator` — the name of the migration that now
+lives at `20260928000002` in the repo; `db push` matches by version, not
+name, so a later file rename never gets reflected in an already-applied
+row's `name` column, and it's harmless). The repo has no files at
+`20260928000008`/`20260928000009` — never has — so the two rows that
+blocked E2E's push were orphaned tracking entries specific to E2E,
+analogous to the orphaned-duplicate pattern Task 0/3 found on QA during
+the 2026-09-09 reconciliation (an MCP `apply_migration` call or a
+file-rename-after-apply leaving a stale row behind). QA never carried
+those two orphan rows. Post-repair, QA and E2E are confirmed identical
+in this range — no further E2E-specific drift found. This closes the
+reconciliation; see the CI/workflow guardrails below for what's now in
+place to stop it recurring.
+
+**Guardrails added 2026-09-22** (prevents recurrence, doesn't re-litigate
+history): `check-migration-drift.yml` runs read-only on every PR into
+`develop` touching `supabase/migrations/**` and fails if the branch adds
+migrations not yet applied to E2E — pointing at `migrate-qa-e2e.yml`'s
+new `workflow_dispatch` trigger as the fix. `migrate-qa-e2e.yml` itself
+now re-verifies `schema_migrations` matches the repo 1:1 immediately
+after every push, on both QA and E2E, so a bookkeeping mismatch like this
+one fails loudly the moment it happens instead of surfacing as a stale
+DB months later. Routine schema changes must go through a committed
+`supabase/migrations/*.sql` file + these gated workflows — MCP
+`apply_migration`/`execute_sql` against QA or E2E refs is for read-only
+inspection or the kind of emergency metadata-only `schema_migrations`
+repair used here, never a substitute for a real migration file.
 
 Full detail + the exact SQL for each step is in
 `docs/superpowers/plans/2026-09-09-qa-migration-reconciliation.md`

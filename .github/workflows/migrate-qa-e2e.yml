@@ -5,6 +5,7 @@ on:
     branches: [develop]
     paths:
       - "supabase/migrations/**"
+  workflow_dispatch:
 
 concurrency:
   group: migrate-qa-e2e
@@ -34,6 +35,9 @@ jobs:
           supabase link --project-ref ${{ secrets.QA_PROJECT_REF }}
           supabase db push --include-all
 
+      - name: Verify schema_migrations matches repo 1:1
+        run: bash scripts/check-migration-drift.sh
+
   migrate-e2e:
     name: Push migrations to E2E (ahpethltxopkjxxzwmmb)
     runs-on: ubuntu-latest
@@ -56,3 +60,6 @@ jobs:
         run: |
           supabase link --project-ref ${{ secrets.E2E_PROJECT_REF }}
           supabase db push --include-all
+
+      - name: Verify schema_migrations matches repo 1:1
+        run: bash scripts/check-migration-drift.sh
