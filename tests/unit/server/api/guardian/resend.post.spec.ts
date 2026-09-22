@@ -1,254 +1,208 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-// Mock state holders
-let mockExistingClaim: { value: unknown } = { value: null };
-let mockInsertError: unknown = null;
-let mockBody: Record<string, unknown> = {};
-// Locked 13-17 player with no consent by default — the only caller shape allowed
-// to create a fresh claim from the no-existing-claim branch.
-let mockUserRow: { value: unknown } = {
-  value: {
-    role: "player",
-    date_of_birth: "2012-01-01",
-    guardian_consent_at: null,
-    full_name: "Player One",
-  },
+const mockState = {
+  rpcData: null as Record<string, unknown> | null,
+  rpcError: null as object | null,
+  rpcCalledWith: undefined as Record<string, unknown> | undefined,
+  claimToken: "tok-abc" as string | null,
+  claimTokenError: null as object | null,
+  mailSuccess: true,
 };
 
-let mockFamilyMembership: { value: { family_unit_id: string } | null } = { value: null };
-let mockFamilyHasParent: { value: boolean } = { value: false };
-
-const mockInsert = vi.fn(async () => ({ error: mockInsertError }));
-const mockUpdate = vi.fn(() => ({ eq: async () => ({ error: null }) }));
-
-// All vi.mock calls first
 vi.mock("~/server/utils/auth", () => ({
-  requireAuth: vi.fn(async () => ({ id: "player-1", email: "player@example.com" })),
+  requireAuth: vi.fn(async () => ({ id: "player-1", email: "kid@example.com" })),
 }));
 
 vi.mock("~/server/utils/logger", () => ({
-  useLogger: () => ({ info: vi.fn(), error: vi.fn(), warn: vi.fn(), debug: vi.fn() }),
+  useLogger: () => ({
+    info: vi.fn(),
+    error: vi.fn(),
+    warn: vi.fn(),
+    debug: vi.fn(),
+  }),
 }));
 
-vi.mock("~/server/utils/rateLimit", () => ({
-  rateLimitByUser: vi.fn(async () => ({ success: true })),
-  throwIfRateLimited: vi.fn(),
-}));
-
-vi.mock("~/server/utils/emailService", () => ({
-  sendGuardianClaimEmail: vi.fn(async () => ({ success: true })),
+vi.mock("~/server/utils/requestToken", () => ({
+  extractRequestToken: vi.fn(() => "fake-token"),
 }));
 
 vi.mock("~/server/utils/supabase", () => ({
+  createServerSupabaseUserClient: vi.fn(() => ({
+    rpc: (fn: string, args: Record<string, unknown>) => {
+      if (fn !== "resend_guardian_claim") {
+        throw new Error(`unexpected rpc ${fn}`);
+      }
+      mockState.rpcCalledWith = args;
+      return {
+        single: () =>
+          Promise.resolve({ data: mockState.rpcData, error: mockState.rpcError }),
+      };
+    },
+  })),
+  // The route fetches guardian_claims.token separately via the admin
+  // client (never returned by the RPC itself -- review finding on #983).
   useSupabaseAdmin: vi.fn(() => ({
     from: (table: string) => {
-      if (table === "users") {
-        return {
-          select: () => ({
-            eq: () => ({
-              maybeSingle: async () => ({ data: mockUserRow.value }),
-            }),
-          }),
-        };
-      }
-      if (table === "family_members") {
-        // No family membership by default — resolveGuardianLock's override only
-        // matters for the dedicated eligibility test below.
-        return {
-          select: () => ({
-            eq: () => ({
-              maybeSingle: async () => ({ data: mockFamilyMembership.value }),
-              eq: () => ({
-                limit: () => ({
-                  maybeSingle: async () => ({
-                    data: mockFamilyHasParent.value ? { user_id: "some-parent" } : null,
-                  }),
-                }),
-              }),
-            }),
-          }),
-        };
-      }
-      // guardian_claims
+      if (table !== "guardian_claims") throw new Error(`unexpected table ${table}`);
       return {
         select: () => ({
           eq: () => ({
-            eq: () => ({
-              maybeSingle: async () => ({ data: mockExistingClaim.value }),
-            }),
+            single: () =>
+              Promise.resolve({
+                data: mockState.claimToken ? { token: mockState.claimToken } : null,
+                error: mockState.claimTokenError,
+              }),
           }),
         }),
-        insert: mockInsert,
-        update: mockUpdate,
       };
     },
   })),
 }));
 
-vi.mock("h3", async () => {
-  const actual = await vi.importActual<typeof import("h3")>("h3");
+vi.mock("~/server/utils/emailService", () => ({
+  sendGuardianClaimEmail: vi.fn(async () => ({ success: mockState.mailSuccess })),
+}));
+
+vi.mock("~/server/utils/requestOrigin", () => ({
+  getSafeRequestOrigin: vi.fn(() => "https://app.example.com"),
+}));
+
+vi.mock("h3", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("h3")>();
   return {
     ...actual,
-    readBody: vi.fn(async () => mockBody),
+    defineEventHandler: (fn: Function) => fn,
+    readBody: vi.fn(async () => ({ guardianEmail: "parent@example.com" })),
+    createError: (config: {
+      statusCode: number;
+      message?: string;
+      statusMessage?: string;
+    }) => {
+      const err = new Error(config.message ?? config.statusMessage) as Error & {
+        statusCode: number;
+      };
+      err.statusCode = config.statusCode;
+      return err;
+    },
   };
 });
 
-import handler from "~/server/api/guardian/resend.post";
+const { default: handler } = await import("~/server/api/guardian/resend.post");
 
-const fakeEvent = {} as Parameters<typeof handler>[0];
-
-describe("POST /api/guardian/resend — no existing claim", () => {
+describe("POST /api/guardian/resend", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
-    mockExistingClaim = { value: null };
-    mockInsertError = null;
-    mockBody = {};
-    mockFamilyMembership = { value: null };
-    mockFamilyHasParent = { value: false };
-    mockUserRow = {
-      value: {
-        role: "player",
-        date_of_birth: "2012-01-01",
-        guardian_consent_at: null,
-        full_name: "Player One",
-      },
+    mockState.rpcData = {
+      claim_id: "claim-1",
+      guardian_email: "parent@example.com",
+      player_name: "Alex",
+      error_code: null,
     };
+    mockState.rpcError = null;
+    mockState.rpcCalledWith = undefined;
+    mockState.claimToken = "tok-abc";
+    mockState.claimTokenError = null;
+    mockState.mailSuccess = true;
   });
 
-  it("creates a fresh claim when no claim exists and an email is provided", async () => {
-    mockBody = { guardianEmail: "newparent@example.com" };
-
-    const result = await handler(fakeEvent);
-
+  it("resends via the session-scoped RPC, fetches the token via the admin client, and sends the email", async () => {
+    const result = await handler({} as Parameters<typeof handler>[0]);
+    expect(mockState.rpcCalledWith).toEqual({
+      p_requested_email: "parent@example.com",
+    });
     expect(result).toEqual({ success: true });
-    expect(mockInsert).toHaveBeenCalledWith(
-      expect.objectContaining({
-        player_user_id: "player-1",
-        guardian_email: "newparent@example.com",
-      }),
-    );
   });
 
-  it("rejects when no claim exists and no email is provided", async () => {
-    mockBody = {};
-
-    await expect(handler(fakeEvent)).rejects.toMatchObject({ statusCode: 400 });
-    expect(mockInsert).not.toHaveBeenCalled();
-  });
-
-  it("rejects a guardian email equal to the player's own", async () => {
-    mockBody = { guardianEmail: "player@example.com" };
-
-    await expect(handler(fakeEvent)).rejects.toMatchObject({ statusCode: 400 });
-    expect(mockInsert).not.toHaveBeenCalled();
-  });
-
-  it("uses the player's full_name in the email rather than the email-address prefix", async () => {
-    mockBody = { guardianEmail: "newparent@example.com" };
-
-    await handler(fakeEvent);
-
-    const { sendGuardianClaimEmail } = await import("~/server/utils/emailService");
-    expect(sendGuardianClaimEmail).toHaveBeenCalledWith(
-      expect.objectContaining({ playerName: "Player One" }),
-    );
-  });
-
-  it("rejects an adult with no pending claim, even with an email provided", async () => {
-    mockUserRow = {
-      value: { role: "player", date_of_birth: "2000-01-01", guardian_consent_at: null, full_name: "Adult Player" },
+  it("403s when the RPC reports the caller isn't eligible", async () => {
+    mockState.rpcData = {
+      claim_id: null,
+      guardian_email: null,
+      player_name: null,
+      error_code: "NOT_ELIGIBLE",
     };
-    mockBody = { guardianEmail: "newparent@example.com" };
-
-    await expect(handler(fakeEvent)).rejects.toMatchObject({ statusCode: 403 });
-    expect(mockInsert).not.toHaveBeenCalled();
+    await expect(
+      handler({} as Parameters<typeof handler>[0]),
+    ).rejects.toMatchObject({ statusCode: 403 });
   });
 
-  it("rejects a parent caller with no pending claim", async () => {
-    mockUserRow = {
-      value: { role: "parent", date_of_birth: null, guardian_consent_at: null, full_name: "A Parent" },
+  it("400s when no email was provided and none is on file", async () => {
+    mockState.rpcData = {
+      claim_id: null,
+      guardian_email: null,
+      player_name: null,
+      error_code: "EMAIL_REQUIRED",
     };
-    mockBody = { guardianEmail: "newparent@example.com" };
-
-    await expect(handler(fakeEvent)).rejects.toMatchObject({ statusCode: 403 });
-    expect(mockInsert).not.toHaveBeenCalled();
+    await expect(
+      handler({} as Parameters<typeof handler>[0]),
+    ).rejects.toMatchObject({ statusCode: 400 });
   });
 
-  it("rejects an already-consented 13-17 player with no pending claim", async () => {
-    mockUserRow = {
-      value: {
-        role: "player",
-        date_of_birth: "2012-01-01",
-        guardian_consent_at: "2026-09-01T00:00:00.000Z",
-        full_name: "Consented Player",
-      },
+  it("400s when the requested email matches the caller's own", async () => {
+    mockState.rpcData = {
+      claim_id: null,
+      guardian_email: null,
+      player_name: null,
+      error_code: "SAME_EMAIL",
     };
-    mockBody = { guardianEmail: "newparent@example.com" };
-
-    await expect(handler(fakeEvent)).rejects.toMatchObject({ statusCode: 403 });
-    expect(mockInsert).not.toHaveBeenCalled();
+    await expect(
+      handler({} as Parameters<typeof handler>[0]),
+    ).rejects.toMatchObject({ statusCode: 400 });
   });
 
-  it("rejects a locked player who already belongs to a family with a parent", async () => {
-    // A real guardian is already present via family membership even though
-    // guardian_consent_at was never stamped — the same override
-    // assertGuardianConfirmed honors, so this endpoint can't be used to spam an
-    // arbitrary address for a player who already has a parent in their family.
-    mockFamilyMembership = { value: { family_unit_id: "family-1" } };
-    mockFamilyHasParent = { value: true };
-    mockBody = { guardianEmail: "newparent@example.com" };
-
-    await expect(handler(fakeEvent)).rejects.toMatchObject({ statusCode: 403 });
-    expect(mockInsert).not.toHaveBeenCalled();
-  });
-});
-
-describe("POST /api/guardian/resend — expired pending claim", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-    mockInsertError = null;
-    mockFamilyMembership = { value: null };
-    mockFamilyHasParent = { value: false };
-    mockUserRow = {
-      value: {
-        role: "player",
-        date_of_birth: "2012-01-01",
-        guardian_consent_at: null,
-        full_name: "Player One",
-      },
+  it("400s when the RPC rejects a malformed email", async () => {
+    mockState.rpcData = {
+      claim_id: null,
+      guardian_email: null,
+      player_name: null,
+      error_code: "INVALID_EMAIL",
     };
-    mockExistingClaim = {
-      value: {
-        id: "claim-1",
-        guardian_email: "oldparent@example.com",
-        token: "old-token",
-        status: "pending",
-        expires_at: "2020-01-01T00:00:00.000Z",
-        reminder_count: 0,
-      },
+    await expect(
+      handler({} as Parameters<typeof handler>[0]),
+    ).rejects.toMatchObject({ statusCode: 400 });
+  });
+
+  it("429s when the RPC's durable rate limit trips", async () => {
+    mockState.rpcData = {
+      claim_id: null,
+      guardian_email: null,
+      player_name: null,
+      error_code: "RATE_LIMITED",
     };
-    mockBody = { guardianEmail: "newparent@example.com" };
+    await expect(
+      handler({} as Parameters<typeof handler>[0]),
+    ).rejects.toMatchObject({ statusCode: 429 });
   });
 
-  it("expires the stale row and issues a fresh claim instead of rejecting", async () => {
-    const result = await handler(fakeEvent);
-
-    expect(result).toEqual({ success: true });
-    expect(mockUpdate).toHaveBeenCalledWith(
-      expect.objectContaining({ status: "expired" }),
-    );
-    expect(mockInsert).toHaveBeenCalledWith(
-      expect.objectContaining({
-        player_user_id: "player-1",
-        guardian_email: "newparent@example.com",
-      }),
-    );
+  it("500s on an unrecognized error_code", async () => {
+    mockState.rpcData = {
+      claim_id: null,
+      guardian_email: null,
+      player_name: null,
+      error_code: "SOMETHING_UNEXPECTED",
+    };
+    await expect(
+      handler({} as Parameters<typeof handler>[0]),
+    ).rejects.toMatchObject({ statusCode: 500 });
   });
 
-  it("still requires a guardian email since the old claim is no longer usable", async () => {
-    mockBody = {};
+  it("500s when the RPC call itself errors", async () => {
+    mockState.rpcError = { message: "db error" };
+    await expect(
+      handler({} as Parameters<typeof handler>[0]),
+    ).rejects.toMatchObject({ statusCode: 500 });
+  });
 
-    await expect(handler(fakeEvent)).rejects.toMatchObject({ statusCode: 400 });
-    expect(mockInsert).not.toHaveBeenCalled();
+  it("500s when the post-RPC token fetch fails", async () => {
+    mockState.claimToken = null;
+    mockState.claimTokenError = { message: "not found" };
+    await expect(
+      handler({} as Parameters<typeof handler>[0]),
+    ).rejects.toMatchObject({ statusCode: 500 });
+  });
+
+  it("502s when the email fails to send after a successful DB write", async () => {
+    mockState.mailSuccess = false;
+    await expect(
+      handler({} as Parameters<typeof handler>[0]),
+    ).rejects.toMatchObject({ statusCode: 502 });
   });
 });
