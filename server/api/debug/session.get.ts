@@ -38,21 +38,35 @@ export default defineEventHandler(async (event) => {
 
     const familyUnitIds = (memberships ?? []).map((m) => m.family_unit_id);
 
-    // Try to fetch data with family_unit_id filter
-    const { data: schools, error: schoolsError } = await supabase
-      .from("schools")
-      .select("id, name")
-      .in("family_unit_id", familyUnitIds);
+    // Only run the dependent queries when membership resolution actually
+    // succeeded and returned at least one family -- an empty familyUnitIds
+    // from a failed membership lookup shouldn't masquerade as "no family".
+    const canQueryFamilyData = !membershipsError && familyUnitIds.length > 0;
 
-    const { data: coaches, error: coachesError } = await supabase
-      .from("coaches")
-      .select("id, first_name, last_name")
-      .in("family_unit_id", familyUnitIds);
+    const { data: schools, error: schoolsError } = canQueryFamilyData
+      ? await supabase
+          .from("schools")
+          .select("id, name")
+          .in("family_unit_id", familyUnitIds)
+      : { data: [] as { id: string; name: string }[], error: null };
 
-    const { data: interactions, error: interactionsError } = await supabase
-      .from("interactions")
-      .select("id, type")
-      .in("family_unit_id", familyUnitIds);
+    const { data: coaches, error: coachesError } = canQueryFamilyData
+      ? await supabase
+          .from("coaches")
+          .select("id, first_name, last_name")
+          .in("family_unit_id", familyUnitIds)
+      : {
+          data: [] as { id: string; first_name: string; last_name: string }[],
+          error: null,
+        };
+
+    const { data: interactions, error: interactionsError } =
+      canQueryFamilyData
+        ? await supabase
+            .from("interactions")
+            .select("id, type")
+            .in("family_unit_id", familyUnitIds)
+        : { data: [] as { id: string; type: string }[], error: null };
 
     // Check request headers/cookies
     const authHeader = getHeader(event, "authorization");
@@ -89,19 +103,27 @@ export default defineEventHandler(async (event) => {
           sample: interactions?.[0] || null,
         },
       },
-      diagnosis: {
-        has_family_membership: familyUnitIds.length > 0,
-        family_unit_ids_value:
-          familyUnitIds.length > 0 ? familyUnitIds : "❌ MISSING",
-        likely_issue:
-          familyUnitIds.length > 0
-            ? "family_unit_id present but queries return no data - check RLS policies or data existence"
-            : "❌ CRITICAL: user has no family_members row - this causes all queries to return empty",
-        recommendation:
-          familyUnitIds.length > 0
-            ? "Check database for records with this family_unit_id"
-            : "User signup/family creation may have failed. Check family_members and family_units tables.",
-      },
+      diagnosis: membershipsError
+        ? {
+            has_family_membership: null,
+            family_unit_ids_value: "⚠️ UNKNOWN (membership lookup failed)",
+            likely_issue: `family_members query failed: ${membershipsError.message} - membership status could not be determined`,
+            recommendation:
+              "Check the family_members query error above; this is not necessarily a missing-family case.",
+          }
+        : {
+            has_family_membership: familyUnitIds.length > 0,
+            family_unit_ids_value:
+              familyUnitIds.length > 0 ? familyUnitIds : "❌ MISSING",
+            likely_issue:
+              familyUnitIds.length > 0
+                ? "family_unit_id present but queries return no data - check RLS policies or data existence"
+                : "❌ CRITICAL: user has no family_members row - this causes all queries to return empty",
+            recommendation:
+              familyUnitIds.length > 0
+                ? "Check database for records with this family_unit_id"
+                : "User signup/family creation may have failed. Check family_members and family_units tables.",
+          },
     };
   } catch (error) {
     logger.warn("Debug session check failed", error);
