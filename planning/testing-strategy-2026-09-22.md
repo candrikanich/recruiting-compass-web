@@ -11,24 +11,15 @@ Source: QA slide (Brian Miller) taxonomy (Smoke/Regression/Feature/Exploratory/H
 
 ---
 
-## Phase 1 — Web Smoke Test Suite
+## Phase 1 — Web Smoke Test Suite — DONE (2026-09-22)
 
-**Goal:** post-deploy sanity check, <2min run, catches "prod is on fire" not logic bugs.
+**Correction from original plan:** repo already had an `@smoke` tag convention wired into `.github/workflows/e2e.yml` (`e2e-smoke` job, gates PRs into develop) covering signup/login/auth-enforcement/schools-CRUD/coaches-CRUD. The job's own comment says "expand coverage over time by tagging more tier1-critical specs, not by inventing a parallel test suite" — a new `tests/e2e/smoke/` dir was built then deleted once this was found.
 
-**Scope (Playwright, new `tests/e2e/smoke/` dir, tagged `@smoke`):**
-- Unauthenticated: `/` loads, `/login` loads, `/signup` loads, no console errors
-- Authenticated (player + parent fixture): `/dashboard`, `/schools`, `/tasks`, `/performance` load, no 500s, no blank screens
-- One write path: create+delete a throwaway school (proves DB write path + RLS alive)
-- One critical API: `GET /api/schools/:id/fit-score` returns 200 shape
+**What shipped instead:** `tests/e2e/tier1-critical/page-health.spec.ts`, tagged `@smoke`, fills the actual gap — page-load + zero-console-error checks for `/`, `/signup` (unauth) and `/dashboard`, `/schools`, `/tasks`, `/performance` (auth) — nothing else in the existing `@smoke` set checks console errors or covers those routes. Write-path and fit-score-API coverage already existed via `schools-crud-atomic.spec.ts` @smoke, not duplicated.
 
-**Wiring:**
-- `npm run test:e2e:smoke` script → `playwright test tests/e2e/smoke --project=chromium`
-- New GitHub Actions step: run smoke suite against the just-deployed Vercel preview URL immediately after deploy (both QA/develop and prod/main), before promoting confidence — not blocking merge, but posts to PR/Slack on fail
-- Target runtime: under 2 min
+Runs automatically via the existing `e2e-smoke` CI job on next PR to develop — no new script/workflow needed.
 
-**Effort:** ~0.5 day (fixtures already exist from full E2E suite, just narrow selection + CI wiring)
-
-**Owner:** web session, own branch off develop, PR when green.
+**Verification done:** `tsc --noEmit` clean, `eslint` clean (E2E dir excluded from lint by config, expected). **Not yet run live** — needs `npm run dev` + seeded E2E DB; do before merging per repo's own "tests passing ≠ code working" rule.
 
 ---
 
@@ -61,7 +52,11 @@ Source: QA slide (Brian Miller) taxonomy (Smoke/Regression/Feature/Exploratory/H
 
 ---
 
-## Phase 3 — Load/Performance Testing
+## Phase 3 — Load/Performance Testing — SCRIPTED, NOT RUN (2026-09-22)
+
+`k6/api-load.js` + `k6/README.md` written. **Not executed** — needs explicit go-ahead on target project (shared with E2E suite, risk of cross-contamination) and a throwaway test account's credentials before running. See open question 2.
+
+Original scope below, unchanged:
 
 **Goal:** know Nitro + Supabase's ceiling before it matters.
 
@@ -78,7 +73,11 @@ Source: QA slide (Brian Miller) taxonomy (Smoke/Regression/Feature/Exploratory/H
 
 ---
 
-## Phase 4 — Exploratory Testing Log
+## Phase 4 — Exploratory Testing Log — DONE (2026-09-22)
+
+`planning/exploratory-log.md` created. Just start appending after manual test sessions.
+
+Original scope below, unchanged:
 
 **Goal:** make ad-hoc poking-around testing leave a trace.
 
