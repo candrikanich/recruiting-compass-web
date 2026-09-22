@@ -24,7 +24,7 @@
 │ /api/athlete/status                  [GET, POST recalculate]    │
 │ /api/athlete/portfolio-health        [GET]                      │
 │ /api/suggestions                     [GET, PATCH dismiss/comp]  │
-│ /api/schools/[id]/fit-score          [GET, POST calculate]      │
+│ /api/schools/[id]/enrich             [POST]                     │
 └──────────────────────────────────────────────────────────────────┘
                             ↓
 ┌─────────────────────────────────────────────────────────────────┐
@@ -511,8 +511,8 @@ health_status VARCHAR(20)         -- 'healthy', 'broken', 'unknown'
 
 ### Fit Score
 
-- `GET /api/schools/[id]/fit-score` - School fit score
-- `POST /api/schools/[id]/fit-score` - Calculate/update fit score
+- `POST /api/schools/[id]/fit-score` - Deprecated, returns 410 Gone → use enrich
+- `POST /api/schools/[id]/enrich` - Update academic data used for fit signals (client computes fit via `useFitScore`)
 
 ### Suggestions
 
