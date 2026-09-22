@@ -115,6 +115,23 @@ describe("POST /api/webhooks/resend-events", () => {
     });
   });
 
+  it("stores the full verified payload in raw_payload, not just the fields the Zod schema narrows to", async () => {
+    vi.mocked(verifyResendEventWebhook).mockReturnValue({
+      type: "email.delivered",
+      created_at: "2026-09-06T00:00:00Z",
+      data: { email_id: "msg_1", to: ["coach@school.edu"], subject: "hi" },
+      // Real Resend payloads carry more than this schema narrows to.
+      tags: [{ name: "campaign", value: "welcome" }],
+    });
+    const { default: handler } =
+      await import("~/server/api/webhooks/resend-events.post");
+    await handler({} as Parameters<typeof handler>[0]);
+
+    expect(mockState.insertedRow?.raw_payload).toMatchObject({
+      tags: [{ name: "campaign", value: "welcome" }],
+    });
+  });
+
   it("returns 500 when the insert fails", async () => {
     mockState.insertError = { message: "db down" };
     vi.mocked(verifyResendEventWebhook).mockReturnValue({

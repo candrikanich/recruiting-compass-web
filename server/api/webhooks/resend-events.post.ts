@@ -15,6 +15,7 @@
  */
 import { defineEventHandler, readRawBody, getHeaders, createError } from "h3";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { z } from "zod";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import { useLogger } from "~/server/utils/logger";
 import { verifyResendEventWebhook } from "~/server/utils/verifyResendEventWebhook";
@@ -30,32 +31,24 @@ const KNOWN_EVENT_TYPES = new Set([
   "failed",
 ]);
 
-interface ResendEventPayload {
-  type: string;
-  created_at?: string;
-  data: {
-    email_id: string;
-    to: string[];
-    subject?: string;
-  };
-}
-
-function isResendEventPayload(value: unknown): value is ResendEventPayload {
-  if (!value || typeof value !== "object") return false;
-  const v = value as Record<string, unknown>;
-  if (typeof v.type !== "string") return false;
-  const data = v.data as Record<string, unknown> | undefined;
-  return !!data && typeof data.email_id === "string" && Array.isArray(data.to);
-}
+const resendEventPayloadSchema = z.object({
+  type: z.string(),
+  created_at: z.string().optional(),
+  data: z.object({
+    email_id: z.string(),
+    to: z.array(z.string()),
+    subject: z.string().optional(),
+  }),
+});
 
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "webhooks/resend-events");
 
-  let payload: unknown;
+  let rawPayload: unknown;
   try {
     const rawBody = (await readRawBody(event)) ?? "";
     const headers = getHeaders(event);
-    payload = verifyResendEventWebhook(rawBody, headers);
+    rawPayload = verifyResendEventWebhook(rawBody, headers);
   } catch (err) {
     logger.warn("Rejected Resend event webhook: bad signature", err);
     throw createError({
@@ -64,12 +57,15 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  if (!isResendEventPayload(payload)) {
+  const parsed = resendEventPayloadSchema.safeParse(rawPayload);
+  if (!parsed.success) {
     logger.warn("Ignoring Resend event webhook with unrecognized shape", {
-      type: (payload as { type?: unknown } | null)?.type,
+      type: (rawPayload as { type?: unknown } | null)?.type,
+      issue: parsed.error.issues[0]?.message,
     });
     return { ok: true, skipped: "unrecognized-payload" };
   }
+  const payload = parsed.data;
 
   const eventType = payload.type.replace(/^email\./, "");
   if (!KNOWN_EVENT_TYPES.has(eventType)) {
@@ -87,7 +83,9 @@ export default defineEventHandler(async (event) => {
     recipient_email: payload.data.to[0] ?? null,
     subject: payload.data.subject ?? null,
     occurred_at: payload.created_at ?? new Date().toISOString(),
-    raw_payload: payload,
+    // Store the full verified payload, not the Zod-narrowed `payload` used
+    // for typed access above -- same reasoning as inbound-email.post.ts (#952).
+    raw_payload: rawPayload,
   });
 
   if (error) {
