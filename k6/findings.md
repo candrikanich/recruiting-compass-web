@@ -32,6 +32,14 @@ Both runs below targeted `GET /api/schools/:id/fit-score`, which turned out to b
 
 **Follow-up filed:** [#970](https://github.com/candrikanich/recruiting-compass-web/issues/970) — seed a pool of distinct test accounts (separate tokens spread across separate rate-limit keys) so a future run measures real endpoint/DB capacity instead of the rate limiter's own ceiling.
 
+## 2026-09-22 — third run, corrected target (`GET /api/schools/recommendations`)
+
+**Profile run:** same 5→20→50 VU / 1s-sleep profile, now targeting `/api/schools/recommendations` instead of the dead `fit-score` endpoint (see the correction note at the top of this file — the original target was orphaned code).
+
+**Result:** identical pattern to the second run — `94.72%` failed, 359/6801 succeeded, all failures fast (avg 70ms, p95 122ms, no timeouts/crashes). 359 successes over ~6 minutes ≈ 60/min, matching the rate limiter's 60/min ceiling again almost exactly.
+
+**Confirms #970 is still the real blocker, unchanged by the endpoint swap.** The single-shared-token problem is orthogonal to which endpoint is under test — any endpoint behind `server/middleware/rate-limit.ts`'s `api` bucket will hit this identical ceiling with the current script. No real capacity signal for `/api/schools/recommendations` obtained yet. #970 (test-account pool) remains the prerequisite before this test can produce a meaningful result.
+
 ## 2026-09-22 — #970 first attempt, 5-account pool — no improvement, wrong mechanism found
 
 **Profile run:** same 5→20→50 VU profile. `setup()` now mints a token per pool account (5 accounts: `k6-load-test@example.com` + `-1` through `-4`, seeded via the Supabase Admin API), `default()` picks one via `__VU % 5`. Only `Authorization: Bearer <token>` sent, same as every prior run.
