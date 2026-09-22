@@ -8,7 +8,7 @@ import { requireAuth } from "~/server/utils/auth";
 import { createServerSupabaseUserClient } from "~/server/utils/supabase";
 import { extractRequestToken } from "~/server/utils/requestToken";
 import { useLogger } from "~/server/utils/logger";
-import { resolveFamilyUnitId } from "~/server/utils/familyMembership";
+import { resolveFamilyUnitIds } from "~/server/utils/familyMembership";
 
 const VALID_STATUSES = ["pending", "confirmed", "discarded", "all"] as const;
 
@@ -16,7 +16,7 @@ export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "inbound-drafts/list");
   try {
     const { id: userId } = await requireAuth(event);
-    const familyUnitId = await resolveFamilyUnitId(event, userId);
+    const familyUnitIds = await resolveFamilyUnitIds(event, userId);
     const token = extractRequestToken(event);
     const supabase = createServerSupabaseUserClient(token);
 
@@ -32,7 +32,7 @@ export default defineEventHandler(async (event) => {
     let query = supabase
       .from("inbound_email_drafts")
       .select("*")
-      .eq("family_unit_id", familyUnitId);
+      .in("family_unit_id", familyUnitIds);
     if (status !== "all") {
       query = query.eq("status", status ?? "pending");
     }

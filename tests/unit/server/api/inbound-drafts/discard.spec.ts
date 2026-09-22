@@ -85,12 +85,11 @@ describe("POST /api/inbound-drafts/:id/discard", () => {
     mockState.rpcError = null;
   });
 
-  it("404s for a draft belonging to another family", async () => {
-    mockState.draft = {
-      id: "550e8400-e29b-41d4-a716-446655440000",
-      family_unit_id: "family-OTHER",
-      status: "pending",
-    };
+  it("404s for a draft belonging to another family (filtered out by RLS)", async () => {
+    // The RLS-scoped client's own select policy never returns a row for a
+    // draft outside the caller's family — this route no longer does its own
+    // ownership check on top of that.
+    mockState.draft = null;
     const { default: handler } =
       await import("~/server/api/inbound-drafts/[id]/discard.post");
     await expect(

@@ -1,7 +1,7 @@
 /**
  * GET /api/family/inbound-address
- * Returns the caller's family's full inbound-forwarding email address
- * (family-<token>@<domain>) for display in Settings.
+ * Returns the caller's full inbound-forwarding email address for every
+ * family they belong to (family-<token>@<domain>) for display in Settings.
  */
 import { defineEventHandler, createError } from "h3";
 import { useRuntimeConfig } from "#imports";
@@ -9,23 +9,22 @@ import { requireAuth } from "~/server/utils/auth";
 import { createServerSupabaseUserClient } from "~/server/utils/supabase";
 import { extractRequestToken } from "~/server/utils/requestToken";
 import { useLogger } from "~/server/utils/logger";
-import { resolveFamilyUnitId } from "~/server/utils/familyMembership";
+import { resolveFamilyUnitIds } from "~/server/utils/familyMembership";
 
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "family/inbound-address");
   try {
     const { id: userId } = await requireAuth(event);
-    const familyUnitId = await resolveFamilyUnitId(event, userId);
+    const familyUnitIds = await resolveFamilyUnitIds(event, userId);
     const token = extractRequestToken(event);
-    const admin = createServerSupabaseUserClient(token);
+    const supabase = createServerSupabaseUserClient(token);
 
-    const { data: family, error: familyError } = await admin
+    const { data: families, error: familiesError } = await supabase
       .from("family_units")
-      .select("inbound_token")
-      .eq("id", familyUnitId)
-      .single();
-    if (familyError || !family) {
-      logger.error("Failed to load family inbound token", familyError);
+      .select("id, inbound_token, family_name")
+      .in("id", familyUnitIds);
+    if (familiesError || !families) {
+      logger.error("Failed to load family inbound tokens", familiesError);
       throw createError({
         statusCode: 500,
         statusMessage: "Failed to load inbound address",
@@ -33,7 +32,13 @@ export default defineEventHandler(async (event) => {
     }
 
     const domain = useRuntimeConfig().public.inboundEmailDomain;
-    return { address: `family-${family.inbound_token}@${domain}` };
+    return {
+      addresses: families.map((family) => ({
+        familyUnitId: family.id,
+        familyName: family.family_name,
+        address: `family-${family.inbound_token}@${domain}`,
+      })),
+    };
   } catch (err) {
     if (err instanceof Error && "statusCode" in err) throw err;
     logger.error("Failed to load inbound address", err);

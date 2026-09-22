@@ -61,18 +61,6 @@ export default defineEventHandler(async (event) => {
     .single();
 
   if (error) {
-    if (error.message === "CODE_NOT_FOUND") {
-      throw createError({
-        statusCode: 404,
-        message: "Family code not found. Please check and try again.",
-      });
-    }
-    if (error.message === "CANNOT_JOIN_OWN_FAMILY") {
-      throw createError({
-        statusCode: 400,
-        message: "You cannot join your own family",
-      });
-    }
     logger.error("Failed to join family via code", error);
     throw createError({
       statusCode: 500,
@@ -85,6 +73,44 @@ export default defineEventHandler(async (event) => {
       statusCode: 500,
       message: "Failed to join family",
     });
+  }
+
+  // join_family_by_code returns expected outcomes (code not found, own
+  // family, rate limited) as error_code rather than raising -- a raised
+  // exception would roll back the rate-limit attempt row it just inserted
+  // along with everything else in the same transaction (#957).
+  switch (data.error_code) {
+    case "CODE_NOT_FOUND":
+      throw createError({
+        statusCode: 404,
+        message: "Family code not found. Please check and try again.",
+      });
+    case "CANNOT_JOIN_OWN_FAMILY":
+      throw createError({
+        statusCode: 400,
+        message: "You cannot join your own family",
+      });
+    case "RATE_LIMITED":
+      throw createError({
+        statusCode: 429,
+        message: "Too many attempts. Please try again in 5 minutes.",
+      });
+    case "INVALID_CODE_FORMAT":
+      throw createError({
+        statusCode: 400,
+        message: "Invalid family code format. Expected: FAM-XXXXXX",
+      });
+    case null:
+    case undefined:
+      break;
+    default:
+      logger.error("Unexpected join_family_by_code error_code", {
+        errorCode: data.error_code,
+      });
+      throw createError({
+        statusCode: 500,
+        message: "Failed to join family",
+      });
   }
 
   if (data.already_member) {

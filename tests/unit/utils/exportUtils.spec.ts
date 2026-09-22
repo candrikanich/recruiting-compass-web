@@ -93,6 +93,54 @@ describe("exportUtils", () => {
       expect(result).toContain("Jane,");
     });
 
+    it("should neutralize formula-injection prefixes (=, +, -, @)", () => {
+      const headers = ["Name", "Notes"];
+      const rows = [
+        ["John", "=SUM(A1:A10)"],
+        ["Jane", "+1+1"],
+        ["Bob", "-2+3"],
+        ["Amy", "@SUM(A1:A10)"],
+      ];
+
+      const result = toCSV(headers, rows);
+
+      expect(result).toContain("John,'=SUM(A1:A10)");
+      expect(result).toContain("Jane,'+1+1");
+      expect(result).toContain("Bob,'-2+3");
+      expect(result).toContain("Amy,'@SUM(A1:A10)");
+    });
+
+    it("should not alter values that don't start with a formula-trigger character", () => {
+      const headers = ["Name", "Notes"];
+      const rows = [["John", "Total = 5+5"]];
+
+      const result = toCSV(headers, rows);
+
+      expect(result).toContain("John,Total = 5+5");
+    });
+
+    it("should neutralize tab- and carriage-return-prefixed formulas (OWASP)", () => {
+      const headers = ["Name", "Notes"];
+      const rows = [
+        ["John", "\t=SUM(A1:A10)"],
+        ["Jane", "\r=SUM(A1:A10)"],
+      ];
+
+      const result = toCSV(headers, rows);
+
+      expect(result).toContain("John,'\t=SUM(A1:A10)");
+      expect(result).toContain("Jane,\"'\r=SUM(A1:A10)\"");
+    });
+
+    it("should quote (not just escape) values containing a carriage return", () => {
+      const headers = ["Name", "Notes"];
+      const rows = [["John", "Line 1\rLine 2"]];
+
+      const result = toCSV(headers, rows);
+
+      expect(result).toContain('"Line 1\rLine 2"');
+    });
+
     it("should escape special characters in headers", () => {
       const headers = ["Name", "Email, Address"];
       const rows = [["John", "test@example.com"]];

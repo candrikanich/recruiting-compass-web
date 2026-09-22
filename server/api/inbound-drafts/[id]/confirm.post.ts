@@ -14,7 +14,6 @@ import { requireAuth } from "~/server/utils/auth";
 import { createServerSupabaseUserClient } from "~/server/utils/supabase";
 import { extractRequestToken } from "~/server/utils/requestToken";
 import { useLogger } from "~/server/utils/logger";
-import { resolveFamilyUnitId } from "~/server/utils/familyMembership";
 import { resolveAthleteId } from "~/server/utils/resolveAthleteId";
 
 const UUID_SHAPE =
@@ -61,7 +60,6 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    const familyUnitId = await resolveFamilyUnitId(event, userId);
     const token = extractRequestToken(event);
     const admin = createServerSupabaseUserClient(token);
 
@@ -70,7 +68,7 @@ export default defineEventHandler(async (event) => {
       .select("*")
       .eq("id", draftId)
       .maybeSingle();
-    if (!draft || draft.family_unit_id !== familyUnitId) {
+    if (!draft) {
       throw createError({ statusCode: 404, statusMessage: "Draft not found" });
     }
 

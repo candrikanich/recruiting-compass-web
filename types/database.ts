@@ -4055,9 +4055,10 @@ export type Database = {
       join_family_by_code: {
         Args: { p_family_code: string };
         Returns: {
-          family_id: string;
-          family_name: string;
+          family_id: string | null;
+          family_name: string | null;
           already_member: boolean;
+          error_code: string | null;
         }[];
       };
       notify_upcoming_events: { Args: never; Returns: undefined };
