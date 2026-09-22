@@ -565,65 +565,12 @@ describe("POST /api/family/invite", () => {
   });
 });
 
-// ─── GET /api/family/invite/[token] ──────────────────────────────────────────
-describe("GET /api/family/invite/[token]", () => {
-  const futureDate = new Date(
-    Date.now() + 7 * 24 * 60 * 60 * 1000,
-  ).toISOString();
-  const pastDate = new Date(Date.now() - 1000).toISOString();
-
-  beforeEach(() => {
-    state.invitation = {
-      id: "invite-abc",
-      invited_email: "invited@example.com",
-      role: "parent",
-      status: "pending",
-      expires_at: futureDate,
-      family_unit_id: "family-123",
-      invited_by: "inviter-id",
-    };
-  });
-
-  it("returns family info for valid pending token without PII", async () => {
-    const { default: handler } =
-      await import("~/server/api/family/invite/[token].get");
-    const result = await handler({} as Parameters<typeof handler>[0]);
-    expect(result).toMatchObject({
-      invitationId: "invite-abc",
-      role: "parent",
-    });
-    expect(result).not.toHaveProperty("email");
-    expect(result).not.toHaveProperty("emailExists");
-    expect(result).not.toHaveProperty("inviterName");
-  });
-
-  it("returns 404 for unknown token", async () => {
-    state.invitation = null;
-    const { default: handler } =
-      await import("~/server/api/family/invite/[token].get");
-    await expect(handler({} as Parameters<typeof handler>[0])).rejects.toThrow(
-      "Invitation not found",
-    );
-  });
-
-  it("returns 410 Gone for expired token", async () => {
-    state.invitation = { ...state.invitation!, expires_at: pastDate };
-    const { default: handler } =
-      await import("~/server/api/family/invite/[token].get");
-    await expect(handler({} as Parameters<typeof handler>[0])).rejects.toThrow(
-      "expired",
-    );
-  });
-
-  it("returns 409 for already-accepted token", async () => {
-    state.invitation = { ...state.invitation!, status: "accepted" };
-    const { default: handler } =
-      await import("~/server/api/family/invite/[token].get");
-    await expect(handler({} as Parameters<typeof handler>[0])).rejects.toThrow(
-      "no longer valid",
-    );
-  });
-});
+// GET /api/family/invite/[token] coverage lives in its own spec now
+// (tests/unit/server/api/family/invite/token.get.spec.ts) -- the route was
+// rewritten in #912/#979 to use createServerSupabaseAnonClient() + the
+// get_family_invitation_by_token() RPC instead of the raw admin-client
+// table reads this shared fixture mocks, so a describe block here duplicated
+// (and had gone stale against) that coverage.
 
 // ─── POST /api/family/invite/[token]/accept ───────────────────────────────────
 describe("POST /api/family/invite/[token]/accept", () => {

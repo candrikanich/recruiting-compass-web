@@ -1,29 +1,21 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 
 const mockState = {
-  invitation: null as Record<string, unknown> | null,
-  familyUnit: null as Record<string, unknown> | null,
+  data: null as Record<string, unknown> | null,
+  error: null as object | null,
 };
 
 vi.mock("~/server/utils/supabase", () => ({
-  useSupabaseAdmin: vi.fn(() => ({
-    from: (table: string) => ({
-      select: (_cols: string) => ({
-        eq: (_col: string, _val: string) => {
-          if (table === "family_invitations") {
-            return {
-              single: () => Promise.resolve({ data: mockState.invitation }),
-            };
-          }
-          if (table === "family_units") {
-            return {
-              single: () => Promise.resolve({ data: mockState.familyUnit }),
-            };
-          }
-          return { single: () => Promise.resolve({ data: null }) };
-        },
-      }),
-    }),
+  createServerSupabaseAnonClient: vi.fn(() => ({
+    rpc: (fn: string) => {
+      if (fn !== "get_family_invitation_by_token") {
+        throw new Error(`unexpected rpc ${fn}`);
+      }
+      return {
+        single: () =>
+          Promise.resolve({ data: mockState.data, error: mockState.error }),
+      };
+    },
   })),
 }));
 
@@ -46,40 +38,17 @@ const mockEvent = {} as Parameters<typeof handler>[0];
 describe("GET /api/family/invite/[token]", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockState.invitation = {
-      id: "inv-1",
+    mockState.error = null;
+    mockState.data = {
+      invitation_id: "inv-1",
       role: "player",
-      status: "pending",
-      expires_at: new Date(Date.now() + 86_400_000).toISOString(),
-      family_unit_id: "fam-1",
+      family_name: "The Smiths",
       invited_email: "player@example.com",
-    };
-    mockState.familyUnit = {
-      family_name: "The Smiths",
-      pending_player_details: null,
+      error_code: null,
     };
   });
 
-  it("returns invitationId, role, familyName, and invitedEmail — no emailExists or inviterName", async () => {
-    const result = await handler(mockEvent);
-    expect(result.invitationId).toBe("inv-1");
-    expect(result.role).toBe("player");
-    expect(result.familyName).toBe("The Smiths");
-    expect(result.invitedEmail).toBe("player@example.com");
-    expect(result).not.toHaveProperty("emailExists");
-    expect(result).not.toHaveProperty("inviterName");
-  });
-
-  it("never returns athlete PII (name, grad year, sport, position) even when pending_player_details is populated", async () => {
-    mockState.familyUnit = {
-      family_name: "The Smiths",
-      pending_player_details: {
-        playerName: "Alex Johnson",
-        graduationYear: 2026,
-        sport: "Soccer",
-        position: "Midfielder",
-      },
-    };
+  it("returns invitationId, role, familyName, and invitedEmail — no other fields", async () => {
     const result = await handler(mockEvent);
     expect(result).toEqual({
       invitationId: "inv-1",
@@ -87,29 +56,62 @@ describe("GET /api/family/invite/[token]", () => {
       familyName: "The Smiths",
       invitedEmail: "player@example.com",
     });
-    expect(result).not.toHaveProperty("prefill");
-    expect(JSON.stringify(result)).not.toMatch(
-      /Alex|Johnson|Soccer|Midfielder|2026/,
-    );
   });
 
-  it("returns no prefill field for parent-role invites either", async () => {
-    (mockState.invitation as Record<string, unknown>).role = "parent";
-    mockState.familyUnit = {
-      family_name: "The Smiths",
-      pending_player_details: { playerName: "Alex Johnson" },
-    };
+  it("works for parent-role invites too", async () => {
+    mockState.data = { ...mockState.data, role: "parent" };
     const result = await handler(mockEvent);
-    expect(result).not.toHaveProperty("prefill");
+    expect(result.role).toBe("parent");
   });
 
-  it("throws 409 when invitation status is accepted", async () => {
-    (mockState.invitation as Record<string, unknown>).status = "accepted";
-    await expect(handler(mockEvent)).rejects.toMatchObject({ statusCode: 409 });
+  it("throws 404 when the RPC reports the invitation wasn't found", async () => {
+    mockState.data = { error_code: "NOT_FOUND" };
+    await expect(handler(mockEvent)).rejects.toMatchObject({
+      statusCode: 404,
+    });
   });
 
-  it("throws 409 when invitation status is declined", async () => {
-    (mockState.invitation as Record<string, unknown>).status = "declined";
-    await expect(handler(mockEvent)).rejects.toMatchObject({ statusCode: 409 });
+  it("throws 409 when invitation status is no longer valid (accepted/declined)", async () => {
+    mockState.data = { error_code: "INVALID_STATUS" };
+    await expect(handler(mockEvent)).rejects.toMatchObject({
+      statusCode: 409,
+    });
+  });
+
+  it("throws 410 when the invitation has expired", async () => {
+    mockState.data = { error_code: "EXPIRED" };
+    await expect(handler(mockEvent)).rejects.toMatchObject({
+      statusCode: 410,
+    });
+  });
+
+  it("throws 500 on an unrecognized error_code", async () => {
+    mockState.data = { error_code: "something_unexpected" };
+    await expect(handler(mockEvent)).rejects.toMatchObject({
+      statusCode: 500,
+    });
+  });
+
+  it("throws 500 when the RPC returns an error", async () => {
+    mockState.data = null;
+    mockState.error = { message: "db error" };
+    await expect(handler(mockEvent)).rejects.toMatchObject({
+      statusCode: 500,
+    });
+  });
+
+  it("throws 500 when the RPC returns no data and no error", async () => {
+    mockState.data = null;
+    await expect(handler(mockEvent)).rejects.toMatchObject({
+      statusCode: 500,
+    });
+  });
+
+  it("throws 400 when token is missing", async () => {
+    const { getRouterParam } = await import("h3");
+    vi.mocked(getRouterParam).mockReturnValueOnce(undefined);
+    await expect(handler(mockEvent)).rejects.toMatchObject({
+      statusCode: 400,
+    });
   });
 });
