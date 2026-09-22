@@ -1,13 +1,15 @@
 # Testing Strategy Plan — 2026-09-22
 
-Source: QA slide (Brian Miller) taxonomy (Smoke/Regression/Feature/Exploratory/Happy-Path/Negative/UI/API/Load) mapped against current web+iOS coverage. Full gap table in session chat. This doc = execution plan for the 4 real gaps.
+Source: QA slide (Brian Miller) taxonomy (Smoke/Regression/Feature/Exploratory/Happy-Path/Negative/UI/API/Load) mapped against current web+iOS coverage. Full gap table in session chat. This doc = execution plan for the real gaps.
+
+**2026-09-22 correction:** Phase 2's premise ("iOS has zero tests") was never verified against the actual iOS repo — it was wrong. iOS already has ~250 test files wired into CI. See Phase 2 for the correction. Only 3 real gaps remain: web page-health smoke coverage, load testing, exploratory log.
 
 ## Priority order
 
-1. Smoke tests (web) — cheap, catches prod-deploy regressions fast
-2. iOS automated test foundation — biggest gap, blocks parity confidence
-3. Load/performance testing — never done, risk grows with user count
-4. Exploratory test log — pure process, near-zero cost
+1. Smoke tests (web) — cheap, catches prod-deploy regressions fast — DONE
+2. ~~iOS automated test foundation~~ — premise wrong, already exists, see Phase 2 correction
+3. Load/performance testing — never done, risk grows with user count — scripted, not run
+4. Exploratory test log — pure process, near-zero cost — DONE
 
 ---
 
@@ -25,30 +27,11 @@ Runs automatically via the existing `e2e-smoke` CI job on next PR to develop —
 
 ## Phase 2 — iOS Test Foundation
 
-**Goal:** stand up XCTest/XCUITest from zero. Currently no automated iOS tests exist at all.
+**CORRECTION (2026-09-22) — original premise was WRONG.** This phase assumed "iOS has zero automated tests," asserted in the original chat response without checking. Verified on-disk: `TheRecruitingCompassTests/` has **~250 real test files** (unit, ViewModels, Accessibility, Integration) covering nearly every feature module, plus `TheRecruitingCompassUITests/`. Both are wired into `.github/workflows/ci.yml` — unit tests run with `-skip-testing:TheRecruitingCompassUITests`, UI tests run separately with `-only-testing:TheRecruitingCompassUITests`. **iOS test foundation already exists and is CI-gated. No scaffolding work done — none needed.** Created and then deleted an empty `feat/ios-test-foundation` worktree/branch once this was discovered; nothing was committed.
 
-**Sub-phases (each its own PR, off iOS `main`):**
+**Real remaining iOS gap, if any:** not "build from zero" — it's whatever coverage gaps exist within the ~250 files (untested edge cases, flaky specs, coverage-percentage blind spots). That needs its own audit, not assumed from a slide comparison. Not attempted here — out of scope for this correction pass.
 
-### 2a — Unit test target + first domain tests
-- Add `RecruitingCompassTests` target if missing (verify first — don't assume)
-- Cover pure logic first: date/deadline math, template resolver equivalents, any Swift port of `domain/` web logic
-- Target: whatever mirrors web's `utils/contactWindow.ts`, `utils/growthAnalytics.ts` style pure functions
-
-### 2b — API/networking layer tests (mocked)
-- Mock URLSession or inject protocol-based client
-- Cover auth token attach, 401 handling, decode-failure handling (Negative Testing from slide)
-
-### 2c — XCUITest happy-path smoke (mirrors web Phase 1)
-- Launch app → login → dashboard renders → tab bar nav works
-- One critical flow: view a school, view a task
-
-### 2d — CI wiring
-- `xcodebuild test -scheme RecruitingCompass -destination 'generic/platform=iOS Simulator'` (per user's env notes: needs `DEVELOPER_DIR=/Applications/Xcode-beta.app/Contents/Developer` if run against beta Xcode)
-- GitHub Actions macOS runner, gate on PR to iOS main
-
-**Effort:** 2a: 1-2 days, 2b: 1 day, 2c: 1-2 days, 2d: 0.5 day. ~1 week total, sequenced not parallel (2b depends on nothing from 2a, could parallelize those two).
-
-**Open question for Chris:** does an XCTest target already exist and just sit empty? Verify before scaffolding — don't duplicate.
+**Lesson:** should have run the repo's own "Orient Before Acting" step (`grep -ril` / directory check) before asserting a gap existed, exactly like `CLAUDE.md`'s own rule says. Didn't, because the claim was made about a different repo than the one loaded in context.
 
 ---
 
