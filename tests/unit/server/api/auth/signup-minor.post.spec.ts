@@ -325,6 +325,22 @@ describe("POST /api/auth/signup-minor", () => {
     expect(mockCreateVerifiedAccount).toHaveBeenCalled();
   });
 
+  it("accepts and normalizes player/guardian emails with surrounding whitespace", async () => {
+    const result = await call({
+      email: "  player@example.com  ",
+      guardianEmail: " parent@example.com ",
+    });
+
+    expect(result).toMatchObject({ ok: true });
+    expect(mockCreateVerifiedAccount).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ email: "player@example.com" }),
+    );
+    expect(mockClaimInsert).toHaveBeenCalledWith(
+      expect.objectContaining({ guardian_email: "parent@example.com" }),
+    );
+  });
+
   it("still succeeds when the guardian email fails to send", async () => {
     // The account exists and the claim is live; the player can resend from the banner.
     mockSendGuardianClaimEmail.mockResolvedValue({ success: false });

@@ -25,6 +25,21 @@ import {
 import type { Database } from "~/types/database";
 
 /**
+ * emailSchema's own chain runs its `.email()` format check before its
+ * `.trim()`/`.toLowerCase()` transforms — a value with surrounding
+ * whitespace (which the removed manual handler used to trim first, and
+ * which iOS's client-side validator accepts by checking a trimmed copy
+ * while still submitting the untrimmed value) fails format validation
+ * before it ever gets normalized. Preprocessing the trim ourselves here
+ * keeps this endpoint's behavior unchanged without touching the shared
+ * schema (other callers may rely on its current ordering).
+ */
+const trimmedEmailSchema = z.preprocess(
+  (val) => (typeof val === "string" ? val.trim() : val),
+  emailSchema,
+);
+
+/**
  * Mirrors signup.post.ts's own server-side schema (not the client-only
  * signupSchema in utils/validation/schemas.ts). Bounds are deliberately
  * loose on the free-text fields below — the manual checks further down
@@ -32,12 +47,12 @@ import type { Database } from "~/types/database";
  * the actual business rules; this layer's job is format/length/type only.
  */
 const signupMinorBodySchema = z.object({
-  email: emailSchema,
+  email: trimmedEmailSchema,
   password: strongPasswordSchema,
   firstName: sanitizedTextSchema(100),
   lastName: sanitizedTextSchema(100),
   dateOfBirth: dateSchema,
-  guardianEmail: emailSchema.or(z.literal("")).optional(),
+  guardianEmail: trimmedEmailSchema.or(z.literal("")).optional(),
   graduationYear: z.number().int().optional(),
   primarySport: sanitizedTextSchema(100),
   gender: sanitizedTextSchema(50),

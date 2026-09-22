@@ -290,9 +290,13 @@ export default defineEventHandler(async (event) => {
     return { ok: true, skipped: "unknown-family" };
   }
 
+  // Store the full verified payload, not the Zod-stripped `payload` used for
+  // typed access above — the retained raw record (7-day retention) should
+  // keep whatever Resend actually sent (attachments, message id, cc/bcc,
+  // etc.), not just the subset this schema narrows down to.
   const rawInsert: RawEmailInsert = {
     family_unit_id: familyUnitId,
-    payload: payload as unknown as Json,
+    payload: rawPayload as unknown as Json,
   };
   const { data: rawRow, error: rawError } = await admin
     .from("raw_inbound_emails")
