@@ -1,6 +1,6 @@
 /* global __ENV */
 import http from "k6/http";
-import { check } from "k6";
+import { check, sleep } from "k6";
 
 // Load test — see k6/README.md for target confirmation before running.
 // Never point this at prod. Confirm with Chris before running against
@@ -19,11 +19,17 @@ import { check } from "k6";
 // /auth/v1/verify — an admin-issued-link redemption, not a public
 // credentialed sign-in, so it isn't captcha-gated.
 
+// Ramp capped at 50 VUs + 1s sleep per iteration (~≤50 req/s from one source
+// IP). A 2026-09-22 run at 10→100→500 VUs with no sleep tripped Vercel's
+// built-in system DDoS mitigation on QA within ~90s — it auto-denied the
+// test machine's IP (self-expired ~15min later), well before the app or
+// Supabase ever showed real strain. See k6/findings.md. Raise this profile
+// only a step at a time, watching the Vercel Firewall dashboard live.
 export const options = {
   stages: [
-    { duration: "1m", target: 10 },
-    { duration: "2m", target: 100 },
-    { duration: "2m", target: 500 },
+    { duration: "1m", target: 5 },
+    { duration: "2m", target: 20 },
+    { duration: "2m", target: 50 },
     { duration: "1m", target: 0 },
   ],
   thresholds: {
@@ -83,7 +89,10 @@ export function setup() {
   // protection on the latter doesn't apply here.
   const verifyRes = http.post(
     `${SUPABASE_URL}/auth/v1/verify`,
-    JSON.stringify({ type: "magiclink", token: hashedToken, email: TEST_EMAIL }),
+    // token_hash (not token) + no email — GoTrue rejects the hashed-token
+    // form if email is present ("Only the token_hash and type should be
+    // provided"), confirmed against a live run 2026-09-22.
+    JSON.stringify({ type: "magiclink", token_hash: hashedToken }),
     {
       headers: {
         "Content-Type": "application/json",
@@ -132,4 +141,5 @@ export default function (data) {
 
   const fitScoreRes = http.get(`${BASE_URL}/api/schools/${data.schoolId}/fit-score`, { headers });
   check(fitScoreRes, { "fit-score 2xx/3xx": (r) => r.status < 400 });
+  sleep(1);
 }

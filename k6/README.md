@@ -4,7 +4,9 @@ Phase 3 of `planning/testing-strategy-2026-09-22.md`. Not wired into CI — manu
 
 ## ⚠️ Before running
 
-**Confirm target with Chris first.** These scripts point at the QA/test Supabase project (`ahpethltxopkjxxzwmmb` / `xpxzhqghxecsjhvklsqg` — verify which is current test project, see `planning/CLAUDE.local.md` `prod-infra-identity`). That project is shared with the E2E suite. Running 500 VUs while E2E is mid-run will cause cross-contamination and false E2E failures. **Never point `BASE_URL`/`SUPABASE_URL` at prod.**
+**Confirm target with Chris first.** These scripts point at the QA/test Supabase project (`ahpethltxopkjxxzwmmb` / `xpxzhqghxecsjhvklsqg` — verify which is current test project, see `planning/CLAUDE.local.md` `prod-infra-identity`). That project is shared with the E2E suite. Running load while E2E is mid-run will cause cross-contamination and false E2E failures. **Never point `BASE_URL`/`SUPABASE_URL` at prod.**
+
+**⚠️ Vercel's system DDoS mitigation trips well below app capacity.** A 2026-09-22 run at 500 VUs with no pacing got the test machine's IP auto-denied by Vercel within ~90s (self-expired ~15min later) — see `k6/findings.md`. The current profile is capped at 50 VUs + 1s sleep per iteration specifically to stay under that ceiling. If you raise it, watch the project's Vercel dashboard → Firewall tab live and stop immediately if "Persistent Actions" shows a new Deny rule against your IP.
 
 ## Install
 
@@ -32,10 +34,11 @@ k6 has no built-in `.env` loader — export the root `.env` into the shell first
 set -a && source .env && set +a && k6 run k6/api-load.js
 ```
 
-Ramp profile: 10 → 100 → 500 VUs over 5 minutes (see `stages` in `api-load.js`). Watch:
+Ramp profile: 5 → 20 → 50 VUs over 5 minutes, 1s sleep per iteration (see `stages` in `api-load.js`). Watch:
 - p95 latency per endpoint (k6 summary)
 - Supabase dashboard: connection pool usage, slow query log
 - Nitro server logs for 5xx spikes
+- **Vercel dashboard → Firewall tab**, live — this is what actually failed first last time, not the app
 
 ## Endpoints covered
 
