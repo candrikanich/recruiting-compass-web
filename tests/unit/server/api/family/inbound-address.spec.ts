@@ -21,30 +21,37 @@ const mockState = {
   family: { inbound_token: "5b011cb7" } as { inbound_token: string } | null,
 };
 
+const fakeClient = () => ({
+  from: (table: string) => {
+    if (table === "family_members") {
+      return {
+        select: () => ({
+          eq: () => ({
+            single: async () => ({ data: mockState.membership, error: null }),
+          }),
+        }),
+      };
+    }
+    if (table === "family_units") {
+      return {
+        select: () => ({
+          eq: () => ({
+            single: async () => ({ data: mockState.family, error: null }),
+          }),
+        }),
+      };
+    }
+    throw new Error(`unexpected table ${table}`);
+  },
+});
+
 vi.mock("~/server/utils/supabase", () => ({
-  useSupabaseAdmin: () => ({
-    from: (table: string) => {
-      if (table === "family_members") {
-        return {
-          select: () => ({
-            eq: () => ({
-              single: async () => ({ data: mockState.membership, error: null }),
-            }),
-          }),
-        };
-      }
-      if (table === "family_units") {
-        return {
-          select: () => ({
-            eq: () => ({
-              single: async () => ({ data: mockState.family, error: null }),
-            }),
-          }),
-        };
-      }
-      throw new Error(`unexpected table ${table}`);
-    },
-  }),
+  useSupabaseAdmin: fakeClient,
+  createServerSupabaseUserClient: fakeClient,
+}));
+
+vi.mock("~/server/utils/requestToken", () => ({
+  extractRequestToken: vi.fn(() => "fake-token"),
 }));
 
 vi.mock("#imports", () => ({

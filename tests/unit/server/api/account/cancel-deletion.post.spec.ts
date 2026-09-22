@@ -20,7 +20,7 @@ vi.mock("~/server/utils/logger", () => ({
 }));
 
 vi.mock("~/server/utils/supabase", () => ({
-  useSupabaseAdmin: vi.fn(() => ({
+  createServerSupabaseUserClient: vi.fn(() => ({
     from: () => ({
       select: () => ({
         eq: () => ({
@@ -36,6 +36,10 @@ vi.mock("~/server/utils/supabase", () => ({
       }),
     }),
   })),
+}));
+
+vi.mock("~/server/utils/requestToken", () => ({
+  extractRequestToken: vi.fn(() => "fake-token"),
 }));
 
 vi.mock("h3", async (importOriginal) => {
