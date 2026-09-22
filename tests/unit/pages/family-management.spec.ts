@@ -34,6 +34,7 @@ vi.mock("~/composables/useFamilyInvitations", () => ({
 const mockParentFamilies = ref<
   { familyId: string; familyCode: string; familyName: string }[]
 >([]);
+const mockJoinByCode = vi.fn().mockResolvedValue(undefined);
 
 vi.mock("~/composables/useFamilyCode", () => ({
   useFamilyCode: () => ({
@@ -46,7 +47,7 @@ vi.mock("~/composables/useFamilyCode", () => ({
     successMessage: ref(null),
     fetchMyCode: mockFetchMyCode,
     createFamily: vi.fn(),
-    joinByCode: vi.fn(),
+    joinByCode: mockJoinByCode,
     regenerateCode: vi.fn(),
     copyCodeToClipboard: vi.fn(),
     removeFamilyMember: vi.fn(),
@@ -55,7 +56,15 @@ vi.mock("~/composables/useFamilyCode", () => ({
 
 const mockFetchAuth = vi.fn((url: string) => {
   if (url === "/api/family/inbound-address") {
-    return Promise.resolve({ address: "family-abc123@inbound.example.com" });
+    return Promise.resolve({
+      addresses: [
+        {
+          familyUnitId: "fam-1",
+          familyName: "Test Family",
+          address: "family-abc123@inbound.example.com",
+        },
+      ],
+    });
   }
   return Promise.resolve({ members: [] });
 });
@@ -75,6 +84,7 @@ vi.mock("~/stores/user", () => ({
 }));
 
 import FamilyManagementPage from "~/pages/settings/family-management.vue";
+import FamilyCodeInput from "~/components/Family/FamilyCodeInput.vue";
 
 function defaultInvitationsReturn(
   overrides: Partial<{ invitations: ReturnType<typeof ref> }> = {},
@@ -181,7 +191,15 @@ describe("family-management parent family members", () => {
     ];
     mockFetchAuth.mockImplementation((url: string) => {
       if (url === "/api/family/inbound-address") {
-        return Promise.resolve({ address: "family-abc123@inbound.example.com" });
+        return Promise.resolve({
+          addresses: [
+            {
+              familyUnitId: "fam-1",
+              familyName: "My Family",
+              address: "family-abc123@inbound.example.com",
+            },
+          ],
+        });
       }
       if (url === "/api/family/members?familyId=fam-1") {
         return Promise.resolve({
@@ -246,6 +264,50 @@ describe("family-management inbound email address", () => {
 
     expect(mockFetchAuth).toHaveBeenCalledWith("/api/family/inbound-address");
     expect(wrapper.text()).toContain("family-abc123@inbound.example.com");
+  });
+
+  it("renders one address per family for a multi-family parent", async () => {
+    mockFetchAuth.mockImplementation((url: string) => {
+      if (url === "/api/family/inbound-address") {
+        return Promise.resolve({
+          addresses: [
+            {
+              familyUnitId: "fam-1",
+              familyName: "The Smiths",
+              address: "family-abc123@inbound.example.com",
+            },
+            {
+              familyUnitId: "fam-2",
+              familyName: "The Joneses",
+              address: "family-def456@inbound.example.com",
+            },
+          ],
+        });
+      }
+      return Promise.resolve({ members: [] });
+    });
+
+    const wrapper = mountPage("parent");
+    await flushPromises();
+
+    expect(wrapper.text()).toContain("family-abc123@inbound.example.com");
+    expect(wrapper.text()).toContain("family-def456@inbound.example.com");
+    expect(wrapper.text()).toContain("The Smiths");
+    expect(wrapper.text()).toContain("The Joneses");
+  });
+
+  it("re-fetches inbound addresses after joining a new family", async () => {
+    const wrapper = mountPage("parent");
+    await flushPromises();
+    mockFetchAuth.mockClear();
+
+    await wrapper
+      .findComponent(FamilyCodeInput)
+      .vm.$emit("submit", "FAM-NEW22");
+    await flushPromises();
+
+    expect(mockJoinByCode).toHaveBeenCalledWith("FAM-NEW22");
+    expect(mockFetchAuth).toHaveBeenCalledWith("/api/family/inbound-address");
   });
 });
 

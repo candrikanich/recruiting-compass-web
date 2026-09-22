@@ -19,8 +19,9 @@ vi.mock("~/server/utils/logger", () => ({
 }));
 
 const mockState = {
-  membership: undefined as { family_unit_id: string } | null | undefined,
+  memberships: undefined as { family_unit_id: string }[] | null | undefined,
   queryCalled: false as boolean,
+  inFilteredWith: undefined as string[] | undefined,
 };
 
 const fakeClient = () => ({
@@ -28,11 +29,9 @@ const fakeClient = () => ({
     if (table === "family_members") {
       return {
         select: () => ({
-          eq: () => ({
-            single: async () => ({
-              data: mockState.membership,
-              error: mockState.membership ? null : { code: "PGRST116" },
-            }),
+          eq: async () => ({
+            data: mockState.memberships,
+            error: null,
           }),
         }),
       };
@@ -40,24 +39,27 @@ const fakeClient = () => ({
     if (table === "inbound_email_drafts") {
       return {
         select: () => ({
-          eq: () => ({
-            eq: () => ({
+          in: (_col: string, ids: string[]) => {
+            mockState.inFilteredWith = ids;
+            return {
+              eq: () => ({
+                order: async () => {
+                  mockState.queryCalled = true;
+                  return {
+                    data: [{ id: "draft-1", status: "pending" }],
+                    error: null,
+                  };
+                },
+              }),
               order: async () => {
-                mockState.queryCalled = true;
+                mockState.queryCalled = false;
                 return {
-                  data: [{ id: "draft-1", status: "pending" }],
+                  data: [{ id: "draft-1", status: "all-statuses" }],
                   error: null,
                 };
               },
-            }),
-            order: async () => {
-              mockState.queryCalled = false;
-              return {
-                data: [{ id: "draft-1", status: "all-statuses" }],
-                error: null,
-              };
-            },
-          }),
+            };
+          },
         }),
       };
     }
@@ -80,12 +82,13 @@ import { requireAuth } from "~/server/utils/auth";
 describe("GET /api/inbound-drafts", () => {
   beforeEach(() => {
     vi.mocked(getQuery).mockReturnValue({});
-    mockState.membership = { family_unit_id: "family-1" };
+    mockState.memberships = [{ family_unit_id: "family-1" }];
     mockState.queryCalled = false;
+    mockState.inFilteredWith = undefined;
   });
 
   it("returns 403 when the caller has no family membership", async () => {
-    mockState.membership = null;
+    mockState.memberships = [];
     vi.mocked(requireAuth).mockResolvedValue({ id: "user-1" } as never);
     const { default: handler } =
       await import("~/server/api/inbound-drafts/index.get");
@@ -100,6 +103,18 @@ describe("GET /api/inbound-drafts", () => {
       await import("~/server/api/inbound-drafts/index.get");
     const result = await handler({} as Parameters<typeof handler>[0]);
     expect(result).toEqual({ drafts: [{ id: "draft-1", status: "pending" }] });
+  });
+
+  it("queries drafts across every family for a multi-family parent", async () => {
+    mockState.memberships = [
+      { family_unit_id: "family-1" },
+      { family_unit_id: "family-2" },
+    ];
+    vi.mocked(requireAuth).mockResolvedValue({ id: "user-1" } as never);
+    const { default: handler } =
+      await import("~/server/api/inbound-drafts/index.get");
+    await handler({} as Parameters<typeof handler>[0]);
+    expect(mockState.inFilteredWith).toEqual(["family-1", "family-2"]);
   });
 
   it("returns all drafts (all statuses) when ?status=all", async () => {

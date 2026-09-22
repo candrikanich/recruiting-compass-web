@@ -9,7 +9,6 @@ import { requireAuth } from "~/server/utils/auth";
 import { createServerSupabaseUserClient } from "~/server/utils/supabase";
 import { extractRequestToken } from "~/server/utils/requestToken";
 import { useLogger } from "~/server/utils/logger";
-import { resolveFamilyUnitId } from "~/server/utils/familyMembership";
 
 const UUID_SHAPE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -17,13 +16,12 @@ const UUID_SHAPE =
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "inbound-drafts/discard");
   try {
-    const { id: userId } = await requireAuth(event);
+    await requireAuth(event);
     const draftId = getRouterParam(event, "id")!;
     if (!UUID_SHAPE.test(draftId)) {
       throw createError({ statusCode: 400, statusMessage: "Invalid draft id" });
     }
 
-    const familyUnitId = await resolveFamilyUnitId(event, userId);
     const token = extractRequestToken(event);
     const supabase = createServerSupabaseUserClient(token);
 
@@ -32,7 +30,7 @@ export default defineEventHandler(async (event) => {
       .select("id, family_unit_id, status")
       .eq("id", draftId)
       .maybeSingle();
-    if (!draft || draft.family_unit_id !== familyUnitId) {
+    if (!draft) {
       throw createError({ statusCode: 404, statusMessage: "Draft not found" });
     }
 
