@@ -17,8 +17,12 @@ vi.mock("~/server/utils/logger", () => ({
   useLogger: () => ({ info: vi.fn(), error: vi.fn(), warn: vi.fn(), debug: vi.fn() }),
 }));
 
+vi.mock("~/server/utils/requestToken", () => ({
+  extractRequestToken: vi.fn(() => "fake-token"),
+}));
+
 vi.mock("~/server/utils/supabase", () => ({
-  useSupabaseAdmin: vi.fn(() => ({
+  createServerSupabaseUserClient: vi.fn(() => ({
     from: (table: string) => {
       if (table === "users") {
         return { select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: mockUserRow.value }) }) }) };
