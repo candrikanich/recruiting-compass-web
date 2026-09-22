@@ -3957,6 +3957,15 @@ export type Database = {
         };
         Returns: string;
       };
+      create_family_for_user: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          family_id: string;
+          family_code: string;
+          family_name: string;
+          already_existed: boolean;
+        }[];
+      };
       delete_expired_audit_logs: {
         Args: never;
         Returns: {
@@ -4043,10 +4052,22 @@ export type Database = {
         Args: { target_user_id: string };
         Returns: boolean;
       };
+      join_family_by_code: {
+        Args: { p_family_code: string };
+        Returns: {
+          family_id: string;
+          family_name: string;
+          already_member: boolean;
+        }[];
+      };
       notify_upcoming_events: { Args: never; Returns: undefined };
       reactivate_school: {
         Args: { p_actor: string; p_school_id: string };
         Returns: Database["public"]["Enums"]["school_status"];
+      };
+      regenerate_family_code: {
+        Args: { p_family_id: string };
+        Returns: string;
       };
       resolve_profile_contact_lead: {
         Args: {
