@@ -119,6 +119,28 @@ describe("exportUtils", () => {
       expect(result).toContain("John,Total = 5+5");
     });
 
+    it("should neutralize tab- and carriage-return-prefixed formulas (OWASP)", () => {
+      const headers = ["Name", "Notes"];
+      const rows = [
+        ["John", "\t=SUM(A1:A10)"],
+        ["Jane", "\r=SUM(A1:A10)"],
+      ];
+
+      const result = toCSV(headers, rows);
+
+      expect(result).toContain("John,'\t=SUM(A1:A10)");
+      expect(result).toContain("Jane,\"'\r=SUM(A1:A10)\"");
+    });
+
+    it("should quote (not just escape) values containing a carriage return", () => {
+      const headers = ["Name", "Notes"];
+      const rows = [["John", "Line 1\rLine 2"]];
+
+      const result = toCSV(headers, rows);
+
+      expect(result).toContain('"Line 1\rLine 2"');
+    });
+
     it("should escape special characters in headers", () => {
       const headers = ["Name", "Email, Address"];
       const rows = [["John", "test@example.com"]];

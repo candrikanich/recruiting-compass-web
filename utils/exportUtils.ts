@@ -36,12 +36,14 @@ const escapeCSV = (value: unknown): string => {
   if (value === null || value === undefined) return "";
   let str = String(value);
   // Neutralize CSV formula injection (OWASP): prefix cells starting with
-  // =, +, -, or @ so spreadsheet apps treat them as text, not formulas.
-  if (/^[=+\-@]/.test(str)) {
+  // =, +, -, @, tab, or carriage return so spreadsheet apps treat them as
+  // text, not formulas.
+  if (/^[=+\-@\t\r]/.test(str)) {
     str = `'${str}`;
   }
-  // Escape quotes and wrap in quotes if contains comma, quote, or newline
-  if (str.includes(",") || str.includes('"') || str.includes("\n")) {
+  // Escape quotes and wrap in quotes if contains comma, quote, newline, or
+  // carriage return (an unquoted \r can split the CSV record).
+  if (str.includes(",") || str.includes('"') || str.includes("\n") || str.includes("\r")) {
     return `"${str.replace(/"/g, '""')}"`;
   }
   return str;
