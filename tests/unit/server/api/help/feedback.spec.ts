@@ -53,11 +53,15 @@ vi.mock("~/server/utils/errorHandler", () => ({
 }));
 
 vi.mock("~/server/utils/supabase", () => ({
-  useSupabaseAdmin: vi.fn(() => ({
+  createServerSupabaseUserClient: vi.fn(() => ({
     from: () => ({
       insert: () => Promise.resolve({ error: mockState.insertError }),
     }),
   })),
+}));
+
+vi.mock("~/server/utils/requestToken", () => ({
+  extractRequestToken: vi.fn(() => "fake-token"),
 }));
 
 vi.mock("~/utils/validation/schemas", () => ({

@@ -10,7 +10,8 @@ import { defineEventHandler, readBody, createError } from "h3";
 import { z } from "zod";
 import { requireAuth } from "~/server/utils/auth";
 import { useLogger } from "~/server/utils/logger";
-import { useSupabaseAdmin } from "~/server/utils/supabase";
+import { createServerSupabaseUserClient } from "~/server/utils/supabase";
+import { extractRequestToken } from "~/server/utils/requestToken";
 import type { Database } from "~/types/database";
 
 export const historySchema = z.object({
@@ -31,7 +32,8 @@ export default defineEventHandler(async (event) => {
     const { category, old_value, new_value, changed_fields } =
       historySchema.parse(body);
 
-    const supabase = useSupabaseAdmin();
+    const token = extractRequestToken(event);
+    const supabase = createServerSupabaseUserClient(token);
 
     // Insert history record
     const response = await supabase

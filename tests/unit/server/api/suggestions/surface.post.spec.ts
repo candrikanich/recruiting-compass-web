@@ -13,7 +13,10 @@ import type { H3Event } from "h3";
 
 vi.mock("~/server/utils/auth", () => ({ requireAuth: vi.fn() }));
 vi.mock("~/server/utils/supabase", () => ({
-  createServerSupabaseClient: vi.fn(() => ({})),
+  createServerSupabaseUserClient: vi.fn(() => ({})),
+}));
+vi.mock("~/server/utils/requestToken", () => ({
+  extractRequestToken: vi.fn(() => "fake-token"),
 }));
 vi.mock("~/server/utils/logger", () => ({
   useLogger: () => ({

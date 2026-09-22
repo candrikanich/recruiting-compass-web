@@ -4,7 +4,8 @@
  */
 
 import { defineEventHandler } from "h3";
-import { createServerSupabaseClient } from "~/server/utils/supabase";
+import { createServerSupabaseUserClient } from "~/server/utils/supabase";
+import { extractRequestToken } from "~/server/utils/requestToken";
 import { requireAuth, getUserRole } from "~/server/utils/auth";
 import { useLogger } from "~/server/utils/logger";
 import type { AthleteAPI } from "~/types/api/athlete";
@@ -22,7 +23,8 @@ import {
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "athlete/phase");
   const user = await requireAuth(event);
-  const supabase = createServerSupabaseClient();
+  const token = extractRequestToken(event);
+  const supabase = createServerSupabaseUserClient(token);
 
   try {
     // Resolve the athlete ID: parents view their linked player's data

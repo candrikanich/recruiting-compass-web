@@ -40,7 +40,21 @@ export default defineEventHandler((event) => {
   // This app runs in SPA mode (ssr: false). With SSR disabled, Nuxt cannot inject per-request
   // nonces at render time, so 'unsafe-inline' is genuinely required for Nuxt to function.
   // To eliminate this, enable SSR and use nonce-based CSP (https://nuxt.com/docs/getting-started/seo-meta).
-  // XSS defence depth: input sanitized via sanitize-html, zero v-html usage, Zod validation on all inputs.
+  // XSS defence depth: input sanitized via sanitize-html, Zod validation on
+  // all inputs, and only one v-html in the whole app (pages/index.vue:104,
+  // a hardcoded static SVG literal, never user data).
+  //
+  // No explicit CORS allowlist here (#914, verified): this is a same-origin
+  // SPA+API, so the browser's default same-origin policy already blocks a
+  // cross-origin page's JS from reading these responses -- there's no
+  // Access-Control-Allow-Origin to loosen that. Cookie-authenticated
+  // state-changing requests (POST/PUT/PATCH/DELETE) are additionally gated
+  // by CSRF token validation (server/middleware/csrf.ts), which a
+  // cross-origin attacker page can't satisfy even if it fired a blind
+  // request. The iOS app authenticates via Authorization: Bearer instead of
+  // cookies, and CORS is a browser-only mechanism -- native network
+  // requests aren't subject to it at all, so it needs no allowlist entry
+  // either.
   //
   // Vercel Speed Insights: va.vercel-scripts.com, vitals.vercel-insights.com, blob: workers
   // Supabase Storage: frame-src/object-src for PDF previews, wss: for WebSocket

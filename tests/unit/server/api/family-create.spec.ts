@@ -1,21 +1,24 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-// Mutable test state — updated per test, read by mock factories at call time
+/**
+ * POST /api/family/create — route wrapper tests.
+ *
+ * The full create flow (existing-family checks, code/token generation,
+ * 23505 race recovery, membership insert, usage log) now lives inside
+ * create_family_for_user(), a SECURITY DEFINER RPC (#912 -- see
+ * supabase/migrations/20260928000023_family_code_rpcs.sql) -- that SQL
+ * logic isn't unit-testable at this layer. This covers the route's own
+ * responsibility: calling the RPC and mapping its result/error to a
+ * response.
+ */
+
 const mockState = {
-  userId: "player-user-id",
-  userRole: "player" as string | null,
-  existingFamily: null as object | null,
-  existingMembership: null as object | null,
-  // Set to simulate losing the create race: the insert below returns a 23505
-  // conflict, and this is what the post-conflict re-select finds.
-  raceWinnerFamily: null as object | null,
-  // Error returned by the post-race family_members upsert, if any.
-  raceMembershipUpsertError: null as { code?: string; message: string } | null,
+  rpcData: null as Record<string, unknown> | null,
+  rpcError: null as object | null,
 };
 
 vi.mock("~/server/utils/auth", () => ({
-  requireAuth: vi.fn(async () => ({ id: mockState.userId })),
-  getUserRole: vi.fn(async () => mockState.userRole),
+  requireAuth: vi.fn(async () => ({ id: "user-1" })),
 }));
 
 vi.mock("~/server/utils/logger", () => ({
@@ -27,98 +30,25 @@ vi.mock("~/server/utils/logger", () => ({
   }),
 }));
 
-vi.mock("~/server/utils/familyCode", () => ({
-  generateFamilyCode: vi.fn().mockResolvedValue("FAM-TESTCODE"),
-}));
-
-vi.mock("~/server/utils/familyInboundToken", () => ({
-  generateInboundToken: vi.fn().mockResolvedValue("abcd1234"),
-}));
-
-const familyUnitsInsertSpy = vi.fn();
-const familyMembersUpsertSpy = vi.fn();
-// Module-level, not per-`.from()`-call scoped: real code calls
-// `.from("family_units")` separately for the initial existing-family check, the
-// insert, and (on a race) the post-conflict re-select — each is a fresh `from()`
-// invocation, so a counter declared inside the closure would reset every time.
-let familyUnitsSelectCallCount = 0;
-
 vi.mock("~/server/utils/supabase", () => ({
-  useSupabaseAdmin: vi.fn(() => ({
-    from: (table: string) => {
-      if (table === "family_units") {
-        return {
-          select: () => ({
-            eq: () => ({
-              maybeSingle: () => {
-                familyUnitsSelectCallCount += 1;
-                // First call is the initial existing-family check; a second call
-                // only happens on the race-recovery path after a 23505 conflict.
-                const data =
-                  familyUnitsSelectCallCount === 1
-                    ? mockState.existingFamily
-                    : mockState.raceWinnerFamily;
-                return Promise.resolve({ data, error: null });
-              },
-            }),
+  createServerSupabaseUserClient: vi.fn(() => ({
+    rpc: (fn: string) => {
+      if (fn !== "create_family_for_user") {
+        throw new Error(`unexpected rpc ${fn}`);
+      }
+      return {
+        single: () =>
+          Promise.resolve({
+            data: mockState.rpcData,
+            error: mockState.rpcError,
           }),
-          insert: (payload: object) => {
-            familyUnitsInsertSpy(payload);
-            return {
-              select: () => ({
-                single: () =>
-                  mockState.raceWinnerFamily
-                    ? Promise.resolve({
-                        data: null,
-                        error: {
-                          code: "23505",
-                          message: "duplicate key value",
-                        },
-                      })
-                    : Promise.resolve({
-                        data: {
-                          id: "family-123",
-                          family_code: "FAM-TESTCODE",
-                          family_name: "My Family",
-                        },
-                        error: null,
-                      }),
-              }),
-            };
-          },
-          delete: () => ({ eq: () => Promise.resolve({ error: null }) }),
-        };
-      }
-      if (table === "family_members") {
-        return {
-          select: () => ({
-            eq: () => ({
-              maybeSingle: () =>
-                Promise.resolve({
-                  data: mockState.existingMembership,
-                  error: null,
-                }),
-            }),
-          }),
-          insert: () => Promise.resolve({ error: null }),
-          upsert: (payload: object, options: object) => {
-            familyMembersUpsertSpy(payload, options);
-            return Promise.resolve({
-              error: mockState.raceMembershipUpsertError,
-            });
-          },
-        };
-      }
-      if (table === "family_code_usage_log") {
-        const builder = Object.assign(
-          Promise.resolve({ data: null, error: null }),
-          { catch: vi.fn() },
-        );
-        return { insert: vi.fn().mockReturnValue(builder) };
-      }
-      return {};
+      };
     },
   })),
+}));
+
+vi.mock("~/server/utils/requestToken", () => ({
+  extractRequestToken: vi.fn(() => "fake-token"),
 }));
 
 vi.mock("h3", async (importOriginal) => {
@@ -140,134 +70,56 @@ vi.mock("h3", async (importOriginal) => {
   };
 });
 
-// Import handler once — mocks are established above
 const { default: handler } = await import("~/server/api/family/create.post");
 
-describe("POST /api/family/create — symmetric", () => {
+describe("POST /api/family/create", () => {
   beforeEach(() => {
-    mockState.userId = "player-user-id";
-    mockState.userRole = "player";
-    mockState.existingFamily = null;
-    mockState.existingMembership = null;
-    mockState.raceWinnerFamily = null;
-    mockState.raceMembershipUpsertError = null;
-    familyUnitsInsertSpy.mockClear();
-    familyMembersUpsertSpy.mockClear();
-    familyUnitsSelectCallCount = 0;
+    mockState.rpcData = {
+      family_id: "family-123",
+      family_code: "FAM-TESTCODE",
+      family_name: "My Family",
+      already_existed: false,
+    };
+    mockState.rpcError = null;
   });
 
-  it("sets inbound_token on insert — DB column is NOT NULL, omitting it 500s in prod", async () => {
-    await handler({} as Parameters<typeof handler>[0]);
-
-    expect(familyUnitsInsertSpy).toHaveBeenCalledWith(
-      expect.objectContaining({ inbound_token: "abcd1234" }),
-    );
-  });
-
-  it("allows a player to create a family unit", async () => {
+  it("creates a family and returns its id/code/name", async () => {
     const result = await handler({} as Parameters<typeof handler>[0]);
-    expect(result).toMatchObject({
+    expect(result).toEqual({
       success: true,
-      familyCode: "FAM-TESTCODE",
       familyId: "family-123",
+      familyCode: "FAM-TESTCODE",
+      familyName: "My Family",
     });
   });
 
-  it("allows a parent to create a family unit", async () => {
-    mockState.userId = "parent-user-id";
-    mockState.userRole = "parent";
-
-    const result = await handler({} as Parameters<typeof handler>[0]);
-    expect(result).toMatchObject({ success: true, familyCode: "FAM-TESTCODE" });
-  });
-
-  it("returns existing family if one already exists", async () => {
-    mockState.existingFamily = {
-      id: "existing-family",
+  it("includes an already-exists message when the RPC reports already_existed", async () => {
+    mockState.rpcData = {
+      family_id: "existing-family",
       family_code: "FAM-EXISTING",
       family_name: "My Family",
+      already_existed: true,
     };
 
     const result = await handler({} as Parameters<typeof handler>[0]);
-    expect(result).toMatchObject({
+    expect(result).toEqual({
       success: true,
       familyId: "existing-family",
+      familyCode: "FAM-EXISTING",
+      familyName: "My Family",
       message: "Family already exists",
     });
   });
 
-  it("returns the invited family instead of creating a duplicate when a player is already a family_members row (not the creator) — repro for idx_player_one_family 500", async () => {
-    mockState.existingMembership = {
-      family_units: {
-        id: "invited-family",
-        family_code: "FAM-INVITED",
-        family_name: "The Invite Family",
-      },
-    };
-
-    const result = await handler({} as Parameters<typeof handler>[0]);
-
-    expect(result).toMatchObject({
-      success: true,
-      familyId: "invited-family",
-      familyCode: "FAM-INVITED",
-      message: "Family already exists",
-    });
-    expect(familyUnitsInsertSpy).not.toHaveBeenCalled();
+  it("returns 500 when the RPC errors", async () => {
+    mockState.rpcError = { message: "db error" };
+    await expect(
+      handler({} as Parameters<typeof handler>[0]),
+    ).rejects.toMatchObject({ statusCode: 500 });
   });
 
-  it("reuses the winner's family when the create INSERT loses a concurrent race (23505)", async () => {
-    // The initial existing-family SELECT found nothing (a genuine race — a
-    // concurrent caller, e.g. plugins/auth.client.ts's SIGNED_IN listener, hadn't
-    // committed its own INSERT yet), so this caller's own INSERT hits
-    // idx_family_units_one_per_creator and gets back a 23505 conflict instead of a
-    // silent duplicate family.
-    mockState.raceWinnerFamily = {
-      id: "race-winner-family",
-      family_code: "FAM-WINNER",
-      family_name: "My Family",
-    };
-
-    const result = await handler({} as Parameters<typeof handler>[0]);
-
-    expect(result).toMatchObject({
-      success: true,
-      familyId: "race-winner-family",
-      familyCode: "FAM-WINNER",
-      message: "Family already exists",
-    });
-  });
-
-  it("durably upserts the caller's own creator membership before returning success on a race loss — the winner's own INSERT may not have committed yet", async () => {
-    mockState.raceWinnerFamily = {
-      id: "race-winner-family",
-      family_code: "FAM-WINNER",
-      family_name: "My Family",
-    };
-
-    await handler({} as Parameters<typeof handler>[0]);
-
-    expect(familyMembersUpsertSpy).toHaveBeenCalledWith(
-      expect.objectContaining({
-        family_unit_id: "race-winner-family",
-        user_id: "player-user-id",
-        role: "player",
-      }),
-      expect.objectContaining({ onConflict: "family_unit_id,user_id" }),
-    );
-  });
-
-  it("500s rather than reporting success if the post-race membership upsert fails", async () => {
-    mockState.raceWinnerFamily = {
-      id: "race-winner-family",
-      family_code: "FAM-WINNER",
-      family_name: "My Family",
-    };
-    mockState.raceMembershipUpsertError = {
-      code: "23503",
-      message: "foreign key violation",
-    };
-
+  it("returns 500 when the RPC returns no data", async () => {
+    mockState.rpcData = null;
     await expect(
       handler({} as Parameters<typeof handler>[0]),
     ).rejects.toMatchObject({ statusCode: 500 });

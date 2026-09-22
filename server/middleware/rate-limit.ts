@@ -1,114 +1,25 @@
 import type { H3Event } from "h3";
-import { setHeader, getCookie } from "h3";
+import { setHeader, getCookie, getHeader } from "h3";
 import { createLogger } from "../utils/logger";
+import { rateLimitByKey } from "../utils/rateLimit";
 
 const logger = createLogger("rate-limit");
-
-/**
- * In-memory rate limiting cache with LRU eviction.
- * Tracks request count per IP + path (or authenticated user ID if available).
- *
- * NOTE: This is suitable for single-instance deployments. For distributed deployments,
- * upgrade to Redis-backed rate limiting:
- * 1. Set REDIS_URL environment variable
- * 2. Install Redis client: npm install redis
- * 3. Uncomment Redis implementation below
- *
- * Production deployment considerations:
- * - Single instance: In-memory cache is sufficient
- * - Multiple instances: Use Redis for shared rate limit state
- * - High traffic: Consider dedicated rate limiting service (e.g., Cloudflare, AWS WAF)
- */
-class RateLimitCache {
-  private cache = new Map<string, { count: number; resetTime: number }>();
-  private maxSize = 1000;
-  private cleanupInterval = 60000; // 1 minute
-
-  constructor() {
-    // Cleanup old entries periodically
-    setInterval(() => this.cleanup(), this.cleanupInterval);
-  }
-
-  /**
-   * Check if request is allowed and increment counter
-   * Returns true if request is within limits, false if rate limited
-   */
-  isAllowed(
-    key: string,
-    limit: number,
-    windowMs: number,
-  ): { allowed: boolean; remaining: number } {
-    const now = Date.now();
-    const entry = this.cache.get(key);
-
-    if (!entry) {
-      // New entry
-      this.cache.set(key, { count: 1, resetTime: now + windowMs });
-      return { allowed: true, remaining: limit - 1 };
-    }
-
-    if (now > entry.resetTime) {
-      // Window expired, reset
-      entry.count = 1;
-      entry.resetTime = now + windowMs;
-      return { allowed: true, remaining: limit - 1 };
-    }
-
-    // Within window
-    entry.count++;
-    const remaining = Math.max(0, limit - entry.count);
-    const allowed = entry.count <= limit;
-
-    if (!allowed) {
-      logger.warn(
-        `Rate limit exceeded for key: ${key} (${entry.count}/${limit})`,
-      );
-    }
-
-    return { allowed, remaining };
-  }
-
-  /**
-   * Remove expired entries
-   */
-  private cleanup() {
-    const now = Date.now();
-    for (const [key, entry] of this.cache.entries()) {
-      if (now > entry.resetTime) {
-        this.cache.delete(key);
-      }
-    }
-
-    // Keep cache size under control
-    if (this.cache.size > this.maxSize) {
-      const entriesToDelete = Math.ceil(this.maxSize * 0.2);
-      let deleted = 0;
-      for (const [key] of this.cache.entries()) {
-        if (deleted >= entriesToDelete) break;
-        this.cache.delete(key);
-        deleted++;
-      }
-    }
-  }
-}
-
-const rateLimitCache = new RateLimitCache();
 
 /**
  * Rate limit configuration per endpoint type
  */
 interface RateLimitConfig {
   limit: number;
-  windowMs: number;
+  window: `${number} ${"s" | "m" | "h" | "d"}`;
 }
 
 const RATE_LIMIT_CONFIGS: Record<string, RateLimitConfig> = {
   // Auth endpoints are strict (prevent brute force)
-  auth: { limit: 5, windowMs: 60 * 1000 }, // 5 requests per minute
+  auth: { limit: 5, window: "1 m" }, // 5 requests per minute
   // Standard API endpoints
-  api: { limit: 60, windowMs: 60 * 1000 }, // 60 requests per minute
+  api: { limit: 60, window: "1 m" }, // 60 requests per minute
   // Default fallback
-  default: { limit: 100, windowMs: 60 * 1000 }, // 100 requests per minute
+  default: { limit: 100, window: "1 m" }, // 100 requests per minute
 };
 
 /**
@@ -141,6 +52,14 @@ function getClientIp(event: H3Event): string {
  * Rate limiting middleware
  * Enforces request rate limits per IP and endpoint type
  *
+ * Backed by the same Upstash Redis limiter used by rateLimitByIp/rateLimitByUser
+ * (server/utils/rateLimit.ts) -- a shared store across concurrent Vercel
+ * function instances, not per-instance in-memory state (#914). Degrades to an
+ * open bypass (no limiting) if UPSTASH_REDIS_REST_URL/TOKEN aren't configured,
+ * same as every other caller of that utility -- rate limiting is defense in
+ * depth, not the primary auth boundary, so failing open here rather than
+ * 500ing every request is the existing, deliberate tradeoff.
+ *
  * @example
  * // Applied globally in nuxt.config.ts
  * export default defineNuxtConfig({
@@ -153,7 +72,7 @@ function getClientIp(event: H3Event): string {
  *   },
  * })
  */
-export default defineEventHandler((event) => {
+export default defineEventHandler(async (event) => {
   // Rate limiting is only meaningful in production. In development and test
   // environments the only traffic is the developer or the E2E suite — applying
   // limits here causes false 429s during automated test runs.
@@ -170,19 +89,21 @@ export default defineEventHandler((event) => {
   const userId = token ? `user:${token.slice(-20)}` : `ip:${ip}`;
   const key = `${userId}:${path}`;
 
-  const result = rateLimitCache.isAllowed(key, config.limit, config.windowMs);
+  const result = await rateLimitByKey(event, key, {
+    requests: config.limit,
+    window: config.window,
+  });
 
   // Add rate limit headers to response
-  const retryAfterSeconds = Math.ceil(config.windowMs / 1000);
   setHeader(event, "X-RateLimit-Limit", String(config.limit));
   setHeader(event, "X-RateLimit-Remaining", String(result.remaining));
-  setHeader(
-    event,
-    "X-RateLimit-Reset",
-    String(Math.ceil((Date.now() + config.windowMs) / 1000)),
-  );
+  setHeader(event, "X-RateLimit-Reset", String(Math.ceil(result.reset / 1000)));
 
-  if (!result.allowed) {
+  if (!result.success) {
+    const retryAfterSeconds = Math.max(
+      1,
+      Math.ceil((result.reset - Date.now()) / 1000),
+    );
     setHeader(event, "Retry-After", retryAfterSeconds);
     logger.warn(`Rate limit exceeded: ${key}`);
     throw createError({

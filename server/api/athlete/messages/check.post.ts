@@ -17,7 +17,8 @@ import { z } from "zod";
 import { useLogger } from "~/server/utils/logger";
 import { requireAuth } from "~/server/utils/auth";
 import { resolveTargetAthleteId } from "~/server/utils/athleteAccess";
-import { useSupabaseAdmin } from "~/server/utils/supabase";
+import { createServerSupabaseUserClient } from "~/server/utils/supabase";
+import { extractRequestToken } from "~/server/utils/requestToken";
 
 export const bodySchema = z.object({
   athleteUserId: z.string().uuid(),
@@ -41,7 +42,8 @@ export default defineEventHandler(async (event) => {
   const { athleteUserId, schoolId, programNote } = parsed.data;
 
   const targetId = await resolveTargetAthleteId(event, user.id, athleteUserId);
-  const supabase = useSupabaseAdmin();
+  const token = extractRequestToken(event);
+  const supabase = createServerSupabaseUserClient(token);
 
   // Rule #6: same program note already sent to a DIFFERENT program → blocking.
   let programNoteReused = false;

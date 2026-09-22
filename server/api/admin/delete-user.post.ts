@@ -16,21 +16,30 @@
  * - Logs the deletion action
  */
 
-interface DeleteUserRequest {
-  email: string;
-  env?: "prod" | "qa";
-}
-
 interface DeleteUserResponse {
   success: boolean;
   message: string;
 }
 
 import { defineEventHandler, readBody, createError } from "h3";
+import { z } from "zod";
 import { requireAdmin } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import { resolveAdminDbEnv } from "~/server/utils/adminDbEnv";
 import { useLogger } from "~/server/utils/logger";
+import { emailSchema } from "~/utils/validation/validators";
+
+// emailSchema validates .email() before its own .trim()/.toLowerCase(), so a
+// whitespace-padded address (this endpoint's own removed manual check
+// trimmed first) must be trimmed before it reaches the schema.
+const deleteUserBodySchema = z.object({
+  email: z.preprocess(
+    (val) => (typeof val === "string" ? val.trim() : val),
+    emailSchema,
+  ),
+  env: z.enum(["prod", "qa"]).optional(),
+});
+type DeleteUserRequest = z.infer<typeof deleteUserBodySchema>;
 
 export default defineEventHandler(
   async (event): Promise<DeleteUserResponse> => {
@@ -40,30 +49,22 @@ export default defineEventHandler(
       const user = await requireAdmin(event);
 
       // 2. Parse and validate request body
-      const body = await readBody<DeleteUserRequest>(event);
-      const { email } = body;
+      const rawBody = await readBody(event);
+      const parsed = deleteUserBodySchema.safeParse(rawBody);
+      if (!parsed.success) {
+        throw createError({
+          statusCode: 400,
+          statusMessage:
+            "Invalid request: " + parsed.error.issues[0]?.message,
+        });
+      }
+      const body: DeleteUserRequest = parsed.data;
       const dbEnv = resolveAdminDbEnv(body.env);
 
       // Create admin client with service role, scoped to the requested DB
       const supabaseAdmin = useSupabaseAdmin(dbEnv);
 
-      if (!email || typeof email !== "string") {
-        throw createError({
-          statusCode: 400,
-          statusMessage: "Email address is required",
-        });
-      }
-
-      // 3. Validate email format
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email.trim())) {
-        throw createError({
-          statusCode: 400,
-          statusMessage: "Invalid email address format",
-        });
-      }
-
-      const targetEmail = email.trim();
+      const targetEmail = body.email;
 
       // 4. Prevent deleting your own account via this endpoint
       if (targetEmail === user.email) {

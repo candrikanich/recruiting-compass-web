@@ -112,16 +112,16 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v4.38.0
+        uses: github/codeql-action/init@v4.38.1
         with:
           languages: ${{ matrix.language }}
           config-file: ./.github/codeql/codeql-config.yml
 
       - name: Autobuild
-        uses: github/codeql-action/autobuild@v4.38.0
+        uses: github/codeql-action/autobuild@v4.38.1
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v4.38.0
+        uses: github/codeql-action/analyze@v4.38.1
         with:
           category: "/language:${{ matrix.language }}"
           # Continue even if some files have parsing issues
@@ -154,7 +154,7 @@ jobs:
 
       - name: TruffleHog Secret Scan (PR diff)
         if: github.event_name == 'pull_request' && steps.sha-check.outputs.has_diff == 'true'
-        uses: trufflesecurity/trufflehog@v3.97.4
+        uses: trufflesecurity/trufflehog@v3.97.5
         with:
           path: ./
           base: ${{ github.event.pull_request.base.sha }}
@@ -186,7 +186,7 @@ jobs:
 
       - name: TruffleHog Secret Scan (scheduled/manual)
         if: github.event_name != 'pull_request' && steps.scan-base.outputs.has_diff == 'true'
-        uses: trufflesecurity/trufflehog@v3.97.4
+        uses: trufflesecurity/trufflehog@v3.97.5
         with:
           path: ./
           base: ${{ steps.scan-base.outputs.sha }}

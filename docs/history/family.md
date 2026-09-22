@@ -1,5 +1,11 @@
 # History: Family
 
+## 2026-09-20 — Deadlines Unified Timeline + Notification Pipeline
+Completed the Deadlines feature from bare CRUD to a full unified timeline merging system NCAA recruiting dates with family-scoped user deadlines, a notification pipeline, and iOS parity.
+
+## 2026-09-20 — Family-Shared Communication Templates
+Moved communication_templates from user-scoped to family-scoped (new family_unit_id column, RLS rewritten) so any family member can see/edit shared templates, with iOS updated to match the new query scoping.
+
 ## 2026-01-31 — Family-units migration runbook
 Apply guide for migrations 021/022 introducing the family_unit system (family_units/family_members/user_notes tables, family_unit_id columns, helper functions, RLS). Migrations applied live and RLS family consolidation completed; kept as historical runbook.
 

@@ -1,6 +1,7 @@
 import { defineEventHandler, createError } from "h3";
 import { requireAuth, getUserRole } from "~/server/utils/auth";
-import { useSupabaseAdmin } from "~/server/utils/supabase";
+import { createServerSupabaseUserClient } from "~/server/utils/supabase";
+import { extractRequestToken } from "~/server/utils/requestToken";
 import { useLogger } from "~/server/utils/logger";
 import type { Database } from "~/types/database";
 
@@ -8,7 +9,8 @@ export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "family/code/my-code");
   try {
     const user = await requireAuth(event);
-    const supabase = useSupabaseAdmin();
+    const token = extractRequestToken(event);
+    const supabase = createServerSupabaseUserClient(token);
 
     const userRole = await getUserRole(user.id, supabase);
 

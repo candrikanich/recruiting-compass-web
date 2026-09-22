@@ -5,7 +5,8 @@
  */
 
 import { defineEventHandler } from "h3";
-import { createServerSupabaseClient } from "~/server/utils/supabase";
+import { createServerSupabaseUserClient } from "~/server/utils/supabase";
+import { extractRequestToken } from "~/server/utils/requestToken";
 import { useLogger } from "~/server/utils/logger";
 import { logCRUD, logError } from "~/server/utils/auditLog";
 import type { StatusScoreResult, Phase } from "~/types/timeline";
@@ -22,7 +23,8 @@ import {
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "athlete/status/recalculate");
   const user = await requireAuth(event);
-  const supabase = createServerSupabaseClient();
+  const token = extractRequestToken(event);
+  const supabase = createServerSupabaseUserClient(token);
 
   try {
     const athleteId = await resolveActingAthleteId(user.id, supabase);
@@ -72,12 +74,13 @@ export default defineEventHandler(async (event) => {
       (t: { id: string }) => t.id,
     );
 
-    // Get completed tasks
-    const { data: completedTasksData, error: completedError } = await supabase
-      .from("athlete_task")
-      .select("task_id")
-      .eq("athlete_id", athleteId)
-      .eq("status", "completed");
+    // athlete_task's SELECT policy doesn't yet recognize family_members-linked
+    // parents (#926) -- go through a SECURITY DEFINER RPC that does its own
+    // self-or-linked-player authorization check instead of a raw .from() read.
+    const { data: completedTasksData, error: completedError } =
+      await supabase.rpc("get_athlete_completed_task_ids", {
+        p_athlete_id: athleteId,
+      });
 
     if (completedError) {
       logger.error("Error fetching completed tasks", completedError);
@@ -87,9 +90,7 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    const completedTaskIds = (completedTasksData || []).map(
-      (at: { task_id: string }) => at.task_id,
-    );
+    const completedTaskIds = completedTasksData || [];
 
     // Calculate task completion rate
     const taskCompletionRate = calculateTaskCompletionRate(
@@ -218,18 +219,19 @@ export default defineEventHandler(async (event) => {
       academicStandingScore,
     });
 
-    // Persist to database
-    // Supabase type generation doesn't include custom columns - bypass type check
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const updateResult = await (supabase.from("users") as any)
-      .update({
-        status_score: result.score,
-        status_label: result.label,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", athleteId);
-
-    const { error: updateError } = updateResult;
+    // Column-scoped write via RPC: users has no family-shared UPDATE policy
+    // (deliberately -- that table also holds email/role/consent/PII, a
+    // blanket grant is a bigger attack surface than this route needs), and
+    // no raw .update() call can go through the session client as this user
+    // for a linked athlete's row.
+    const { error: updateError } = await supabase.rpc(
+      "set_athlete_status_score",
+      {
+        p_athlete_id: athleteId,
+        p_score: result.score,
+        p_label: result.label,
+      },
+    );
 
     if (updateError) {
       logger.error("Error updating status score", updateError);

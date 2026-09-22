@@ -78,7 +78,12 @@ vi.mock("~/server/utils/logger", () => ({
 
 vi.mock("~/server/utils/supabase", () => ({
   createServerSupabaseClient: vi.fn(),
+  createServerSupabaseUserClient: vi.fn(),
   useSupabaseAdmin: vi.fn(),
+}));
+
+vi.mock("~/server/utils/requestToken", () => ({
+  extractRequestToken: vi.fn(() => "fake-token"),
 }));
 
 // social/sync.post.ts's catch block calls auditLog() as a fire-and-forget
@@ -180,13 +185,19 @@ describe("Parent/Athlete Access Control — mutation route wiring (mocked authz)
     async ({ path }) => {
       vi.resetModules();
       const { requireAuth } = await import("~/server/utils/auth");
-      const { createServerSupabaseClient } =
+      const { createServerSupabaseClient, createServerSupabaseUserClient } =
         await import("~/server/utils/supabase");
       vi.mocked(requireAuth).mockResolvedValue({
         id: "parent-1",
         email: "parent@example.com",
       });
+      // Routes in this table are migrating off createServerSupabaseClient
+      // one at a time (#912) -- mock both factories identically so this
+      // shared table doesn't need to track which client each route is on.
       vi.mocked(createServerSupabaseClient).mockReturnValue(
+        mockSupabaseWithRole("parent") as unknown as SupabaseClient,
+      );
+      vi.mocked(createServerSupabaseUserClient).mockReturnValue(
         mockSupabaseWithRole("parent") as unknown as SupabaseClient,
       );
 
@@ -342,12 +353,12 @@ describe.skipIf(!hasLiveSupabase)(
     async function loadPhaseHandler() {
       vi.resetModules();
       const { requireAuth } = await import("~/server/utils/auth");
-      const { createServerSupabaseClient } =
+      const { createServerSupabaseUserClient } =
         await import("~/server/utils/supabase");
       vi.mocked(requireAuth).mockImplementation(async () => ({
         id: "unused",
       }));
-      vi.mocked(createServerSupabaseClient).mockReturnValue(admin);
+      vi.mocked(createServerSupabaseUserClient).mockReturnValue(admin);
       return (await import("~/server/api/athlete/phase.get")).default;
     }
 

@@ -167,11 +167,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, inject } from "vue";
+import { ref, computed, watch, onMounted, inject } from "vue";
 import { useAuthFetch } from "~/composables/useAuthFetch";
 import { useFamilyCode } from "~/composables/useFamilyCode";
 import type { UseActiveFamilyReturn } from "~/composables/useActiveFamily";
-import { getGraduationYearOptions } from "~/utils/graduationYears";
+import { useGraduationYearOptions } from "~/composables/useGraduationYearOptions";
 import { useOnboarding } from "~/composables/useOnboarding";
 import { useNuxProgress } from "~/composables/useNuxProgress";
 import { createClientLogger } from "~/utils/logger";
@@ -226,7 +226,18 @@ const commonSports = [
   "Water Polo",
 ];
 
-const graduationYears = computed(() => getGraduationYearOptions());
+const { graduationYears } = useGraduationYearOptions();
+
+// The July 1 pivot can roll the just-graduated class out from under a form
+// that's been open since before midnight — clear a now-invalid selection
+// rather than let a stale value reach the (freshly re-validated) server.
+// graduationYear is a plain string ref (no v-model.number), so compare
+// against the stringified options.
+watch(graduationYears, (years) => {
+  if (graduationYear.value && !years.map(String).includes(graduationYear.value)) {
+    graduationYear.value = "";
+  }
+});
 
 const { $fetchAuth } = useAuthFetch();
 const activeFamilyCtx = inject<UseActiveFamilyReturn>("activeFamily");

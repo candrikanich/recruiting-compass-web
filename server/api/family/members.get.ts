@@ -1,6 +1,7 @@
 import { defineEventHandler, createError, getQuery } from "h3";
 import { requireAuth } from "~/server/utils/auth";
-import { useSupabaseAdmin } from "~/server/utils/supabase";
+import { createServerSupabaseUserClient } from "~/server/utils/supabase";
+import { extractRequestToken } from "~/server/utils/requestToken";
 import { useLogger } from "~/server/utils/logger";
 
 interface FamilyMemberRow {
@@ -25,7 +26,8 @@ interface FamilyMemberWithUser extends FamilyMemberRow {
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "family/members");
   const user = await requireAuth(event);
-  const supabase = useSupabaseAdmin();
+  const token = extractRequestToken(event);
+  const supabase = createServerSupabaseUserClient(token);
   const query = getQuery(event);
   const familyId = query.familyId as string;
 
@@ -66,7 +68,8 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  // Fetch user details separately to ensure they're retrieved with admin privileges
+  // Fetch user details separately -- RLS ("Users can view family members'
+  // profiles") already permits reading any co-member's row.
   if (!members || members.length === 0) {
     logger.debug("No family members found", { familyId });
     return {

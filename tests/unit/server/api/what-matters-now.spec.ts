@@ -5,8 +5,11 @@ vi.mock("~/server/utils/auth", () => ({
   getUserRole: vi.fn(),
 }));
 vi.mock("~/server/utils/supabase", () => ({
-  createServerSupabaseClient: vi.fn(),
+  createServerSupabaseUserClient: vi.fn(),
   useSupabaseAdmin: vi.fn(),
+}));
+vi.mock("~/server/utils/requestToken", () => ({
+  extractRequestToken: vi.fn(() => "fake-token"),
 }));
 vi.mock("h3", async (importOriginal) => {
   const actual = (await importOriginal()) as Record<string, unknown>;
@@ -118,12 +121,12 @@ describe("GET /api/athlete/what-matters-now", () => {
 
   it("returns the highest-priority current-grade task for the athlete", async () => {
     const { requireAuth, getUserRole } = await import("~/server/utils/auth");
-    const { createServerSupabaseClient } =
+    const { createServerSupabaseUserClient } =
       await import("~/server/utils/supabase");
     vi.mocked(requireAuth).mockResolvedValue({ id: "player-1" } as never);
     vi.mocked(getUserRole).mockResolvedValue("player" as never);
 
-    vi.mocked(createServerSupabaseClient).mockReturnValue(
+    vi.mocked(createServerSupabaseUserClient).mockReturnValue(
       makeSupabase({
         users: { data: { current_phase: "junior" }, error: null },
         task: {
@@ -172,7 +175,7 @@ describe("GET /api/athlete/what-matters-now", () => {
 
   it("rejects unauthenticated requests with 401", async () => {
     const { requireAuth } = await import("~/server/utils/auth");
-    const { createServerSupabaseClient } =
+    const { createServerSupabaseUserClient } =
       await import("~/server/utils/supabase");
     vi.mocked(requireAuth).mockRejectedValue(
       Object.assign(new Error("Unauthorized"), { statusCode: 401 }),
@@ -186,6 +189,6 @@ describe("GET /api/athlete/what-matters-now", () => {
     } as never;
 
     await expect(handler(mockEvent)).rejects.toMatchObject({ statusCode: 401 });
-    expect(createServerSupabaseClient).not.toHaveBeenCalled();
+    expect(createServerSupabaseUserClient).not.toHaveBeenCalled();
   });
 });

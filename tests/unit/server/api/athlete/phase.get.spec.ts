@@ -8,7 +8,11 @@ import {
 
 // Mock dependencies
 vi.mock("~/server/utils/supabase", () => ({
-  createServerSupabaseClient: vi.fn(),
+  createServerSupabaseUserClient: vi.fn(),
+}));
+
+vi.mock("~/server/utils/requestToken", () => ({
+  extractRequestToken: vi.fn(() => "fake-token"),
 }));
 
 vi.mock("~/server/utils/auth", () => ({
@@ -56,7 +60,7 @@ describe("/api/athlete/phase.get", () => {
     it("should return sophomore phase for Class of 2028 in February 2026", async () => {
       vi.setSystemTime(new Date("2026-02-14T12:00:00Z"));
 
-      const { createServerSupabaseClient } =
+      const { createServerSupabaseUserClient } =
         await import("~/server/utils/supabase");
       const { requireAuth } = await import("~/server/utils/auth");
       const handler = (await import("~/server/api/athlete/phase.get")).default;
@@ -66,7 +70,7 @@ describe("/api/athlete/phase.get", () => {
         email: "test@example.com",
       });
 
-      vi.mocked(createServerSupabaseClient).mockReturnValue(
+      vi.mocked(createServerSupabaseUserClient).mockReturnValue(
         createMockSupabase({
           user: { data: { current_phase: null }, error: null },
           userPreferences: {
@@ -84,7 +88,7 @@ describe("/api/athlete/phase.get", () => {
     it("falls back to grade-derived phase when the users row is missing (deleted account / signup race)", async () => {
       vi.setSystemTime(new Date("2026-02-14T12:00:00Z"));
 
-      const { createServerSupabaseClient } =
+      const { createServerSupabaseUserClient } =
         await import("~/server/utils/supabase");
       const { requireAuth } = await import("~/server/utils/auth");
       const handler = (await import("~/server/api/athlete/phase.get")).default;
@@ -94,7 +98,7 @@ describe("/api/athlete/phase.get", () => {
         email: "test@example.com",
       });
 
-      vi.mocked(createServerSupabaseClient).mockReturnValue(
+      vi.mocked(createServerSupabaseUserClient).mockReturnValue(
         createMockSupabase({
           userMissing: true,
           userPreferences: {
@@ -112,7 +116,7 @@ describe("/api/athlete/phase.get", () => {
     it("should return freshman phase for Class of 2029 in February 2026", async () => {
       vi.setSystemTime(new Date("2026-02-14T12:00:00Z"));
 
-      const { createServerSupabaseClient } =
+      const { createServerSupabaseUserClient } =
         await import("~/server/utils/supabase");
       const { requireAuth } = await import("~/server/utils/auth");
       const handler = (await import("~/server/api/athlete/phase.get")).default;
@@ -122,7 +126,7 @@ describe("/api/athlete/phase.get", () => {
         email: "test@example.com",
       });
 
-      vi.mocked(createServerSupabaseClient).mockReturnValue(
+      vi.mocked(createServerSupabaseUserClient).mockReturnValue(
         createMockSupabase({
           user: { data: { current_phase: null }, error: null },
           userPreferences: {
@@ -140,7 +144,7 @@ describe("/api/athlete/phase.get", () => {
     it("should return junior phase for Class of 2027 in February 2026", async () => {
       vi.setSystemTime(new Date("2026-02-14T12:00:00Z"));
 
-      const { createServerSupabaseClient } =
+      const { createServerSupabaseUserClient } =
         await import("~/server/utils/supabase");
       const { requireAuth } = await import("~/server/utils/auth");
       const handler = (await import("~/server/api/athlete/phase.get")).default;
@@ -150,7 +154,7 @@ describe("/api/athlete/phase.get", () => {
         email: "test@example.com",
       });
 
-      vi.mocked(createServerSupabaseClient).mockReturnValue(
+      vi.mocked(createServerSupabaseUserClient).mockReturnValue(
         createMockSupabase({
           user: { data: { current_phase: null }, error: null },
           userPreferences: {
@@ -168,7 +172,7 @@ describe("/api/athlete/phase.get", () => {
     it("should default to freshman when no graduation year is set", async () => {
       vi.setSystemTime(new Date("2026-02-14T12:00:00Z"));
 
-      const { createServerSupabaseClient } =
+      const { createServerSupabaseUserClient } =
         await import("~/server/utils/supabase");
       const { requireAuth } = await import("~/server/utils/auth");
       const handler = (await import("~/server/api/athlete/phase.get")).default;
@@ -178,7 +182,7 @@ describe("/api/athlete/phase.get", () => {
         email: "test@example.com",
       });
 
-      vi.mocked(createServerSupabaseClient).mockReturnValue(
+      vi.mocked(createServerSupabaseUserClient).mockReturnValue(
         createMockSupabase({
           user: { data: { current_phase: null }, error: null },
           userPreferences: { data: null, error: null },
@@ -193,7 +197,7 @@ describe("/api/athlete/phase.get", () => {
     it("should return senior phase for Class of 2026 in February 2026", async () => {
       vi.setSystemTime(new Date("2026-02-14T12:00:00Z"));
 
-      const { createServerSupabaseClient } =
+      const { createServerSupabaseUserClient } =
         await import("~/server/utils/supabase");
       const { requireAuth } = await import("~/server/utils/auth");
       const handler = (await import("~/server/api/athlete/phase.get")).default;
@@ -203,7 +207,7 @@ describe("/api/athlete/phase.get", () => {
         email: "test@example.com",
       });
 
-      vi.mocked(createServerSupabaseClient).mockReturnValue(
+      vi.mocked(createServerSupabaseUserClient).mockReturnValue(
         createMockSupabase({
           user: { data: { current_phase: null }, error: null },
           userPreferences: {
@@ -223,7 +227,7 @@ describe("/api/athlete/phase.get", () => {
     it("returns the stored phase, ignoring graduation year, once the athlete has explicitly advanced", async () => {
       vi.setSystemTime(new Date("2026-02-14T12:00:00Z"));
 
-      const { createServerSupabaseClient } =
+      const { createServerSupabaseUserClient } =
         await import("~/server/utils/supabase");
       const { requireAuth } = await import("~/server/utils/auth");
       const handler = (await import("~/server/api/athlete/phase.get")).default;
@@ -235,7 +239,7 @@ describe("/api/athlete/phase.get", () => {
 
       // Grad year 2029 alone would compute "freshman" — but current_phase is
       // already "sophomore" from a prior explicit advance, and that must win.
-      vi.mocked(createServerSupabaseClient).mockReturnValue(
+      vi.mocked(createServerSupabaseUserClient).mockReturnValue(
         createMockSupabase({
           user: { data: { current_phase: "sophomore" }, error: null },
           userPreferences: {
@@ -253,7 +257,7 @@ describe("/api/athlete/phase.get", () => {
     it("reports zero year-completion milestones when only some grade-9 tasks are done", async () => {
       vi.setSystemTime(new Date("2026-02-14T12:00:00Z"));
 
-      const { createServerSupabaseClient } =
+      const { createServerSupabaseUserClient } =
         await import("~/server/utils/supabase");
       const { requireAuth } = await import("~/server/utils/auth");
       const handler = (await import("~/server/api/athlete/phase.get")).default;
@@ -265,7 +269,7 @@ describe("/api/athlete/phase.get", () => {
 
       const taskRows = freshmanMilestoneTaskRows();
 
-      vi.mocked(createServerSupabaseClient).mockReturnValue(
+      vi.mocked(createServerSupabaseUserClient).mockReturnValue(
         createMockSupabase({
           user: { data: { current_phase: null }, error: null },
           userPreferences: { data: null, error: null },
@@ -289,7 +293,7 @@ describe("/api/athlete/phase.get", () => {
     it("reports canAdvance true and 1/4 year milestones when all grade-9 tasks are done", async () => {
       vi.setSystemTime(new Date("2026-02-14T12:00:00Z"));
 
-      const { createServerSupabaseClient } =
+      const { createServerSupabaseUserClient } =
         await import("~/server/utils/supabase");
       const { requireAuth } = await import("~/server/utils/auth");
       const handler = (await import("~/server/api/athlete/phase.get")).default;
@@ -301,7 +305,7 @@ describe("/api/athlete/phase.get", () => {
 
       const taskRows = freshmanMilestoneTaskRows();
 
-      vi.mocked(createServerSupabaseClient).mockReturnValue(
+      vi.mocked(createServerSupabaseUserClient).mockReturnValue(
         createMockSupabase({
           user: { data: { current_phase: null }, error: null },
           userPreferences: { data: null, error: null },
@@ -327,7 +331,7 @@ describe("/api/athlete/phase.get", () => {
     it("throws 500 when the users.current_phase query returns an error", async () => {
       vi.setSystemTime(new Date("2026-02-14T12:00:00Z"));
 
-      const { createServerSupabaseClient } =
+      const { createServerSupabaseUserClient } =
         await import("~/server/utils/supabase");
       const { requireAuth } = await import("~/server/utils/auth");
       const handler = (await import("~/server/api/athlete/phase.get")).default;
@@ -337,7 +341,7 @@ describe("/api/athlete/phase.get", () => {
         email: "test@example.com",
       });
 
-      vi.mocked(createServerSupabaseClient).mockReturnValue(
+      vi.mocked(createServerSupabaseUserClient).mockReturnValue(
         createMockSupabase({
           user: {
             data: null,
@@ -355,7 +359,7 @@ describe("/api/athlete/phase.get", () => {
     it("throws 500 when preferences DB query returns a non-PGRST116 error", async () => {
       vi.setSystemTime(new Date("2026-02-14T12:00:00Z"));
 
-      const { createServerSupabaseClient } =
+      const { createServerSupabaseUserClient } =
         await import("~/server/utils/supabase");
       const { requireAuth } = await import("~/server/utils/auth");
       const handler = (await import("~/server/api/athlete/phase.get")).default;
@@ -365,7 +369,7 @@ describe("/api/athlete/phase.get", () => {
         email: "test@example.com",
       });
 
-      vi.mocked(createServerSupabaseClient).mockReturnValue(
+      vi.mocked(createServerSupabaseUserClient).mockReturnValue(
         createMockSupabase({
           user: { data: { current_phase: null }, error: null },
           userPreferences: {
@@ -384,7 +388,7 @@ describe("/api/athlete/phase.get", () => {
     it("throws 500 when athlete_task query returns an error", async () => {
       vi.setSystemTime(new Date("2026-02-14T12:00:00Z"));
 
-      const { createServerSupabaseClient } =
+      const { createServerSupabaseUserClient } =
         await import("~/server/utils/supabase");
       const { requireAuth } = await import("~/server/utils/auth");
       const handler = (await import("~/server/api/athlete/phase.get")).default;
@@ -394,7 +398,7 @@ describe("/api/athlete/phase.get", () => {
         email: "test@example.com",
       });
 
-      vi.mocked(createServerSupabaseClient).mockReturnValue(
+      vi.mocked(createServerSupabaseUserClient).mockReturnValue(
         createMockSupabase({
           user: { data: { current_phase: "junior" }, error: null },
           athleteTasks: {
@@ -413,7 +417,7 @@ describe("/api/athlete/phase.get", () => {
     it("throws 401 when a dependency inside the try block throws an Unauthorized error", async () => {
       vi.setSystemTime(new Date("2026-02-14T12:00:00Z"));
 
-      const { createServerSupabaseClient } =
+      const { createServerSupabaseUserClient } =
         await import("~/server/utils/supabase");
       const { requireAuth, getUserRole } = await import("~/server/utils/auth");
       const handler = (await import("~/server/api/athlete/phase.get")).default;
@@ -422,7 +426,7 @@ describe("/api/athlete/phase.get", () => {
         id: "test-user-id",
         email: "test@example.com",
       });
-      vi.mocked(createServerSupabaseClient).mockReturnValue(
+      vi.mocked(createServerSupabaseUserClient).mockReturnValue(
         createMockSupabase({
           user: { data: { current_phase: "junior" }, error: null },
         }) as any,
@@ -439,7 +443,7 @@ describe("/api/athlete/phase.get", () => {
     it("throws 500 for unexpected generic errors thrown inside the try block", async () => {
       vi.setSystemTime(new Date("2026-02-14T12:00:00Z"));
 
-      const { createServerSupabaseClient } =
+      const { createServerSupabaseUserClient } =
         await import("~/server/utils/supabase");
       const { requireAuth, getUserRole } = await import("~/server/utils/auth");
       const handler = (await import("~/server/api/athlete/phase.get")).default;
@@ -448,7 +452,7 @@ describe("/api/athlete/phase.get", () => {
         id: "test-user-id",
         email: "test@example.com",
       });
-      vi.mocked(createServerSupabaseClient).mockReturnValue(
+      vi.mocked(createServerSupabaseUserClient).mockReturnValue(
         createMockSupabase({
           user: { data: { current_phase: "junior" }, error: null },
         }) as any,

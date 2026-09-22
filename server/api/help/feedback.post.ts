@@ -1,7 +1,8 @@
 import { useLogger } from "~/server/utils/logger";
 import { validateBody } from "~/server/utils/validation";
 import { requireAuth } from "~/server/utils/auth";
-import { useSupabaseAdmin } from "~/server/utils/supabase";
+import { createServerSupabaseUserClient } from "~/server/utils/supabase";
+import { extractRequestToken } from "~/server/utils/requestToken";
 import { createSafeErrorResponse } from "~/server/utils/errorHandler";
 import { helpFeedbackSchema } from "~/utils/validation/schemas";
 import { rateLimitByIp, throwIfRateLimited } from "~/server/utils/rateLimit";
@@ -18,7 +19,8 @@ export default defineEventHandler(async (event) => {
 
     const user = await requireAuth(event);
     const body = await validateBody(event, helpFeedbackSchema);
-    const supabase = useSupabaseAdmin();
+    const token = extractRequestToken(event);
+    const supabase = createServerSupabaseUserClient(token);
 
     const { error } = await supabase.from("help_feedback").insert({
       page: body.page,

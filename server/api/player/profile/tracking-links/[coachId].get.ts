@@ -1,6 +1,7 @@
 import { defineEventHandler, getRouterParam, createError } from "h3";
 import { requireAuth } from "~/server/utils/auth";
-import { useSupabaseAdmin } from "~/server/utils/supabase";
+import { createServerSupabaseUserClient } from "~/server/utils/supabase";
+import { extractRequestToken } from "~/server/utils/requestToken";
 import { useLogger } from "~/server/utils/logger";
 
 export default defineEventHandler(async (event) => {
@@ -8,7 +9,8 @@ export default defineEventHandler(async (event) => {
   try {
     const { id: userId } = await requireAuth(event);
     const coachId = getRouterParam(event, "coachId")!;
-    const supabase = useSupabaseAdmin();
+    const token = extractRequestToken(event);
+    const supabase = createServerSupabaseUserClient(token);
 
     const { data: membership, error: membershipError } = await supabase
       .from("family_members")

@@ -3,7 +3,7 @@ import { createError } from "h3";
 
 // State objects read at call-time to avoid vi.mock hoisting issues
 const mockState = {
-  token: "valid-token" as string | number | undefined,
+  token: "11111111-1111-4111-8111-111111111111" as string | number | undefined,
   email: "admin@example.com" as string | number | undefined,
   invitation: {
     invited_email: "admin@example.com",
@@ -67,7 +67,7 @@ const { default: handler } =
 describe("POST /api/auth/validate-admin-token", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockState.token = "valid-token";
+    mockState.token = "11111111-1111-4111-8111-111111111111";
     mockState.email = "admin@example.com";
     mockState.invitation = {
       invited_email: "admin@example.com",
@@ -93,6 +93,17 @@ describe("POST /api/auth/validate-admin-token", () => {
 
   describe("happy path", () => {
     it("returns valid: true when the invitation is unconsumed, unexpired, and the email matches", async () => {
+      const result = await handler({} as Parameters<typeof handler>[0]);
+
+      expect(result).toEqual({ valid: true });
+    });
+
+    // Regression: pages/admin/signup.vue only checks trimmed length for its
+    // own non-empty guard but sends the raw untrimmed value -- a
+    // copy-pasted token with incidental whitespace must still validate.
+    it("accepts a token with incidental leading/trailing whitespace (copy-paste artifact)", async () => {
+      mockState.token = "  11111111-1111-4111-8111-111111111111  ";
+
       const result = await handler({} as Parameters<typeof handler>[0]);
 
       expect(result).toEqual({ valid: true });
@@ -185,6 +196,24 @@ describe("POST /api/auth/validate-admin-token", () => {
       ).rejects.toMatchObject({
         statusCode: 400,
       });
+    });
+
+    // Regression: tokens are minted via randomUUID() -- the schema now
+    // requires that shape, not just any non-empty string.
+    it("returns 400 when token is a non-UUID string", async () => {
+      mockState.token = "not-a-real-uuid";
+
+      await expect(
+        handler({} as Parameters<typeof handler>[0]),
+      ).rejects.toMatchObject({ statusCode: 400 });
+    });
+
+    it("returns 400 when email is not a valid email format", async () => {
+      mockState.email = "not-an-email";
+
+      await expect(
+        handler({} as Parameters<typeof handler>[0]),
+      ).rejects.toMatchObject({ statusCode: 400 });
     });
   });
 

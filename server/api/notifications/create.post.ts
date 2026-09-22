@@ -5,7 +5,8 @@
 
 import { defineEventHandler, readBody, createError } from "h3";
 import { z } from "zod";
-import { createServerSupabaseClient } from "~/server/utils/supabase";
+import { createServerSupabaseUserClient } from "~/server/utils/supabase";
+import { extractRequestToken } from "~/server/utils/requestToken";
 import { requireAuth } from "~/server/utils/auth";
 import { useLogger } from "~/server/utils/logger";
 
@@ -48,7 +49,8 @@ export default defineEventHandler(async (event) => {
     }
     const { type, title, message, priority, action_url } = parsed.data;
 
-    const supabase = createServerSupabaseClient();
+    const token = extractRequestToken(event);
+    const supabase = createServerSupabaseUserClient(token);
 
     // Create notification
     const { data, error } =

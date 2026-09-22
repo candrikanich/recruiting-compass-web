@@ -13,7 +13,8 @@ import { z } from "zod";
 import { useLogger } from "~/server/utils/logger";
 import { requireAuth } from "~/server/utils/auth";
 import { resolveTargetAthleteId } from "~/server/utils/athleteAccess";
-import { useSupabaseAdmin } from "~/server/utils/supabase";
+import { createServerSupabaseUserClient } from "~/server/utils/supabase";
+import { extractRequestToken } from "~/server/utils/requestToken";
 import { assertGuardianConfirmed } from "~/server/utils/guardianGate";
 import type { Database } from "~/types/database";
 
@@ -50,7 +51,8 @@ export default defineEventHandler(async (event) => {
     user.id,
     b.athleteUserId,
   );
-  const supabase = useSupabaseAdmin();
+  const token = extractRequestToken(event);
+  const supabase = createServerSupabaseUserClient(token);
   await assertGuardianConfirmed(supabase, user.id, "message coaches");
 
   const row: AthleteMessageInsert = {

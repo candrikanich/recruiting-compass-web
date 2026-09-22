@@ -14,6 +14,7 @@ const mockFamilyMembership: { value: { family_unit_id: string } | null } = {
   value: null,
 };
 const mockFamilyHasParent: { value: boolean } = { value: false };
+const mockClaimError: { value: object | null } = { value: null };
 
 vi.mock("~/server/utils/auth", () => ({
   requireAuth: vi.fn(async () => ({ id: "player-1", email: "p@example.com" })),
@@ -28,8 +29,12 @@ vi.mock("~/server/utils/logger", () => ({
   }),
 }));
 
+vi.mock("~/server/utils/requestToken", () => ({
+  extractRequestToken: vi.fn(() => "fake-token"),
+}));
+
 vi.mock("~/server/utils/supabase", () => ({
-  useSupabaseAdmin: vi.fn(() => ({
+  createServerSupabaseUserClient: vi.fn(() => ({
     from: (table: string) => {
       if (table === "users") {
         return {
@@ -64,7 +69,10 @@ vi.mock("~/server/utils/supabase", () => ({
           eq: () => ({
             order: () => ({
               limit: () => ({
-                maybeSingle: async () => ({ data: mockClaimRow.value }),
+                maybeSingle: async () => ({
+                  data: mockClaimRow.value,
+                  error: mockClaimError.value,
+                }),
               }),
             }),
           }),
@@ -85,6 +93,7 @@ describe("GET /api/guardian/status", () => {
     mockClaimRow.value = null;
     mockFamilyMembership.value = null;
     mockFamilyHasParent.value = false;
+    mockClaimError.value = null;
   });
 
   it("returns status 'none', locked:true, pending:true (mirrors locked) for a 13-17 player who never named a guardian", async () => {
@@ -237,5 +246,23 @@ describe("GET /api/guardian/status", () => {
     // Presentation-only status is untouched by the override — no claim exists here,
     // so it's still "none"; the banner text is display-only, `locked` is authoritative.
     expect(result.status).toBe("none");
+  });
+
+  it("500s instead of reporting 'no claim' when the guardian_claims query itself errors (PR #963)", async () => {
+    // A permission/RLS failure must not be silently read as an absent
+    // claim — that would mask a real pending/expired/claimed guardian
+    // claim from the player.
+    mockUserRow.value = {
+      role: "player",
+      date_of_birth: "2012-01-01",
+      guardian_consent_at: null,
+    };
+    mockClaimError.value = {
+      message: "permission denied for table guardian_claims",
+    };
+
+    await expect(statusHandler(fakeEvent)).rejects.toMatchObject({
+      statusCode: 500,
+    });
   });
 });

@@ -5,10 +5,12 @@
  */
 
 import { defineEventHandler } from "h3";
-import { createServerSupabaseClient } from "~/server/utils/supabase";
+import { createServerSupabaseUserClient } from "~/server/utils/supabase";
+import { extractRequestToken } from "~/server/utils/requestToken";
 import { useLogger } from "~/server/utils/logger";
 import { logCRUD, logError } from "~/server/utils/auditLog";
 import type { Phase } from "~/types/timeline";
+import type { Json } from "~/types/database";
 import { requireAuth } from "~/server/utils/auth";
 import { resolveActingAthleteId } from "~/server/utils/playerOwnedPreferences";
 import {
@@ -30,7 +32,8 @@ interface AdvancePhaseResponse {
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "athlete/phase/advance");
   const user = await requireAuth(event);
-  const supabase = createServerSupabaseClient();
+  const token = extractRequestToken(event);
+  const supabase = createServerSupabaseUserClient(token);
 
   try {
     // Athletes advance their own record; a parent's call is redirected to
@@ -95,12 +98,13 @@ export default defineEventHandler(async (event) => {
       currentPhase = computePhaseFromGraduationYear(graduationYear);
     }
 
-    // Fetch completed tasks
-    const { data: athleteTasksData, error: tasksError } = await supabase
-      .from("athlete_task")
-      .select("task_id")
-      .eq("athlete_id", athleteId)
-      .eq("status", "completed");
+    // Fetch completed tasks via RPC (users has no family-shared UPDATE
+    // policy, so the phase write below also routes through a RPC -- this
+    // read reuses the same self-or-linked-player authorization check).
+    const { data: completedTaskIdsData, error: tasksError } =
+      await supabase.rpc("get_athlete_completed_task_ids", {
+        p_athlete_id: athleteId,
+      });
 
     if (tasksError) {
       logger.error("Error fetching athlete tasks", tasksError);
@@ -110,9 +114,7 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    const completedTaskIds = (athleteTasksData || []).map(
-      (at: { task_id: string }) => at.task_id,
-    );
+    const completedTaskIds = completedTaskIdsData ?? [];
 
     // Resolve PHASE_MILESTONES slugs to real seeded task ids
     const taskIdsBySlug = await getTaskIdsBySlug(supabase);
@@ -145,18 +147,12 @@ export default defineEventHandler(async (event) => {
       taskIdsBySlug,
     );
 
-    // phase_milestone_data is a custom JSONB column not captured in generated types
-    const updateResult = await supabase
-      .from("users")
-      .update({
-        current_phase: nextPhase,
-        phase_milestone_data: phaseMilestoneData,
-        updated_at: new Date().toISOString(),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any)
-      .eq("id", athleteId);
-
-    const { error: updateError } = updateResult;
+    const { error: updateError } = await supabase.rpc("set_athlete_phase", {
+      p_athlete_id: athleteId,
+      p_next_phase: nextPhase,
+      // phase_milestone_data is a custom JSONB column not captured in generated types
+      p_phase_milestone_data: phaseMilestoneData as unknown as Json,
+    });
 
     if (updateError) {
       logger.error("Error updating user phase", updateError);

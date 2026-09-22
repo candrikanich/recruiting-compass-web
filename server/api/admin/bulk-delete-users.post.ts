@@ -24,11 +24,6 @@
  * - Logs all actions via audit logger
  */
 
-interface BulkDeleteUserRequest {
-  emails: string[];
-  env?: "prod" | "qa";
-}
-
 interface BulkDeleteError {
   email: string;
   reason: string;
@@ -43,10 +38,21 @@ interface BulkDeleteUserResponse {
 }
 
 import { defineEventHandler, readBody, createError } from "h3";
+import { z } from "zod";
 import { requireAdmin } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import { resolveAdminDbEnv } from "~/server/utils/adminDbEnv";
 import { useLogger } from "~/server/utils/logger";
+
+// Length/type gate only -- the per-email format validation (with its own
+// dedicated "which emails are invalid" message) stays a manual pass below,
+// since it needs to report every bad address at once rather than fail on
+// the first Zod issue.
+const bulkDeleteBodySchema = z.object({
+  emails: z.array(z.string()).min(1, "At least one email address is required"),
+  env: z.enum(["prod", "qa"]).optional(),
+});
+type BulkDeleteUserRequest = z.infer<typeof bulkDeleteBodySchema>;
 
 export default defineEventHandler(
   async (event): Promise<BulkDeleteUserResponse> => {
@@ -56,26 +62,21 @@ export default defineEventHandler(
       const user = await requireAdmin(event);
 
       // 2. Parse and validate request body
-      const body = await readBody<BulkDeleteUserRequest>(event);
+      const rawBody = await readBody(event);
+      const parsed = bulkDeleteBodySchema.safeParse(rawBody);
+      if (!parsed.success) {
+        throw createError({
+          statusCode: 400,
+          statusMessage:
+            parsed.error.issues[0]?.message ?? "Invalid request body",
+        });
+      }
+      const body: BulkDeleteUserRequest = parsed.data;
       const { emails } = body;
       const dbEnv = resolveAdminDbEnv(body.env);
 
       // Create admin client with service role, scoped to the requested DB
       const supabaseAdmin = useSupabaseAdmin(dbEnv);
-
-      if (!Array.isArray(emails)) {
-        throw createError({
-          statusCode: 400,
-          statusMessage: "Emails must be an array",
-        });
-      }
-
-      if (emails.length === 0) {
-        throw createError({
-          statusCode: 400,
-          statusMessage: "At least one email address is required",
-        });
-      }
 
       // 3. Validate and normalize emails
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

@@ -9,7 +9,8 @@
  */
 import { defineEventHandler, createError } from "h3";
 import { requireAuth } from "~/server/utils/auth";
-import { useSupabaseAdmin } from "~/server/utils/supabase";
+import { createServerSupabaseUserClient } from "~/server/utils/supabase";
+import { extractRequestToken } from "~/server/utils/requestToken";
 import { useLogger } from "~/server/utils/logger";
 
 const LEADS_LIMIT = 100;
@@ -35,7 +36,8 @@ export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "player/profile/contacts");
   try {
     const { id: userId } = await requireAuth(event);
-    const supabase = useSupabaseAdmin();
+    const token = extractRequestToken(event);
+    const supabase = createServerSupabaseUserClient(token);
 
     const { data: membership, error: membershipError } = await supabase
       .from("family_members")

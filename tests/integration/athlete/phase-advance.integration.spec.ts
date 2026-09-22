@@ -93,6 +93,15 @@ vi.mock("~/server/utils/auditLog", () => ({
 
 vi.mock("~/server/utils/supabase", () => ({
   createServerSupabaseClient: vi.fn(),
+  // phase.get.ts is on the session-scoped client (#926); phase/advance.post.ts
+  // is not yet migrated and still uses createServerSupabaseClient. Both mocks
+  // get set to the same value in each test below since a single test often
+  // calls both handlers.
+  createServerSupabaseUserClient: vi.fn(),
+}));
+
+vi.mock("~/server/utils/requestToken", () => ({
+  extractRequestToken: vi.fn(() => "fake-token"),
 }));
 
 // Real h3, except defineEventHandler stays an identity wrapper — same as the
@@ -224,13 +233,14 @@ describe.skipIf(!hasLiveSupabase)(
 
     it("AC1/AC3: a seeded athlete who completed the required milestones can advance, and progress is nonzero beforehand", async () => {
       const { requireAuth } = await import("~/server/utils/auth");
-      const { createServerSupabaseClient } =
+      const { createServerSupabaseClient, createServerSupabaseUserClient } =
         await import("~/server/utils/supabase");
       vi.mocked(requireAuth).mockResolvedValue({
         id: athleteId,
         email: "athlete@example.com",
       });
       vi.mocked(createServerSupabaseClient).mockReturnValue(admin);
+      vi.mocked(createServerSupabaseUserClient).mockReturnValue(admin);
 
       const phaseGetHandler = (await import("~/server/api/athlete/phase.get"))
         .default;
@@ -254,7 +264,7 @@ describe.skipIf(!hasLiveSupabase)(
 
     it("AC2: the new phase is visible immediately (same session) and after simulating a fresh session (new Supabase client, no shared in-memory state)", async () => {
       const { requireAuth } = await import("~/server/utils/auth");
-      const { createServerSupabaseClient } =
+      const { createServerSupabaseClient, createServerSupabaseUserClient } =
         await import("~/server/utils/supabase");
       const phaseGetHandler = (await import("~/server/api/athlete/phase.get"))
         .default;
@@ -268,6 +278,7 @@ describe.skipIf(!hasLiveSupabase)(
       // test just wrote through (mirrors usePhaseCalculation.advancePhase()
       // calling refreshPhase() right after a successful advance).
       vi.mocked(createServerSupabaseClient).mockReturnValue(admin);
+      vi.mocked(createServerSupabaseUserClient).mockReturnValue(admin);
       const immediate = await phaseGetHandler(fakeEvent());
       expect(immediate.phase).toBe("sophomore");
 
@@ -275,19 +286,21 @@ describe.skipIf(!hasLiveSupabase)(
       // durable in Postgres and not an artifact of client-side caching.
       const freshSessionClient = adminClient();
       vi.mocked(createServerSupabaseClient).mockReturnValue(freshSessionClient);
+      vi.mocked(createServerSupabaseUserClient).mockReturnValue(freshSessionClient);
       const afterReload = await phaseGetHandler(fakeEvent());
       expect(afterReload.phase).toBe("sophomore");
     });
 
     it("idempotency: advancing again immediately is gated (not a duplicate side effect), since sophomore's own milestones aren't complete", async () => {
       const { requireAuth } = await import("~/server/utils/auth");
-      const { createServerSupabaseClient } =
+      const { createServerSupabaseClient, createServerSupabaseUserClient } =
         await import("~/server/utils/supabase");
       vi.mocked(requireAuth).mockResolvedValue({
         id: athleteId,
         email: "athlete@example.com",
       });
       vi.mocked(createServerSupabaseClient).mockReturnValue(admin);
+      vi.mocked(createServerSupabaseUserClient).mockReturnValue(admin);
 
       const advanceHandler = (
         await import("~/server/api/athlete/phase/advance.post")

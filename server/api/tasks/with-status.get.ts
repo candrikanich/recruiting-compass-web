@@ -4,7 +4,8 @@
  */
 
 import { defineEventHandler, getQuery } from "h3";
-import { createServerSupabaseClient } from "~/server/utils/supabase";
+import { createServerSupabaseUserClient } from "~/server/utils/supabase";
+import { extractRequestToken } from "~/server/utils/requestToken";
 import { requireAuth } from "~/server/utils/auth";
 import { resolveTargetAthleteId } from "~/server/utils/athleteAccess";
 import { computeTaskDeadline } from "~/server/utils/taskDeadlines";
@@ -20,7 +21,8 @@ const ATHLETE_TASK_COLUMNS =
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "tasks/with-status");
   const user = await requireAuth(event);
-  const supabase = createServerSupabaseClient();
+  const token = extractRequestToken(event);
+  const supabase = createServerSupabaseUserClient(token);
 
   try {
     const query = getQuery(event);

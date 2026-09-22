@@ -1,6 +1,7 @@
 import { defineEventHandler, createError, setResponseHeader } from "h3";
 import { requireAuth } from "~/server/utils/auth";
-import { useSupabaseAdmin } from "~/server/utils/supabase";
+import { createServerSupabaseUserClient } from "~/server/utils/supabase";
+import { extractRequestToken } from "~/server/utils/requestToken";
 import { useLogger } from "~/server/utils/logger";
 
 export default defineEventHandler(async (event) => {
@@ -12,7 +13,8 @@ export default defineEventHandler(async (event) => {
   logger.debug("User authenticated", { userId: user.id });
 
   try {
-    const supabase = useSupabaseAdmin();
+    const token = extractRequestToken(event);
+    const supabase = createServerSupabaseUserClient(token);
 
     // For non-parents, return empty families list
     if (!user.id) {

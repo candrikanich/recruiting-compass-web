@@ -6,9 +6,9 @@
  */
 import { defineEventHandler, getRouterParam, createError } from "h3";
 import { requireAuth } from "~/server/utils/auth";
-import { useSupabaseAdmin } from "~/server/utils/supabase";
+import { createServerSupabaseUserClient } from "~/server/utils/supabase";
+import { extractRequestToken } from "~/server/utils/requestToken";
 import { useLogger } from "~/server/utils/logger";
-import { resolveFamilyUnitId } from "~/server/utils/familyMembership";
 
 const UUID_SHAPE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -16,21 +16,21 @@ const UUID_SHAPE =
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "inbound-drafts/discard");
   try {
-    const { id: userId } = await requireAuth(event);
+    await requireAuth(event);
     const draftId = getRouterParam(event, "id")!;
     if (!UUID_SHAPE.test(draftId)) {
       throw createError({ statusCode: 400, statusMessage: "Invalid draft id" });
     }
 
-    const familyUnitId = await resolveFamilyUnitId(event, userId);
-    const admin = useSupabaseAdmin();
+    const token = extractRequestToken(event);
+    const supabase = createServerSupabaseUserClient(token);
 
-    const { data: draft } = await admin
+    const { data: draft } = await supabase
       .from("inbound_email_drafts")
       .select("id, family_unit_id, status")
       .eq("id", draftId)
       .maybeSingle();
-    if (!draft || draft.family_unit_id !== familyUnitId) {
+    if (!draft) {
       throw createError({ statusCode: 404, statusMessage: "Draft not found" });
     }
 
@@ -38,12 +38,15 @@ export default defineEventHandler(async (event) => {
       return { ok: true };
     }
 
-    const { error: updateError } = await admin
-      .from("inbound_email_drafts")
-      .update({ status: "discarded" })
-      .eq("id", draftId);
-    if (updateError) {
-      logger.error("Failed to discard draft", updateError);
+    // Mutation goes through a SECURITY DEFINER RPC, not a raw UPDATE -- a
+    // family-scoped RLS UPDATE policy can't restrict which columns change,
+    // so a raw grant would let any family member rewrite any field via a
+    // direct Supabase call, not just the status transition this route makes.
+    const { error: rpcError } = await supabase.rpc("discard_inbound_draft", {
+      p_draft_id: draftId,
+    });
+    if (rpcError) {
+      logger.error("Failed to discard draft", rpcError);
       throw createError({
         statusCode: 500,
         statusMessage: "Failed to discard draft",
