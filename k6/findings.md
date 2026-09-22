@@ -31,3 +31,23 @@ Both runs below targeted `GET /api/schools/:id/fit-score`, which turned out to b
 **What this run actually validated (accidentally):** the per-user rate limiter works as designed in a real QA deploy. That's a legitimate, useful confirmation, just not the fit-score load-capacity signal the test was built to produce.
 
 **Follow-up filed:** [#970](https://github.com/candrikanich/recruiting-compass-web/issues/970) — seed a pool of distinct test accounts (separate tokens spread across separate rate-limit keys) so a future run measures real endpoint/DB capacity instead of the rate limiter's own ceiling.
+
+## 2026-09-22 — #970 first attempt, 5-account pool — no improvement, wrong mechanism found
+
+**Profile run:** same 5→20→50 VU profile. `setup()` now mints a token per pool account (5 accounts: `k6-load-test@example.com` + `-1` through `-4`, seeded via the Supabase Admin API), `default()` picks one via `__VU % 5`. Only `Authorization: Bearer <token>` sent, same as every prior run.
+
+**Result: no improvement.** ~367 successes, ~94.6% failed — statistically identical to the single-account runs.
+
+**Root cause: `server/middleware/rate-limit.ts` keys its per-user bucket off the `sb-access-token` COOKIE (`getCookie(event, "sb-access-token")`), not the `Authorization` header.** With only the header set, every request — regardless of which pool account's token it carried — fell through to the `ip:<ip>` fallback bucket, and all 5 accounts share one test machine's IP. The pool never actually spread load across distinct keys; it just spread identical-bucket traffic across 5 tokens that all mapped to the same rate limit.
+
+## 2026-09-22 — #970 second attempt, cookie fix — mechanism confirmed working
+
+**Fix:** send `sb-access-token` as a cookie too (`Cookie: sb-access-token=<token>`), alongside the existing `Authorization` header. `requireAuth` already accepts either, so this doesn't change what the app does with the request — it only changes which rate-limit bucket it lands in.
+
+**Result:** 1586 successes (23.4%), up from ~367 (5.3%) — a ~4.3x improvement, close to (not exactly) the 5x a perfectly even VU distribution across 5 accounts would predict. Confirms the pool now genuinely spreads load across 5 distinct `(user, path)` rate-limit keys.
+
+**Still hitting the limiter, not real capacity, because of simple math:** 5 accounts × 60 req/min = 300 req/min (~5 req/s) aggregate allowed throughput, while the 50-VU profile attempts up to ~50 req/s. Most requests still legitimately 429 — correct rate-limiter behavior at this pool size, not an app bug. To get past the limiter and measure real endpoint/DB capacity, the pool needs to roughly match the VU count.
+
+**Decision (Chris, 2026-09-22):** don't scale the pool to ~50 accounts pre-launch — no real user traffic yet to make that capacity number meaningful. Deferred to [#984](https://github.com/candrikanich/recruiting-compass-web/issues/984), to revisit once there's real usage worth capacity-planning against.
+
+**What this arc actually accomplished:** found and fixed a real bug in the test harness itself (cookie vs. header), confirmed `server/middleware/rate-limit.ts` behaves correctly and predictably at every pool size tested, and left a working, documented pool mechanism (`TEST_EMAIL_POOL_SIZE`) ready to scale whenever #984 is picked up. No production/QA app bug found in the endpoint itself across five total runs — the entire investigation ended up characterizing the rate limiter, not the endpoint, which remains genuinely untested at real load.
