@@ -23,30 +23,36 @@ export default defineEventHandler(async (event) => {
   try {
     // Verify user is authenticated
     const user = await requireAuth(event);
-
-    // Get user metadata
     const userId = user.id;
-    const familyUnitId = user.user_metadata?.family_unit_id as
-      string | undefined;
 
     // Use admin client to check raw database state
     const supabase = createServerSupabaseClient();
+
+    // family_unit_id lives in family_members now, not user_metadata (that
+    // was the pre-family_members account_links model). A user can belong
+    // to more than one family (multi-family parent support).
+    const { data: memberships, error: membershipsError } = await supabase
+      .from("family_members")
+      .select("family_unit_id")
+      .eq("user_id", userId);
+
+    const familyUnitIds = (memberships ?? []).map((m) => m.family_unit_id);
 
     // Try to fetch data with family_unit_id filter
     const { data: schools, error: schoolsError } = await supabase
       .from("schools")
       .select("id, name")
-      .eq("family_unit_id", familyUnitId || "");
+      .in("family_unit_id", familyUnitIds);
 
     const { data: coaches, error: coachesError } = await supabase
       .from("coaches")
       .select("id, first_name, last_name")
-      .eq("family_unit_id", familyUnitId || "");
+      .in("family_unit_id", familyUnitIds);
 
     const { data: interactions, error: interactionsError } = await supabase
       .from("interactions")
       .select("id, type")
-      .eq("family_unit_id", familyUnitId || "");
+      .in("family_unit_id", familyUnitIds);
 
     // Check request headers/cookies
     const authHeader = getHeader(event, "authorization");
@@ -57,14 +63,16 @@ export default defineEventHandler(async (event) => {
       user: {
         id: userId,
         email: user.email,
-        family_unit_id: familyUnitId,
-        metadata: user.user_metadata,
+        family_unit_ids: familyUnitIds,
       },
       auth_sources: {
         has_auth_header: !!authHeader,
         has_cookie: !!cookieToken,
       },
       queries: {
+        family_members: {
+          error: membershipsError?.message || null,
+        },
         schools: {
           count: schools?.length || 0,
           error: schoolsError?.message || null,
@@ -82,14 +90,17 @@ export default defineEventHandler(async (event) => {
         },
       },
       diagnosis: {
-        has_family_unit_id: !!familyUnitId,
-        family_unit_id_value: familyUnitId || "❌ MISSING",
-        likely_issue: familyUnitId
-          ? "family_unit_id present but queries return no data - check RLS policies or data existence"
-          : "❌ CRITICAL: family_unit_id is missing from user.user_metadata - this causes all queries to return empty",
-        recommendation: familyUnitId
-          ? "Check database for records with this family_unit_id"
-          : "User signup may have failed to set family_unit_id. Check users table and signup logic.",
+        has_family_membership: familyUnitIds.length > 0,
+        family_unit_ids_value:
+          familyUnitIds.length > 0 ? familyUnitIds : "❌ MISSING",
+        likely_issue:
+          familyUnitIds.length > 0
+            ? "family_unit_id present but queries return no data - check RLS policies or data existence"
+            : "❌ CRITICAL: user has no family_members row - this causes all queries to return empty",
+        recommendation:
+          familyUnitIds.length > 0
+            ? "Check database for records with this family_unit_id"
+            : "User signup/family creation may have failed. Check family_members and family_units tables.",
       },
     };
   } catch (error) {
