@@ -36,6 +36,9 @@ jobs:
           supabase db push --include-all
 
       - name: Verify schema_migrations matches repo 1:1
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.QA_DB_PASSWORD }}
         run: bash scripts/check-migration-drift.sh
 
   migrate-e2e:
@@ -62,4 +65,7 @@ jobs:
           supabase db push --include-all
 
       - name: Verify schema_migrations matches repo 1:1
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.E2E_DB_PASSWORD }}
         run: bash scripts/check-migration-drift.sh
