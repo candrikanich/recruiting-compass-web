@@ -9,7 +9,8 @@ import { defineEventHandler, getQuery, createError } from "h3";
 import { requireAuth } from "~/server/utils/auth";
 import { resolveTargetAthleteId } from "~/server/utils/athleteAccess";
 import { useLogger } from "~/server/utils/logger";
-import { useSupabaseAdmin } from "~/server/utils/supabase";
+import { createServerSupabaseUserClient } from "~/server/utils/supabase";
+import { extractRequestToken } from "~/server/utils/requestToken";
 import { assembleSchoolRecommendations } from "~/server/utils/assembleSchoolRecommendations";
 import { getOrSetShared } from "~/server/utils/sharedCache";
 import { CACHE_KEYS, TTL } from "~/server/utils/redis";
@@ -20,6 +21,8 @@ export default defineEventHandler(
   async (event): Promise<SchoolRecommendationsResponse> => {
     const logger = useLogger(event, "schools/recommendations");
     const user = await requireAuth(event);
+    const token = extractRequestToken(event);
+    const supabase = createServerSupabaseUserClient(token);
     const query = getQuery(event);
 
     const athleteId = await resolveTargetAthleteId(
@@ -37,7 +40,7 @@ export default defineEventHandler(
 
     try {
       const cached = await getOrSetShared(cacheKey, TTL.TWO_MINUTES, () =>
-        assembleSchoolRecommendations(useSupabaseAdmin(), athleteId, 12),
+        assembleSchoolRecommendations(supabase, athleteId, 12),
       );
 
       return {
