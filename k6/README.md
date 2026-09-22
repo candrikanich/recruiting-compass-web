@@ -37,11 +37,12 @@ Ramp profile: 10 → 100 → 500 VUs over 5 minutes (see `stages` in `api-load.j
 
 ## Endpoints covered
 
-Picked because they're the most query-heavy paths found in the codebase (union queries across `interactions`/`athlete_messages`/`events`/`video_links`/`offers` for admin growth stats, per-school fit-score computation):
-- `GET /api/schools`
-- `GET /api/schools/:id/fit-score`
-- `POST /api/athlete/phase/advance`
-- `GET /api/admin/growth` (admin-gated — only include if test account has admin role)
+Currently implemented in `api-load.js`:
+- `GET /api/schools/:id/fit-score` — the test account's own school id is resolved once in `setup()` via a direct, RLS-scoped Supabase REST read (no `GET /api/schools` collection route exists server-side; school lists are fetched client-side straight from Supabase)
+
+**Not yet implemented** — planned, do not assume these are exercised by running `k6 run`:
+- `POST /api/athlete/phase/advance` — mutates account state, needs disposable per-user test data or a safe reset strategy before it's safe to load-test
+- `GET /api/admin/growth` — the union-query path across `interactions`/`athlete_messages`/`events`/`video_links`/`offers` most likely to bottleneck first; needs a scenario gated on an explicitly-configured admin test account
 
 ## Output
 

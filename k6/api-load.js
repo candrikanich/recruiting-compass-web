@@ -1,10 +1,16 @@
 /* global __ENV */
 import http from "k6/http";
-import { check, sleep } from "k6";
+import { check } from "k6";
 
 // Load test — see k6/README.md for target confirmation before running.
 // Never point this at prod. Confirm with Chris before running against
 // the shared QA/test Supabase project (E2E suite depends on it).
+//
+// Only exercises GET /api/schools/:id/fit-score — school LISTS are fetched
+// client-side straight from Supabase (no server collection route exists at
+// GET /api/schools), so a real school id is resolved once in setup() via a
+// direct, RLS-scoped Supabase REST read using the logged-in test account's
+// own access token.
 
 export const options = {
   stages: [
@@ -26,7 +32,7 @@ const TEST_EMAIL = __ENV.TEST_EMAIL;
 const TEST_PASSWORD = __ENV.TEST_PASSWORD;
 
 export function setup() {
-  const res = http.post(
+  const loginRes = http.post(
     `${SUPABASE_URL}/auth/v1/token?grant_type=password`,
     JSON.stringify({ email: TEST_EMAIL, password: TEST_PASSWORD }),
     {
@@ -36,23 +42,50 @@ export function setup() {
       },
     },
   );
-  check(res, { "login succeeded": (r) => r.status === 200 });
-  const { access_token: accessToken } = JSON.parse(res.body);
-  return { accessToken };
+  if (loginRes.status !== 200) {
+    throw new Error(
+      `k6 setup: login failed with status ${loginRes.status}: ${loginRes.body}`,
+    );
+  }
+
+  let accessToken;
+  try {
+    accessToken = JSON.parse(loginRes.body).access_token;
+  } catch {
+    throw new Error(`k6 setup: login response was not valid JSON: ${loginRes.body}`);
+  }
+  if (typeof accessToken !== "string" || accessToken.length === 0) {
+    throw new Error(`k6 setup: login response had no access_token: ${loginRes.body}`);
+  }
+
+  const authHeaders = {
+    Authorization: `Bearer ${accessToken}`,
+    apikey: SUPABASE_ANON_KEY,
+  };
+
+  // RLS-scoped read via the logged-in test account's own token — returns
+  // only schools that account can see, same as the app's own client-side query.
+  const schoolRes = http.get(`${SUPABASE_URL}/rest/v1/schools?select=id&limit=1`, {
+    headers: authHeaders,
+  });
+  if (schoolRes.status !== 200) {
+    throw new Error(
+      `k6 setup: schools lookup failed with status ${schoolRes.status}: ${schoolRes.body}`,
+    );
+  }
+  const schools = JSON.parse(schoolRes.body);
+  if (!Array.isArray(schools) || schools.length === 0) {
+    throw new Error(
+      "k6 setup: test account has no schools — seed at least one before running this load test",
+    );
+  }
+
+  return { accessToken, schoolId: schools[0].id };
 }
 
 export default function (data) {
   const headers = { Authorization: `Bearer ${data.accessToken}` };
 
-  const schoolsRes = http.get(`${BASE_URL}/api/schools`, { headers });
-  check(schoolsRes, { "schools 2xx/3xx": (r) => r.status < 400 });
-
-  const schools = JSON.parse(schoolsRes.body || "[]");
-  const firstId = Array.isArray(schools) ? schools[0]?.id : schools?.data?.[0]?.id;
-  if (firstId) {
-    const fitScoreRes = http.get(`${BASE_URL}/api/schools/${firstId}/fit-score`, { headers });
-    check(fitScoreRes, { "fit-score 2xx/3xx": (r) => r.status < 400 });
-  }
-
-  sleep(1);
+  const fitScoreRes = http.get(`${BASE_URL}/api/schools/${data.schoolId}/fit-score`, { headers });
+  check(fitScoreRes, { "fit-score 2xx/3xx": (r) => r.status < 400 });
 }
