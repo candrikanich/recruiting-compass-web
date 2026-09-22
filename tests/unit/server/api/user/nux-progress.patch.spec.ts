@@ -24,7 +24,11 @@ const mockUpdate = vi.fn(() => ({ eq: mockEq }));
 const mockFrom = vi.fn(() => ({ update: mockUpdate }));
 
 vi.mock("~/server/utils/supabase", () => ({
-  useSupabaseAdmin: vi.fn(() => ({ from: mockFrom })),
+  createServerSupabaseUserClient: vi.fn(() => ({ from: mockFrom })),
+}));
+
+vi.mock("~/server/utils/requestToken", () => ({
+  extractRequestToken: vi.fn(() => "fake-token"),
 }));
 
 vi.mock("~/server/utils/auth", () => ({

@@ -2,7 +2,8 @@ import { defineEventHandler, createError, readBody } from "h3";
 import { z } from "zod";
 import { useLogger } from "~/server/utils/logger";
 import { requireAuth } from "~/server/utils/auth";
-import { useSupabaseAdmin } from "~/server/utils/supabase";
+import { createServerSupabaseUserClient } from "~/server/utils/supabase";
+import { extractRequestToken } from "~/server/utils/requestToken";
 import { NUX_CHECKLIST_KEYS } from "~/types/nux";
 
 // Mirrors types/nux.ts's NuxProgress shape. Two real callers:
@@ -97,7 +98,8 @@ export default defineEventHandler(async (event) => {
     }
     const { nux_progress } = parsedBody.data;
 
-    const supabase = useSupabaseAdmin();
+    const token = extractRequestToken(event);
+    const supabase = createServerSupabaseUserClient(token);
     const { error } = await supabase
       .from("users")
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
