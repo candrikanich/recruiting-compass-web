@@ -12,6 +12,12 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+    # Fork PRs don't get repo secrets (GitHub withholds them from
+    # pull_request runs on forked code) — the E2E link step would hard-fail
+    # before any comparison. Skip cleanly rather than failing opaquely; this
+    # repo has no external forks today, but a maintainer merging a fork PR
+    # should sync QA/E2E via workflow_dispatch on migrate-qa-e2e.yml instead.
+    if: github.event.pull_request.head.repo.full_name == github.repository
 
     steps:
       - name: Checkout code
