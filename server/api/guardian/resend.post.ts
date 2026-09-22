@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { defineEventHandler, readBody, createError } from "h3";
+import { z } from "zod";
 import { useLogger } from "~/server/utils/logger";
 import { requireAuth } from "~/server/utils/auth";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
@@ -7,8 +8,17 @@ import { rateLimitByUser, throwIfRateLimited } from "~/server/utils/rateLimit";
 import { sendGuardianClaimEmail } from "~/server/utils/emailService";
 import { getSafeRequestOrigin } from "~/server/utils/requestOrigin";
 import { resolveGuardianLock } from "~/server/utils/guardianGate";
+import { emailSchema } from "~/utils/validation/validators";
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+// emailSchema validates .email() before its own .trim()/.toLowerCase(), so a
+// whitespace-padded address must be trimmed before it reaches the schema
+// (see signup-minor.post.ts, which hit the same issue).
+const resendBodySchema = z.object({
+  guardianEmail: z.preprocess(
+    (val) => (typeof val === "string" ? val.trim() : val),
+    emailSchema.or(z.literal("")).optional(),
+  ),
+});
 
 /**
  * Resend the guardian confirmation email, optionally to a different address.
@@ -26,7 +36,15 @@ export default defineEventHandler(async (event) => {
       await rateLimitByUser(event, user.id, { requests: 3, window: "1 h" }),
     );
 
-    const body = await readBody<{ guardianEmail?: string }>(event);
+    const rawBody = await readBody(event);
+    const parsed = resendBodySchema.safeParse(rawBody);
+    if (!parsed.success) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: "Enter a valid parent or guardian email",
+      });
+    }
+    const body = parsed.data;
     const supabase = useSupabaseAdmin();
 
     const { data: userRow } = await supabase
@@ -42,7 +60,7 @@ export default defineEventHandler(async (event) => {
       .eq("status", "pending")
       .maybeSingle();
 
-    const requestedEmail = body.guardianEmail?.trim().toLowerCase();
+    const requestedEmail = body.guardianEmail || undefined;
 
     // A pending row past its expiry is dead weight, not a live claim: the partial unique
     // index only excludes 'pending' rows, so leaving its status alone would collide with
@@ -79,12 +97,6 @@ export default defineEventHandler(async (event) => {
         throw createError({
           statusCode: 400,
           statusMessage: "Enter a parent or guardian email to invite them",
-        });
-      }
-      if (!EMAIL_RE.test(requestedEmail)) {
-        throw createError({
-          statusCode: 400,
-          statusMessage: "Enter a valid parent or guardian email",
         });
       }
       if (requestedEmail === user.email?.trim().toLowerCase()) {
@@ -132,12 +144,6 @@ export default defineEventHandler(async (event) => {
     let token = claim.token;
 
     if (requestedEmail && requestedEmail !== claim.guardian_email) {
-      if (!EMAIL_RE.test(requestedEmail)) {
-        throw createError({
-          statusCode: 400,
-          statusMessage: "Enter a valid parent or guardian email",
-        });
-      }
       if (requestedEmail === user.email?.trim().toLowerCase()) {
         throw createError({
           statusCode: 400,
