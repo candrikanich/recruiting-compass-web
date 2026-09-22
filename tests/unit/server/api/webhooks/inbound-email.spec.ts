@@ -52,6 +52,7 @@ vi.mock("resend", () => ({
 
 const mockState = {
   rawInsertId: "raw-1",
+  rawInsertRows: [] as Record<string, unknown>[],
   draftInsertRows: [] as Record<string, unknown>[],
   notificationRowBatches: [] as Record<string, unknown>[][],
   attachmentInsertRows: [] as Record<string, unknown>[],
@@ -77,14 +78,17 @@ vi.mock("~/server/utils/supabase", () => ({
     from: (table: string) => {
       if (table === "raw_inbound_emails") {
         return {
-          insert: () => ({
-            select: () => ({
-              single: async () => ({
-                data: { id: mockState.rawInsertId },
-                error: null,
+          insert: (row: Record<string, unknown>) => {
+            mockState.rawInsertRows.push(row);
+            return {
+              select: () => ({
+                single: async () => ({
+                  data: { id: mockState.rawInsertId },
+                  error: null,
+                }),
               }),
-            }),
-          }),
+            };
+          },
         };
       }
       if (table === "inbound_email_drafts") {
@@ -169,6 +173,7 @@ describe("POST /api/webhooks/inbound-email", () => {
       "svix-timestamp": "123",
       "svix-signature": "v1,sig",
     });
+    mockState.rawInsertRows = [];
     mockState.draftInsertRows = [];
     mockState.notificationRowBatches = [];
     mockState.attachmentInsertRows = [];
@@ -297,6 +302,45 @@ describe("POST /api/webhooks/inbound-email", () => {
         related_entity_type: "inbound_email_draft",
       }),
     ]);
+  });
+
+  it("stores the full verified payload in raw_inbound_emails, not just the fields the Zod schema narrows to", async () => {
+    vi.mocked(verifyResendWebhook).mockReturnValue({
+      type: "email.received",
+      data: {
+        email_id: "email-1",
+        to: ["family-ab3d9f2c@inbound.therecruitingcompass.com"],
+        from: "Player <player@example.com>",
+        subject: "Fwd: Camp invite",
+        created_at: "2026-09-02T15:15:00.000Z",
+        // Real Resend payloads carry more than this schema narrows to
+        // (attachments, message_id, cc/bcc) -- the raw record must keep it.
+        message_id: "msg-abc123",
+        attachments: [{ id: "att-1", filename: "camp.pdf" }],
+      },
+    } as unknown as ReturnType<typeof verifyResendWebhook>);
+    vi.mocked(parseInboundToken).mockReturnValue("ab3d9f2c");
+    vi.mocked(resolveFamilyByInboundToken).mockResolvedValue("family-1");
+    receivingGetMock.mockResolvedValue({ data: { text: "hi" }, error: null });
+    vi.mocked(parseForwardedThread).mockReturnValue([
+      { parsed: null, segmentText: "hi" },
+    ]);
+    vi.mocked(matchCoachByEmail).mockResolvedValue({
+      coachId: null,
+      schoolId: null,
+    });
+
+    const { default: handler } =
+      await import("~/server/api/webhooks/inbound-email.post");
+    await handler({} as Parameters<typeof handler>[0]);
+
+    expect(mockState.rawInsertRows).toHaveLength(1);
+    expect(mockState.rawInsertRows[0]?.payload).toMatchObject({
+      data: expect.objectContaining({
+        message_id: "msg-abc123",
+        attachments: [{ id: "att-1", filename: "camp.pdf" }],
+      }),
+    });
   });
 
   it("still creates an unmatched draft when fetching the full email body fails", async () => {
