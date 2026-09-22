@@ -10,6 +10,14 @@ export const changePasswordSchema = z.object({
   newPassword: z.string().min(8, "Password must be at least 8 characters"),
 });
 
+// #912: stays on the service-role client -- updateUserById() below is a
+// Supabase Auth Admin API call (GoTrue's /admin/users/:id), not a
+// PostgREST table query. RLS and createServerSupabaseUserClient() don't
+// apply to Auth Admin endpoints at all; they always require the
+// service-role key, for any caller. Manual authz already covers this
+// route: requireAuth() gates it, and the current-password re-check via a
+// fresh anonClient.auth.signInWithPassword() confirms the caller before
+// any admin write.
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "auth/change-password");
   try {
