@@ -5,6 +5,7 @@ import {
   createError,
   getRequestIP,
 } from "h3";
+import { z } from "zod";
 import { useLogger } from "~/server/utils/logger";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import { rateLimitByIp, throwIfRateLimited } from "~/server/utils/rateLimit";
@@ -15,29 +16,37 @@ import { getSafeRequestOrigin } from "~/server/utils/requestOrigin";
 import { markOnboardingComplete } from "~/server/utils/onboardingComplete";
 import { isUnderMinimumAge, requiresGuardianInvite } from "~/utils/age";
 import { getGraduationYearOptions } from "~/utils/graduationYears";
+import {
+  emailSchema,
+  strongPasswordSchema,
+  sanitizedTextSchema,
+  dateSchema,
+} from "~/utils/validation/validators";
 import type { Database } from "~/types/database";
 
-interface SignupMinorBody {
-  email?: string;
-  password?: string;
-  firstName?: string;
-  lastName?: string;
-  dateOfBirth?: string;
-  guardianEmail?: string;
-  graduationYear?: number;
-  primarySport?: string;
-  gender?: string;
-  zipCode?: string;
-  captchaToken?: string;
-  // True only when the caller's own onboarding flow has nothing left to ask after
-  // this signup — web's single-step form sends this; iOS omits it (its onboarding
-  // still has a separate schools-carousel step, see planning/iOS_SPEC_web-ios-
-  // parity-pass-2026-09-17.md Item A). Without this flag, grad year + sport alone
-  // are NOT proof of full onboarding — iOS already sends both as step-1-only data.
-  wizardComplete?: boolean;
-}
+/**
+ * Mirrors signup.post.ts's own server-side schema (not the client-only
+ * signupSchema in utils/validation/schemas.ts). Bounds are deliberately
+ * loose on the free-text fields below — the manual checks further down
+ * (grad-year membership, guardian-email-not-self, age gates) still carry
+ * the actual business rules; this layer's job is format/length/type only.
+ */
+const signupMinorBodySchema = z.object({
+  email: emailSchema,
+  password: strongPasswordSchema,
+  firstName: sanitizedTextSchema(100),
+  lastName: sanitizedTextSchema(100),
+  dateOfBirth: dateSchema,
+  guardianEmail: emailSchema.or(z.literal("")).optional(),
+  graduationYear: z.number().int().optional(),
+  primarySport: sanitizedTextSchema(100),
+  gender: sanitizedTextSchema(50),
+  zipCode: sanitizedTextSchema(10),
+  captchaToken: z.string().max(4096).optional(),
+  wizardComplete: z.boolean().optional(),
+});
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+type SignupMinorBody = z.infer<typeof signupMinorBodySchema>;
 
 /**
  * Standalone signup for a 13-17 player. Naming a guardian is optional — see
@@ -75,19 +84,23 @@ export default defineEventHandler(async (event) => {
       await rateLimitByIp(event, { requests: 5, window: "10 m" }),
     );
 
-    const body = await readBody<SignupMinorBody>(event);
-    const email = body.email?.trim().toLowerCase() ?? "";
+    const rawBody = await readBody(event);
+    const parsed = signupMinorBodySchema.safeParse(rawBody);
+    if (!parsed.success) {
+      throw createError({
+        statusCode: 400,
+        statusMessage:
+          "Invalid signup data: " + parsed.error.issues[0]?.message,
+      });
+    }
+    const body: SignupMinorBody = parsed.data;
+
+    const email = body.email;
     const guardianEmail = body.guardianEmail?.trim().toLowerCase() || null;
     const firstName = body.firstName?.trim() ?? "";
     const lastName = body.lastName?.trim() ?? "";
     const dateOfBirth = body.dateOfBirth?.trim() ?? "";
 
-    if (!EMAIL_RE.test(email) || !body.password) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: "A valid email and password are required",
-      });
-    }
     if (!firstName || !lastName) {
       throw createError({
         statusCode: 400,
@@ -100,8 +113,7 @@ export default defineEventHandler(async (event) => {
     // able to smuggle bad data into phase_milestone_data or user_preferences.
     if (
       body.graduationYear !== undefined &&
-      (!Number.isInteger(body.graduationYear) ||
-        !getGraduationYearOptions().includes(body.graduationYear))
+      !getGraduationYearOptions().includes(body.graduationYear)
     ) {
       throw createError({
         statusCode: 400,
@@ -109,7 +121,7 @@ export default defineEventHandler(async (event) => {
       });
     }
     const primarySport =
-      typeof body.primarySport === "string"
+      typeof body.primarySport === "string" && body.primarySport
         ? body.primarySport.trim()
         : undefined;
     if (body.primarySport !== undefined && !primarySport) {
@@ -119,12 +131,6 @@ export default defineEventHandler(async (event) => {
       });
     }
     if (guardianEmail) {
-      if (!EMAIL_RE.test(guardianEmail)) {
-        throw createError({
-          statusCode: 400,
-          statusMessage: "Enter a valid parent or guardian email",
-        });
-      }
       // A minor cannot be their own guardian. Without this the whole consent
       // mechanism is self-serve: the player would receive the claim link at their
       // own inbox.
