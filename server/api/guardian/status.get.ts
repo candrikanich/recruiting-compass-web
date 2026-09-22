@@ -71,13 +71,21 @@ export default defineEventHandler(async (event): Promise<GuardianStatus> => {
 
     const locked = await resolveGuardianLock(supabase, user, authUser.id);
 
-    const { data: claim } = await supabase
+    const { data: claim, error: claimError } = await supabase
       .from("guardian_claims")
       .select("guardian_email, status, expires_at")
       .eq("player_user_id", authUser.id)
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();
+
+    // A permission/RLS failure here must surface as an error, not silently
+    // read as "no claim" -- that would mask a real pending/expired/claimed
+    // guardian claim from the player (and the iOS client's banner) as if
+    // none existed (review finding on PR #963).
+    if (claimError) {
+      throw claimError;
+    }
 
     if (!claim) {
       return { locked, pending: locked, claimOutstanding: false, guardianEmailMasked: null, expiresAt: null, status: "none" };
