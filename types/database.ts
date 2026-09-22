@@ -4179,6 +4179,14 @@ export type Database = {
         Args: { athlete_id: string; photo_url: string };
         Returns: undefined;
       };
+      set_athlete_phase: {
+        Args: {
+          p_athlete_id: string;
+          p_next_phase: string;
+          p_phase_milestone_data: Json;
+        };
+        Returns: undefined;
+      };
       set_athlete_status_score: {
         Args: { p_athlete_id: string; p_score: number; p_label: string };
         Returns: undefined;

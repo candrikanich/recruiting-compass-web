@@ -7,7 +7,11 @@ import {
 } from "../phaseTestSupport";
 
 vi.mock("~/server/utils/supabase", () => ({
-  createServerSupabaseClient: vi.fn(),
+  createServerSupabaseUserClient: vi.fn(),
+}));
+
+vi.mock("~/server/utils/requestToken", () => ({
+  extractRequestToken: vi.fn(() => "fake-token"),
 }));
 
 vi.mock("~/server/utils/auth", () => ({
@@ -55,7 +59,7 @@ describe("/api/athlete/phase/advance.post", () => {
 
   describe("authorization", () => {
     it("redirects a parent's call to their linked athlete's row (family-shared profile, #555)", async () => {
-      const { createServerSupabaseClient } =
+      const { createServerSupabaseUserClient } =
         await import("~/server/utils/supabase");
       const { requireAuth, getUserRole } = await import("~/server/utils/auth");
       const handler = (await import("~/server/api/athlete/phase/advance.post"))
@@ -84,7 +88,7 @@ describe("/api/athlete/phase/advance.post", () => {
         },
         usersUpdate: { data: null, error: null },
       });
-      vi.mocked(createServerSupabaseClient).mockReturnValue(
+      vi.mocked(createServerSupabaseUserClient).mockReturnValue(
         mockSupabase as any,
       );
 
@@ -95,7 +99,7 @@ describe("/api/athlete/phase/advance.post", () => {
     });
 
     it("throws 404 when a parent has no linked athlete to advance", async () => {
-      const { createServerSupabaseClient } =
+      const { createServerSupabaseUserClient } =
         await import("~/server/utils/supabase");
       const { requireAuth, getUserRole } = await import("~/server/utils/auth");
       const handler = (await import("~/server/api/athlete/phase/advance.post"))
@@ -106,7 +110,7 @@ describe("/api/athlete/phase/advance.post", () => {
         email: "parent@example.com",
       });
       vi.mocked(getUserRole).mockResolvedValueOnce("parent");
-      vi.mocked(createServerSupabaseClient).mockReturnValue(
+      vi.mocked(createServerSupabaseUserClient).mockReturnValue(
         createMockSupabase({}) as any,
       );
 
@@ -116,7 +120,7 @@ describe("/api/athlete/phase/advance.post", () => {
     });
 
     it("only ever targets the resolved athlete's own row — there is no athleteId param to advance someone else's phase", async () => {
-      const { createServerSupabaseClient } =
+      const { createServerSupabaseUserClient } =
         await import("~/server/utils/supabase");
       const { requireAuth } = await import("~/server/utils/auth");
       const handler = (await import("~/server/api/athlete/phase/advance.post"))
@@ -137,7 +141,7 @@ describe("/api/athlete/phase/advance.post", () => {
         },
         usersUpdate: { data: null, error: null },
       });
-      vi.mocked(createServerSupabaseClient).mockReturnValue(
+      vi.mocked(createServerSupabaseUserClient).mockReturnValue(
         mockSupabase as any,
       );
 
@@ -152,7 +156,7 @@ describe("/api/athlete/phase/advance.post", () => {
 
   describe("milestone gating", () => {
     it("rejects advancement when required milestone tasks are incomplete", async () => {
-      const { createServerSupabaseClient } =
+      const { createServerSupabaseUserClient } =
         await import("~/server/utils/supabase");
       const { requireAuth } = await import("~/server/utils/auth");
       const handler = (await import("~/server/api/athlete/phase/advance.post"))
@@ -170,7 +174,7 @@ describe("/api/athlete/phase/advance.post", () => {
         // Only 1 of 4 required freshman milestones complete
         athleteTasks: { data: [{ task_id: taskRows[0].id }], error: null },
       });
-      vi.mocked(createServerSupabaseClient).mockReturnValue(
+      vi.mocked(createServerSupabaseUserClient).mockReturnValue(
         mockSupabase as any,
       );
 
@@ -186,7 +190,7 @@ describe("/api/athlete/phase/advance.post", () => {
     });
 
     it("does not resolve raw milestone slugs as completed task ids (regression guard for the original bug)", async () => {
-      const { createServerSupabaseClient } =
+      const { createServerSupabaseUserClient } =
         await import("~/server/utils/supabase");
       const { requireAuth } = await import("~/server/utils/auth");
       const handler = (await import("~/server/api/athlete/phase/advance.post"))
@@ -209,7 +213,7 @@ describe("/api/athlete/phase/advance.post", () => {
           error: null,
         },
       });
-      vi.mocked(createServerSupabaseClient).mockReturnValue(
+      vi.mocked(createServerSupabaseUserClient).mockReturnValue(
         mockSupabase as any,
       );
 
@@ -220,7 +224,7 @@ describe("/api/athlete/phase/advance.post", () => {
     });
 
     it("advances when all required milestone tasks are complete", async () => {
-      const { createServerSupabaseClient } =
+      const { createServerSupabaseUserClient } =
         await import("~/server/utils/supabase");
       const { requireAuth } = await import("~/server/utils/auth");
       const handler = (await import("~/server/api/athlete/phase/advance.post"))
@@ -241,7 +245,7 @@ describe("/api/athlete/phase/advance.post", () => {
         },
         usersUpdate: { data: null, error: null },
       });
-      vi.mocked(createServerSupabaseClient).mockReturnValue(
+      vi.mocked(createServerSupabaseUserClient).mockReturnValue(
         mockSupabase as any,
       );
 
@@ -255,7 +259,7 @@ describe("/api/athlete/phase/advance.post", () => {
     });
 
     it("falls back to the grade-derived phase (matching GET) when current_phase has never been set", async () => {
-      const { createServerSupabaseClient } =
+      const { createServerSupabaseUserClient } =
         await import("~/server/utils/supabase");
       const { requireAuth } = await import("~/server/utils/auth");
       const handler = (await import("~/server/api/athlete/phase/advance.post"))
@@ -277,7 +281,7 @@ describe("/api/athlete/phase/advance.post", () => {
         },
         usersUpdate: { data: null, error: null },
       });
-      vi.mocked(createServerSupabaseClient).mockReturnValue(
+      vi.mocked(createServerSupabaseUserClient).mockReturnValue(
         mockSupabase as any,
       );
 
@@ -290,7 +294,7 @@ describe("/api/athlete/phase/advance.post", () => {
 
   describe("idempotency", () => {
     it("returns a non-error, non-duplicate response when already at the final phase (committed)", async () => {
-      const { createServerSupabaseClient } =
+      const { createServerSupabaseUserClient } =
         await import("~/server/utils/supabase");
       const { requireAuth } = await import("~/server/utils/auth");
       const handler = (await import("~/server/api/athlete/phase/advance.post"))
@@ -305,7 +309,7 @@ describe("/api/athlete/phase/advance.post", () => {
         user: { data: { current_phase: "committed" }, error: null },
         athleteTasks: { data: [], error: null },
       });
-      vi.mocked(createServerSupabaseClient).mockReturnValue(
+      vi.mocked(createServerSupabaseUserClient).mockReturnValue(
         mockSupabase as any,
       );
 
@@ -320,7 +324,7 @@ describe("/api/athlete/phase/advance.post", () => {
     });
 
     it("advancing twice in a row is safe: the second call re-evaluates gating against the new phase rather than duplicating the first advance", async () => {
-      const { createServerSupabaseClient } =
+      const { createServerSupabaseUserClient } =
         await import("~/server/utils/supabase");
       const { requireAuth } = await import("~/server/utils/auth");
       const handler = (await import("~/server/api/athlete/phase/advance.post"))
@@ -343,7 +347,7 @@ describe("/api/athlete/phase/advance.post", () => {
           error: null,
         },
       });
-      vi.mocked(createServerSupabaseClient).mockReturnValue(
+      vi.mocked(createServerSupabaseUserClient).mockReturnValue(
         mockSupabase as any,
       );
 
@@ -360,7 +364,7 @@ describe("/api/athlete/phase/advance.post", () => {
 
   describe("error handling", () => {
     it("throws 404 (not 500) when the users row is missing — deleted account must not fake-succeed or alert", async () => {
-      const { createServerSupabaseClient } =
+      const { createServerSupabaseUserClient } =
         await import("~/server/utils/supabase");
       const { requireAuth } = await import("~/server/utils/auth");
       const handler = (await import("~/server/api/athlete/phase/advance.post"))
@@ -372,7 +376,7 @@ describe("/api/athlete/phase/advance.post", () => {
       });
 
       const mockSupabase = createMockSupabase({ userMissing: true });
-      vi.mocked(createServerSupabaseClient).mockReturnValue(
+      vi.mocked(createServerSupabaseUserClient).mockReturnValue(
         mockSupabase as any,
       );
 
@@ -383,7 +387,7 @@ describe("/api/athlete/phase/advance.post", () => {
     });
 
     it("throws 500 when the users.current_phase query returns an error", async () => {
-      const { createServerSupabaseClient } =
+      const { createServerSupabaseUserClient } =
         await import("~/server/utils/supabase");
       const { requireAuth } = await import("~/server/utils/auth");
       const handler = (await import("~/server/api/athlete/phase/advance.post"))
@@ -400,7 +404,7 @@ describe("/api/athlete/phase/advance.post", () => {
           error: { code: "42P01", message: "relation does not exist" },
         },
       });
-      vi.mocked(createServerSupabaseClient).mockReturnValue(
+      vi.mocked(createServerSupabaseUserClient).mockReturnValue(
         mockSupabase as any,
       );
 
@@ -411,7 +415,7 @@ describe("/api/athlete/phase/advance.post", () => {
     });
 
     it("throws 500 when the users update fails", async () => {
-      const { createServerSupabaseClient } =
+      const { createServerSupabaseUserClient } =
         await import("~/server/utils/supabase");
       const { requireAuth } = await import("~/server/utils/auth");
       const handler = (await import("~/server/api/athlete/phase/advance.post"))
@@ -435,7 +439,7 @@ describe("/api/athlete/phase/advance.post", () => {
           error: { code: "23505", message: "update failed" },
         },
       });
-      vi.mocked(createServerSupabaseClient).mockReturnValue(
+      vi.mocked(createServerSupabaseUserClient).mockReturnValue(
         mockSupabase as any,
       );
 
