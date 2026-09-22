@@ -1,7 +1,21 @@
 import { defineEventHandler, getRouterParam, createError } from "h3";
 import { useLogger } from "~/server/utils/logger";
-import { useSupabaseAdmin } from "~/server/utils/supabase";
+import { createServerSupabaseAnonClient } from "~/server/utils/supabase";
 
+const ERROR_RESPONSES: Record<string, { statusCode: number; statusMessage: string }> = {
+  NOT_FOUND: { statusCode: 404, statusMessage: "Invitation not found" },
+  INVALID_STATUS: { statusCode: 409, statusMessage: "This invitation is no longer valid" },
+  EXPIRED: { statusCode: 410, statusMessage: "This invitation has expired" },
+};
+
+// #912: deliberately unauthenticated -- reachable by anyone with the link
+// (e.g. a forwarded invite), not just the invitee, before they may even
+// have an account. family_invitations_select requires family membership
+// or a matching auth.email(), which an anonymous caller has neither of, so
+// the lookup goes through get_family_invitation_by_token() (a SECURITY
+// DEFINER RPC that resolves by token internally) rather than a raw query
+// -- see supabase/migrations/20260929000040_token_lookup_rpcs.sql for why
+// a plain RLS policy can't express "found by token" safely.
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "family/invite/token");
   const token = getRouterParam(event, "token");
@@ -10,56 +24,46 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: "Token is required" });
   }
 
-  const supabase = useSupabaseAdmin();
+  const supabase = createServerSupabaseAnonClient();
 
   try {
-    const { data: invitation } = await supabase
-      .from("family_invitations")
-      .select("id, role, status, expires_at, family_unit_id, invited_email")
-      .eq("token", token)
+    const { data, error } = await supabase
+      .rpc("get_family_invitation_by_token", { p_token: token })
       .single();
 
-    if (!invitation) {
+    if (error) {
+      logger.error("Failed to fetch invitation", error);
       throw createError({
-        statusCode: 404,
-        statusMessage: "Invitation not found",
+        statusCode: 500,
+        statusMessage: "Failed to fetch invitation",
       });
     }
 
-    if (invitation.status !== "pending") {
+    if (!data) {
       throw createError({
-        statusCode: 409,
-        statusMessage: "This invitation is no longer valid",
+        statusCode: 500,
+        statusMessage: "Failed to fetch invitation",
       });
     }
 
-    if (new Date(invitation.expires_at) < new Date()) {
+    if (data.error_code) {
+      const mapped = ERROR_RESPONSES[data.error_code];
+      if (mapped) throw createError(mapped);
+      logger.error("Unexpected get_family_invitation_by_token error_code", {
+        errorCode: data.error_code,
+      });
       throw createError({
-        statusCode: 410,
-        statusMessage: "This invitation has expired",
+        statusCode: 500,
+        statusMessage: "Failed to fetch invitation",
       });
     }
 
-    // Unauthenticated preview: family name + the invited address only. Athlete
-    // PII (name, DOB, grad year, sport, position) stays behind acceptance —
-    // this endpoint is reachable by anyone with the link (e.g. a forwarded
-    // invite), not just the invitee. The invited email itself is safe to
-    // return: it's already known to whoever holds the link (it's who the
-    // invite was addressed to), and prefilling it prevents a real failure
-    // mode where the visitor signs up with a different email than the one
-    // invited, which the accept endpoint then rejects.
-    const { data: familyUnit } = await supabase
-      .from("family_units")
-      .select("family_name")
-      .eq("id", invitation.family_unit_id)
-      .single();
-
-    logger.info("Invitation token lookup", { invitationId: invitation.id });
+    logger.info("Invitation token lookup", { invitationId: data.invitation_id });
     return {
-      invitationId: invitation.id,
-      role: invitation.role,
-      familyName: familyUnit?.family_name ?? "My Family",
-      invitedEmail: invitation.invited_email,
+      invitationId: data.invitation_id,
+      role: data.role,
+      familyName: data.family_name,
+      invitedEmail: data.invited_email,
     };
   } catch (err) {
     if (err instanceof Error && "statusCode" in err) throw err;
