@@ -1,7 +1,8 @@
 import { defineEventHandler, getRouterParam, createError } from "h3";
 import { useLogger } from "~/server/utils/logger";
 import { requireAuth } from "~/server/utils/auth";
-import { useSupabaseAdmin } from "~/server/utils/supabase";
+import { createServerSupabaseUserClient } from "~/server/utils/supabase";
+import { extractRequestToken } from "~/server/utils/requestToken";
 import { CURRENT_TERMS_VERSION } from "~/utils/legal";
 
 // Maps the accept_guardian_claim() SQL function's raised error messages to the
@@ -32,6 +33,11 @@ const CLAIM_ERROR_RESPONSES: Record<string, { statusCode: number; statusMessage:
  * failure partway through cannot leave the player in a family without guardian_consent_at
  * recorded — a state guardianGate.ts's hasParentInFamily() would otherwise read as an
  * already-present guardian and silently unlock the account with no consent on file.
+ *
+ * #912: session-scoped client, not service-role — accept_guardian_claim() itself now
+ * verifies p_guardian_id = auth.uid() internally (20260929000040), so a direct RPC call
+ * can no longer forge a different guardian id even though EXECUTE is granted to
+ * authenticated.
  */
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "guardian/claim/accept");
@@ -46,7 +52,8 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 400, statusMessage: "Account has no email on file" });
     }
 
-    const supabase = useSupabaseAdmin();
+    const requestToken = extractRequestToken(event);
+    const supabase = createServerSupabaseUserClient(requestToken);
     const { data: familyUnitId, error } = await supabase.rpc("accept_guardian_claim", {
       p_token: token,
       p_guardian_id: guardian.id,

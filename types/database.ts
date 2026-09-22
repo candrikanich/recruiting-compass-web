@@ -4047,6 +4047,27 @@ export type Database = {
           task_completion_rate: number;
         }[];
       };
+      get_family_invitation_by_token: {
+        Args: { p_token: string };
+        Returns: {
+          invitation_id: string | null;
+          role: string | null;
+          family_name: string | null;
+          invited_email: string | null;
+          error_code: string | null;
+        }[];
+      };
+      get_guardian_claim_by_token: {
+        Args: { p_token: string };
+        Returns: {
+          guardian_email: string | null;
+          player_name: string | null;
+          player_date_of_birth: string | null;
+          player_graduation_year: number | null;
+          expires_at: string | null;
+          error_code: string | null;
+        }[];
+      };
       get_linked_user_ids: {
         Args: never;
         Returns: {
