@@ -10,11 +10,18 @@
 --
 -- Fix: verify the caller is a member of the school's family_unit_id
 -- (same membership shape as "Users can update schools in their families",
--- the schools table's own RLS UPDATE policy) before touching anything,
--- and reject p_actor values other than auth.uid() rather than silently
--- trusting it -- kept as an explicit parameter (not derived internally)
--- to avoid a client-side signature change, but no longer trusted as
--- authoritative.
+-- the schools table's own permissive RLS UPDATE policy) before touching
+-- anything, and reject p_actor values other than auth.uid() rather than
+-- silently trusting it -- kept as an explicit parameter (not derived
+-- internally) to avoid a client-side signature change, but no longer
+-- trusted as authoritative.
+--
+-- Review fix (PR #978): also require family_can_write(family_unit_id),
+-- the schools table's RESTRICTIVE entitlement policy (schools_update_
+-- requires_entitlement) -- a SECURITY DEFINER function bypasses ALL RLS
+-- on schools, restrictive included, so replicating only the membership
+-- check let a family with no writable subscription still reactivate a
+-- school through this RPC even though an ordinary UPDATE would be denied.
 
 CREATE OR REPLACE FUNCTION "public"."reactivate_school"(
   "p_school_id" "uuid",
@@ -42,6 +49,10 @@ BEGIN
     SELECT 1 FROM public.family_members
     WHERE family_unit_id = v_family_unit_id AND user_id = auth.uid()
   ) THEN
+    RAISE EXCEPTION 'not authorized for this school' USING ERRCODE = '42501';
+  END IF;
+
+  IF NOT public.family_can_write(v_family_unit_id) THEN
     RAISE EXCEPTION 'not authorized for this school' USING ERRCODE = '42501';
   END IF;
 
