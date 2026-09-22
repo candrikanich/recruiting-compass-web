@@ -350,16 +350,18 @@ UUID regeneration breaking `athlete_task` FKs).
 
 ### #912: service-role client — legitimate exceptions (audited 2026-09-22)
 
-Issue #912 found 114 routes on `useSupabaseAdmin()` (RLS bypassed). Most
-have since been migrated to `createServerSupabaseUserClient()` /
-`createServerSupabaseAnonClient()` route by route (family-code, account
-self-service, user preferences, guardian status, player tracking-links,
-schools search/recommendations — see closed PRs #951/#957/#960/#962/#963/#967/#969).
-The following 30 routes are audited, intentional exceptions — each has no
-session to scope RLS to in the first place, so a client swap isn't
-meaningful. Recommendation #2 from #912's original report: document why +
-confirm manual authz. Every file below already carries its own doc
-comment; this is the index, not a restatement.
+Issue #912 found 114 routes on `useSupabaseAdmin()` (RLS bypassed). All
+real migration work is done (family-code, account self-service, user
+preferences, guardian status, player tracking-links, schools
+search/recommendations, token-based invite/claim RPCs, guardian resend —
+see closed PRs #951/#957/#960/#962/#963/#967/#969/#979/#983). The
+following routes are audited, intentional exceptions. Recommendation #2
+from #912's original report: document why + confirm manual authz. Every
+file below already carries its own doc comment; this is the index, not a
+restatement.
+
+**30 routes have no session to scope RLS to in the first place, so a
+client swap isn't meaningful:**
 
 - **`server/api/admin/**` (15 routes)** — gated by `requireAdmin()`
   (verifies `is_admin` server-side, never a client claim). Admin
@@ -398,13 +400,23 @@ comment; this is the index, not a restatement.
   `useSupabaseAdmin()` call is for the token lookup itself, which by
   definition can't be scoped to a not-yet-admin caller's RLS.
 
-Not in this list (deferred, not exceptions — real RPC work needed):
-`family/invite/[token].get.ts`, `guardian/claim/[token]/{accept,index}`,
-`guardian/resend.post.ts`. Each resolves a row by an opaque token before
-the caller has any established relationship to it (invite/claim flows),
-which needs a SECURITY DEFINER RPC per the `join_family_by_code` pattern
-(`20260929000023`), not a plain client swap — `guardian/resend.post.ts`'s
-own doc comment already explains this for that route specifically.
+**2 routes are mostly migrated but keep one narrow, documented
+`useSupabaseAdmin()` call for a single privileged operation the rest of
+the route (session-scoped) can't reach:**
+
+- **`server/api/guardian/resend.post.ts`** — the state-changing work
+  (rate limit, eligibility, create/revoke+reissue/reminder) runs entirely
+  through `resend_guardian_claim()` (SECURITY DEFINER RPC,
+  `20260929000050`) on the session-scoped client. Only the follow-up read
+  of `guardian_claims.token` — deliberately never returned by that RPC,
+  since doing so would let any signed-in caller read it directly via
+  PostgREST (a review finding on #983) — uses `useSupabaseAdmin()`,
+  scoped to the single `claim_id` the RPC just returned.
+- **`server/api/user/preferences/player-details.patch.ts`** — the
+  primary read/write uses `createServerSupabaseUserClient()`. A narrow
+  `useSupabaseAdmin()` call triggers suggestion re-evaluation after a
+  profile change, since `suggestions` INSERT is service-role-only
+  (non-critical side effect, own try/catch, doesn't fail the request).
 
 ## Common Patterns
 
