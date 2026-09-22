@@ -6,11 +6,19 @@ import { check, sleep } from "k6";
 // Never point this at prod. Confirm with Chris before running against
 // the shared QA/test Supabase project (E2E suite depends on it).
 //
-// Only exercises GET /api/schools/:id/fit-score — school LISTS are fetched
-// client-side straight from Supabase (no server collection route exists at
-// GET /api/schools), so a real school id is resolved once in setup() via a
-// direct, RLS-scoped Supabase REST read using the minted session's own
-// access token.
+// Exercises GET /api/schools/recommendations — real query weight
+// (assembleSchoolRecommendations), currently wired into the schools-page
+// empty state, no side effects. Originally targeted GET
+// /api/schools/:id/fit-score, discovered 2026-09-22 to be dead/orphaned
+// code (hardcodes `fitScore: null`, no frontend caller — the app now
+// computes fit signals client-side via composables/useFitScore.ts). See
+// k6/findings.md and the dead-code cleanup issue it links.
+//
+// Note: this endpoint is Redis-cached per athlete for 2 minutes
+// (server/api/schools/recommendations.get.ts) — repeated calls from the
+// same test account within that window hit cache, not real DB work. Keep
+// this in mind when reading results; it isn't a pure DB-capacity signal
+// either.
 //
 // Auth: QA's Supabase project has Turnstile captcha enabled on the public
 // password-grant endpoint (real signup/login protection — correctly not
@@ -111,35 +119,13 @@ export function setup() {
     throw new Error(`k6 setup: verify response had no access_token: ${verifyRes.body}`);
   }
 
-  const authHeaders = {
-    Authorization: `Bearer ${accessToken}`,
-    apikey: SUPABASE_ANON_KEY,
-  };
-
-  // RLS-scoped read via the logged-in test account's own token — returns
-  // only schools that account can see, same as the app's own client-side query.
-  const schoolRes = http.get(`${SUPABASE_URL}/rest/v1/schools?select=id&limit=1`, {
-    headers: authHeaders,
-  });
-  if (schoolRes.status !== 200) {
-    throw new Error(
-      `k6 setup: schools lookup failed with status ${schoolRes.status}: ${schoolRes.body}`,
-    );
-  }
-  const schools = parseJsonOrThrow(schoolRes, "schools lookup");
-  if (!Array.isArray(schools) || schools.length === 0) {
-    throw new Error(
-      "k6 setup: test account has no schools — seed at least one before running this load test",
-    );
-  }
-
-  return { accessToken, schoolId: schools[0].id };
+  return { accessToken };
 }
 
 export default function (data) {
   const headers = { Authorization: `Bearer ${data.accessToken}` };
 
-  const fitScoreRes = http.get(`${BASE_URL}/api/schools/${data.schoolId}/fit-score`, { headers });
-  check(fitScoreRes, { "fit-score 2xx/3xx": (r) => r.status < 400 });
+  const res = http.get(`${BASE_URL}/api/schools/recommendations`, { headers });
+  check(res, { "recommendations 2xx/3xx": (r) => r.status < 400 });
   sleep(1);
 }

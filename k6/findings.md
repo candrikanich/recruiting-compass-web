@@ -1,5 +1,11 @@
 # k6 Load Test Findings
 
+## Correction (2026-09-22, after the two runs below)
+
+Both runs below targeted `GET /api/schools/:id/fit-score`, which turned out to be **dead/orphaned code** — it hardcodes `fitScore: null` and nothing in the frontend calls it anymore (the app now computes fit signals client-side via `composables/useFitScore.ts`; the old `POST /api/schools/[id]/fit-score` sibling already self-documents as deprecated, returning 410). Neither run measured real fit-score capacity, because there was never any real work happening server-side to measure. The rate-limiter finding in the second run below is still valid (that's middleware-level, applies regardless of endpoint), but the "endpoint capacity" framing in both entries is not.
+
+`api-load.js` now targets `GET /api/schools/recommendations` instead — a real, currently-used, query-weighted endpoint. Dead-code cleanup for `fit-score.get.ts` filed as [#972](https://github.com/candrikanich/recruiting-compass-web/issues/972).
+
 ## 2026-09-22 — first live run, QA (xpxzhqghxecsjhvklsqg / qa.myrecruitingcompass.com)
 
 **Profile run:** original 10 → 100 → 500 VU ramp, no sleep between iterations, single source IP.
