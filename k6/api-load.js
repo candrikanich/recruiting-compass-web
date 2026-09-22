@@ -153,7 +153,19 @@ export function setup() {
 
 export default function (data) {
   const token = data.accessTokens[__VU % data.accessTokens.length];
-  const headers = { Authorization: `Bearer ${token}` };
+  // server/middleware/rate-limit.ts keys its per-user bucket off the
+  // sb-access-token COOKIE, not the Authorization header -- with only the
+  // header set, every request (regardless of which pool account's token is
+  // used) fell back to its ip:<ip> bucket, so a single test machine's IP
+  // still collapsed all 5 accounts onto one shared rate-limit key. Sending
+  // it as a cookie too (harmless duplication; requireAuth accepts either)
+  // is what actually lets the pool spread load across distinct keys.
+  // Confirmed by a live run 2026-09-22: header-only got the same ~60/min
+  // ceiling as a single account; this fixes it.
+  const headers = {
+    Authorization: `Bearer ${token}`,
+    Cookie: `sb-access-token=${token}`,
+  };
 
   const res = http.get(`${BASE_URL}/api/schools/recommendations`, { headers });
   check(res, { "recommendations 2xx/3xx": (r) => r.status < 400 });
