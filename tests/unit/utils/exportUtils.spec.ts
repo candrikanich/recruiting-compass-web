@@ -93,6 +93,32 @@ describe("exportUtils", () => {
       expect(result).toContain("Jane,");
     });
 
+    it("should neutralize formula-injection prefixes (=, +, -, @)", () => {
+      const headers = ["Name", "Notes"];
+      const rows = [
+        ["John", "=SUM(A1:A10)"],
+        ["Jane", "+1+1"],
+        ["Bob", "-2+3"],
+        ["Amy", "@SUM(A1:A10)"],
+      ];
+
+      const result = toCSV(headers, rows);
+
+      expect(result).toContain("John,'=SUM(A1:A10)");
+      expect(result).toContain("Jane,'+1+1");
+      expect(result).toContain("Bob,'-2+3");
+      expect(result).toContain("Amy,'@SUM(A1:A10)");
+    });
+
+    it("should not alter values that don't start with a formula-trigger character", () => {
+      const headers = ["Name", "Notes"];
+      const rows = [["John", "Total = 5+5"]];
+
+      const result = toCSV(headers, rows);
+
+      expect(result).toContain("John,Total = 5+5");
+    });
+
     it("should escape special characters in headers", () => {
       const headers = ["Name", "Email, Address"];
       const rows = [["John", "test@example.com"]];

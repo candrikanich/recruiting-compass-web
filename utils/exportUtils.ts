@@ -34,7 +34,12 @@ declare module "jspdf" {
  */
 const escapeCSV = (value: unknown): string => {
   if (value === null || value === undefined) return "";
-  const str = String(value);
+  let str = String(value);
+  // Neutralize CSV formula injection (OWASP): prefix cells starting with
+  // =, +, -, or @ so spreadsheet apps treat them as text, not formulas.
+  if (/^[=+\-@]/.test(str)) {
+    str = `'${str}`;
+  }
   // Escape quotes and wrap in quotes if contains comma, quote, or newline
   if (str.includes(",") || str.includes('"') || str.includes("\n")) {
     return `"${str.replace(/"/g, '""')}"`;
