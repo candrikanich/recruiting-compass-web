@@ -4,6 +4,7 @@
  */
 
 import { defineEventHandler, readBody, createError } from "h3";
+import { z } from "zod";
 import { createServerSupabaseUserClient } from "~/server/utils/supabase";
 import { extractRequestToken } from "~/server/utils/requestToken";
 import { requireAuth } from "~/server/utils/auth";
@@ -12,9 +13,10 @@ import { requireUuidParam } from "~/server/utils/validation";
 import { logCRUD, logError } from "~/server/utils/auditLog";
 import type { AthleteTask, TaskStatus } from "~/types/timeline";
 
-interface UpdateTaskBody {
-  status: TaskStatus;
-}
+const updateTaskBodySchema = z.object({
+  status: z.enum(["not_started", "in_progress", "completed", "skipped"]),
+});
+type UpdateTaskBody = z.infer<typeof updateTaskBodySchema>;
 
 interface UpdateTaskData {
   athlete_id: string;
@@ -33,28 +35,15 @@ export default defineEventHandler(async (event) => {
   const taskId = requireUuidParam(event, "taskId");
 
   try {
-    const body = await readBody<UpdateTaskBody>(event);
-
-    if (!body.status) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: "Status is required",
-      });
-    }
-
-    // Validate status value
-    const validStatuses = [
-      "not_started",
-      "in_progress",
-      "completed",
-      "skipped",
-    ];
-    if (!validStatuses.includes(body.status)) {
+    const rawBody = await readBody(event);
+    const parsed = updateTaskBodySchema.safeParse(rawBody);
+    if (!parsed.success) {
       throw createError({
         statusCode: 422,
         statusMessage: "Invalid status value",
       });
     }
+    const body: UpdateTaskBody = parsed.data;
 
     // Validate dependencies only when attempting to complete or start
     if (body.status === "completed" || body.status === "in_progress") {

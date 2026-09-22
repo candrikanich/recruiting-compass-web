@@ -1,4 +1,5 @@
 import { defineEventHandler, readBody, getRequestIP, createError } from "h3";
+import { z } from "zod";
 import { requireAuth } from "~/server/utils/auth";
 import { createServerSupabaseUserClient } from "~/server/utils/supabase";
 import { extractRequestToken } from "~/server/utils/requestToken";
@@ -8,9 +9,13 @@ import {
 } from "~/server/utils/familyCode";
 import { useLogger } from "~/server/utils/logger";
 
-interface JoinByCodeBody {
-  familyCode: string;
-}
+// Type/length gate only -- isValidFamilyCodeFormat below still carries the
+// actual FAM-XXXXXX format check, kept as its own step so the 400 for a
+// malformed-but-present code stays distinct from a missing/wrong-type field.
+const joinByCodeBodySchema = z.object({
+  familyCode: z.string().max(50),
+});
+type JoinByCodeBody = z.infer<typeof joinByCodeBodySchema>;
 
 // Finding a family by code (and the own-family/already-member checks, the
 // membership insert, and the usage log) go through join_family_by_code(), a
@@ -21,7 +26,15 @@ interface JoinByCodeBody {
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "family/code/join");
   const user = await requireAuth(event);
-  const body = await readBody<JoinByCodeBody>(event);
+  const rawBody = await readBody(event);
+  const parsed = joinByCodeBodySchema.safeParse(rawBody);
+  if (!parsed.success) {
+    throw createError({
+      statusCode: 400,
+      message: "Invalid family code format. Expected: FAM-XXXXXX",
+    });
+  }
+  const body: JoinByCodeBody = parsed.data;
   const { familyCode } = body;
   const token = extractRequestToken(event);
   const supabase = createServerSupabaseUserClient(token);
