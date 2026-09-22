@@ -1,7 +1,8 @@
 import { defineEventHandler, createError } from "h3";
 import { useLogger } from "~/server/utils/logger";
 import { requireAuth } from "~/server/utils/auth";
-import { useSupabaseAdmin } from "~/server/utils/supabase";
+import { createServerSupabaseUserClient } from "~/server/utils/supabase";
+import { extractRequestToken } from "~/server/utils/requestToken";
 import { resolveGuardianLock } from "~/server/utils/guardianGate";
 
 export interface GuardianStatus {
@@ -59,7 +60,8 @@ export default defineEventHandler(async (event): Promise<GuardianStatus> => {
 
   try {
     const authUser = await requireAuth(event);
-    const supabase = useSupabaseAdmin();
+    const token = extractRequestToken(event);
+    const supabase = createServerSupabaseUserClient(token);
 
     const { data: user } = await supabase
       .from("users")
@@ -69,13 +71,21 @@ export default defineEventHandler(async (event): Promise<GuardianStatus> => {
 
     const locked = await resolveGuardianLock(supabase, user, authUser.id);
 
-    const { data: claim } = await supabase
+    const { data: claim, error: claimError } = await supabase
       .from("guardian_claims")
       .select("guardian_email, status, expires_at")
       .eq("player_user_id", authUser.id)
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();
+
+    // A permission/RLS failure here must surface as an error, not silently
+    // read as "no claim" -- that would mask a real pending/expired/claimed
+    // guardian claim from the player (and the iOS client's banner) as if
+    // none existed (review finding on PR #963).
+    if (claimError) {
+      throw claimError;
+    }
 
     if (!claim) {
       return { locked, pending: locked, claimOutstanding: false, guardianEmailMasked: null, expiresAt: null, status: "none" };
