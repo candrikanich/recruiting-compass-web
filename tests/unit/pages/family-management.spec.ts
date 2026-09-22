@@ -55,7 +55,15 @@ vi.mock("~/composables/useFamilyCode", () => ({
 
 const mockFetchAuth = vi.fn((url: string) => {
   if (url === "/api/family/inbound-address") {
-    return Promise.resolve({ address: "family-abc123@inbound.example.com" });
+    return Promise.resolve({
+      addresses: [
+        {
+          familyUnitId: "fam-1",
+          familyName: "Test Family",
+          address: "family-abc123@inbound.example.com",
+        },
+      ],
+    });
   }
   return Promise.resolve({ members: [] });
 });
@@ -181,7 +189,15 @@ describe("family-management parent family members", () => {
     ];
     mockFetchAuth.mockImplementation((url: string) => {
       if (url === "/api/family/inbound-address") {
-        return Promise.resolve({ address: "family-abc123@inbound.example.com" });
+        return Promise.resolve({
+          addresses: [
+            {
+              familyUnitId: "fam-1",
+              familyName: "My Family",
+              address: "family-abc123@inbound.example.com",
+            },
+          ],
+        });
       }
       if (url === "/api/family/members?familyId=fam-1") {
         return Promise.resolve({
@@ -246,6 +262,36 @@ describe("family-management inbound email address", () => {
 
     expect(mockFetchAuth).toHaveBeenCalledWith("/api/family/inbound-address");
     expect(wrapper.text()).toContain("family-abc123@inbound.example.com");
+  });
+
+  it("renders one address per family for a multi-family parent", async () => {
+    mockFetchAuth.mockImplementation((url: string) => {
+      if (url === "/api/family/inbound-address") {
+        return Promise.resolve({
+          addresses: [
+            {
+              familyUnitId: "fam-1",
+              familyName: "The Smiths",
+              address: "family-abc123@inbound.example.com",
+            },
+            {
+              familyUnitId: "fam-2",
+              familyName: "The Joneses",
+              address: "family-def456@inbound.example.com",
+            },
+          ],
+        });
+      }
+      return Promise.resolve({ members: [] });
+    });
+
+    const wrapper = mountPage("parent");
+    await flushPromises();
+
+    expect(wrapper.text()).toContain("family-abc123@inbound.example.com");
+    expect(wrapper.text()).toContain("family-def456@inbound.example.com");
+    expect(wrapper.text()).toContain("The Smiths");
+    expect(wrapper.text()).toContain("The Joneses");
   });
 });
 
