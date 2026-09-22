@@ -20,6 +20,69 @@
 -- existing logic (including the race-recovery paths) rather than
 -- redesigning behavior. All three key off auth.uid(), never a
 -- client-supplied actor id.
+--
+-- Review fixes (PR #951):
+-- 1. join_family_by_code is reachable directly via PostgREST's Data API by
+--    any authenticated client, bypassing join.post.ts's in-memory per-IP
+--    checkRateLimit. Added a durable per-user attempt table so the RPC
+--    itself enforces the same 5-per-5-minutes window regardless of caller
+--    (route-level IP limiter stays as defense in depth).
+-- 2. generate_unique_family_code/generate_unique_inbound_token used
+--    Postgres random() (not cryptographically unpredictable) for values
+--    that function as bearer credentials -- family_code authorizes join,
+--    inbound_token routes raw inbound email to a family. Switched to
+--    pgcrypto's gen_random_bytes via _crypto_random_char, with unbiased
+--    rejection sampling for alphabets that don't evenly divide 256.
+-- 3. family_code_usage_log inserts ran in the same transaction as the
+--    primary operation, so a log failure rolled back family
+--    creation/join/regeneration -- the JS code they replaced treated
+--    logging as fire-and-forget (.catch()-swallowed). Wrapped each insert
+--    in a nested block that only suppresses the logging failure.
+
+CREATE TABLE IF NOT EXISTS "public"."family_code_join_attempts" (
+    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
+    "user_id" "uuid" NOT NULL,
+    "attempted_at" timestamp with time zone DEFAULT "now"() NOT NULL,
+    CONSTRAINT "family_code_join_attempts_pkey" PRIMARY KEY ("id")
+);
+
+ALTER TABLE "public"."family_code_join_attempts" OWNER TO "postgres";
+
+ALTER TABLE ONLY "public"."family_code_join_attempts"
+    ADD CONSTRAINT "family_code_join_attempts_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE CASCADE;
+
+CREATE INDEX "idx_family_code_join_attempts_user_time" ON "public"."family_code_join_attempts" USING "btree" ("user_id", "attempted_at");
+
+-- No policies: only the SECURITY DEFINER join_family_by_code RPC (which
+-- bypasses RLS as the table owner) ever reads or writes this table.
+ALTER TABLE "public"."family_code_join_attempts" ENABLE ROW LEVEL SECURITY;
+
+REVOKE ALL ON TABLE "public"."family_code_join_attempts" FROM PUBLIC, "anon", "authenticated";
+
+-- Unbiased single-character draw from pgcrypto randomness for any alphabet,
+-- shared by both generator functions below. Rejection sampling avoids the
+-- modulo bias a plain `byte % length` would introduce whenever 256 isn't a
+-- multiple of the alphabet length (e.g. the 36-char inbound-token alphabet).
+CREATE OR REPLACE FUNCTION "public"."_crypto_random_char"("p_chars" "text")
+RETURNS "text"
+LANGUAGE "plpgsql"
+SET "search_path" = "public"
+AS $$
+DECLARE
+  v_len int := length(p_chars);
+  v_threshold int := 256 - (256 % v_len);
+  v_byte int;
+BEGIN
+  LOOP
+    v_byte := get_byte(extensions.gen_random_bytes(1), 0);
+    IF v_byte < v_threshold THEN
+      RETURN substr(p_chars, 1 + (v_byte % v_len), 1);
+    END IF;
+  END LOOP;
+END;
+$$;
+
+REVOKE ALL ON FUNCTION "public"."_crypto_random_char"("text") FROM PUBLIC, "anon", "authenticated";
 
 CREATE OR REPLACE FUNCTION "public"."generate_unique_family_code"()
 RETURNS "text"
@@ -36,7 +99,7 @@ BEGIN
   FOR v_attempt IN 1..5 LOOP
     v_candidate := 'FAM-';
     FOR v_i IN 1..6 LOOP
-      v_candidate := v_candidate || substr(v_chars, 1 + floor(random() * length(v_chars))::int, 1);
+      v_candidate := v_candidate || public._crypto_random_char(v_chars);
     END LOOP;
     IF NOT EXISTS (SELECT 1 FROM public.family_units WHERE family_code = v_candidate) THEN
       RETURN v_candidate;
@@ -63,7 +126,7 @@ BEGIN
   FOR v_attempt IN 1..5 LOOP
     v_candidate := '';
     FOR v_i IN 1..8 LOOP
-      v_candidate := v_candidate || substr(v_chars, 1 + floor(random() * length(v_chars))::int, 1);
+      v_candidate := v_candidate || public._crypto_random_char(v_chars);
     END LOOP;
     IF NOT EXISTS (SELECT 1 FROM public.family_units WHERE inbound_token = v_candidate) THEN
       RETURN v_candidate;
@@ -146,8 +209,12 @@ BEGIN
   INSERT INTO public.family_members (family_unit_id, user_id, role)
   VALUES (v_new_family.id, auth.uid(), COALESCE(v_role, 'player'));
 
-  INSERT INTO public.family_code_usage_log (family_unit_id, user_id, code_used, action)
-  VALUES (v_new_family.id, auth.uid(), v_new_code, 'generated');
+  BEGIN
+    INSERT INTO public.family_code_usage_log (family_unit_id, user_id, code_used, action)
+    VALUES (v_new_family.id, auth.uid(), v_new_code, 'generated');
+  EXCEPTION WHEN OTHERS THEN
+    RAISE WARNING 'family_code_usage_log insert failed (create): %', SQLERRM;
+  END;
 
   RETURN QUERY SELECT v_new_family.id, v_new_family.family_code, v_new_family.family_name, false;
 END;
@@ -165,10 +232,28 @@ AS $$
 DECLARE
   v_role text;
   v_family public.family_units%ROWTYPE;
+  v_recent_attempts int;
 BEGIN
   IF p_family_code !~ '^FAM-[A-Z0-9]{6}$' THEN
     RAISE EXCEPTION 'INVALID_CODE_FORMAT' USING ERRCODE = 'P0001';
   END IF;
+
+  -- Durable per-user rate limit: this RPC is reachable directly via
+  -- PostgREST, bypassing join.post.ts's in-memory per-IP checkRateLimit, so
+  -- the same 5-per-5-minutes window has to be enforced here too. Opportunistic
+  -- cleanup keeps the table bounded without needing a separate cron.
+  DELETE FROM public.family_code_join_attempts
+   WHERE user_id = auth.uid() AND attempted_at < now() - interval '1 hour';
+
+  SELECT count(*) INTO v_recent_attempts
+    FROM public.family_code_join_attempts
+   WHERE user_id = auth.uid() AND attempted_at > now() - interval '5 minutes';
+
+  IF v_recent_attempts >= 5 THEN
+    RAISE EXCEPTION 'RATE_LIMITED' USING ERRCODE = 'P0003';
+  END IF;
+
+  INSERT INTO public.family_code_join_attempts (user_id) VALUES (auth.uid());
 
   SELECT role INTO v_role FROM public.users WHERE id = auth.uid();
 
@@ -195,8 +280,12 @@ BEGIN
   INSERT INTO public.family_members (family_unit_id, user_id, role)
   VALUES (v_family.id, auth.uid(), COALESCE(v_role, 'player'));
 
-  INSERT INTO public.family_code_usage_log (family_unit_id, user_id, code_used, action)
-  VALUES (v_family.id, auth.uid(), p_family_code, 'joined');
+  BEGIN
+    INSERT INTO public.family_code_usage_log (family_unit_id, user_id, code_used, action)
+    VALUES (v_family.id, auth.uid(), p_family_code, 'joined');
+  EXCEPTION WHEN OTHERS THEN
+    RAISE WARNING 'family_code_usage_log insert failed (join): %', SQLERRM;
+  END;
 
   RETURN QUERY SELECT v_family.id, v_family.family_name, false;
 END;
@@ -227,8 +316,12 @@ BEGIN
      SET family_code = v_new_code, code_generated_at = now()
    WHERE id = p_family_id;
 
-  INSERT INTO public.family_code_usage_log (family_unit_id, user_id, code_used, action)
-  VALUES (p_family_id, auth.uid(), v_new_code, 'regenerated');
+  BEGIN
+    INSERT INTO public.family_code_usage_log (family_unit_id, user_id, code_used, action)
+    VALUES (p_family_id, auth.uid(), v_new_code, 'regenerated');
+  EXCEPTION WHEN OTHERS THEN
+    RAISE WARNING 'family_code_usage_log insert failed (regenerate): %', SQLERRM;
+  END;
 
   RETURN v_new_code;
 END;
