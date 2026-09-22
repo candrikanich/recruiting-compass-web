@@ -71,7 +71,7 @@ utils/             # Shared helpers that are not yet a bounded context
 
 Nitro auto-routes by file path:
 
-- `server/api/schools/[id]/fit-score.get.ts` → `GET /api/schools/:id/fit-score`
+- `server/api/schools/[id]/enrich.post.ts` → `POST /api/schools/:id/enrich`
 - `server/api/athlete/phase/advance.post.ts` → `POST /api/athlete/phase/advance`
 
 Call via: `$fetch('/api/endpoint', { method: 'POST', body: {...} })`

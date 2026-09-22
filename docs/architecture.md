@@ -107,7 +107,7 @@ server/api/
 │   ├── [id].put.ts             → PUT  /api/schools/:id
 │   ├── [id].delete.ts          → DELETE /api/schools/:id
 │   └── [id]/
-│       ├── fit-score.get.ts    → GET  /api/schools/:id/fit-score
+│       ├── enrich.post.ts      → POST /api/schools/:id/enrich
 │       └── coaches.get.ts      → GET  /api/schools/:id/coaches
 └── coaches/
     └── [id].get.ts             → GET  /api/coaches/:id
