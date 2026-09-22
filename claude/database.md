@@ -348,6 +348,64 @@ UUID regeneration breaking `athlete_task` FKs).
 
 **Types:** `npx supabase gen types typescript --local > types/database.ts` after migrations
 
+### #912: service-role client — legitimate exceptions (audited 2026-09-22)
+
+Issue #912 found 114 routes on `useSupabaseAdmin()` (RLS bypassed). Most
+have since been migrated to `createServerSupabaseUserClient()` /
+`createServerSupabaseAnonClient()` route by route (family-code, account
+self-service, user preferences, guardian status, player tracking-links,
+schools search/recommendations — see closed PRs #951/#957/#960/#962/#963/#967/#969).
+The following 30 routes are audited, intentional exceptions — each has no
+session to scope RLS to in the first place, so a client swap isn't
+meaningful. Recommendation #2 from #912's original report: document why +
+confirm manual authz. Every file below already carries its own doc
+comment; this is the index, not a restatement.
+
+- **`server/api/admin/**` (15 routes)** — gated by `requireAdmin()`
+  (verifies `is_admin` server-side, never a client claim). Admin
+  operations are deliberately cross-tenant (user lookups, stats, growth
+  analytics, bulk actions) — the entire point is reading/writing outside
+  the caller's own row, which RLS is built to prevent. Service-role is the
+  correct tool, not a gap.
+- **`server/api/cron/**` (7 routes)** — gated by `CRON_SECRET` via
+  `withCronRun` (Bearer or `x-cron-secret` header). No user session exists
+  at all; the caller is Vercel Cron, not a browser.
+- **`server/api/webhooks/inbound-email.post.ts`,
+  `webhooks/resend-events.post.ts`** — gated by Svix signature
+  verification before any DB write. The caller is Resend, not an
+  authenticated user; there is no JWT to build a session-scoped client
+  from.
+- **`server/api/public/profile/[slug]/{contact,interest}.post.ts`** —
+  deliberately unauthenticated (public lead-capture on a public profile
+  page; anyone including a signed-out visitor must be able to submit).
+  `profile_contacts` has no RLS INSERT policy by design (see
+  `20260909000000`'s own comment). Writes are tightly scoped in code:
+  never creates/mutates a coach or school row from the input, response is
+  always `{ ok: true }`, no PII leaves the endpoint.
+- **`server/api/auth/{signup,signup-minor}.post.ts`** — pre-account
+  creation. There is no user yet to hold a session; these routes create
+  the `auth.users` row the session would be issued from.
+- **`server/api/auth/validate-admin-token.post.ts`,
+  `auth/admin-profile.post.ts`** — admin-invitation redemption during
+  signup. `validate-admin-token` is a read-only pre-check against
+  `admin_invitations` (no session exists yet at that point in the flow).
+  `admin-profile` requires `requireAuth()` (a session does exist there)
+  but the actual grant runs through the `consume_admin_invitation`
+  SECURITY DEFINER RPC, atomically validating + single-use-consuming the
+  token + granting `is_admin` — the invitation's email is checked against
+  the caller's own verified JWT email, never a client-supplied one (a
+  prior review finding, since fixed). The route's own top-level
+  `useSupabaseAdmin()` call is for the token lookup itself, which by
+  definition can't be scoped to a not-yet-admin caller's RLS.
+
+Not in this list (deferred, not exceptions — real RPC work needed):
+`family/invite/[token].get.ts`, `guardian/claim/[token]/{accept,index}`,
+`guardian/resend.post.ts`. Each resolves a row by an opaque token before
+the caller has any established relationship to it (invite/claim flows),
+which needs a SECURITY DEFINER RPC per the `join_family_by_code` pattern
+(`20260929000023`), not a plain client swap — `guardian/resend.post.ts`'s
+own doc comment already explains this for that route specifically.
+
 ## Common Patterns
 
 - **State mutation**: Only in Pinia actions, never in components — keeps state changes auditable and devtools-visible
