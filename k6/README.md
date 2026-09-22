@@ -15,19 +15,21 @@ brew install k6
 
 ## Setup
 
-Create `k6/.env` (gitignored) with a throwaway test account's credentials:
+No separate env file — this reuses the repo's single root `.env`, which already has `NUXT_PUBLIC_SUPABASE_URL`, `NUXT_PUBLIC_SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY`. Add just two new lines to it (a throwaway test account's email and the QA deploy host — k6-specific, nothing else needs these):
 ```
-BASE_URL=https://<qa-deploy>.vercel.app
-SUPABASE_URL=https://<test-project>.supabase.co
-SUPABASE_ANON_KEY=<anon key>
+BASE_URL=https://<qa-deploy-host>
 TEST_EMAIL=k6-load-test@example.com
-TEST_PASSWORD=<password>
 ```
+
+**No password needed.** QA's Supabase project has Turnstile captcha on the public password-grant login endpoint (correct — it protects real signup/login there, not disabled just for this script). `setup()` instead uses `SUPABASE_SERVICE_ROLE_KEY` to admin-generate a magic link for the test account and redeems it via `/auth/v1/verify`, which isn't captcha-gated.
+
+**`SUPABASE_SERVICE_ROLE_KEY` grants full database access bypassing RLS** — it's already treated as a secret in the root `.env` (gitignored); nothing new to handle here, just don't paste its value into chat/logs/PRs.
 
 ## Run
 
+k6 has no built-in `.env` loader — export the root `.env` into the shell first, then run:
 ```bash
-k6 run --env-file k6/.env k6/api-load.js
+set -a && source .env && set +a && k6 run k6/api-load.js
 ```
 
 Ramp profile: 10 → 100 → 500 VUs over 5 minutes (see `stages` in `api-load.js`). Watch:
