@@ -1,3 +1,7 @@
+-- (Applied live to QA/E2E via Supabase MCP; re-touched to force a fresh
+-- Check Migration Drift run after fixing that workflow's missing
+-- credentials on its own check step -- 534a8813.)
+--
 -- #912: server/api/guardian/status.get.ts reads the caller's own
 -- guardian_claims row (guardian_email, status, expires_at only -- never
 -- token) but guardian_claims has RLS enabled with zero policies AND
