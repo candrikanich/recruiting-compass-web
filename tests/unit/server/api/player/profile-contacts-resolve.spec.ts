@@ -20,6 +20,7 @@ const mockState = {
   lead: undefined as Record<string, unknown> | null | undefined,
   rpcCalledWith: undefined as Record<string, unknown> | undefined,
   rpcError: null as object | null,
+  rpcReturnsStoredLead: undefined as Record<string, unknown> | undefined,
 };
 
 vi.mock("~/server/utils/auth", () => ({
@@ -63,7 +64,20 @@ vi.mock("~/server/utils/supabase", () => ({
         throw new Error(`unexpected rpc ${fn}`);
       }
       mockState.rpcCalledWith = args;
-      return Promise.resolve({ data: null, error: mockState.rpcError });
+      if (mockState.rpcError) {
+        return Promise.resolve({ data: null, error: mockState.rpcError });
+      }
+      // Mirrors the RPC's real return shape: the row it actually stored,
+      // which a concurrent resolution's idempotency guard may have pinned
+      // to a different status/interaction than this request's own args.
+      return Promise.resolve({
+        data:
+          mockState.rpcReturnsStoredLead ?? {
+            status: args.p_status,
+            interaction_id: args.p_interaction_id,
+          },
+        error: null,
+      });
     },
   })),
 }));
@@ -99,6 +113,7 @@ describe("POST /api/player/profile/contacts/:id/resolve", () => {
     mockState.membership = { family_unit_id: "family-1" };
     mockState.rpcCalledWith = undefined;
     mockState.rpcError = null;
+    mockState.rpcReturnsStoredLead = undefined;
   });
 
   it("dismisses a pending lead via the RPC", async () => {
@@ -243,6 +258,39 @@ describe("POST /api/player/profile/contacts/:id/resolve", () => {
 
     await expect(handler(mockEvent)).rejects.toMatchObject({
       statusCode: 500,
+    });
+  });
+
+  // Regression (qodo review on PR #949): a concurrent request could resolve
+  // this lead between our own read and the RPC's lock, in which case the
+  // RPC's idempotency guard preserves that earlier resolution instead of
+  // applying ours. The response must report what was actually stored, not
+  // blindly echo back the request body.
+  it("reports the RPC's stored resolution, not the requested one, when a concurrent request won the race", async () => {
+    mockState.lead = {
+      id: LEAD_ID,
+      status: "pending",
+      interaction_id: null,
+      family_unit_id: "family-1",
+    };
+    mockState.rpcReturnsStoredLead = {
+      status: "dismissed",
+      interaction_id: null,
+    };
+    vi.mocked(readBody).mockResolvedValue({
+      status: "resolved",
+      interactionId: INTERACTION_ID,
+    });
+    const { default: handler } = await import(
+      "~/server/api/player/profile/contacts/[id]/resolve.post"
+    );
+
+    const result = await handler(mockEvent);
+
+    expect(result).toEqual({
+      ok: true,
+      status: "dismissed",
+      interactionId: null,
     });
   });
 });

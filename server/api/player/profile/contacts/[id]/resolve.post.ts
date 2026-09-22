@@ -97,11 +97,14 @@ export default defineEventHandler(async (event) => {
     // so a raw grant would let any family member rewrite any field
     // (coach_name, coach_email, matched_coach_id, ...) via a direct
     // Supabase call, not just the resolve/dismiss transition this route makes.
-    const { error: rpcErr } = await admin.rpc("resolve_profile_contact_lead", {
-      p_lead_id: leadId,
-      p_status: parsed.data.status,
-      p_interaction_id: parsed.data.interactionId ?? null,
-    });
+    const { data: resolvedLead, error: rpcErr } = await admin.rpc(
+      "resolve_profile_contact_lead",
+      {
+        p_lead_id: leadId,
+        p_status: parsed.data.status,
+        p_interaction_id: parsed.data.interactionId ?? null,
+      },
+    );
     if (rpcErr) {
       logger.error("Failed to update lead status", rpcErr);
       throw createError({
@@ -110,10 +113,14 @@ export default defineEventHandler(async (event) => {
       });
     }
 
+    // Report the row the RPC actually stored, not the requested values --
+    // a concurrent request could have resolved this lead between our read
+    // above and the RPC's lock, in which case the RPC's own idempotency
+    // guard preserved that earlier resolution instead of applying ours.
     return {
       ok: true,
-      status: parsed.data.status,
-      interactionId: parsed.data.interactionId ?? null,
+      status: resolvedLead?.status ?? parsed.data.status,
+      interactionId: resolvedLead?.interaction_id ?? null,
     };
   } catch (err) {
     if (err instanceof Error && "statusCode" in err) throw err;
