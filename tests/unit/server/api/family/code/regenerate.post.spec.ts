@@ -1,12 +1,22 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
+/**
+ * POST /api/family/code/regenerate — route wrapper tests.
+ *
+ * The owner check, code generation, and update now live inside
+ * regenerate_family_code(), a SECURITY DEFINER RPC (#912 -- see
+ * supabase/migrations/20260928000023_family_code_rpcs.sql). This covers
+ * the route's own responsibility: validating the body and mapping the
+ * RPC's result/error to a response.
+ */
+
 const VALID_FAMILY_ID = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee";
 
 const mockState = {
   userId: "user-1",
-  familyData: null as { id: string; created_by_user_id: string } | null,
-  updateError: null as object | null,
-  generatedCode: "FAM-NEWCODE",
+  rpcData: "FAM-NEWCODE" as string | null,
+  rpcError: null as object | null,
+  rpcCalledWith: undefined as Record<string, unknown> | undefined,
   body: { familyId: VALID_FAMILY_ID } as object,
 };
 
@@ -23,10 +33,6 @@ vi.mock("~/server/utils/logger", () => ({
   }),
 }));
 
-vi.mock("~/server/utils/familyCode", () => ({
-  generateFamilyCode: vi.fn(async () => mockState.generatedCode),
-}));
-
 vi.mock("~/server/utils/validation", () => ({
   validateBody: vi.fn(
     async (_event: unknown, _schema: unknown) => mockState.body,
@@ -34,31 +40,19 @@ vi.mock("~/server/utils/validation", () => ({
 }));
 
 vi.mock("~/server/utils/supabase", () => ({
-  useSupabaseAdmin: vi.fn(() => ({
-    from: (table: string) => {
-      if (table === "family_units") {
-        return {
-          select: () => ({
-            eq: () => ({
-              single: () =>
-                Promise.resolve({ data: mockState.familyData, error: null }),
-            }),
-          }),
-          update: () => ({
-            eq: () => Promise.resolve({ error: mockState.updateError }),
-          }),
-        };
+  createServerSupabaseUserClient: vi.fn(() => ({
+    rpc: (fn: string, args: Record<string, unknown>) => {
+      if (fn !== "regenerate_family_code") {
+        throw new Error(`unexpected rpc ${fn}`);
       }
-      if (table === "family_code_usage_log") {
-        const logPromise = Object.assign(
-          Promise.resolve({ data: null, error: null }),
-          { catch: vi.fn() },
-        );
-        return { insert: vi.fn().mockReturnValue(logPromise) };
-      }
-      return {};
+      mockState.rpcCalledWith = args;
+      return Promise.resolve({ data: mockState.rpcData, error: mockState.rpcError });
     },
   })),
+}));
+
+vi.mock("~/server/utils/requestToken", () => ({
+  extractRequestToken: vi.fn(() => "fake-token"),
 }));
 
 vi.mock("h3", async (importOriginal) => {
@@ -92,35 +86,25 @@ const mockEvent = { context: {}, node: { req: {}, res: {} } } as Parameters<
 describe("POST /api/family/code/regenerate", () => {
   beforeEach(() => {
     mockState.userId = "user-1";
-    mockState.familyData = {
-      id: VALID_FAMILY_ID,
-      created_by_user_id: "user-1",
-    };
-    mockState.updateError = null;
-    mockState.generatedCode = "FAM-NEWCODE";
+    mockState.rpcData = "FAM-NEWCODE";
+    mockState.rpcError = null;
+    mockState.rpcCalledWith = undefined;
     mockState.body = { familyId: VALID_FAMILY_ID };
   });
 
   it("returns new family code on happy path", async () => {
     const result = await handler(mockEvent);
+    expect(mockState.rpcCalledWith).toEqual({ p_family_id: VALID_FAMILY_ID });
     expect(result).toMatchObject({ success: true, familyCode: "FAM-NEWCODE" });
   });
 
-  it("throws 403 when family does not exist", async () => {
-    mockState.familyData = null;
+  it("throws 403 when the caller isn't the family owner", async () => {
+    mockState.rpcError = { message: "NOT_FAMILY_OWNER" };
     await expect(handler(mockEvent)).rejects.toMatchObject({ statusCode: 403 });
   });
 
-  it("throws 403 when user is not the family owner", async () => {
-    mockState.familyData = {
-      id: VALID_FAMILY_ID,
-      created_by_user_id: "other-user",
-    };
-    await expect(handler(mockEvent)).rejects.toMatchObject({ statusCode: 403 });
-  });
-
-  it("throws 500 when DB update returns an error", async () => {
-    mockState.updateError = { message: "write failed" };
+  it("throws 500 when the RPC errors unexpectedly", async () => {
+    mockState.rpcError = { message: "db error" };
     await expect(handler(mockEvent)).rejects.toMatchObject({ statusCode: 500 });
   });
 
