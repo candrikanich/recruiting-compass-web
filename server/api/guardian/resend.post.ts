@@ -26,6 +26,19 @@ const resendBodySchema = z.object({
  * A changed address revokes the old claim and issues a new one, but deliberately carries
  * the original `expires_at` forward: letting the clock restart would make the retention
  * deadline indefinitely extendable by re-entering an address.
+ *
+ * #912: stays on the service-role client (unlike guardian/status.get.ts, migrated in the
+ * same PR) -- this route reads and writes guardian_claims.token, which
+ * 20260929000010_guardian_claims_self_select.sql column-REVOKEs from `authenticated` so a
+ * player can never read their own guardian's confirmation token via a direct API call. That
+ * revoke would block this route's own session-scoped queries too, not just other callers.
+ * A safe migration needs SECURITY DEFINER RPCs for the token-bearing operations without
+ * duplicating guardianGate.ts's resolveGuardianLock eligibility predicate in SQL (that
+ * file's own comments warn against a second copy of it drifting from the first) -- real
+ * design work for its own pass. Manual authz already covers this route:
+ * resolveGuardianLock() gates the create-new-claim path, every claim lookup/write is scoped
+ * to `player_user_id = user.id` (never a client-supplied id), and rateLimitByUser caps it at
+ * 3/hour.
  */
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "guardian/resend");
