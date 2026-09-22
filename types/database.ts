@@ -4016,6 +4016,16 @@ export type Database = {
         Args: { p_family_unit_id: string };
         Returns: boolean;
       };
+      family_notification_exists: {
+        Args: {
+          p_user_id: string;
+          p_related_entity_id: string;
+          p_related_entity_type: string;
+          p_type: string;
+          p_scheduled_for: string;
+        };
+        Returns: boolean;
+      };
       family_unit_created_by: {
         Args: { p_family_unit_id: string };
         Returns: string;
@@ -4063,6 +4073,19 @@ export type Database = {
       increment_profile_link_view: {
         Args: { link_id: string };
         Returns: undefined;
+      };
+      insert_family_notification: {
+        Args: {
+          p_user_id: string;
+          p_type: string;
+          p_title: string;
+          p_message: string;
+          p_priority: string;
+          p_related_entity_type: string;
+          p_related_entity_id: string;
+          p_scheduled_for: string;
+        };
+        Returns: string;
       };
       is_data_owner: { Args: { target_user_id: string }; Returns: boolean };
       is_parent_viewing_athlete: {
