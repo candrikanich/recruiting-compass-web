@@ -38,6 +38,19 @@
 --    creation/join/regeneration -- the JS code they replaced treated
 --    logging as fire-and-forget (.catch()-swallowed). Wrapped each insert
 --    in a nested block that only suppresses the logging failure.
+--
+-- Review fixes (PR #957):
+-- 4. join_family_by_code's expected failures (code not found, own family,
+--    rate limited) were RAISE EXCEPTION, which rolled back the attempt row
+--    just inserted along with everything else in the same transaction --
+--    every non-existent-code guess evaded the limiter entirely. Switched
+--    the function to RETURN an error_code column instead of raising for
+--    any expected outcome, so the attempt insert always commits.
+-- 5. The count-then-insert rate-limit check wasn't atomic: concurrent
+--    calls from the same user could all read the same below-limit count
+--    before any of them inserted an attempt. Lock the caller's own users
+--    row (SELECT ... FOR UPDATE) for the rest of the transaction so
+--    same-user calls serialize through the check.
 
 CREATE TABLE IF NOT EXISTS "public"."family_code_join_attempts" (
     "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
@@ -223,8 +236,13 @@ $$;
 REVOKE ALL ON FUNCTION "public"."create_family_for_user"() FROM PUBLIC, "anon";
 GRANT EXECUTE ON FUNCTION "public"."create_family_for_user"() TO "authenticated";
 
+-- Return type changed (added error_code) to fix two review findings on
+-- PR #957 -- DROP is required since CREATE OR REPLACE can't change a
+-- function's RETURNS TABLE column list.
+DROP FUNCTION IF EXISTS "public"."join_family_by_code"("text");
+
 CREATE OR REPLACE FUNCTION "public"."join_family_by_code"("p_family_code" "text")
-RETURNS TABLE("family_id" "uuid", "family_name" "text", "already_member" boolean)
+RETURNS TABLE("family_id" "uuid", "family_name" "text", "already_member" boolean, "error_code" "text")
 LANGUAGE "plpgsql"
 SECURITY DEFINER
 SET "search_path" = "public"
@@ -235,8 +253,17 @@ DECLARE
   v_recent_attempts int;
 BEGIN
   IF p_family_code !~ '^FAM-[A-Z0-9]{6}$' THEN
-    RAISE EXCEPTION 'INVALID_CODE_FORMAT' USING ERRCODE = 'P0001';
+    RETURN QUERY SELECT NULL::uuid, NULL::text, false, 'INVALID_CODE_FORMAT'::text;
+    RETURN;
   END IF;
+
+  -- Lock the caller's own users row for the rest of this transaction so
+  -- concurrent join calls from the same user serialize through the
+  -- count-then-insert below instead of all reading the same below-limit
+  -- count before any of them commits an attempt row (review finding #2 on
+  -- PR #957). Other users' rows are untouched, so this doesn't serialize
+  -- across different callers.
+  SELECT role INTO v_role FROM public.users WHERE id = auth.uid() FOR UPDATE;
 
   -- Durable per-user rate limit: this RPC is reachable directly via
   -- PostgREST, bypassing join.post.ts's in-memory per-IP checkRateLimit, so
@@ -250,30 +277,35 @@ BEGIN
    WHERE user_id = auth.uid() AND attempted_at > now() - interval '5 minutes';
 
   IF v_recent_attempts >= 5 THEN
-    RAISE EXCEPTION 'RATE_LIMITED' USING ERRCODE = 'P0003';
+    RETURN QUERY SELECT NULL::uuid, NULL::text, false, 'RATE_LIMITED'::text;
+    RETURN;
   END IF;
 
+  -- Record this attempt before resolving the code, and return (rather than
+  -- raise) every expected failure below, so a nonexistent-code or
+  -- own-family guess still commits this insert instead of rolling it back
+  -- with the rest of the transaction (review finding #1 on PR #957).
   INSERT INTO public.family_code_join_attempts (user_id) VALUES (auth.uid());
-
-  SELECT role INTO v_role FROM public.users WHERE id = auth.uid();
 
   SELECT * INTO v_family
     FROM public.family_units
    WHERE family_code = p_family_code;
 
   IF NOT FOUND THEN
-    RAISE EXCEPTION 'CODE_NOT_FOUND' USING ERRCODE = 'P0002';
+    RETURN QUERY SELECT NULL::uuid, NULL::text, false, 'CODE_NOT_FOUND'::text;
+    RETURN;
   END IF;
 
   IF v_family.created_by_user_id = auth.uid() THEN
-    RAISE EXCEPTION 'CANNOT_JOIN_OWN_FAMILY' USING ERRCODE = 'P0001';
+    RETURN QUERY SELECT NULL::uuid, NULL::text, false, 'CANNOT_JOIN_OWN_FAMILY'::text;
+    RETURN;
   END IF;
 
   IF EXISTS (
     SELECT 1 FROM public.family_members
      WHERE family_unit_id = v_family.id AND user_id = auth.uid()
   ) THEN
-    RETURN QUERY SELECT v_family.id, v_family.family_name, true;
+    RETURN QUERY SELECT v_family.id, v_family.family_name, true, NULL::text;
     RETURN;
   END IF;
 
@@ -287,7 +319,7 @@ BEGIN
     RAISE WARNING 'family_code_usage_log insert failed (join): %', SQLERRM;
   END;
 
-  RETURN QUERY SELECT v_family.id, v_family.family_name, false;
+  RETURN QUERY SELECT v_family.id, v_family.family_name, false, NULL::text;
 END;
 $$;
 
