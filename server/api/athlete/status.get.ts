@@ -7,7 +7,8 @@
 
 import { defineEventHandler } from "h3";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { createServerSupabaseClient } from "~/server/utils/supabase";
+import { createServerSupabaseUserClient } from "~/server/utils/supabase";
+import { extractRequestToken } from "~/server/utils/requestToken";
 import { requireAuth, getUserRole } from "~/server/utils/auth";
 import { useLogger } from "~/server/utils/logger";
 import type { Database } from "~/types/database";
@@ -63,7 +64,8 @@ async function callGetAthleteStatusRpc(
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "athlete/status");
   const user = await requireAuth(event);
-  const supabase = createServerSupabaseClient();
+  const token = extractRequestToken(event);
+  const supabase = createServerSupabaseUserClient(token);
 
   try {
     // Resolve the athlete ID: parents view their linked player's data

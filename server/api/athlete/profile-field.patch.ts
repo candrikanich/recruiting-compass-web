@@ -13,7 +13,8 @@ import { defineEventHandler, readBody, createError } from "h3";
 import { z } from "zod";
 import { useLogger } from "~/server/utils/logger";
 import { requireAuth, canMutateAthleteData } from "~/server/utils/auth";
-import { useSupabaseAdmin } from "~/server/utils/supabase";
+import { createServerSupabaseUserClient } from "~/server/utils/supabase";
+import { extractRequestToken } from "~/server/utils/requestToken";
 import {
   EDITABLE_USERS_COLUMNS,
   editableColumnFor,
@@ -45,7 +46,8 @@ export default defineEventHandler(async (event) => {
     }
     const { athleteUserId, sourcePath, value } = parsed.data;
 
-    const supabase = useSupabaseAdmin();
+    const token = extractRequestToken(event);
+    const supabase = createServerSupabaseUserClient(token);
 
     // Authz: athlete may write only their own data; parents are read-only.
     if (!(await canMutateAthleteData(user.id, athleteUserId, supabase))) {
