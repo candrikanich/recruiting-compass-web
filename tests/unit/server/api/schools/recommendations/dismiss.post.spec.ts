@@ -42,7 +42,7 @@ vi.mock("~/server/utils/redis", () => ({
   CACHE_KEYS: { SCHOOL_RECS: (id: string) => `rec:v1:${id}` },
 }));
 vi.mock("~/server/utils/supabase", () => ({
-  useSupabaseAdmin: () => ({
+  createServerSupabaseUserClient: () => ({
     from: (table: string) => {
       if (table === "family_members") {
         const chain = {
@@ -61,6 +61,10 @@ vi.mock("~/server/utils/supabase", () => ({
       throw new Error(`unexpected table ${table}`);
     },
   }),
+}));
+
+vi.mock("~/server/utils/requestToken", () => ({
+  extractRequestToken: vi.fn(() => "fake-token"),
 }));
 vi.mock("h3", async (importOriginal) => {
   const actual = await importOriginal<typeof import("h3")>();
