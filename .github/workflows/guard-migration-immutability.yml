@@ -6,10 +6,18 @@ name: Guard Migration Immutability
 # then refuses to run (the #23 prod failure: 20260929000020/21 were applied, then
 # removed in #976/#977). Fix forward with a new migration instead.
 #
-# Plain `pull_request` and no secrets: this job only diffs git history.
+# pull_request_target, not pull_request: with `pull_request` a same-repo PR loads
+# THIS FILE from its own branch, so the PR that rewrites a migration could also
+# weaken the guard. pull_request_target always loads it from the base branch.
+# No secrets are used, and the PR head is only fetched as git objects to diff --
+# nothing from it is checked out or executed.
+#
+# labeled/unlabeled re-evaluate the guard when `allow-migration-rewrite` is
+# added or removed, since the job's outcome depends on that label.
 on:
-  pull_request:
+  pull_request_target:
     branches: [develop, main]
+    types: [opened, synchronize, reopened, labeled, unlabeled]
     paths:
       - "supabase/migrations/**"
 
@@ -22,10 +30,15 @@ jobs:
     if: "!contains(github.event.pull_request.labels.*.name, 'allow-migration-rewrite')"
 
     steps:
-      - name: Checkout
+      - name: Checkout base branch
         uses: actions/checkout@v7
         with:
           fetch-depth: 0
+
+      - name: Fetch PR head as data
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: git fetch --no-tags origin "refs/pull/${PR_NUMBER}/head"
 
       - name: Fail on changes to already-merged migrations
         env:
