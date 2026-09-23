@@ -292,6 +292,10 @@ test.describe("Family Invite Flow", () => {
 
       await expect(page.locator("h1")).toContainText("invited to join");
 
+      // /join defaults to the signup form; login is behind a toggle.
+      await expect(page.getByTestId("signup-section")).toBeVisible();
+      await page.getByTestId("switch-to-login").click();
+
       await expect(
         page.locator('[data-testid="login-connect-button"]'),
       ).toBeVisible();
@@ -421,20 +425,25 @@ test.describe("Family Invite Flow", () => {
       await page.goto(`/join?token=${LOGIN_CONNECT_TOKEN}`);
       await page.waitForLoadState("domcontentloaded");
 
-      // Should show login form (emailExists=true for TEST_PARENT)
+      // /join defaults to the signup form; an existing user switches to login.
+      await expect(page.getByTestId("signup-section")).toBeVisible({
+        timeout: 10000,
+      });
+      await page.getByTestId("switch-to-login").click();
       await expect(
         page.locator('[data-testid="login-connect-button"]'),
-      ).toBeVisible({ timeout: 10000 });
+      ).toBeVisible();
       await expect(page.locator('[data-testid="email-input"]')).toBeVisible();
       await expect(
         page.locator('[data-testid="password-input"]'),
       ).toBeVisible();
 
       // The testid sits on the DesignSystemInput wrapper — target the inner
-      // <input> to fill. Email is not pre-filled, so supply both credentials.
-      await page
-        .locator('[data-testid="email-input"] input')
-        .fill(TEST_PARENT.email);
+      // <input>. Email is prefilled from the invite and disabled, so only the
+      // password needs filling.
+      await expect(
+        page.locator('[data-testid="email-input"] input'),
+      ).toHaveValue(TEST_PARENT.email);
       await page
         .locator('[data-testid="password-input"] input')
         .fill(TEST_PARENT.password);
