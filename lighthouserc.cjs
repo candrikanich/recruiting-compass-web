@@ -18,6 +18,11 @@ module.exports = {
       settings: {
         // Required for Chrome in CI / Docker environments
         chromeFlags: "--no-sandbox --disable-dev-shm-usage",
+        // Staging is a Vercel preview deployment, which always sends
+        // X-Robots-Tag: noindex, and most sampled pages are authenticated
+        // routes robots.txt intentionally disallows. is-crawlable can never
+        // pass here, and its 4.5 weight alone dragged SEO to 0.42.
+        skipAudits: ["is-crawlable"],
       },
     },
     // Budgets are warn-only: an SPA (ssr:false) yields noisy lab scores, so a

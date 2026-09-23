@@ -68,6 +68,17 @@ export default defineNuxtConfig({
       htmlAttrs: {
         lang: "en",
       },
+      // Site-wide fallbacks: an ssr:false SPA ships an empty <head> until a
+      // page sets its own, so Lighthouse (document-title, meta-description)
+      // sees nothing. Pages that call useHead({ title }) override the title.
+      title: "The Recruiting Compass",
+      meta: [
+        {
+          name: "description",
+          content:
+            "Track schools, coaches, and outreach in one place. The Recruiting Compass helps student-athletes and their families navigate college recruiting.",
+        },
+      ],
       link: [
         // SVG favicon for modern browsers; .ico fallback for legacy/Safari.
         { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
