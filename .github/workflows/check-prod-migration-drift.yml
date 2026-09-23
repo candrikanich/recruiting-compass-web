@@ -1,0 +1,66 @@
+name: Check Prod Migration Drift
+
+# Promotion PRs into main: fail before merge if prod's schema_migrations holds
+# versions the repo no longer has (REMOTE_ONLY), which is what makes the
+# post-merge `db push` fail. Pending (LOCAL_ONLY) migrations are expected here.
+#
+# pull_request_target for the same reason as check-migration-drift.yml: workflow
+# code comes from the base branch and the PR's migrations are read as data only.
+on:
+  pull_request_target:
+    branches: [main]
+    paths:
+      - "supabase/migrations/**"
+
+jobs:
+  check-prod-drift:
+    name: Check prod migration drift
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    # Advisory until PROD_* secrets are confirmed readable outside the
+    # `production` environment; remove once this has run green on a real PR.
+    continue-on-error: true
+
+    steps:
+      - name: Checkout base branch
+        uses: actions/checkout@v7
+
+      - name: Copy trusted drift-check script
+        run: |
+          cp scripts/check-migration-drift.sh "$RUNNER_TEMP/check-migration-drift.sh"
+          chmod +x "$RUNNER_TEMP/check-migration-drift.sh"
+
+      - name: Checkout PR migration files
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          path: pr-head
+          sparse-checkout: |
+            supabase/migrations
+          sparse-checkout-cone-mode: false
+
+      - name: Use PR's migration files for the drift check
+        run: |
+          rm -rf supabase/migrations
+          mv pr-head/supabase/migrations supabase/migrations
+          rm -rf pr-head
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@46f7f98c7f948ad727d22c1e67fab04c223a0520 # v3.0.0
+        with:
+          version: 2.116.0
+
+      - name: Link to prod (read-only check)
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.PROD_DB_PASSWORD }}
+        run: supabase link --project-ref ${{ secrets.PROD_PROJECT_REF }}
+
+      - name: Check for orphaned prod migration rows
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.PROD_DB_PASSWORD }}
+          ALLOW_LOCAL_ONLY: "1"
+        run: bash "$RUNNER_TEMP/check-migration-drift.sh"

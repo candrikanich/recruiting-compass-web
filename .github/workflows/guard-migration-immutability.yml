@@ -1,0 +1,58 @@
+name: Guard Migration Immutability
+
+# A migration file that already exists on the base branch may have been applied
+# to QA/E2E/prod. Renaming, deleting or editing it leaves the linked project's
+# schema_migrations with a version the repo no longer has, and `supabase db push`
+# then refuses to run (the #23 prod failure: 20260929000020/21 were applied, then
+# removed in #976/#977). Fix forward with a new migration instead.
+#
+# pull_request_target, not pull_request: with `pull_request` a same-repo PR loads
+# THIS FILE from its own branch, so the PR that rewrites a migration could also
+# weaken the guard. pull_request_target always loads it from the base branch.
+# No secrets are used, and the PR head is only fetched as git objects to diff --
+# nothing from it is checked out or executed.
+#
+# labeled/unlabeled re-evaluate the guard when `allow-migration-rewrite` is
+# added or removed, since the job's outcome depends on that label.
+on:
+  pull_request_target:
+    branches: [develop, main]
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+    paths:
+      - "supabase/migrations/**"
+
+jobs:
+  guard:
+    name: No rename/delete/edit of existing migrations
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    if: "!contains(github.event.pull_request.labels.*.name, 'allow-migration-rewrite')"
+
+    steps:
+      - name: Checkout base branch
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Fetch PR head as data
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: git fetch --no-tags origin "refs/pull/${PR_NUMBER}/head"
+
+      - name: Fail on changes to already-merged migrations
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          CHANGED=$(git diff --name-status --no-renames --diff-filter=DM \
+            "$BASE_SHA" "$HEAD_SHA" -- 'supabase/migrations/*.sql')
+          if [ -n "$CHANGED" ]; then
+            echo "These migrations exist on the base branch but were deleted or modified:"
+            echo "$CHANGED"
+            echo ""
+            echo "Add a new forward migration instead. If the rewrite is deliberate and"
+            echo "every environment has been repaired, add the 'allow-migration-rewrite' label."
+            exit 1
+          fi
+          echo "No existing migrations were deleted, renamed or modified."
