@@ -1855,6 +1855,7 @@ export type Database = {
           school_id: string;
           sentiment:
             Database["public"]["Enums"]["interaction_sentiment"] | null;
+          source_draft_id: string | null;
           subject: string | null;
           type: Database["public"]["Enums"]["interaction_type"];
           updated_at: string | null;
@@ -1874,6 +1875,7 @@ export type Database = {
           school_id: string;
           sentiment?:
             Database["public"]["Enums"]["interaction_sentiment"] | null;
+          source_draft_id?: string | null;
           subject?: string | null;
           type: Database["public"]["Enums"]["interaction_type"];
           updated_at?: string | null;
@@ -1893,6 +1895,7 @@ export type Database = {
           school_id?: string;
           sentiment?:
             Database["public"]["Enums"]["interaction_sentiment"] | null;
+          source_draft_id?: string | null;
           subject?: string | null;
           type?: Database["public"]["Enums"]["interaction_type"];
           updated_at?: string | null;
@@ -1925,6 +1928,13 @@ export type Database = {
             columns: ["logged_by"];
             isOneToOne: false;
             referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "interactions_source_draft_id_fkey";
+            columns: ["source_draft_id"];
+            isOneToOne: false;
+            referencedRelation: "inbound_email_drafts";
             referencedColumns: ["id"];
           },
           {

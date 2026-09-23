@@ -20,8 +20,21 @@ jobs:
     if: github.event.pull_request.head.repo.full_name == github.repository
 
     steps:
+      # Checks out the PR head, including this repo having no external forks
+      # today. Every same-repo branch push still reaches this job with
+      # SUPABASE_ACCESS_TOKEN/E2E_DB_PASSWORD in env below -- an unreviewed
+      # branch could otherwise edit scripts/check-migration-drift.sh to
+      # exfiltrate them or hit the E2E project directly before merge. The
+      # script that actually runs with those secrets is fetched from
+      # `develop` (a separate step, below), never from this checkout.
       - name: Checkout code
         uses: actions/checkout@v7
+
+      - name: Fetch trusted drift-check script from develop
+        run: |
+          git fetch --depth=1 origin develop
+          git show origin/develop:scripts/check-migration-drift.sh > "$RUNNER_TEMP/check-migration-drift.sh"
+          chmod +x "$RUNNER_TEMP/check-migration-drift.sh"
 
       - name: Setup Supabase CLI
         uses: supabase/setup-cli@46f7f98c7f948ad727d22c1e67fab04c223a0520 # v3.0.0
@@ -34,8 +47,11 @@ jobs:
           SUPABASE_DB_PASSWORD: ${{ secrets.E2E_DB_PASSWORD }}
         run: supabase link --project-ref ${{ secrets.E2E_PROJECT_REF }}
 
+      # Local migration files under supabase/migrations/ come from the PR
+      # checkout above (they're the data being checked for drift, never
+      # executed) -- only the comparison script itself is the trusted copy.
       - name: Check for pending migrations
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_DB_PASSWORD: ${{ secrets.E2E_DB_PASSWORD }}
-        run: bash scripts/check-migration-drift.sh
+        run: bash "$RUNNER_TEMP/check-migration-drift.sh"

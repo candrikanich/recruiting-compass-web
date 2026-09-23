@@ -132,6 +132,7 @@ export default defineEventHandler(async (event) => {
             : draft.body_text,
         occurred_at: parsed.data.occurredAt ?? draft.occurred_at,
         logged_by: userId,
+        source_draft_id: draftId,
       })
       .select("id")
       .single();
