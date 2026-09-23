@@ -5,6 +5,9 @@ on:
     branches: [main]
     paths:
       - "supabase/migrations/**"
+  # Re-run after fixing prod history: "Re-run" replays the old commit's workflow file,
+  # so a workflow fix needs a fresh trigger. Still gated by the production environment.
+  workflow_dispatch:
 
 concurrency:
   group: migrate-prod
