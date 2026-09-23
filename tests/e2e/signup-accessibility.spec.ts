@@ -4,6 +4,9 @@ import {
   continueToPlayerInfoStep,
   fillPlayerAccountStep,
 } from "./helpers/signup";
+import { makeTestUser } from "./fixtures/testData";
+
+const { password: PASSWORD } = makeTestUser();
 
 test.describe("Signup Page - WCAG 2.1 Level AA Accessibility", () => {
   // This spec tests the signup UI accessibility — must start unauthenticated
@@ -143,23 +146,31 @@ test.describe("Signup Page - WCAG 2.1 Level AA Accessibility", () => {
   });
 
   test("should announce loading state to screen readers", async ({ page }) => {
-    // Submit button lives on the final wizard step
-    await fillPlayerAccountStep(page, {
+    // Hold the account-creation request open so the form stays in its loading
+    // state long enough to assert on it. Never fulfilled: the test ends first.
+    await page.route("**/api/auth/signup", () => {});
+
+    await completePlayerSignupForm(page, {
       firstName: "Test",
       lastName: "User",
       dateOfBirth: "2000-01-15",
-      email: "valid@example.com",
-      password: "TestPassword123!",
+      email: `loading-a11y-${Date.now()}@example.com`,
+      password: PASSWORD,
     });
-    await continueToPlayerInfoStep(page);
 
-    // The live region should be present in the DOM for screen readers
-    const liveRegion = page.locator('[role="status"][aria-live="polite"]');
-    await expect(liveRegion).toBeTruthy();
-
-    // Submit button should have proper ARIA attributes
     const submitButton = page.locator('[data-testid="signup-button"]');
-    await expect(submitButton).toHaveAttribute("aria-label");
+    await expect(submitButton).toHaveAttribute("aria-label", "Create Account");
+    await submitButton.click();
+
+    // Conditional live region + busy button only exist while loading
+    await expect(
+      page.getByText("Creating your account, please wait..."),
+    ).toBeAttached();
+    await expect(submitButton).toHaveAttribute("aria-busy", "true");
+    await expect(submitButton).toHaveAttribute(
+      "aria-label",
+      "Creating account, please wait",
+    );
   });
 
   test("should have proper focus management on error summary", async ({
@@ -175,7 +186,7 @@ test.describe("Signup Page - WCAG 2.1 Level AA Accessibility", () => {
       lastName: "User",
       dateOfBirth: tenYearsAgo.toISOString().split("T")[0],
       email: "valid@example.com",
-      password: "TestPassword123!",
+      password: PASSWORD,
     });
 
     // Submit — under-13 → error summary appears
@@ -227,7 +238,7 @@ test.describe("Signup Page - WCAG 2.1 Level AA Accessibility", () => {
       lastName: "User",
       dateOfBirth: "2000-01-15",
       email: "valid@example.com",
-      password: "TestPassword123!",
+      password: PASSWORD,
     });
     await continueToPlayerInfoStep(page);
 

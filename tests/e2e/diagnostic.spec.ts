@@ -48,6 +48,7 @@ test.describe("Diagnostic Tests", () => {
     await expect(firstNameInput).toBeVisible();
     await expect(emailInput).toBeVisible();
     await expect(passwordInput).toBeVisible();
+    await continueButton.waitFor({ state: "visible" });
     await expect(continueButton).toBeVisible();
   });
 

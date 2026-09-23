@@ -4,13 +4,14 @@ import {
   continueToPlayerInfoStep,
   fillPlayerAccountStep,
 } from "./helpers/signup";
+import { makeTestUser } from "./fixtures/testData";
 
 const ADULT_PLAYER = {
   firstName: "John",
   lastName: "Doe",
   dateOfBirth: "2005-01-15", // 18+ so no guardian step
   email: "",
-  password: "SecurePass123",
+  password: makeTestUser().password,
 };
 
 // Unique suffix per test run to avoid "already registered" collisions

@@ -21,9 +21,9 @@ export async function fillPlayerAccountStep(
   fields: PlayerAccountFields,
 ): Promise<void> {
   await page.click('[data-testid="user-type-player"]');
-  await expect(
-    page.locator('[data-testid="signup-form-player"]'),
-  ).toBeVisible();
+  const playerForm = page.locator('[data-testid="signup-form-player"]');
+  await playerForm.waitFor({ state: "visible" });
+  await expect(playerForm).toBeVisible();
 
   await page.fill("#firstName", fields.firstName);
   await page.fill("#lastName", fields.lastName);
@@ -39,10 +39,12 @@ export async function continueToPlayerInfoStep(page: Page): Promise<void> {
 
   const guardianSkip = page.getByTestId("signup-guardian-skip");
   const gradYear = page.locator("#signup-graduation-year");
-  await expect(guardianSkip.or(gradYear)).toBeVisible();
+  const nextStep = guardianSkip.or(gradYear);
+  await nextStep.waitFor({ state: "visible" });
   if (await guardianSkip.isVisible()) {
     await guardianSkip.click();
   }
+  await gradYear.waitFor({ state: "visible" });
   await expect(gradYear).toBeVisible();
 }
 
