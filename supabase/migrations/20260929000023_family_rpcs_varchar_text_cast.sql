@@ -101,6 +101,12 @@ BEGIN
 END;
 $$;
 
+-- Prod applied the pre-#957 20260928000023, where join_family_by_code returned 3
+-- columns (no error_code). CREATE OR REPLACE cannot change a function's return
+-- type (SQLSTATE 42P13), so drop first; the DROP also resets the ACL, so the
+-- REVOKE/GRANT below re-establish it (matches 20260928000023).
+DROP FUNCTION IF EXISTS "public"."join_family_by_code"("text");
+
 CREATE OR REPLACE FUNCTION "public"."join_family_by_code"("p_family_code" "text")
 RETURNS TABLE("family_id" "uuid", "family_name" "text", "already_member" boolean, "error_code" "text")
 LANGUAGE "plpgsql"
@@ -168,3 +174,6 @@ BEGIN
   RETURN QUERY SELECT v_family.id, v_family.family_name::text, false, NULL::text;
 END;
 $$;
+
+REVOKE ALL ON FUNCTION "public"."join_family_by_code"("text") FROM PUBLIC, "anon";
+GRANT EXECUTE ON FUNCTION "public"."join_family_by_code"("text") TO "authenticated";
