@@ -95,19 +95,46 @@ async function loadFamilyUnitId(
   return data?.family_unit_id ?? null;
 }
 
-// Parent onboarding stages sport/gender here until the athlete accepts their
-// invite and the data is hydrated into user_preferences.
+/**
+ * Parent onboarding stages sport/gender on family_units until the athlete
+ * accepts their invite and it is hydrated into user_preferences. That blob is
+ * family-scoped and unattributed, so it only describes the target when the
+ * target is a parent in exactly one family that has no player member yet —
+ * otherwise it could belong to a sibling or to a different family.
+ */
 async function loadPendingPlayerDetails(
   supabase: SupabaseClient<Database>,
-  familyUnitId: string,
+  userId: string,
 ): Promise<Record<string, unknown>> {
-  const { data, error } = await supabase
-    .from("family_units")
-    .select("pending_player_details")
-    .eq("id", familyUnitId)
-    .maybeSingle();
-  if (error) throw error;
-  return asRecord(data?.pending_player_details);
+  const { data: memberships, error: membershipError } = await supabase
+    .from("family_members")
+    .select("family_unit_id, role")
+    .eq("user_id", userId);
+  if (membershipError) throw membershipError;
+
+  const [membership, ...others] = memberships ?? [];
+  if (!membership || others.length > 0 || membership.role !== "parent") {
+    return {};
+  }
+
+  const [playersResult, unitResult] = await Promise.all([
+    supabase
+      .from("family_members")
+      .select("user_id")
+      .eq("family_unit_id", membership.family_unit_id)
+      .eq("role", "player")
+      .limit(1),
+    supabase
+      .from("family_units")
+      .select("pending_player_details")
+      .eq("id", membership.family_unit_id)
+      .maybeSingle(),
+  ]);
+  if (playersResult.error) throw playersResult.error;
+  if (unitResult.error) throw unitResult.error;
+  if ((playersResult.data ?? []).length > 0) return {};
+
+  return asRecord(unitResult.data?.pending_player_details);
 }
 
 export async function assembleSchoolRecommendations(
@@ -168,9 +195,10 @@ export async function assembleSchoolRecommendations(
     locationZip: asString(location.zip),
   });
   const gpa = asNumber(player.gpa);
-  const needsPendingFallback = familyUnitId && !asString(player.primary_sport);
+  const needsPendingFallback =
+    !asString(player.primary_sport) || !asString(player.gender);
   const pending = needsPendingFallback
-    ? await loadPendingPlayerDetails(supabase, familyUnitId)
+    ? await loadPendingPlayerDetails(supabase, athleteId)
     : {};
   const sport = asString(player.primary_sport) ?? asString(pending.sport);
   const gender = genderFilterFor(
