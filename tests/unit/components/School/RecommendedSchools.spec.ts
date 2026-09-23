@@ -74,4 +74,30 @@ describe("RecommendedSchools", () => {
       "Could not load recommended schools.",
     );
   });
+
+  it("shows an empty state when there are no matches", () => {
+    const wrapper = mount(RecommendedSchools, {
+      props: { items: [] },
+      global: { stubs },
+    });
+    expect(
+      wrapper.find('[data-testid="recommended-schools-empty"]').exists(),
+    ).toBe(true);
+  });
+
+  it("hides the empty state while loading or on error", () => {
+    const loading = mount(RecommendedSchools, {
+      props: { items: [], loading: true },
+      global: { stubs },
+    });
+    const failed = mount(RecommendedSchools, {
+      props: { items: [], error: "boom" },
+      global: { stubs },
+    });
+    for (const wrapper of [loading, failed]) {
+      expect(
+        wrapper.find('[data-testid="recommended-schools-empty"]').exists(),
+      ).toBe(false);
+    }
+  });
 });

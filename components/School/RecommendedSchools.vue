@@ -35,8 +35,17 @@
       {{ error }}
     </p>
 
+    <p
+      v-else-if="items.length === 0"
+      data-testid="recommended-schools-empty"
+      class="rounded-lg border border-brand-slate-200 bg-brand-slate-50 px-4 py-3 text-sm text-brand-slate-600"
+    >
+      No school matches yet. Add your sport, GPA, and home state to your profile
+      to get suggestions.
+    </p>
+
     <ul
-      v-else-if="items.length > 0"
+      v-else
       class="grid grid-cols-1 gap-4 text-left md:grid-cols-2 lg:grid-cols-3"
     >
       <li
