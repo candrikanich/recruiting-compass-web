@@ -1,4 +1,17 @@
 import { test, expect } from "@playwright/test";
+import {
+  completePlayerSignupForm,
+  continueToPlayerInfoStep,
+  fillPlayerAccountStep,
+} from "./helpers/signup";
+
+const ADULT_PLAYER = {
+  firstName: "John",
+  lastName: "Doe",
+  dateOfBirth: "2005-01-15", // 18+ so no guardian step
+  email: "",
+  password: "SecurePass123",
+};
 
 // Unique suffix per test run to avoid "already registered" collisions
 const RUN = Date.now();
@@ -22,18 +35,10 @@ test.describe("Signup Page - Full Flow E2E Tests", () => {
     test("should complete full player signup flow with redirect to onboarding", async ({
       page,
     }) => {
-      await page.click('[data-testid="user-type-player"]');
-      await expect(
-        page.locator('[data-testid="signup-form-player"]'),
-      ).toBeVisible();
-
-      await page.fill("#firstName", "John");
-      await page.fill("#lastName", "Doe");
-      await page.fill("#dateOfBirth", "2005-01-15"); // 18+ years old
-      await page.fill("#email", `player-e2e-${RUN}@example.com`);
-      await page.fill("#password", "SecurePass123");
-      await page.fill("#confirmPassword", "SecurePass123");
-      await page.check("#agreeToTerms");
+      await completePlayerSignupForm(page, {
+        ...ADULT_PLAYER,
+        email: `player-e2e-${RUN}@example.com`,
+      });
 
       await expect(
         page.locator('[data-testid="signup-button"]'),
@@ -44,14 +49,13 @@ test.describe("Signup Page - Full Flow E2E Tests", () => {
     });
 
     test("submit button disabled when terms not agreed", async ({ page }) => {
-      await page.click('[data-testid="user-type-player"]');
-
-      await page.fill("#firstName", "John");
-      await page.fill("#lastName", "Doe");
-      await page.fill("#dateOfBirth", "2005-01-15");
-      await page.fill("#email", "john.nodoe@example.com");
-      await page.fill("#password", "SecurePass123");
-      await page.fill("#confirmPassword", "SecurePass123");
+      await fillPlayerAccountStep(page, {
+        ...ADULT_PLAYER,
+        email: "john.nodoe@example.com",
+      });
+      await continueToPlayerInfoStep(page);
+      await page.selectOption("#signup-graduation-year", { index: 1 });
+      await page.selectOption("#signup-primary-sport", "Basketball");
       // agreeToTerms NOT checked
 
       await expect(
@@ -59,40 +63,31 @@ test.describe("Signup Page - Full Flow E2E Tests", () => {
       ).toBeDisabled();
     });
 
-    test("submit button disabled when dateOfBirth is missing for player", async ({
+    test("continue disabled when dateOfBirth is missing for player", async ({
       page,
     }) => {
-      await page.click('[data-testid="user-type-player"]');
+      await fillPlayerAccountStep(page, {
+        ...ADULT_PLAYER,
+        dateOfBirth: "", // intentionally left blank
+        email: "john.nodob@example.com",
+      });
 
-      await page.fill("#firstName", "John");
-      await page.fill("#lastName", "Doe");
-      // dateOfBirth intentionally left blank
-      await page.fill("#email", "john.nodob@example.com");
-      await page.fill("#password", "SecurePass123");
-      await page.fill("#confirmPassword", "SecurePass123");
-      await page.check("#agreeToTerms");
-
-      await expect(
-        page.locator('[data-testid="signup-button"]'),
-      ).toBeDisabled();
+      await expect(page.getByTestId("signup-step-continue")).toBeDisabled();
     });
 
     test("COPPA: under-13 player sees age restriction error on submit", async ({
       page,
     }) => {
-      await page.click('[data-testid="user-type-player"]');
-
-      await page.fill("#firstName", "Young");
-      await page.fill("#lastName", "Player");
-
-      // Set DOB to 10 years ago (under 13)
       const tenYearsAgo = new Date();
       tenYearsAgo.setFullYear(tenYearsAgo.getFullYear() - 10);
-      await page.fill("#dateOfBirth", tenYearsAgo.toISOString().split("T")[0]);
-      await page.fill("#email", `under13-e2e-${RUN}@example.com`);
-      await page.fill("#password", "SecurePass123");
-      await page.fill("#confirmPassword", "SecurePass123");
-      await page.check("#agreeToTerms");
+
+      await completePlayerSignupForm(page, {
+        ...ADULT_PLAYER,
+        firstName: "Young",
+        lastName: "Player",
+        dateOfBirth: tenYearsAgo.toISOString().split("T")[0],
+        email: `under13-e2e-${RUN}@example.com`,
+      });
 
       await page.click('[data-testid="signup-button"]');
 
@@ -107,24 +102,18 @@ test.describe("Signup Page - Full Flow E2E Tests", () => {
     test("minor (13-17) player can submit the signup form", async ({
       page,
     }) => {
-      await page.click('[data-testid="user-type-player"]');
-
-      // DOB ~15 years ago: old enough for COPPA (13+), minor (<18).
-      // Guardian gating was removed — minors sign up directly.
+      // DOB ~15 years ago: old enough for COPPA (13+), minor (<18). Naming a
+      // guardian is optional — the guardian step is skipped.
       const fifteenYearsAgo = new Date();
       fifteenYearsAgo.setFullYear(fifteenYearsAgo.getFullYear() - 15);
-      await page.fill("#firstName", "Minor");
-      await page.fill("#lastName", "Player");
-      await page.fill(
-        "#dateOfBirth",
-        fifteenYearsAgo.toISOString().split("T")[0],
-      );
-      await page.fill("#email", `minor-e2e-${RUN}@example.com`);
-      await page.fill("#password", "SecurePass123");
-      await page.fill("#confirmPassword", "SecurePass123");
-      await page.check("#agreeToTerms");
 
-      // No guardian-invite notice; the submit button is enabled.
+      await completePlayerSignupForm(page, {
+        ...ADULT_PLAYER,
+        firstName: "Minor",
+        dateOfBirth: fifteenYearsAgo.toISOString().split("T")[0],
+        email: `minor-e2e-${RUN}@example.com`,
+      });
+
       await expect(
         page.locator('[data-testid="minor-guardian-notice"]'),
       ).not.toBeVisible();

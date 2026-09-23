@@ -1,4 +1,9 @@
 import { test, expect } from "@playwright/test";
+import {
+  completePlayerSignupForm,
+  continueToPlayerInfoStep,
+  fillPlayerAccountStep,
+} from "./helpers/signup";
 
 test.describe("Signup Page - WCAG 2.1 Level AA Accessibility", () => {
   // This spec tests the signup UI accessibility — must start unauthenticated
@@ -138,9 +143,15 @@ test.describe("Signup Page - WCAG 2.1 Level AA Accessibility", () => {
   });
 
   test("should announce loading state to screen readers", async ({ page }) => {
-    // Wait for form to appear (player type requires dateOfBirth)
-    await page.locator('[data-testid="user-type-player"]').click();
-    await page.waitForSelector("form");
+    // Submit button lives on the final wizard step
+    await fillPlayerAccountStep(page, {
+      firstName: "Test",
+      lastName: "User",
+      dateOfBirth: "2000-01-15",
+      email: "valid@example.com",
+      password: "TestPassword123!",
+    });
+    await continueToPlayerInfoStep(page);
 
     // The live region should be present in the DOM for screen readers
     const liveRegion = page.locator('[role="status"][aria-live="polite"]');
@@ -154,22 +165,20 @@ test.describe("Signup Page - WCAG 2.1 Level AA Accessibility", () => {
   test("should have proper focus management on error summary", async ({
     page,
   }) => {
-    // Wait for form to appear (player type requires dateOfBirth)
-    await page.locator('[data-testid="user-type-player"]').click();
-    await page.waitForSelector("form");
+    // An under-13 DOB passes the wizard's own gating but is rejected by the
+    // submit handler before Supabase is called, which sets a form-level error
+    // without the button-disabling blur validation an invalid email triggers.
+    const tenYearsAgo = new Date();
+    tenYearsAgo.setFullYear(tenYearsAgo.getFullYear() - 10);
+    await completePlayerSignupForm(page, {
+      firstName: "Test",
+      lastName: "User",
+      dateOfBirth: tenYearsAgo.toISOString().split("T")[0],
+      email: "valid@example.com",
+      password: "TestPassword123!",
+    });
 
-    // Fill all fields with valid email and mismatched passwords — submit handler
-    // checks passwords before Supabase is called, setting a form-level error
-    // without the button-disabling blur validation that an invalid email triggers.
-    await page.fill("#firstName", "Test");
-    await page.fill("#lastName", "User");
-    await page.fill("#email", "valid@example.com");
-    await page.fill("#dateOfBirth", "2000-01-15");
-    await page.fill("#password", "TestPassword123!");
-    await page.fill("#confirmPassword", "DifferentPassword456!");
-    await page.check("#agreeToTerms");
-
-    // Submit — passwords don't match → error summary appears
+    // Submit — under-13 → error summary appears
     const submitButton = page.locator('[data-testid="signup-button"]');
     await submitButton.click();
 
@@ -212,9 +221,15 @@ test.describe("Signup Page - WCAG 2.1 Level AA Accessibility", () => {
   });
 
   test("should have terms checkbox properly labeled", async ({ page }) => {
-    // Wait for form to appear
-    await page.locator('[data-testid="user-type-player"]').click();
-    await page.waitForSelector("form");
+    // Terms checkbox lives on the final wizard step
+    await fillPlayerAccountStep(page, {
+      firstName: "Test",
+      lastName: "User",
+      dateOfBirth: "2000-01-15",
+      email: "valid@example.com",
+      password: "TestPassword123!",
+    });
+    await continueToPlayerInfoStep(page);
 
     // Checkbox should have id
     const checkbox = page.locator("#agreeToTerms");
