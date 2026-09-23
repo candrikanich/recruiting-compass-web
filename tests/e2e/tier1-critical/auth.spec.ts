@@ -74,8 +74,10 @@ test.describe("Tier 1: Authentication - Critical User Flows", () => {
     // Navigate to signup first
     await page.goto("/signup");
     await page.waitForLoadState("networkidle"); // let the form hydrate
-    // Select user type first (new signup flow requires this step)
-    await page.locator('[data-testid="user-type-player"]').click();
+    // Parent signup is a single form (player signup is a multi-step wizard);
+    // password validation is shared, so use the form that has terms + submit
+    // on one screen.
+    await page.locator('[data-testid="user-type-parent"]').click();
     await page.waitForSelector("#firstName");
 
     await authPage.fillAndValidate("#firstName", "Test");

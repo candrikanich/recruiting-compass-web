@@ -38,18 +38,18 @@ test.describe("Diagnostic Tests", () => {
     // Select player role to proceed to the form
     await page.locator('[data-testid="user-type-player"]').click();
 
-    // Step 2: Form fields should now be visible
+    // Step 2: Account fields are shown first; terms + submit live on the
+    // final wizard step (see helpers/signup.ts).
     const firstNameInput = page.locator("#firstName");
     const emailInput = page.locator("#email");
     const passwordInput = page.locator("#password");
-    const termsCheckbox = page.locator('input[type="checkbox"]');
-    const createButton = page.locator('[data-testid="signup-button"]');
+    const continueButton = page.getByTestId("signup-step-continue");
 
     await expect(firstNameInput).toBeVisible();
     await expect(emailInput).toBeVisible();
     await expect(passwordInput).toBeVisible();
-    await expect(termsCheckbox).toBeVisible();
-    await expect(createButton).toBeVisible();
+    await continueButton.waitFor({ state: "visible" });
+    await expect(continueButton).toBeVisible();
   });
 
   test("should validate email field", async ({ page }) => {

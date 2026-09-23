@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
+import { completePlayerSignupForm } from "./helpers/signup";
 
 /**
  * Entry-flow coverage: a brand-new user signing up and driving the v2
@@ -21,21 +22,27 @@ async function signUp(
   email: string,
 ): Promise<void> {
   await page.goto("/signup");
-  await page.click(`[data-testid="user-type-${role}"]`);
-  await expect(
-    page.locator(`[data-testid="signup-form-${role}"]`),
-  ).toBeVisible();
-
-  await page.fill("#firstName", role === "player" ? "Player" : "Parent");
-  await page.fill("#lastName", "E2E");
   if (role === "player") {
     // 18+ so the COPPA / minor-guardian gate never blocks a standalone signup.
-    await page.fill("#dateOfBirth", "2005-01-15");
+    await completePlayerSignupForm(page, {
+      firstName: "Player",
+      lastName: "E2E",
+      dateOfBirth: "2005-01-15",
+      email,
+      password: PASSWORD,
+    });
+  } else {
+    await page.click('[data-testid="user-type-parent"]');
+    await expect(
+      page.locator('[data-testid="signup-form-parent"]'),
+    ).toBeVisible();
+    await page.fill("#firstName", "Parent");
+    await page.fill("#lastName", "E2E");
+    await page.fill("#email", email);
+    await page.fill("#password", PASSWORD);
+    await page.fill("#confirmPassword", PASSWORD);
+    await page.check("#agreeToTerms");
   }
-  await page.fill("#email", email);
-  await page.fill("#password", PASSWORD);
-  await page.fill("#confirmPassword", PASSWORD);
-  await page.check("#agreeToTerms");
 
   await expect(
     page.locator('[data-testid="signup-button"]'),
@@ -62,8 +69,24 @@ test.describe("Onboarding v2 — Full Entry Journey", () => {
     await page.locator("#onboarding-primary-sport").selectOption("Baseball");
     await page.locator("#onboarding-zip-code").fill("44092");
 
-    // Completes onboarding → dashboard directly (no schools-to-explore step)
     await page.getByRole("button", { name: /go to your dashboard/i }).click();
+
+    // A zip with recommendations inserts a "Schools to explore" step before
+    // the dashboard; a zip with none goes straight there.
+    const finishExplore = page.getByRole("button", {
+      name: /^go to dashboard$/i,
+    });
+    await expect
+      .poll(
+        async () => /\/dashboard/.test(page.url()) || finishExplore.isVisible(),
+        {
+          timeout: 15000,
+        },
+      )
+      .toBe(true);
+    if (!/\/dashboard/.test(page.url())) {
+      await finishExplore.click();
+    }
 
     await expect(page).toHaveURL(/\/dashboard/, { timeout: 15000 });
   });
@@ -74,7 +97,10 @@ test.describe("Onboarding v2 — Full Entry Journey", () => {
 
     await expect(page).toHaveURL(/\/onboarding(\/|$|\?)/, { timeout: 15000 });
 
-    // Click the completion button without filling required fields
+    // Signup already drafted grad year + sport into this step, so clear them
+    // to exercise the required-field validation.
+    await page.locator("#onboarding-graduation-year").selectOption("");
+    await page.locator("#onboarding-primary-sport").selectOption("");
     await page.getByRole("button", { name: /go to your dashboard/i }).click();
 
     // Should stay on the onboarding screen with validation errors
