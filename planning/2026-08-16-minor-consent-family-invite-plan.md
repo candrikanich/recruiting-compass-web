@@ -1,3 +1,5 @@
+> **SUPERSEDED** by `planning/iOS_SPEC_web-ios-parity-pass-2026-09-17.md`, see 2026-09-17.
+
 # Plan — Minor Consent via Parent-Led Family Invite (N1)
 
 **Date:** 2026-08-16

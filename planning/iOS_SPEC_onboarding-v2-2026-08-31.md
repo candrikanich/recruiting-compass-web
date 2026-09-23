@@ -1,3 +1,5 @@
+> **SUPERSEDED** by `planning/iOS_SPEC_web-ios-parity-pass-2026-09-17.md`, see 2026-09-17.
+
 # iOS Spec: Onboarding v2 — 2-Step Wizard + Dashboard NUX
 
 **Date:** 2026-08-31
