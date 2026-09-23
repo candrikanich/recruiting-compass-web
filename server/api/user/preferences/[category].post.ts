@@ -10,7 +10,8 @@ import { defineEventHandler, readBody, createError } from "h3";
 import { z } from "zod";
 import { requireAuth } from "~/server/utils/auth";
 import { useLogger } from "~/server/utils/logger";
-import { useSupabaseAdmin } from "~/server/utils/supabase";
+import { createServerSupabaseUserClient } from "~/server/utils/supabase";
+import { extractRequestToken } from "~/server/utils/requestToken";
 import { resolvePreferenceTargetUserId } from "~/server/utils/playerOwnedPreferences";
 import { deleteShared } from "~/server/utils/sharedCache";
 import { CACHE_KEYS } from "~/server/utils/redis";
@@ -63,7 +64,8 @@ export default defineEventHandler(async (event) => {
     const body = await readBody<{ data: Record<string, unknown> }>(event);
     const { data } = preferencesSchema.parse(body);
 
-    const supabase = useSupabaseAdmin();
+    const token = extractRequestToken(event);
+    const supabase = createServerSupabaseUserClient(token);
 
     // For player-owned categories, a parent writes to the linked athlete's row so the
     // whole family edits one canonical profile (mirrors the GET redirect).

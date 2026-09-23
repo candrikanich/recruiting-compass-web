@@ -24,7 +24,10 @@ const mockRpc = vi.fn(
 );
 
 vi.mock("~/server/utils/supabase", () => ({
-  useSupabaseAdmin: vi.fn(() => ({ rpc: mockRpc })),
+  createServerSupabaseUserClient: vi.fn(() => ({ rpc: mockRpc })),
+}));
+vi.mock("~/server/utils/requestToken", () => ({
+  extractRequestToken: vi.fn(() => "fake-token"),
 }));
 vi.mock("~/server/utils/auth", () => ({
   requireAuth: vi.fn(async () => state.guardian),
@@ -64,7 +67,6 @@ describe("POST /api/guardian/claim/[token]/accept", () => {
     expect(mockRpc).toHaveBeenCalledWith("accept_guardian_claim", {
       p_token: "tok-1",
       p_guardian_id: "guardian-1",
-      p_guardian_email: "parent@example.com",
       p_terms_version: expect.any(String),
     });
   });

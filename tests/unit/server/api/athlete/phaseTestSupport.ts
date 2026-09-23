@@ -128,7 +128,29 @@ export function createMockSupabase(config: MockSupabaseConfig) {
     return builder;
   });
 
-  return { from, usersUpdate };
+  // advance.post.ts routes its completed-tasks read and phase write through
+  // RPCs (users has no family-shared UPDATE policy under RLS) rather than
+  // raw .from() calls -- reuses the same athleteTasks/usersUpdate config so
+  // existing assertions against `mockSupabase.usersUpdate` keep working.
+  const rpc = vi.fn((fn: string, params: Record<string, unknown>) => {
+    if (fn === "get_athlete_completed_task_ids") {
+      const result = config.athleteTasks ?? { data: [], error: null };
+      return Promise.resolve({
+        data: (result.data ?? []).map((t) => t.task_id),
+        error: result.error,
+      });
+    }
+    if (fn === "set_athlete_phase") {
+      usersUpdate({
+        current_phase: params.p_next_phase,
+        phase_milestone_data: params.p_phase_milestone_data,
+      });
+      return Promise.resolve(config.usersUpdate ?? { data: null, error: null });
+    }
+    throw new Error(`phaseTestSupport: unexpected rpc "${fn}"`);
+  });
+
+  return { from, rpc, usersUpdate };
 }
 
 /**

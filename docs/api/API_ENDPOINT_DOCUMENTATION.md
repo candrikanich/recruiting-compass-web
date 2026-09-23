@@ -21,8 +21,8 @@ server/api/
 │   ├── [id].put.ts                   → PUT /api/schools/:id
 │   ├── [id].delete.ts                → DELETE /api/schools/:id
 │   ├── [id]/
-│   │   ├── fit-score.post.ts          → POST /api/schools/:id/fit-score
-│   │   ├── fit-score.get.ts           → GET /api/schools/:id/fit-score
+│   │   ├── fit-score.post.ts          → POST /api/schools/:id/fit-score (410 Gone, use enrich)
+│   │   ├── enrich.post.ts             → POST /api/schools/:id/enrich
 │   │   └── coaches.get.ts             → GET /api/schools/:id/coaches
 │   └── search.get.ts                 → GET /api/schools/search
 └── coaches/
@@ -607,8 +607,8 @@ Authorization: Bearer <jwt_token>
 - `GET /api/schools/:id` - Get single school
 - `PUT /api/schools/:id` - Update school
 - `DELETE /api/schools/:id` - Delete school
-- `GET /api/schools/:id/fit-score` - Get fit score for school
-- `POST /api/schools/:id/fit-score` - Calculate/update fit score
+- `POST /api/schools/:id/fit-score` - Deprecated, returns 410 Gone → use enrich
+- `POST /api/schools/:id/enrich` - Update academic data used for fit signals
 - `GET /api/schools/:id/coaches` - List coaches at school
 - `GET /api/schools/search` - Search schools
 

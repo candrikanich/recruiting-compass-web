@@ -1,17 +1,21 @@
 /**
  * /api/video-links CRUD — route unit tests.
  *
- * These endpoints run against the service-role Supabase client (bypasses
- * RLS), so every query MUST carry an explicit ownership/family filter.
- * These tests assert the handlers call the right filtered queries and
- * surface the right status codes — not just "returns data".
+ * These endpoints run against a session-scoped Supabase client (RLS-backed,
+ * see #912 + companion migration 20260928000018 widening the write policies
+ * for parent-triggered edits). Every query still carries an explicit
+ * ownership/family filter as a clear-error (404) path, on top of RLS.
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { H3Event } from "h3";
 
 const mockSupabase = { from: vi.fn() };
 vi.mock("~/server/utils/supabase", () => ({
-  createServerSupabaseClient: () => mockSupabase,
+  createServerSupabaseUserClient: () => mockSupabase,
+}));
+
+vi.mock("~/server/utils/requestToken", () => ({
+  extractRequestToken: vi.fn(() => "fake-token"),
 }));
 
 const mockRequireAuth = vi.fn(async () => ({ id: "user-1", email: "p@t" }));

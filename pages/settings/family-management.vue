@@ -226,14 +226,25 @@
         />
       </section>
 
-      <!-- Inbound Email Forwarding Address -->
+      <!-- Inbound Email Forwarding Address(es) -->
       <section
-        v-if="inboundAddress"
+        v-if="inboundAddresses.length"
         class="mb-6 rounded-xl border border-slate-200 bg-white p-6 shadow-xs"
       >
-        <div class="rounded-lg border border-blue-200 bg-blue-50 p-4">
+        <div
+          v-for="entry in inboundAddresses"
+          :key="entry.familyUnitId"
+          class="rounded-lg border border-blue-200 bg-blue-50 p-4 last:mb-0"
+          :class="{ 'mb-4': inboundAddresses.length > 1 }"
+        >
           <h3 class="mb-2 text-lg font-semibold text-blue-900">
             Forward Coach Emails
+            <span
+              v-if="inboundAddresses.length > 1"
+              class="text-sm font-normal text-blue-700"
+            >
+              ({{ entry.familyName }})
+            </span>
           </h3>
           <p class="mb-4 text-sm text-blue-700">
             Forward or CC emails from coaches to this address to automatically
@@ -246,12 +257,12 @@
                 class="truncate font-mono text-sm font-bold text-blue-900 sm:text-base"
                 data-testid="inbound-address"
               >
-                {{ inboundAddress }}
+                {{ entry.address }}
               </div>
               <button
                 type="button"
                 class="ml-4 shrink-0 rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"
-                @click="handleCopyInboundAddress"
+                @click="handleCopyInboundAddress(entry.address)"
               >
                 📋 Copy
               </button>
@@ -405,15 +416,17 @@ const error = ref<string | null>(null);
 const familyMembers = ref<FamilyMember[]>([]);
 const parentFamilyMembers = ref<Record<string, FamilyMember[]>>({});
 const loadingMembers = ref(false);
-const inboundAddress = ref<string | null>(null);
+const inboundAddresses = ref<
+  { familyUnitId: string; familyName: string; address: string }[]
+>([]);
 
 const fetchInboundAddress = async () => {
   try {
     const { $fetchAuth } = useAuthFetch();
     const response = (await $fetchAuth("/api/family/inbound-address")) as {
-      address: string;
+      addresses: { familyUnitId: string; familyName: string; address: string }[];
     };
-    inboundAddress.value = response.address;
+    inboundAddresses.value = response.addresses;
   } catch {
     // Non-critical display — a fetch failure here must never break the page.
   }
@@ -486,16 +499,16 @@ const handleJoinFamily = async (code: string) => {
   if (isParent.value && parentFamilies.value.length > 0) {
     await fetchParentFamilyMembers();
   }
+  await fetchInboundAddress();
 };
 
 const handleCopyCode = async (code: string) => {
   await copyCodeToClipboard(code);
 };
 
-const handleCopyInboundAddress = async () => {
-  if (!inboundAddress.value) return;
+const handleCopyInboundAddress = async (address: string) => {
   try {
-    await navigator.clipboard.writeText(inboundAddress.value);
+    await navigator.clipboard.writeText(address);
     showToast("Address copied to clipboard", "success");
   } catch {
     showToast("Failed to copy address. Please try again.", "error");

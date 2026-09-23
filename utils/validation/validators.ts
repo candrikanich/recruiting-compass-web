@@ -14,6 +14,21 @@ export const emailSchema = z
   .trim();
 
 /**
+ * emailSchema's own chain runs its `.email()` format check before its
+ * `.trim()`/`.toLowerCase()` transforms -- a value with surrounding
+ * whitespace fails format validation before it ever gets normalized.
+ * Server endpoints that accept client-submitted, potentially-untrimmed
+ * email addresses (iOS validates a trimmed copy client-side but submits
+ * the original value) should use this instead of emailSchema directly.
+ * emailSchema itself stays unchanged -- other callers may rely on its
+ * current ordering.
+ */
+export const trimmedEmailSchema = z.preprocess(
+  (val) => (typeof val === "string" ? val.trim() : val),
+  emailSchema,
+);
+
+/**
  * URL schema with protocol validation
  * Accepts bare domains (e.g. "stanford.edu") and normalizes them to https://.
  * Rejects javascript:, data:, and other dangerous protocols.

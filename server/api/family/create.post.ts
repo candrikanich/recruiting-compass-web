@@ -1,207 +1,49 @@
 import { defineEventHandler, createError } from "h3";
-import { requireAuth, getUserRole } from "~/server/utils/auth";
-import { useSupabaseAdmin } from "~/server/utils/supabase";
-import { generateFamilyCode } from "~/server/utils/familyCode";
-import { generateInboundToken } from "~/server/utils/familyInboundToken";
+import { requireAuth } from "~/server/utils/auth";
+import { createServerSupabaseUserClient } from "~/server/utils/supabase";
+import { extractRequestToken } from "~/server/utils/requestToken";
 import { useLogger } from "~/server/utils/logger";
-import type { Database } from "~/types/database";
 
+// Whole flow (existing-family checks, code+token generation, race recovery,
+// membership insert, usage log) lives in create_family_for_user() -- a
+// SECURITY DEFINER RPC, not sequential RLS-scoped queries. Two reasons:
+// generating a collision-free code/token requires reading EVERY family's
+// row, which no ordinary RLS policy can safely grant to a session-scoped
+// client; and the create-race recovery path (23505 on
+// idx_family_units_one_per_creator, read-back, upsert membership) needs to
+// stay atomic within one transaction, not split across separate
+// session-scoped queries.
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "family/create");
   try {
-    const user = await requireAuth(event);
-    const supabase = useSupabaseAdmin();
+    await requireAuth(event);
+    const token = extractRequestToken(event);
+    const supabase = createServerSupabaseUserClient(token);
 
-    // Both players and parents can create families
-    const userRole = await getUserRole(user.id, supabase);
-    logger.debug("Resolved user role", { userRole, userId: user.id });
-
-    // Check if user already has a family
-    const fetchResponse = await supabase
-      .from("family_units")
-      .select("id, family_code")
-      .eq("created_by_user_id", user.id)
-      .maybeSingle();
-
-    const { data: existingFamily } = fetchResponse as {
-      data: Database["public"]["Tables"]["family_units"]["Row"] | null;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      error: any;
-    };
-
-    if (existingFamily) {
-      logger.info("Family already exists", { familyId: existingFamily.id });
-      return {
-        success: true,
-        familyId: existingFamily.id,
-        familyCode: existingFamily.family_code,
-        message: "Family already exists",
-      };
-    }
-
-    // The check above only catches families this user CREATED. A player who
-    // joined an existing family via invite accept has a family_members row
-    // but never created a family_units row — without this check they'd fall
-    // through to insert(), and the member-insert below would 500 on
-    // idx_player_one_family (a player can only belong to one family).
-    const membershipResponse = await supabase
-      .from("family_members")
-      .select("family_units!inner(id, family_code, family_name)")
-      .eq("user_id", user.id)
-      .maybeSingle();
-
-    const { data: existingMembership } = membershipResponse as {
-      data: {
-        family_units: Pick<
-          Database["public"]["Tables"]["family_units"]["Row"],
-          "id" | "family_code" | "family_name"
-        >;
-      } | null;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      error: any;
-    };
-
-    if (existingMembership?.family_units) {
-      const family = existingMembership.family_units;
-      logger.info("User already belongs to a family via invite", {
-        familyId: family.id,
-      });
-      return {
-        success: true,
-        familyId: family.id,
-        familyCode: family.family_code,
-        familyName: family.family_name,
-        message: "Family already exists",
-      };
-    }
-
-    // Generate unique code + inbound-email token (inbound_token is NOT NULL —
-    // required for the family-<token>@... inbound-forwarding address)
-    const familyCode = await generateFamilyCode(supabase);
-    const inboundToken = await generateInboundToken(supabase);
-
-    // Create family unit
-    const insertResponse = await supabase
-      .from("family_units")
-      .insert({
-        created_by_user_id: user.id,
-        family_name: "My Family",
-        family_code: familyCode,
-        code_generated_at: new Date().toISOString(),
-        inbound_token: inboundToken,
-      } as Database["public"]["Tables"]["family_units"]["Insert"])
-      .select()
+    const { data, error } = await supabase
+      .rpc("create_family_for_user")
       .single();
 
-    const { data: newFamily, error: familyError } = insertResponse as {
-      data: Database["public"]["Tables"]["family_units"]["Row"] | null;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      error: any;
-    };
-
-    if (familyError?.code === "23505") {
-      // Lost the create race to a concurrent caller (e.g. plugins/auth.client.ts's
-      // SIGNED_IN listener firing at the same moment as an explicit call from a
-      // page) -- idx_family_units_one_per_creator turned what used to be a silent
-      // duplicate family into this conflict. Reuse the winner's row.
-      const { data: raceWinner } = await supabase
-        .from("family_units")
-        .select("id, family_code, family_name")
-        .eq("created_by_user_id", user.id)
-        .maybeSingle();
-
-      if (raceWinner) {
-        // The winning request's own family_members insert may not have
-        // committed yet when we read the row back — upsert our membership
-        // here so callers never observe a family without their own creator
-        // membership. onConflict matches the winner's own insert 1:1, so
-        // this is a no-op once that insert lands.
-        const { error: raceMembershipError } = await supabase
-          .from("family_members")
-          .upsert(
-            {
-              family_unit_id: raceWinner.id,
-              user_id: user.id,
-              role: userRole ?? "player",
-            } as Database["public"]["Tables"]["family_members"]["Insert"],
-            { onConflict: "family_unit_id,user_id", ignoreDuplicates: true },
-          );
-
-        if (raceMembershipError) {
-          logger.error(
-            "Failed to durable-ize creator membership after race",
-            raceMembershipError,
-          );
-          throw createError({
-            statusCode: 500,
-            message: "Failed to add user to family",
-          });
-        }
-
-        logger.info("Lost family-creation race, reusing existing family", {
-          familyId: raceWinner.id,
-        });
-        return {
-          success: true,
-          familyId: raceWinner.id,
-          familyCode: raceWinner.family_code,
-          familyName: raceWinner.family_name,
-          message: "Family already exists",
-        };
-      }
-    }
-
-    if (familyError || !newFamily) {
-      logger.error("Family creation failed", familyError);
+    if (error || !data) {
+      logger.error("Family creation failed", error);
       throw createError({
         statusCode: 500,
         message: "Failed to create family",
       });
     }
 
-    // Add creator to family_members with their actual role
-    const memberResponse = await supabase.from("family_members").insert({
-      family_unit_id: newFamily.id,
-      user_id: user.id,
-      role: userRole ?? "player",
-    } as Database["public"]["Tables"]["family_members"]["Insert"]);
+    logger.info("Family created", {
+      familyId: data.family_id,
+      familyCode: data.family_code,
+      alreadyExisted: data.already_existed,
+    });
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error: memberError } = memberResponse as { error: any };
-
-    if (memberError) {
-      logger.error("Failed to add user to family members", memberError);
-      // Clean up the orphaned family record
-      try {
-        await supabase.from("family_units").delete().eq("id", newFamily.id);
-      } catch (cleanupErr) {
-        logger.warn("Failed to clean up orphaned family record", cleanupErr);
-      }
-      throw createError({
-        statusCode: 500,
-        message: "Failed to add user to family",
-      });
-    }
-
-    // Log code generation (fire and forget)
-    void supabase
-      .from("family_code_usage_log")
-      .insert({
-        family_unit_id: newFamily.id,
-        user_id: user.id,
-        code_used: familyCode,
-        action: "generated",
-      } as Database["public"]["Tables"]["family_code_usage_log"]["Insert"])
-      .then(({ error }) => {
-        if (error) logger.warn("Failed to log code generation", error);
-      });
-
-    logger.info("Family created", { familyId: newFamily.id, familyCode });
     return {
       success: true,
-      familyId: newFamily.id,
-      familyCode: familyCode,
-      familyName: newFamily.family_name,
+      familyId: data.family_id,
+      familyCode: data.family_code,
+      familyName: data.family_name,
+      ...(data.already_existed ? { message: "Family already exists" } : {}),
     };
   } catch (err) {
     if (err instanceof Error && "statusCode" in err) throw err;

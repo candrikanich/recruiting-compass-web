@@ -13,7 +13,9 @@
  */
 
 import { defineEventHandler, createError, readBody } from "h3";
-import { createServerSupabaseClient } from "~/server/utils/supabase";
+import { z } from "zod";
+import { createServerSupabaseUserClient } from "~/server/utils/supabase";
+import { extractRequestToken } from "~/server/utils/requestToken";
 import { requireAuth } from "~/server/utils/auth";
 import { useLogger } from "~/server/utils/logger";
 import { requireUuidParam } from "~/server/utils/validation";
@@ -25,17 +27,41 @@ import {
 import { lookupSchoolMetadata } from "~/server/utils/schoolMetadataLookup";
 import type { SchoolAcademicInfo } from "~/types/schoolFit";
 
-type EnrichSearchBody = { schoolName?: string; confirmed?: false };
-type EnrichConfirmBody = { scorecardId: number; confirmed: true };
-type EnrichBody = EnrichSearchBody | EnrichConfirmBody;
+// pages/schools/[id]/index.vue's two call sites match these shapes exactly:
+// handleEnrich() sends only { schoolName } (confirmed omitted entirely, not
+// even `false`), confirmEnrich() sends only { scorecardId, confirmed: true }
+// with scorecardId always a real number (typed as such client-side, sourced
+// from the earlier search response's own numeric id). Plain z.union, not
+// discriminatedUnion -- the search branch's `confirmed` key is routinely
+// absent rather than `false`, which discriminatedUnion's dispatch can't
+// route on.
+const enrichConfirmSchema = z.object({
+  confirmed: z.literal(true),
+  scorecardId: z.number().int(),
+});
+const enrichSearchSchema = z.object({
+  confirmed: z.literal(false).optional(),
+  schoolName: z.string().trim().min(1).max(255).optional(),
+});
+const enrichBodySchema = z.union([enrichConfirmSchema, enrichSearchSchema]);
 
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "schools/enrich");
   const user = await requireAuth(event);
-  const supabase = createServerSupabaseClient();
+  const token = extractRequestToken(event);
+  const supabase = createServerSupabaseUserClient(token);
 
   const schoolId = requireUuidParam(event, "id");
-  const body = await readBody<EnrichBody>(event);
+  const rawBody = await readBody(event);
+  const parsedBody = enrichBodySchema.safeParse(rawBody);
+  if (!parsedBody.success) {
+    throw createError({
+      statusCode: 400,
+      statusMessage:
+        parsedBody.error.issues[0]?.message ?? "Invalid request body",
+    });
+  }
+  const body = parsedBody.data;
 
   // Verify school belongs to user's family unit
   const { data: membership } = await supabase
@@ -65,7 +91,7 @@ export default defineEventHandler(async (event) => {
 
   // Step 1: Search Scorecard
   if (!body.confirmed) {
-    const searchName = (body as EnrichSearchBody).schoolName || schoolName;
+    const searchName = body.schoolName || schoolName;
     if (!searchName) {
       throw createError({
         statusCode: 400,
@@ -103,7 +129,7 @@ export default defineEventHandler(async (event) => {
   }
 
   // Step 2: Confirm and save
-  const { scorecardId } = body as EnrichConfirmBody;
+  const { scorecardId } = body;
 
   logger.info("Confirming Scorecard data", { schoolId, scorecardId });
 

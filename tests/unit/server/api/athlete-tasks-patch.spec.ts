@@ -59,9 +59,13 @@ vi.mock("~/server/utils/logger", () => ({
 }));
 
 vi.mock("~/server/utils/supabase", () => ({
-  createServerSupabaseClient: vi.fn(() => ({
+  createServerSupabaseUserClient: vi.fn(() => ({
     from: (table: string) => makeChain(table),
   })),
+}));
+
+vi.mock("~/server/utils/requestToken", () => ({
+  extractRequestToken: vi.fn(() => "fake-token"),
 }));
 
 vi.mock("~/server/utils/validation", () => ({

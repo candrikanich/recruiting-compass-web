@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 const mockState = {
   userId: "user-123",
@@ -20,14 +20,21 @@ vi.mock("~/server/utils/auth", () => ({
   requireAuth: vi.fn(async () => ({ id: mockState.userId })),
 }));
 
-vi.mock("~/server/utils/supabase", () => ({
-  useSupabaseAdmin: vi.fn(() => ({
-    from: vi.fn(() => ({
-      update: vi.fn(() => ({
-        eq: mockEq,
-      })),
+const fakeClient = {
+  from: vi.fn(() => ({
+    update: vi.fn(() => ({
+      eq: mockEq,
     })),
   })),
+};
+
+vi.mock("~/server/utils/supabase", () => ({
+  useSupabaseAdmin: vi.fn(() => fakeClient),
+  createServerSupabaseUserClient: vi.fn(() => fakeClient),
+}));
+
+vi.mock("~/server/utils/requestToken", () => ({
+  extractRequestToken: vi.fn(() => "fake-token"),
 }));
 
 vi.mock("h3", async () => {
@@ -39,6 +46,9 @@ vi.mock("h3", async () => {
 });
 
 const { default: handler } = await import("~/server/api/user/profile.patch");
+const { useSupabaseAdmin, createServerSupabaseUserClient } = await import(
+  "~/server/utils/supabase"
+);
 
 function makeEvent(body: unknown) {
   return { node: { req: {}, res: {} }, _body: body } as any;
@@ -52,12 +62,20 @@ describe("PATCH /api/user/profile", () => {
     mockEq.mockImplementation(() => ({ error: mockState.updateError }));
   });
 
+  afterEach(() => {
+    // Regression guard: a handler reverting to the privileged client would
+    // still return correct data from this shared fakeClient and pass every
+    // other assertion here undetected.
+    expect(useSupabaseAdmin).not.toHaveBeenCalled();
+  });
+
   it("returns { success: true } with valid fields", async () => {
     const result = await handler(
       makeEvent({ full_name: "Jane Doe", phone: "555-1234" }),
     );
     expect(result).toEqual({ success: true });
     expect(mockEq).toHaveBeenCalledWith("id", "user-123");
+    expect(createServerSupabaseUserClient).toHaveBeenCalledWith("fake-token");
   });
 
   it("throws 400 when full_name is empty string", async () => {

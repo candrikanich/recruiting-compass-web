@@ -390,3 +390,57 @@ Marked `@deprecated`, scheduled for removal:
 | performance | 1 | QA performance audit (bundle/CSS/TTFB baseline) |
 | testing | 1 | Coverage improvement plan 72→80% |
 | ui | 1 | Segmented control direction migration (PR #406/#407) |
+
+## Doc Cleanup Run — 2026-09-20
+
+- Deleted: 12 files (session debris)
+- Compressed: 44 files -> domain history
+- Kept: 53 files (active/future-looking)
+
+| Doc | Domain | Summary |
+|-----|--------|---------|
+| 2026-08-21-school-status-pipeline-spec.md | schools | Formalized the school recruiting-status pipeline into one canonical ordered stage list (researching -> contacted -> visiting -> offer_rec... |
+| 2026-08-23-unified-missing-info-step-design.md | coaches | Brought the web coach-outreach composer to parity with iOS's unified "Complete your info" step - a single ordered, missing-only info-gath... |
+| 2026-08-23-unified-missing-info-step-plan.md | coaches | Brought the web coach-outreach composer to parity with iOS's unified "Complete your info" step - a single ordered, missing-only info-gath... |
+| 2026-08-25-coach-detail-redesign-design.md | coaches | Rebuilt the web Coach Detail page to a two-column Figma layout, adding persisted tags/source fields on coaches and a derived-insights com... |
+| 2026-08-25-coach-detail-redesign-plan.md | coaches | Rebuilt the web Coach Detail page to a two-column Figma layout, adding persisted tags/source fields on coaches and a derived-insights com... |
+| 2026-08-25-public-player-profile-phase1-plan.md | general | Built and shipped the full Public Player Profile feature in four phases: a redesigned dark-hero public page exposing metrics/team-history... |
+| 2026-08-25-public-player-profile-phase2-plan.md | general | Built and shipped the full Public Player Profile feature in four phases: a redesigned dark-hero public page exposing metrics/team-history... |
+| 2026-08-25-public-player-profile-spec.md | general | Built and shipped the full Public Player Profile feature in four phases: a redesigned dark-hero public page exposing metrics/team-history... |
+| 2026-08-26-public-player-profile-phase3-plan.md | general | Built and shipped the full Public Player Profile feature in four phases: a redesigned dark-hero public page exposing metrics/team-history... |
+| 2026-08-26-public-player-profile-phase4-plan.md | general | Built and shipped the full Public Player Profile feature in four phases: a redesigned dark-hero public page exposing metrics/team-history... |
+| DESIGN_public-profile-inbound-to-interaction-2026-08-27.md | coaches | Closed the gap where inbound public-profile coach messages (Contact/Express Interest) never became tracked CRM interactions - added a new... |
+| PLAN_public-profile-inbound-to-interaction-2026-08-27.md | coaches | Closed the gap where inbound public-profile coach messages (Contact/Express Interest) never became tracked CRM interactions - added a new... |
+| coach-detail-consolidation-2026-08-23.md | coaches | Fixed the web coach-outreach template resolver bug (optional-segment gate wrapper leaking into rendered messages), moved the text-compose... |
+| coach-detail-followup-spec.md | coaches | Follow-up to the initial Coach Detail redesign: added the full-width Coach Detail header toolbar, a "Communication History & Analytics" c... |
+| coach-outreach-compose-ux-plan.md | coaches | Designed the coach-outreach compose UX overhaul: a full variables panel, live preview with bolded unresolved tokens, a send gate blocking... |
+| e2e-ci-refactor-plan.md | e2e | Refactored E2E CI to decouple the WebKit job from waiting on the Chromium job, sharded the main Chromium phase 4-ways with a dedicated se... |
+| help-docs-page-spec.md | general | Specified and shipped a dedicated auth-gated in-app Help Center (/help) with its own docs layout, sidebar navigation across four topic ar... |
+| iOS_SPEC_2026-08-16_age-gate-and-onboarding-parity.md | onboarding | Added COPPA-compliant DOB attestation copy, confirmed a 13+ minimum age, widened the grad-year picker to +5 years, and added an age gate ... |
+| iOS_SPEC_animated-completion-checkbox-2026-08-24.md | ui | Ported the web's spring/checkmark completion animation to iOS via native .symbolEffect(.bounce), resolving design decisions (emerald tint... |
+| iOS_SPEC_coach-detail-followups-2026-08-25.md | coaches | Five polish follow-ups to the iOS coach detail screen: school-logo avatar, formatted phone, days-since-contact from interaction history, ... |
+| iOS_SPEC_coach-detail-redesign-2026-08-25.md | coaches | Ported the web Coach Detail redesign to iOS: two new DB fields (tags/source), a 9-section vertical layout, and the ported useCoachInsight... |
+| iOS_SPEC_coach-tile-detail-consolidation-2026-08-15.md | ios | Unified two divergent iOS coach-tile components into one variant-driven CoachCardView (compact/full), removed tile-level delete, fixed th... |
+| iOS_SPEC_family-shared-templates-2026-08-24.md | family | Moved communication_templates from user-scoped to family-scoped (new family_unit_id column, RLS rewritten) so any family member can see/e... |
+| iOS_SPEC_gymnastics-beach-volleyball-parity-2026-08-25.md | ios | Extended the canonical sport vocabulary from 17 to 19 sports (added Gymnastics, Beach Volleyball) across iOS positions/metrics/calendar r... |
+| iOS_SPEC_player-details-tab-reorg-2026-08-10.md | ios | Confirmed the Basics/Academics tab reorg was already done on iOS, then specified the one real remaining gap: multiple travel teams (a rep... |
+| iOS_SPEC_questionnaire-and-metric-parity-2026-08-19.md | coaches | Added per-school recruiting-questionnaire gating (a new questionnaireNote template variable) plus log-metric unit-dropdown and 3-decimal-... |
+| iOS_SPEC_recruiting-status-researching-parity-2026-08-13.md | schools | Added the missing "researching" case to iOS's SchoolStatus enum (label, badge color, funnel order) so schools using that live DB status r... |
+| iOS_SPEC_school-data-enrichment-2026-09-06.md | schools | Brought iOS to parity with a merged web change adding editable school mascot/colors, an auto-resolved conference-website link, and a scho... |
+| iOS_SPEC_timeline-sync-shared-endpoints-2026-08-11.md | ios | Fixed a scoring/task divergence between web and iOS dashboards by having iOS consume shared web API endpoints (/api/athlete/phase, /statu... |
+| spike-576-wikidata-school-metadata.md | schools | Investigated Wikidata as a data source for school mascots/colors/athletics URLs, found coverage too low, and recommended a three-source s... |
+| ACCESSIBILITY_AUDIT_COACHES.md | accessibility | WCAG 2.1 AA audit of the Coaches module pages found roughly 60-65% compliance, with critical/high/medium/low issues around modal focus tr... |
+| ACCESSIBILITY_AUDIT_ROOT.md | accessibility | WCAG 2.1 AA audit of the Coach Detail page and related components found roughly 75% compliance, with critical issues (modal focus trap/AR... |
+| ACCESSIBILITY_QUICK_FIXES.md | accessibility | Sprint-organized quick-fix punch list tied to the coaches/forms accessibility audits - specific fixes for FieldError live regions, FormEr... |
+| schema-reconciliation.md | coaches | Investigated the coach-outreach template seed's assumed schema against the live DB, found major mismatches (metrics stored numeric vs. |
+| 2026-08-31-user-onboarding-redesign.md | onboarding | Reshaped onboarding from a 5-step wizard to a 2-step value-first flow with inline school recommendations, a dashboard "Getting Started" c... |
+| 2026-09-02-deadlines-buildout.md | family | Completed the Deadlines feature from bare CRUD to a full unified timeline merging system NCAA recruiting dates with family-scoped user de... |
+| 2026-09-05-inbound-email-ingestion-phase1.md | general | Stood up the Resend Inbound webhook pipeline: a per-family inbound token, a forwarded-email parser, Svix signature verification, and a pe... |
+| 2026-09-05-prod-staging-db-separation.md | infrastructure | Split the shared Supabase project into a dedicated prod project and a staging project, added a gated CI migration-promotion pipeline, and... |
+| 2026-09-05-staging-inventory.md | infrastructure | Split the shared Supabase project into a dedicated prod project and a staging project, added a gated CI migration-promotion pipeline, and... |
+| 2026-09-06-help-center-audit.md | general | Audited and rewrote the in-app Help Center to match shipped features, added a "last reviewed" date mechanism plus FAQ and Glossary sectio... |
+| 2026-09-06-inbound-email-ingestion-phase2.md | general | Added draft review UX for inbound email ingestion: list/confirm/discard endpoints turning a pending inbound-email draft into a real inter... |
+| 2026-09-06-inbound-email-ingestion-phase3.md | general | Polish/accuracy pass on inbound email ingestion: broader forward-parser coverage (mobile/plain-text/Spanish), auto-created coach records ... |
+| 2026-09-08-school-metadata-enrichment-triggers.md | schools | Built a shared school-metadata lookup utility (mascot/colors/athletics URL/conference) and wired it into enrich/autocomplete/backfill tri... |
+| 2026-09-06-resend-email-events.md | infrastructure | Ingested Resend's outbound email lifecycle webhook (sent/delivered/bounced/complained/opened/clicked) into a new email_events table via a... |
+

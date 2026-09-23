@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 // ─── Shared mock state ───────────────────────────────────────────────────────
 const state = {
@@ -40,6 +40,10 @@ const state = {
   insertedInvitation: { id: "invite-abc" } as object | null,
   insertError: null as object | null,
   familyMemberInsertSpy: vi.fn(() => Promise.resolve({ error: null })),
+  // accept.post.ts now delegates the family_members insert + invitation
+  // status update to the accept_family_invitation RPC (SECURITY DEFINER) --
+  // spy on that call instead of the raw table writes it replaced.
+  acceptRpcSpy: vi.fn((_args: unknown) => Promise.resolve({ error: null })),
   // Spy on family_invitations.insert({ ..., pending_player_details }) so the
   // invite-time snapshot is observable as part of the single insert write
   // (issue #898 follow-up: no longer a separate update after the insert).
@@ -114,9 +118,84 @@ function buildChain(opts: {
   };
 }
 
-vi.mock("~/server/utils/supabase", () => ({
-  useSupabaseAdmin: vi.fn(() => ({
-    from: (table: string) => {
+const fakeClientFactory = () => ({
+  rpc: (fnName: string, args: unknown) => {
+    if (fnName === "accept_family_invitation") return state.acceptRpcSpy(args);
+    // invite.post.ts's duplicate-member check -- the raw family_members
+    // maybeSingle() query this used to be still populates state.existingMember,
+    // so route the RPC through the same test knob.
+    if (fnName === "find_family_member_by_email") {
+      const existingMemberId =
+        state.existingMember && typeof state.existingMember === "object"
+          ? ((state.existingMember as { id?: string }).id ?? null)
+          : null;
+      return Promise.resolve({ data: existingMemberId, error: null });
+    }
+    // [token].get.ts's get_family_invitation_by_token RPC (#979) -- mirrors
+    // the real function's error_code branching over the same state.invitation
+    // knob the old raw-query fake used, so the describe block below didn't
+    // need rewriting when the route moved off raw .from() queries.
+    if (fnName === "get_family_invitation_by_token") {
+      const invitation = state.invitation as {
+        id: string;
+        role: string;
+        invited_email: string;
+        status: string;
+        expires_at: string;
+      } | null;
+      const single = () => {
+        if (!invitation) {
+          return Promise.resolve({
+            data: {
+              invitation_id: null,
+              role: null,
+              family_name: null,
+              invited_email: null,
+              error_code: "NOT_FOUND",
+            },
+            error: null,
+          });
+        }
+        if (invitation.status !== "pending") {
+          return Promise.resolve({
+            data: {
+              invitation_id: null,
+              role: null,
+              family_name: null,
+              invited_email: null,
+              error_code: "INVALID_STATUS",
+            },
+            error: null,
+          });
+        }
+        if (new Date(invitation.expires_at) < new Date()) {
+          return Promise.resolve({
+            data: {
+              invitation_id: null,
+              role: null,
+              family_name: null,
+              invited_email: null,
+              error_code: "EXPIRED",
+            },
+            error: null,
+          });
+        }
+        return Promise.resolve({
+          data: {
+            invitation_id: invitation.id,
+            role: invitation.role,
+            family_name: state.family?.family_name ?? "My Family",
+            invited_email: invitation.invited_email,
+            error_code: null,
+          },
+          error: null,
+        });
+      };
+      return { single };
+    }
+    return Promise.resolve({ data: null, error: null });
+  },
+  from: (table: string) => {
       if (table === "family_members") {
         // The invite handler awaits `.select(...).eq("user_id", id)` as a list,
         // while the existing-member check chains `.eq().eq().maybeSingle()`.
@@ -209,7 +288,22 @@ vi.mock("~/server/utils/supabase", () => ({
       }
       return {};
     },
-  })),
+});
+
+// [token].get.ts is pre-auth (no session to scope to) and went through the
+// RPC-based createServerSupabaseAnonClient() migration in #979.
+// invite.post.ts and accept.post.ts use the session-scoped one -- all three
+// mock functions alias the same factory, but stay separate exports so the
+// accept describe block below can assert useSupabaseAdmin is never called
+// during its own tests.
+vi.mock("~/server/utils/supabase", () => ({
+  useSupabaseAdmin: vi.fn(fakeClientFactory),
+  createServerSupabaseUserClient: vi.fn(fakeClientFactory),
+  createServerSupabaseAnonClient: vi.fn(fakeClientFactory),
+}));
+
+vi.mock("~/server/utils/requestToken", () => ({
+  extractRequestToken: vi.fn(() => "fake-token"),
 }));
 
 vi.mock("h3", async (importOriginal) => {
@@ -638,6 +732,9 @@ describe("POST /api/family/invite/[token]/accept", () => {
       pending_player_details: null,
     };
     state.familyMemberInsertSpy = vi.fn(() => Promise.resolve({ error: null }));
+    state.acceptRpcSpy = vi.fn((_args: unknown) =>
+      Promise.resolve({ error: null }),
+    );
     state.usersUpdateSpy = vi.fn((_payload: unknown) => ({
       eq: () => Promise.resolve({ error: null }),
     }));
@@ -649,6 +746,14 @@ describe("POST /api/family/invite/[token]/accept", () => {
     }));
   });
 
+  afterEach(async () => {
+    // Regression guard: fakeClientFactory returns the same shape for both
+    // clients, so a handler reverting to the privileged one would otherwise
+    // pass every assertion below undetected.
+    const { useSupabaseAdmin } = await import("~/server/utils/supabase");
+    expect(useSupabaseAdmin).not.toHaveBeenCalled();
+  });
+
   it("stamps the accepting user's email as verified", async () => {
     const { default: handler } =
       await import("~/server/api/family/invite/[token]/accept.post");
@@ -657,6 +762,10 @@ describe("POST /api/family/invite/[token]/accept", () => {
     expect(state.verifyStampSpy).toHaveBeenCalledWith(
       expect.objectContaining({ email_verified_at: expect.any(String) }),
     );
+    const { createServerSupabaseUserClient } = await import(
+      "~/server/utils/supabase"
+    );
+    expect(createServerSupabaseUserClient).toHaveBeenCalledWith("fake-token");
   });
 
   it("creates family_member record and marks invitation accepted", async () => {
@@ -668,15 +777,24 @@ describe("POST /api/family/invite/[token]/accept", () => {
       familyUnitId: "family-123",
     });
     expect(result).not.toHaveProperty("emailMismatch");
-    expect(state.familyMemberInsertSpy).toHaveBeenCalledTimes(1);
+    expect(state.acceptRpcSpy).toHaveBeenCalledTimes(1);
+    expect(state.acceptRpcSpy).toHaveBeenCalledWith({
+      p_invitation_id: "invite-abc",
+    });
   });
 
+  // Idempotency (skip-insert-if-already-a-member) now lives inside the
+  // accept_family_invitation RPC itself, not in route-level branching --
+  // this just confirms the route still calls it and returns success either
+  // way; the actual idempotent-skip behavior is covered by the live RLS
+  // integration spec.
   it("is idempotent when already a member", async () => {
     state.existingMember = { id: "existing-member" };
     const { default: handler } =
       await import("~/server/api/family/invite/[token]/accept.post");
     const result = await handler({} as Parameters<typeof handler>[0]);
     expect(result).toMatchObject({ success: true });
+    expect(state.acceptRpcSpy).toHaveBeenCalledTimes(1);
   });
 
   it("rejects with 403 when authenticated email does not match invited email", async () => {
@@ -687,7 +805,7 @@ describe("POST /api/family/invite/[token]/accept", () => {
       handler({} as Parameters<typeof handler>[0]),
     ).rejects.toMatchObject({ statusCode: 403 });
     // Family membership must be unchanged on a rejected mismatch attempt.
-    expect(state.familyMemberInsertSpy).not.toHaveBeenCalled();
+    expect(state.acceptRpcSpy).not.toHaveBeenCalled();
   });
 
   it("mismatch rejection message offers signing in with the invited account", async () => {

@@ -5,7 +5,8 @@
  */
 
 import { defineEventHandler, createError } from "h3";
-import { createServerSupabaseClient } from "~/server/utils/supabase";
+import { createServerSupabaseUserClient } from "~/server/utils/supabase";
+import { extractRequestToken } from "~/server/utils/requestToken";
 import { requireAuth } from "~/server/utils/auth";
 import { resolveActingAthleteId } from "~/server/utils/playerOwnedPreferences";
 import { useLogger } from "~/server/utils/logger";
@@ -16,13 +17,13 @@ export default defineEventHandler(async (event) => {
   try {
     const user = await requireAuth(event);
     const id = requireUuidParam(event, "id");
-    const supabase = createServerSupabaseClient();
+    const token = extractRequestToken(event);
+    const supabase = createServerSupabaseUserClient(token);
 
     const athleteId = await resolveActingAthleteId(user.id, supabase);
 
-    // Verify ownership before deleting — RLS is bypassed by the service-role
-    // client, so this explicit check is the only guard. Return 404 (not 403)
-    // to avoid leaking whether the row exists.
+    // Explicit ownership check stays as a clear 404 path; RLS
+    // (video_links_delete_owner_or_family_parent) is now a real backstop.
     const { data: existing, error: fetchError } = await supabase
       .from("video_links")
       .select("id")

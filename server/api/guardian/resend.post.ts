@@ -1,198 +1,146 @@
-import { randomUUID } from "node:crypto";
 import { defineEventHandler, readBody, createError } from "h3";
+import { z } from "zod";
 import { useLogger } from "~/server/utils/logger";
 import { requireAuth } from "~/server/utils/auth";
-import { useSupabaseAdmin } from "~/server/utils/supabase";
-import { rateLimitByUser, throwIfRateLimited } from "~/server/utils/rateLimit";
+import {
+  createServerSupabaseUserClient,
+  useSupabaseAdmin,
+} from "~/server/utils/supabase";
+import { extractRequestToken } from "~/server/utils/requestToken";
 import { sendGuardianClaimEmail } from "~/server/utils/emailService";
 import { getSafeRequestOrigin } from "~/server/utils/requestOrigin";
-import { resolveGuardianLock } from "~/server/utils/guardianGate";
+import { emailSchema } from "~/utils/validation/validators";
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+// emailSchema validates .email() before its own .trim()/.toLowerCase(), so a
+// whitespace-padded address must be trimmed before it reaches the schema
+// (see signup-minor.post.ts, which hit the same issue).
+const resendBodySchema = z.object({
+  guardianEmail: z.preprocess(
+    (val) => (typeof val === "string" ? val.trim() : val),
+    emailSchema.or(z.literal("")).optional(),
+  ),
+});
+
+const ERROR_RESPONSES: Record<
+  string,
+  { statusCode: number; statusMessage: string }
+> = {
+  NOT_ELIGIBLE: {
+    statusCode: 403,
+    statusMessage: "Your account doesn't have a guardian invite to send",
+  },
+  EMAIL_REQUIRED: {
+    statusCode: 400,
+    statusMessage: "Enter a parent or guardian email to invite them",
+  },
+  SAME_EMAIL: {
+    statusCode: 400,
+    statusMessage:
+      "Your parent or guardian needs a different email address than yours",
+  },
+  RATE_LIMITED: {
+    statusCode: 429,
+    statusMessage: "Too many attempts. Please try again later.",
+  },
+  INVALID_EMAIL: {
+    statusCode: 400,
+    statusMessage: "Enter a valid parent or guardian email",
+  },
+};
 
 /**
  * Resend the guardian confirmation email, optionally to a different address.
  *
- * A changed address revokes the old claim and issues a new one, but deliberately carries
- * the original `expires_at` forward: letting the clock restart would make the retention
- * deadline indefinitely extendable by re-entering an address.
+ * #912: session-scoped client. The route's whole state machine (expire stale claim ->
+ * create / revoke+reissue / bump reminder) now lives inside resend_guardian_claim(), a
+ * SECURITY DEFINER RPC (20260929000050) -- guardian_claims.token is column-REVOKEd from
+ * authenticated and the table has no INSERT/UPDATE policy at all, so a session-scoped
+ * client can't perform any of these writes directly. The RPC enforces its own durable
+ * rate limit and eligibility gate (see that migration's header) rather than trusting this
+ * route's checks alone, since it's also reachable directly via PostgREST once EXECUTE is
+ * granted to authenticated.
+ *
+ * The RPC deliberately never returns the claim token -- returning it would let any
+ * signed-in caller read it directly via the RPC, bypassing the email-delivery boundary
+ * the token-column REVOKE exists to enforce. After the RPC succeeds, this route fetches
+ * the token for the returned claim_id with a narrow useSupabaseAdmin() call (service-role,
+ * scoped to a single column/row) -- the one piece of this route that genuinely can't move
+ * off the privileged client, since the whole point is that only the trusted server, not a
+ * direct RPC caller, may read it.
  */
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "guardian/resend");
 
   try {
     const user = await requireAuth(event);
-    throwIfRateLimited(
-      await rateLimitByUser(event, user.id, { requests: 3, window: "1 h" }),
-    );
 
-    const body = await readBody<{ guardianEmail?: string }>(event);
-    const supabase = useSupabaseAdmin();
-
-    const { data: userRow } = await supabase
-      .from("users")
-      .select("role, date_of_birth, guardian_consent_at, full_name")
-      .eq("id", user.id)
-      .maybeSingle();
-
-    const { data: pendingClaim } = await supabase
-      .from("guardian_claims")
-      .select("id, guardian_email, token, status, expires_at, reminder_count")
-      .eq("player_user_id", user.id)
-      .eq("status", "pending")
-      .maybeSingle();
-
-    const requestedEmail = body.guardianEmail?.trim().toLowerCase();
-
-    // A pending row past its expiry is dead weight, not a live claim: the partial unique
-    // index only excludes 'pending' rows, so leaving its status alone would collide with
-    // a fresh insert below. Mark it expired and fall through to the same "no claim" path
-    // a player who never had one takes, instead of 410-ing them into a support dead end.
-    let claim = pendingClaim;
-    if (claim && new Date(claim.expires_at) < new Date()) {
-      await supabase
-        .from("guardian_claims")
-        .update({ status: "expired" })
-        .eq("id", claim.id);
-      claim = null;
-    }
-
-    if (!claim) {
-      // No pending claim — this is the "invite a parent" path for a player who skipped
-      // the guardian step at signup (or whose prior claim expired with nothing pending).
-      // Same endpoint, same UX action from the player's point of view ("send/resend a
-      // confirmation email to my guardian"); only the DB write differs (insert vs.
-      // revoke-and-reissue below).
-      //
-      // Gated on resolveGuardianLock rather than "authenticated at all": without this,
-      // any adult, parent, or already-consented player could insert a guardian_claims
-      // row and send mail to an arbitrary address, and a second "guardian" accepting for
-      // an already-consented player would hit claim/[token]/accept.post.ts's
-      // idx_player_one_family unique constraint (500, membership half-written).
-      if (!(await resolveGuardianLock(supabase, userRow, user.id))) {
-        throw createError({
-          statusCode: 403,
-          statusMessage: "Your account doesn't have a guardian invite to send",
-        });
-      }
-      if (!requestedEmail) {
-        throw createError({
-          statusCode: 400,
-          statusMessage: "Enter a parent or guardian email to invite them",
-        });
-      }
-      if (!EMAIL_RE.test(requestedEmail)) {
-        throw createError({
-          statusCode: 400,
-          statusMessage: "Enter a valid parent or guardian email",
-        });
-      }
-      if (requestedEmail === user.email?.trim().toLowerCase()) {
-        throw createError({
-          statusCode: 400,
-          statusMessage:
-            "Your parent or guardian needs a different email address than yours",
-        });
-      }
-
-      const token = randomUUID();
-      const { error: insertError } = await supabase
-        .from("guardian_claims")
-        .insert({
-          player_user_id: user.id,
-          guardian_email: requestedEmail,
-          token,
-        });
-
-      if (insertError) {
-        logger.error("Failed to create guardian claim", insertError);
-        throw createError({
-          statusCode: 500,
-          statusMessage: "Could not start guardian confirmation",
-        });
-      }
-
-      const playerName =
-        userRow?.full_name ?? (user.email ?? "Your athlete").split("@")[0];
-      const mail = await sendGuardianClaimEmail({
-        to: requestedEmail,
-        playerName,
-        token,
-        requestOrigin: getSafeRequestOrigin(event),
-        context: { purpose: "invite", userId: user.id },
+    const rawBody = await readBody(event);
+    const parsed = resendBodySchema.safeParse(rawBody);
+    if (!parsed.success) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: "Enter a valid parent or guardian email",
       });
-      if (!mail.success) {
-        logger.warn("Guardian invite email failed to send", mail.error);
-        throw createError({
-          statusCode: 502,
-          statusMessage:
-            "We couldn't send that email. Please try again shortly.",
-        });
-      }
-
-      logger.info("Guardian claim created from dashboard invite");
-      return { success: true };
     }
-    let guardianEmail = claim.guardian_email;
-    let token = claim.token;
+    const requestedEmail = parsed.data.guardianEmail || undefined;
 
-    if (requestedEmail && requestedEmail !== claim.guardian_email) {
-      if (!EMAIL_RE.test(requestedEmail)) {
-        throw createError({
-          statusCode: 400,
-          statusMessage: "Enter a valid parent or guardian email",
-        });
-      }
-      if (requestedEmail === user.email?.trim().toLowerCase()) {
-        throw createError({
-          statusCode: 400,
-          statusMessage:
-            "Your parent or guardian needs a different email address than yours",
-        });
-      }
+    const token = extractRequestToken(event);
+    const supabase = createServerSupabaseUserClient(token);
+    const { data, error } = await supabase
+      .rpc("resend_guardian_claim", {
+        p_requested_email: requestedEmail ?? null,
+      })
+      .single();
 
-      // Revoke then reissue, rather than mutating in place: the old token may already be
-      // in an inbox, and it must stop working the moment the address changes.
-      await supabase
-        .from("guardian_claims")
-        .update({ status: "revoked" })
-        .eq("id", claim.id);
-
-      token = randomUUID();
-      guardianEmail = requestedEmail;
-
-      const { error: insertError } = await supabase
-        .from("guardian_claims")
-        .insert({
-          player_user_id: user.id,
-          guardian_email: guardianEmail,
-          token,
-          expires_at: claim.expires_at,
-        });
-
-      if (insertError) {
-        logger.error("Failed to reissue guardian claim", insertError);
-        throw createError({
-          statusCode: 500,
-          statusMessage: "Could not update the guardian email",
-        });
-      }
-    } else {
-      await supabase
-        .from("guardian_claims")
-        .update({
-          last_reminder_at: new Date().toISOString(),
-          reminder_count: (claim.reminder_count ?? 0) + 1,
-        })
-        .eq("id", claim.id);
+    if (error) {
+      logger.error("Failed to resend guardian claim", error);
+      throw createError({
+        statusCode: 500,
+        statusMessage: "Could not resend the confirmation email",
+      });
     }
 
-    const playerName =
-      userRow?.full_name ?? (user.email ?? "Your athlete").split("@")[0];
+    if (!data) {
+      throw createError({
+        statusCode: 500,
+        statusMessage: "Could not resend the confirmation email",
+      });
+    }
+
+    if (data.error_code) {
+      const mapped = ERROR_RESPONSES[data.error_code];
+      if (mapped) throw createError(mapped);
+      logger.error("Unexpected resend_guardian_claim error_code", {
+        errorCode: data.error_code,
+      });
+      throw createError({
+        statusCode: 500,
+        statusMessage: "Could not resend the confirmation email",
+      });
+    }
+
+    // Only the service-role client may read guardian_claims.token (see the
+    // doc comment above) -- fetch it narrowly, scoped to the single row the
+    // RPC just created/reissued/reminded.
+    const admin = useSupabaseAdmin();
+    const { data: claimRow, error: claimError } = await admin
+      .from("guardian_claims")
+      .select("token")
+      .eq("id", data.claim_id!)
+      .single();
+
+    if (claimError || !claimRow) {
+      logger.error("Failed to fetch claim token after resend", claimError);
+      throw createError({
+        statusCode: 500,
+        statusMessage: "Could not resend the confirmation email",
+      });
+    }
+
     const mail = await sendGuardianClaimEmail({
-      to: guardianEmail,
-      playerName,
-      token,
+      to: data.guardian_email!,
+      playerName: data.player_name!,
+      token: claimRow.token,
       requestOrigin: getSafeRequestOrigin(event),
       context: { purpose: "invite", userId: user.id },
     });

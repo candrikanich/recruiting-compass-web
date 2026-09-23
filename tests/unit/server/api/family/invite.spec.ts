@@ -21,6 +21,7 @@ const mockState = {
   invitationId: "inv-789",
   invitationError: null as object | null,
   insertedFamilyUnitId: null as string | null,
+  insertedPendingPlayerDetails: null as Record<string, unknown> | null,
 };
 
 const mockRateLimitState = {
@@ -56,88 +57,82 @@ vi.mock("~/server/utils/logger", () => ({
 }));
 
 vi.mock("~/server/utils/supabase", () => ({
-  useSupabaseAdmin: vi.fn(() => {
-    let familyMembersCallCount = 0;
-    return {
-      from: (table: string) => {
-        if (table === "family_members") {
-          familyMembersCallCount++;
-          const callNum = familyMembersCallCount;
-          return {
-            select: () => ({
-              eq: (_col: string, _val: unknown) => {
-                if (callNum === 1) {
-                  // First call: membership lookup — .eq("user_id", ...) awaited
-                  // directly, resolving to the full list of memberships.
-                  return Promise.resolve({
-                    data: mockState.memberships,
-                    error: null,
-                  });
-                }
-                // Second call: existing member check — .eq("family_unit_id", ...).eq("user_id", ...).maybeSingle()
-                return {
-                  eq: () => ({
-                    maybeSingle: () =>
-                      Promise.resolve({
-                        data: mockState.existingMember,
-                        error: null,
-                      }),
-                  }),
-                };
-              },
-            }),
-          };
-        }
-        if (table === "users") {
-          return {
-            select: () => ({
-              eq: () => ({
-                maybeSingle: () =>
-                  Promise.resolve({
-                    data: mockState.existingUser,
-                    error: null,
-                  }),
-                single: () =>
-                  Promise.resolve({
-                    data: mockState.inviterProfile,
-                    error: null,
-                  }),
-              }),
-            }),
-          };
-        }
-        if (table === "family_units") {
-          return {
-            select: () => ({
-              eq: () => ({
-                single: () =>
-                  Promise.resolve({ data: mockState.family, error: null }),
-              }),
-            }),
-          };
-        }
-        if (table === "family_invitations") {
-          return {
-            insert: (payload: { family_unit_id?: string }) => {
-              mockState.insertedFamilyUnitId = payload?.family_unit_id ?? null;
-              return {
-                select: () => ({
-                  single: () =>
-                    Promise.resolve({
-                      data: mockState.invitationError
-                        ? null
-                        : { id: mockState.invitationId },
-                      error: mockState.invitationError,
-                    }),
+  createServerSupabaseUserClient: vi.fn(() => ({
+    from: (table: string) => {
+      if (table === "family_members") {
+        // Only the membership lookup — .eq("user_id", ...) awaited
+        // directly, resolving to the full list of memberships. The
+        // existing-member check now goes through the
+        // find_family_member_by_email RPC instead.
+        return {
+          select: () => ({
+            eq: () =>
+              Promise.resolve({ data: mockState.memberships, error: null }),
+          }),
+        };
+      }
+      if (table === "users") {
+        return {
+          select: () => ({
+            eq: () => ({
+              single: () =>
+                Promise.resolve({
+                  data: mockState.inviterProfile,
+                  error: null,
                 }),
-              };
-            },
-          };
-        }
-        return {};
-      },
-    };
-  }),
+            }),
+          }),
+        };
+      }
+      if (table === "family_units") {
+        return {
+          select: () => ({
+            eq: () => ({
+              single: () =>
+                Promise.resolve({ data: mockState.family, error: null }),
+            }),
+          }),
+        };
+      }
+      if (table === "family_invitations") {
+        return {
+          insert: (payload: {
+            family_unit_id?: string;
+            pending_player_details?: Record<string, unknown>;
+          }) => {
+            mockState.insertedFamilyUnitId = payload?.family_unit_id ?? null;
+            mockState.insertedPendingPlayerDetails =
+              payload?.pending_player_details ?? null;
+            return {
+              select: () => ({
+                single: () =>
+                  Promise.resolve({
+                    data: mockState.invitationError
+                      ? null
+                      : { id: mockState.invitationId },
+                    error: mockState.invitationError,
+                  }),
+              }),
+            };
+          },
+        };
+      }
+      return {};
+    },
+    rpc: (fn: string) => {
+      if (fn !== "find_family_member_by_email") {
+        throw new Error(`unexpected rpc ${fn}`);
+      }
+      return Promise.resolve({
+        data: mockState.existingMember,
+        error: null,
+      });
+    },
+  })),
+}));
+
+vi.mock("~/server/utils/requestToken", () => ({
+  extractRequestToken: vi.fn(() => "fake-token"),
 }));
 
 vi.mock("~/server/utils/emailService", () => ({
@@ -174,6 +169,7 @@ vi.mock("h3", async (importOriginal) => {
 
 import { rateLimitByUser, throwIfRateLimited } from "~/server/utils/rateLimit";
 import { requireAuth } from "~/server/utils/auth";
+import { readBody } from "h3";
 
 const { default: handler } = await import("~/server/api/family/invite.post");
 
@@ -316,5 +312,78 @@ describe("POST /api/family/invite — multi-family membership", () => {
     await handler({} as Parameters<typeof handler>[0]);
 
     expect(mockState.insertedFamilyUnitId).toBe("joined-family-a");
+  });
+});
+
+describe("POST /api/family/invite — player snapshot normalization (iOS-staged draft)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockState.userId = "user-123";
+    mockState.memberships = [
+      {
+        family_unit_id: "family-456",
+        family_units: { created_by_user_id: "user-123" },
+      },
+    ];
+    mockState.insertedFamilyUnitId = null;
+    mockState.insertedPendingPlayerDetails = null;
+    mockState.existingUser = null;
+    mockState.existingMember = null;
+    mockState.inviterProfile = { full_name: "Test User" };
+    mockState.invitationError = null;
+    mockRateLimitState.success = true;
+
+    vi.mocked(requireAuth).mockResolvedValue({ id: mockState.userId });
+    vi.mocked(rateLimitByUser).mockResolvedValue({ ...mockRateLimitState });
+    vi.mocked(throwIfRateLimited).mockImplementation(() => {});
+    vi.mocked(readBody).mockResolvedValue({
+      email: "invited@example.com",
+      role: "player",
+    });
+  });
+
+  it("normalizes an iOS-staged draft (first_name/last_name/graduation_year, no wire pendingPlayerDetails) into playerName/graduationYear", async () => {
+    // Exact shape iOS's PendingPlayerDetails/savePlayerDetails() writes directly via the
+    // Supabase client SDK, and the dashboard's invite-only flow (InviteAthleteView) sends
+    // no pendingPlayerDetails on the invite request itself (issue this test guards).
+    mockState.family = {
+      family_name: "Test Family",
+      pending_player_details: {
+        first_name: "Alex",
+        last_name: "Rivera",
+        sport: "Baseball",
+        position: "Pitcher",
+        graduation_year: 2028,
+        playerDob: "2011-06-15",
+      },
+    };
+
+    await handler({} as Parameters<typeof handler>[0]);
+
+    expect(mockState.insertedPendingPlayerDetails).toMatchObject({
+      playerName: "Alex Rivera",
+      graduationYear: 2028,
+      playerDob: "2011-06-15",
+    });
+  });
+
+  it("leaves an already-canonical (web-staged) draft's playerName/graduationYear untouched", async () => {
+    mockState.family = {
+      family_name: "Test Family",
+      pending_player_details: {
+        playerName: "Jordan Lee",
+        graduationYear: 2027,
+        sport: "Soccer",
+        playerDob: "2010-01-01",
+      },
+    };
+
+    await handler({} as Parameters<typeof handler>[0]);
+
+    expect(mockState.insertedPendingPlayerDetails).toMatchObject({
+      playerName: "Jordan Lee",
+      graduationYear: 2027,
+      playerDob: "2010-01-01",
+    });
   });
 });

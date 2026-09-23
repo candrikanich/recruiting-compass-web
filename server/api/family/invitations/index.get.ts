@@ -1,13 +1,15 @@
 import { defineEventHandler, createError } from "h3";
 import { useLogger } from "~/server/utils/logger";
 import { requireAuth } from "~/server/utils/auth";
-import { useSupabaseAdmin } from "~/server/utils/supabase";
+import { createServerSupabaseUserClient } from "~/server/utils/supabase";
+import { extractRequestToken } from "~/server/utils/requestToken";
 
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "family/invitations");
   try {
     const user = await requireAuth(event);
-    const supabase = useSupabaseAdmin();
+    const token = extractRequestToken(event);
+    const supabase = createServerSupabaseUserClient(token);
 
     const { data: memberships, error: membershipError } = await supabase
       .from("family_members")

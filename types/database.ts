@@ -1855,6 +1855,7 @@ export type Database = {
           school_id: string;
           sentiment:
             Database["public"]["Enums"]["interaction_sentiment"] | null;
+          source_draft_id: string | null;
           subject: string | null;
           type: Database["public"]["Enums"]["interaction_type"];
           updated_at: string | null;
@@ -1874,6 +1875,7 @@ export type Database = {
           school_id: string;
           sentiment?:
             Database["public"]["Enums"]["interaction_sentiment"] | null;
+          source_draft_id?: string | null;
           subject?: string | null;
           type: Database["public"]["Enums"]["interaction_type"];
           updated_at?: string | null;
@@ -1893,6 +1895,7 @@ export type Database = {
           school_id?: string;
           sentiment?:
             Database["public"]["Enums"]["interaction_sentiment"] | null;
+          source_draft_id?: string | null;
           subject?: string | null;
           type?: Database["public"]["Enums"]["interaction_type"];
           updated_at?: string | null;
@@ -1925,6 +1928,13 @@ export type Database = {
             columns: ["logged_by"];
             isOneToOne: false;
             referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "interactions_source_draft_id_fkey";
+            columns: ["source_draft_id"];
+            isOneToOne: false;
+            referencedRelation: "inbound_email_drafts";
             referencedColumns: ["id"];
           },
           {
@@ -3882,11 +3892,18 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      accept_family_invitation: {
+        Args: { p_invitation_id: string };
+        Returns: {
+          family_unit_id: string;
+          role: string;
+          pending_player_details: Json;
+        }[];
+      };
       accept_guardian_claim: {
         Args: {
           p_token: string;
           p_guardian_id: string;
-          p_guardian_email: string;
           p_terms_version: string;
         };
         Returns: string;
@@ -3894,6 +3911,39 @@ export type Database = {
       can_access_family_player_prefs: {
         Args: { target_user: string };
         Returns: boolean;
+      };
+      confirm_inbound_draft: {
+        Args: {
+          p_draft_id: string;
+          p_school_id: string | null;
+          p_coach_id: string | null;
+          p_coach_id_set: boolean;
+          p_type: string | null;
+          p_direction: string | null;
+          p_subject: string | null;
+          p_subject_set: boolean;
+          p_content: string | null;
+          p_content_set: boolean;
+          p_occurred_at: string | null;
+        };
+        Returns: {
+          draft: {
+            body_text: string | null;
+            confirmed_interaction_id: string | null;
+            created_at: string;
+            family_unit_id: string;
+            id: string;
+            matched_coach_id: string | null;
+            matched_school_id: string | null;
+            occurred_at: string;
+            raw_email_id: string | null;
+            sender_email: string | null;
+            sender_name: string | null;
+            status: string;
+            subject: string | null;
+          };
+          interaction_id: string | null;
+        }[];
       };
       consume_admin_invitation: {
         Args: {
@@ -3931,11 +3981,55 @@ export type Database = {
         };
         Returns: string;
       };
+      create_family_for_user: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          family_id: string;
+          family_code: string;
+          family_name: string;
+          already_existed: boolean;
+        }[];
+      };
+      decline_family_invitation: {
+        Args: { p_invitation_id: string };
+        Returns: {
+          id: string;
+          family_unit_id: string;
+          invited_by: string;
+          invited_email: string;
+          role: string;
+          token: string;
+          status: string;
+          pending_player_details: Json | null;
+          created_at: string;
+          expires_at: string;
+          accepted_at: string | null;
+          declined_at: string | null;
+        };
+      };
       delete_expired_audit_logs: {
         Args: never;
         Returns: {
           deleted_count: number;
         }[];
+      };
+      discard_inbound_draft: {
+        Args: { p_draft_id: string };
+        Returns: {
+          body_text: string | null;
+          confirmed_interaction_id: string | null;
+          created_at: string;
+          family_unit_id: string;
+          id: string;
+          matched_coach_id: string | null;
+          matched_school_id: string | null;
+          occurred_at: string;
+          raw_email_id: string | null;
+          sender_email: string | null;
+          sender_name: string | null;
+          status: string;
+          subject: string | null;
+        };
       };
       duplicate_data_on_unlink: {
         Args: { p_link_id: string; p_user_keeping_copy: string };
@@ -3946,9 +4040,23 @@ export type Database = {
         Args: { p_family_unit_id: string };
         Returns: boolean;
       };
+      family_notification_exists: {
+        Args: {
+          p_user_id: string;
+          p_related_entity_id: string;
+          p_related_entity_type: string;
+          p_type: string;
+          p_scheduled_for: string;
+        };
+        Returns: boolean;
+      };
       family_unit_created_by: {
         Args: { p_family_unit_id: string };
         Returns: string;
+      };
+      find_family_member_by_email: {
+        Args: { p_email: string; p_family_unit_id: string };
+        Returns: string | null;
       };
       get_accessible_athletes: {
         Args: never;
@@ -3956,6 +4064,10 @@ export type Database = {
           athlete_id: string;
           family_unit_id: string;
         }[];
+      };
+      get_athlete_completed_task_ids: {
+        Args: { p_athlete_id: string };
+        Returns: string[];
       };
       get_athlete_status: {
         Args: { p_user_id: string };
@@ -3967,6 +4079,27 @@ export type Database = {
           last_interaction_date: string;
           school_count: number;
           task_completion_rate: number;
+        }[];
+      };
+      get_family_invitation_by_token: {
+        Args: { p_token: string };
+        Returns: {
+          invitation_id: string | null;
+          role: string | null;
+          family_name: string | null;
+          invited_email: string | null;
+          error_code: string | null;
+        }[];
+      };
+      get_guardian_claim_by_token: {
+        Args: { p_token: string };
+        Returns: {
+          guardian_email: string | null;
+          player_name: string | null;
+          player_date_of_birth: string | null;
+          player_graduation_year: number | null;
+          expires_at: string | null;
+          error_code: string | null;
         }[];
       };
       get_linked_user_ids: {
@@ -3986,6 +4119,19 @@ export type Database = {
         Args: { link_id: string };
         Returns: undefined;
       };
+      insert_family_notification: {
+        Args: {
+          p_user_id: string;
+          p_type: string;
+          p_title: string;
+          p_message: string;
+          p_priority: string;
+          p_related_entity_type: string;
+          p_related_entity_id: string;
+          p_scheduled_for: string;
+        };
+        Returns: string;
+      };
       is_data_owner: { Args: { target_user_id: string }; Returns: boolean };
       is_parent_viewing_athlete: {
         Args: { target_athlete_id: string };
@@ -3995,10 +4141,58 @@ export type Database = {
         Args: { target_user_id: string };
         Returns: boolean;
       };
+      join_family_by_code: {
+        Args: { p_family_code: string };
+        Returns: {
+          family_id: string | null;
+          family_name: string | null;
+          already_member: boolean;
+          error_code: string | null;
+        }[];
+      };
       notify_upcoming_events: { Args: never; Returns: undefined };
       reactivate_school: {
         Args: { p_actor: string; p_school_id: string };
         Returns: Database["public"]["Enums"]["school_status"];
+      };
+      regenerate_family_code: {
+        Args: { p_family_id: string };
+        Returns: string;
+      };
+      resend_guardian_claim: {
+        Args: { p_requested_email: string | null };
+        Returns: {
+          claim_id: string | null;
+          guardian_email: string | null;
+          player_name: string | null;
+          error_code: string | null;
+        }[];
+      };
+      resolve_profile_contact_lead: {
+        Args: {
+          p_lead_id: string;
+          p_status: string;
+          p_interaction_id: string | null;
+        };
+        Returns: {
+          id: string;
+          family_unit_id: string;
+          player_user_id: string | null;
+          type: string;
+          coach_name: string;
+          coach_email: string | null;
+          coach_title: string | null;
+          matched_coach_id: string | null;
+          school_id: string | null;
+          school_name: string | null;
+          note: string | null;
+          program: string | null;
+          ip: unknown;
+          user_agent: string | null;
+          created_at: string;
+          status: string;
+          interaction_id: string | null;
+        };
       };
       safe_jsonb_extract: { Args: { key: string; obj: Json }; Returns: Json };
       search_schools_fts: {
@@ -4060,6 +4254,18 @@ export type Database = {
       };
       set_athlete_profile_photo: {
         Args: { athlete_id: string; photo_url: string };
+        Returns: undefined;
+      };
+      set_athlete_phase: {
+        Args: {
+          p_athlete_id: string;
+          p_next_phase: string;
+          p_phase_milestone_data: Json;
+        };
+        Returns: undefined;
+      };
+      set_athlete_status_score: {
+        Args: { p_athlete_id: string; p_score: number; p_label: string };
         Returns: undefined;
       };
       set_primary_metric: { Args: { p_metric_id: string }; Returns: undefined };

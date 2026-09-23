@@ -1,5 +1,8 @@
 # History: UI
 
+## 2026-09-20 — Animated Completion Checkbox (iOS)
+Ported the web's spring/checkmark completion animation to iOS via native .symbolEffect(.bounce), resolving design decisions (emerald tint on Terms checkbox, native switches kept for consent toggles).
+
 ## 2026-08 — Segmented Control Direction Migration
 FormSegmentedControl component built + migrated 6 sites (Direction, offers sort-dir, video platform). Shipped PR #406/#407.
 

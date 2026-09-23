@@ -47,9 +47,10 @@ import ws from "ws";
 
 const SUPABASE_URL =
   process.env.TEST_SUPABASE_URL || process.env.NUXT_PUBLIC_SUPABASE_URL;
+const ANON_KEY = process.env.NUXT_PUBLIC_SUPABASE_ANON_KEY;
 const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-const hasLiveSupabase = Boolean(SUPABASE_URL && SERVICE_ROLE_KEY);
+const hasLiveSupabase = Boolean(SUPABASE_URL && ANON_KEY && SERVICE_ROLE_KEY);
 
 const realtimeOptions: RealtimeClientOptions = {
   transport: ws as unknown as RealtimeClientOptions["transport"],
@@ -60,6 +61,31 @@ const adminClient = (): SupabaseClient =>
     auth: { autoRefreshToken: false, persistSession: false },
     realtime: realtimeOptions,
   });
+
+// Reviewer finding on PR #947: mocking createServerSupabaseUserClient to
+// return the admin (service-role) client bypasses RLS entirely, so these
+// tests kept passing even if a real session client couldn't read
+// athlete_task -- defeating the point of a live-Postgres test for a
+// session-scoped-client migration. Sign in as the seeded user instead and
+// let the route's own createServerSupabaseUserClient() build a real,
+// RLS-bound client from that access token (only extractRequestToken is
+// mocked, to hand it the token). admin is used only for fixture
+// setup/cleanup and resolveTargetAthleteId's authorization check
+// (useSupabaseAdmin, a legitimate service-role use predating #912).
+const signIn = async (email: string, password: string): Promise<string> => {
+  const client = createClient(SUPABASE_URL as string, ANON_KEY as string, {
+    auth: { autoRefreshToken: false, persistSession: false },
+    realtime: realtimeOptions,
+  });
+  const { data, error } = await client.auth.signInWithPassword({
+    email,
+    password,
+  });
+  if (error || !data.session) {
+    throw new Error(`signIn failed for ${email}: ${error?.message}`);
+  }
+  return data.session.access_token;
+};
 
 // Auth/logging are Phase 1-4 territory and orthogonal to what this test
 // proves (row resolution + authz) — mock just enough to invoke the real
@@ -78,9 +104,21 @@ vi.mock("~/server/utils/logger", () => ({
   }),
 }));
 
-vi.mock("~/server/utils/supabase", () => ({
-  createServerSupabaseClient: vi.fn(),
-  useSupabaseAdmin: vi.fn(),
+// createServerSupabaseUserClient stays REAL (unmocked) -- it must build an
+// actual RLS-bound client from the token extractRequestToken hands it, per
+// the reviewer finding above. useSupabaseAdmin is mocked to the fixture
+// admin client, matching resolveTargetAthleteId's legitimate service-role use.
+vi.mock("~/server/utils/supabase", async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import("~/server/utils/supabase")>();
+  return {
+    ...actual,
+    useSupabaseAdmin: vi.fn(),
+  };
+});
+
+vi.mock("~/server/utils/requestToken", () => ({
+  extractRequestToken: vi.fn(() => "fake-token"),
 }));
 
 vi.mock("h3", async (importOriginal) => {
@@ -122,6 +160,7 @@ function fakeEvent(query: Record<string, string> = {}): H3Event {
 }
 
 const RUN_ID = Date.now();
+const PASSWORD = "AthleteTasksTest123!";
 
 async function createUser(
   admin: SupabaseClient,
@@ -132,7 +171,7 @@ async function createUser(
   const { data: authUser, error: authError } =
     await admin.auth.admin.createUser({
       email,
-      password: "AthleteTasksTest123!",
+      password: PASSWORD,
       email_confirm: true,
     });
   if (authError || !authUser.user) {
@@ -150,7 +189,7 @@ async function createUser(
       `Failed to insert public.users row (${label}): ${userInsertError.message}`,
     );
   }
-  return authUser.user.id as string;
+  return { id: authUser.user.id as string, email };
 }
 
 async function createFamily(
@@ -195,8 +234,11 @@ describe.skipIf(!hasLiveSupabase)(
     const admin = hasLiveSupabase ? adminClient() : (null as never);
 
     let familyAParentId: string;
+    let familyAParentEmail: string;
     let familyAAthleteId: string;
+    let familyAAthleteEmail: string;
     let familyBParentId: string;
+    let familyBParentEmail: string;
     let taskId: string;
     const createdUserIds: string[] = [];
     const createdFamilyIds: string[] = [];
@@ -216,9 +258,15 @@ describe.skipIf(!hasLiveSupabase)(
       }
       taskId = taskRows[0].id as string;
 
-      familyAParentId = await createUser(admin, "parent", "family-a-parent");
-      familyAAthleteId = await createUser(admin, "player", "family-a-athlete");
-      familyBParentId = await createUser(admin, "parent", "family-b-parent");
+      const familyAParent = await createUser(admin, "parent", "family-a-parent");
+      const familyAAthlete = await createUser(admin, "player", "family-a-athlete");
+      const familyBParent = await createUser(admin, "parent", "family-b-parent");
+      familyAParentId = familyAParent.id;
+      familyAParentEmail = familyAParent.email;
+      familyAAthleteId = familyAAthlete.id;
+      familyAAthleteEmail = familyAAthlete.email;
+      familyBParentId = familyBParent.id;
+      familyBParentEmail = familyBParent.email;
       createdUserIds.push(familyAParentId, familyAAthleteId, familyBParentId);
 
       // family_code column is varchar(10) with CHECK format FAM-[A-Z0-9]{6} —
@@ -281,13 +329,17 @@ describe.skipIf(!hasLiveSupabase)(
 
     it("AC1: parent viewing their linked athlete sees the athlete's real completion rows, not the parent's own empty ones", async () => {
       const { requireAuth } = await import("~/server/utils/auth");
-      const { createServerSupabaseClient, useSupabaseAdmin } =
-        await import("~/server/utils/supabase");
+      const { useSupabaseAdmin } = await import("~/server/utils/supabase");
+      const { extractRequestToken } = await import(
+        "~/server/utils/requestToken"
+      );
       vi.mocked(requireAuth).mockResolvedValue({
         id: familyAParentId,
-        email: "parent@example.com",
+        email: familyAParentEmail,
       });
-      vi.mocked(createServerSupabaseClient).mockReturnValue(admin);
+      vi.mocked(extractRequestToken).mockReturnValue(
+        await signIn(familyAParentEmail, PASSWORD),
+      );
       vi.mocked(useSupabaseAdmin).mockReturnValue(admin);
 
       const handler = (await import("~/server/api/athlete-tasks/index.get"))
@@ -305,13 +357,16 @@ describe.skipIf(!hasLiveSupabase)(
 
     it("regression: athlete calling without athleteId still sees their own rows", async () => {
       const { requireAuth } = await import("~/server/utils/auth");
-      const { createServerSupabaseClient } =
-        await import("~/server/utils/supabase");
+      const { extractRequestToken } = await import(
+        "~/server/utils/requestToken"
+      );
       vi.mocked(requireAuth).mockResolvedValue({
         id: familyAAthleteId,
-        email: "athlete@example.com",
+        email: familyAAthleteEmail,
       });
-      vi.mocked(createServerSupabaseClient).mockReturnValue(admin);
+      vi.mocked(extractRequestToken).mockReturnValue(
+        await signIn(familyAAthleteEmail, PASSWORD),
+      );
 
       const handler = (await import("~/server/api/athlete-tasks/index.get"))
         .default;
@@ -325,13 +380,17 @@ describe.skipIf(!hasLiveSupabase)(
 
     it("AC5: a parent from an unrelated family cannot fetch the athlete's tasks (403)", async () => {
       const { requireAuth } = await import("~/server/utils/auth");
-      const { createServerSupabaseClient, useSupabaseAdmin } =
-        await import("~/server/utils/supabase");
+      const { useSupabaseAdmin } = await import("~/server/utils/supabase");
+      const { extractRequestToken } = await import(
+        "~/server/utils/requestToken"
+      );
       vi.mocked(requireAuth).mockResolvedValue({
         id: familyBParentId,
-        email: "other-parent@example.com",
+        email: familyBParentEmail,
       });
-      vi.mocked(createServerSupabaseClient).mockReturnValue(admin);
+      vi.mocked(extractRequestToken).mockReturnValue(
+        await signIn(familyBParentEmail, PASSWORD),
+      );
       vi.mocked(useSupabaseAdmin).mockReturnValue(admin);
 
       const handler = (await import("~/server/api/athlete-tasks/index.get"))

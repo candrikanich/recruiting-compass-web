@@ -1,0 +1,21 @@
+-- Originally unblocked server/api/notifications/generate.post.ts for #912 by
+-- adding broad family INSERT/SELECT policies on notifications plus a
+-- resurrected, unscoped recommendation_letters SELECT policy.
+--
+-- This file was renamed from 20260929000030 to 20260929000032 by
+-- b3e8b165 to resolve a migration-timestamp collision. Its original content
+-- is superseded by 20260929000031 (the qodo-review-fix migration, applied
+-- with an earlier, still-correct timestamp), which drops these exact
+-- policies and replaces them with narrow, content-scoped SECURITY DEFINER
+-- RPCs (family_notification_exists / insert_family_notification) --
+-- notificationGenerator.ts calls those RPCs exclusively.
+--
+-- Left as a genuine no-op (not restored broad-policy SQL) because file
+-- order is timestamp order: 031 runs before 032 on any fresh apply
+-- (new E2E project, local dev, disaster recovery), so this file re-running
+-- 20260929000030's original CREATE POLICY statements after 031 already
+-- dropped them would silently reopen the family-wide notification
+-- read/write hole and the resurrected cross-family recommendation_letters
+-- leak that 031 exists to close. Kept as a file only so schema_migrations
+-- bookkeeping for the renamed timestamp stays consistent; no SQL to run.
+SELECT 1;

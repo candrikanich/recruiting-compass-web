@@ -9,7 +9,8 @@
 import { defineEventHandler, getQuery } from "h3";
 import { requireAuth } from "~/server/utils/auth";
 import { useLogger } from "~/server/utils/logger";
-import { useSupabaseAdmin } from "~/server/utils/supabase";
+import { createServerSupabaseUserClient } from "~/server/utils/supabase";
+import { extractRequestToken } from "~/server/utils/requestToken";
 
 export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "user/preferences/history");
@@ -29,7 +30,8 @@ export default defineEventHandler(async (event) => {
     const limit = Math.min(Number(query.limit) || 50, 100); // Max 100
     const offset = Number(query.offset) || 0;
 
-    const supabase = useSupabaseAdmin();
+    const token = extractRequestToken(event);
+    const supabase = createServerSupabaseUserClient(token);
 
     // Get total count
     const { count, error: countError } = await supabase

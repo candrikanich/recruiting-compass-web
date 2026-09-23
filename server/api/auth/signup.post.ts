@@ -1,32 +1,48 @@
 import { defineEventHandler, readBody, createError, getRequestIP } from "h3";
+import { z } from "zod";
 import { useLogger } from "~/server/utils/logger";
 import { rateLimitByIp, throwIfRateLimited } from "~/server/utils/rateLimit";
 import { verifyTurnstile } from "~/server/utils/turnstile";
 import { createVerifiedAccount } from "~/server/utils/accountCreation";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
+import {
+  trimmedEmailSchema,
+  strongPasswordSchema,
+  sanitizedTextSchema,
+  dateSchema,
+} from "~/utils/validation/validators";
 
-interface SignupBody {
-  email: string;
-  password: string;
-  fullName?: string;
-  role?: string;
-  dateOfBirth?: string;
-  captchaToken?: string;
-  metadata?: Record<string, string | boolean>;
-  /**
-   * Invite / guardian-claim / admin signups have their `email_verified_at`
-   * stamped by the accept handler moments later, so they must never see the
-   * verify-email flow at all — including the email (spec §5).
-   */
-  skipVerificationEmail?: boolean;
-  /**
-   * Present only when this signup completes a family invite acceptance.
-   * A real, unexpired, pending invite row (not a client-asserted flag) is
-   * what lets us skip Turnstile here — the invite link itself is already
-   * the bot-filter for this path.
-   */
-  inviteToken?: string;
-}
+/**
+ * Server-side body schema for this endpoint specifically -- not the same as
+ * the client-only signupSchema (utils/validation/schemas.ts), which also
+ * requires confirmPassword (never sent to the API) and refines dateOfBirth
+ * as required for role=player (this endpoint's manual isUnderMinimumAge
+ * check below already covers that, and enforcing it again here would 400 a
+ * legitimate role=parent submission with no dateOfBirth at all).
+ *
+ * role is restricted to parent/player deliberately, not admin -- admin
+ * promotion goes through pendingAdmin's metadata.pending_admin flag (which
+ * pickAllowedMetadata below already discards) plus a separately-confirmed
+ * flow (admin-profile.post.ts's validated adminToken), never a client-
+ * asserted role on this public, unauthenticated endpoint.
+ */
+const signupBodySchema = z.object({
+  email: trimmedEmailSchema,
+  password: strongPasswordSchema,
+  fullName: sanitizedTextSchema(255),
+  role: z.enum(["parent", "player"]).optional(),
+  // pages/signup.vue sends dateOfBirth as "" by default for role=parent
+  // (its ref never becomes undefined) -- allow empty string through
+  // alongside a real YYYY-MM-DD date, matching sanitizedTextSchema's
+  // pattern above. Downstream code already treats "" as falsy/absent.
+  dateOfBirth: dateSchema.or(z.literal("")).optional(),
+  captchaToken: z.string().max(4096).optional(),
+  metadata: z.record(z.string(), z.union([z.string(), z.boolean()])).optional(),
+  skipVerificationEmail: z.boolean().optional(),
+  inviteToken: z.string().max(255).optional(),
+});
+
+type SignupBody = z.infer<typeof signupBodySchema>;
 
 /**
  * A pending, unexpired invite token only proves *an* invite exists — without
@@ -102,8 +118,18 @@ export default defineEventHandler(async (event) => {
       await rateLimitByIp(event, { requests: 10, window: "1 h" }),
     );
 
-    const body = await readBody<SignupBody>(event);
-    const email = body.email?.trim().toLowerCase();
+    const rawBody = await readBody(event);
+    const parsed = signupBodySchema.safeParse(rawBody);
+    if (!parsed.success) {
+      throw createError({
+        statusCode: 400,
+        statusMessage:
+          "Invalid signup data: " + parsed.error.issues[0]?.message,
+      });
+    }
+
+    const body: SignupBody = parsed.data;
+    const email = body.email;
     const {
       password,
       fullName,
@@ -114,13 +140,6 @@ export default defineEventHandler(async (event) => {
       skipVerificationEmail,
       inviteToken,
     } = body;
-
-    if (!email || !password) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: "Email and password are required",
-      });
-    }
 
     const skipCaptcha = inviteToken
       ? await hasValidPendingInvite(inviteToken, email, role)

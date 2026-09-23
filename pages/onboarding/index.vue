@@ -18,10 +18,14 @@
             Welcome to The Recruiting Compass
           </h1>
           <p class="mb-6 text-white/90">Let's get you set up</p>
+          <p v-if="currentStep === 2" class="text-sm font-medium text-white/80">
+            Step 2 of 2
+          </p>
         </div>
 
         <!-- Screen Container -->
         <div
+          v-if="currentStep === 1"
           ref="stepContainer"
           role="region"
           tabindex="-1"
@@ -172,7 +176,7 @@
         </div>
 
         <!-- Navigation -->
-        <div class="flex justify-end gap-4">
+        <div v-if="currentStep === 1" class="flex justify-end gap-4">
           <button
             @click="nextScreen"
             :disabled="loading"
@@ -181,24 +185,78 @@
             Go to your dashboard →
           </button>
         </div>
+
+        <!-- Step 2: Schools to Explore -->
+        <div
+          v-else
+          ref="stepTwoContainer"
+          role="region"
+          tabindex="-1"
+          aria-label="Schools to explore"
+          class="mb-8 rounded-2xl border border-white/20 bg-white/95 p-8 shadow-2xl backdrop-blur-xs focus:outline-none"
+        >
+          <RecommendedSchools
+            :items="recommendations"
+            :loading="recsLoading"
+            :error="recsError"
+            :adding-key="addingKey"
+            :home-state="homeState"
+            @add="handleAddSchool"
+            @dismiss="handleDismissSchool"
+          />
+
+          <p v-if="actionError" role="alert" class="mt-4 text-sm text-red-600">
+            {{ actionError }}
+          </p>
+
+          <div
+            v-if="error"
+            role="alert"
+            class="mt-4 rounded-lg border border-red-200 bg-red-50 p-4"
+          >
+            <p class="text-red-800">{{ error }}</p>
+            <button
+              @click="clearError"
+              class="mt-2 text-sm text-red-600 hover:text-red-700"
+            >
+              Dismiss
+            </button>
+          </div>
+
+          <div class="mt-6 flex justify-end">
+            <button
+              @click="finishOnboarding"
+              :disabled="finishing"
+              class="rounded-lg bg-blue-500 px-6 py-3 font-medium text-white transition-colors hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Go to Dashboard
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, nextTick } from "vue";
+import { ref, computed, watch, onMounted, nextTick } from "vue";
 import { useOnboarding } from "~/composables/useOnboarding";
 import { usePreferenceManager } from "~/composables/usePreferenceManager";
 import { useNuxProgress } from "~/composables/useNuxProgress";
+import { useGraduationYearOptions } from "~/composables/useGraduationYearOptions";
+import { useSchoolRecommendations } from "~/composables/useSchoolRecommendations";
+import { useSchools } from "~/composables/useSchools";
+import { recommendationToSchoolDraft } from "~/utils/schoolRecommendations";
 import { createClientLogger } from "~/utils/logger";
-import { getGraduationYearOptions } from "~/utils/graduationYears";
 // The bare <MultiSportFieldBackground /> tag silently resolves to nothing
 // without this — Nuxt auto-imports components/Auth/*.vue under the
 // Auth-prefixed tag; pages/signup.vue and pages/login.vue only work because
 // they import it explicitly.
 import MultiSportFieldBackground from "~/components/Auth/MultiSportFieldBackground.vue";
+import RecommendedSchools from "~/components/School/RecommendedSchools.vue";
 import type { PlayerDetails } from "~/types/models";
+import type { SchoolRecommendation } from "~/types/schoolRecommendations";
+import type { School } from "~/types/models";
 
 const logger = createClientLogger("Onboarding");
 
@@ -213,15 +271,32 @@ const {
   getHomeLocation,
 } = usePreferenceManager();
 const { completeItem } = useNuxProgress();
+const {
+  recommendations,
+  signals,
+  loading: recsLoading,
+  error: recsError,
+  fetchRecommendations,
+  dismissRecommendation,
+  removeRecommendation,
+} = useSchoolRecommendations();
+const { createSchool } = useSchools();
 
 const stepContainer = ref<HTMLElement | null>(null);
+const stepTwoContainer = ref<HTMLElement | null>(null);
 
+const currentStep = ref<1 | 2>(1);
 const onboardingData = ref<Record<string, unknown>>({});
 const loading = ref(false);
 const error = ref<string | null>(null);
 const zipCodeError = ref<string | null>(null);
 const sportError = ref<string | null>(null);
 const graduationYearError = ref<string | null>(null);
+const addingKey = ref<string | null>(null);
+const actionError = ref<string | null>(null);
+const finishing = ref(false);
+
+const homeState = computed(() => signals.value?.homeState ?? null);
 
 // Common high school sports and their positions
 const commonSports = [
@@ -258,7 +333,17 @@ const genderIsAutoDerived = computed(() => {
   return sport.toLowerCase() in SPORT_GENDER_MAP;
 });
 
-const graduationYears = computed(() => getGraduationYearOptions());
+const { graduationYears } = useGraduationYearOptions();
+
+// The July 1 pivot can roll the just-graduated class out from under a form
+// that's been open since before midnight — clear a now-invalid selection
+// rather than let a stale value reach the (freshly re-validated) server.
+watch(graduationYears, (years) => {
+  const selected = onboardingData.value.graduation_year;
+  if (selected !== undefined && !years.includes(selected as number)) {
+    onboardingData.value.graduation_year = undefined;
+  }
+});
 
 const onSportChange = () => {
   const sport = (
@@ -283,7 +368,13 @@ const hasSport = (): boolean => {
 
 const hasGraduationYear = (): boolean => {
   const year = onboardingData.value.graduation_year;
-  return year !== undefined && year !== null && year !== "";
+  if (year === undefined || year === null || year === "") return false;
+  // Membership, not just presence — a prefilled value (query param, or
+  // canonical prefs from a parent's earlier onboarding) is never revalidated
+  // against the current options list, only cleared reactively when
+  // graduationYears itself changes. A stale out-of-range year must not pass
+  // here just because it's non-empty.
+  return graduationYears.value.includes(year as number);
 };
 
 const validateStep1 = (): boolean => {
@@ -337,23 +428,19 @@ const saveStep1 = async () => {
   $posthog?.capture("onboarding_v2_step1_complete");
 };
 
-const nextScreen = async () => {
-  if (!validateStep1()) {
-    return;
-  }
-  loading.value = true;
-  try {
-    await saveStep1();
+const completionAssessment = {
+  hasHighlightVideo: false,
+  hasContactedCoaches: false,
+  hasTargetSchools: false,
+  hasRegisteredEligibility: false,
+  hasTakenTestScores: false,
+};
 
-    const assessment = {
-      hasHighlightVideo: false,
-      hasContactedCoaches: false,
-      hasTargetSchools: false,
-      hasRegisteredEligibility: false,
-      hasTakenTestScores: false,
-    };
+const finishOnboarding = async () => {
+  finishing.value = true;
+  try {
     await completeOnboarding(
-      assessment,
+      completionAssessment,
       onboardingData.value.graduation_year as number | undefined,
     );
 
@@ -365,7 +452,71 @@ const nextScreen = async () => {
     error.value =
       err instanceof Error ? err.message : "Failed to complete onboarding";
   } finally {
+    finishing.value = false;
+  }
+};
+
+const nextScreen = async () => {
+  if (!validateStep1()) {
+    return;
+  }
+  loading.value = true;
+  error.value = null;
+  try {
+    await saveStep1();
+    await fetchRecommendations();
+
+    if (recsError.value) {
+      // A failed fetch, not a genuine no-match — stay on step 1 so the
+      // player can see the error and retry rather than silently skipping
+      // school discovery.
+      error.value = recsError.value;
+      return;
+    }
+
+    if (recommendations.value.length > 0) {
+      currentStep.value = 2;
+      await nextTick();
+      stepTwoContainer.value?.focus();
+      return;
+    }
+
+    await finishOnboarding();
+  } catch (err) {
+    error.value =
+      err instanceof Error ? err.message : "Failed to complete onboarding";
+  } finally {
     loading.value = false;
+  }
+};
+
+const handleAddSchool = async (school: SchoolRecommendation) => {
+  addingKey.value = school.catalogKey;
+  actionError.value = null;
+  try {
+    await createSchool(
+      recommendationToSchoolDraft(school) as Omit<
+        School,
+        "id" | "created_at" | "updated_at"
+      >,
+    );
+    removeRecommendation(school.catalogKey);
+    await completeItem("first_school");
+  } catch (err) {
+    logger.warn("Failed to add recommended school", err);
+    actionError.value = "Could not add that school.";
+  } finally {
+    addingKey.value = null;
+  }
+};
+
+const handleDismissSchool = async (school: SchoolRecommendation) => {
+  actionError.value = null;
+  try {
+    await dismissRecommendation(school.catalogKey);
+  } catch (err) {
+    logger.warn("Failed to dismiss school recommendation", err);
+    actionError.value = "Could not dismiss that school.";
   }
 };
 

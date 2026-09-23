@@ -99,7 +99,51 @@ function makeSupabase(
     return chain;
   });
 
-  const supabase = { from: fromMock } as unknown as SupabaseClient;
+  // generateOfferNotifications/generateRecommendationNotifications/
+  // generateEventNotifications/generateCoachFollowupNotifications route
+  // their dedupe-check + insert through family_notification_exists /
+  // insert_family_notification RPCs now (#912), not raw notifications
+  // table access. Derive the RPC responses from the same "notifications"
+  // table config tests already set (its `maybeSingle` result), so
+  // individual test bodies don't need to change.
+  const rpcMock = vi.fn(async (fn: string, params: Record<string, unknown>) => {
+    const raw = tables.notifications;
+    const cfg = typeof raw === "function" ? raw() : (raw ?? {});
+    if (fn === "family_notification_exists") {
+      const result = cfg.maybeSingle ?? { data: null, error: null };
+      if (result.error) return { data: null, error: result.error };
+      return { data: result.data != null, error: null };
+    }
+    if (fn === "insert_family_notification") {
+      if (trackInserts) {
+        // Normalize back to the original insert row shape (array of one
+        // object, original column names) so pre-existing assertions
+        // against inserts.calls[...].rows keep working unchanged.
+        trackInserts.calls.push({
+          table: "notifications",
+          rows: [
+            {
+              user_id: params.p_user_id,
+              type: params.p_type,
+              title: params.p_title,
+              message: params.p_message,
+              priority: params.p_priority,
+              related_entity_type: params.p_related_entity_type,
+              related_entity_id: params.p_related_entity_id,
+              scheduled_for: params.p_scheduled_for,
+            },
+          ],
+        });
+      }
+      return { data: "mock-notification-id", error: null };
+    }
+    throw new Error(`makeSupabase: unexpected rpc "${fn}"`);
+  });
+
+  const supabase = {
+    from: fromMock,
+    rpc: rpcMock,
+  } as unknown as SupabaseClient;
   return { supabase, fromMock };
 }
 

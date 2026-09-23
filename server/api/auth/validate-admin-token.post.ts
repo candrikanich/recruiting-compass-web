@@ -14,13 +14,22 @@
  */
 
 import { defineEventHandler, readBody, createError } from "h3";
+import { z } from "zod";
 import { useLogger } from "~/server/utils/logger";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
+import { trimmedEmailSchema } from "~/utils/validation/validators";
 
-interface ValidateAdminTokenRequest {
-  token: string;
-  email: string;
-}
+// Tokens are minted via randomUUID() (server/api/admin/invitations.post.ts),
+// so a real UUID shape, not just a non-empty string. .trim() first: the
+// token field is a manually-typed/pasted text input on the admin signup
+// form (pages/admin/signup.vue) -- that page only checks trimmed length for
+// its own non-empty guard but sends the raw untrimmed value, so incidental
+// copy-paste whitespace must not 400 a legitimate token.
+//
+const validateAdminTokenSchema = z.object({
+  token: z.string().trim().uuid(),
+  email: trimmedEmailSchema,
+});
 
 interface ValidateAdminTokenResponse {
   valid: boolean;
@@ -31,26 +40,19 @@ export default defineEventHandler(
   async (event): Promise<ValidateAdminTokenResponse> => {
     const logger = useLogger(event, "auth/validate-admin-token");
     try {
-      const body = await readBody<ValidateAdminTokenRequest>(event);
-      const { token, email } = body;
-
-      if (!token || typeof token !== "string") {
-        logger.warn(
-          "Admin token validation attempt with missing/invalid token",
-        );
+      const rawBody = await readBody(event);
+      const parsed = validateAdminTokenSchema.safeParse(rawBody);
+      if (!parsed.success) {
+        logger.warn("Admin token validation attempt with malformed body", {
+          issue: parsed.error.issues[0]?.message,
+        });
         throw createError({
           statusCode: 400,
-          statusMessage: "Token is required",
+          statusMessage:
+            parsed.error.issues[0]?.message ?? "Invalid request body",
         });
       }
-
-      if (!email || typeof email !== "string") {
-        logger.warn("Admin token validation attempt with missing email");
-        throw createError({
-          statusCode: 400,
-          statusMessage: "Email is required",
-        });
-      }
+      const { token, email } = parsed.data;
 
       const supabase = useSupabaseAdmin();
       const { data: invitation, error: lookupError } = await supabase

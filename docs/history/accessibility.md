@@ -1,5 +1,14 @@
 # History: Accessibility
 
+## 2026-09-20 — Accessibility Quick-Fix Sprint Plan
+Sprint-organized quick-fix punch list tied to the coaches/forms accessibility audits - specific fixes for FieldError live regions, FormErrorSummary focus-jump, required-field announcements, modal ARIA, radio grouping, contrast, and touch targets.
+
+## 2026-09-20 — Coach Detail Page Accessibility Audit
+WCAG 2.1 AA audit of the Coach Detail page and related components found roughly 75% compliance, with critical issues (modal focus trap/ARIA gaps) and high-priority issues (color-only status indicators, unlabeled interaction lists/buttons), with an implementation-priority plan.
+
+## 2026-09-20 — Coaches Module Accessibility Audit
+WCAG 2.1 AA audit of the Coaches module pages found roughly 60-65% compliance, with critical/high/medium/low issues around modal focus traps, icon-button labels, loading-state announcements, and form label associations, with prescribed fixes.
+
 ## 2026-02-09 — Interactions Page A11y Audit
 Full WCAG 2.1 AA audit of interactions page: 16 issues (5 critical, 5 high) covering focus indicators, label associations, skip links, live regions.
 

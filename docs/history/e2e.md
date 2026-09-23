@@ -1,5 +1,8 @@
 # History: E2E
 
+## 2026-09-20 — E2E CI Pipeline Refactor (Phases 1-4)
+Refactored E2E CI to decouple the WebKit job from waiting on the Chromium job, sharded the main Chromium phase 4-ways with a dedicated seed job, quarantined known-flaky specs into a non-blocking job, and split PR-gating (smoke suite) from full-suite gating (on promotion to main). Phase 5 (root-cause flake fixes) remains a forward TODO.
+
 ## 2026-06 — E2E Reliability Findings Log
 E2E reliability findings: gate flake root-caused (global-setup auth capture), full-run results (418-438 pass), known issues cataloged. Suite later greened (177→0 fails).
 

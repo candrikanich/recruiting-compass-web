@@ -4,7 +4,8 @@
  */
 
 import { defineEventHandler, createError } from "h3";
-import { createServerSupabaseClient } from "~/server/utils/supabase";
+import { createServerSupabaseUserClient } from "~/server/utils/supabase";
+import { extractRequestToken } from "~/server/utils/requestToken";
 import { requireAuth } from "~/server/utils/auth";
 import { useLogger } from "~/server/utils/logger";
 
@@ -12,7 +13,8 @@ export default defineEventHandler(async (event) => {
   const logger = useLogger(event, "deadlines/list");
   try {
     const user = await requireAuth(event);
-    const supabase = createServerSupabaseClient();
+    const token = extractRequestToken(event);
+    const supabase = createServerSupabaseUserClient(token);
 
     const { data: membership } = await supabase
       .from("family_members")

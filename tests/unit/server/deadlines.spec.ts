@@ -71,13 +71,17 @@ describe("updateDeadlineSchema", () => {
 });
 
 // ---------------------------------------------------------------------------
-// Endpoint tests — these hit the service-role Supabase client (bypasses RLS),
-// so every query MUST resolve family_unit_id and filter/stamp by it.
+// Endpoint tests — these hit the session-scoped Supabase client (respects
+// RLS), so every query MUST resolve family_unit_id and filter/stamp by it.
 // ---------------------------------------------------------------------------
 
 const mockSupabase = { from: vi.fn() };
 vi.mock("~/server/utils/supabase", () => ({
-  createServerSupabaseClient: () => mockSupabase,
+  createServerSupabaseUserClient: () => mockSupabase,
+}));
+
+vi.mock("~/server/utils/requestToken", () => ({
+  extractRequestToken: vi.fn(() => "fake-token"),
 }));
 
 const mockRequireAuth = vi.fn(async () => ({ id: "user-1", email: "p@t" }));

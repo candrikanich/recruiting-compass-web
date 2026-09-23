@@ -11,7 +11,7 @@
  * no-data-yet empty response, upsert/delete happy paths, and Zod
  * validation on POST.
  */
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import type { H3Event } from "h3";
 
 vi.mock("~/server/utils/auth", () => ({
@@ -69,7 +69,22 @@ function fakeEvent(
   } as unknown as H3Event;
 }
 
-vi.mock("~/server/utils/supabase", () => ({ useSupabaseAdmin: vi.fn() }));
+vi.mock("~/server/utils/supabase", () => ({
+  useSupabaseAdmin: vi.fn(),
+  createServerSupabaseUserClient: vi.fn(),
+}));
+
+vi.mock("~/server/utils/requestToken", () => ({
+  extractRequestToken: vi.fn(() => "fake-token"),
+}));
+
+// Every route in this file should use the session-scoped client, never the
+// privileged one — if a handler regresses to useSupabaseAdmin(), these tests
+// would otherwise still pass with the old shared-mock setup and hide it.
+afterEach(async () => {
+  const { useSupabaseAdmin } = await import("~/server/utils/supabase");
+  expect(useSupabaseAdmin).not.toHaveBeenCalled();
+});
 
 vi.mock("~/server/utils/sharedCache", () => ({
   deleteShared: vi.fn().mockResolvedValue(undefined),
@@ -93,8 +108,12 @@ describe("GET /api/user/preferences/[category]", () => {
   }
 
   it("rejects an invalid category with 400", async () => {
-    const { useSupabaseAdmin } = await import("~/server/utils/supabase");
-    vi.mocked(useSupabaseAdmin).mockReturnValue({ from: vi.fn() } as never);
+    const { createServerSupabaseUserClient } = await import(
+      "~/server/utils/supabase"
+    );
+    vi.mocked(createServerSupabaseUserClient).mockReturnValue({
+      from: vi.fn(),
+    } as never);
     const handler = await loadHandler();
 
     await expect(
@@ -103,8 +122,10 @@ describe("GET /api/user/preferences/[category]", () => {
   });
 
   it("returns an empty, exists:false response when no preferences row exists yet", async () => {
-    const { useSupabaseAdmin } = await import("~/server/utils/supabase");
-    vi.mocked(useSupabaseAdmin).mockReturnValue({
+    const { createServerSupabaseUserClient } = await import(
+      "~/server/utils/supabase"
+    );
+    vi.mocked(createServerSupabaseUserClient).mockReturnValue({
       from: () => ({
         select: () => ({
           eq: () => ({
@@ -123,14 +144,17 @@ describe("GET /api/user/preferences/[category]", () => {
     };
     expect(result.exists).toBe(false);
     expect(result.data).toEqual({});
+    expect(createServerSupabaseUserClient).toHaveBeenCalledWith("fake-token");
   });
 
   it("returns the caller's own preferences for a non-player-owned category even when the caller is a parent", async () => {
     const { getUserRole } = await import("~/server/utils/auth");
     vi.mocked(getUserRole).mockResolvedValue("parent");
-    const { useSupabaseAdmin } = await import("~/server/utils/supabase");
+    const { createServerSupabaseUserClient } = await import(
+      "~/server/utils/supabase"
+    );
     const selectedUserIds: string[] = [];
-    vi.mocked(useSupabaseAdmin).mockReturnValue({
+    vi.mocked(createServerSupabaseUserClient).mockReturnValue({
       from: () => ({
         select: () => ({
           eq: (col: string, val: string) => {
@@ -163,9 +187,11 @@ describe("GET /api/user/preferences/[category]", () => {
     });
     vi.mocked(getUserRole).mockResolvedValue("parent");
 
-    const { useSupabaseAdmin } = await import("~/server/utils/supabase");
+    const { createServerSupabaseUserClient } = await import(
+      "~/server/utils/supabase"
+    );
     const selectedUserIds: string[] = [];
-    vi.mocked(useSupabaseAdmin).mockReturnValue({
+    vi.mocked(createServerSupabaseUserClient).mockReturnValue({
       from: (table: string) => {
         if (table === "family_members") {
           return {
@@ -259,9 +285,11 @@ describe("POST /api/user/preferences/[category]", () => {
   });
 
   it("upserts the preference row and returns the saved data", async () => {
-    const { useSupabaseAdmin } = await import("~/server/utils/supabase");
+    const { createServerSupabaseUserClient } = await import(
+      "~/server/utils/supabase"
+    );
     const upsertCalls: unknown[] = [];
-    vi.mocked(useSupabaseAdmin).mockReturnValue({
+    vi.mocked(createServerSupabaseUserClient).mockReturnValue({
       from: () => ({
         upsert: (row: unknown) => {
           upsertCalls.push(row);
@@ -291,8 +319,10 @@ describe("POST /api/user/preferences/[category]", () => {
   });
 
   it("does not invalidate the school-recs cache for a category that doesn't affect recommendations", async () => {
-    const { useSupabaseAdmin } = await import("~/server/utils/supabase");
-    vi.mocked(useSupabaseAdmin).mockReturnValue({
+    const { createServerSupabaseUserClient } = await import(
+      "~/server/utils/supabase"
+    );
+    vi.mocked(createServerSupabaseUserClient).mockReturnValue({
       from: () => ({
         upsert: () => ({
           select: () => ({
@@ -314,8 +344,10 @@ describe("POST /api/user/preferences/[category]", () => {
   });
 
   it("invalidates the athlete's school-recs cache after a location preference save (e.g. a zip update)", async () => {
-    const { useSupabaseAdmin } = await import("~/server/utils/supabase");
-    vi.mocked(useSupabaseAdmin).mockReturnValue({
+    const { createServerSupabaseUserClient } = await import(
+      "~/server/utils/supabase"
+    );
+    vi.mocked(createServerSupabaseUserClient).mockReturnValue({
       from: () => ({
         upsert: () => ({
           select: () => ({
@@ -344,9 +376,11 @@ describe("POST /api/user/preferences/[category]", () => {
     });
     vi.mocked(getUserRole).mockResolvedValue("parent");
 
-    const { useSupabaseAdmin } = await import("~/server/utils/supabase");
+    const { createServerSupabaseUserClient } = await import(
+      "~/server/utils/supabase"
+    );
     const upsertCalls: Array<{ user_id: string; category: string }> = [];
-    vi.mocked(useSupabaseAdmin).mockReturnValue({
+    vi.mocked(createServerSupabaseUserClient).mockReturnValue({
       from: (table: string) => {
         if (table === "family_members") {
           return {
@@ -424,9 +458,11 @@ describe("DELETE /api/user/preferences/[category]", () => {
   }
 
   it("deletes the caller's own preferences row for the category", async () => {
-    const { useSupabaseAdmin } = await import("~/server/utils/supabase");
+    const { createServerSupabaseUserClient } = await import(
+      "~/server/utils/supabase"
+    );
     const deleteCalls: Array<{ col: string; val: string }[]> = [];
-    vi.mocked(useSupabaseAdmin).mockReturnValue({
+    vi.mocked(createServerSupabaseUserClient).mockReturnValue({
       from: () => ({
         delete: () => ({
           eq: (col: string, val: string) => {
@@ -455,8 +491,10 @@ describe("DELETE /api/user/preferences/[category]", () => {
   });
 
   it("returns 500 when the delete fails", async () => {
-    const { useSupabaseAdmin } = await import("~/server/utils/supabase");
-    vi.mocked(useSupabaseAdmin).mockReturnValue({
+    const { createServerSupabaseUserClient } = await import(
+      "~/server/utils/supabase"
+    );
+    vi.mocked(createServerSupabaseUserClient).mockReturnValue({
       from: () => ({
         delete: () => ({
           eq: () => ({

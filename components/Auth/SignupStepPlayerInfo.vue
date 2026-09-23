@@ -129,9 +129,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, watch } from "vue";
 import { useSportsPositionLookup } from "~/composables/useSportsPositionLookup";
-import { getGraduationYearOptions } from "~/utils/graduationYears";
+import { useGraduationYearOptions } from "~/composables/useGraduationYearOptions";
 import TermsAndSubmit from "~/components/Auth/TermsAndSubmit.vue";
 
 const props = defineProps<{
@@ -144,7 +144,7 @@ const props = defineProps<{
   fieldErrors: Record<string, string>;
 }>();
 
-defineEmits<{
+const emit = defineEmits<{
   "update:graduationYear": [value: number];
   "update:primarySport": [value: string];
   "update:gender": [value: string];
@@ -154,7 +154,19 @@ defineEmits<{
 }>();
 
 const { commonSports } = useSportsPositionLookup();
-const graduationYears = computed(() => getGraduationYearOptions());
+const { graduationYears } = useGraduationYearOptions();
+
+// The July 1 pivot can roll the just-graduated class out from under a form
+// that's been open since before midnight — clear a now-invalid selection
+// rather than let a stale value reach the (freshly re-validated) server.
+watch(graduationYears, (years) => {
+  if (
+    props.graduationYear !== undefined &&
+    !years.includes(props.graduationYear)
+  ) {
+    emit("update:graduationYear", undefined as unknown as number);
+  }
+});
 
 // Sports whose gender isn't ambiguous — skip asking and derive it silently.
 // Mirrors pages/onboarding/index.vue's SPORT_GENDER_MAP (same small,
