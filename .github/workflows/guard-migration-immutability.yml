@@ -1,0 +1,45 @@
+name: Guard Migration Immutability
+
+# A migration file that already exists on the base branch may have been applied
+# to QA/E2E/prod. Renaming, deleting or editing it leaves the linked project's
+# schema_migrations with a version the repo no longer has, and `supabase db push`
+# then refuses to run (the #23 prod failure: 20260929000020/21 were applied, then
+# removed in #976/#977). Fix forward with a new migration instead.
+#
+# Plain `pull_request` and no secrets: this job only diffs git history.
+on:
+  pull_request:
+    branches: [develop, main]
+    paths:
+      - "supabase/migrations/**"
+
+jobs:
+  guard:
+    name: No rename/delete/edit of existing migrations
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    if: "!contains(github.event.pull_request.labels.*.name, 'allow-migration-rewrite')"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Fail on changes to already-merged migrations
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          CHANGED=$(git diff --name-status --no-renames --diff-filter=DM \
+            "$BASE_SHA" "$HEAD_SHA" -- 'supabase/migrations/*.sql')
+          if [ -n "$CHANGED" ]; then
+            echo "These migrations exist on the base branch but were deleted or modified:"
+            echo "$CHANGED"
+            echo ""
+            echo "Add a new forward migration instead. If the rewrite is deliberate and"
+            echo "every environment has been repaired, add the 'allow-migration-rewrite' label."
+            exit 1
+          fi
+          echo "No existing migrations were deleted, renamed or modified."

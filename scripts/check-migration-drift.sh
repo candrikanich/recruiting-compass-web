@@ -14,6 +14,10 @@
 # isn't enough; skip to the first `{` instead.
 set -euo pipefail
 
+# Prod legitimately has LOCAL_ONLY rows (that is what a deploy applies), so the
+# prod PR check sets ALLOW_LOCAL_ONLY=1 and fails only on orphaned remote rows.
+ALLOW_LOCAL_ONLY="${ALLOW_LOCAL_ONLY:-0}"
+
 RAW=$(supabase migration list --linked --output-format json 2>/dev/null)
 JSON=$(echo "$RAW" | sed -n '/^{/,$p')
 
@@ -22,7 +26,7 @@ REMOTE_ONLY=$(echo "$JSON" | jq -r '.migrations[] | select((.local // "") == "" 
 
 FAILED=0
 
-if [ -n "$LOCAL_ONLY" ]; then
+if [ -n "$LOCAL_ONLY" ] && [ "$ALLOW_LOCAL_ONLY" != "1" ]; then
   FAILED=1
   echo "LOCAL_ONLY — migrations present locally but not yet applied to the linked project:"
   echo "$LOCAL_ONLY"
