@@ -367,7 +367,13 @@ const hasSport = (): boolean => {
 
 const hasGraduationYear = (): boolean => {
   const year = onboardingData.value.graduation_year;
-  return year !== undefined && year !== null && year !== "";
+  if (year === undefined || year === null || year === "") return false;
+  // Membership, not just presence — a prefilled value (query param, or
+  // canonical prefs from a parent's earlier onboarding) is never revalidated
+  // against the current options list, only cleared reactively when
+  // graduationYears itself changes. A stale out-of-range year must not pass
+  // here just because it's non-empty.
+  return graduationYears.value.includes(year as number);
 };
 
 const validateStep1 = (): boolean => {
