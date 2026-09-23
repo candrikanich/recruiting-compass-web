@@ -95,6 +95,21 @@ async function loadFamilyUnitId(
   return data?.family_unit_id ?? null;
 }
 
+// Parent onboarding stages sport/gender here until the athlete accepts their
+// invite and the data is hydrated into user_preferences.
+async function loadPendingPlayerDetails(
+  supabase: SupabaseClient<Database>,
+  familyUnitId: string,
+): Promise<Record<string, unknown>> {
+  const { data, error } = await supabase
+    .from("family_units")
+    .select("pending_player_details")
+    .eq("id", familyUnitId)
+    .maybeSingle();
+  if (error) throw error;
+  return asRecord(data?.pending_player_details);
+}
+
 export async function assembleSchoolRecommendations(
   supabase: SupabaseClient<Database>,
   athleteId: string,
@@ -153,8 +168,14 @@ export async function assembleSchoolRecommendations(
     locationZip: asString(location.zip),
   });
   const gpa = asNumber(player.gpa);
-  const sport = asString(player.primary_sport);
-  const gender = genderFilterFor(asString(player.gender));
+  const needsPendingFallback = familyUnitId && !asString(player.primary_sport);
+  const pending = needsPendingFallback
+    ? await loadPendingPlayerDetails(supabase, familyUnitId)
+    : {};
+  const sport = asString(player.primary_sport) ?? asString(pending.sport);
+  const gender = genderFilterFor(
+    asString(player.gender) ?? asString(pending.gender),
+  );
 
   const excludedKeys = new Set<string>([
     ...trackedNames.map(catalogKeyFor),
