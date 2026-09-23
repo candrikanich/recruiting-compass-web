@@ -288,6 +288,11 @@ jobs:
   # at T+0 instead of waiting out the ~50m chromium job first (both jobs were
   # non-dependent — WebKit only ever needed e2e-tests' build output, not its
   # test result).
+  #
+  # Failures are advisory: this job shares test accounts with the chromium jobs,
+  # so e2e-sequential's cross-account-logout signOut() can revoke its refresh
+  # tokens mid-run. We deliberately don't `needs: e2e-webkit` on e2e-sequential
+  # (would add up to 75m to the gate). Real fix is per-job test accounts (#998).
   e2e-webkit:
     name: Playwright E2E Tests (WebKit/Safari)
     runs-on: ubuntu-latest
