@@ -3913,22 +3913,37 @@ export type Database = {
         Returns: boolean;
       };
       confirm_inbound_draft: {
-        Args: { p_draft_id: string; p_interaction_id: string };
-        Returns: {
-          body_text: string | null;
-          confirmed_interaction_id: string | null;
-          created_at: string;
-          family_unit_id: string;
-          id: string;
-          matched_coach_id: string | null;
-          matched_school_id: string | null;
-          occurred_at: string;
-          raw_email_id: string | null;
-          sender_email: string | null;
-          sender_name: string | null;
-          status: string;
-          subject: string | null;
+        Args: {
+          p_draft_id: string;
+          p_school_id: string | null;
+          p_coach_id: string | null;
+          p_coach_id_set: boolean;
+          p_type: string | null;
+          p_direction: string | null;
+          p_subject: string | null;
+          p_subject_set: boolean;
+          p_content: string | null;
+          p_content_set: boolean;
+          p_occurred_at: string | null;
         };
+        Returns: {
+          draft: {
+            body_text: string | null;
+            confirmed_interaction_id: string | null;
+            created_at: string;
+            family_unit_id: string;
+            id: string;
+            matched_coach_id: string | null;
+            matched_school_id: string | null;
+            occurred_at: string;
+            raw_email_id: string | null;
+            sender_email: string | null;
+            sender_name: string | null;
+            status: string;
+            subject: string | null;
+          };
+          interaction_id: string | null;
+        }[];
       };
       consume_admin_invitation: {
         Args: {

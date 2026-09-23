@@ -1,7 +1,17 @@
 name: Check Migration Drift
 
+# pull_request_target, not pull_request: with the plain `pull_request`
+# trigger, GitHub loads and runs THIS FILE from the PR branch itself for
+# same-repo PRs (only forks are denied secrets, not same-repo branches) --
+# every `run`/`uses`/`env` line below was under the PR author's control,
+# secrets and all, regardless of which script we happened to shell out to.
+# pull_request_target always loads the workflow definition from the base
+# branch (develop) instead, closing that off. The PR's own code is only
+# ever read as data (see "Checkout PR migration files" below), never
+# executed -- the trusted script is fetched from develop in its own step,
+# same as before.
 on:
-  pull_request:
+  pull_request_target:
     branches: [develop]
     paths:
       - "supabase/migrations/**"
@@ -12,29 +22,43 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    # Fork PRs don't get repo secrets (GitHub withholds them from
-    # pull_request runs on forked code) — the E2E link step would hard-fail
-    # before any comparison. Skip cleanly rather than failing opaquely; this
-    # repo has no external forks today, but a maintainer merging a fork PR
-    # should sync QA/E2E via workflow_dispatch on migrate-qa-e2e.yml instead.
+    # pull_request_target grants secrets to fork PRs too (its whole point is
+    # running trusted workflow code against untrusted PR data) -- this guard
+    # stays required, not just a fork-secrets nicety like it was under
+    # `pull_request`. This repo has no external forks today; a maintainer
+    # merging a fork PR should sync QA/E2E via workflow_dispatch on
+    # migrate-qa-e2e.yml instead.
     if: github.event.pull_request.head.repo.full_name == github.repository
 
     steps:
-      # Checks out the PR head, including this repo having no external forks
-      # today. Every same-repo branch push still reaches this job with
-      # SUPABASE_ACCESS_TOKEN/E2E_DB_PASSWORD in env below -- an unreviewed
-      # branch could otherwise edit scripts/check-migration-drift.sh to
-      # exfiltrate them or hit the E2E project directly before merge. The
-      # script that actually runs with those secrets is fetched from
-      # `develop` (a separate step, below), never from this checkout.
-      - name: Checkout code
+      # Base-branch checkout (develop) -- this is where the trusted script
+      # comes from, not the PR.
+      - name: Checkout base branch
         uses: actions/checkout@v7
 
-      - name: Fetch trusted drift-check script from develop
+      - name: Copy trusted drift-check script
         run: |
-          git fetch --depth=1 origin develop
-          git show origin/develop:scripts/check-migration-drift.sh > "$RUNNER_TEMP/check-migration-drift.sh"
+          cp scripts/check-migration-drift.sh "$RUNNER_TEMP/check-migration-drift.sh"
           chmod +x "$RUNNER_TEMP/check-migration-drift.sh"
+
+      # PR head content, fetched into its own directory and never executed
+      # or sourced -- only its supabase/migrations/*.sql files are read, by
+      # the trusted script above, as inert data to diff against the linked
+      # project's schema_migrations.
+      - name: Checkout PR migration files
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          path: pr-head
+          sparse-checkout: |
+            supabase/migrations
+          sparse-checkout-cone-mode: false
+
+      - name: Use PR's migration files for the drift check
+        run: |
+          rm -rf supabase/migrations
+          mv pr-head/supabase/migrations supabase/migrations
+          rm -rf pr-head
 
       - name: Setup Supabase CLI
         uses: supabase/setup-cli@46f7f98c7f948ad727d22c1e67fab04c223a0520 # v3.0.0
@@ -47,9 +71,6 @@ jobs:
           SUPABASE_DB_PASSWORD: ${{ secrets.E2E_DB_PASSWORD }}
         run: supabase link --project-ref ${{ secrets.E2E_PROJECT_REF }}
 
-      # Local migration files under supabase/migrations/ come from the PR
-      # checkout above (they're the data being checked for drift, never
-      # executed) -- only the comparison script itself is the trusted copy.
       - name: Check for pending migrations
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
