@@ -81,62 +81,63 @@ export default defineEventHandler(async (event) => {
         statusMessage: "Cannot confirm a discarded draft",
       });
     }
-
-    let schoolId = draft.matched_school_id;
-    if (!schoolId) {
-      if (!parsed.data.schoolId) {
-        throw createError({
-          statusCode: 422,
-          statusMessage:
-            "schoolId is required — this draft has no matched school",
-        });
-      }
-      // Explicit check stays even under RLS: the interactions INSERT policy
-      // only validates family_unit_id + logged_by, not that school_id itself
-      // belongs to the same family -- confirm the caller-supplied schoolId
-      // actually belongs to their own family before letting it into the
-      // interaction insert.
-      const { data: school } = await admin
-        .from("schools")
-        .select("id")
-        .eq("id", parsed.data.schoolId)
-        .eq("family_unit_id", draft.family_unit_id)
-        .maybeSingle();
-      if (!school) {
-        throw createError({
-          statusCode: 422,
-          statusMessage: "Invalid schoolId",
-        });
-      }
-      schoolId = school.id;
+    if (!draft.matched_school_id && !parsed.data.schoolId) {
+      throw createError({
+        statusCode: 422,
+        statusMessage:
+          "schoolId is required — this draft has no matched school",
+      });
     }
 
-    const { data: interaction, error: insertError } = await admin
-      .from("interactions")
-      .insert({
-        family_unit_id: draft.family_unit_id,
-        school_id: schoolId,
-        coach_id:
-          parsed.data.coachId !== undefined
-            ? parsed.data.coachId
-            : draft.matched_coach_id,
-        type: parsed.data.type ?? "email",
-        direction: parsed.data.direction ?? "inbound",
-        subject:
-          parsed.data.subject !== undefined
-            ? parsed.data.subject
-            : draft.subject,
-        content:
-          parsed.data.content !== undefined
-            ? parsed.data.content
-            : draft.body_text,
-        occurred_at: parsed.data.occurredAt ?? draft.occurred_at,
-        logged_by: userId,
+    // Interaction creation and draft confirmation happen inside one
+    // SECURITY DEFINER RPC, not a client-side insert followed by an update
+    // -- a caller-supplied interaction id can't be trusted as proof it was
+    // created for this draft (any family member could insert their own
+    // interaction and pass its id in). The RPC creates the interaction
+    // itself from these fields, so `interactions.source_draft_id` is only
+    // ever set from the row the RPC just locked, never from client input.
+    // It also closes the observable race where two concurrent confirms
+    // both pass the status check above -- its own UPDATE is WHERE status =
+    // 'pending', server-side.
+    const { data: rpcResult, error: rpcError } = await admin
+      .rpc("confirm_inbound_draft", {
+        p_draft_id: draftId,
+        p_school_id: parsed.data.schoolId ?? null,
+        p_coach_id: parsed.data.coachId ?? null,
+        p_coach_id_set: parsed.data.coachId !== undefined,
+        p_type: parsed.data.type ?? null,
+        p_direction: parsed.data.direction ?? null,
+        p_subject: parsed.data.subject ?? null,
+        p_subject_set: parsed.data.subject !== undefined,
+        p_content: parsed.data.content ?? null,
+        p_content_set: parsed.data.content !== undefined,
+        p_occurred_at: parsed.data.occurredAt ?? null,
       })
-      .select("id")
       .single();
-    if (insertError || !interaction) {
-      logger.error("Failed to create interaction from draft", insertError);
+    if (rpcError || !rpcResult) {
+      logger.error("Failed to confirm draft", rpcError);
+      const statusMessage = rpcError?.message ?? "";
+      if (statusMessage.includes("schoolId is required")) {
+        throw createError({ statusCode: 422, statusMessage });
+      }
+      if (statusMessage === "invalid schoolId") {
+        throw createError({ statusCode: 422, statusMessage: "Invalid schoolId" });
+      }
+      throw createError({
+        statusCode: 500,
+        statusMessage: "Failed to confirm draft",
+      });
+    }
+
+    const interactionId = rpcResult.interaction_id;
+    if (!interactionId) {
+      // Only reachable if the RPC's idempotent-replay branch somehow
+      // returned a confirmed draft with no interaction id, which its own
+      // logic never produces -- kept as a type-narrowing guard, not a
+      // reachable runtime path.
+      logger.error("confirm_inbound_draft returned no interaction id", {
+        draftId,
+      });
       throw createError({
         statusCode: 500,
         statusMessage: "Failed to confirm draft",
@@ -158,6 +159,12 @@ export default defineEventHandler(async (event) => {
         stagedAttachmentsError,
       );
     } else if (stagedAttachments && stagedAttachments.length > 0) {
+      const { data: interactionRow } = await admin
+        .from("interactions")
+        .select("school_id")
+        .eq("id", interactionId)
+        .single();
+      const schoolId = interactionRow?.school_id;
       // Documents are athlete-owned regardless of who confirms the draft —
       // a parent confirming must not park the attachment on their own
       // (unlisted) Documents page. `uploaded_by` stays the actual confirming
@@ -168,7 +175,7 @@ export default defineEventHandler(async (event) => {
       const athleteUserId = await resolveAthleteId(userId, admin);
       const documentInserts = stagedAttachments.map((attachment) => ({
         type: "coach_attachment" as const,
-        interaction_id: interaction.id,
+        interaction_id: interactionId,
         family_unit_id: draft.family_unit_id,
         school_id: schoolId,
         user_id: athleteUserId,
@@ -193,33 +200,9 @@ export default defineEventHandler(async (event) => {
       }
     }
 
-    // Mutation goes through a SECURITY DEFINER RPC, not a raw UPDATE -- a
-    // family-scoped RLS UPDATE policy can't restrict which columns change or
-    // enforce the pending-only transition, so a raw grant would let any
-    // family member rewrite any field (including confirmed_interaction_id)
-    // via a direct Supabase call. The RPC also closes the observable race
-    // where two concurrent confirms both pass the status check above and
-    // each try to claim this draft -- its own UPDATE is WHERE status =
-    // 'pending', same guard as before, just server-side now.
-    const { data: confirmedDraft, error: rpcError } = await admin.rpc(
-      "confirm_inbound_draft",
-      { p_draft_id: draftId, p_interaction_id: interaction.id },
-    );
-    if (rpcError) {
-      logger.error("Failed to mark draft confirmed", rpcError);
-      throw createError({
-        statusCode: 500,
-        statusMessage: "Failed to confirm draft",
-      });
-    }
-
-    // Another request already confirmed this draft first. Our own
-    // interaction insert above already landed — that's a residual
-    // duplicate-interaction risk on true concurrent confirms, not fully
-    // closed by this guard alone (see M2 in the final review).
     return {
       ok: true,
-      interactionId: confirmedDraft?.confirmed_interaction_id ?? interaction.id,
+      interactionId,
     };
   } catch (err) {
     if (err instanceof Error && "statusCode" in err) throw err;

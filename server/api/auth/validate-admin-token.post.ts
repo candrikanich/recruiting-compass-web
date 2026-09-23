@@ -17,7 +17,7 @@ import { defineEventHandler, readBody, createError } from "h3";
 import { z } from "zod";
 import { useLogger } from "~/server/utils/logger";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
-import { emailSchema } from "~/utils/validation/validators";
+import { trimmedEmailSchema } from "~/utils/validation/validators";
 
 // Tokens are minted via randomUUID() (server/api/admin/invitations.post.ts),
 // so a real UUID shape, not just a non-empty string. .trim() first: the
@@ -25,9 +25,10 @@ import { emailSchema } from "~/utils/validation/validators";
 // form (pages/admin/signup.vue) -- that page only checks trimmed length for
 // its own non-empty guard but sends the raw untrimmed value, so incidental
 // copy-paste whitespace must not 400 a legitimate token.
+//
 const validateAdminTokenSchema = z.object({
   token: z.string().trim().uuid(),
-  email: emailSchema,
+  email: trimmedEmailSchema,
 });
 
 interface ValidateAdminTokenResponse {

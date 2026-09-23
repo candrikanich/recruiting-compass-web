@@ -6,7 +6,7 @@ import { verifyTurnstile } from "~/server/utils/turnstile";
 import { createVerifiedAccount } from "~/server/utils/accountCreation";
 import { useSupabaseAdmin } from "~/server/utils/supabase";
 import {
-  emailSchema,
+  trimmedEmailSchema,
   strongPasswordSchema,
   sanitizedTextSchema,
   dateSchema,
@@ -27,7 +27,7 @@ import {
  * asserted role on this public, unauthenticated endpoint.
  */
 const signupBodySchema = z.object({
-  email: emailSchema,
+  email: trimmedEmailSchema,
   password: strongPasswordSchema,
   fullName: sanitizedTextSchema(255),
   role: z.enum(["parent", "player"]).optional(),

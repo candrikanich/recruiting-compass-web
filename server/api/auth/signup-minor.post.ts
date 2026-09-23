@@ -12,27 +12,12 @@ import { markOnboardingComplete } from "~/server/utils/onboardingComplete";
 import { isUnderMinimumAge, requiresGuardianInvite } from "~/utils/age";
 import { getGraduationYearOptions } from "~/utils/graduationYears";
 import {
-  emailSchema,
+  trimmedEmailSchema,
   strongPasswordSchema,
   sanitizedTextSchema,
   dateSchema,
 } from "~/utils/validation/validators";
 import type { Database } from "~/types/database";
-
-/**
- * emailSchema's own chain runs its `.email()` format check before its
- * `.trim()`/`.toLowerCase()` transforms — a value with surrounding
- * whitespace (which the removed manual handler used to trim first, and
- * which iOS's client-side validator accepts by checking a trimmed copy
- * while still submitting the untrimmed value) fails format validation
- * before it ever gets normalized. Preprocessing the trim ourselves here
- * keeps this endpoint's behavior unchanged without touching the shared
- * schema (other callers may rely on its current ordering).
- */
-const trimmedEmailSchema = z.preprocess(
-  (val) => (typeof val === "string" ? val.trim() : val),
-  emailSchema,
-);
 
 /**
  * Mirrors signup.post.ts's own server-side schema (not the client-only
